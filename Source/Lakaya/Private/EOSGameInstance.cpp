@@ -32,6 +32,7 @@ void UEOSGameInstance::Init()
 
 void UEOSGameInstance::Login()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Login start"));
 	if (OnlineSubsystem)
 	{
 		if (IOnlineIdentityPtr Identity = OnlineSubsystem->GetIdentityInterface())
