@@ -185,6 +185,9 @@ void UEOSGameInstance::OnFindSessionComplete(bool bWasSuccessful)
 
 void UEOSGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
 {
+	UE_LOG(LogTemp, Warning, TEXT("JoinSessionComplete!"));
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("JoinSessionComplete"));
+
 	if (OnlineSubsystem)
 	{
 		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
@@ -196,8 +199,20 @@ void UEOSGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCo
 			{
 				if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
 				{
+					UE_LOG(LogTemp, Warning, TEXT("ClientTravel Start!"));
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("ClientTravel Start!"));
 					PC->ClientTravel(ConnectionInfo, ETravelType::TRAVEL_Absolute);
 				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("PlayerController is Empty!"));
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("PlayerController is Empty!"));
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("ConnectionInfo is Empty!"));
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("ConnectionInfo is Empty!"));
 			}
 		}
 	}
