@@ -109,8 +109,8 @@ void UEOSGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 		{
 			SessionPtr->ClearOnCreateSessionCompleteDelegates(this);
-			//UE_LOG(LogTemp,Warning,TEXT("Start Game Level Open"));
-			//UGameplayStatics::OpenLevel(this, FName("MainLevel"), true, FString("listen"));
+			UE_LOG(LogTemp,Warning,TEXT("Start Game Level Open"));
+			UGameplayStatics::OpenLevel(this, FName("MainLevel"), true, FString("listen"));
 		}
 	}
 }
@@ -202,6 +202,8 @@ void UEOSGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCo
 				{
 					UE_LOG(LogTemp, Warning, TEXT("ClientTravel Start!"));
 					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("ClientTravel Start!"));
+					UE_LOG(LogTemp, Warning, TEXT("ConnectionInfo %s"), *ConnectionInfo);
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("ConnectionInfo %s"), *ConnectionInfo));
 					PC->ClientTravel(ConnectionInfo, ETravelType::TRAVEL_Absolute);
 				}
 				else
