@@ -109,8 +109,8 @@ void UEOSGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 		{
 			SessionPtr->ClearOnCreateSessionCompleteDelegates(this);
-			//UE_LOG(LogTemp,Warning,TEXT("Start Game Level Open"));
-			//UGameplayStatics::OpenLevel(this, FName("MainLevel"), true, FString("listen"));
+			/*UE_LOG(LogTemp,Warning,TEXT("Start Game Level Open"));
+			UGameplayStatics::OpenLevel(this, FName("MainLevel"), true, FString("?listen"));
 
 			FString ConnectionInfo = FString();
 			SessionPtr->GetResolvedConnectString(SessionName, ConnectionInfo);
@@ -134,7 +134,7 @@ void UEOSGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Server::ConnectionInfo is Empty!"));
 				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Server::ConnectionInfo is Empty!"));
-			}
+			}*/
 		}
 	}
 }
@@ -323,5 +323,5 @@ void UEOSGameInstance::ShowFriendsUI()
 
 void UEOSGameInstance::CallServerTravel()
 {
-	
+	GetWorld()->ServerTravel("/Game/ThirdPerson/Maps/MainLevel?listen");
 }
