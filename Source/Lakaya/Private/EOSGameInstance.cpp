@@ -109,10 +109,10 @@ void UEOSGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 		{
 			SessionPtr->ClearOnCreateSessionCompleteDelegates(this);
-			/*UE_LOG(LogTemp,Warning,TEXT("Start Game Level Open"));
+			UE_LOG(LogTemp,Warning,TEXT("Start Game Level Open"));
 			UGameplayStatics::OpenLevel(this, FName("MainLevel"), true, FString("?listen"));
 
-			FString ConnectionInfo = FString();
+			/*FString ConnectionInfo = FString();
 			SessionPtr->GetResolvedConnectString(SessionName, ConnectionInfo);
 			if (!ConnectionInfo.IsEmpty())
 			{
