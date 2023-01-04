@@ -220,6 +220,7 @@ void UEOSGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCo
 			FString ConnectionInfo = FString();
 			SessionPtr->GetResolvedConnectString(SessionName, ConnectionInfo);
 
+
 			if (!ConnectionInfo.IsEmpty())
 			{
 				if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
@@ -229,6 +230,7 @@ void UEOSGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCo
 					UE_LOG(LogTemp, Warning, TEXT("ConnectionInfo %s"), *ConnectionInfo);
 					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("ConnectionInfo %s"), *ConnectionInfo));
 					PC->ClientTravel(ConnectionInfo, ETravelType::TRAVEL_Absolute);
+					UE_LOG(LogTemp, Warning, TEXT("ClientTravel END!"));
 				}
 				else
 				{
