@@ -109,8 +109,32 @@ void UEOSGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 		{
 			SessionPtr->ClearOnCreateSessionCompleteDelegates(this);
-			UE_LOG(LogTemp,Warning,TEXT("Start Game Level Open"));
-			UGameplayStatics::OpenLevel(this, FName("MainLevel"), true, FString("listen"));
+			//UE_LOG(LogTemp,Warning,TEXT("Start Game Level Open"));
+			//UGameplayStatics::OpenLevel(this, FName("MainLevel"), true, FString("listen"));
+
+			FString ConnectionInfo = FString();
+			SessionPtr->GetResolvedConnectString(SessionName, ConnectionInfo);
+			if (!ConnectionInfo.IsEmpty())
+			{
+				if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Server::ClientTravel Start!"));
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Server::ClientTravel Start!"));
+					UE_LOG(LogTemp, Warning, TEXT("Server::ConnectionInfo %s"), *ConnectionInfo);
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Server::ConnectionInfo %s"), *ConnectionInfo));
+					PC->ClientTravel(ConnectionInfo, ETravelType::TRAVEL_Absolute);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Server::PlayerController is Empty!"));
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Server::PlayerController is Empty!"));
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Server::ConnectionInfo is Empty!"));
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Server::ConnectionInfo is Empty!"));
+			}
 		}
 	}
 }
@@ -295,4 +319,9 @@ void UEOSGameInstance::ShowFriendsUI()
 			}
 		}
 	}
+}
+
+void UEOSGameInstance::CallServerTravel()
+{
+	
 }

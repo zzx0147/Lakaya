@@ -50,6 +50,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ShowFriendsUI();
 
+	UFUNCTION(BlueprintCallable)
+	void CallServerTravel();
+
 protected:
 	class IOnlineSubsystem* OnlineSubsystem;
 
