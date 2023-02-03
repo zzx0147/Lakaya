@@ -1,7 +1,7 @@
 #include "IndividualGameMode.h"
-#include "Lakaya/LakayaCharacter.h"
+#include "TestCharacter.h"
 
 AIndividualGameMode::AIndividualGameMode()
 {
-	DefaultPawnClass = ALakayaCharacter::StaticClass();
+	DefaultPawnClass = ATestCharacter::StaticClass();
 }
