@@ -83,6 +83,8 @@ Packaged/*
 
 # Rider files
 .idea/*
+Plugins/Developer/RiderLink/*
+
 
 # Mac files
 .DS_Store
