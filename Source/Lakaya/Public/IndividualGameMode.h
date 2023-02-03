@@ -8,5 +8,7 @@ UCLASS()
 class LAKAYA_API AIndividualGameMode : public ALakayaDefalutPlayGameMode
 {
 	GENERATED_BODY()
-	
+
+public:
+	AIndividualGameMode();
 };
