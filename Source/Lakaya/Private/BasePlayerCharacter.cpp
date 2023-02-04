@@ -77,6 +77,7 @@ void ABasePlayerCharacter::UnPossessed()
 {
 	Super::UnPossessed();
 
+	// Debug necessary. want to remove InputMappingContext from subsystem when unpossess
 	if (const auto PlayerController = Cast<APlayerController>(Controller))
 		if (const auto InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<
 			UEnhancedInputLocalPlayerSubsystem>())

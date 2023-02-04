@@ -61,6 +61,7 @@ public:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 private:
+	// Input event functions
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Crouching(const FInputActionValue& Value);
