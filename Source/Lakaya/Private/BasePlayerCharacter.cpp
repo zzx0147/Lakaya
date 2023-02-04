@@ -5,19 +5,62 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "InputMappingContext.h"
 
 // Sets default values
 ABasePlayerCharacter::ABasePlayerCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-}
+	PrimaryActorTick.bCanEverTick = false;
+	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
+	RunMultiplier = 2.0;
 
-// Called when the game starts or when spawned
-void ABasePlayerCharacter::BeginPlay()
-{
-	Super::BeginPlay();
+	// Character must look at the camera is looking at
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationPitch = bUseControllerRotationRoll = false;
+
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArm->SetupAttachment(RootComponent);
+	SpringArm->bUsePawnControlRotation = true;
+
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	Camera->SetupAttachment(SpringArm);
+
+	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
+		TEXT("InputMappingContext'/Game/Yongwoo/Input/IC_CharacterControl'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> MoveFinder(
+		TEXT("InputAction'/Game/Yongwoo/Input/IA_Move'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> LookFinder(
+		TEXT("InputAction'/Game/Yongwoo/Input/IA_Look'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> JumpFinder(
+		TEXT("InputAction'/Game/Yongwoo/Input/IA_Jump'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> CrouchFinder(
+		TEXT("InputAction'/Game/Yongwoo/Input/IA_Crouch'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> UnCrouchFinder(
+		TEXT("InputAction'/Game/Yongwoo/Input/IA_UnCrouch'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> RunFinder(
+		TEXT("InputAction'/Game/Yongwoo/Input/IA_Run'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> StopFinder(
+		TEXT("InputAction'/Game/Yongwoo/Input/IA_StopRunning'"));
+
+	if (ContextFinder.Succeeded()) BasicControlContext = ContextFinder.Object;
+	if (MoveFinder.Succeeded()) MoveAction = MoveFinder.Object;
+	if (LookFinder.Succeeded()) LookAction = LookFinder.Object;
+	if (JumpFinder.Succeeded()) JumpAction = JumpFinder.Object;
+	if (CrouchFinder.Succeeded()) CrouchAction = CrouchFinder.Object;
+	if (UnCrouchFinder.Succeeded()) UnCrouchAction = UnCrouchFinder.Object;
+	if (RunFinder.Succeeded()) RunAction = RunFinder.Object;
+	if (StopFinder.Succeeded()) StopRunningAction = StopFinder.Object;
 }
 
 void ABasePlayerCharacter::PossessedBy(AController* NewController)
@@ -34,15 +77,10 @@ void ABasePlayerCharacter::UnPossessed()
 {
 	Super::UnPossessed();
 
-	// if(const auto PlayerController = Cast<APlayerController>(Controller))
-	// 	if(const auto InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
-	// 		InputSystem->RemoveMappingContext(BasicControlContext.LoadSynchronous());
-}
-
-// Called every frame
-void ABasePlayerCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+	if (const auto PlayerController = Cast<APlayerController>(Controller))
+		if (const auto InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>())
+			InputSystem->RemoveMappingContext(BasicControlContext);
 }
 
 // Called to bind functionality to input
@@ -58,7 +96,8 @@ void ABasePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		InputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Crouching);
 		InputComponent->BindAction(UnCrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::UnCrouching);
 		InputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Run);
-		InputComponent->BindAction(StopRunningAction,ETriggerEvent::Triggered,this,&ABasePlayerCharacter::StopRunning);
+		InputComponent->BindAction(StopRunningAction, ETriggerEvent::Triggered, this,
+		                           &ABasePlayerCharacter::StopRunning);
 	}
 }
 

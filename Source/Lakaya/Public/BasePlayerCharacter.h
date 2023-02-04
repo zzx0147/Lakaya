@@ -43,20 +43,20 @@ class LAKAYA_API ABasePlayerCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, Category = Movement)
 	float RunMultiplier;
 
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+	class USpringArmComponent* SpringArm;
+
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+	class UCameraComponent* Camera;
 public:
 	// Sets default values for this character's properties
 	ABasePlayerCharacter();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void UnPossessed() override;
 
 public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
