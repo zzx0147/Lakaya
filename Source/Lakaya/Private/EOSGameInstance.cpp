@@ -10,6 +10,7 @@
 #include "OnlineSubSystem.h"
 #include "OnlineSessionSettings.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 const FName TestSessionName = FName("Test Session");
 
@@ -28,6 +29,15 @@ void UEOSGameInstance::Init()
 
 	//Login();
 
+}
+
+void UEOSGameInstance::Shutdown()
+{
+	Super::Shutdown();
+	if (UKismetSystemLibrary::IsServer(GEngine->GetWorld()))
+	{
+		DestroySession();
+	}
 }
 
 void UEOSGameInstance::Login()
@@ -110,7 +120,7 @@ void UEOSGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 		{
 			SessionPtr->ClearOnCreateSessionCompleteDelegates(this);
 			UE_LOG(LogTemp,Warning,TEXT("Start Game Level Open"));
-			UGameplayStatics::OpenLevel(this, FName("MainLevel"), true, FString("?listen"));
+			UGameplayStatics::OpenLevel(this, FName("TestGamePlayLevel"), true, FString("?listen"));
 
 			/*FString ConnectionInfo = FString();
 			SessionPtr->GetResolvedConnectString(SessionName, ConnectionInfo);
@@ -220,7 +230,6 @@ void UEOSGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCo
 			FString ConnectionInfo = FString();
 			SessionPtr->GetResolvedConnectString(SessionName, ConnectionInfo);
 
-
 			if (!ConnectionInfo.IsEmpty())
 			{
 				if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
@@ -246,6 +255,62 @@ void UEOSGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCo
 		}
 	}
 
+}
+
+void UEOSGameInstance::QuickJoinSession()
+{
+	if (bIsLoggedIn)
+	{
+		if (OnlineSubsystem)
+		{
+			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
+			{
+				SearchSettings = MakeShareable(new FOnlineSessionSearch());
+				SearchSettings->MaxSearchResults = 5000;
+
+				SearchSettings->QuerySettings.Set(SEARCH_KEYWORDS, FString("LakayaLobby"), EOnlineComparisonOp::Equals);
+				SearchSettings->QuerySettings.Set(SEARCH_LOBBIES, true, EOnlineComparisonOp::Equals);
+
+				SessionPtr->OnFindSessionsCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnFindSessionCompleteWithQuickJoin);
+				SessionPtr->FindSessions(0, SearchSettings.ToSharedRef());
+			}
+		}
+	}
+}
+
+void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Success: %d"), bWasSuccessful);
+	if (bWasSuccessful)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Found %d Lobbies"), SearchSettings->SearchResults.Num());
+		if (OnlineSubsystem)
+		{
+			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
+			{
+				//SessionPtr->ClearOnFindSessionsCompleteDelegates(this);
+				if (SearchSettings->SearchResults.Num())
+				{
+					SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
+					SessionPtr->JoinSession(0, TestSessionName, SearchSettings->SearchResults[0]);
+					SessionPtr->GetSessionState(TestSessionName);
+					if (OnQuickJoinSessionComplete.IsBound())
+					{
+						OnQuickJoinSessionComplete.Broadcast(true);
+						OnQuickJoinSessionComplete.Clear();
+					}
+				}
+				else
+				{
+					if (OnQuickJoinSessionComplete.IsBound())
+					{
+						OnQuickJoinSessionComplete.Broadcast(false);
+						OnQuickJoinSessionComplete.Clear();
+					}
+				}
+			}
+		}
+	}
 }
 
 void UEOSGameInstance::GetAllFriends()

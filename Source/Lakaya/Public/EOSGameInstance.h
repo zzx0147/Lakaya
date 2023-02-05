@@ -11,6 +11,10 @@
 /**
  *
  */
+
+//퀵 조인 완료시 콜백해주는 델리게이트
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickJoinSessionComplete,bool,IsSucsess);
+
 UCLASS()
 class LAKAYA_API UEOSGameInstance : public UGameInstance
 {
@@ -20,6 +24,8 @@ public:
 	UEOSGameInstance();
 
 	virtual void Init() override;
+
+	virtual void Shutdown() override;
 
 	UFUNCTION(BlueprintCallable)
 	void Login();
@@ -39,6 +45,9 @@ public:
 	TSharedPtr<FOnlineSessionSearch> SearchSettings;
 	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
 
+	UFUNCTION(BlueprintCallable)
+	void QuickJoinSession();
+	void OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful);
 
 	UFUNCTION(BlueprintCallable)
 	void GetAllFriends();
@@ -53,6 +62,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CallServerTravel();
 
+public:
+	UPROPERTY(BlueprintAssignable,VisibleAnywhere, BlueprintCallable, Category = "Event")
+	FOnQuickJoinSessionComplete OnQuickJoinSessionComplete;
 protected:
 	class IOnlineSubsystem* OnlineSubsystem;
 
