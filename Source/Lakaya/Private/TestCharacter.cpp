@@ -30,7 +30,7 @@ ATestCharacter::ATestCharacter()
 void ATestCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 void ATestCharacter::SetSpringArm()

@@ -13,7 +13,7 @@ public:
 	AIndividualItem();
 
 protected:
-	virtual void BeginPlay() override;
+	virtual auto BeginPlay() -> void override;
 	virtual void PostInitializeComponents() override;
 	
 public:	

@@ -8,5 +8,10 @@ UCLASS()
 class LAKAYA_API AIndividualPlayerState : public APlayerState
 {
 	GENERATED_BODY()
-	
+
+public :
+	AIndividualPlayerState();
+
+protected:
+
 };

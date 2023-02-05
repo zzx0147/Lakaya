@@ -1,6 +1,5 @@
 #pragma once
 
-// #include "CoreMinimal.h"
 #include "EngineMinimal.h"
 #include "GameFramework/Character.h"
 #include "TestCharacter.generated.h"
