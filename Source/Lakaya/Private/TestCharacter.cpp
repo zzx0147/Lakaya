@@ -23,6 +23,8 @@ ATestCharacter::ATestCharacter()
 	// TODO : 애니메이션
 
 	GetCharacterMovement()->JumpZVelocity = 400.0f;
+
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Character"));
 }
 
 void ATestCharacter::BeginPlay()
