@@ -1,5 +1,7 @@
 #include "TestCharacter.h"
 
+#include "IndividualItem.h"
+
 ATestCharacter::ATestCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -24,6 +26,7 @@ ATestCharacter::ATestCharacter()
 
 	GetCharacterMovement()->JumpZVelocity = 400.0f;
 
+	// TODO
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Character"));
 }
 
@@ -31,6 +34,7 @@ void ATestCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	GetWorld()->SpawnActor(AIndividualItem::StaticClass());
 }
 
 void ATestCharacter::SetSpringArm()

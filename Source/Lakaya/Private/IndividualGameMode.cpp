@@ -5,33 +5,37 @@
 AIndividualGameMode::AIndividualGameMode()
 {
 	DefaultPawnClass = ATestCharacter::StaticClass();
-
-	IndividualItems.Init(nullptr, 10);
 	
-	CurrentItemCount = 0;
-	MaxCount = 10;
-	MinCount = 0;
+	// CurrentItemCount = 0;
+	// MaxCount = 10;
+	// MinCount = 0;
 
-	UE_LOG(LogTemp, Warning, TEXT("%d"), IndividualItems.Num());
+	// IndividualItems.Init(nullptr, MaxCount);
+	
+	// for (auto arr : IndividualItems)
+	// {
+		// auto Item = GetWorld()->SpawnActor(AIndividualItem::StaticClass());
+		// IndividualItems.Emplace(Item);
+		// UE_LOG(LogTemp, Warning, TEXT("실행 !"));
+	// }
 
-	for(int i = 0; i < 10; i++)
-	{
-		// 내용물 뜯어보기.
-	}
+	// GetWorld()->SpawnActor<AIndividualItem>(AIndividualItem::StaticClass());
 }
 
 void AIndividualGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+	
 }
 
 void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
+	
 }
 
-void AIndividualGameMode::SpawnAndInsertTArray()
-{
+// void AIndividualGameMode::SpawnAndInsertTArray()
+// {
 	// auto Item = GetWorld()->SpawnActor(AIndividualItem::StaticClass());
 	// IndividualItems.Insert(Item, CurrentItemCount);
-}
+// }
