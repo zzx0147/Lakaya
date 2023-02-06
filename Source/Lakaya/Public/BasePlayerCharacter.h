@@ -48,6 +48,9 @@ class LAKAYA_API ABasePlayerCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class UCameraComponent* Camera;
+
+	UPROPERTY(VisibleAnywhere, Category = Health)
+	class UHealthComponent* HealthComponent;
 public:
 	// Sets default values for this character's properties
 	ABasePlayerCharacter();

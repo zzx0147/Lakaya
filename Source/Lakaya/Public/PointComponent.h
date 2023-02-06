@@ -17,16 +17,17 @@ class LAKAYA_API UPointComponent : public UActorComponent
 	uint8 InitialPoint;
 
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintAssignable, Category = Events)
-	FOnPointChangedSignature OnPointChanged;
-
 	// Sets default values for this component's properties
 	UPointComponent();
 
-	virtual void BeginPlay() override;
-
 	void GainPoint(const uint8& GainingPoint);
 	void ReturnPoints();
+
+protected:
+	UPROPERTY(BlueprintAssignable, Category = Events)
+	FOnPointChangedSignature OnPointChanged;
+
+	virtual void BeginPlay() override;
 
 private:
 	uint8 Point;
