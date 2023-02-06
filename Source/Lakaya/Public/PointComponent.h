@@ -17,7 +17,7 @@ class LAKAYA_API UPointComponent : public UActorComponent
 	uint8 InitialPoint;
 
 public:
-	UPROPERTY(EditAnywhere, Category = Events)
+	UPROPERTY(EditDefaultsOnly, BlueprintAssignable, Category = Events)
 	FOnPointChangedSignature OnPointChanged;
 
 	// Sets default values for this component's properties
