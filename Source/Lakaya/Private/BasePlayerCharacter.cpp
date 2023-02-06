@@ -136,5 +136,6 @@ void ABasePlayerCharacter::Run(const FInputActionValue& Value)
 
 void ABasePlayerCharacter::StopRunning(const FInputActionValue& Value)
 {
+	// This can causing problem when change RunMultiplier until running
 	GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
 }
