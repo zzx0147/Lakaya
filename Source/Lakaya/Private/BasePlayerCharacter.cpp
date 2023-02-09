@@ -10,6 +10,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "InputMappingContext.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ABasePlayerCharacter::ABasePlayerCharacter()
@@ -64,6 +65,19 @@ ABasePlayerCharacter::ABasePlayerCharacter()
 	if (UnCrouchFinder.Succeeded()) UnCrouchAction = UnCrouchFinder.Object;
 	if (RunFinder.Succeeded()) RunAction = RunFinder.Object;
 	if (StopFinder.Succeeded()) StopRunningAction = StopFinder.Object;
+}
+
+void ABasePlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	HealthComponent->OnDead.AddLambda([this] { Destroy(); });
+	HealthComponent->OnHealthChanged.AddLambda([](const float& Health, const float& Delta)
+	{
+		// Debug code
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White,
+		                                 FString::Printf(TEXT("Health : %f, Delta : %f"), Health, Delta));
+	});
 }
 
 void ABasePlayerCharacter::PossessedBy(AController* NewController)

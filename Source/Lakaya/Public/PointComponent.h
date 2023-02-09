@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "PointComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPointChangedSignature, const uint8&, ChangedPoint);
+DECLARE_EVENT_OneParam(UPointComponent, FOnPointChanged, const uint8&);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UPointComponent : public UActorComponent
@@ -23,10 +23,9 @@ public:
 	void GainPoint(const uint8& GainingPoint);
 	void ReturnPoints();
 
-protected:
-	UPROPERTY(BlueprintAssignable, Category = Events)
-	FOnPointChangedSignature OnPointChanged;
+	FOnPointChanged OnPointChanged;
 
+protected:
 	virtual void BeginPlay() override;
 
 private:

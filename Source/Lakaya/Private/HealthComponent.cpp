@@ -19,9 +19,8 @@ void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	const auto Owner = GetOwner();
-	if (!Owner) return;
-	Owner->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::DamageHandler);
+	if (const auto Owner = GetOwner())
+		Owner->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::DamageHandler);
 
 	Health = MaximumHealth;
 }
