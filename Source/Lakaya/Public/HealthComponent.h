@@ -10,7 +10,7 @@ DECLARE_EVENT_TwoParams(UHealthComponent, FOnHealthChanged, const float&, const 
 
 DECLARE_EVENT(UHealthComponent, FOnDead);
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Health), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()

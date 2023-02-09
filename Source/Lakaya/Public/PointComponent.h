@@ -8,12 +8,12 @@
 
 DECLARE_EVENT_OneParam(UPointComponent, FOnPointChanged, const uint8&);
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Point), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UPointComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, Category = Point)
+	UPROPERTY(EditDefaultsOnly, Category = Point)
 	uint8 InitialPoint;
 
 public:
