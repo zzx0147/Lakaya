@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
-#include "InputMappingQuery.h"
 #include "GameFramework/Character.h"
 #include "BasePlayerCharacter.generated.h"
 
@@ -14,13 +13,13 @@ class LAKAYA_API ABasePlayerCharacter : public ACharacter
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = Input)
-	UInputMappingContext* BasicControlContext;
+	class UInputMappingContext* BasicControlContext;
 
 	UPROPERTY(EditAnywhere, Category = Input)
-	int8 ContextPriority;
+	int8 BasicContextPriority;
 
 	UPROPERTY(EditAnywhere, Category = Input)
-	UInputAction* MoveAction;
+	class UInputAction* MoveAction;
 
 	UPROPERTY(EditAnywhere, Category = Input)
 	UInputAction* LookAction;
@@ -51,6 +50,7 @@ class LAKAYA_API ABasePlayerCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, Category = Health)
 	class UHealthComponent* HealthComponent;
+
 public:
 	// Sets default values for this character's properties
 	ABasePlayerCharacter();
@@ -72,4 +72,8 @@ private:
 	void UnCrouching(const FInputActionValue& Value);
 	void Run(const FInputActionValue& Value);
 	void StopRunning(const FInputActionValue& Value);
+
+protected:
+	UPROPERTY()
+	class UEnhancedInputLocalPlayerSubsystem* InputSystem;
 };

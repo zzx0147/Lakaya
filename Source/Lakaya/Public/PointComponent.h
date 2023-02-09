@@ -13,7 +13,7 @@ class LAKAYA_API UPointComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditDefaultsOnly, Category = Point)
+	UPROPERTY(EditAnywhere, Category = Point)
 	uint8 InitialPoint;
 
 public:

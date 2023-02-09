@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BasePlayerCharacter.h"
+#include "ArmedCharacter.h"
 #include "PointCollectingCharacter.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API APointCollectingCharacter : public ABasePlayerCharacter
+class LAKAYA_API APointCollectingCharacter : public AArmedCharacter
 {
 	GENERATED_BODY()
 
