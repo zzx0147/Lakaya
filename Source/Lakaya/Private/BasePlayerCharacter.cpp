@@ -71,6 +71,7 @@ void ABasePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	InputComponent = nullptr;
 	HealthComponent->OnDead.AddLambda([this] { Destroy(); });
 	HealthComponent->OnHealthChanged.AddLambda([](const float& Health, const float& Delta)
 	{
@@ -85,8 +86,7 @@ void ABasePlayerCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	if (const auto PlayerController = Cast<APlayerController>(NewController))
-		if ((InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<
-			UEnhancedInputLocalPlayerSubsystem>()))
+		if ((InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>()))
 			InputSystem->AddMappingContext(BasicControlContext, BasicContextPriority);
 }
 

@@ -57,12 +57,15 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 void AArmedCharacter::Fire(const FInputActionValue& Value)
 {
+	//TODO: 무기 격발
 }
 
 void AArmedCharacter::Ability(const FInputActionValue& Value)
 {
+	//TODO: 무기 보조 능력 시전
 }
 
 void AArmedCharacter::Reload(const FInputActionValue& Value)
 {
+	//TODO: 무기 능력 시전
 }
