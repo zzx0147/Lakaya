@@ -3,7 +3,11 @@
 	"Modules": 
 	{
 <<<<<<< HEAD
+<<<<<<< HEAD
 		"Lakaya": "UnrealEditor-Lakaya-0016.dll"
+=======
+		"Lakaya": "UnrealEditor-Lakaya-4130.dll"
+>>>>>>> parent of 06ac0ca (20230206_0056)
 =======
 		"Lakaya": "UnrealEditor-Lakaya-4130.dll"
 >>>>>>> parent of 06ac0ca (20230206_0056)

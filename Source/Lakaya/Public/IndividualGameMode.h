@@ -16,6 +16,7 @@ public:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 public:
 
 public:
@@ -29,9 +30,17 @@ public:
 	void SpawnAndInsertTArray();
 
 public:
+=======
+	void SpawnAndInsertTArray();
+
+public:
+>>>>>>> parent of 06ac0ca (20230206_0056)
 	TArray<AActor*> IndividualItems;
 	int32 CurrentItemCount;
 	int32 MaxCount;
 	int32 MinCount;
+<<<<<<< HEAD
+>>>>>>> parent of 06ac0ca (20230206_0056)
+=======
 >>>>>>> parent of 06ac0ca (20230206_0056)
 };

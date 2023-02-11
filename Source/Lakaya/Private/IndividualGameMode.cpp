@@ -7,7 +7,10 @@ AIndividualGameMode::AIndividualGameMode()
 	DefaultPawnClass = ATestCharacter::StaticClass();
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> parent of 06ac0ca (20230206_0056)
 	IndividualItems.Init(nullptr, 10);
 	
 	CurrentItemCount = 0;
@@ -20,6 +23,9 @@ AIndividualGameMode::AIndividualGameMode()
 	{
 		// 내용물 뜯어보기.
 	}
+<<<<<<< HEAD
+>>>>>>> parent of 06ac0ca (20230206_0056)
+=======
 >>>>>>> parent of 06ac0ca (20230206_0056)
 }
 
@@ -31,6 +37,7 @@ void AIndividualGameMode::PostInitializeComponents()
 void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 	for (int i = 0; i < 6; i++)
@@ -44,11 +51,16 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 	int32 Count = ItemArray.Num();
 	UE_LOG(LogTemp, Warning, TEXT("%d"), Count);
 =======
+=======
+>>>>>>> parent of 06ac0ca (20230206_0056)
 }
 
 void AIndividualGameMode::SpawnAndInsertTArray()
 {
 	// auto Item = GetWorld()->SpawnActor(AIndividualItem::StaticClass());
 	// IndividualItems.Insert(Item, CurrentItemCount);
+<<<<<<< HEAD
+>>>>>>> parent of 06ac0ca (20230206_0056)
+=======
 >>>>>>> parent of 06ac0ca (20230206_0056)
 }
