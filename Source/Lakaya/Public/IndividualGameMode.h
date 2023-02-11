@@ -15,9 +15,17 @@ public:
 	virtual void PostInitializeComponents() override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
+private:
+	void RandomSpawn();
+	
 public:
-	// TArray<AActor*> ItemArray;
-	// int32 CurrentCount;
-	// int32 MaxCount;
-	// int32 MinCount;
+	TArray<AActor*> Item;
+
+	// TODO : 하드코딩 수정
+	FVector pos_01;
+	FVector pos_02;
+	FVector pos_03;
+	FVector pos_04;
+	FVector pos_05;
+	FVector pos_06;
 };

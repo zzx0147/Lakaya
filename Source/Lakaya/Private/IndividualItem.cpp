@@ -5,6 +5,9 @@ AIndividualItem::AIndividualItem()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	// 본인이 리플리켕트 대상임을 알림.
+	bReplicates = true;
+	
 	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TRIGGER"));
 	Box = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BOX"));
 
