@@ -15,11 +15,13 @@ public:
 	virtual void PostInitializeComponents() override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
-	// void SpawnAndInsertTArray();
+public:
 
 public:
-	// TArray<AActor*> IndividualItems;
-	// int32 CurrentItemCount;
-	// int32 MaxCount;
-	// int32 MinCount;
+	TArray<AActor*> ItemArray;
+	int32 CurrentCount;
+	int32 MaxCount;
+	int32 MinCount;
+
+	FVector SpawnLocation;
 };

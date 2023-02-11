@@ -1,5 +1,4 @@
 #include "TestCharacter.h"
-
 #include "IndividualItem.h"
 
 ATestCharacter::ATestCharacter()
@@ -34,7 +33,6 @@ void ATestCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetWorld()->SpawnActor(AIndividualItem::StaticClass());
 }
 
 void ATestCharacter::SetSpringArm()

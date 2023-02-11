@@ -1,5 +1,5 @@
 #include "IndividualItem.h"
-// #include "IndividualPlayerState.h"
+#include "IndividualGameMode.h"
 
 AIndividualItem::AIndividualItem()
 {
@@ -16,8 +16,9 @@ AIndividualItem::AIndividualItem()
 	if (SM_BOX.Succeeded())
 		Box->SetStaticMesh(SM_BOX.Object);
 	
-	Trigger->SetRelativeLocation(FVector(400.0f, 0.0f, 0.0f));
+	// Trigger->SetRelativeLocation(FVector(400.0f, 0.0f, 0.0f));
 
+	// Collision Profile
 	Trigger->SetCollisionProfileName(TEXT("IndividualItem"));
 	Box->SetCollisionProfileName(TEXT("NoCollision"));
 }
@@ -31,6 +32,8 @@ void AIndividualItem::BeginPlay()
 void AIndividualItem::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+
+	// 등록
 	Trigger->OnComponentBeginOverlap.AddDynamic(this, &AIndividualItem::OnCharacterOverlap);
 }
 
