@@ -1,11 +1,5 @@
 #include "TestCharacter.h"
-<<<<<<< HEAD
-<<<<<<< HEAD
 #include "IndividualItem.h"
-=======
->>>>>>> parent of 06ac0ca (20230206_0056)
-=======
->>>>>>> parent of 06ac0ca (20230206_0056)
 
 ATestCharacter::ATestCharacter()
 {

@@ -16,7 +16,7 @@ AIndividualItem::AIndividualItem()
 	if (SM_BOX.Succeeded())
 		Box->SetStaticMesh(SM_BOX.Object);
 	
-	// Trigger->SetRelativeLocation(FVector(400.0f, 0.0f, 0.0f));
+	Trigger->SetRelativeLocation(FVector(400.0f, 0.0f, 0.0f));
 
 	// Collision Profile
 	Trigger->SetCollisionProfileName(TEXT("IndividualItem"));
