@@ -50,7 +50,11 @@ void AIndividualItem::OnCharacterOverlap(UPrimitiveComponent* OverlappedComp, AA
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnCharacterOverlap"));
-	
-	Box->SetHiddenInGame(true, true);
-	SetActorEnableCollision(false);
+
+	// auto ABGameMode = Cast<AIndividualGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	// ABGameMode->RandomSpawn();
+	// ABGameMode->Item.Remove(this);
+	// Box->SetHiddenInGame(true, true);
+	// SetActorEnableCollision(false);
+	Destroy();
 }

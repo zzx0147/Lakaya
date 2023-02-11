@@ -6,7 +6,12 @@ AIndividualGameMode::AIndividualGameMode()
 {
 	DefaultPawnClass = ATestCharacter::StaticClass();
 
-	// TODO : 하드코딩 수정
+	ItemMaxCount = 3;
+
+	PosMinCount = 1;
+	PosMaxCount = 6;
+	
+	// TODO : 하드코딩 수정, 위치값을 불러오는 방법 알아보자.
 	pos_01 = (FVector(1000.0f, 200.0f, 0.0f));
 	pos_02 = (FVector(1000.0f, 400.0f, 0.0f));
 	pos_03 = (FVector(1000.0f, 600.0f, 0.0f));
@@ -19,7 +24,7 @@ void AIndividualGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	for (int i = 0; i <3; i++)
+	for (int i = 0; i < ItemMaxCount; i++)
 	{
 		RandomSpawn();
 	}
@@ -32,10 +37,9 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 
 void AIndividualGameMode::RandomSpawn()
 {
-	int32 PosNumber = FMath::RandRange(1, 6);
-
+	int32 PosNumber = FMath::RandRange(PosMinCount, PosMaxCount);
 	AActor* item = GetWorld()->SpawnActor(AIndividualItem::StaticClass());
-
+	
 	switch (PosNumber)
 	{
 	case 1:
