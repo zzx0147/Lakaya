@@ -1,5 +1,8 @@
 #include "TestCharacter.h"
+<<<<<<< HEAD
 #include "IndividualItem.h"
+=======
+>>>>>>> parent of 06ac0ca (20230206_0056)
 
 ATestCharacter::ATestCharacter()
 {
@@ -25,7 +28,6 @@ ATestCharacter::ATestCharacter()
 
 	GetCharacterMovement()->JumpZVelocity = 400.0f;
 
-	// TODO
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Character"));
 }
 
