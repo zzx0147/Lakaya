@@ -4,9 +4,6 @@
 AIndividualItem::AIndividualItem()
 {
 	PrimaryActorTick.bCanEverTick = false;
-
-	// 본인이 리플리켕트 대상임을 알림.
-	bReplicates = true;
 	
 	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TRIGGER"));
 	Box = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BOX"));
@@ -14,7 +11,7 @@ AIndividualItem::AIndividualItem()
 	RootComponent = Trigger;
 	Box->SetupAttachment(RootComponent);
 
-	Trigger->SetBoxExtent(FVector(10.5f, 10.5f, 10.5f));
+	Trigger->SetBoxExtent(FVector(21.0f, 21.0f, 21.0f));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_BOX(TEXT("/Game/KDJ/Box_D50973B1.Box_D50973B1"));
 	if (SM_BOX.Succeeded())
 		Box->SetStaticMesh(SM_BOX.Object);
@@ -24,6 +21,8 @@ AIndividualItem::AIndividualItem()
 	// Collision Profile
 	Trigger->SetCollisionProfileName(TEXT("IndividualItem"));
 	Box->SetCollisionProfileName(TEXT("NoCollision"));
+
+	bReplicates = true;
 }
 
 void AIndividualItem::BeginPlay()
@@ -51,10 +50,5 @@ void AIndividualItem::OnCharacterOverlap(UPrimitiveComponent* OverlappedComp, AA
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnCharacterOverlap"));
 
-	// auto ABGameMode = Cast<AIndividualGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	// ABGameMode->RandomSpawn();
-	// ABGameMode->Item.Remove(this);
-	// Box->SetHiddenInGame(true, true);
-	// SetActorEnableCollision(false);
 	Destroy();
 }
