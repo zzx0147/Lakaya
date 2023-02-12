@@ -5,14 +5,25 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "InGamePlayerState.h"
 #include "InputMappingContext.h"
 
 void AInGamePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// In a dedicated server, the following logic is not necessary.
+	if(IsRunningDedicatedServer()) return;
+
 	if (const auto Subsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
 		Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
+}
+
+void AInGamePlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	if (HasAuthority()) InPawn->OnTakeAnyDamage.AddDynamic(this, &AInGamePlayerController::DamageHandler);
 }
 
 void AInGamePlayerController::SetupInputComponent()
@@ -31,7 +42,9 @@ void AInGamePlayerController::SetupInputComponent()
 
 AInGamePlayerController::AInGamePlayerController()
 {
-	InterfaceContextPriority = -100;
+	if(IsRunningDedicatedServer()) return;
+	
+	InterfaceContextPriority = 100;
 	
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
 		TEXT("InputMappingContext'/Game/Yongwoo/Input/IC_InterfaceControl'"));
@@ -64,4 +77,10 @@ void AInGamePlayerController::WeaponHandler(const FInputActionValue& Value)
 void AInGamePlayerController::ArmorHandler(const FInputActionValue& Value)
 {
 	//TODO: UI를 띄웁니다.
+}
+
+void AInGamePlayerController::DamageHandler(AActor* DamageActor, float Damage, const UDamageType* DamageType,
+                                            AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (const auto State = GetPlayerState<AInGamePlayerState>()) State->ApplyDamage(Damage);
 }

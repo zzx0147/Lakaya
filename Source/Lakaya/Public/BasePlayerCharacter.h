@@ -48,21 +48,19 @@ class LAKAYA_API ABasePlayerCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class UCameraComponent* Camera;
 
-	UPROPERTY(VisibleAnywhere, Category = Health)
-	class UHealthComponent* HealthComponent;
-
 public:
 	// Sets default values for this character's properties
 	ABasePlayerCharacter();
+
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void UnPossessed() override;
 
-public:
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	UPROPERTY()
+	class UEnhancedInputLocalPlayerSubsystem* InputSystem;
 
 private:
 	// Input event functions
@@ -72,8 +70,4 @@ private:
 	void UnCrouching(const FInputActionValue& Value);
 	void Run(const FInputActionValue& Value);
 	void StopRunning(const FInputActionValue& Value);
-
-protected:
-	UPROPERTY()
-	class UEnhancedInputLocalPlayerSubsystem* InputSystem;
 };

@@ -5,7 +5,6 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "HealthComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -20,6 +19,9 @@ ABasePlayerCharacter::ABasePlayerCharacter()
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 	RunMultiplier = 2.0;
 
+	// In a dedicated server, the following logic is not necessary.
+	if(IsRunningDedicatedServer()) return;
+
 	// Character must look at the camera is looking at
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationPitch = bUseControllerRotationRoll = false;
@@ -30,8 +32,6 @@ ABasePlayerCharacter::ABasePlayerCharacter()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
-
-	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
 		TEXT("InputMappingContext'/Game/Yongwoo/Input/IC_CharacterControl'"));
@@ -72,22 +72,21 @@ void ABasePlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	InputComponent = nullptr;
-	HealthComponent->OnDead.AddLambda([this] { Destroy(); });
-	HealthComponent->OnHealthChanged.AddLambda([](const float& Health, const float& Delta)
-	{
-		// Debug code
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White,
-		                                 FString::Printf(TEXT("Health : %f, Delta : %f"), Health, Delta));
-	});
 }
 
 void ABasePlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
+	if(IsRunningDedicatedServer()) return;
+	
 	if (const auto PlayerController = Cast<APlayerController>(NewController))
+	{
+		// If It's not listen server, set role as AutonomousProxy
+		if (!HasAuthority()) SetRole(ROLE_AutonomousProxy);
 		if ((InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>()))
 			InputSystem->AddMappingContext(BasicControlContext, BasicContextPriority);
+	}
 }
 
 void ABasePlayerCharacter::UnPossessed()

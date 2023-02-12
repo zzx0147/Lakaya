@@ -3,24 +3,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InGamePlayerState.h"
-#include "PointCollectingPlayerState.generated.h"
+#include "GameFramework/PlayerState.h"
+#include "InGamePlayerState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API APointCollectingPlayerState : public AInGamePlayerState
+class LAKAYA_API AInGamePlayerState : public APlayerState
 {
 	GENERATED_BODY()
 
 	UPROPERTY(Replicated)
-	uint8 Point;
+	float Health;
 
 public:
-	void GainPoint(const uint8& GainedPoint);
-	void ResetPoint();
-	const uint8& GetPoint() const;
+	void ApplyDamage(const float&);
+	const float& GetHealth() const;
 
 protected:
 	virtual void BeginPlay() override;

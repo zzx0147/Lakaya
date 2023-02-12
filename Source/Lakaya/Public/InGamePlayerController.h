@@ -32,6 +32,7 @@ class LAKAYA_API AInGamePlayerController : public APlayerController
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnPossess(APawn* InPawn) override;
 	virtual void SetupInputComponent() override;
 
 public:
@@ -41,4 +42,8 @@ private:
 	void MenuHandler(const FInputActionValue& Value);
 	void WeaponHandler(const FInputActionValue& Value);
 	void ArmorHandler(const FInputActionValue& Value);
+
+	UFUNCTION()
+	void DamageHandler(AActor* DamageActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy,
+	                   AActor* DamageCauser);
 };
