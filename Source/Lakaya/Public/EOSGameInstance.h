@@ -62,6 +62,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CallServerTravel();
 
+	UFUNCTION(BlueprintCallable)
+	void StartSession();
+
+	UFUNCTION(BlueprintCallable)
+	void EndSession();
+
 public:
 	UPROPERTY(BlueprintAssignable,VisibleAnywhere, BlueprintCallable, Category = "Event")
 	FOnQuickJoinSessionComplete OnQuickJoinSessionComplete;

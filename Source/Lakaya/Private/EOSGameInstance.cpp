@@ -288,25 +288,29 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 		{
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
+				bool result = false;
 				//SessionPtr->ClearOnFindSessionsCompleteDelegates(this);
 				if (SearchSettings->SearchResults.Num())
 				{
 					SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
-					SessionPtr->JoinSession(0, TestSessionName, SearchSettings->SearchResults[0]);
-					SessionPtr->GetSessionState(TestSessionName);
-					if (OnQuickJoinSessionComplete.IsBound())
+					for (int i = 0; i < SearchSettings->SearchResults.Num(); ++i)
 					{
-						OnQuickJoinSessionComplete.Broadcast(true);
-						OnQuickJoinSessionComplete.Clear();
+						if (SessionPtr->GetSessionState(TestSessionName) == EOnlineSessionState::Type::Pending)
+						{
+							SessionPtr->JoinSession(0, TestSessionName, SearchSettings->SearchResults[0]);
+							result = true;
+							break;
+						}
+
 					}
+					
+					//SessionPtr->GetSessionState(TestSessionName);
 				}
-				else
+
+				if (OnQuickJoinSessionComplete.IsBound())
 				{
-					if (OnQuickJoinSessionComplete.IsBound())
-					{
-						OnQuickJoinSessionComplete.Broadcast(false);
-						OnQuickJoinSessionComplete.Clear();
-					}
+					OnQuickJoinSessionComplete.Broadcast(result);
+					OnQuickJoinSessionComplete.Clear();
 				}
 			}
 		}
@@ -391,4 +395,32 @@ void UEOSGameInstance::ShowFriendsUI()
 void UEOSGameInstance::CallServerTravel()
 {
 	GetWorld()->ServerTravel("/Game/ThirdPerson/Maps/MainLevel?listen");
+}
+
+void UEOSGameInstance::StartSession()
+{
+	if (UKismetSystemLibrary::IsServer(GetWorld()) || UKismetSystemLibrary::IsDedicatedServer(GetWorld()))
+	{
+		if (OnlineSubsystem)
+		{
+			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
+			{
+				SessionPtr->StartSession(TestSessionName);
+			}
+		}
+	}
+}
+
+void UEOSGameInstance::EndSession()
+{
+	if (UKismetSystemLibrary::IsServer(GetWorld()) || UKismetSystemLibrary::IsDedicatedServer(GetWorld()))
+	{
+		if (OnlineSubsystem)
+		{
+			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
+			{
+				SessionPtr->EndSession(TestSessionName);
+			}
+		}
+	}
 }
