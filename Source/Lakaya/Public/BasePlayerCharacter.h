@@ -67,6 +67,8 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void UnPossessed() override;
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
 	UPROPERTY()
 	class UEnhancedInputLocalPlayerSubsystem* InputSystem;
@@ -80,4 +82,6 @@ private:
 	void Run(const FInputActionValue& Value);
 	void StopRunning(const FInputActionValue& Value);
 	void Interaction(const FInputActionValue& Value);
+
+	uint8 InteractableCount;
 };

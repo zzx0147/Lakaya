@@ -80,6 +80,7 @@ void ABasePlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	InputComponent = nullptr;
+	InteractableCount = 0;
 }
 
 void ABasePlayerCharacter::PossessedBy(AController* NewController)
@@ -103,6 +104,27 @@ void ABasePlayerCharacter::UnPossessed()
 
 	// Debug necessary. want to remove InputMappingContext from subsystem when unpossess
 	if (InputSystem) InputSystem->RemoveMappingContext(BasicControlContext);
+}
+
+void ABasePlayerCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorBeginOverlap(OtherActor);
+
+	// Add interaction context when overlapped by trigger
+	if (!InputSystem || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
+	InteractableCount++;
+	if (!InputSystem->HasMappingContext(InteractionContext))
+		InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
+}
+
+void ABasePlayerCharacter::NotifyActorEndOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorEndOverlap(OtherActor);
+
+	// Remove interaction context when far away from triggers
+	if (!InputSystem || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
+	InteractableCount--;
+	if (InteractableCount == 0) InputSystem->RemoveMappingContext(InteractionContext);
 }
 
 // Called to bind functionality to input
