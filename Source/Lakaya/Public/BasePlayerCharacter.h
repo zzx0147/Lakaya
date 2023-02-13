@@ -12,32 +12,41 @@ class LAKAYA_API ABasePlayerCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, Category = Input)
+	UPROPERTY(EditAnywhere, Category = "Input|Movement|Context")
 	class UInputMappingContext* BasicControlContext;
 
-	UPROPERTY(EditAnywhere, Category = Input)
+	UPROPERTY(EditAnywhere, Category = "Input|Movement|Context")
 	int8 BasicContextPriority;
 
-	UPROPERTY(EditAnywhere, Category = Input)
+	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
 	class UInputAction* MoveAction;
 
-	UPROPERTY(EditAnywhere, Category = Input)
+	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
 	UInputAction* LookAction;
 
-	UPROPERTY(EditAnywhere, Category = Input)
+	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
 	UInputAction* JumpAction;
 
-	UPROPERTY(EditAnywhere, Category = Input)
+	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
 	UInputAction* CrouchAction;
 
-	UPROPERTY(EditAnywhere, Category = Input)
+	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
 	UInputAction* UnCrouchAction;
 
-	UPROPERTY(EditAnywhere, Category = Input)
+	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
 	UInputAction* RunAction;
 
-	UPROPERTY(EditAnywhere, Category = Input)
+	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
 	UInputAction* StopRunningAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input|Interaction|Context")
+	UInputMappingContext* InteractionContext;
+
+	UPROPERTY(EditAnywhere, Category = "Input|Interaction|Context")
+	int8 InteractionPriority;
+
+	UPROPERTY(EditAnywhere, Category = "Input|Interaction|Actions")
+	UInputAction* InteractionAction;
 
 	UPROPERTY(EditAnywhere, Category = Movement)
 	float RunMultiplier;
@@ -70,4 +79,5 @@ private:
 	void UnCrouching(const FInputActionValue& Value);
 	void Run(const FInputActionValue& Value);
 	void StopRunning(const FInputActionValue& Value);
+	void Interaction(const FInputActionValue& Value);
 };

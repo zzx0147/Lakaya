@@ -14,19 +14,19 @@ class LAKAYA_API AArmedCharacter : public ABasePlayerCharacter
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, Category=Input)
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Context")
 	UInputMappingContext* WeaponControlContext;
 
-	UPROPERTY(EditAnywhere, Category=Input)
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Context")
 	int8 WeaponContextPriority;
 
-	UPROPERTY(EditAnywhere, Category=Input)
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* FireAction;
 
-	UPROPERTY(EditAnywhere, Category=Input)
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* AbilityAction;
 
-	UPROPERTY(EditAnywhere, Category=Input)
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* ReloadAction;
 
 public:

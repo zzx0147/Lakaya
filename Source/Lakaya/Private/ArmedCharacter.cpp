@@ -9,8 +9,6 @@
 
 AArmedCharacter::AArmedCharacter()
 {
-	WeaponContextPriority = 10;
-	
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
 		TEXT("InputMappingContext'/Game/Yongwoo/Input/IC_WeaponControl'"));
 

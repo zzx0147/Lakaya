@@ -20,7 +20,7 @@ ABasePlayerCharacter::ABasePlayerCharacter()
 	RunMultiplier = 2.0;
 
 	// In a dedicated server, the following logic is not necessary.
-	if(IsRunningDedicatedServer()) return;
+	if (IsRunningDedicatedServer()) return;
 
 	// Character must look at the camera is looking at
 	bUseControllerRotationYaw = true;
@@ -57,6 +57,12 @@ ABasePlayerCharacter::ABasePlayerCharacter()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> StopFinder(
 		TEXT("InputAction'/Game/Yongwoo/Input/IA_StopRunning'"));
 
+	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> InteractionContextFinder(
+		TEXT("InputMappingContext'/Game/Yongwoo/Input/IC_InteractionControl'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionFinder(
+		TEXT("InputAction'/Game/Yongwoo/Input/IA_Interaction'"));
+
 	if (ContextFinder.Succeeded()) BasicControlContext = ContextFinder.Object;
 	if (MoveFinder.Succeeded()) MoveAction = MoveFinder.Object;
 	if (LookFinder.Succeeded()) LookAction = LookFinder.Object;
@@ -65,6 +71,8 @@ ABasePlayerCharacter::ABasePlayerCharacter()
 	if (UnCrouchFinder.Succeeded()) UnCrouchAction = UnCrouchFinder.Object;
 	if (RunFinder.Succeeded()) RunAction = RunFinder.Object;
 	if (StopFinder.Succeeded()) StopRunningAction = StopFinder.Object;
+	if (InteractionContextFinder.Succeeded()) InteractionContext = InteractionContextFinder.Object;
+	if (InteractionFinder.Succeeded()) InteractionAction = InteractionFinder.Object;
 }
 
 void ABasePlayerCharacter::BeginPlay()
@@ -78,8 +86,8 @@ void ABasePlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	if(IsRunningDedicatedServer()) return;
-	
+	if (IsRunningDedicatedServer()) return;
+
 	if (const auto PlayerController = Cast<APlayerController>(NewController))
 	{
 		// If It's not listen server, set role as AutonomousProxy
@@ -112,6 +120,8 @@ void ABasePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		InputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Run);
 		InputComponent->BindAction(StopRunningAction, ETriggerEvent::Triggered, this,
 		                           &ABasePlayerCharacter::StopRunning);
+		InputComponent->BindAction(InteractionAction, ETriggerEvent::Triggered, this,
+		                           &ABasePlayerCharacter::Interaction);
 	}
 }
 
@@ -151,4 +161,9 @@ void ABasePlayerCharacter::StopRunning(const FInputActionValue& Value)
 {
 	// This can causing problem when change RunMultiplier until running
 	GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
+}
+
+void ABasePlayerCharacter::Interaction(const FInputActionValue& Value)
+{
+	//TODO: 대상 물체와 상호작용하는 로직을 추가합니다.
 }
