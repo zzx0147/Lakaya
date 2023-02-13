@@ -7,6 +7,12 @@
 
 void APointCollectingPlayerState::GainPoint(const uint8& GainedPoint)
 {
+	if (!HasAuthority())
+	{
+		UE_LOG(LogSecurity, Warning, TEXT("Client trying to gain a point. there is an logic error or client cheated"));
+		return;
+	}
+	
 	Point += GainedPoint;
 }
 
@@ -18,13 +24,6 @@ void APointCollectingPlayerState::ResetPoint()
 const uint8& APointCollectingPlayerState::GetPoint() const
 {
 	return Point;
-}
-
-void APointCollectingPlayerState::BeginPlay()
-{
-	Super::BeginPlay();
-
-	Point = 0;
 }
 
 void APointCollectingPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

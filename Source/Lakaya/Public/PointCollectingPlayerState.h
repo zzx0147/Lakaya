@@ -14,7 +14,8 @@ class LAKAYA_API APointCollectingPlayerState : public AInGamePlayerState
 {
 	GENERATED_BODY()
 
-	UPROPERTY(Replicated)
+	// Client must NOT change this value
+	UPROPERTY(Replicated, Transient)
 	uint8 Point;
 
 public:
@@ -23,6 +24,5 @@ public:
 	const uint8& GetPoint() const;
 
 protected:
-	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

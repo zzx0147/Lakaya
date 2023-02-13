@@ -14,14 +14,20 @@ class LAKAYA_API AInGamePlayerState : public APlayerState
 {
 	GENERATED_BODY()
 
-	UPROPERTY(Replicated)
+	// Client must NOT change this value
+	UPROPERTY(Replicated, Transient)
 	float Health;
 
 public:
-	void ApplyDamage(const float&);
+	virtual void SetupPlayerState(APawn* Pawn);
 	const float& GetHealth() const;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+private:
+	UFUNCTION()
+	void ApplyDamage(AActor* DamageActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy,
+	                 AActor* DamageCauser);
 };

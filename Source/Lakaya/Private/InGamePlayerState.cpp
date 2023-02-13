@@ -5,9 +5,21 @@
 
 #include "Net/UnrealNetwork.h"
 
-void AInGamePlayerState::ApplyDamage(const float& Damage)
+void AInGamePlayerState::ApplyDamage(AActor* DamageActor, float Damage, const UDamageType* DamageType,
+                                     AController* InstigatedBy, AActor* DamageCauser)
 {
+	if (!HasAuthority())
+	{
+		UE_LOG(LogSecurity, Warning, TEXT("Client trying to apply damage. there is an logic error or client cheated"));
+		return;
+	}
+	
 	Health -= Damage;
+}
+
+void AInGamePlayerState::SetupPlayerState(APawn* Pawn)
+{
+	if (HasAuthority()) Pawn->OnTakeAnyDamage.AddDynamic(this, &AInGamePlayerState::ApplyDamage);
 }
 
 const float& AInGamePlayerState::GetHealth() const
