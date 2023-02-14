@@ -294,6 +294,7 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 		UE_LOG(LogTemp, Warning, TEXT("Found %d Lobbies"), SearchSettings->SearchResults.Num());
 		if (OnlineSubsystem)
 		{
+			bool result = false;
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
 				//SessionPtr->ClearOnFindSessionsCompleteDelegates(this);
@@ -301,8 +302,15 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 				{
 					SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
 					SessionPtr->JoinSession(0, /*TestSessionName*/FName("holy moly"), SearchSettings->SearchResults[0]);
+					result = true;
 					//SessionPtr->GetSessionState(TestSessionName);
 				}
+
+			}
+			if (OnQuickJoinSessionComplete.IsBound())
+			{
+				OnQuickJoinSessionComplete.Broadcast(result);
+				OnQuickJoinSessionComplete.Clear();
 			}
 		}
 	}
