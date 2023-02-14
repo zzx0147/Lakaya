@@ -296,32 +296,12 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 		{
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
-				bool result = false;
 				//SessionPtr->ClearOnFindSessionsCompleteDelegates(this);
 				if (SearchSettings->SearchResults.Num())
 				{
 					SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
-					for (int i = 0; i < SearchSettings->SearchResults.Num(); ++i)
-					{
-						if (SessionPtr->GetSessionState(TestSessionName) == EOnlineSessionState::Type::Pending)
-						{
-							SessionPtr->JoinSession(0, TestSessionName, SearchSettings->SearchResults[i]);
-							result = true;
-							break;
-						}
-						else
-						{
-							PrintSessionState();
-						}
-					}
-					
+					SessionPtr->JoinSession(0, /*TestSessionName*/FName("holy moly"), SearchSettings->SearchResults[0]);
 					//SessionPtr->GetSessionState(TestSessionName);
-				}
-
-				if (OnQuickJoinSessionComplete.IsBound())
-				{
-					OnQuickJoinSessionComplete.Broadcast(result);
-					OnQuickJoinSessionComplete.Clear();
 				}
 			}
 		}
