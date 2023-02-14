@@ -75,4 +75,6 @@ protected:
 	class IOnlineSubsystem* OnlineSubsystem;
 
 	bool bIsLoggedIn;
+
+	//FName CurrentServerName;
 };

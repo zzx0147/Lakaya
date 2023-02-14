@@ -11,6 +11,7 @@
 #include "OnlineSessionSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Misc/DateTime.h"
 
 const FName TestSessionName = FName("Test Session");
 
@@ -86,10 +87,15 @@ void UEOSGameInstance::CreateSession()
 		{
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
+				//FDateTime Now = FDateTime::UtcNow();
+				//int64 Timestamp = Now.ToUnixTimestamp();
+				//FString SessionName = FString::Printf("Lakaya:%lld", Timestamp);
+				
+
 				FOnlineSessionSettings SessionSettings;
 				SessionSettings.bIsDedicated = false;
 				SessionSettings.bShouldAdvertise = true;
-				//SessionSettings.bIsLANMatch = true;
+
 				SessionSettings.bIsLANMatch = false;
 				SessionSettings.NumPublicConnections = 5;
 				SessionSettings.bAllowJoinInProgress = true;
@@ -211,6 +217,8 @@ void UEOSGameInstance::OnFindSessionComplete(bool bWasSuccessful)
 				if(SearchSettings->SearchResults.Num())
 				{ 
 					SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
+					//SearchSettings->SearchResults[0].Session.SessionSettings.Get();
+					//SearchSettings->SearchResults[0].GetSessionIdStr();
 					SessionPtr->JoinSession(0,TestSessionName,SearchSettings->SearchResults[0]);
 				}
 			}
@@ -301,7 +309,6 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 							result = true;
 							break;
 						}
-
 					}
 					
 					//SessionPtr->GetSessionState(TestSessionName);

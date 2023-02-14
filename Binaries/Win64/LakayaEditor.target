@@ -4730,6 +4730,18 @@
 			"Type": "RequiredResource"
 		},
 		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/VisualStudioTools/Binaries/Win64/UnrealEditor-VisualStudioTools.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/VisualStudioTools/Binaries/Win64/UnrealEditor-VisualStudioTools.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/VisualStudioTools/Binaries/Win64/UnrealEditor.modules",
+			"Type": "RequiredResource"
+		},
+		{
 			"Path": "$(EngineDir)/Plugins/Media/AndroidMedia/Binaries/Win64/UnrealEditor-AndroidMediaEditor.dll",
 			"Type": "DynamicLibrary"
 		},
@@ -26785,6 +26797,10 @@
 		},
 		{
 			"Path": "$(EngineDir)/Plugins/Interchange/Runtime/Interchange.uplugin",
+			"Type": "UFS"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/VisualStudioTools/VisualStudioTools.uplugin",
 			"Type": "UFS"
 		},
 		{
