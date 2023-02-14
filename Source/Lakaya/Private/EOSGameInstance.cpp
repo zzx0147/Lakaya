@@ -305,9 +305,13 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 					{
 						if (SessionPtr->GetSessionState(TestSessionName) == EOnlineSessionState::Type::Pending)
 						{
-							SessionPtr->JoinSession(0, TestSessionName, SearchSettings->SearchResults[0]);
+							SessionPtr->JoinSession(0, TestSessionName, SearchSettings->SearchResults[i]);
 							result = true;
 							break;
+						}
+						else
+						{
+							GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("ConnectionInfo is Empty!"));
 						}
 					}
 					
@@ -427,6 +431,47 @@ void UEOSGameInstance::EndSession()
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
 				SessionPtr->EndSession(TestSessionName);
+			}
+		}
+	}
+}
+
+void UEOSGameInstance::PrintSessionState()
+{
+	if (OnlineSubsystem)
+	{
+		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
+		{
+			EOnlineSessionState::Type State = SessionPtr->GetSessionState(TestSessionName);
+
+			switch (State)
+			{
+			case EOnlineSessionState::NoSession:
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("NoSession"));
+				break;
+			case EOnlineSessionState::Creating:
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Creating"));
+				break;
+			case EOnlineSessionState::Pending:
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Pending"));
+				break;
+			case EOnlineSessionState::Starting:
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Starting"));
+				break;
+			case EOnlineSessionState::InProgress:
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("InProgress"));
+				break;
+			case EOnlineSessionState::Ending:
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Ending"));
+				break;
+			case EOnlineSessionState::Ended:
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Ended"));
+				break;
+			case EOnlineSessionState::Destroying:
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Destroying"));
+				break;
+			default:
+				break;
 			}
 		}
 	}

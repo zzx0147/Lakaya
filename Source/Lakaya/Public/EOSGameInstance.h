@@ -68,6 +68,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EndSession();
 
+	UFUNCTION(BlueprintCallable)
+	void PrintSessionState();
+
+
 public:
 	UPROPERTY(BlueprintAssignable,VisibleAnywhere, BlueprintCallable, Category = "Event")
 	FOnQuickJoinSessionComplete OnQuickJoinSessionComplete;
