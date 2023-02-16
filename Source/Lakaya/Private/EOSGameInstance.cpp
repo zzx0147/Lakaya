@@ -13,7 +13,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Misc/DateTime.h"
 
-const FName TestSessionName = FName("Test Session");
+const FName MyGameSessionName = FName(TEXT("GameSession"));
 
 UEOSGameInstance::UEOSGameInstance()
 {
@@ -106,7 +106,7 @@ void UEOSGameInstance::CreateSession()
 				SessionSettings.Set(SEARCH_KEYWORDS, FString("LakayaLobby"), EOnlineDataAdvertisementType::ViaOnlineService);
 
 				SessionPtr->OnCreateSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnCreateSessionComplete);
-				SessionPtr->CreateSession(0, TestSessionName, SessionSettings);
+				SessionPtr->CreateSession(0, MyGameSessionName, SessionSettings);
 			}
 		}
 	}
@@ -164,7 +164,7 @@ void UEOSGameInstance::DestroySession()
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
 				SessionPtr->OnDestroySessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnDestroySessionComplete);
-				SessionPtr->DestroySession(TestSessionName);
+				SessionPtr->DestroySession(MyGameSessionName);
 			}
 		}
 	}
@@ -219,7 +219,7 @@ void UEOSGameInstance::OnFindSessionComplete(bool bWasSuccessful)
 					SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
 					//SearchSettings->SearchResults[0].Session.SessionSettings.Get();
 					//SearchSettings->SearchResults[0].GetSessionIdStr();
-					SessionPtr->JoinSession(0,TestSessionName,SearchSettings->SearchResults[0]);
+					SessionPtr->JoinSession(0,MyGameSessionName,SearchSettings->SearchResults[0]);
 				}
 			}
 		}
@@ -301,9 +301,8 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 				if (SearchSettings->SearchResults.Num())
 				{
 					SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
-					SessionPtr->JoinSession(0, /*TestSessionName*/FName("holy moly"), SearchSettings->SearchResults[0]);
+					SessionPtr->JoinSession(0, MyGameSessionName, SearchSettings->SearchResults[0]);
 					result = true;
-					//SessionPtr->GetSessionState(TestSessionName);
 				}
 
 			}
@@ -371,7 +370,7 @@ void UEOSGameInstance::ShowInviteUI()
 		{
 			if (IOnlineExternalUIPtr UIPtr = OnlineSubsystem->GetExternalUIInterface())
 			{
-				UIPtr->ShowInviteUI(0,TestSessionName);
+				UIPtr->ShowInviteUI(0,MyGameSessionName);
 			}
 		}
 	}
@@ -404,7 +403,7 @@ void UEOSGameInstance::StartSession()
 		{
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
-				SessionPtr->StartSession(TestSessionName);
+				SessionPtr->StartSession(MyGameSessionName);
 			}
 		}
 	}
@@ -418,7 +417,7 @@ void UEOSGameInstance::EndSession()
 		{
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
-				SessionPtr->EndSession(TestSessionName);
+				SessionPtr->EndSession(MyGameSessionName);
 			}
 		}
 	}
@@ -430,7 +429,7 @@ void UEOSGameInstance::PrintSessionState()
 	{
 		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 		{
-			EOnlineSessionState::Type State = SessionPtr->GetSessionState(TestSessionName);
+			EOnlineSessionState::Type State = SessionPtr->GetSessionState(MyGameSessionName);
 
 			switch (State)
 			{
