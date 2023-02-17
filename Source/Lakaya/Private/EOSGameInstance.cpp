@@ -13,7 +13,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Misc/DateTime.h"
 
-const FName MyGameSessionName = FName(TEXT("Game Session"));
+//const FName MyGameSessionName = FName(TEXT("Game Session"));
+const FName MyGameSessionName = FName("GameSession");
 
 UEOSGameInstance::UEOSGameInstance()
 {
