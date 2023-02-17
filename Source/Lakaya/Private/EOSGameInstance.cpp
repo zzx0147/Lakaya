@@ -294,21 +294,27 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 		UE_LOG(LogTemp, Warning, TEXT("Found %d Lobbies"), SearchSettings->SearchResults.Num());
 		if (OnlineSubsystem)
 		{
-			bool result = false;
+			bool IsSuccess = false;
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
 				//SessionPtr->ClearOnFindSessionsCompleteDelegates(this);
 				if (SearchSettings->SearchResults.Num())
 				{
-					SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
-					SessionPtr->JoinSession(0, MyGameSessionName, SearchSettings->SearchResults[0]);
-					result = true;
+					for (const auto Results : SearchSettings->SearchResults)
+					{
+						SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
+						IsSuccess = SessionPtr->JoinSession(0, MyGameSessionName, Results);
+						if (IsSuccess)
+						{
+							break;
+						}
+					}
 				}
 
 			}
 			if (OnQuickJoinSessionComplete.IsBound())
 			{
-				OnQuickJoinSessionComplete.Broadcast(result);
+				OnQuickJoinSessionComplete.Broadcast(IsSuccess);
 				OnQuickJoinSessionComplete.Clear();
 			}
 		}
