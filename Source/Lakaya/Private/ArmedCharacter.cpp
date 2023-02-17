@@ -45,11 +45,11 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (const auto InputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	if (const auto ArmedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		InputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AArmedCharacter::Fire);
-		InputComponent->BindAction(AbilityAction, ETriggerEvent::Triggered, this, &AArmedCharacter::Ability);
-		InputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AArmedCharacter::Reload);
+		ArmedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AArmedCharacter::Fire);
+		ArmedInputComponent->BindAction(AbilityAction, ETriggerEvent::Triggered, this, &AArmedCharacter::Ability);
+		ArmedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AArmedCharacter::Reload);
 	}
 }
 

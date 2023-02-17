@@ -1,11 +1,15 @@
 #include "IndividualGameMode.h"
+
+#include "BasePlayerCharacter.h"
 #include "IndividualItem.h"
 #include "TestCharacter.h"
 
 AIndividualGameMode::AIndividualGameMode()
 {
 	DefaultPawnClass = ATestCharacter::StaticClass();
-
+	// DefaultPawnClass = ABasePlayerCharacter::StaticClass();
+	// PlayerControllerClass = ABasePlayerCharacter::StaticClass();
+	
 	ItemMaxCount = 3;
 	PosMinCount = 1;
 	PosMaxCount = 6;

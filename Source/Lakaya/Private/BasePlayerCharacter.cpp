@@ -93,7 +93,7 @@ void ABasePlayerCharacter::PossessedBy(AController* NewController)
 	{
 		// If It's not listen server, set role as AutonomousProxy
 		if (!HasAuthority()) SetRole(ROLE_AutonomousProxy);
-		if ((InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>()))
+		if (((InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())) == nullptr)
 			InputSystem->AddMappingContext(BasicControlContext, BasicContextPriority);
 	}
 }
@@ -132,17 +132,17 @@ void ABasePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (const auto InputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	if (const auto BaseInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		InputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Move);
-		InputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Look);
-		InputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-		InputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Crouching);
-		InputComponent->BindAction(UnCrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::UnCrouching);
-		InputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Run);
-		InputComponent->BindAction(StopRunningAction, ETriggerEvent::Triggered, this,
+		BaseInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Move);
+		BaseInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Look);
+		BaseInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+		BaseInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Crouching);
+		BaseInputComponent->BindAction(UnCrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::UnCrouching);
+		BaseInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Run);
+		BaseInputComponent->BindAction(StopRunningAction, ETriggerEvent::Triggered, this,
 		                           &ABasePlayerCharacter::StopRunning);
-		InputComponent->BindAction(InteractionAction, ETriggerEvent::Triggered, this,
+		BaseInputComponent->BindAction(InteractionAction, ETriggerEvent::Triggered, this,
 		                           &ABasePlayerCharacter::Interaction);
 	}
 }
