@@ -14,7 +14,7 @@
 #include "Misc/DateTime.h"
 
 //const FName MyGameSessionName = FName(TEXT("Game Session"));
-const FName MyGameSessionName = FName("GameSession");
+const FName MyGameSessionName = FName("Game Session");
 
 UEOSGameInstance::UEOSGameInstance()
 {
