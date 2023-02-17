@@ -10,11 +10,17 @@
 
 AIndividualGameMode::AIndividualGameMode()
 {
-	// DefaultPawnClass = ATestCharacter::StaticClass();
-	DefaultPawnClass = ABasePlayerCharacter::StaticClass();
+	DefaultPawnClass = ATestCharacter::StaticClass();
+	// DefaultPawnClass = ABasePlayerCharacter::StaticClass();
 	// DefaultPawnClass = AArmedCharacter::StaticClass();
-	PlayerControllerClass = AInGamePlayerController::StaticClass();
-	PlayerStateClass = AInGamePlayerState::StaticClass();
+	// PlayerControllerClass = AInGamePlayerController::StaticClass();
+	// PlayerStateClass = AInGamePlayerState::StaticClass();
+
+	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/KDJ/BP_ThirdPersonCharacter.BP_ThirdPersonCharacter"));
+	if (PlayerPawnBPClass.Class != NULL)
+	{
+		DefaultPawnClass = PlayerPawnBPClass.Class;
+	}
 	
 	ItemMaxCount = 3;
 	PosMinCount = 1;
