@@ -65,6 +65,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StartSession();
 
+	void OnUpdateSessionComplete(FName SessionName, bool bWasSuccessful);
+
 	UFUNCTION(BlueprintCallable)
 	void EndSession();
 

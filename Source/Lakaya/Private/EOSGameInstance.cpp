@@ -415,11 +415,32 @@ void UEOSGameInstance::StartSession()
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
 				SessionSettings.bAllowJoinInProgress = false;
+				SessionPtr->OnUpdateSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnUpdateSessionComplete);
 				SessionPtr->UpdateSession(MyGameSessionName, SessionSettings);
-				SessionPtr->StartSession(MyGameSessionName);
 			}
 		}
 	}
+}
+
+void UEOSGameInstance::OnUpdateSessionComplete(FName SessionName, bool bWasSuccessful)
+{
+	if (SessionName == MyGameSessionName && bWasSuccessful)
+	{
+		if (UKismetSystemLibrary::IsServer(GetWorld()) || UKismetSystemLibrary::IsDedicatedServer(GetWorld()))
+		{
+			if (OnlineSubsystem)
+			{
+				if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Update Session Complete"));
+					SessionPtr->OnUpdateSessionCompleteDelegates.Clear();
+					SessionPtr->StartSession(MyGameSessionName);
+
+				}
+			}
+		}
+	}
+
 }
 
 void UEOSGameInstance::EndSession()
