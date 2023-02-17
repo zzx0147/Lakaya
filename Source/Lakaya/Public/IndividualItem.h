@@ -26,6 +26,12 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Box)
 	UStaticMeshComponent* Box;
 
+public:
+	int32 GetItemNumber();
+	
+public:
+	int32 ItemNumber;
+	
 private:
 	UFUNCTION()
 	void OnCharacterOverlap(UPrimitiveComponent* OverlappedComp,
