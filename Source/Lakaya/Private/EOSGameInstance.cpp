@@ -93,13 +93,13 @@ void UEOSGameInstance::CreateSession()
 				//FString SessionName = FString::Printf("Lakaya:%lld", Timestamp);
 				
 
-				FOnlineSessionSettings SessionSettings;
+
 				SessionSettings.bIsDedicated = false;
 				SessionSettings.bShouldAdvertise = true;
 
 				SessionSettings.bIsLANMatch = false;
 				SessionSettings.NumPublicConnections = 5;
-				SessionSettings.bAllowJoinInProgress = false;
+				SessionSettings.bAllowJoinInProgress = true;
 				SessionSettings.bAllowJoinViaPresence = true;
 				SessionSettings.bUsesPresence = true;
 				SessionSettings.bUseLobbiesIfAvailable = true;
@@ -303,11 +303,15 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 				{
 					for (const auto Results : SearchSettings->SearchResults)
 					{
-						SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
-						IsSuccess = SessionPtr->JoinSession(0, MyGameSessionName, Results);
-						if (IsSuccess)
+						if (Results.Session.SessionSettings.bAllowJoinInProgress)
 						{
-							break;
+							IsSuccess = SessionPtr->JoinSession(0, MyGameSessionName, Results);
+							if (IsSuccess)
+							{
+								SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
+								break;
+							}
+
 						}
 					}
 				}
@@ -410,6 +414,8 @@ void UEOSGameInstance::StartSession()
 		{
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
+				SessionSettings.bAllowJoinInProgress = false;
+				SessionPtr->UpdateSession(MyGameSessionName, SessionSettings);
 				SessionPtr->StartSession(MyGameSessionName);
 			}
 		}

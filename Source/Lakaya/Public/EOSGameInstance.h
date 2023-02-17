@@ -80,5 +80,7 @@ protected:
 
 	bool bIsLoggedIn;
 
+	FOnlineSessionSettings SessionSettings;
+
 	//FName CurrentServerName;
 };
