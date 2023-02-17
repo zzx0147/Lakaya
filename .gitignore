@@ -50,6 +50,8 @@ Binaries/Win64/**
 !Binaries/Win64/LakayaEditor.target
 !Binaries/Win64/UnrealEditor.modules
 !Binaries/Win64/UnrealEditor-Lakaya.dll
+Binaries/Mac/*
+Binaries/IOS/*
 Plugins/*/Binaries/*
 
 # Builds
@@ -78,3 +80,11 @@ DerivedDataCache/*
 
 # Packaging Folder
 Packaged/*
+
+# Rider files
+.idea/*
+Plugins/Developer/RiderLink/*
+
+
+# Mac files
+.DS_Store
