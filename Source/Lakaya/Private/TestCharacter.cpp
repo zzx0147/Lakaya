@@ -1,4 +1,6 @@
 #include "TestCharacter.h"
+
+#include "IndividualGameMode.h"
 #include "IndividualItem.h"
 
 ATestCharacter::ATestCharacter()
@@ -65,6 +67,12 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &ATestCharacter::MoveRight);
 	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &ATestCharacter::Turn);
 	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &ATestCharacter::LookUp);
+}
+
+void ATestCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
 }
 
 void ATestCharacter::MoveForward(float Value)

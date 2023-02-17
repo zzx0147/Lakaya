@@ -14,4 +14,21 @@ public:
 
 	virtual void PostInitializeComponents() override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+
+public:
+	void RandomSpawn();
+	
+public:
+	TArray<int32> VectorArray;
+	int32 ItemMaxCount;
+	int32 PosMinCount;
+	int32 PosMaxCount;
+	
+	// TODO
+	FVector pos_01;
+	FVector pos_02;
+	FVector pos_03;
+	FVector pos_04;
+	FVector pos_05;
+	FVector pos_06;
 };
