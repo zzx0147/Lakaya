@@ -13,9 +13,6 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Misc/DateTime.h"
 
-//const FName MyGameSessionName = FName(TEXT("Game Session"));
-const FName MyGameSessionName = FName(TEXT("MyGame"));
-
 UEOSGameInstance::UEOSGameInstance()
 {
 	bIsLoggedIn = false;
@@ -88,11 +85,6 @@ void UEOSGameInstance::CreateSession()
 		{
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
-				//FDateTime Now = FDateTime::UtcNow();
-				//int64 Timestamp = Now.ToUnixTimestamp();
-				//FString SessionName = FString::Printf("Lakaya:%lld", Timestamp);
-				
-
 
 				SessionSettings.bIsDedicated = false;
 				SessionSettings.bShouldAdvertise = true;
@@ -107,7 +99,7 @@ void UEOSGameInstance::CreateSession()
 				SessionSettings.Set(SEARCH_KEYWORDS, FString("LakayaLobby"), EOnlineDataAdvertisementType::ViaOnlineService);
 				
 				SessionPtr->OnCreateSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnCreateSessionComplete);
-				SessionPtr->CreateSession(0, NAME_GameSession, SessionSettings);
+				SessionPtr->CreateSession(0, FName(NAME_GameSession), SessionSettings);
 			}
 		}
 	}
@@ -418,9 +410,9 @@ void UEOSGameInstance::StartSession()
 		{
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
-				SessionSettings.bAllowJoinInProgress = false;
-				SessionPtr->OnUpdateSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnUpdateSessionComplete);
-				SessionPtr->UpdateSession(NAME_GameSession, SessionSettings);
+				//SessionSettings.bAllowJoinInProgress = false;
+				//SessionPtr->OnUpdateSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnUpdateSessionComplete);
+				//SessionPtr->UpdateSession(NAME_GameSession, SessionSettings);
 			}
 		}
 	}
