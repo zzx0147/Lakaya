@@ -91,7 +91,7 @@ void UEOSGameInstance::CreateSession()
 
 				SessionSettings.bIsLANMatch = false;
 				SessionSettings.NumPublicConnections = 5;
-				SessionSettings.bAllowJoinInProgress = true;
+				SessionSettings.bAllowJoinInProgress = false;
 				SessionSettings.bAllowJoinViaPresence = true;
 				SessionSettings.bUsesPresence = true;
 				SessionSettings.bUseLobbiesIfAvailable = true;
