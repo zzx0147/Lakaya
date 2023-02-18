@@ -481,36 +481,7 @@ void UEOSGameInstance::PrintSessionState()
 		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 		{
 			EOnlineSessionState::Type State = SessionPtr->GetSessionState(MyGameSessionName);
-
-			switch (State)
-			{
-			case EOnlineSessionState::NoSession:
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("NoSession"));
-				break;
-			case EOnlineSessionState::Creating:
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Creating"));
-				break;
-			case EOnlineSessionState::Pending:
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Pending"));
-				break;
-			case EOnlineSessionState::Starting:
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Starting"));
-				break;
-			case EOnlineSessionState::InProgress:
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("InProgress"));
-				break;
-			case EOnlineSessionState::Ending:
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Ending"));
-				break;
-			case EOnlineSessionState::Ended:
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Ended"));
-				break;
-			case EOnlineSessionState::Destroying:
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Destroying"));
-				break;
-			default:
-				break;
-			}
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, EOnlineSessionState::ToString(State));
 		}
 	}
 }
