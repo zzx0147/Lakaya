@@ -2,11 +2,19 @@
 
 #include "IndividualGameMode.h"
 #include "IndividualItem.h"
+// #include "Components/WidgetComponent.h"
+#include "HUDWidget.h"
 
 ATestCharacter::ATestCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	static ConstructorHelpers::FClassFinder<UHUDWidget> UI_HUD_C(TEXT("/Game/KDJ/UI/UI_Timer.UI_Timer_C"));
+	if (UI_HUD_C.Succeeded())
+	{
+		HUDWidgetClass = UI_HUD_C.Class;
+	}
+	
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
 
@@ -28,12 +36,20 @@ ATestCharacter::ATestCharacter()
 	GetCharacterMovement()->JumpZVelocity = 400.0f;
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Character"));
+
+}
+
+UHUDWidget* ATestCharacter::GetHUDWidget() const
+{
+	return HUDWidget;
 }
 
 void ATestCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	HUDWidget = CreateWidget<UHUDWidget>(GetWorld(), HUDWidgetClass);
+	HUDWidget->AddToViewport();
 }
 
 void ATestCharacter::SetSpringArm()

@@ -155,7 +155,6 @@ void ABasePlayerCharacter::Move(const FInputActionValue& Value)
 
 	AddMovementInput(Matrix.GetUnitAxis(EAxis::X), Vector.Y);
 	AddMovementInput(Matrix.GetUnitAxis(EAxis::Y), Vector.X);
-	UE_LOG(LogTemp, Warning, TEXT("시발움직여요 ! "));
 }
 
 void ABasePlayerCharacter::Look(const FInputActionValue& Value)
@@ -189,5 +188,5 @@ void ABasePlayerCharacter::StopRunning(const FInputActionValue& Value)
 void ABasePlayerCharacter::Interaction(const FInputActionValue& Value)
 {
 	//TODO: 대상 물체와 상호작용하는 로직을 추가합니다.
-	UE_LOG(LogTemp, Warning, TEXT("시발 F가 눌려요 !"));
+	
 }

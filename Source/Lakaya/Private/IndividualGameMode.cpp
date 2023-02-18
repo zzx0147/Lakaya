@@ -1,5 +1,4 @@
 #include "IndividualGameMode.h"
-
 #include "ArmedCharacter.h"
 #include "BasePlayerCharacter.h"
 #include "IndividualItem.h"
@@ -7,6 +6,7 @@
 #include "InGamePlayerState.h"
 #include "TestCharacter.h"
 #include "Viewports.h"
+#include "Components/WidgetComponent.h"
 
 AIndividualGameMode::AIndividualGameMode()
 {
@@ -16,12 +16,6 @@ AIndividualGameMode::AIndividualGameMode()
 	// PlayerControllerClass = AInGamePlayerController::StaticClass();
 	// PlayerStateClass = AInGamePlayerState::StaticClass();
 
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/KDJ/BP_ThirdPersonCharacter.BP_ThirdPersonCharacter"));
-	if (PlayerPawnBPClass.Class != NULL)
-	{
-		DefaultPawnClass = PlayerPawnBPClass.Class;
-	}
-	
 	ItemMaxCount = 3;
 	PosMinCount = 1;
 	PosMaxCount = 6;
@@ -33,6 +27,8 @@ AIndividualGameMode::AIndividualGameMode()
 	pos_04 = (FVector(1000.0f, 800.0f, 0.0f));
 	pos_05 = (FVector(1000.0f, 1000.0f, 0.0f));
 	pos_06 = (FVector(1000.0f, 1200.0f, 0.0f));
+
+	
 }
 
 void AIndividualGameMode::PostInitializeComponents()
