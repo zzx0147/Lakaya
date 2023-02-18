@@ -290,9 +290,11 @@ void UEOSGameInstance::QuickJoinSession()
 void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Success: %d"), bWasSuccessful);
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Success: %d"),bWasSuccessful));
 	if (bWasSuccessful)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Found %d Lobbies"), SearchSettings->SearchResults.Num());
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Found %d Lobbies"), SearchSettings->SearchResults.Num()));
 		if (OnlineSubsystem)
 		{
 			bool IsSuccess = false;
