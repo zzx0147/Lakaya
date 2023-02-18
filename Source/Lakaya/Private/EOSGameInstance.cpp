@@ -452,7 +452,24 @@ void UEOSGameInstance::EndSession()
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
 				SessionPtr->EndSession(MyGameSessionName);
+				SessionPtr->OnEndSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnEndSessionComplete);
 			}
+		}
+	}
+}
+
+void UEOSGameInstance::OnEndSessionComplete(FName SessionName, bool bWasSiccessfil)
+{
+	if (UKismetSystemLibrary::IsServer(GetWorld()) || UKismetSystemLibrary::IsDedicatedServer(GetWorld()))
+	{
+		if (OnlineSubsystem)
+		{
+			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
+			{
+				SessionPtr->OnEndSessionCompleteDelegates.Clear();
+				SessionPtr->OnDestroySessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnDestroySessionComplete);
+				SessionPtr->DestroySession(MyGameSessionName);
+			} 
 		}
 	}
 }

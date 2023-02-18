@@ -64,11 +64,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void StartSession();
-
 	void OnUpdateSessionComplete(FName SessionName, bool bWasSuccessful);
 
 	UFUNCTION(BlueprintCallable)
 	void EndSession();
+	void OnEndSessionComplete(FName SessionName, bool bWasSiccessfil);
 
 	UFUNCTION(BlueprintCallable)
 	void PrintSessionState();
