@@ -298,8 +298,8 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 					for (const auto Results : SearchSettings->SearchResults)
 					{
 						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Lobby is joinable? %d"), Results.Session.SessionSettings.bAllowJoinInProgress));
-						if (Results.Session.SessionSettings.bAllowJoinInProgress)
-						{
+						/*if (Results.Session.SessionSettings.bAllowJoinInProgress)
+						{*/
 							IsSuccess = SessionPtr->JoinSession(0, NAME_GameSession, Results);
 							GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("try Join session, is success? %d"),IsSuccess));
 							if (IsSuccess)
@@ -308,7 +308,7 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 								break;
 							}
 
-						}
+						//}
 					}
 				}
 
