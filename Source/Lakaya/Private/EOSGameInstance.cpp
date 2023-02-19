@@ -222,6 +222,7 @@ void UEOSGameInstance::OnFindSessionComplete(bool bWasSuccessful)
 					SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
 					//SearchSettings->SearchResults[0].Session.SessionSettings.Get();
 					//SearchSettings->SearchResults[0].GetSessionIdStr();
+
 					SessionPtr->JoinSession(0, NAME_GameSession,SearchSettings->SearchResults[0]);
 				}
 			}
@@ -283,7 +284,10 @@ void UEOSGameInstance::QuickJoinSession()
 				SearchSettings->QuerySettings.Set(SEARCH_LOBBIES, true, EOnlineComparisonOp::Equals);
 
 				SessionPtr->OnFindSessionsCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnFindSessionCompleteWithQuickJoin);
-				SessionPtr->FindSessions(0, SearchSettings.ToSharedRef());
+
+				const FUniqueNetIdPtr UserId = MyPlayerController->GetLocalPlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
+
+				SessionPtr->FindSessions(*UserId, SearchSettings.ToSharedRef());
 			}
 		}
 	}
@@ -305,7 +309,7 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 				//SessionPtr->ClearOnFindSessionsCompleteDelegates(this);
 				if (SearchSettings->SearchResults.Num())
 				{
-					for (const auto Results : SearchSettings->SearchResults)
+					for (const FOnlineSessionSearchResult& Results : SearchSettings->SearchResults)
 					{
 						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Lobby is joinable? %d"), Results.Session.SessionSettings.bAllowJoinInProgress));
 						/*if (Results.Session.SessionSettings.bAllowJoinInProgress)
