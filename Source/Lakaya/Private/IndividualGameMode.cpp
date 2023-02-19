@@ -28,7 +28,8 @@ AIndividualGameMode::AIndividualGameMode()
 	pos_05 = (FVector(1000.0f, 1000.0f, 0.0f));
 	pos_06 = (FVector(1000.0f, 1200.0f, 0.0f));
 
-	
+	Minute = 3;
+	Second = 0;
 }
 
 void AIndividualGameMode::PostInitializeComponents()

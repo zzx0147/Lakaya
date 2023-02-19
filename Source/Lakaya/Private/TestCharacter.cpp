@@ -2,7 +2,6 @@
 
 #include "IndividualGameMode.h"
 #include "IndividualItem.h"
-// #include "Components/WidgetComponent.h"
 #include "HUDWidget.h"
 
 ATestCharacter::ATestCharacter()
@@ -36,7 +35,6 @@ ATestCharacter::ATestCharacter()
 	GetCharacterMovement()->JumpZVelocity = 400.0f;
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Character"));
-
 }
 
 UHUDWidget* ATestCharacter::GetHUDWidget() const

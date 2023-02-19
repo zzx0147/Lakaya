@@ -32,5 +32,6 @@ public:
 	FVector pos_05;
 	FVector pos_06;
 
-
+	int32 Minute;
+	int32 Second;
 };
