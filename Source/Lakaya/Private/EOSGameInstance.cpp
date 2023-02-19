@@ -101,6 +101,7 @@ void UEOSGameInstance::CreateSession()
 					SessionSettings.bAllowJoinViaPresenceFriendsOnly = false;
 					SessionSettings.bAllowInvites = true;
 					SessionSettings.Set(SEARCH_KEYWORDS, FString("LakayaLobby"), EOnlineDataAdvertisementType::ViaOnlineService);
+					SessionSettings.Set(FName(TEXT("ISJOINABLE")), true, EOnlineDataAdvertisementType::ViaOnlineService);
 
 					SessionPtr->OnCreateSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnCreateSessionComplete);
 
@@ -283,7 +284,7 @@ void UEOSGameInstance::QuickJoinSession()
 
 				SearchSettings->QuerySettings.Set(SEARCH_KEYWORDS, FString("LakayaLobby"), EOnlineComparisonOp::Equals);
 				SearchSettings->QuerySettings.Set(SEARCH_LOBBIES, true, EOnlineComparisonOp::Equals);
-				SearchSettings->QuerySettings.Set(SEARCH_NONEMPTY_SERVERS_ONLY, true, EOnlineComparisonOp::Equals);
+				//SearchSettings->QuerySettings.Set(SEARCH_NONEMPTY_SERVERS_ONLY, true, EOnlineComparisonOp::Equals); not working
 				SearchSettings->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 
 				SessionPtr->OnFindSessionsCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnFindSessionCompleteWithQuickJoin);
@@ -314,7 +315,10 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 				{
 					for (const FOnlineSessionSearchResult& Results : SearchSettings->SearchResults)
 					{
-						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Lobby is joinable? %d"), Results.Session.SessionSettings.bAllowJoinInProgress));
+						bool isJoinable;
+						Results.Session.SessionSettings.Get(FName(TEXT("ISJOINABLE")), isJoinable);
+						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Lobby is joinable? %d"), isJoinable));
+
 						/*if (Results.Session.SessionSettings.bAllowJoinInProgress)
 						{*/
 							const FUniqueNetIdPtr UserId = MyPlayerController->GetLocalPlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
@@ -442,6 +446,7 @@ void UEOSGameInstance::StartSession()
 				newSessionSettings.bAllowJoinViaPresenceFriendsOnly = false;
 				newSessionSettings.bAllowInvites = false;
 				newSessionSettings.Set(SEARCH_KEYWORDS, FString("LakayaLobby"), EOnlineDataAdvertisementType::ViaOnlineService);
+				newSessionSettings.Set(FName(TEXT("ISJOINABLE")), false, EOnlineDataAdvertisementType::ViaOnlineService);
 
 				SessionPtr->OnUpdateSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnUpdateSessionComplete);
 				const FName SessionName(NAME_GameSession);
