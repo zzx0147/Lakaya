@@ -73,6 +73,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void PrintSessionState();
 
+	void CleanUpSession();
 
 public:
 	UPROPERTY(BlueprintAssignable,VisibleAnywhere, BlueprintCallable, Category = "Event")
@@ -84,5 +85,6 @@ protected:
 
 	FOnlineSessionSettings SessionSettings;
 
+	APlayerController* MyPlayerController;
 	//FName CurrentServerName;
 };

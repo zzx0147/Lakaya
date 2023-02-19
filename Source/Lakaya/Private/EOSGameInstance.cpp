@@ -58,6 +58,7 @@ void UEOSGameInstance::Login()
 
 			Identity->OnLoginCompleteDelegates->AddUObject(this, &UEOSGameInstance::OnLoginComplete);
 			Identity->Login(0, Credentials);
+			MyPlayerController = GetFirstLocalPlayerController(GetWorld());
 		}
 	}
 }
@@ -86,20 +87,27 @@ void UEOSGameInstance::CreateSession()
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
 
-				SessionSettings.bIsDedicated = false;
-				SessionSettings.bShouldAdvertise = true;
+				if (MyPlayerController)
+				{
+					SessionSettings.bIsDedicated = false;
+					SessionSettings.bShouldAdvertise = true;
 
-				SessionSettings.bIsLANMatch = false;
-				SessionSettings.NumPublicConnections = 5;
-				SessionSettings.bAllowJoinInProgress = false;
-				SessionSettings.bAllowJoinViaPresence = true;
-				SessionSettings.bUsesPresence = true;
-				SessionSettings.bUseLobbiesIfAvailable = true;
+					SessionSettings.bIsLANMatch = false;
+					SessionSettings.NumPublicConnections = 5;
+					SessionSettings.bAllowJoinInProgress = false;
+					SessionSettings.bAllowJoinViaPresence = true;
+					SessionSettings.bUsesPresence = true;
+					SessionSettings.bUseLobbiesIfAvailable = true;
+					SessionSettings.bAllowJoinViaPresenceFriendsOnly = false;
 
-				SessionSettings.Set(SEARCH_KEYWORDS, FString("LakayaLobby"), EOnlineDataAdvertisementType::ViaOnlineService);
-				
-				SessionPtr->OnCreateSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnCreateSessionComplete);
-				SessionPtr->CreateSession(0, FName(NAME_GameSession), SessionSettings);
+					SessionSettings.Set(SEARCH_KEYWORDS, FString("LakayaLobby"), EOnlineDataAdvertisementType::ViaOnlineService);
+
+					SessionPtr->OnCreateSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnCreateSessionComplete);
+
+					const FUniqueNetIdPtr UserId = MyPlayerController->GetLocalPlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
+					SessionPtr->CreateSession(*UserId, FName(NAME_GameSession), SessionSettings);
+					//SessionPtr->CreateSession(0, FName(NAME_GameSession), SessionSettings);
+				}
 			}
 		}
 	}
@@ -445,7 +453,8 @@ void UEOSGameInstance::EndSession()
 		{
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
-				SessionPtr->OnEndSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnEndSessionComplete);
+				CleanUpSession();
+				//SessionPtr->OnEndSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnEndSessionComplete);
 			}
 		}
 	}
@@ -475,6 +484,35 @@ void UEOSGameInstance::PrintSessionState()
 		{
 			EOnlineSessionState::Type State = SessionPtr->GetSessionState(NAME_GameSession);
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, EOnlineSessionState::ToString(State));
+		}
+	}
+}
+
+void UEOSGameInstance::CleanUpSession()
+{
+	
+	if(OnlineSubsystem)
+	{
+		IOnlineSessionPtr Sessions = OnlineSubsystem->GetSessionInterface();
+		EOnlineSessionState::Type SessionState = Sessions->GetSessionState(NAME_GameSession);
+
+		if (EOnlineSessionState::InProgress == SessionState)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Ending session because of return to front end"));
+			Sessions->EndSession(NAME_GameSession);
+		}
+		else if (EOnlineSessionState::Ending == SessionState)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Waiting for session to end on return to main menu"));
+		}
+		else if (EOnlineSessionState::Ended == SessionState || EOnlineSessionState::Pending == SessionState)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Destroying session on return to main menu"));
+			Sessions->DestroySession(NAME_GameSession);
+		}
+		else if (EOnlineSessionState::Starting == SessionState || EOnlineSessionState::Creating == SessionState)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Waiting for session to start, and then we will end it to return to main menu"));
 		}
 	}
 }
