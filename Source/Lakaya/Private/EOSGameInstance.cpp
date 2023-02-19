@@ -100,6 +100,7 @@ void UEOSGameInstance::CreateSession()
 					SessionSettings.bUseLobbiesIfAvailable = true;
 					SessionSettings.bAllowJoinViaPresenceFriendsOnly = false;
 					SessionSettings.bAllowInvites = true;
+
 					SessionSettings.Set(SEARCH_KEYWORDS, FString("LakayaLobby"), EOnlineDataAdvertisementType::ViaOnlineService);
 					SessionSettings.Set(FName(TEXT("ISJOINABLE")), true, EOnlineDataAdvertisementType::ViaOnlineService);
 
@@ -313,14 +314,16 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 				//SessionPtr->ClearOnFindSessionsCompleteDelegates(this);
 				if (SearchSettings->SearchResults.Num())
 				{
+
 					for (const FOnlineSessionSearchResult& Results : SearchSettings->SearchResults)
 					{
 						bool isJoinable;
 						Results.Session.SessionSettings.Get(FName(TEXT("ISJOINABLE")), isJoinable);
 						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Lobby is joinable? %d"), isJoinable));
 
-						/*if (Results.Session.SessionSettings.bAllowJoinInProgress)
-						{*/
+						
+						if (isJoinable)
+						{
 							const FUniqueNetIdPtr UserId = MyPlayerController->GetLocalPlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
 
 							IsSuccess = SessionPtr->JoinSession(*UserId, NAME_GameSession, Results);
@@ -330,8 +333,7 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 								SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
 								break;
 							}
-
-						//}
+						}
 					}
 				}
 
@@ -450,7 +452,7 @@ void UEOSGameInstance::StartSession()
 
 				SessionPtr->OnUpdateSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnUpdateSessionComplete);
 				const FName SessionName(NAME_GameSession);
-				SessionPtr->UpdateSession(SessionName, newSessionSettings,true);
+				SessionPtr->UpdateSession(SessionName, newSessionSettings, true);
 			}
 		}
 	}
