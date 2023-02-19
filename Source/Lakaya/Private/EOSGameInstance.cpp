@@ -94,18 +94,19 @@ void UEOSGameInstance::CreateSession()
 
 					SessionSettings.bIsLANMatch = false;
 					SessionSettings.NumPublicConnections = 5;
-					SessionSettings.bAllowJoinInProgress = false;
+					SessionSettings.bAllowJoinInProgress = true;
 					SessionSettings.bAllowJoinViaPresence = true;
 					SessionSettings.bUsesPresence = true;
 					SessionSettings.bUseLobbiesIfAvailable = true;
 					SessionSettings.bAllowJoinViaPresenceFriendsOnly = false;
-
+					SessionSettings.bAllowInvites = true;
 					SessionSettings.Set(SEARCH_KEYWORDS, FString("LakayaLobby"), EOnlineDataAdvertisementType::ViaOnlineService);
 
 					SessionPtr->OnCreateSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnCreateSessionComplete);
 
 					const FUniqueNetIdPtr UserId = MyPlayerController->GetLocalPlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
-					SessionPtr->CreateSession(*UserId, FName(NAME_GameSession), SessionSettings);
+					const FName SessionName(NAME_GameSession);
+					SessionPtr->CreateSession(*UserId, SessionName, SessionSettings);
 					//SessionPtr->CreateSession(0, FName(NAME_GameSession), SessionSettings);
 				}
 			}
@@ -173,6 +174,7 @@ void UEOSGameInstance::DestroySession()
 
 void UEOSGameInstance::OnDestroySessionComplete(FName SessionName, bool bWasSuccessful)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Destroy Session is %d"), bWasSuccessful));
 	if (OnlineSubsystem)
 	{
 		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
@@ -418,9 +420,23 @@ void UEOSGameInstance::StartSession()
 		{
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
-				//SessionSettings.bAllowJoinInProgress = false;
-				//SessionPtr->OnUpdateSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnUpdateSessionComplete);
-				//SessionPtr->UpdateSession(NAME_GameSession, SessionSettings);
+				FOnlineSessionSettings newSessionSettings;
+				newSessionSettings.bIsDedicated = false;
+				newSessionSettings.bShouldAdvertise = true;
+
+				newSessionSettings.bIsLANMatch = false;
+				newSessionSettings.NumPublicConnections = 5;
+				newSessionSettings.bAllowJoinInProgress = false;
+				newSessionSettings.bAllowJoinViaPresence = true;
+				newSessionSettings.bUsesPresence = true;
+				newSessionSettings.bUseLobbiesIfAvailable = true;
+				newSessionSettings.bAllowJoinViaPresenceFriendsOnly = false;
+				newSessionSettings.bAllowInvites = false;
+				newSessionSettings.Set(SEARCH_KEYWORDS, FString("LakayaLobby"), EOnlineDataAdvertisementType::ViaOnlineService);
+
+				SessionPtr->OnUpdateSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnUpdateSessionComplete);
+				const FName SessionName(NAME_GameSession);
+				SessionPtr->UpdateSession(SessionName, newSessionSettings,true);
 			}
 		}
 	}
@@ -462,18 +478,18 @@ void UEOSGameInstance::EndSession()
 
 void UEOSGameInstance::OnEndSessionComplete(FName SessionName, bool bWasSiccessfil)
 {
-	if (UKismetSystemLibrary::IsServer(GetWorld()) || UKismetSystemLibrary::IsDedicatedServer(GetWorld()))
+	//if (UKismetSystemLibrary::IsServer(GetWorld()) || UKismetSystemLibrary::IsDedicatedServer(GetWorld()))
+	//{
+	if (OnlineSubsystem)
 	{
-		if (OnlineSubsystem)
+		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 		{
-			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
-			{
-				SessionPtr->OnEndSessionCompleteDelegates.Clear();
-				SessionPtr->OnDestroySessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnDestroySessionComplete);
-				SessionPtr->DestroySession(NAME_GameSession);
-			} 
+			SessionPtr->OnEndSessionCompleteDelegates.Clear();
+			SessionPtr->OnDestroySessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnDestroySessionComplete);
+			SessionPtr->DestroySession(NAME_GameSession);
 		}
 	}
+	//}
 }
 
 void UEOSGameInstance::PrintSessionState()
@@ -500,6 +516,7 @@ void UEOSGameInstance::CleanUpSession()
 		{
 			UE_LOG(LogTemp, Log, TEXT("Ending session because of return to front end"));
 			Sessions->EndSession(NAME_GameSession);
+			Sessions->OnEndSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnEndSessionComplete);
 		}
 		else if (EOnlineSessionState::Ending == SessionState)
 		{
