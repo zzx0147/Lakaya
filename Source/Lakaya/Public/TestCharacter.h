@@ -11,7 +11,7 @@ class LAKAYA_API ATestCharacter : public ACharacter
 
 public:
 	ATestCharacter();
-
+	
 	class UHUDWidget* GetHUDWidget() const;
 
 protected:

@@ -34,4 +34,8 @@ public:
 
 	int32 Minute;
 	int32 Second;
+
+public:
+	int32 GetMinute();
+	int32 GetSecond();
 };

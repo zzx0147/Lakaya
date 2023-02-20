@@ -48,6 +48,10 @@ void ATestCharacter::BeginPlay()
 
 	HUDWidget = CreateWidget<UHUDWidget>(GetWorld(), HUDWidgetClass);
 	HUDWidget->AddToViewport();
+
+	AIndividualGameMode* GameMode = GetWorld()->GetAuthGameMode<AIndividualGameMode>();
+	HUDWidget->BindMinute(GameMode);
+	HUDWidget->BindSecond(GameMode);
 }
 
 void ATestCharacter::SetSpringArm()
@@ -86,6 +90,7 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void ATestCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+
 
 }
 

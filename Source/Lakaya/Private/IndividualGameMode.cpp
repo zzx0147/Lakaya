@@ -87,3 +87,13 @@ void AIndividualGameMode::RandomSpawn()
 		break;
 	}
 }
+
+int32 AIndividualGameMode::GetMinute()
+{
+	return Minute;
+}
+
+int32 AIndividualGameMode::GetSecond()
+{
+	return Second;
+}
