@@ -1,6 +1,7 @@
 #include "IndividualGameMode.h"
 #include "ArmedCharacter.h"
 #include "BasePlayerCharacter.h"
+#include "HUDWidget.h"
 #include "IndividualItem.h"
 #include "InGamePlayerController.h"
 #include "InGamePlayerState.h"
@@ -28,8 +29,8 @@ AIndividualGameMode::AIndividualGameMode()
 	pos_05 = (FVector(1000.0f, 1000.0f, 0.0f));
 	pos_06 = (FVector(1000.0f, 1200.0f, 0.0f));
 
-	Minute = 3;
-	Second = 0;
+	Minutes = 3;
+	Seconds = 1;
 }
 
 void AIndividualGameMode::PostInitializeComponents()
@@ -88,12 +89,32 @@ void AIndividualGameMode::RandomSpawn()
 	}
 }
 
-int32 AIndividualGameMode::GetMinute()
+int32 AIndividualGameMode::GetMinutes()
 {
-	return Minute;
+	return Minutes;
 }
 
-int32 AIndividualGameMode::GetSecond()
+int32 AIndividualGameMode::GetSeconds()
 {
-	return Second;
+	return Seconds;
+}
+
+int32 AIndividualGameMode::SetMinutes(int32 Value)
+{
+	return Minutes = Value;
+}
+
+int32 AIndividualGameMode::SetSeconds(int32 Value)
+{
+	return Seconds = Value;
+}
+
+int32 AIndividualGameMode::MinusMinutes(int32 Value)
+{
+	return Minutes -= Value;
+}
+
+int32 AIndividualGameMode::MinusSeconds(int32 Value)
+{
+	return Seconds -= Value;
 }

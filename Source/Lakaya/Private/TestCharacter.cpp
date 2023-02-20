@@ -3,6 +3,7 @@
 #include "IndividualGameMode.h"
 #include "IndividualItem.h"
 #include "HUDWidget.h"
+#include "Components/TextBlock.h"
 
 ATestCharacter::ATestCharacter()
 {
@@ -48,10 +49,6 @@ void ATestCharacter::BeginPlay()
 
 	HUDWidget = CreateWidget<UHUDWidget>(GetWorld(), HUDWidgetClass);
 	HUDWidget->AddToViewport();
-
-	AIndividualGameMode* GameMode = GetWorld()->GetAuthGameMode<AIndividualGameMode>();
-	HUDWidget->BindMinute(GameMode);
-	HUDWidget->BindSecond(GameMode);
 }
 
 void ATestCharacter::SetSpringArm()
@@ -90,8 +87,6 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void ATestCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
-
 }
 
 void ATestCharacter::MoveForward(float Value)

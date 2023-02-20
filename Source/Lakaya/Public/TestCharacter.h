@@ -11,12 +11,14 @@ class LAKAYA_API ATestCharacter : public ACharacter
 
 public:
 	ATestCharacter();
-	
+
 	class UHUDWidget* GetHUDWidget() const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = UI)
 	TSubclassOf<class UHUDWidget> HUDWidgetClass;
+
+private:
 	class UHUDWidget* HUDWidget;
 
 protected:

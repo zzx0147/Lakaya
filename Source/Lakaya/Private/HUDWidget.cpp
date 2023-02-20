@@ -2,30 +2,52 @@
 #include "Components/TextBlock.h"
 #include "IndividualGameMode.h"
 
-void UHUDWidget::BindMinute(AIndividualGameMode* GameMinute)
-{
-	CurrentMinute = GameMinute;
-}
-
-void UHUDWidget::BindSecond(AIndividualGameMode* GameSecond)
-{
-	CurrentSecond = GameSecond;
-}
-
 void UHUDWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	TextMinute = Cast<UTextBlock>(GetWidgetFromName(TEXT("txtMinutes")));
-	TextSecond = Cast<UTextBlock>(GetWidgetFromName(TEXT("txtSeconds")));
+	MinuteText = Cast<UTextBlock>(GetWidgetFromName("txtMinutes"));
+	SecondText = Cast<UTextBlock>(GetWidgetFromName("txtSeconds"));
+
+	UpdateTimerText();
+	
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UHUDWidget::UpdateTimerText, 1.0f, true);
+
+	AIndividualGameMode* GameMode = GetWorld()->GetAuthGameMode<AIndividualGameMode>();
+	if (!IsValid(GameMode))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameMode Null"));
+	}
+
+	FText TimerMinutesText = FText::AsNumber(GameMode->GetMinutes(), &FNumberFormattingOptions().SetMinimumIntegralDigits(2).SetUseGrouping(false));
+	MinuteText->SetText(TimerMinutesText);
 }
 
-void UHUDWidget::UpdateMinute()
+void UHUDWidget::UpdateTimerText()
 {
-	TextMinute->SetText(FText::FromString(FString::FromInt(CurrentMinute->GetMinute())));
-}
-
-void UHUDWidget::UpdateSecond()
-{
-	TextSecond->SetText(FText::FromString(FString::FromInt(CurrentSecond->GetSecond())));
+	AIndividualGameMode* GameMode = GetWorld()->GetAuthGameMode<AIndividualGameMode>();
+	if (!IsValid(GameMode))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameMode Null"));
+	}
+	
+	if (GameMode->GetSeconds() > 0)
+	{
+		GameMode->MinusSeconds(1);
+		FText TimerValueText = FText::AsNumber(GameMode->GetSeconds(), &FNumberFormattingOptions().SetMinimumIntegralDigits(2).SetUseGrouping(false));
+		SecondText->SetText(TimerValueText);
+	}
+	else if (GameMode->GetMinutes() > 0)
+	{
+		GameMode->MinusMinutes(1);
+		GameMode->SetSeconds(59);
+		FText TimerSecondsText = FText::AsNumber(GameMode->GetSeconds(), &FNumberFormattingOptions().SetMinimumIntegralDigits(2).SetUseGrouping(false));
+		SecondText->SetText(TimerSecondsText);
+		FText TimerMinutesText = FText::AsNumber(GameMode->GetMinutes(), &FNumberFormattingOptions().SetMinimumIntegralDigits(2).SetUseGrouping(false));
+		MinuteText->SetText(TimerMinutesText);
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+	}
 }

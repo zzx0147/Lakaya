@@ -32,10 +32,18 @@ public:
 	FVector pos_05;
 	FVector pos_06;
 
-	int32 Minute;
-	int32 Second;
+
+private:
+	int32 Minutes;
+	int32 Seconds;
 
 public:
-	int32 GetMinute();
-	int32 GetSecond();
+	int32 GetMinutes();
+	int32 GetSeconds();
+
+	int32 SetMinutes(int32 Value);
+	int32 SetSeconds(int32 Value);
+
+	int32 MinusMinutes(int32 Value);
+	int32 MinusSeconds(int32 Value);
 };
