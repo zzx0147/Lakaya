@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
-#include "InGamePlayerController.generated.h"
+#include "MenuCallingPlayerController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API AInGamePlayerController : public APlayerController
+class LAKAYA_API AMenuCallingPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
@@ -36,7 +36,7 @@ protected:
 	virtual void SetupInputComponent() override;
 
 public:
-	AInGamePlayerController();
+	AMenuCallingPlayerController();
 
 private:
 	void MenuHandler(const FInputActionValue& Value);

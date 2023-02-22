@@ -5,10 +5,10 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/Character.h"
-#include "BasePlayerCharacter.generated.h"
+#include "MovableCharacter.generated.h"
 
 UCLASS()
-class LAKAYA_API ABasePlayerCharacter : public ACharacter
+class LAKAYA_API AMovableCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -65,7 +65,7 @@ class LAKAYA_API ABasePlayerCharacter : public ACharacter
 
 public:
 	// Sets default values for this character's properties
-	ABasePlayerCharacter();
+	AMovableCharacter();
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 

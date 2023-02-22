@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
-#include "InGamePlayerState.generated.h"
+#include "HealthPlayerState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API AInGamePlayerState : public APlayerState
+class LAKAYA_API AHealthPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 

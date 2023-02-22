@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "InGamePlayerController.h"
+#include "MenuCallingPlayerController.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "InGamePlayerState.h"
+#include "HealthPlayerState.h"
 #include "InputMappingContext.h"
 
-void AInGamePlayerController::BeginPlay()
+void AMenuCallingPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -19,29 +19,29 @@ void AInGamePlayerController::BeginPlay()
 		Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 }
 
-void AInGamePlayerController::OnPossess(APawn* InPawn)
+void AMenuCallingPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
 	if (!HasAuthority()) return;
-	if (const auto State = GetPlayerState<AInGamePlayerState>()) State->SetupPlayerState(InPawn);
+	if (const auto State = GetPlayerState<AHealthPlayerState>()) State->SetupPlayerState(InPawn);
 }
 
-void AInGamePlayerController::SetupInputComponent()
+void AMenuCallingPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
 	if (const auto Component = Cast<UEnhancedInputComponent>(InputComponent))
 	{
-		Component->BindAction(MenuAction, ETriggerEvent::Triggered, this, &AInGamePlayerController::MenuHandler);
+		Component->BindAction(MenuAction, ETriggerEvent::Triggered, this, &AMenuCallingPlayerController::MenuHandler);
 		Component->BindAction(WeaponLoadoutAction, ETriggerEvent::Triggered, this,
-		                      &AInGamePlayerController::WeaponHandler);
+		                      &AMenuCallingPlayerController::WeaponHandler);
 		Component->BindAction(ArmorLoadoutAction, ETriggerEvent::Triggered, this,
-		                      &AInGamePlayerController::ArmorHandler);
+		                      &AMenuCallingPlayerController::ArmorHandler);
 	}
 }
 
-AInGamePlayerController::AInGamePlayerController()
+AMenuCallingPlayerController::AMenuCallingPlayerController()
 {
 	if (IsRunningDedicatedServer()) return;
 
@@ -65,17 +65,17 @@ AInGamePlayerController::AInGamePlayerController()
 	if (ArmorFinder.Succeeded()) ArmorLoadoutAction = ArmorFinder.Object;
 }
 
-void AInGamePlayerController::MenuHandler(const FInputActionValue& Value)
+void AMenuCallingPlayerController::MenuHandler(const FInputActionValue& Value)
 {
 	//TODO: UI를 띄웁니다.
 }
 
-void AInGamePlayerController::WeaponHandler(const FInputActionValue& Value)
+void AMenuCallingPlayerController::WeaponHandler(const FInputActionValue& Value)
 {
 	//TODO: UI를 띄웁니다.
 }
 
-void AInGamePlayerController::ArmorHandler(const FInputActionValue& Value)
+void AMenuCallingPlayerController::ArmorHandler(const FInputActionValue& Value)
 {
 	//TODO: UI를 띄웁니다.
 }

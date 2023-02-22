@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BasePlayerCharacter.h"
+#include "MovableCharacter.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -12,7 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
-ABasePlayerCharacter::ABasePlayerCharacter()
+AMovableCharacter::AMovableCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -80,14 +80,14 @@ ABasePlayerCharacter::ABasePlayerCharacter()
 	if (InteractionStopFinder.Succeeded()) InteractionStopAction = InteractionStopFinder.Object;
 }
 
-void ABasePlayerCharacter::BeginPlay()
+void AMovableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
 	InteractableCount = 0;
 }
 
-void ABasePlayerCharacter::PossessedBy(AController* NewController)
+void AMovableCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
@@ -102,14 +102,14 @@ void ABasePlayerCharacter::PossessedBy(AController* NewController)
 	}
 }
 
-void ABasePlayerCharacter::UnPossessed()
+void AMovableCharacter::UnPossessed()
 {
 	Super::UnPossessed();
 
 	if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(BasicControlContext);
 }
 
-void ABasePlayerCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
+void AMovableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
@@ -120,7 +120,7 @@ void ABasePlayerCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 		InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
 
-void ABasePlayerCharacter::NotifyActorEndOverlap(AActor* OtherActor)
+void AMovableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorEndOverlap(OtherActor);
 
@@ -131,28 +131,28 @@ void ABasePlayerCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 }
 
 // Called to bind functionality to input
-void ABasePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AMovableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	if (const auto CastedComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		CastedComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Move);
-		CastedComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Look);
+		CastedComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMovableCharacter::Move);
+		CastedComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMovableCharacter::Look);
 		CastedComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-		CastedComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Crouching);
-		CastedComponent->BindAction(UnCrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::UnCrouching);
-		CastedComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Run);
+		CastedComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AMovableCharacter::Crouching);
+		CastedComponent->BindAction(UnCrouchAction, ETriggerEvent::Triggered, this, &AMovableCharacter::UnCrouching);
+		CastedComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AMovableCharacter::Run);
 		CastedComponent->BindAction(StopRunningAction, ETriggerEvent::Triggered, this,
-		                            &ABasePlayerCharacter::StopRunning);
+		                            &AMovableCharacter::StopRunning);
 		CastedComponent->BindAction(InteractionStartAction, ETriggerEvent::Triggered, this,
-		                            &ABasePlayerCharacter::InteractionStart);
+		                            &AMovableCharacter::InteractionStart);
 		CastedComponent->BindAction(InteractionStopAction, ETriggerEvent::Triggered, this,
-		                            &ABasePlayerCharacter::InteractionStop);
+		                            &AMovableCharacter::InteractionStop);
 	}
 }
 
-void ABasePlayerCharacter::Move(const FInputActionValue& Value)
+void AMovableCharacter::Move(const FInputActionValue& Value)
 {
 	const auto Vector = Value.Get<FVector2D>();
 	const FRotator YawRotator(0, Controller->GetControlRotation().Yaw, 0);
@@ -162,35 +162,35 @@ void ABasePlayerCharacter::Move(const FInputActionValue& Value)
 	AddMovementInput(Matrix.GetUnitAxis(EAxis::Y), Vector.X);
 }
 
-void ABasePlayerCharacter::Look(const FInputActionValue& Value)
+void AMovableCharacter::Look(const FInputActionValue& Value)
 {
 	const auto Vector = Value.Get<FVector2D>();
 	AddControllerYawInput(Vector.X);
 	AddControllerPitchInput(Vector.Y);
 }
 
-void ABasePlayerCharacter::Crouching(const FInputActionValue& Value)
+void AMovableCharacter::Crouching(const FInputActionValue& Value)
 {
 	Crouch();
 }
 
-void ABasePlayerCharacter::UnCrouching(const FInputActionValue& Value)
+void AMovableCharacter::UnCrouching(const FInputActionValue& Value)
 {
 	UnCrouch();
 }
 
-void ABasePlayerCharacter::Run(const FInputActionValue& Value)
+void AMovableCharacter::Run(const FInputActionValue& Value)
 {
 	GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
 }
 
-void ABasePlayerCharacter::StopRunning(const FInputActionValue& Value)
+void AMovableCharacter::StopRunning(const FInputActionValue& Value)
 {
 	// This can causing problem when change RunMultiplier until running
 	GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
 }
 
-void ABasePlayerCharacter::InteractionStart(const FInputActionValue& Value)
+void AMovableCharacter::InteractionStart(const FInputActionValue& Value)
 {
 	FHitResult HitResult;
 	const auto Location = SpringArm->GetComponentLocation();
@@ -203,7 +203,7 @@ void ABasePlayerCharacter::InteractionStart(const FInputActionValue& Value)
 	}
 }
 
-void ABasePlayerCharacter::InteractionStop(const FInputActionValue& Value)
+void AMovableCharacter::InteractionStop(const FInputActionValue& Value)
 {
 	if (InteractingActor.IsValid())
 	{
