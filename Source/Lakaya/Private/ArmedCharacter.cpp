@@ -43,14 +43,14 @@ void AArmedCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	if (InputSystem) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
+	if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
 }
 
 void AArmedCharacter::UnPossessed()
 {
 	Super::UnPossessed();
 
-	if (InputSystem) InputSystem->RemoveMappingContext(WeaponControlContext);
+	if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(WeaponControlContext);
 }
 
 void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

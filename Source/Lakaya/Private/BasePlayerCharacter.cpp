@@ -18,6 +18,7 @@ ABasePlayerCharacter::ABasePlayerCharacter()
 	PrimaryActorTick.bCanEverTick = false;
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 	RunMultiplier = 2.0;
+	InteractionRange = 100;
 
 	// In a dedicated server, the following logic is not necessary.
 	if (IsRunningDedicatedServer()) return;
@@ -83,7 +84,6 @@ void ABasePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	InputComponent = nullptr;
 	InteractableCount = 0;
 }
 
@@ -97,8 +97,8 @@ void ABasePlayerCharacter::PossessedBy(AController* NewController)
 	{
 		// If It's not listen server, set role as AutonomousProxy
 		if (!HasAuthority()) SetRole(ROLE_AutonomousProxy);
-		if ((InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>()))
-			InputSystem->AddMappingContext(BasicControlContext, BasicContextPriority);
+		InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+		if (InputSystem.IsValid()) InputSystem->AddMappingContext(BasicControlContext, BasicContextPriority);
 	}
 }
 
@@ -106,7 +106,7 @@ void ABasePlayerCharacter::UnPossessed()
 {
 	Super::UnPossessed();
 
-	if (InputSystem) InputSystem->RemoveMappingContext(BasicControlContext);
+	if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(BasicControlContext);
 }
 
 void ABasePlayerCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -114,7 +114,7 @@ void ABasePlayerCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	Super::NotifyActorBeginOverlap(OtherActor);
 
 	// Add interaction context when overlapped by trigger
-	if (!InputSystem || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
+	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
 	if (!InputSystem->HasMappingContext(InteractionContext))
 		InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
@@ -125,7 +125,7 @@ void ABasePlayerCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	Super::NotifyActorEndOverlap(OtherActor);
 
 	// Remove interaction context when far away from triggers
-	if (!InputSystem || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
+	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	--InteractableCount;
 	if (InteractableCount == 0) InputSystem->RemoveMappingContext(InteractionContext);
 }
@@ -192,9 +192,22 @@ void ABasePlayerCharacter::StopRunning(const FInputActionValue& Value)
 
 void ABasePlayerCharacter::InteractionStart(const FInputActionValue& Value)
 {
-	//TODO: 대상 물체와 상호작용하는 로직을 추가합니다.
+	FHitResult HitResult;
+	const auto Location = SpringArm->GetComponentLocation();
+	if (GetWorld()->LineTraceSingleByObjectType(HitResult, Location,
+	                                            Location + SpringArm->GetForwardVector() * InteractionRange,
+	                                            FCollisionObjectQueryParams::AllObjects))
+	{
+		InteractingActor = HitResult.GetActor();
+		//TODO: 해당 액터에 대해 상호작용을 수행합니다.
+	}
 }
 
 void ABasePlayerCharacter::InteractionStop(const FInputActionValue& Value)
 {
+	if (InteractingActor.IsValid())
+	{
+		//TODO: 현재 상호작용중인 액터와 상호작용을 중지합니다.
+	}
+	InteractingActor.Reset();
 }

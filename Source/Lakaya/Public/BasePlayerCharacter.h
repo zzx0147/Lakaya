@@ -60,6 +60,9 @@ class LAKAYA_API ABasePlayerCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class UCameraComponent* Camera;
 
+	UPROPERTY(EditAnywhere, Category = Interaction)
+	float InteractionRange;
+
 public:
 	// Sets default values for this character's properties
 	ABasePlayerCharacter();
@@ -73,8 +76,7 @@ protected:
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
-	UPROPERTY()
-	class UEnhancedInputLocalPlayerSubsystem* InputSystem;
+	TWeakObjectPtr<class UEnhancedInputLocalPlayerSubsystem> InputSystem;
 
 private:
 	// Input event functions
@@ -88,4 +90,5 @@ private:
 	void InteractionStop(const FInputActionValue& Value);
 
 	uint8 InteractableCount;
+	TWeakObjectPtr<AActor> InteractingActor;
 };
