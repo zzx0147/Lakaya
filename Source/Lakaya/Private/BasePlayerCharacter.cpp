@@ -18,6 +18,7 @@ ABasePlayerCharacter::ABasePlayerCharacter()
 	PrimaryActorTick.bCanEverTick = false;
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 	RunMultiplier = 2.0;
+	InteractionRange = 100;
 
 	// In a dedicated server, the following logic is not necessary.
 	if (IsRunningDedicatedServer()) return;
@@ -60,8 +61,11 @@ ABasePlayerCharacter::ABasePlayerCharacter()
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> InteractionContextFinder(
 		TEXT("InputMappingContext'/Game/Yongwoo/Input/IC_InteractionControl'"));
 
-	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_Interaction'"));
+	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionStartFinder(
+		TEXT("InputAction'/Game/Yongwoo/Input/IA_InteractionStart'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionStopFinder(
+		TEXT("InputAction'/Game/Yongwoo/Input/IA_InteractionStop'"));
 
 	if (ContextFinder.Succeeded()) BasicControlContext = ContextFinder.Object;
 	if (MoveFinder.Succeeded()) MoveAction = MoveFinder.Object;
@@ -72,14 +76,14 @@ ABasePlayerCharacter::ABasePlayerCharacter()
 	if (RunFinder.Succeeded()) RunAction = RunFinder.Object;
 	if (StopFinder.Succeeded()) StopRunningAction = StopFinder.Object;
 	if (InteractionContextFinder.Succeeded()) InteractionContext = InteractionContextFinder.Object;
-	if (InteractionFinder.Succeeded()) InteractionAction = InteractionFinder.Object;
+	if (InteractionStartFinder.Succeeded()) InteractionStartAction = InteractionStartFinder.Object;
+	if (InteractionStopFinder.Succeeded()) InteractionStopAction = InteractionStopFinder.Object;
 }
 
 void ABasePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	InputComponent = nullptr;
 	InteractableCount = 0;
 }
 
@@ -93,8 +97,8 @@ void ABasePlayerCharacter::PossessedBy(AController* NewController)
 	{
 		// If It's not listen server, set role as AutonomousProxy
 		if (!HasAuthority()) SetRole(ROLE_AutonomousProxy);
-		if (((InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())) == nullptr)
-			InputSystem->AddMappingContext(BasicControlContext, BasicContextPriority);
+		InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+		if (InputSystem.IsValid()) InputSystem->AddMappingContext(BasicControlContext, BasicContextPriority);
 	}
 }
 
@@ -102,8 +106,7 @@ void ABasePlayerCharacter::UnPossessed()
 {
 	Super::UnPossessed();
 
-	// Debug necessary. want to remove InputMappingContext from subsystem when unpossess
-	if (InputSystem) InputSystem->RemoveMappingContext(BasicControlContext);
+	if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(BasicControlContext);
 }
 
 void ABasePlayerCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -111,8 +114,8 @@ void ABasePlayerCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	Super::NotifyActorBeginOverlap(OtherActor);
 
 	// Add interaction context when overlapped by trigger
-	if (!InputSystem || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
-	InteractableCount++;
+	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
+	++InteractableCount;
 	if (!InputSystem->HasMappingContext(InteractionContext))
 		InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
@@ -122,8 +125,8 @@ void ABasePlayerCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	Super::NotifyActorEndOverlap(OtherActor);
 
 	// Remove interaction context when far away from triggers
-	if (!InputSystem || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
-	InteractableCount--;
+	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
+	--InteractableCount;
 	if (InteractableCount == 0) InputSystem->RemoveMappingContext(InteractionContext);
 }
 
@@ -132,18 +135,20 @@ void ABasePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (const auto BaseInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	if (const auto InputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		BaseInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Move);
-		BaseInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Look);
-		BaseInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-		BaseInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Crouching);
-		BaseInputComponent->BindAction(UnCrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::UnCrouching);
-		BaseInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Run);
-		BaseInputComponent->BindAction(StopRunningAction, ETriggerEvent::Triggered, this,
+		InputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Move);
+		InputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Look);
+		InputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+		InputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Crouching);
+		InputComponent->BindAction(UnCrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::UnCrouching);
+		InputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Run);
+		InputComponent->BindAction(StopRunningAction, ETriggerEvent::Triggered, this,
 		                           &ABasePlayerCharacter::StopRunning);
-		BaseInputComponent->BindAction(InteractionAction, ETriggerEvent::Triggered, this,
-		                           &ABasePlayerCharacter::Interaction);
+		InputComponent->BindAction(InteractionStartAction, ETriggerEvent::Triggered, this,
+		                           &ABasePlayerCharacter::InteractionStart);
+		InputComponent->BindAction(InteractionStopAction, ETriggerEvent::Triggered, this,
+		                           &ABasePlayerCharacter::InteractionStop);
 	}
 }
 
@@ -185,8 +190,24 @@ void ABasePlayerCharacter::StopRunning(const FInputActionValue& Value)
 	GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
 }
 
-void ABasePlayerCharacter::Interaction(const FInputActionValue& Value)
+void ABasePlayerCharacter::InteractionStart(const FInputActionValue& Value)
 {
-	//TODO: 대상 물체와 상호작용하는 로직을 추가합니다.
-	
+	FHitResult HitResult;
+	const auto Location = SpringArm->GetComponentLocation();
+	if (GetWorld()->LineTraceSingleByObjectType(HitResult, Location,
+	                                            Location + SpringArm->GetForwardVector() * InteractionRange,
+	                                            FCollisionObjectQueryParams::AllObjects))
+	{
+		InteractingActor = HitResult.GetActor();
+		//TODO: 해당 액터에 대해 상호작용을 수행합니다.
+	}
+}
+
+void ABasePlayerCharacter::InteractionStop(const FInputActionValue& Value)
+{
+	if (InteractingActor.IsValid())
+	{
+		//TODO: 현재 상호작용중인 액터와 상호작용을 중지합니다.
+	}
+	InteractingActor.Reset();
 }

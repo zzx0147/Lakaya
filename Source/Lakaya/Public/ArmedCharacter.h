@@ -21,13 +21,22 @@ class LAKAYA_API AArmedCharacter : public ABasePlayerCharacter
 	int8 WeaponContextPriority;
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
-	UInputAction* FireAction;
+	UInputAction* FireStartAction;
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
-	UInputAction* AbilityAction;
+	UInputAction* FireStopAction;
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
-	UInputAction* ReloadAction;
+	UInputAction* AbilityStartAction;
+
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
+	UInputAction* AbilityStopAction;
+
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
+	UInputAction* ReloadStartAction;
+
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
+	UInputAction* ReloadStopAction;
 
 public:
 	AArmedCharacter();
@@ -38,7 +47,10 @@ protected:
 	virtual void UnPossessed() override;
 
 private:
-	void Fire(const FInputActionValue& Value);
-	void Ability(const FInputActionValue& Value);
-	void Reload(const FInputActionValue& Value);
+	void FireStart(const FInputActionValue& Value);
+	void FireStop(const FInputActionValue& Value);
+	void AbilityStart(const FInputActionValue& Value);
+	void AbilityStop(const FInputActionValue& Value);
+	void ReloadStart(const FInputActionValue& Value);
+	void ReloadStop(const FInputActionValue& Value);
 };

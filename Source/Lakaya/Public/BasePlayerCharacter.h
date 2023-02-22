@@ -46,7 +46,10 @@ class LAKAYA_API ABasePlayerCharacter : public ACharacter
 	int8 InteractionPriority;
 
 	UPROPERTY(EditAnywhere, Category = "Input|Interaction|Actions")
-	UInputAction* InteractionAction;
+	UInputAction* InteractionStartAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input|Interaction|Actions")
+	UInputAction* InteractionStopAction;
 
 	UPROPERTY(EditAnywhere, Category = Movement)
 	float RunMultiplier;
@@ -56,6 +59,9 @@ class LAKAYA_API ABasePlayerCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class UCameraComponent* Camera;
+
+	UPROPERTY(EditAnywhere, Category = Interaction)
+	float InteractionRange;
 
 public:
 	// Sets default values for this character's properties
@@ -70,8 +76,7 @@ protected:
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
-	UPROPERTY()
-	class UEnhancedInputLocalPlayerSubsystem* InputSystem;
+	TWeakObjectPtr<class UEnhancedInputLocalPlayerSubsystem> InputSystem;
 
 private:
 	// Input event functions
@@ -81,7 +86,9 @@ private:
 	void UnCrouching(const FInputActionValue& Value);
 	void Run(const FInputActionValue& Value);
 	void StopRunning(const FInputActionValue& Value);
-	void Interaction(const FInputActionValue& Value);
+	void InteractionStart(const FInputActionValue& Value);
+	void InteractionStop(const FInputActionValue& Value);
 
 	uint8 InteractableCount;
+	TWeakObjectPtr<AActor> InteractingActor;
 };
