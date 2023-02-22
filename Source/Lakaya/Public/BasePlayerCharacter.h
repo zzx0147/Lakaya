@@ -46,7 +46,10 @@ class LAKAYA_API ABasePlayerCharacter : public ACharacter
 	int8 InteractionPriority;
 
 	UPROPERTY(EditAnywhere, Category = "Input|Interaction|Actions")
-	UInputAction* InteractionAction;
+	UInputAction* InteractionStartAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input|Interaction|Actions")
+	UInputAction* InteractionStopAction;
 
 	UPROPERTY(EditAnywhere, Category = Movement)
 	float RunMultiplier;
@@ -81,7 +84,8 @@ private:
 	void UnCrouching(const FInputActionValue& Value);
 	void Run(const FInputActionValue& Value);
 	void StopRunning(const FInputActionValue& Value);
-	void Interaction(const FInputActionValue& Value);
+	void InteractionStart(const FInputActionValue& Value);
+	void InteractionStop(const FInputActionValue& Value);
 
 	uint8 InteractableCount;
 };
