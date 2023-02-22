@@ -62,6 +62,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CallServerTravel();
 
+	UFUNCTION(BlueprintCallable)
+	void StartSession();
+	void OnUpdateSessionComplete(FName SessionName, bool bWasSuccessful);
+
+	UFUNCTION(BlueprintCallable)
+	void EndSession();
+	void OnEndSessionComplete(FName SessionName, bool bWasSiccessfil);
+
+	UFUNCTION(BlueprintCallable)
+	void PrintSessionState();
+
+	void CleanUpSession();
+
 public:
 	UPROPERTY(BlueprintAssignable,VisibleAnywhere, BlueprintCallable, Category = "Event")
 	FOnQuickJoinSessionComplete OnQuickJoinSessionComplete;
@@ -69,4 +82,9 @@ protected:
 	class IOnlineSubsystem* OnlineSubsystem;
 
 	bool bIsLoggedIn;
+
+	FOnlineSessionSettings SessionSettings;
+
+	APlayerController* MyPlayerController;
+	//FName CurrentServerName;
 };
