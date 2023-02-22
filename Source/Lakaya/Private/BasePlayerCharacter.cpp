@@ -35,37 +35,37 @@ ABasePlayerCharacter::ABasePlayerCharacter()
 	Camera->SetupAttachment(SpringArm);
 
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
-		TEXT("InputMappingContext'/Game/Yongwoo/Input/IC_CharacterControl'"));
+		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_CharacterControl'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> MoveFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_Move'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Move'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> LookFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_Look'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Look'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> JumpFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_Jump'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Jump'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> CrouchFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_Crouch'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Crouch'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> UnCrouchFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_UnCrouch'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_UnCrouch'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> RunFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_Run'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Run'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> StopFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_StopRunning'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_StopRunning'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> InteractionContextFinder(
-		TEXT("InputMappingContext'/Game/Yongwoo/Input/IC_InteractionControl'"));
+		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_InteractionControl'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionStartFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_InteractionStart'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_InteractionStart'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionStopFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_InteractionStop'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_InteractionStop'"));
 
 	if (ContextFinder.Succeeded()) BasicControlContext = ContextFinder.Object;
 	if (MoveFinder.Succeeded()) MoveAction = MoveFinder.Object;
@@ -135,20 +135,20 @@ void ABasePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (const auto InputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	if (const auto CastedComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		InputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Move);
-		InputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Look);
-		InputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-		InputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Crouching);
-		InputComponent->BindAction(UnCrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::UnCrouching);
-		InputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Run);
-		InputComponent->BindAction(StopRunningAction, ETriggerEvent::Triggered, this,
-		                           &ABasePlayerCharacter::StopRunning);
-		InputComponent->BindAction(InteractionStartAction, ETriggerEvent::Triggered, this,
-		                           &ABasePlayerCharacter::InteractionStart);
-		InputComponent->BindAction(InteractionStopAction, ETriggerEvent::Triggered, this,
-		                           &ABasePlayerCharacter::InteractionStop);
+		CastedComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Move);
+		CastedComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Look);
+		CastedComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+		CastedComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Crouching);
+		CastedComponent->BindAction(UnCrouchAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::UnCrouching);
+		CastedComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ABasePlayerCharacter::Run);
+		CastedComponent->BindAction(StopRunningAction, ETriggerEvent::Triggered, this,
+		                            &ABasePlayerCharacter::StopRunning);
+		CastedComponent->BindAction(InteractionStartAction, ETriggerEvent::Triggered, this,
+		                            &ABasePlayerCharacter::InteractionStart);
+		CastedComponent->BindAction(InteractionStopAction, ETriggerEvent::Triggered, this,
+		                            &ABasePlayerCharacter::InteractionStop);
 	}
 }
 

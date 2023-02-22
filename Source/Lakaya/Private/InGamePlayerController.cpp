@@ -48,16 +48,16 @@ AInGamePlayerController::AInGamePlayerController()
 	InterfaceContextPriority = 100;
 
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
-		TEXT("InputMappingContext'/Game/Yongwoo/Input/IC_InterfaceControl'"));
+		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_InterfaceControl'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> MenuFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_Menu'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Menu'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> WeaponFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_WeaponLoadout'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_WeaponLoadout'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ArmorFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_ArmorLoadout'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ArmorLoadout'"));
 
 	if (ContextFinder.Succeeded()) InterfaceInputContext = ContextFinder.Object;
 	if (MenuFinder.Succeeded()) MenuAction = MenuFinder.Object;

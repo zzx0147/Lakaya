@@ -10,25 +10,25 @@
 AArmedCharacter::AArmedCharacter()
 {
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
-		TEXT("InputMappingContext'/Game/Yongwoo/Input/IC_WeaponControl'"));
+		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_WeaponControl'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> FireStartFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_FireStart'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_FireStart'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> FireStopFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_FireStop'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_FireStop'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> AbilityStartFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_AbilityStart'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_AbilityStart'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> AbilityStopFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_AbilityStop'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_AbilityStop'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ReloadStartFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_ReloadStart'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ReloadStart'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ReloadStopFinder(
-		TEXT("InputAction'/Game/Yongwoo/Input/IA_ReloadStop'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ReloadStop'"));
 
 	if (ContextFinder.Succeeded()) WeaponControlContext = ContextFinder.Object;
 	if (FireStartFinder.Succeeded()) FireStartAction = FireStartFinder.Object;
@@ -57,14 +57,14 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (const auto InputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	if (const auto CastedComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		InputComponent->BindAction(FireStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::FireStart);
-		InputComponent->BindAction(FireStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::FireStop);
-		InputComponent->BindAction(AbilityStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::AbilityStart);
-		InputComponent->BindAction(AbilityStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::AbilityStop);
-		InputComponent->BindAction(ReloadStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::ReloadStart);
-		InputComponent->BindAction(ReloadStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::ReloadStop);
+		CastedComponent->BindAction(FireStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::FireStart);
+		CastedComponent->BindAction(FireStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::FireStop);
+		CastedComponent->BindAction(AbilityStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::AbilityStart);
+		CastedComponent->BindAction(AbilityStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::AbilityStop);
+		CastedComponent->BindAction(ReloadStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::ReloadStart);
+		CastedComponent->BindAction(ReloadStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::ReloadStop);
 	}
 }
 
