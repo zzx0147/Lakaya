@@ -14,15 +14,16 @@ class LAKAYA_API ACollectorPlayerState : public AHealthPlayerState
 {
 	GENERATED_BODY()
 
-	// Client must NOT change this value
-	UPROPERTY(Replicated, Transient)
-	uint8 Point;
+protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
 	void GainPoint(const uint8& GainedPoint);
 	void ResetPoint();
 	const uint8& GetPoint() const;
 
-protected:
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+private:
+	// Client must NOT change this value
+	UPROPERTY(Replicated, Transient)
+	uint8 Point;
 };

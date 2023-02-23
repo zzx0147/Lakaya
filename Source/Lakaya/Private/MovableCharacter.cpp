@@ -47,7 +47,7 @@ AMovableCharacter::AMovableCharacter()
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> StopFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_StopRunning'"));
-	
+
 	if (ContextFinder.Succeeded()) MovementContext = ContextFinder.Object;
 	if (MoveFinder.Succeeded()) MoveAction = MoveFinder.Object;
 	if (LookFinder.Succeeded()) LookAction = LookFinder.Object;

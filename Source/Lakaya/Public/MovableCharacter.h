@@ -12,6 +12,29 @@ class LAKAYA_API AMovableCharacter : public AThirdPersonCharacter
 {
 	GENERATED_BODY()
 
+public:
+	AMovableCharacter();
+
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+protected:
+	virtual void BeginPlay() override;
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void UnPossessed() override;
+
+private:
+	// Input event functions
+	void Move(const FInputActionValue& Value);
+	void Look(const FInputActionValue& Value);
+	void Crouching(const FInputActionValue& Value);
+	void UnCrouching(const FInputActionValue& Value);
+	void Run(const FInputActionValue& Value);
+	void StopRunning(const FInputActionValue& Value);
+
+protected:
+	TWeakObjectPtr<class UEnhancedInputLocalPlayerSubsystem> InputSystem;
+
+private:
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Context")
 	class UInputMappingContext* MovementContext;
 
@@ -41,25 +64,4 @@ class LAKAYA_API AMovableCharacter : public AThirdPersonCharacter
 
 	UPROPERTY(EditAnywhere, Category = Movement)
 	float RunMultiplier;
-
-public:
-	AMovableCharacter();
-
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-
-protected:
-	virtual void BeginPlay() override;
-	virtual void PossessedBy(AController* NewController) override;
-	virtual void UnPossessed() override;
-
-	TWeakObjectPtr<class UEnhancedInputLocalPlayerSubsystem> InputSystem;
-
-private:
-	// Input event functions
-	void Move(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
-	void Crouching(const FInputActionValue& Value);
-	void UnCrouching(const FInputActionValue& Value);
-	void Run(const FInputActionValue& Value);
-	void StopRunning(const FInputActionValue& Value);
 };
