@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "InputMappingContext.h"
+#include "Interactable.h"
 
 AInteractableCharacter::AInteractableCharacter()
 {
@@ -29,20 +30,20 @@ AInteractableCharacter::AInteractableCharacter()
 void AInteractableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	
+
 	if (const auto CastedComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		CastedComponent->BindAction(InteractionStartAction, ETriggerEvent::Triggered, this,
-									&AInteractableCharacter::InteractionStart);
+		                            &AInteractableCharacter::InteractionStart);
 		CastedComponent->BindAction(InteractionStopAction, ETriggerEvent::Triggered, this,
-									&AInteractableCharacter::InteractionStop);
+		                            &AInteractableCharacter::InteractionStop);
 	}
 }
 
 void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
-	
+
 	// Add interaction context when overlapped by trigger
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
@@ -53,7 +54,7 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorEndOverlap(OtherActor);
-	
+
 	// Remove interaction context when far away from triggers
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	--InteractableCount;
@@ -64,20 +65,18 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 {
 	FHitResult HitResult;
 	const auto Location = GetCamera()->GetComponentLocation();
-	if (GetWorld()->LineTraceSingleByObjectType(HitResult, Location,
-												Location + GetCamera()->GetForwardVector() * InteractionRange,
-												FCollisionObjectQueryParams::AllObjects))
-	{
-		InteractingActor = HitResult.GetActor();
-		//TODO: 해당 액터에 대해 상호작용을 수행합니다.
-	}
+
+	if (!GetWorld()->LineTraceSingleByObjectType(HitResult, Location,
+	                                             Location + GetCamera()->GetForwardVector() * InteractionRange,
+	                                             FCollisionObjectQueryParams::AllObjects))
+		return;
+
+	InteractingActor = Cast<IInteractable>(HitResult.GetActor());
+	if (InteractingActor.IsValid()) InteractingActor->InteractionStart(this);
 }
 
 void AInteractableCharacter::InteractionStop(const FInputActionValue& Value)
 {
-	if (InteractingActor.IsValid())
-	{
-		//TODO: 현재 상호작용중인 액터와 상호작용을 중지합니다.
-	}
+	if (InteractingActor.IsValid()) InteractingActor->InteractionStop(this);
 	InteractingActor.Reset();
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "MovableCharacter.h"
+#include "UObject/WeakInterfacePtr.h"
 #include "InteractableCharacter.generated.h"
 
 /**
@@ -43,5 +44,5 @@ private:
 	float InteractionRange;
 
 	uint8 InteractableCount;
-	TWeakObjectPtr<AActor> InteractingActor;
+	TWeakInterfacePtr<class IInteractable> InteractingActor;
 };
