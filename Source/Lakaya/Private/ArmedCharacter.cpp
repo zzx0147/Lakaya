@@ -6,6 +6,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "WeaponAbility.h"
+#include "WeaponFire.h"
+#include "WeaponReload.h"
 
 AArmedCharacter::AArmedCharacter()
 {
@@ -43,7 +46,13 @@ void AArmedCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
+	if (InputSystem.IsValid())
+	{
+		InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
+		SetupWeaponComponent(UWeaponFire::StaticClass(), FireComponent);
+		SetupWeaponComponent(UWeaponAbility::StaticClass(), AbilityComponent);
+		SetupWeaponComponent(UWeaponReload::StaticClass(), ReloadComponent);
+	}
 }
 
 void AArmedCharacter::UnPossessed()
@@ -70,27 +79,30 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 void AArmedCharacter::FireStart(const FInputActionValue& Value)
 {
-	//TODO: 무기 격발
+	if (FireComponent.IsValid()) IWeaponFire::Execute_FireStart(FireComponent.GetObject());
 }
 
 void AArmedCharacter::FireStop(const FInputActionValue& Value)
 {
+	if (FireComponent.IsValid()) IWeaponFire::Execute_FireStop(FireComponent.GetObject());
 }
 
 void AArmedCharacter::AbilityStart(const FInputActionValue& Value)
 {
-	//TODO: 무기 보조 능력 시전
+	if (AbilityComponent.IsValid()) IWeaponAbility::Execute_AbilityStart(AbilityComponent.GetObject());
 }
 
 void AArmedCharacter::AbilityStop(const FInputActionValue& Value)
 {
+	if (AbilityComponent.IsValid()) IWeaponAbility::Execute_AbilityStop(AbilityComponent.GetObject());
 }
 
 void AArmedCharacter::ReloadStart(const FInputActionValue& Value)
 {
-	//TODO: 무기 능력 시전
+	if (ReloadComponent.IsValid()) IWeaponReload::Execute_ReloadStart(ReloadComponent.GetObject());
 }
 
 void AArmedCharacter::ReloadStop(const FInputActionValue& Value)
 {
+	if (ReloadComponent.IsValid()) IWeaponReload::Execute_ReloadStop(ReloadComponent.GetObject());
 }
