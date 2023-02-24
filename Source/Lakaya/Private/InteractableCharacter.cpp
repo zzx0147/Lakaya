@@ -72,11 +72,11 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 		return;
 
 	InteractingActor = Cast<IInteractable>(HitResult.GetActor());
-	if (InteractingActor.IsValid()) InteractingActor->InteractionStart(this);
+	if (InteractingActor.IsValid()) IInteractable::Execute_InteractionStart(InteractingActor.GetObject(), this);
 }
 
 void AInteractableCharacter::InteractionStop(const FInputActionValue& Value)
 {
-	if (InteractingActor.IsValid()) InteractingActor->InteractionStop(this);
+	if (InteractingActor.IsValid()) IInteractable::Execute_InteractionStop(InteractingActor.GetObject(), this);
 	InteractingActor.Reset();
 }
