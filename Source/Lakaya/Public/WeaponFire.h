@@ -26,5 +26,8 @@ public:
 	virtual void FireStart(const float& Time);
 
 	UFUNCTION(Server, Reliable)
-	virtual void FireStop(const float&Time);
+	virtual void FireStop(const float& Time);
+
+	UFUNCTION(Server, Reliable)
+	virtual void SwitchFireMode(const float& Time);
 };

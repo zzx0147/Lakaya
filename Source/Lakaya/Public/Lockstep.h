@@ -20,8 +20,9 @@ class LAKAYA_API ILockstep
 {
 	GENERATED_BODY()
 
-	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	inline static constexpr float LockstepDelay = 0.1f;
+	
 	void Execute(void (*ExecuteFunction)(UObject*, const float&));
 	void Execute(void (*ExecuteFunction)(UObject*, const float&, APawn*), APawn* Caller);
 };
