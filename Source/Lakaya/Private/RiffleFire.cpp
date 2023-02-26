@@ -28,8 +28,6 @@ void URiffleFire::FireStart_Implementation(const float& Time)
 	default:
 		UE_LOG(LogActorComponent, Error, TEXT("FireMode was not EFireMode"));
 	}
-
-	TimerManager.SetTimer(StartTimer, this, &URiffleFire::TraceFire, LockstepTimerTime(Time));
 }
 
 void URiffleFire::FireStop_Implementation(const float& Time)

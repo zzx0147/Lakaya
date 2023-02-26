@@ -21,6 +21,9 @@ AArmedCharacter::AArmedCharacter()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> FireStopFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_FireStop'"));
 
+	static const ConstructorHelpers::FObjectFinder<UInputAction> ModeSwitchFinder(
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_SwitchFireMode'"));
+
 	static const ConstructorHelpers::FObjectFinder<UInputAction> AbilityStartFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_AbilityStart'"));
 
@@ -36,6 +39,7 @@ AArmedCharacter::AArmedCharacter()
 	if (ContextFinder.Succeeded()) WeaponControlContext = ContextFinder.Object;
 	if (FireStartFinder.Succeeded()) FireStartAction = FireStartFinder.Object;
 	if (FireStopFinder.Succeeded()) FireStopAction = FireStopFinder.Object;
+	if (ModeSwitchFinder.Succeeded()) FireModeSwitchAction = ModeSwitchFinder.Object;
 	if (AbilityStartFinder.Succeeded()) AbilityStartAction = AbilityStartFinder.Object;
 	if (AbilityStopFinder.Succeeded()) AbilityStopAction = AbilityStopFinder.Object;
 	if (ReloadStartFinder.Succeeded()) ReloadStartAction = ReloadStartFinder.Object;
@@ -70,6 +74,7 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	{
 		CastedComponent->BindAction(FireStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::FireStart);
 		CastedComponent->BindAction(FireStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::FireStop);
+		CastedComponent->BindAction(FireModeSwitchAction, ETriggerEvent::Triggered, this, &AArmedCharacter::SwitchFireMode);
 		CastedComponent->BindAction(AbilityStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::AbilityStart);
 		CastedComponent->BindAction(AbilityStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::AbilityStop);
 		CastedComponent->BindAction(ReloadStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::ReloadStart);
@@ -85,6 +90,11 @@ void AArmedCharacter::FireStart(const FInputActionValue& Value)
 void AArmedCharacter::FireStop(const FInputActionValue& Value)
 {
 	if (FireComponent.IsValid()) FireComponent->Execute(IWeaponFire::Execute_FireStop);
+}
+
+void AArmedCharacter::SwitchFireMode(const FInputActionValue& Value)
+{
+	if (FireComponent.IsValid()) FireComponent->Execute(IWeaponFire::Execute_SwitchFireMode);
 }
 
 void AArmedCharacter::AbilityStart(const FInputActionValue& Value)
