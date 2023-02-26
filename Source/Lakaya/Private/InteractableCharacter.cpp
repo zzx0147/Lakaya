@@ -8,6 +8,7 @@
 #include "Camera/CameraComponent.h"
 #include "InputMappingContext.h"
 #include "Interactable.h"
+#include "GameFramework/GameStateBase.h"
 
 AInteractableCharacter::AInteractableCharacter()
 {
@@ -72,11 +73,10 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 		return;
 
 	InteractingActor = Cast<IInteractable>(HitResult.GetActor());
-	if (InteractingActor.IsValid()) IInteractable::Execute_InteractionStart(InteractingActor.GetObject(), this);
+	if (InteractingActor.IsValid()) InteractingActor->Execute(IInteractable::Execute_InteractionStart, this);
 }
 
 void AInteractableCharacter::InteractionStop(const FInputActionValue& Value)
 {
-	if (InteractingActor.IsValid()) IInteractable::Execute_InteractionStop(InteractingActor.GetObject(), this);
-	InteractingActor.Reset();
+	if (InteractingActor.IsValid()) InteractingActor->Execute(IInteractable::Execute_InteractionStop, this);
 }

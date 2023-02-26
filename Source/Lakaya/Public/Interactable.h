@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Interface.h"
+#include "Lockstep.h"
 #include "Interactable.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UInteractable : public UInterface
+class UInteractable : public ULockstep
 {
 	GENERATED_BODY()
 };
@@ -16,15 +16,15 @@ class UInteractable : public UInterface
 /**
  * 
  */
-class LAKAYA_API IInteractable
+class LAKAYA_API IInteractable : public ILockstep
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(Server, Reliable)
-	virtual void InteractionStart(APawn* Caller);
+	virtual void InteractionStart(const float& Time, APawn* Caller);
 	
 	UFUNCTION(Server, Reliable)
-	virtual void InteractionStop(APawn* Caller);
+	virtual void InteractionStop(const float& Time, APawn* Caller);
 };

@@ -79,30 +79,30 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 void AArmedCharacter::FireStart(const FInputActionValue& Value)
 {
-	if (FireComponent.IsValid()) IWeaponFire::Execute_FireStart(FireComponent.GetObject());
+	if (FireComponent.IsValid()) FireComponent->Execute(IWeaponFire::Execute_FireStart);
 }
 
 void AArmedCharacter::FireStop(const FInputActionValue& Value)
 {
-	if (FireComponent.IsValid()) IWeaponFire::Execute_FireStop(FireComponent.GetObject());
+	if (FireComponent.IsValid()) FireComponent->Execute(IWeaponFire::Execute_FireStop);
 }
 
 void AArmedCharacter::AbilityStart(const FInputActionValue& Value)
 {
-	if (AbilityComponent.IsValid()) IWeaponAbility::Execute_AbilityStart(AbilityComponent.GetObject());
+	if (AbilityComponent.IsValid()) AbilityComponent->Execute(IWeaponAbility::Execute_AbilityStart);
 }
 
 void AArmedCharacter::AbilityStop(const FInputActionValue& Value)
 {
-	if (AbilityComponent.IsValid()) IWeaponAbility::Execute_AbilityStop(AbilityComponent.GetObject());
+	if (AbilityComponent.IsValid()) AbilityComponent->Execute(IWeaponAbility::Execute_AbilityStop);
 }
 
 void AArmedCharacter::ReloadStart(const FInputActionValue& Value)
 {
-	if (ReloadComponent.IsValid()) IWeaponReload::Execute_ReloadStart(ReloadComponent.GetObject());
+	if (ReloadComponent.IsValid()) ReloadComponent->Execute(IWeaponReload::Execute_ReloadStart);
 }
 
 void AArmedCharacter::ReloadStop(const FInputActionValue& Value)
 {
-	if (ReloadComponent.IsValid()) IWeaponReload::Execute_ReloadStop(ReloadComponent.GetObject());
+	if (ReloadComponent.IsValid()) ReloadComponent->Execute(IWeaponReload::Execute_ReloadStop);
 }

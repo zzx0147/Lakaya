@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Lockstep.h"
-#include "WeaponAbility.generated.h"
+#include "UObject/Interface.h"
+#include "Lockstep.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UWeaponAbility : public ULockstep
+class ULockstep : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -16,15 +16,12 @@ class UWeaponAbility : public ULockstep
 /**
  * 
  */
-class LAKAYA_API IWeaponAbility : public ILockstep
+class LAKAYA_API ILockstep
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION(Server, Reliable)
-	virtual void AbilityStart(const float& Time);
-
-	UFUNCTION(Server, Reliable)
-	virtual void AbilityStop(const float& Time);
+	void Execute(void (*ExecuteFunction)(UObject*, const float&));
+	void Execute(void (*ExecuteFunction)(UObject*, const float&, APawn*), APawn* Caller);
 };
