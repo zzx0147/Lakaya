@@ -12,7 +12,7 @@
 
 AInteractableCharacter::AInteractableCharacter()
 {
-	InteractionRange = 100;
+	InteractionRange = 500;
 
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> InteractionContextFinder(
 		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_InteractionControl'"));
@@ -66,10 +66,10 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 {
 	FHitResult HitResult;
 	const auto Location = GetCamera()->GetComponentLocation();
+	auto End = Location + GetCamera()->GetForwardVector() * InteractionRange;
 
-	if (!GetWorld()->LineTraceSingleByObjectType(HitResult, Location,
-	                                             Location + GetCamera()->GetForwardVector() * InteractionRange,
-	                                             FCollisionObjectQueryParams::AllObjects))
+	DrawDebugLine(GetWorld(), Location, End, FColor::Yellow, false, 2, 0, 1);
+	if (!GetWorld()->LineTraceSingleByObjectType(HitResult, Location, End, FCollisionObjectQueryParams::AllObjects))
 		return;
 
 	InteractingActor = Cast<IInteractable>(HitResult.GetActor());
