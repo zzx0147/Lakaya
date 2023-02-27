@@ -12,6 +12,8 @@
 
 AInteractableCharacter::AInteractableCharacter()
 {
+	if (IsRunningDedicatedServer()) return;
+	
 	InteractionRange = 500;
 	CollisionChannel = ECC_GameTraceChannel3;
 
@@ -52,6 +54,8 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
+	if (!IsOwnedByLocalPlayer()) return;
+	
 	// Add interaction context when overlapped by trigger
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
@@ -63,6 +67,8 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorEndOverlap(OtherActor);
 
+	if (!IsOwnedByLocalPlayer()) return;
+	
 	// Remove interaction context when far away from triggers
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	--InteractableCount;
@@ -75,7 +81,7 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 	const auto Location = GetCamera()->GetComponentLocation();
 	const auto End = Location + GetCamera()->GetForwardVector() * InteractionRange;
 
-	DrawDebugLine(GetWorld(), Location, End, FColor::Yellow, false, 2, 0, 1);
+	DrawDebugLine(GetWorld(), Location, End, FColor::Yellow, false, 2);
 	if (!GetWorld()->LineTraceSingleByChannel(HitResult, Location, End, CollisionChannel, TraceQueryParams))
 		return;
 

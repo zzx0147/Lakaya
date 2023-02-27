@@ -5,7 +5,6 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "InputMappingContext.h"
@@ -16,13 +15,13 @@ AMovableCharacter::AMovableCharacter()
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 	RunMultiplier = 2.0;
 
-	// In a dedicated server, the following logic is not necessary.
-	if (IsRunningDedicatedServer()) return;
-
 	// Character must look at the camera is looking at
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationPitch = bUseControllerRotationRoll = false;
 	GetSpringArm()->bUsePawnControlRotation = true;
+
+	// In a dedicated server, the following logic is not necessary.
+	if (IsRunningDedicatedServer()) return;
 
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
 		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_CharacterControl'"));
@@ -69,13 +68,11 @@ void AMovableCharacter::PossessedBy(AController* NewController)
 
 	if (IsRunningDedicatedServer()) return;
 
-	if (const auto PlayerController = Cast<APlayerController>(NewController))
-	{
-		// If It's not listen server, set role as AutonomousProxy
-		if (!HasAuthority()) SetRole(ROLE_AutonomousProxy);
-		InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-		if (InputSystem.IsValid()) InputSystem->AddMappingContext(MovementContext, MovementContextPriority);
-	}
+	const auto PlayerController = Cast<APlayerController>(NewController);
+	if (!PlayerController || !PlayerController->IsLocalController()) return;
+
+	InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	if (InputSystem.IsValid()) InputSystem->AddMappingContext(MovementContext, MovementContextPriority);
 }
 
 void AMovableCharacter::UnPossessed()
@@ -100,6 +97,13 @@ void AMovableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		CastedComponent->BindAction(StopRunningAction, ETriggerEvent::Triggered, this,
 		                            &AMovableCharacter::StopRunning);
 	}
+}
+
+bool AMovableCharacter::IsOwnedByLocalPlayer() const
+{
+	const auto PlayerController = Cast<APlayerController>(GetOwner());
+	if (!IsRunningDedicatedServer() && PlayerController && PlayerController->IsLocalController()) return true;
+	return false;
 }
 
 void AMovableCharacter::Move(const FInputActionValue& Value)

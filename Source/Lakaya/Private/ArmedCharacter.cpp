@@ -12,6 +12,8 @@
 
 AArmedCharacter::AArmedCharacter()
 {
+	if(IsRunningDedicatedServer()) return;
+	
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
 		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_WeaponControl'"));
 

@@ -21,13 +21,17 @@ class LAKAYA_API URiffleFire : public UActorComponent, public IWeaponFire
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void BeginPlay() override;
+
+private:
 	void FireStart_Implementation(const float& Time);
 	void FireStop_Implementation(const float& Time);
 	void SwitchFireMode_Implementation(const float& Time);
 
 	float LockstepTimerTime(const float& Time) const;
 	void TraceFire();
-	void StopAutoFire();
+	void StopFire();
 	void UpdateFireMode();
 
 	EFireMode FireMode;
@@ -36,4 +40,6 @@ class LAKAYA_API URiffleFire : public UActorComponent, public IWeaponFire
 	FTimerHandle StartTimer;
 	FTimerHandle StopTimer;
 	FTimerHandle SwitchModeTimer;
+	TWeakObjectPtr<class AThirdPersonCharacter> Character;
+	FCollisionQueryParams TraceQueryParams;
 };
