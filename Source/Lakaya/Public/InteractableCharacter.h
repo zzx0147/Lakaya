@@ -21,6 +21,7 @@ public:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
@@ -43,6 +44,10 @@ private:
 	UPROPERTY(EditAnywhere, Category = Interaction)
 	float InteractionRange;
 
+	UPROPERTY(EditAnywhere, Category = Interaction)
+	TEnumAsByte<ECollisionChannel> CollisionChannel;
+
 	uint8 InteractableCount;
 	TWeakInterfacePtr<class IInteractable> InteractingActor;
+	FCollisionQueryParams TraceQueryParams;
 };

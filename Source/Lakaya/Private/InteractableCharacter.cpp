@@ -13,6 +13,7 @@
 AInteractableCharacter::AInteractableCharacter()
 {
 	InteractionRange = 500;
+	CollisionChannel = ECC_GameTraceChannel3;
 
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> InteractionContextFinder(
 		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_InteractionControl'"));
@@ -41,6 +42,12 @@ void AInteractableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	}
 }
 
+void AInteractableCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	TraceQueryParams.AddIgnoredActor(this);
+}
+
 void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
@@ -66,10 +73,10 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 {
 	FHitResult HitResult;
 	const auto Location = GetCamera()->GetComponentLocation();
-	auto End = Location + GetCamera()->GetForwardVector() * InteractionRange;
+	const auto End = Location + GetCamera()->GetForwardVector() * InteractionRange;
 
 	DrawDebugLine(GetWorld(), Location, End, FColor::Yellow, false, 2, 0, 1);
-	if (!GetWorld()->LineTraceSingleByObjectType(HitResult, Location, End, FCollisionObjectQueryParams::AllObjects))
+	if (!GetWorld()->LineTraceSingleByChannel(HitResult, Location, End, CollisionChannel, TraceQueryParams))
 		return;
 
 	InteractingActor = Cast<IInteractable>(HitResult.GetActor());
