@@ -11,6 +11,7 @@ void URiffleFire::BeginPlay()
 {
 	Super::BeginPlay();
 	Character = Cast<AThirdPersonCharacter>(GetOwner());
+	if (Character.IsStale()) UE_LOG(LogActorComponent, Error, TEXT("Attached Actor was not AThirdPersonCharacter."));
 	TraceQueryParams.AddIgnoredActor(GetOwner());
 }
 
