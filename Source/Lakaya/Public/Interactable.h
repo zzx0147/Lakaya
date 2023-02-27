@@ -23,8 +23,8 @@ class LAKAYA_API IInteractable : public ILockstep
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(Server, Reliable)
-	virtual void InteractionStart(const float& Time, APawn* Caller);
-	
+	virtual void InteractionStart(const float& Time, const FUniqueNetIdRepl& CallerId);
+
 	UFUNCTION(Server, Reliable)
-	virtual void InteractionStop(const float& Time, APawn* Caller);
+	virtual void InteractionStop(const float& Time, const FUniqueNetIdRepl& CallerId);
 };

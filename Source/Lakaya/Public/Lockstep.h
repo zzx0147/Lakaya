@@ -24,5 +24,5 @@ public:
 	inline static constexpr float LockstepDelay = 0.1f;
 	
 	void Execute(void (*ExecuteFunction)(UObject*, const float&));
-	void Execute(void (*ExecuteFunction)(UObject*, const float&, APawn*), APawn* Caller);
+	void Execute(void (*ExecuteFunction)(UObject*, const float&, const FUniqueNetIdRepl&), const APawn* Caller);
 };
