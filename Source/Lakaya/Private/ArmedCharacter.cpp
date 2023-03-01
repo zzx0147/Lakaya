@@ -6,9 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "WeaponAbility.h"
-#include "WeaponFire.h"
-#include "WeaponReload.h"
+#include "WeaponComponent.h"
 
 AArmedCharacter::AArmedCharacter()
 {
@@ -55,9 +53,7 @@ void AArmedCharacter::PossessedBy(AController* NewController)
 	if (InputSystem.IsValid())
 	{
 		InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
-		SetupWeaponComponent(UWeaponFire::StaticClass(), FireComponent);
-		SetupWeaponComponent(UWeaponAbility::StaticClass(), AbilityComponent);
-		SetupWeaponComponent(UWeaponReload::StaticClass(), ReloadComponent);
+		WeaponComponent = Cast<UWeaponComponent>(GetComponentByClass(UWeaponComponent::StaticClass()));
 	}
 }
 
@@ -87,35 +83,31 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 void AArmedCharacter::FireStart(const FInputActionValue& Value)
 {
-	if (FireComponent.IsValid()) FireComponent->Execute(IWeaponFire::Execute_FireStart);
+	if (WeaponComponent.IsValid()) WeaponComponent->Call_FireStart();
 }
 
 void AArmedCharacter::FireStop(const FInputActionValue& Value)
 {
-	if (FireComponent.IsValid()) FireComponent->Execute(IWeaponFire::Execute_FireStop);
+	if (WeaponComponent.IsValid()) WeaponComponent->Call_FireStop();
 }
 
 void AArmedCharacter::SwitchFireMode(const FInputActionValue& Value)
 {
-	if (FireComponent.IsValid()) FireComponent->Execute(IWeaponFire::Execute_SwitchFireMode);
+	if (WeaponComponent.IsValid()) WeaponComponent->Call_SwitchSelector();
 }
 
 void AArmedCharacter::AbilityStart(const FInputActionValue& Value)
 {
-	if (AbilityComponent.IsValid()) AbilityComponent->Execute(IWeaponAbility::Execute_AbilityStart);
 }
 
 void AArmedCharacter::AbilityStop(const FInputActionValue& Value)
 {
-	if (AbilityComponent.IsValid()) AbilityComponent->Execute(IWeaponAbility::Execute_AbilityStop);
 }
 
 void AArmedCharacter::ReloadStart(const FInputActionValue& Value)
 {
-	if (ReloadComponent.IsValid()) ReloadComponent->Execute(IWeaponReload::Execute_ReloadStart);
 }
 
 void AArmedCharacter::ReloadStop(const FInputActionValue& Value)
 {
-	if (ReloadComponent.IsValid()) ReloadComponent->Execute(IWeaponReload::Execute_ReloadStop);
 }
