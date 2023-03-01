@@ -37,6 +37,6 @@ public:
 	UFUNCTION(Server, Reliable)
 	virtual void SwitchFireMode(const float& Time);
 	
-	UFUNCTION(NetMulticast, Unreliable)
+	UFUNCTION(Client, Unreliable)
 	virtual void SwitchFireModeConfirmed(const float& Time);
 };
