@@ -25,9 +25,18 @@ public:
 	UFUNCTION(Server, Reliable)
 	virtual void FireStart(const float& Time);
 
+	UFUNCTION(NetMulticast, Unreliable)
+	virtual void FireStartConfirmed(const float& Time);
+
 	UFUNCTION(Server, Reliable)
 	virtual void FireStop(const float& Time);
 
+	UFUNCTION(NetMulticast, Unreliable)
+	virtual void FireStopConfirmed(const float& Time);
+
 	UFUNCTION(Server, Reliable)
 	virtual void SwitchFireMode(const float& Time);
+	
+	UFUNCTION(NetMulticast, Unreliable)
+	virtual void SwitchFireModeConfirmed(const float& Time);
 };

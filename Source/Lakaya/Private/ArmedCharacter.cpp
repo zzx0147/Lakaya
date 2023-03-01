@@ -12,8 +12,8 @@
 
 AArmedCharacter::AArmedCharacter()
 {
-	if(IsRunningDedicatedServer()) return;
-	
+	if (IsRunningDedicatedServer()) return;
+
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
 		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_WeaponControl'"));
 
@@ -76,7 +76,8 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	{
 		CastedComponent->BindAction(FireStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::FireStart);
 		CastedComponent->BindAction(FireStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::FireStop);
-		CastedComponent->BindAction(FireModeSwitchAction, ETriggerEvent::Triggered, this, &AArmedCharacter::SwitchFireMode);
+		CastedComponent->BindAction(FireModeSwitchAction, ETriggerEvent::Triggered, this,
+		                            &AArmedCharacter::SwitchFireMode);
 		CastedComponent->BindAction(AbilityStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::AbilityStart);
 		CastedComponent->BindAction(AbilityStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::AbilityStop);
 		CastedComponent->BindAction(ReloadStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::ReloadStart);
