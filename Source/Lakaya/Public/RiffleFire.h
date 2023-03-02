@@ -30,6 +30,7 @@ private:
 	void SwitchSelector_Implementation(const float& Time);
 	void FireStartNotify_Implementation(const float& Time);
 	void FireStopNotify_Implementation(const float& Time);
+	virtual void SetupData(const FTableRowBase* Data) override;
 
 	float LockstepTimerTime(const float& Time) const;
 	void TraceFire();

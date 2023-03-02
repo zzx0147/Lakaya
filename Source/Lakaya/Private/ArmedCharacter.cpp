@@ -41,7 +41,7 @@ AArmedCharacter::AArmedCharacter()
 	if (ContextFinder.Succeeded()) WeaponControlContext = ContextFinder.Object;
 	if (FireStartFinder.Succeeded()) FireStartAction = FireStartFinder.Object;
 	if (FireStopFinder.Succeeded()) FireStopAction = FireStopFinder.Object;
-	if (ModeSwitchFinder.Succeeded()) FireModeSwitchAction = ModeSwitchFinder.Object;
+	if (ModeSwitchFinder.Succeeded()) SwitchSelectorAction = ModeSwitchFinder.Object;
 	if (AbilityStartFinder.Succeeded()) AbilityStartAction = AbilityStartFinder.Object;
 	if (AbilityStopFinder.Succeeded()) AbilityStopAction = AbilityStopFinder.Object;
 	if (ReloadStartFinder.Succeeded()) ReloadStartAction = ReloadStartFinder.Object;
@@ -55,9 +55,8 @@ void AArmedCharacter::PossessedBy(AController* NewController)
 	if (InputSystem.IsValid())
 	{
 		InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
-		SetupWeaponComponent(UWeaponFire::StaticClass(), FireComponent);
-		SetupWeaponComponent(UWeaponAbility::StaticClass(), AbilityComponent);
-		SetupWeaponComponent(UWeaponReload::StaticClass(), ReloadComponent);
+		//TODO: 데이터테이블을 구성하고, 아래의 함수를 실행하여 무기를 구현합니다.
+		// PrimaryWeapon.SetupWeaponComponents()
 	}
 }
 
@@ -76,8 +75,8 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	{
 		CastedComponent->BindAction(FireStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::FireStart);
 		CastedComponent->BindAction(FireStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::FireStop);
-		CastedComponent->BindAction(FireModeSwitchAction, ETriggerEvent::Triggered, this,
-		                            &AArmedCharacter::SwitchFireMode);
+		CastedComponent->BindAction(SwitchSelectorAction, ETriggerEvent::Triggered, this,
+		                            &AArmedCharacter::SwitchSelector);
 		CastedComponent->BindAction(AbilityStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::AbilityStart);
 		CastedComponent->BindAction(AbilityStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::AbilityStop);
 		CastedComponent->BindAction(ReloadStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::ReloadStart);
@@ -87,35 +86,35 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 void AArmedCharacter::FireStart(const FInputActionValue& Value)
 {
-	if (FireComponent.IsValid()) FireComponent->Invoke(IWeaponFire::Execute_FireStart);
+	PrimaryWeapon.FireStart();
 }
 
 void AArmedCharacter::FireStop(const FInputActionValue& Value)
 {
-	if (FireComponent.IsValid()) FireComponent->Invoke(IWeaponFire::Execute_FireStop);
+	PrimaryWeapon.FireStop();
 }
 
-void AArmedCharacter::SwitchFireMode(const FInputActionValue& Value)
+void AArmedCharacter::SwitchSelector(const FInputActionValue& Value)
 {
-	if (FireComponent.IsValid()) FireComponent->Invoke(IWeaponFire::Execute_SwitchSelector);
+	PrimaryWeapon.SwitchSelector();
 }
 
 void AArmedCharacter::AbilityStart(const FInputActionValue& Value)
 {
-	if (AbilityComponent.IsValid()) AbilityComponent->Invoke(IWeaponAbility::Execute_AbilityStart);
+	PrimaryWeapon.AbilityStart();
 }
 
 void AArmedCharacter::AbilityStop(const FInputActionValue& Value)
 {
-	if (AbilityComponent.IsValid()) AbilityComponent->Invoke(IWeaponAbility::Execute_AbilityStop);
+	PrimaryWeapon.AbilityStop();
 }
 
 void AArmedCharacter::ReloadStart(const FInputActionValue& Value)
 {
-	if (ReloadComponent.IsValid()) ReloadComponent->Invoke(IWeaponReload::Execute_ReloadStart);
+	PrimaryWeapon.ReloadStart();
 }
 
 void AArmedCharacter::ReloadStop(const FInputActionValue& Value)
 {
-	if (ReloadComponent.IsValid()) ReloadComponent->Invoke(IWeaponReload::Execute_ReloadStop);
+	PrimaryWeapon.ReloadStop();
 }

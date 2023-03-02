@@ -4,6 +4,8 @@
 #include "RiffleFire.h"
 
 #include "ThirdPersonCharacter.h"
+#include "WeaponFireData.h"
+#include "WeaponStruct.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/GameStateBase.h"
 
@@ -72,6 +74,13 @@ void URiffleFire::FireStartNotify_Implementation(const float& Time)
 void URiffleFire::FireStopNotify_Implementation(const float& Time)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireStop"));
+}
+
+void URiffleFire::SetupData(const FTableRowBase* Data)
+{
+	IWeaponFire::SetupData(Data);
+	auto CastedData = static_cast<const FWeaponFireData*>(Data);
+	//TODO: 데이터를 받아옵니다.
 }
 
 float URiffleFire::LockstepTimerTime(const float& Time) const
