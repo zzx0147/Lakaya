@@ -30,7 +30,10 @@ private:
 	void AbilityStop(const FInputActionValue& Value);
 	void ReloadStart(const FInputActionValue& Value);
 	void ReloadStop(const FInputActionValue& Value);
-	
+
+	template <class T>
+	void SetupWeaponComponent(TSubclassOf<UInterface> InterfaceClass, TWeakInterfacePtr<T>& OutPtr);
+
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Context")
 	UInputMappingContext* WeaponControlContext;
 
@@ -58,5 +61,14 @@ private:
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* ReloadStopAction;
 
-	TWeakObjectPtr<class UWeaponComponent> WeaponComponent;
+	TWeakInterfacePtr<class IWeaponFire> FireComponent;
+	TWeakInterfacePtr<class IWeaponAbility> AbilityComponent;
+	TWeakInterfacePtr<class IWeaponReload> ReloadComponent;
 };
+
+template <class T>
+void AArmedCharacter::SetupWeaponComponent(TSubclassOf<UInterface> InterfaceClass, TWeakInterfacePtr<T>& OutPtr)
+{
+	auto Interfaces = GetComponentsByInterface(InterfaceClass);
+	if (Interfaces.Num() > 0) OutPtr = Cast<T>(Interfaces.Top());
+}

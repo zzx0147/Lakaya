@@ -3,7 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WeaponComponent.h"
+#include "WeaponFire.h"
+#include "Components/ActorComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "RiffleFire.generated.h"
 
@@ -16,7 +17,7 @@ enum class EFireMode : uint8
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class LAKAYA_API URiffleFire : public UWeaponComponent
+class LAKAYA_API URiffleFire : public UActorComponent, public IWeaponFire
 {
 	GENERATED_BODY()
 
@@ -24,13 +25,12 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	bool FireStart_Validate(const float& RequestTime, const FString& Arg) { return true; }
-	void FireStart_Implementation(const float& Time, const FString& Arg);
-	void FireStartNotify_Implementation(const float& Time, const FString& Arg);
-	bool FireStop_Validate(const float& RequestTime, const FString& Arg) { return true; }
-	void FireStop_Implementation(const float& Time, const FString& Arg);
-	void FireStopNotify_Implementation(const float& Time, const FString& Arg);
-	void SwitchSelector_Implementation(const float& Time, const FString& Arg);
+	void FireStart_Implementation(const float& Time);
+	void FireStop_Implementation(const float& Time);
+	void SwitchFireMode_Implementation(const float& Time);
+	void FireStartConfirmed_Implementation(const float& Time);
+	void FireStopConfirmed_Implementation(const float& Time);
+	void SwitchFireModeConfirmed_Implementation(const float& Time);
 
 	float LockstepTimerTime(const float& Time) const;
 	void TraceFire();

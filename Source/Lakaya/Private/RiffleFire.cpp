@@ -15,9 +15,9 @@ void URiffleFire::BeginPlay()
 	TraceQueryParams.AddIgnoredActor(GetOwner());
 }
 
-void URiffleFire::FireStart_Implementation(const float& Time, const FString& Arg)
+void URiffleFire::FireStart_Implementation(const float& Time)
 {
-	FireStartNotify(Time, Arg);
+	Execute_FireStartConfirmed(this, Time);
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	if (TimerManager.IsTimerActive(StartTimer)) return;
 
@@ -37,15 +37,16 @@ void URiffleFire::FireStart_Implementation(const float& Time, const FString& Arg
 	TimerManager.SetTimer(StartTimer, this, &URiffleFire::TraceFire, 0.1f, true, LockstepTimerTime(Time));
 }
 
-void URiffleFire::FireStop_Implementation(const float& Time, const FString& Arg)
+void URiffleFire::FireStop_Implementation(const float& Time)
 {
-	FireStopNotify(Time, Arg);
+	Execute_FireStopConfirmed(this, Time);
 	if (FireMode != EFireMode::Auto) return;
 	GetWorld()->GetTimerManager().SetTimer(StopTimer, this, &URiffleFire::StopFire, LockstepTimerTime(Time));
 }
 
-void URiffleFire::SwitchSelector_Implementation(const float& Time, const FString& Arg)
+void URiffleFire::SwitchFireMode_Implementation(const float& Time)
 {
+	Execute_SwitchFireModeConfirmed(this, Time);
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	if (TimerManager.IsTimerActive(StartTimer) || TimerManager.IsTimerActive(StopTimer)) return;
 
@@ -64,14 +65,19 @@ void URiffleFire::SwitchSelector_Implementation(const float& Time, const FString
 	TimerManager.SetTimer(SwitchModeTimer, this, &URiffleFire::UpdateFireMode, LockstepTimerTime(Time));
 }
 
-void URiffleFire::FireStartNotify_Implementation(const float& Time, const FString& Arg)
+void URiffleFire::FireStartConfirmed_Implementation(const float& Time)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireStart"));
 }
 
-void URiffleFire::FireStopNotify_Implementation(const float& Time, const FString& Arg)
+void URiffleFire::FireStopConfirmed_Implementation(const float& Time)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireStop"));
+}
+
+void URiffleFire::SwitchFireModeConfirmed_Implementation(const float& Time)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Switch"));
 }
 
 float URiffleFire::LockstepTimerTime(const float& Time) const

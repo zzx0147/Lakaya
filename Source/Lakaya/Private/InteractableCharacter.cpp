@@ -7,14 +7,13 @@
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "InputMappingContext.h"
-#include "InteractableActor.h"
+#include "Interactable.h"
 #include "GameFramework/GameStateBase.h"
-#include "GameFramework/PlayerState.h"
 
 AInteractableCharacter::AInteractableCharacter()
 {
 	if (IsRunningDedicatedServer()) return;
-
+	
 	InteractionRange = 500;
 	CollisionChannel = ECC_GameTraceChannel3;
 
@@ -56,7 +55,7 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	Super::NotifyActorBeginOverlap(OtherActor);
 
 	if (!IsOwnedByLocalPlayer()) return;
-
+	
 	// Add interaction context when overlapped by trigger
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
@@ -69,7 +68,7 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	Super::NotifyActorEndOverlap(OtherActor);
 
 	if (!IsOwnedByLocalPlayer()) return;
-
+	
 	// Remove interaction context when far away from triggers
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	--InteractableCount;
@@ -86,11 +85,11 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 	if (!GetWorld()->LineTraceSingleByChannel(HitResult, Location, End, CollisionChannel, TraceQueryParams))
 		return;
 
-	InteractingActor = Cast<AInteractableActor>(HitResult.GetActor());
-	if (InteractingActor.IsValid()) InteractingActor->Call_InteractionStart(GetPlayerState()->GetUniqueId().ToString());
+	InteractingActor = Cast<IInteractable>(HitResult.GetActor());
+	if (InteractingActor.IsValid()) InteractingActor->Execute(IInteractable::Execute_InteractionStart, this);
 }
 
 void AInteractableCharacter::InteractionStop(const FInputActionValue& Value)
 {
-	if (InteractingActor.IsValid()) InteractingActor->Call_InteractionStop(GetPlayerState()->GetUniqueId().ToString());
+	if (InteractingActor.IsValid()) InteractingActor->Execute(IInteractable::Execute_InteractionStop, this);
 }

@@ -48,6 +48,6 @@ private:
 	TEnumAsByte<ECollisionChannel> CollisionChannel;
 
 	uint8 InteractableCount;
-	TWeakInterfacePtr<class AInteractableActor> InteractingActor;
+	TWeakInterfacePtr<class IInteractable> InteractingActor;
 	FCollisionQueryParams TraceQueryParams;
 };
