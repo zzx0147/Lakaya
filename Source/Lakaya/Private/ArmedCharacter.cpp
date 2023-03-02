@@ -87,35 +87,35 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 void AArmedCharacter::FireStart(const FInputActionValue& Value)
 {
-	if (FireComponent.IsValid()) FireComponent->Execute(IWeaponFire::Execute_FireStart);
+	if (FireComponent.IsValid()) FireComponent->Invoke(IWeaponFire::Execute_FireStart);
 }
 
 void AArmedCharacter::FireStop(const FInputActionValue& Value)
 {
-	if (FireComponent.IsValid()) FireComponent->Execute(IWeaponFire::Execute_FireStop);
+	if (FireComponent.IsValid()) FireComponent->Invoke(IWeaponFire::Execute_FireStop);
 }
 
 void AArmedCharacter::SwitchFireMode(const FInputActionValue& Value)
 {
-	if (FireComponent.IsValid()) FireComponent->Execute(IWeaponFire::Execute_SwitchFireMode);
+	if (FireComponent.IsValid()) FireComponent->Invoke(IWeaponFire::Execute_SwitchSelector);
 }
 
 void AArmedCharacter::AbilityStart(const FInputActionValue& Value)
 {
-	if (AbilityComponent.IsValid()) AbilityComponent->Execute(IWeaponAbility::Execute_AbilityStart);
+	if (AbilityComponent.IsValid()) AbilityComponent->Invoke(IWeaponAbility::Execute_AbilityStart);
 }
 
 void AArmedCharacter::AbilityStop(const FInputActionValue& Value)
 {
-	if (AbilityComponent.IsValid()) AbilityComponent->Execute(IWeaponAbility::Execute_AbilityStop);
+	if (AbilityComponent.IsValid()) AbilityComponent->Invoke(IWeaponAbility::Execute_AbilityStop);
 }
 
 void AArmedCharacter::ReloadStart(const FInputActionValue& Value)
 {
-	if (ReloadComponent.IsValid()) ReloadComponent->Execute(IWeaponReload::Execute_ReloadStart);
+	if (ReloadComponent.IsValid()) ReloadComponent->Invoke(IWeaponReload::Execute_ReloadStart);
 }
 
 void AArmedCharacter::ReloadStop(const FInputActionValue& Value)
 {
-	if (ReloadComponent.IsValid()) ReloadComponent->Execute(IWeaponReload::Execute_ReloadStop);
+	if (ReloadComponent.IsValid()) ReloadComponent->Invoke(IWeaponReload::Execute_ReloadStop);
 }

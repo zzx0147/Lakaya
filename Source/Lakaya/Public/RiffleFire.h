@@ -27,10 +27,9 @@ protected:
 private:
 	void FireStart_Implementation(const float& Time);
 	void FireStop_Implementation(const float& Time);
-	void SwitchFireMode_Implementation(const float& Time);
-	void FireStartConfirmed_Implementation(const float& Time);
-	void FireStopConfirmed_Implementation(const float& Time);
-	void SwitchFireModeConfirmed_Implementation(const float& Time);
+	void SwitchSelector_Implementation(const float& Time);
+	void FireStartNotify_Implementation(const float& Time);
+	void FireStopNotify_Implementation(const float& Time);
 
 	float LockstepTimerTime(const float& Time) const;
 	void TraceFire();

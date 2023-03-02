@@ -17,9 +17,9 @@ void URiffleFire::BeginPlay()
 
 void URiffleFire::FireStart_Implementation(const float& Time)
 {
-	Execute_FireStartConfirmed(this, Time);
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	if (TimerManager.IsTimerActive(StartTimer)) return;
+	Execute_FireStartNotify(this, Time);
 
 	switch (FireMode)
 	{
@@ -39,14 +39,13 @@ void URiffleFire::FireStart_Implementation(const float& Time)
 
 void URiffleFire::FireStop_Implementation(const float& Time)
 {
-	Execute_FireStopConfirmed(this, Time);
 	if (FireMode != EFireMode::Auto) return;
+	Execute_FireStopNotify(this, Time);
 	GetWorld()->GetTimerManager().SetTimer(StopTimer, this, &URiffleFire::StopFire, LockstepTimerTime(Time));
 }
 
-void URiffleFire::SwitchFireMode_Implementation(const float& Time)
+void URiffleFire::SwitchSelector_Implementation(const float& Time)
 {
-	Execute_SwitchFireModeConfirmed(this, Time);
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	if (TimerManager.IsTimerActive(StartTimer) || TimerManager.IsTimerActive(StopTimer)) return;
 
@@ -65,30 +64,27 @@ void URiffleFire::SwitchFireMode_Implementation(const float& Time)
 	TimerManager.SetTimer(SwitchModeTimer, this, &URiffleFire::UpdateFireMode, LockstepTimerTime(Time));
 }
 
-void URiffleFire::FireStartConfirmed_Implementation(const float& Time)
+void URiffleFire::FireStartNotify_Implementation(const float& Time)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireStart"));
 }
 
-void URiffleFire::FireStopConfirmed_Implementation(const float& Time)
+void URiffleFire::FireStopNotify_Implementation(const float& Time)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireStop"));
 }
 
-void URiffleFire::SwitchFireModeConfirmed_Implementation(const float& Time)
-{
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Switch"));
-}
-
 float URiffleFire::LockstepTimerTime(const float& Time) const
 {
-	return Time + LockstepDelay - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+	//TODO: 임시로 설정한 0.1f 대신, GameInstance로부터 LockstepDelay값을 받아와서 사용하도록 변경합니다.
+	return Time + 0.1f - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 }
 
 void URiffleFire::TraceFire()
 {
 	if (--FireCount == 0) StopFire();
 
+	//TODO: 사거리를 제한하는 로직을 추가합니다.
 	FHitResult HitResult;
 	const auto CameraLocation = Character->GetCamera()->GetComponentLocation();
 	const auto CameraForward = CameraLocation + Character->GetCamera()->GetForwardVector() * 10000;

@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Lockstep.h"
+#include "WeaponBase.h"
 #include "WeaponReload.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UWeaponReload : public ULockstep
+class UWeaponReload : public UWeaponBase
 {
 	GENERATED_BODY()
 };
@@ -16,7 +16,7 @@ class UWeaponReload : public ULockstep
 /**
  * 
  */
-class LAKAYA_API IWeaponReload : public ILockstep
+class LAKAYA_API IWeaponReload : public IWeaponBase
 {
 	GENERATED_BODY()
 
@@ -27,4 +27,11 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	virtual void ReloadStop(const float& Time);
+
+protected:
+	UFUNCTION(NetMulticast, Reliable)
+	virtual void ReloadStartNotify(const float& Time);
+
+	UFUNCTION(NetMulticast, Reliable)
+	virtual void ReloadStopNotify(const float& Time);
 };

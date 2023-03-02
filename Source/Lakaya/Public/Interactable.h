@@ -3,12 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Lockstep.h"
 #include "Interactable.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UInteractable : public ULockstep
+class UInteractable : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -16,25 +15,32 @@ class UInteractable : public ULockstep
 /**
  * 
  */
-class LAKAYA_API IInteractable : public ILockstep
+class LAKAYA_API IInteractable
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	/**
-	 * @brief 인터렉션 시작을 서버에 요청합니다. 직접 호출하지 않고, Execute(IInteractable::Execute_InteractionStart)와 같이 호출합니다.
+	 * @brief 인터렉션 시작을 서버에 요청합니다. 직접 호출하는 대신 Invoke 함수를 사용하여 호출하세요.
 	 * @param Time 클라이언트에서 인터렉션을 시작한 시간입니다.
-	 * @param CallerId 플레이어의 UniqueID입니다.
+	 * @param CallerID 플레이어의 UniqueID입니다.
 	 */
-	UFUNCTION(Server, Reliable)
-	virtual void InteractionStart(const float& Time, const FUniqueNetIdRepl& CallerId);
+	UFUNCTION(Server, Reliable, WithValidation)
+	virtual void InteractionStart(const float& Time, const FString& CallerID);
 
 	/**
-	 * @brief 인터렉션 중단을 서버에 요청합니다. 직접 호출하지 않고, Execute(IInteractable::Execute_InteractionStop)와 같이 호출합니다.
+	 * @brief 인터렉션 중단을 서버에 요청합니다. 직접 호출하는 대신 Invoke 함수를 사용하여 호출하세요.
 	 * @param Time 클라이언트에서 인터렉션을 중단한 시간입니다.
-	 * @param CallerId 플레이어의 UniqueID입니다.
+	 * @param CallerID 플레이어의 UniqueID입니다.
 	 */
-	UFUNCTION(Server, Reliable)
-	virtual void InteractionStop(const float& Time, const FUniqueNetIdRepl& CallerId);
+	UFUNCTION(Server, Reliable, WithValidation)
+	virtual void InteractionStop(const float& Time, const FString& CallerID);
+
+	/**
+	 * @brief 인터페이스의 이벤트 함수를 호출하는 절차의 편의를 위해 만들어진 함수입니다.
+	 * @param Func 호출하려는 이벤트 함수
+	 * @param Caller 호출하는 APawn
+	 */
+	void Invoke(void (*Func)(UObject*, const float&, const FString&), APawn* Caller);
 };
