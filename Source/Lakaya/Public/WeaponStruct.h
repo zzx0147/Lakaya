@@ -60,7 +60,31 @@ public:
 		if (ReloadComponent.IsValid()) ReloadComponent->Invoke(IWeaponReload::Execute_ReloadStop);
 	}
 
+private:
+	template <class T>
+	void SetupComponent(AActor* Caller, UClass* ComponentClass, TWeakInterfacePtr<T>& Ptr,
+	                    const FName& DataRowName);
+
+public:
 	TWeakInterfacePtr<IWeaponFire> FireComponent;
 	TWeakInterfacePtr<IWeaponAbility> AbilityComponent;
 	TWeakInterfacePtr<IWeaponReload> ReloadComponent;
 };
+
+template <class T>
+void FWeaponStruct::SetupComponent(AActor* Caller, UClass* ComponentClass, TWeakInterfacePtr<T>& Ptr,
+                                   const FName& DataRowName)
+{
+	auto Component = Caller->AddComponentByClass(TSubclassOf<UActorComponent>(ComponentClass), false,
+	                                             FTransform::Identity, false);
+	
+	Ptr = Cast<T>(Component);
+	if (!Ptr.IsValid())
+	{
+		Caller->RemoveOwnedComponent(Component);
+		UE_LOG(LogActor, Error, TEXT("Loaded actor component was not subclass of IWeaponBase"));
+		return;
+	}
+
+	IWeaponBase::Execute_SetupData(Ptr.GetObject(), DataRowName);
+}
