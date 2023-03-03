@@ -9,6 +9,14 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/GameStateBase.h"
 
+URiffleFire::URiffleFire()
+{
+	static const ConstructorHelpers::FObjectFinder<UDataTable> TableFinder(
+		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/WeaponFireDataTable'"));
+
+	if (TableFinder.Succeeded()) WeaponFireDataTable = TableFinder.Object;
+}
+
 void URiffleFire::BeginPlay()
 {
 	Super::BeginPlay();
@@ -76,11 +84,10 @@ void URiffleFire::FireStopNotify_Implementation(const float& Time)
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireStop"));
 }
 
-void URiffleFire::SetupData(const FTableRowBase* Data)
+void URiffleFire::SetupData_Implementation(const FName& RowName)
 {
-	IWeaponFire::SetupData(Data);
-	auto CastedData = static_cast<const FWeaponFireData*>(Data);
-	//TODO: 데이터를 받아옵니다.
+	auto Data = WeaponFireDataTable->FindRow<FWeaponFireData>(RowName,TEXT("RiffleFire"));
+	//TODO: 받아온 데이터를 적용합니다.
 }
 
 float URiffleFire::LockstepTimerTime(const float& Time) const

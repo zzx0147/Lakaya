@@ -23,6 +23,9 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void UnPossessed() override;
 
+public:
+	void SetupPrimaryWeapon(const FName& WeaponAssetRowName);
+
 private:
 	void FireStart(const FInputActionValue& Value);
 	void FireStop(const FInputActionValue& Value);
@@ -31,7 +34,7 @@ private:
 	void AbilityStop(const FInputActionValue& Value);
 	void ReloadStart(const FInputActionValue& Value);
 	void ReloadStop(const FInputActionValue& Value);
-	
+
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Context")
 	UInputMappingContext* WeaponControlContext;
 
@@ -43,7 +46,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* FireStopAction;
-	
+
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* SwitchSelectorAction;
 
@@ -58,6 +61,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* ReloadStopAction;
+
+	UPROPERTY(EditAnywhere, Category=Weapon)
+	UDataTable* WeaponAssetDataTable;
 
 	FWeaponStruct PrimaryWeapon;
 };

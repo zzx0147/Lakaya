@@ -30,8 +30,11 @@ public:
 	void Invoke(void (*Func)(UObject*, const float&));
 
 	/**
-	 * @brief 컴포넌트에 데이터를 전달합니다.
-	 * @param Data 컴포넌트에 전달될 데이터입니다.
+	 * @brief 컴포넌트를 데이터기반으로 셋업합니다.
+	 * @param RowName 컴포넌트에 전달될 데이터의 키값입니다. 이 값을 사용하여 데이터테이블에서 데이터를 찾아 사용합니다.
 	 */
-	virtual void SetupData(const FTableRowBase* Data) { return; }
+	UFUNCTION(NetMulticast, Reliable)
+	virtual void SetupData(const FName& RowName);
+
+	virtual void SetupData_Implementation(const FName& RowName) { return; };
 };

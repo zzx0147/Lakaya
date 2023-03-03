@@ -21,21 +21,27 @@ class LAKAYA_API URiffleFire : public UActorComponent, public IWeaponFire
 {
 	GENERATED_BODY()
 
+public:
+	URiffleFire();
+
 protected:
 	virtual void BeginPlay() override;
 
 private:
+	virtual void SetupData_Implementation(const FName& RowName) override;
 	void FireStart_Implementation(const float& Time);
 	void FireStop_Implementation(const float& Time);
 	void SwitchSelector_Implementation(const float& Time);
 	void FireStartNotify_Implementation(const float& Time);
 	void FireStopNotify_Implementation(const float& Time);
-	virtual void SetupData(const FTableRowBase* Data) override;
 
 	float LockstepTimerTime(const float& Time) const;
 	void TraceFire();
 	void StopFire();
 	void UpdateFireMode();
+
+	UPROPERTY(EditAnywhere, Category=DataTable)
+	class UDataTable* WeaponFireDataTable;
 
 	EFireMode FireMode;
 	EFireMode DesiredFireMode;

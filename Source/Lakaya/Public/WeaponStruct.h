@@ -22,12 +22,8 @@ public:
 	 * @brief 무기를 구성하는 컴포넌트를 생성하여 액터에 부착하고, 컴포넌트를 셋업합니다.
 	 * @param Caller 컴포넌트가 부착될 오브젝트입니다.
 	 * @param Data 컴포넌트 클래스에 대한 정보를 담은 데이터입니다.
-	 * @param FireData 무기 격발에 관련된 데이터테이블입니다.
-	 * @param AbilityData 무기 능력에 관련된 데이터테이블입니다.
-	 * @param ReloadData 무기 재장전에 관련된 데이터테이블입니다.
 	 */
-	void SetupWeaponComponents(AActor* Caller, const FWeaponAssetData& Data, const UDataTable& FireData,
-	                           const UDataTable& AbilityData, const UDataTable& ReloadData);
+	void SetupWeaponComponents(AActor* Caller, const FWeaponAssetData& Data);
 
 	inline void FireStart()
 	{

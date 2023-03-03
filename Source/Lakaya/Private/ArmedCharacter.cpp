@@ -38,6 +38,9 @@ AArmedCharacter::AArmedCharacter()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ReloadStopFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ReloadStop'"));
 
+	static const ConstructorHelpers::FObjectFinder<UDataTable> WeaponAssetFinder(
+		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/WeaponAssetDataTable'"));
+
 	if (ContextFinder.Succeeded()) WeaponControlContext = ContextFinder.Object;
 	if (FireStartFinder.Succeeded()) FireStartAction = FireStartFinder.Object;
 	if (FireStopFinder.Succeeded()) FireStopAction = FireStopFinder.Object;
@@ -46,6 +49,7 @@ AArmedCharacter::AArmedCharacter()
 	if (AbilityStopFinder.Succeeded()) AbilityStopAction = AbilityStopFinder.Object;
 	if (ReloadStartFinder.Succeeded()) ReloadStartAction = ReloadStartFinder.Object;
 	if (ReloadStopFinder.Succeeded()) ReloadStopAction = ReloadStopFinder.Object;
+	if (WeaponAssetFinder.Succeeded()) WeaponAssetDataTable = WeaponAssetFinder.Object;
 }
 
 void AArmedCharacter::PossessedBy(AController* NewController)
@@ -55,8 +59,7 @@ void AArmedCharacter::PossessedBy(AController* NewController)
 	if (InputSystem.IsValid())
 	{
 		InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
-		//TODO: 데이터테이블을 구성하고, 아래의 함수를 실행하여 무기를 구현합니다.
-		// PrimaryWeapon.SetupWeaponComponents()
+		SetupPrimaryWeapon(TEXT("Test"));
 	}
 }
 
@@ -65,6 +68,12 @@ void AArmedCharacter::UnPossessed()
 	Super::UnPossessed();
 
 	if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(WeaponControlContext);
+}
+
+void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponAssetRowName)
+{
+	PrimaryWeapon.SetupWeaponComponents(
+		this, *WeaponAssetDataTable->FindRow<FWeaponAssetData>(WeaponAssetRowName,TEXT("SetupPrimaryWeapon")));
 }
 
 void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
