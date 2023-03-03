@@ -81,7 +81,7 @@ void FWeaponStruct::SetupComponent(AActor* Caller, UClass* ComponentClass, TWeak
 	Ptr = Cast<T>(Component);
 	if (!Ptr.IsValid())
 	{
-		Caller->RemoveOwnedComponent(Component);
+		Component->DestroyComponent();
 		UE_LOG(LogActor, Error, TEXT("Loaded actor component was not subclass of IWeaponBase"));
 		return;
 	}
