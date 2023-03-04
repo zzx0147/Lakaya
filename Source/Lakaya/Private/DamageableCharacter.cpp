@@ -4,6 +4,11 @@
 #include "DamageableCharacter.h"
 
 
+ADamageableCharacter::ADamageableCharacter()
+{
+	MaximumHealth = 100.f;
+}
+
 void ADamageableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -32,7 +37,8 @@ void ADamageableCharacter::OnTakeAnyDamageCallback(AActor* DamagedActor, float D
                                                    AController* InstigatedBy, AActor* DamageCauser)
 {
 	if (!HasAuthority()) Health -= Damage;
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Damaged : %f"), Damage));
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red,
+	                                 FString::Printf(TEXT("Damaged : %f, Health : %f"), Damage, Health));
 }
 
 void ADamageableCharacter::OnKillCharacterCallback(AController* EventInstigator, AActor* DamageCauser)
