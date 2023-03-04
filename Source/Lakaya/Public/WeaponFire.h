@@ -6,35 +6,34 @@
 #include "WeaponBase.h"
 #include "WeaponFire.generated.h"
 
-// This class does not need to be modified.
-UINTERFACE(MinimalAPI)
-class UWeaponFire : public UWeaponBase
-{
-	GENERATED_BODY()
-};
-
 /**
  * 
  */
-class LAKAYA_API IWeaponFire : public IWeaponBase
+UCLASS()
+class LAKAYA_API UWeaponFire : public UWeaponBase
 {
 	GENERATED_BODY()
 
-	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(Server, Reliable)
-	virtual void FireStart(const float& Time);
+	void FireStart(const float& Time);
 
 	UFUNCTION(Server, Reliable)
-	virtual void FireStop(const float& Time);
+	void FireStop(const float& Time);
 
 	UFUNCTION(Server, Reliable)
-	virtual void SwitchSelector(const float& Time);
+	void SwitchSelector(const float& Time);
 
 protected:
 	UFUNCTION(NetMulticast, Reliable)
-	virtual void FireStartNotify(const float& Time);
+	void FireStartNotify(const float& Time);
 
 	UFUNCTION(NetMulticast, Reliable)
-	virtual void FireStopNotify(const float& Time);
+	void FireStopNotify(const float& Time);
+
+	virtual void FireStart_Implementation(const float& Time) { return; }
+	virtual void FireStop_Implementation(const float& Time) { return; }
+	virtual void SwitchSelector_Implementation(const float& Time) { return; }
+	virtual void FireStartNotify_Implementation(const float& Time) { return; }
+	virtual void FireStopNotify_Implementation(const float& Time) { return; }
 };

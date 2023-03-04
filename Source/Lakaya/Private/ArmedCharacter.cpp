@@ -7,11 +7,16 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "WeaponAbility.h"
+#include "WeaponComponent.h"
 #include "WeaponFire.h"
 #include "WeaponReload.h"
+#include "Engine/DataTable.h"
+#include "Net/UnrealNetwork.h"
 
 AArmedCharacter::AArmedCharacter()
 {
+	bReplicateUsingRegisteredSubObjectList = true;
+
 	if (IsRunningDedicatedServer()) return;
 
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
@@ -56,12 +61,7 @@ void AArmedCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	if (InputSystem.IsValid())
-	{
-		InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
-		//TODO: 여기가 아니라 GameMode에서 무기를 지정해주도록 구조를 변경합니다.
-		SetupPrimaryWeapon(TEXT("Test"));
-	}
+	if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
 }
 
 void AArmedCharacter::UnPossessed()
@@ -71,10 +71,18 @@ void AArmedCharacter::UnPossessed()
 	if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(WeaponControlContext);
 }
 
+void AArmedCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AArmedCharacter, PrimaryWeapon);
+}
+
 void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponAssetRowName)
 {
-	PrimaryWeapon.SetupWeaponComponents(
-		this, *WeaponAssetDataTable->FindRow<FWeaponAssetData>(WeaponAssetRowName,TEXT("SetupPrimaryWeapon")));
+	PrimaryWeapon = Cast<UWeaponComponent>(
+		AddComponentByClass(UWeaponComponent::StaticClass(), false, FTransform::Identity, false));
+	PrimaryWeapon->RequestSetupData(WeaponAssetRowName);
+	PrimaryWeapon->SetIsReplicated(true);
 }
 
 void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -94,37 +102,43 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	}
 }
 
+void AArmedCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	SetupPrimaryWeapon(TEXT("Test"));
+}
+
 void AArmedCharacter::FireStart(const FInputActionValue& Value)
 {
-	PrimaryWeapon.FireStart();
+	PrimaryWeapon->FireStart();
 }
 
 void AArmedCharacter::FireStop(const FInputActionValue& Value)
 {
-	PrimaryWeapon.FireStop();
+	PrimaryWeapon->FireStop();
 }
 
 void AArmedCharacter::SwitchSelector(const FInputActionValue& Value)
 {
-	PrimaryWeapon.SwitchSelector();
+	PrimaryWeapon->SwitchSelector();
 }
 
 void AArmedCharacter::AbilityStart(const FInputActionValue& Value)
 {
-	PrimaryWeapon.AbilityStart();
+	PrimaryWeapon->AbilityStart();
 }
 
 void AArmedCharacter::AbilityStop(const FInputActionValue& Value)
 {
-	PrimaryWeapon.AbilityStop();
+	PrimaryWeapon->AbilityStop();
 }
 
 void AArmedCharacter::ReloadStart(const FInputActionValue& Value)
 {
-	PrimaryWeapon.ReloadStart();
+	PrimaryWeapon->ReloadStart();
 }
 
 void AArmedCharacter::ReloadStop(const FInputActionValue& Value)
 {
-	PrimaryWeapon.ReloadStop();
+	PrimaryWeapon->ReloadStop();
 }

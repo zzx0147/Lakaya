@@ -2,5 +2,3 @@
 
 
 #include "WeaponReload.h"
-
-// Add default functionality here for any IWeaponReload functions that are not pure virtual.

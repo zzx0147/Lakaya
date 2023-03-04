@@ -2,5 +2,3 @@
 
 
 #include "WeaponAbility.h"
-
-// Add default functionality here for any IWeaponAbility functions that are not pure virtual.

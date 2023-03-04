@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "WeaponFire.h"
-#include "Components/ActorComponent.h"
-#include "GameFramework/GameStateBase.h"
 #include "RiffleFire.generated.h"
 
 UENUM(BlueprintType)
@@ -16,24 +14,21 @@ enum class EFireMode : uint8
 	Auto
 };
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class LAKAYA_API URiffleFire : public UActorComponent, public IWeaponFire
+UCLASS()
+class LAKAYA_API URiffleFire : public UWeaponFire
 {
 	GENERATED_BODY()
 
 public:
 	URiffleFire();
 
-protected:
-	virtual void BeginPlay() override;
-
 private:
 	virtual void SetupData_Implementation(const FName& RowName) override;
-	void FireStart_Implementation(const float& Time);
-	void FireStop_Implementation(const float& Time);
-	void SwitchSelector_Implementation(const float& Time);
-	void FireStartNotify_Implementation(const float& Time);
-	void FireStopNotify_Implementation(const float& Time);
+	virtual void FireStart_Implementation(const float& Time) override;
+	virtual void FireStop_Implementation(const float& Time) override;
+	virtual void SwitchSelector_Implementation(const float& Time) override;
+	virtual void FireStartNotify_Implementation(const float& Time) override;
+	virtual void FireStopNotify_Implementation(const float& Time) override;
 
 	float LockstepTimerTime(const float& Time) const;
 	void TraceFire();

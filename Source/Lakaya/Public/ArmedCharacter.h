@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "InteractableCharacter.h"
-#include "WeaponStruct.h"
 #include "ArmedCharacter.generated.h"
 
 /**
@@ -20,10 +19,15 @@ public:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void UnPossessed() override;
 
 public:
+	/**
+	 * @brief 캐릭터의 첫번째 무기를 설정합니다.
+	 * @param WeaponAssetRowName WeaponAssetDataTable에서의 RowName
+	 */
 	void SetupPrimaryWeapon(const FName& WeaponAssetRowName);
 
 private:
@@ -63,7 +67,8 @@ private:
 	UInputAction* ReloadStopAction;
 
 	UPROPERTY(EditAnywhere, Category=Weapon)
-	UDataTable* WeaponAssetDataTable;
+	class UDataTable* WeaponAssetDataTable;
 
-	FWeaponStruct PrimaryWeapon;
+	UPROPERTY(Replicated)
+	class UWeaponComponent* PrimaryWeapon;
 };

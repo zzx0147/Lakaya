@@ -5,10 +5,10 @@
 
 #include "ThirdPersonCharacter.h"
 #include "WeaponFireData.h"
-#include "WeaponStruct.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/DataTable.h"
 
 URiffleFire::URiffleFire()
 {
@@ -16,14 +16,6 @@ URiffleFire::URiffleFire()
 		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/WeaponFireDataTable'"));
 
 	if (TableFinder.Succeeded()) WeaponFireDataTable = TableFinder.Object;
-}
-
-void URiffleFire::BeginPlay()
-{
-	Super::BeginPlay();
-	Character = Cast<AThirdPersonCharacter>(GetOwner());
-	if (Character.IsStale()) UE_LOG(LogActorComponent, Error, TEXT("Attached Actor was not AThirdPersonCharacter."));
-	TraceQueryParams.AddIgnoredActor(GetOwner());
 }
 
 void URiffleFire::FireStart_Implementation(const float& Time)
@@ -34,7 +26,7 @@ void URiffleFire::FireStart_Implementation(const float& Time)
 	auto ReservedTime = LockstepTimerTime(Time);
 	if (ReservedTime < 0.f) return;
 
-	Execute_FireStartNotify(this, Time);
+	FireStartNotify(Time);
 
 	switch (FireMode)
 	{
@@ -54,7 +46,7 @@ void URiffleFire::FireStart_Implementation(const float& Time)
 void URiffleFire::FireStop_Implementation(const float& Time)
 {
 	if (FireMode != EFireMode::Auto) return;
-	Execute_FireStopNotify(this, Time);
+	FireStopNotify(Time);
 	GetWorld()->GetTimerManager().SetTimer(StopTimer, this, &URiffleFire::StopFire, LockstepTimerTime(Time));
 }
 
@@ -91,14 +83,29 @@ void URiffleFire::FireStopNotify_Implementation(const float& Time)
 
 void URiffleFire::SetupData_Implementation(const FName& RowName)
 {
+	auto Component = Cast<UActorComponent>(GetOuter());
+	if (Component == nullptr)
+	{
+		UE_LOG(LogNetSubObject, Error, TEXT("Outer was not UActorComponent!"));
+		return;
+	}
+
+	Character = Cast<AThirdPersonCharacter>(Component->GetOwner());
+	if (Character.IsStale())
+	{
+		UE_LOG(LogNetSubObject, Error, TEXT("Attached Actor was not AThirdPersonCharacter."));
+		return;
+	}
+
+	TraceQueryParams.AddIgnoredActor(Character.Get());
+
 	auto Data = WeaponFireDataTable->FindRow<FWeaponFireData>(RowName,TEXT("RiffleFire"));
 	//TODO: 받아온 데이터를 적용합니다.
 }
 
 float URiffleFire::LockstepTimerTime(const float& Time) const
 {
-	//TODO: 임시로 설정한 0.1f 대신, GameInstance로부터 LockstepDelay값을 받아와서 사용하도록 변경합니다.
-	return Time + 0.1f - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+	return Time + LockstepDelay - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 }
 
 void URiffleFire::TraceFire()
@@ -116,13 +123,13 @@ void URiffleFire::TraceFire()
 		AimPoint = HitResult.ImpactPoint;
 	else AimPoint = CameraForward;
 
-	const auto& Location = GetOwner()->GetActorLocation();
+	const auto& Location = Character->GetActorLocation();
 	DrawDebugLine(GetWorld(), Location, AimPoint, FColor::Red, false, 1);
 	if (!GetWorld()->LineTraceSingleByChannel(HitResult, Location, AimPoint, ECC_GameTraceChannel2, TraceQueryParams))
 		return;
 
 	UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, Character->GetController(),
-	                              GetOwner(), nullptr);
+	                              Character.Get(), nullptr);
 }
 
 void URiffleFire::StopFire()
