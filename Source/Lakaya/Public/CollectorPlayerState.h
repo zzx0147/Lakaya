@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HealthPlayerState.h"
+#include "GameFramework/PlayerState.h"
 #include "CollectorPlayerState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API ACollectorPlayerState : public AHealthPlayerState
+class LAKAYA_API ACollectorPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 

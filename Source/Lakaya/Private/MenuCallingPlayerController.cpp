@@ -5,7 +5,6 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "HealthPlayerState.h"
 #include "InputMappingContext.h"
 
 void AMenuCallingPlayerController::BeginPlay()
@@ -24,7 +23,6 @@ void AMenuCallingPlayerController::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 
 	if (!HasAuthority()) return;
-	if (const auto State = GetPlayerState<AHealthPlayerState>()) State->SetupPlayerState(InPawn);
 }
 
 void AMenuCallingPlayerController::SetupInputComponent()

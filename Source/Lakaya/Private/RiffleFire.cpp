@@ -8,6 +8,7 @@
 #include "WeaponStruct.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/GameStateBase.h"
+#include "Kismet/GameplayStatics.h"
 
 URiffleFire::URiffleFire()
 {
@@ -29,6 +30,10 @@ void URiffleFire::FireStart_Implementation(const float& Time)
 {
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	if (TimerManager.IsTimerActive(StartTimer)) return;
+
+	auto ReservedTime = LockstepTimerTime(Time);
+	if (ReservedTime < 0.f) return;
+
 	Execute_FireStartNotify(this, Time);
 
 	switch (FireMode)
@@ -42,9 +47,8 @@ void URiffleFire::FireStart_Implementation(const float& Time)
 	default: UE_LOG(LogActorComponent, Error, TEXT("FireMode was not EFireMode"));
 		break;
 	}
-	//TODO: RPC가 늦게 도착하여 InFirstDelay가 음수가 되는 경우, 즉시 시작되지 않고 InRate만큼 기다렸다가 시작되므로 수정이 필요합니다.
 	//TODO: InRate에 발사속도를 기입합니다.
-	TimerManager.SetTimer(StartTimer, this, &URiffleFire::TraceFire, 0.1f, true, LockstepTimerTime(Time));
+	TimerManager.SetTimer(StartTimer, this, &URiffleFire::TraceFire, 0.1f, true, ReservedTime);
 }
 
 void URiffleFire::FireStop_Implementation(const float& Time)
@@ -71,6 +75,7 @@ void URiffleFire::SwitchSelector_Implementation(const float& Time)
 		UE_LOG(LogActorComponent, Error, TEXT("DesiredFire was not EFireMode"));
 	}
 
+	//TODO: 재장전에 걸리는 시간을 기입합니다.
 	TimerManager.SetTimer(SwitchModeTimer, this, &URiffleFire::UpdateFireMode, LockstepTimerTime(Time));
 }
 
@@ -116,7 +121,8 @@ void URiffleFire::TraceFire()
 	if (!GetWorld()->LineTraceSingleByChannel(HitResult, Location, AimPoint, ECC_GameTraceChannel2, TraceQueryParams))
 		return;
 
-	//TODO: 충돌한 폰 또는 폰의 OwnerPlayer에게 피해를 입힙니다.
+	UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, Character->GetController(),
+	                              GetOwner(), nullptr);
 }
 
 void URiffleFire::StopFire()

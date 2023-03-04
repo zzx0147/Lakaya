@@ -12,6 +12,7 @@
 #include "UObject/WeakInterfacePtr.h"
 #include "WeaponStruct.generated.h"
 
+//TODO: UWeaponComponent를 하나 만들고, 그 액터 컴포넌트의 서브오브젝트로 Fire, Reload, Ability의 역할을 수행하는 클래스를 생성하도록 변경합니다.
 USTRUCT()
 struct FWeaponStruct
 {
@@ -77,7 +78,8 @@ void FWeaponStruct::SetupComponent(AActor* Caller, UClass* ComponentClass, TWeak
 {
 	auto Component = Caller->AddComponentByClass(TSubclassOf<UActorComponent>(ComponentClass), false,
 	                                             FTransform::Identity, false);
-	
+	if (!Component) return;
+
 	Ptr = Cast<T>(Component);
 	if (!Ptr.IsValid())
 	{

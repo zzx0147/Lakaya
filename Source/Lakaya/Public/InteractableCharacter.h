@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MovableCharacter.h"
+#include "DamageableCharacter.h"
 #include "UObject/WeakInterfacePtr.h"
 #include "InteractableCharacter.generated.h"
 
@@ -11,7 +11,7 @@
  * 
  */
 UCLASS()
-class LAKAYA_API AInteractableCharacter : public AMovableCharacter
+class LAKAYA_API AInteractableCharacter : public ADamageableCharacter
 {
 	GENERATED_BODY()
 

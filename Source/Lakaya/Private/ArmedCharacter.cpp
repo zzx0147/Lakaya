@@ -59,6 +59,7 @@ void AArmedCharacter::PossessedBy(AController* NewController)
 	if (InputSystem.IsValid())
 	{
 		InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
+		//TODO: 여기가 아니라 GameMode에서 무기를 지정해주도록 구조를 변경합니다.
 		SetupPrimaryWeapon(TEXT("Test"));
 	}
 }
