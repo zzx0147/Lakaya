@@ -31,9 +31,13 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void FireStopNotify(const float& Time);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void SwitchSelectorNotify(const float& Time);
+
 	virtual void FireStart_Implementation(const float& Time) { return; }
 	virtual void FireStop_Implementation(const float& Time) { return; }
 	virtual void SwitchSelector_Implementation(const float& Time) { return; }
 	virtual void FireStartNotify_Implementation(const float& Time) { return; }
 	virtual void FireStopNotify_Implementation(const float& Time) { return; }
+	virtual void SwitchSelectorNotify_Implementation(const float& Time) { return; }
 };

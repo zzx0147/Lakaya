@@ -29,6 +29,7 @@ private:
 	virtual void SwitchSelector_Implementation(const float& Time) override;
 	virtual void FireStartNotify_Implementation(const float& Time) override;
 	virtual void FireStopNotify_Implementation(const float& Time) override;
+	virtual void SwitchSelectorNotify_Implementation(const float& Time) override;
 
 	float LockstepTimerTime(const float& Time) const;
 	void TraceFire();

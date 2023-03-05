@@ -97,6 +97,12 @@ void URiffleFire::FireStopNotify_Implementation(const float& Time)
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireStop"));
 }
 
+void URiffleFire::SwitchSelectorNotify_Implementation(const float& Time)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Switch"));
+
+}
+
 void URiffleFire::SetupData_Implementation(const FName& RowName)
 {
 	auto Component = Cast<UActorComponent>(GetOuter());
