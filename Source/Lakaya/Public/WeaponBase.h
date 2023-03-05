@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS(Config=Game)
+UCLASS(Config=Game, Abstract)
 class LAKAYA_API UWeaponBase : public UObject
 {
 	GENERATED_BODY()
@@ -20,7 +20,7 @@ public:
 
 protected:
 	virtual void SetupData_Implementation(const FName& RowName) { return; }
-	
+
 	UPROPERTY(Config)
 	float LockstepDelay = 0.1f;
 };

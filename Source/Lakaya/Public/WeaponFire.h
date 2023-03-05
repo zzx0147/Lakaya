@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class LAKAYA_API UWeaponFire : public UWeaponBase
 {
 	GENERATED_BODY()
