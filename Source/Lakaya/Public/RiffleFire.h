@@ -43,7 +43,15 @@ private:
 	uint8 FireCount;
 	FTimerHandle StartTimer;
 	FTimerHandle StopTimer;
-	FTimerHandle SwitchModeTimer;
+	FTimerHandle SelectorTimer;
+	float LastStartTime;
+	float LastStopTime;
+	float LastSelectorTime;
 	TWeakObjectPtr<class AThirdPersonCharacter> Character;
 	FCollisionQueryParams TraceQueryParams;
+
+	float BaseDamage;
+	float FireDelay;
+	float FireRange;
+	float SwitchingDelay;
 };

@@ -21,10 +21,23 @@ URiffleFire::URiffleFire()
 void URiffleFire::FireStart_Implementation(const float& Time)
 {
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-	if (TimerManager.IsTimerActive(StartTimer)) return;
 
 	auto ReservedTime = LockstepTimerTime(Time);
-	if (ReservedTime < 0.f) return;
+	if (ReservedTime < 0.f || TimerManager.IsTimerActive(SelectorTimer)) return;
+
+	if (TimerManager.IsTimerActive(StartTimer))
+	{
+		// if (FireMode == EFireMode::Auto && Time > LastStartTime) return;
+		//
+		// // Continuous firing
+		// if (FireCount < 1 && FireMode != EFireMode::Auto)
+		// {
+		// 	FireCount = FireMode == EFireMode::Semi ? 1 : 3;
+		// 	FireStartNotify(Time);
+		// 	return;
+		// }
+		return;
+	}
 
 	FireStartNotify(Time);
 
@@ -35,17 +48,20 @@ void URiffleFire::FireStart_Implementation(const float& Time)
 	case EFireMode::Burst: FireCount = 3;
 		break;
 	case EFireMode::Auto: FireCount = -1;
+		LastStartTime = Time;
+		if (Time > LastStopTime) TimerManager.ClearTimer(StopTimer);
 		break;
 	default: UE_LOG(LogActorComponent, Error, TEXT("FireMode was not EFireMode"));
-		break;
+		return;
 	}
-	//TODO: InRate에 발사속도를 기입합니다.
-	TimerManager.SetTimer(StartTimer, this, &URiffleFire::TraceFire, 0.1f, true, ReservedTime);
+
+	TimerManager.SetTimer(StartTimer, this, &URiffleFire::TraceFire, FireDelay, true, ReservedTime);
 }
 
 void URiffleFire::FireStop_Implementation(const float& Time)
 {
-	if (FireMode != EFireMode::Auto) return;
+	if (FireMode != EFireMode::Auto || Time < LastStartTime || Time < LastStopTime) return;
+	LastStopTime = Time;
 	FireStopNotify(Time);
 	GetWorld()->GetTimerManager().SetTimer(StopTimer, this, &URiffleFire::StopFire, LockstepTimerTime(Time));
 }
@@ -67,8 +83,8 @@ void URiffleFire::SwitchSelector_Implementation(const float& Time)
 		UE_LOG(LogActorComponent, Error, TEXT("DesiredFire was not EFireMode"));
 	}
 
-	//TODO: 재장전에 걸리는 시간을 기입합니다.
-	TimerManager.SetTimer(SwitchModeTimer, this, &URiffleFire::UpdateFireMode, LockstepTimerTime(Time));
+	TimerManager.SetTimer(SelectorTimer, this, &URiffleFire::UpdateFireMode,
+	                      Time + SwitchingDelay - GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
 }
 
 void URiffleFire::FireStartNotify_Implementation(const float& Time)
@@ -100,7 +116,10 @@ void URiffleFire::SetupData_Implementation(const FName& RowName)
 	TraceQueryParams.AddIgnoredActor(Character.Get());
 
 	auto Data = WeaponFireDataTable->FindRow<FWeaponFireData>(RowName,TEXT("RiffleFire"));
-	//TODO: 받아온 데이터를 적용합니다.
+	BaseDamage = Data->BaseDamage;
+	FireDelay = 60 / Data->FireRate;
+	FireRange = Data->FireRange;
+	SwitchingDelay = Data->SelectorSwitchingDelay;
 }
 
 float URiffleFire::LockstepTimerTime(const float& Time) const
@@ -110,7 +129,11 @@ float URiffleFire::LockstepTimerTime(const float& Time) const
 
 void URiffleFire::TraceFire()
 {
-	if (--FireCount == 0) StopFire();
+	if (FireCount-- == 0)
+	{
+		StopFire();
+		return;
+	}
 
 	//TODO: 사거리를 제한하는 로직을 추가합니다.
 	FHitResult HitResult;
@@ -128,7 +151,7 @@ void URiffleFire::TraceFire()
 	if (!GetWorld()->LineTraceSingleByChannel(HitResult, Location, AimPoint, ECC_GameTraceChannel2, TraceQueryParams))
 		return;
 
-	UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, Character->GetController(),
+	UGameplayStatics::ApplyDamage(HitResult.GetActor(), BaseDamage, Character->GetController(),
 	                              Character.Get(), nullptr);
 }
 
