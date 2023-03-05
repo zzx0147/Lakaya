@@ -8,17 +8,6 @@
 #include "GameFramework/GameStateBase.h"
 #include "WeaponBase.generated.h"
 
-USTRUCT()
-struct FEventInfoStruct
-{
-	GENERATED_BODY()
-
-public:
-	inline bool operator<(const FEventInfoStruct& Other) const { return ExecutionTime < Other.ExecutionTime; }
-	inline bool operator>(const FEventInfoStruct& Other) const { return ExecutionTime > Other.ExecutionTime; }
-	float ExecutionTime;
-	uint8 EventNumber;
-};
 
 /**
  * 
@@ -28,6 +17,15 @@ class LAKAYA_API UWeaponBase : public UObject
 {
 	GENERATED_BODY()
 
+	struct FEventInfoStruct
+	{
+		inline bool operator<(const FEventInfoStruct& Other) const { return ExecutionTime < Other.ExecutionTime; }
+		inline bool operator>(const FEventInfoStruct& Other) const { return ExecutionTime > Other.ExecutionTime; }
+
+		float ExecutionTime;
+		uint8 EventNumber;
+	};
+	
 public:
 	UFUNCTION(NetMulticast, Reliable)
 	void SetupData(const FName& RowName);
