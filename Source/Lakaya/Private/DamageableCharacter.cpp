@@ -3,6 +3,8 @@
 
 #include "DamageableCharacter.h"
 
+#include "Net/UnrealNetwork.h"
+
 
 ADamageableCharacter::ADamageableCharacter()
 {
@@ -28,17 +30,35 @@ float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 	return Damage;
 }
 
+void ADamageableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ADamageableCharacter, OnKillCharacter);
+	DOREPLIFETIME(ADamageableCharacter, MaximumHealth);
+	DOREPLIFETIME(ADamageableCharacter, Health);
+}
+
 void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
 {
 	OnKillCharacter.Broadcast(EventInstigator, DamageCauser);
 }
 
+void ADamageableCharacter::OnRep_MaximumHealth()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red,
+	                                 FString::Printf(TEXT("MaximumHealth Changed : %f"), MaximumHealth));
+}
+
+void ADamageableCharacter::OnRep_Health()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Health Changed : %f"), Health));
+}
+
 void ADamageableCharacter::OnTakeAnyDamageCallback(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
                                                    AController* InstigatedBy, AActor* DamageCauser)
 {
-	if (!HasAuthority()) Health -= Damage;
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red,
-	                                 FString::Printf(TEXT("Damaged : %f, Health : %f"), Damage, Health));
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Damaged : %f"), Damage));
 }
 
 void ADamageableCharacter::OnKillCharacterCallback(AController* EventInstigator, AActor* DamageCauser)
