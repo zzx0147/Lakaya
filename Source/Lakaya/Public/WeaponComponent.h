@@ -68,6 +68,7 @@ public:
 private:
 	template <class T>
 	T* CreateSingleSubObject(UClass* SubObjectClass, const FName& DataRowName);
+	void SetupData();
 
 public:
 	UPROPERTY(Replicated)
@@ -84,6 +85,7 @@ private:
 	class UDataTable* WeaponAssetDataTable;
 
 	FName RequestedRowName;
+	bool bIsDataSetupRequested;
 };
 
 template <class T>

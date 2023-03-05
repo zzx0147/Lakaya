@@ -11,6 +11,7 @@
 UWeaponComponent::UWeaponComponent()
 {
 	bReplicateUsingRegisteredSubObjectList = true;
+	bIsDataSetupRequested = false;
 
 	static const ConstructorHelpers::FObjectFinder<UDataTable> DataFinder(
 		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/WeaponAssetDataTable'"));
@@ -21,20 +22,26 @@ UWeaponComponent::UWeaponComponent()
 void UWeaponComponent::ReadyForReplication()
 {
 	Super::ReadyForReplication();
-
-	auto Data = WeaponAssetDataTable->FindRow<FWeaponAssetData>(RequestedRowName,TEXT("WeaponComponent"));
-	if (!Data) return;
-	
-	FireSubObject = CreateSingleSubObject<UWeaponFire>(Data->FireClassPath.LoadSynchronous(), Data->FireRowName);
-	AbilitySubObject = CreateSingleSubObject<UWeaponAbility>(Data->AbilityClassPath.LoadSynchronous(),
-	                                                         Data->AbilityRowName);
-	ReloadSubObject = CreateSingleSubObject<UWeaponReload>(Data->ReloadClassPath.LoadSynchronous(),
-	                                                       Data->ReloadRowName);
+	if (bIsDataSetupRequested) SetupData();
 }
 
 void UWeaponComponent::RequestSetupData(const FName& RowName)
 {
 	RequestedRowName = RowName;
+	bIsDataSetupRequested = true;
+	if (IsReadyForReplication()) SetupData();
+}
+
+void UWeaponComponent::SetupData()
+{
+	auto Data = WeaponAssetDataTable->FindRow<FWeaponAssetData>(RequestedRowName,TEXT("WeaponComponent"));
+	if (!Data) return;
+
+	FireSubObject = CreateSingleSubObject<UWeaponFire>(Data->FireClassPath.LoadSynchronous(), Data->FireRowName);
+	AbilitySubObject = CreateSingleSubObject<UWeaponAbility>(Data->AbilityClassPath.LoadSynchronous(),
+	                                                         Data->AbilityRowName);
+	ReloadSubObject = CreateSingleSubObject<UWeaponReload>(Data->ReloadClassPath.LoadSynchronous(),
+	                                                       Data->ReloadRowName);
 }
 
 void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
