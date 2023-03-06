@@ -8,9 +8,15 @@ void UWeaponBase::ApplyEvent(const uint8& EventNumber, const float& RequestTime)
 	auto CurrentTime = GetServerTime();
 	auto ExecutionTime = RequestTime + LockstepDelay;
 
-	if (ExecutionTime < CurrentTime) ExecuteLateEvent(EventNumber, RequestTime, CurrentTime);
-	else if (ExecutionTime == CurrentTime) ExecuteEvent(EventNumber);
-	else EnqueueEventSetTimer({ExecutionTime, EventNumber});
+	if (ExecutionTime > CurrentTime) EnqueueSetTimer({ExecutionTime, EventNumber});
+	else if (ExecutionTime < CurrentTime) ExecuteLateEvent(EventNumber, RequestTime, CurrentTime);
+	else ExecuteEvent(EventNumber);
+}
+
+void UWeaponBase::ExecuteLateEvent(const uint8& EventNumber, const float& RequestTime, const float& CurrentTime)
+{
+	UE_LOG(LogNetTraffic, Warning, TEXT("RequestedTime : %f, CurrentTime : %f. ExecuteLateEvent Invoked..."),
+	       RequestTime, CurrentTime);
 }
 
 void UWeaponBase::EventTimerCallback()
@@ -36,7 +42,7 @@ void UWeaponBase::EventTimerCallback()
 	CurrentEventExecutionTime = PriorityQueue.top().ExecutionTime;
 }
 
-void UWeaponBase::EnqueueEventSetTimer(const FEventInfoStruct&& EventInfo)
+void UWeaponBase::EnqueueSetTimer(const FEventInfoStruct&& EventInfo)
 {
 	PriorityQueue.push(EventInfo);
 	// Don't set timer when recently added event is not closer than current waiting event

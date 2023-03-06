@@ -23,47 +23,14 @@ public:
 
 	virtual void RequestSetupData(const FName& RowName);
 
-	inline void FireStart()
-	{
-		if (FireSubObject)
-			FireSubObject->FireStart(GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
-	}
-
-	inline void FireStop()
-	{
-		if (FireSubObject)
-			FireSubObject->FireStop(GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
-	}
-
-	inline void SwitchSelector()
-	{
-		if (FireSubObject)
-			FireSubObject->SwitchSelector(GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
-	}
-
-	inline void AbilityStart()
-	{
-		if (AbilitySubObject)
-			AbilitySubObject->AbilityStart(GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
-	}
-
-	inline void AbilityStop()
-	{
-		if (AbilitySubObject)
-			AbilitySubObject->AbilityStop(GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
-	}
-
-	inline void ReloadStart()
-	{
-		if (ReloadSubObject)
-			ReloadSubObject->ReloadStart(GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
-	}
-
-	inline void ReloadStop()
-	{
-		if (ReloadSubObject)
-			ReloadSubObject->ReloadStop(GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
-	}
+	inline float GetServerTime() { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
+	inline void FireStart() { if (FireSubObject) FireSubObject->FireStart(GetServerTime()); }
+	inline void FireStop() { if (FireSubObject) FireSubObject->FireStop(GetServerTime()); }
+	inline void SwitchSelector() { if (FireSubObject) FireSubObject->SwitchSelector(GetServerTime()); }
+	inline void AbilityStart() { if (AbilitySubObject) AbilitySubObject->AbilityStart(GetServerTime()); }
+	inline void AbilityStop() { if (AbilitySubObject) AbilitySubObject->AbilityStop(GetServerTime()); }
+	inline void ReloadStart() { if (ReloadSubObject) ReloadSubObject->ReloadStart(GetServerTime()); }
+	inline void ReloadStop() { if (ReloadSubObject) ReloadSubObject->ReloadStop(GetServerTime()); }
 
 private:
 	template <class T>

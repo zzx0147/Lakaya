@@ -53,15 +53,11 @@ protected:
 	 * @param RequestTime 최초 이벤트가 요청된 시간입니다.
 	 * @param CurrentTime 현재 시간입니다.
 	 */
-	virtual void ExecuteLateEvent(const uint8& EventNumber, const float& RequestTime, const float& CurrentTime)
-	{
-		UE_LOG(LogNetTraffic, Warning, TEXT("RequestedTime : %f, CurrentTime : %f. ExecuteLateEvent Invoked..."),
-		       RequestTime, CurrentTime);
-	}
+	virtual void ExecuteLateEvent(const uint8& EventNumber, const float& RequestTime, const float& CurrentTime);
 
 private:
 	void EventTimerCallback();
-	void EnqueueEventSetTimer(const FEventInfoStruct&& EventInfo);
+	void EnqueueSetTimer(const FEventInfoStruct&& EventInfo);
 
 protected:
 	UPROPERTY(Config)
