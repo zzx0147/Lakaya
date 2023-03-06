@@ -25,7 +25,7 @@ class LAKAYA_API UWeaponBase : public UObject
 		float ExecutionTime;
 		uint8 EventNumber;
 	};
-	
+
 public:
 	UFUNCTION(NetMulticast, Reliable)
 	void SetupData(const FName& RowName);
@@ -55,11 +55,13 @@ protected:
 	 */
 	virtual void ExecuteLateEvent(const uint8& EventNumber, const float& RequestTime, const float& CurrentTime)
 	{
-		return;
+		UE_LOG(LogNetTraffic, Warning, TEXT("RequestedTime : %f, CurrentTime : %f. ExecuteLateEvent Invoked..."),
+		       RequestTime, CurrentTime);
 	}
 
 private:
 	void EventTimerCallback();
+	void EnqueueEventSetTimer(const FEventInfoStruct&& EventInfo);
 
 protected:
 	UPROPERTY(Config)
@@ -68,4 +70,5 @@ protected:
 private:
 	std::priority_queue<FEventInfoStruct, std::vector<FEventInfoStruct>, std::greater<FEventInfoStruct>> PriorityQueue;
 	FTimerHandle EventTimer;
+	float CurrentEventExecutionTime = MAX_flt;
 };

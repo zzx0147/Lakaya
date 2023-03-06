@@ -14,6 +14,19 @@ class LAKAYA_API UWeaponFire : public UWeaponBase
 {
 	GENERATED_BODY()
 
+protected:
+	enum EWeaponFireEvent : uint8
+	{
+		FireStartEvent,
+		FireStopEvent,
+		SwitchSelectorEvent,
+		FireStartNotifyEvent,
+		FireStopNotifyEvent,
+		SwitchSelectorNotifyEvent
+	};
+
+	virtual void ExecuteEvent(const uint8& EventNumber) override;
+
 public:
 	UFUNCTION(Server, Reliable)
 	void FireStart(const float& Time);
@@ -34,10 +47,17 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void SwitchSelectorNotify(const float& Time);
 
-	virtual void FireStart_Implementation(const float& Time) { return; }
-	virtual void FireStop_Implementation(const float& Time) { return; }
-	virtual void SwitchSelector_Implementation(const float& Time) { return; }
-	virtual void FireStartNotify_Implementation(const float& Time) { return; }
-	virtual void FireStopNotify_Implementation(const float& Time) { return; }
-	virtual void SwitchSelectorNotify_Implementation(const float& Time) { return; }
+	virtual void FireStart_Implementation(const float& Time);
+	virtual void FireStop_Implementation(const float& Time);
+	virtual void SwitchSelector_Implementation(const float& Time);
+	virtual void FireStartNotify_Implementation(const float& Time);
+	virtual void FireStopNotify_Implementation(const float& Time);
+	virtual void SwitchSelectorNotify_Implementation(const float& Time);
+
+	virtual void OnFireStart() { return; }
+	virtual void OnFireStop() { return; }
+	virtual void OnSwitchSelector() { return; }
+	virtual void OnFireStartNotify() { return; }
+	virtual void OnFireStopNotify() { return; }
+	virtual void OnSwitchSelectorNotify() { return; }
 };

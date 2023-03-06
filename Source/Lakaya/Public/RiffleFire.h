@@ -7,7 +7,7 @@
 #include "RiffleFire.generated.h"
 
 UENUM(BlueprintType)
-enum class EFireMode : uint8
+enum class EGunSelector : uint8
 {
 	Semi,
 	Burst,
@@ -22,35 +22,38 @@ class LAKAYA_API URiffleFire : public UWeaponFire
 public:
 	URiffleFire();
 
-private:
+protected:
 	virtual void SetupData_Implementation(const FName& RowName) override;
-	virtual void FireStart_Implementation(const float& Time) override;
-	virtual void FireStop_Implementation(const float& Time) override;
-	virtual void SwitchSelector_Implementation(const float& Time) override;
-	virtual void FireStartNotify_Implementation(const float& Time) override;
-	virtual void FireStopNotify_Implementation(const float& Time) override;
-	virtual void SwitchSelectorNotify_Implementation(const float& Time) override;
+	virtual void OnFireStart() override;
+	virtual void OnFireStop() override;
+	virtual void OnSwitchSelector() override;
+	virtual void OnFireStartNotify() override;
+	virtual void OnFireStopNotify() override;
+	virtual void OnSwitchSelectorNotify() override;
 
-	float LockstepTimerTime(const float& Time) const;
+private:
+	inline bool IsOnFiring() { return FireCount != 0; }
+	inline bool IsNotFiring() { return FireCount == 0; }
+
 	void TraceFire();
 	void StopFire();
 	void UpdateFireMode();
+	void OnNestedFire();
+	void OnFreshFire();
 
 	UPROPERTY(EditAnywhere, Category=DataTable)
 	class UDataTable* WeaponFireDataTable;
 
-	EFireMode FireMode;
-	EFireMode DesiredFireMode;
-	uint8 FireCount;
-	FTimerHandle StartTimer;
-	FTimerHandle StopTimer;
-	FTimerHandle SelectorTimer;
-	float LastStartTime;
-	float LastStopTime;
-	float LastSelectorTime;
+	// Variables for implementation
 	TWeakObjectPtr<class AThirdPersonCharacter> Character;
 	FCollisionQueryParams TraceQueryParams;
+	FTimerHandle FireTimer;
+	FTimerHandle SelectorTimer;
+	EGunSelector Selector;
+	EGunSelector DesiredSelector;
+	uint16 FireCount;
 
+	// Loaded data
 	float BaseDamage;
 	float FireDelay;
 	float FireRange;

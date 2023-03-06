@@ -18,93 +18,64 @@ URiffleFire::URiffleFire()
 	if (TableFinder.Succeeded()) WeaponFireDataTable = TableFinder.Object;
 }
 
-void URiffleFire::FireStart_Implementation(const float& Time)
+void URiffleFire::OnFireStart()
 {
-	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-
-	auto ReservedTime = LockstepTimerTime(Time);
-	if (ReservedTime < 0.f || TimerManager.IsTimerActive(SelectorTimer)) return;
-
-	if (TimerManager.IsTimerActive(StartTimer))
-	{
-		// if (FireMode == EFireMode::Auto && Time > LastStartTime) return;
-		//
-		// // Continuous firing
-		// if (FireCount < 1 && FireMode != EFireMode::Auto)
-		// {
-		// 	FireCount = FireMode == EFireMode::Semi ? 1 : 3;
-		// 	FireStartNotify(Time);
-		// 	return;
-		// }
-		return;
-	}
-
-	FireStartNotify(Time);
-
-	switch (FireMode)
-	{
-	case EFireMode::Semi: FireCount = 1;
-		break;
-	case EFireMode::Burst: FireCount = 3;
-		break;
-	case EFireMode::Auto: FireCount = -1;
-		LastStartTime = Time;
-		if (Time > LastStopTime) TimerManager.ClearTimer(StopTimer);
-		break;
-	default: UE_LOG(LogActorComponent, Error, TEXT("FireMode was not EFireMode"));
-		return;
-	}
-
-	TimerManager.SetTimer(StartTimer, this, &URiffleFire::TraceFire, FireDelay, true, ReservedTime);
+	Super::OnFireStart();
+	auto& TimerManager = GetWorld()->GetGameState()->GetWorldTimerManager();
+	if (TimerManager.IsTimerActive(SelectorTimer)) return;
+	if (TimerManager.IsTimerActive(FireTimer)) OnNestedFire();
+	else OnFreshFire();
 }
 
-void URiffleFire::FireStop_Implementation(const float& Time)
+void URiffleFire::OnFireStop()
 {
-	if (FireMode != EFireMode::Auto || Time < LastStartTime || Time < LastStopTime) return;
-	LastStopTime = Time;
-	FireStopNotify(Time);
-	GetWorld()->GetTimerManager().SetTimer(StopTimer, this, &URiffleFire::StopFire, LockstepTimerTime(Time));
+	Super::OnFireStop();
+	if (Selector == EGunSelector::Auto) FireCount = 0;
 }
 
-void URiffleFire::SwitchSelector_Implementation(const float& Time)
+void URiffleFire::OnSwitchSelector()
 {
-	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-	if (TimerManager.IsTimerActive(StartTimer) || TimerManager.IsTimerActive(StopTimer)) return;
+	Super::OnSwitchSelector();
+	if (IsOnFiring()) return;
 
-	switch (DesiredFireMode)
+	switch (DesiredSelector)
 	{
-	case EFireMode::Semi: DesiredFireMode = EFireMode::Burst;
+	case EGunSelector::Semi: DesiredSelector = EGunSelector::Burst;
 		break;
-	case EFireMode::Burst: DesiredFireMode = EFireMode::Auto;
+	case EGunSelector::Burst: DesiredSelector = EGunSelector::Auto;
 		break;
-	case EFireMode::Auto: DesiredFireMode = EFireMode::Semi;
+	case EGunSelector::Auto: DesiredSelector = EGunSelector::Semi;
 		break;
 	default:
 		UE_LOG(LogActorComponent, Error, TEXT("DesiredFire was not EFireMode"));
+		return;
 	}
 
-	TimerManager.SetTimer(SelectorTimer, this, &URiffleFire::UpdateFireMode,
-	                      Time + SwitchingDelay - GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
+	GetWorld()->GetGameState()->GetWorldTimerManager().SetTimer(SelectorTimer, this, &URiffleFire::UpdateFireMode,
+	                                                            FireDelay);
 }
 
-void URiffleFire::FireStartNotify_Implementation(const float& Time)
+void URiffleFire::OnFireStartNotify()
 {
+	Super::OnFireStartNotify();
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireStart"));
 }
 
-void URiffleFire::FireStopNotify_Implementation(const float& Time)
+void URiffleFire::OnFireStopNotify()
 {
+	Super::OnFireStopNotify();
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireStop"));
 }
 
-void URiffleFire::SwitchSelectorNotify_Implementation(const float& Time)
+void URiffleFire::OnSwitchSelectorNotify()
 {
+	Super::OnSwitchSelectorNotify();
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Switch"));
-
 }
 
 void URiffleFire::SetupData_Implementation(const FName& RowName)
 {
+	Super::SetupData_Implementation(RowName);
 	auto Component = Cast<UActorComponent>(GetOuter());
 	if (Component == nullptr)
 	{
@@ -128,18 +99,14 @@ void URiffleFire::SetupData_Implementation(const FName& RowName)
 	SwitchingDelay = Data->SelectorSwitchingDelay;
 }
 
-float URiffleFire::LockstepTimerTime(const float& Time) const
-{
-	return Time + LockstepDelay - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
-}
-
 void URiffleFire::TraceFire()
 {
-	if (FireCount-- == 0)
+	if (FireCount == 0)
 	{
 		StopFire();
 		return;
 	}
+	--FireCount;
 
 	//TODO: 사거리를 제한하는 로직을 추가합니다.
 	FHitResult HitResult;
@@ -147,11 +114,13 @@ void URiffleFire::TraceFire()
 	const auto CameraForward = CameraLocation + Character->GetCamera()->GetForwardVector() * 10000;
 	FVector AimPoint;
 
+	// Get camera watching point
 	DrawDebugLine(GetWorld(), CameraLocation, CameraForward, FColor::Green, false, 1);
 	if (GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, CameraForward, ECC_Camera, TraceQueryParams))
 		AimPoint = HitResult.ImpactPoint;
 	else AimPoint = CameraForward;
 
+	// Trace from actor to camera watching point
 	const auto& Location = Character->GetActorLocation();
 	DrawDebugLine(GetWorld(), Location, AimPoint, FColor::Red, false, 1);
 	if (!GetWorld()->LineTraceSingleByChannel(HitResult, Location, AimPoint, ECC_GameTraceChannel2, TraceQueryParams))
@@ -163,10 +132,48 @@ void URiffleFire::TraceFire()
 
 void URiffleFire::StopFire()
 {
-	GetWorld()->GetTimerManager().ClearTimer(StartTimer);
+	GetWorld()->GetTimerManager().ClearTimer(FireTimer);
 }
 
 void URiffleFire::UpdateFireMode()
 {
-	FireMode = DesiredFireMode;
+	Selector = DesiredSelector;
+}
+
+void URiffleFire::OnNestedFire()
+{
+	switch (Selector)
+	{
+	case EGunSelector::Semi:
+		if (IsNotFiring()) FireCount = 1;
+		break;
+	case EGunSelector::Burst:
+		if (IsNotFiring()) FireCount = 3;
+		break;
+	case EGunSelector::Auto:
+		FireCount = MAX_uint16;
+		break;
+	default:
+		UE_LOG(LogActorComponent, Error, TEXT("FireMode was not EFireMode"));
+		return;
+	}
+}
+
+void URiffleFire::OnFreshFire()
+{
+	switch (Selector)
+	{
+	case EGunSelector::Semi: FireCount = 1;
+		break;
+	case EGunSelector::Burst: FireCount = 3;
+		break;
+	case EGunSelector::Auto: FireCount = MAX_uint16;
+		break;
+	default:
+		UE_LOG(LogActorComponent, Error, TEXT("FireMode was not EFireMode"));
+		return;
+	}
+
+	GetWorld()->GetGameState()->GetWorldTimerManager().SetTimer(FireTimer, this, &URiffleFire::TraceFire, FireDelay,
+	                                                            true, 0.f);
 }
