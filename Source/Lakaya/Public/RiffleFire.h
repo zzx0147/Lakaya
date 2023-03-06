@@ -14,7 +14,7 @@ enum class EGunSelector : uint8
 	Auto
 };
 
-UCLASS()
+UCLASS(Config=Game)
 class LAKAYA_API URiffleFire : public UWeaponFire
 {
 	GENERATED_BODY()
@@ -43,6 +43,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category=DataTable)
 	class UDataTable* WeaponFireDataTable;
+
+	UPROPERTY(Config)
+	float TraceCameraRange = 10000.f;
 
 	// Variables for implementation
 	TWeakObjectPtr<class AThirdPersonCharacter> Character;

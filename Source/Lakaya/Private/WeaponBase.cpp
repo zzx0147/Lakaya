@@ -44,7 +44,7 @@ void UWeaponBase::EventTimerCallback()
 
 void UWeaponBase::EnqueueSetTimer(const FEventInfoStruct&& EventInfo)
 {
-	PriorityQueue.push(EventInfo);
+	PriorityQueue.emplace(EventInfo);
 	// Don't set timer when recently added event is not closer than current waiting event
 	if (CurrentEventExecutionTime <= PriorityQueue.top().ExecutionTime) return;
 	GetWorld()->GetGameState()->GetWorldTimerManager().SetTimer(EventTimer, this, &UWeaponBase::EventTimerCallback,

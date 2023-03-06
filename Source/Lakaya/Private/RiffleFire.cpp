@@ -111,7 +111,7 @@ void URiffleFire::TraceFire()
 	//TODO: 사거리를 제한하는 로직을 추가합니다.
 	FHitResult HitResult;
 	const auto CameraLocation = Character->GetCamera()->GetComponentLocation();
-	const auto CameraForward = CameraLocation + Character->GetCamera()->GetForwardVector() * 10000;
+	const auto CameraForward = CameraLocation + Character->GetCamera()->GetForwardVector() * TraceCameraRange;
 	FVector AimPoint;
 
 	// Get camera watching point
