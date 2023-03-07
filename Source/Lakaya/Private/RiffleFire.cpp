@@ -3,6 +3,7 @@
 
 #include "RiffleFire.h"
 
+#include "GunComponent.h"
 #include "ThirdPersonCharacter.h"
 #include "WeaponFireData.h"
 #include "Camera/CameraComponent.h"
@@ -21,7 +22,7 @@ URiffleFire::URiffleFire()
 void URiffleFire::OnFireStart()
 {
 	Super::OnFireStart();
-	auto& TimerManager = GetWorld()->GetGameState()->GetWorldTimerManager();
+	auto& TimerManager = GetWorld()->GetTimerManager();
 	if (TimerManager.IsTimerActive(SelectorTimer)) return;
 	if (TimerManager.IsTimerActive(FireTimer)) OnNestedFire();
 	else OnFreshFire();
@@ -51,8 +52,7 @@ void URiffleFire::OnSwitchSelector()
 		return;
 	}
 
-	GetWorld()->GetGameState()->GetWorldTimerManager().SetTimer(SelectorTimer, this, &URiffleFire::UpdateFireMode,
-	                                                            FireDelay);
+	GetWorld()->GetTimerManager().SetTimer(SelectorTimer, this, &URiffleFire::UpdateFireMode, FireDelay);
 }
 
 void URiffleFire::OnFireStartNotify()
@@ -76,15 +76,17 @@ void URiffleFire::OnSwitchSelectorNotify()
 void URiffleFire::SetupData_Implementation(const FName& RowName)
 {
 	Super::SetupData_Implementation(RowName);
+
 	auto Component = Cast<UActorComponent>(GetOuter());
 	if (Component == nullptr)
 	{
 		UE_LOG(LogNetSubObject, Error, TEXT("Outer was not UActorComponent!"));
 		return;
 	}
+	GunComponent = Cast<UGunComponent>(Component);
 
 	Character = Cast<AThirdPersonCharacter>(Component->GetOwner());
-	if (Character.IsStale())
+	if (!Character.IsValid())
 	{
 		UE_LOG(LogNetSubObject, Error, TEXT("Attached Actor was not AThirdPersonCharacter."));
 		return;
@@ -107,6 +109,9 @@ void URiffleFire::TraceFire()
 		return;
 	}
 	--FireCount;
+
+	// When there is bullet feature and have not bullets, skip fire.
+	if (GunComponent.IsValid() && !GunComponent->CostBullets(1)) return;
 
 	//TODO: 사거리를 제한하는 로직을 추가합니다.
 	FHitResult HitResult;
@@ -174,6 +179,5 @@ void URiffleFire::OnFreshFire()
 		return;
 	}
 
-	GetWorld()->GetGameState()->GetWorldTimerManager().SetTimer(FireTimer, this, &URiffleFire::TraceFire, FireDelay,
-	                                                            true, 0.f);
+	GetWorld()->GetTimerManager().SetTimer(FireTimer, this, &URiffleFire::TraceFire, FireDelay, true, 0.f);
 }

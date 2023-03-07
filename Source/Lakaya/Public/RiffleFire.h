@@ -48,6 +48,7 @@ private:
 	float TraceCameraRange = 10000.f;
 
 	// Variables for implementation
+	TWeakObjectPtr<class UGunComponent> GunComponent;
 	TWeakObjectPtr<class AThirdPersonCharacter> Character;
 	FCollisionQueryParams TraceQueryParams;
 	FTimerHandle FireTimer;
