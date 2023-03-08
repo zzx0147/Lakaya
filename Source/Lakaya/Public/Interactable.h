@@ -30,6 +30,8 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	virtual void InteractionStart(const float& Time, APawn* Caller);
 
+	virtual bool InteractionStart_Validate(const float& Time, APawn* Caller) { return true; }
+
 	/**
 	 * @brief 인터렉션 중단을 서버에 요청합니다. 직접 호출하는 대신 Invoke 함수를 사용하여 호출하세요.
 	 * @param Time 클라이언트에서 인터렉션을 중단한 시간입니다.
@@ -37,6 +39,9 @@ public:
 	 */
 	UFUNCTION(Server, Reliable, WithValidation)
 	virtual void InteractionStop(const float& Time, APawn* Caller);
+
+	virtual bool InteractionStop_Validate(const float& Time, APawn* Caller) { return true; }
+
 
 	/**
 	 * @brief 인터페이스의 이벤트 함수를 호출하는 절차의 편의를 위해 만들어진 함수입니다.

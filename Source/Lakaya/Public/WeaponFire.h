@@ -28,6 +28,7 @@ protected:
 	virtual void ExecuteEvent(const uint8& EventNumber) override;
 
 public:
+	//TODO: 클라이언트에서 처리가능한 부분은 클라이언트에서 최대한 처리를 하고 서버 RPC를 콜하도록 로직을 변경해야 합니다.
 	UFUNCTION(Server, Reliable)
 	void FireStart(const float& Time);
 
