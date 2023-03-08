@@ -15,6 +15,19 @@ class LAKAYA_API AMenuCallingPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
+public:
+	AMenuCallingPlayerController();
+
+protected:
+	virtual void BeginPlay() override;
+	virtual void OnPossess(APawn* InPawn) override;
+	virtual void SetupInputComponent() override;
+
+private:
+	void MenuHandler(const FInputActionValue& Value);
+	void WeaponHandler(const FInputActionValue& Value);
+	void ArmorHandler(const FInputActionValue& Value);
+
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
 
@@ -29,17 +42,4 @@ class LAKAYA_API AMenuCallingPlayerController : public APlayerController
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* ArmorLoadoutAction;
-
-protected:
-	virtual void BeginPlay() override;
-	virtual void OnPossess(APawn* InPawn) override;
-	virtual void SetupInputComponent() override;
-
-public:
-	AMenuCallingPlayerController();
-
-private:
-	void MenuHandler(const FInputActionValue& Value);
-	void WeaponHandler(const FInputActionValue& Value);
-	void ArmorHandler(const FInputActionValue& Value);
 };

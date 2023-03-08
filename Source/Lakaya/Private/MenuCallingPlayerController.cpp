@@ -5,7 +5,6 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "HealthPlayerState.h"
 #include "InputMappingContext.h"
 
 void AMenuCallingPlayerController::BeginPlay()
@@ -15,8 +14,9 @@ void AMenuCallingPlayerController::BeginPlay()
 	// In a dedicated server, the following logic is not necessary.
 	if (IsRunningDedicatedServer()) return;
 
-	if (const auto Subsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
-		Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
+	if (auto LocalPlayer = GetLocalPlayer())
+		if (const auto Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+			Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 }
 
 void AMenuCallingPlayerController::OnPossess(APawn* InPawn)
@@ -24,7 +24,6 @@ void AMenuCallingPlayerController::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 
 	if (!HasAuthority()) return;
-	if (const auto State = GetPlayerState<AHealthPlayerState>()) State->SetupPlayerState(InPawn);
 }
 
 void AMenuCallingPlayerController::SetupInputComponent()

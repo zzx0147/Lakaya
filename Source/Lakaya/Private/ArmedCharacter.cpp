@@ -6,9 +6,20 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "WeaponAbility.h"
+#include "WeaponClassData.h"
+#include "WeaponComponent.h"
+#include "WeaponFire.h"
+#include "WeaponReload.h"
+#include "Engine/DataTable.h"
+#include "Net/UnrealNetwork.h"
 
 AArmedCharacter::AArmedCharacter()
 {
+	bReplicateUsingRegisteredSubObjectList = true;
+
+	if (IsRunningDedicatedServer()) return;
+
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
 		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_WeaponControl'"));
 
@@ -17,6 +28,9 @@ AArmedCharacter::AArmedCharacter()
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> FireStopFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_FireStop'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> ModeSwitchFinder(
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_SwitchFireMode'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> AbilityStartFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_AbilityStart'"));
@@ -30,13 +44,18 @@ AArmedCharacter::AArmedCharacter()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ReloadStopFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ReloadStop'"));
 
+	static const ConstructorHelpers::FObjectFinder<UDataTable> DataFinder(
+		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/WeaponClassDataTable'"));
+
 	if (ContextFinder.Succeeded()) WeaponControlContext = ContextFinder.Object;
 	if (FireStartFinder.Succeeded()) FireStartAction = FireStartFinder.Object;
 	if (FireStopFinder.Succeeded()) FireStopAction = FireStopFinder.Object;
+	if (ModeSwitchFinder.Succeeded()) SwitchSelectorAction = ModeSwitchFinder.Object;
 	if (AbilityStartFinder.Succeeded()) AbilityStartAction = AbilityStartFinder.Object;
 	if (AbilityStopFinder.Succeeded()) AbilityStopAction = AbilityStopFinder.Object;
 	if (ReloadStartFinder.Succeeded()) ReloadStartAction = ReloadStartFinder.Object;
 	if (ReloadStopFinder.Succeeded()) ReloadStopAction = ReloadStopFinder.Object;
+	if (DataFinder.Succeeded()) WeaponClassDataTable = DataFinder.Object;
 }
 
 void AArmedCharacter::PossessedBy(AController* NewController)
@@ -53,6 +72,29 @@ void AArmedCharacter::UnPossessed()
 	if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(WeaponControlContext);
 }
 
+void AArmedCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AArmedCharacter, PrimaryWeapon);
+}
+
+void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponClassRowName)
+{
+	auto Data = WeaponClassDataTable->FindRow<FWeaponClassData>(WeaponClassRowName,TEXT("SetupPrimaryWeapon"));
+
+	PrimaryWeapon = Cast<UWeaponComponent>(
+		AddComponentByClass(Data->WeaponClass.LoadSynchronous(), false, FTransform::Identity, false));
+
+	if (!PrimaryWeapon)
+	{
+		UE_LOG(LogActor, Warning, TEXT("PrimaryWeapon was setted as nullptr"));
+		return;
+	}
+
+	PrimaryWeapon->RequestSetupData(Data->AssetRowName);
+	PrimaryWeapon->SetIsReplicated(true);
+}
+
 void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -61,6 +103,8 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	{
 		CastedComponent->BindAction(FireStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::FireStart);
 		CastedComponent->BindAction(FireStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::FireStop);
+		CastedComponent->BindAction(SwitchSelectorAction, ETriggerEvent::Triggered, this,
+		                            &AArmedCharacter::SwitchSelector);
 		CastedComponent->BindAction(AbilityStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::AbilityStart);
 		CastedComponent->BindAction(AbilityStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::AbilityStop);
 		CastedComponent->BindAction(ReloadStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::ReloadStart);
@@ -68,29 +112,43 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	}
 }
 
+void AArmedCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	if (HasAuthority()) SetupPrimaryWeapon(TEXT("Test"));
+}
+
 void AArmedCharacter::FireStart(const FInputActionValue& Value)
 {
-	//TODO: 무기 격발
+	PrimaryWeapon->FireStart();
 }
 
 void AArmedCharacter::FireStop(const FInputActionValue& Value)
 {
+	PrimaryWeapon->FireStop();
+}
+
+void AArmedCharacter::SwitchSelector(const FInputActionValue& Value)
+{
+	PrimaryWeapon->SwitchSelector();
 }
 
 void AArmedCharacter::AbilityStart(const FInputActionValue& Value)
 {
-	//TODO: 무기 보조 능력 시전
+	PrimaryWeapon->AbilityStart();
 }
 
 void AArmedCharacter::AbilityStop(const FInputActionValue& Value)
 {
+	PrimaryWeapon->AbilityStop();
 }
 
 void AArmedCharacter::ReloadStart(const FInputActionValue& Value)
 {
-	//TODO: 무기 능력 시전
+	PrimaryWeapon->ReloadStart();
 }
 
 void AArmedCharacter::ReloadStop(const FInputActionValue& Value)
 {
+	PrimaryWeapon->ReloadStop();
 }
