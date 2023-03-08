@@ -13,6 +13,8 @@ class LAKAYA_API UGunComponent : public UWeaponComponent
 	GENERATED_BODY()
 
 public:
+	UGunComponent();
+	
 	inline const uint16& GetMagazineCapacity() const { return MagazineCapacity; }
 	inline const uint16& GetRemainBullets() const { return RemainBullets; }
 
@@ -35,7 +37,7 @@ public:
 	virtual bool CostBullets(const uint16& Bullets);
 
 protected:
-	virtual void BeginPlay() override;
+	virtual void SetupData() override;
 
 	UFUNCTION()
 	virtual void OnRep_MagazineCapacity() { return; }

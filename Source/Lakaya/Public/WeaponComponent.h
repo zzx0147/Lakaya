@@ -23,6 +23,10 @@ public:
 
 	virtual void RequestSetupData(const FName& RowName);
 
+protected:
+	virtual void SetupData();
+
+public:
 	inline float GetServerTime() { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
 	inline void FireStart() { if (FireSubObject) FireSubObject->FireStart(GetServerTime()); }
 	inline void FireStop() { if (FireSubObject) FireSubObject->FireStop(GetServerTime()); }
@@ -38,7 +42,6 @@ public:
 private:
 	template <class T>
 	T* CreateSingleSubObject(UClass* SubObjectClass, const FName& DataRowName);
-	void SetupData();
 
 public:
 	UPROPERTY(Replicated)
@@ -50,11 +53,13 @@ public:
 	UPROPERTY(Replicated)
 	UWeaponReload* ReloadSubObject;
 
-private:
+protected:
+	FName RequestedRowName;
+
 	UPROPERTY(EditAnywhere)
 	class UDataTable* WeaponAssetDataTable;
 
-	FName RequestedRowName;
+private:
 	bool bIsDataSetupRequested;
 };
 

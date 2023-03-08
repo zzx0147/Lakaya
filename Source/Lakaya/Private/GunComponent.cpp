@@ -3,6 +3,8 @@
 
 #include "GunComponent.h"
 
+#include "GunAssetData.h"
+#include "Engine/DataTable.h"
 #include "Net/UnrealNetwork.h"
 
 void UGunComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -13,6 +15,14 @@ void UGunComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(UGunComponent, RemainBullets);
 }
 
+
+UGunComponent::UGunComponent()
+{
+	static const ConstructorHelpers::FObjectFinder<UDataTable> DataFinder(
+		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/GunAssetDataTable'"));
+
+	if (DataFinder.Succeeded()) WeaponAssetDataTable = DataFinder.Object;
+}
 
 void UGunComponent::Reload()
 {
@@ -32,9 +42,11 @@ bool UGunComponent::CostBullets(const uint16& Bullets)
 	return true;
 }
 
-void UGunComponent::BeginPlay()
+void UGunComponent::SetupData()
 {
-	Super::BeginPlay();
-	//TODO: 임시 코드이므로 데이터를 받아서 설정하도록 변경해야 합니다.
-	RemainBullets = MagazineCapacity = 30;
+	Super::SetupData();
+	auto Data = WeaponAssetDataTable->FindRow<FGunAssetData>(RequestedRowName,TEXT("GunComponent"));
+	if (!Data) return;
+
+	RemainBullets = MagazineCapacity = Data->Magazine;
 }
