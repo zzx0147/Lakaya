@@ -68,7 +68,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	class UDataTable* WeaponClassDataTable;
-	
-	UPROPERTY(Replicated)
+
+	UPROPERTY(Replicated, VisibleAnywhere)
 	class UWeaponComponent* PrimaryWeapon;
 };

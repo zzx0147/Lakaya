@@ -84,13 +84,13 @@ void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponClassRowName)
 
 	PrimaryWeapon = Cast<UWeaponComponent>(
 		AddComponentByClass(Data->WeaponClass.LoadSynchronous(), false, FTransform::Identity, false));
-	
+
 	if (!PrimaryWeapon)
 	{
 		UE_LOG(LogActor, Warning, TEXT("PrimaryWeapon was setted as nullptr"));
 		return;
 	}
-	
+
 	PrimaryWeapon->RequestSetupData(Data->AssetRowName);
 	PrimaryWeapon->SetIsReplicated(true);
 }
@@ -115,7 +115,7 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 void AArmedCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	SetupPrimaryWeapon(TEXT("Test"));
+	if (HasAuthority()) SetupPrimaryWeapon(TEXT("Test"));
 }
 
 void AArmedCharacter::FireStart(const FInputActionValue& Value)

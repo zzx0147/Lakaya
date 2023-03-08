@@ -27,6 +27,9 @@ class LAKAYA_API UWeaponBase : public UObject
 	};
 
 public:
+	virtual bool IsNameStableForNetworking() const override { return false; }
+	virtual bool IsSupportedForNetworking() const override { return true; }
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void SetupData(const FName& RowName);
 

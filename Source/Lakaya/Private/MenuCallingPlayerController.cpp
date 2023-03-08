@@ -14,8 +14,9 @@ void AMenuCallingPlayerController::BeginPlay()
 	// In a dedicated server, the following logic is not necessary.
 	if (IsRunningDedicatedServer()) return;
 
-	if (const auto Subsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
-		Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
+	if (auto LocalPlayer = GetLocalPlayer())
+		if (const auto Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+			Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 }
 
 void AMenuCallingPlayerController::OnPossess(APawn* InPawn)
