@@ -19,6 +19,8 @@ void UStandardReload::SetupData_Implementation(const FName& RowName)
 {
 	Super::SetupData_Implementation(RowName);
 
+	GunComponent = Cast<UGunComponent>(GetOuter());
+
 	auto Data = ReloadTable->FindRow<FWeaponReloadData>(RowName,TEXT("StandardReload"));
 	ReloadDelay = Data->ReloadDelay;
 }
@@ -27,6 +29,7 @@ void UStandardReload::OnReloadStart()
 {
 	Super::OnReloadStart();
 
+	if (GunComponent.IsValid()) GunComponent->SetFireEnabled(false);
 	auto& TimerManager = GetWorld()->GetTimerManager();
 	if (TimerManager.IsTimerActive(ReloadTimer)) return;
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &UStandardReload::ReloadCallback, ReloadDelay);
@@ -41,5 +44,9 @@ void UStandardReload::OnReloadStartNotify()
 
 void UStandardReload::ReloadCallback()
 {
-	if (GunComponent.IsValid()) GunComponent->Reload();
+	if (GunComponent.IsValid())
+	{
+		GunComponent->Reload();
+		GunComponent->SetFireEnabled(true);
+	}
 }

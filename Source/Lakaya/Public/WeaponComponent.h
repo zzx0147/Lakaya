@@ -31,6 +31,9 @@ public:
 	inline void AbilityStop() { if (AbilitySubObject) AbilitySubObject->AbilityStop(GetServerTime()); }
 	inline void ReloadStart() { if (ReloadSubObject) ReloadSubObject->ReloadStart(GetServerTime()); }
 	inline void ReloadStop() { if (ReloadSubObject) ReloadSubObject->ReloadStop(GetServerTime()); }
+	inline void SetFireEnabled(const bool& Enabled) { if (FireSubObject) FireSubObject->SetEnabled(Enabled); }
+	inline void SetAbilityEnabled(const bool& Enabled) { if (AbilitySubObject) AbilitySubObject->SetEnabled(Enabled); }
+	inline void SetReloadEnabled(const bool& Enabled) { if (ReloadSubObject) ReloadSubObject->SetEnabled(Enabled); }
 
 private:
 	template <class T>

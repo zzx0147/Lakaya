@@ -35,33 +35,39 @@ void UWeaponFire::ExecuteEvent(const uint8& EventNumber)
 
 void UWeaponFire::FireStart_Implementation(const float& Time)
 {
+	if (!GetIsEnabled()) return;
 	FireStartNotify(Time);
 	ApplyEvent(FireStartEvent, Time);
 }
 
 void UWeaponFire::FireStop_Implementation(const float& Time)
 {
+	if (!GetIsEnabled()) return;
 	FireStopNotify(Time);
 	ApplyEvent(FireStopEvent, Time);
 }
 
 void UWeaponFire::SwitchSelector_Implementation(const float& Time)
 {
+	if (!GetIsEnabled()) return;
 	SwitchSelectorNotify(Time);
 	ApplyEvent(SwitchSelectorEvent, Time);
 }
 
 void UWeaponFire::FireStartNotify_Implementation(const float& Time)
 {
+	if (!GetIsEnabled()) return;
 	ApplyEvent(FireStartNotifyEvent, Time);
 }
 
 void UWeaponFire::FireStopNotify_Implementation(const float& Time)
 {
+	if (!GetIsEnabled()) return;
 	ApplyEvent(FireStopNotifyEvent, Time);
 }
 
 void UWeaponFire::SwitchSelectorNotify_Implementation(const float& Time)
 {
+	if (!GetIsEnabled()) return;
 	ApplyEvent(SwitchSelectorNotifyEvent, Time);
 }

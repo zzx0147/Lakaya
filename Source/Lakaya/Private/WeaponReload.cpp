@@ -30,22 +30,26 @@ void UWeaponReload::ExecuteEvent(const uint8& EventNumber)
 
 void UWeaponReload::ReloadStart_Implementation(const float& Time)
 {
+	if (!GetIsEnabled()) return;
 	ReloadStartNotify(Time);
 	ApplyEvent(ReloadStartEvent, Time);
 }
 
 void UWeaponReload::ReloadStop_Implementation(const float& Time)
 {
+	if (!GetIsEnabled()) return;
 	ReloadStopNotify(Time);
 	ApplyEvent(ReloadStopEvent, Time);
 }
 
 void UWeaponReload::ReloadStartNotify_Implementation(const float& Time)
 {
+	if (!GetIsEnabled()) return;
 	ApplyEvent(ReloadStartNotifyEvent, Time);
 }
 
 void UWeaponReload::ReloadStopNotify_Implementation(const float& Time)
 {
+	if (!GetIsEnabled()) return;
 	ApplyEvent(ReloadStopNotifyEvent, Time);
 }

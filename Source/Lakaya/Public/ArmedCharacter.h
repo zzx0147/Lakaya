@@ -26,9 +26,9 @@ protected:
 public:
 	/**
 	 * @brief 캐릭터의 첫번째 무기를 설정합니다.
-	 * @param WeaponAssetRowName WeaponAssetDataTable에서의 RowName
+	 * @param WeaponClassRowName WeaponAssetDataTable에서의 RowName
 	 */
-	void SetupPrimaryWeapon(const FName& WeaponAssetRowName);
+	void SetupPrimaryWeapon(const FName& WeaponClassRowName);
 
 private:
 	void FireStart(const FInputActionValue& Value);
@@ -66,9 +66,9 @@ private:
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* ReloadStopAction;
 
-	UPROPERTY(EditAnywhere, Category=Weapon)
-	class UDataTable* WeaponAssetDataTable;
-
+	UPROPERTY(EditAnywhere)
+	class UDataTable* WeaponClassDataTable;
+	
 	UPROPERTY(Replicated)
 	class UWeaponComponent* PrimaryWeapon;
 };

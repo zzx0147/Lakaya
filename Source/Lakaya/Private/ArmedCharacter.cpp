@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "WeaponAbility.h"
+#include "WeaponClassData.h"
 #include "WeaponComponent.h"
 #include "WeaponFire.h"
 #include "WeaponReload.h"
@@ -43,8 +44,8 @@ AArmedCharacter::AArmedCharacter()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ReloadStopFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ReloadStop'"));
 
-	static const ConstructorHelpers::FObjectFinder<UDataTable> WeaponAssetFinder(
-		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/WeaponAssetDataTable'"));
+	static const ConstructorHelpers::FObjectFinder<UDataTable> DataFinder(
+		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/WeaponClassDataTable'"));
 
 	if (ContextFinder.Succeeded()) WeaponControlContext = ContextFinder.Object;
 	if (FireStartFinder.Succeeded()) FireStartAction = FireStartFinder.Object;
@@ -54,7 +55,7 @@ AArmedCharacter::AArmedCharacter()
 	if (AbilityStopFinder.Succeeded()) AbilityStopAction = AbilityStopFinder.Object;
 	if (ReloadStartFinder.Succeeded()) ReloadStartAction = ReloadStartFinder.Object;
 	if (ReloadStopFinder.Succeeded()) ReloadStopAction = ReloadStopFinder.Object;
-	if (WeaponAssetFinder.Succeeded()) WeaponAssetDataTable = WeaponAssetFinder.Object;
+	if (DataFinder.Succeeded()) WeaponClassDataTable = DataFinder.Object;
 }
 
 void AArmedCharacter::PossessedBy(AController* NewController)
@@ -77,11 +78,20 @@ void AArmedCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AArmedCharacter, PrimaryWeapon);
 }
 
-void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponAssetRowName)
+void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponClassRowName)
 {
+	auto Data = WeaponClassDataTable->FindRow<FWeaponClassData>(WeaponClassRowName,TEXT("SetupPrimaryWeapon"));
+
 	PrimaryWeapon = Cast<UWeaponComponent>(
-		AddComponentByClass(UWeaponComponent::StaticClass(), false, FTransform::Identity, false));
-	PrimaryWeapon->RequestSetupData(WeaponAssetRowName);
+		AddComponentByClass(Data->WeaponClass.LoadSynchronous(), false, FTransform::Identity, false));
+	
+	if (!PrimaryWeapon)
+	{
+		UE_LOG(LogActor, Warning, TEXT("PrimaryWeapon was setted as nullptr"));
+		return;
+	}
+	
+	PrimaryWeapon->RequestSetupData(Data->AssetRowName);
 	PrimaryWeapon->SetIsReplicated(true);
 }
 
