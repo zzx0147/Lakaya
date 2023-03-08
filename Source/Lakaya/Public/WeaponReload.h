@@ -14,6 +14,17 @@ class LAKAYA_API UWeaponReload : public UWeaponBase
 {
 	GENERATED_BODY()
 
+protected:
+	enum EWeaponReloadEvent : uint8
+	{
+		ReloadStartEvent,
+		ReloadStopEvent,
+		ReloadStartNotifyEvent,
+		ReloadStopNotifyEvent
+	};
+
+	virtual void ExecuteEvent(const uint8& EventNumber) override;
+
 public:
 	UFUNCTION(Server, Reliable)
 	void ReloadStart(const float& Time);
@@ -28,8 +39,13 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void ReloadStopNotify(const float& Time);
 
-	virtual void ReloadStart_Implementation(const float& Time) { return; }
-	virtual void ReloadStop_Implementation(const float& Time) { return; }
-	virtual void ReloadStartNotify_Implementation(const float& Time) { return; }
-	virtual void ReloadStopNotify_Implementation(const float& Time) { return; }
+	virtual void ReloadStart_Implementation(const float& Time);
+	virtual void ReloadStop_Implementation(const float& Time);
+	virtual void ReloadStartNotify_Implementation(const float& Time);
+	virtual void ReloadStopNotify_Implementation(const float& Time);
+
+	virtual void OnReloadStart() { return; }
+	virtual void OnReloadStop() { return; }
+	virtual void OnReloadStartNotify() { return; }
+	virtual void OnReloadStopNotify() { return; }
 };

@@ -26,6 +26,10 @@ void UWeaponFire::ExecuteEvent(const uint8& EventNumber)
 	case SwitchSelectorNotifyEvent:
 		OnSwitchSelectorNotify();
 		break;
+	default:
+		UE_LOG(LogNetSubObject, Warning, TEXT("ExecuteEvent called not initialized eventnumber. It was %d"),
+		       EventNumber);
+		break;
 	}
 }
 
