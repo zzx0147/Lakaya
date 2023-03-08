@@ -23,7 +23,10 @@ void URiffleFire::OnFireStart()
 {
 	Super::OnFireStart();
 	auto& TimerManager = GetWorld()->GetTimerManager();
-	if (TimerManager.IsTimerActive(SelectorTimer)) return;
+	
+	if (TimerManager.IsTimerActive(SelectorTimer) || GunComponent.IsValid() && GunComponent->GetRemainBullets() == 0)
+		return;
+	
 	if (TimerManager.IsTimerActive(FireTimer)) OnNestedFire();
 	else OnFreshFire();
 }
@@ -103,15 +106,12 @@ void URiffleFire::SetupData_Implementation(const FName& RowName)
 
 void URiffleFire::TraceFire()
 {
-	if (FireCount == 0)
+	if (FireCount == 0 || GunComponent.IsValid() && !GunComponent->CostBullets(1))
 	{
 		StopFire();
 		return;
 	}
 	--FireCount;
-
-	// When there is bullet feature and have not bullets, skip fire.
-	if (GunComponent.IsValid() && !GunComponent->CostBullets(1)) return;
 
 	//TODO: 사거리를 제한하는 로직을 추가합니다.
 	FHitResult HitResult;
