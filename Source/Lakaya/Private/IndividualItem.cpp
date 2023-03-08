@@ -12,7 +12,7 @@ AIndividualItem::AIndividualItem()
 	Box->SetupAttachment(RootComponent);
 
 	Trigger->SetBoxExtent(FVector(21.0f, 21.0f, 21.0f));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_BOX(TEXT("/Game/KDJ/Box_D50973B1.Box_D50973B1"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_BOX(TEXT("/Game/Dev/KDJ/Box_D50973B1.Box_D50973B1"));
 	if (SM_BOX.Succeeded())
 		Box->SetStaticMesh(SM_BOX.Object);
 	

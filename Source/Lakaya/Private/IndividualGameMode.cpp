@@ -1,21 +1,24 @@
 #include "IndividualGameMode.h"
 #include "ArmedCharacter.h"
 #include "MovableCharacter.h"
-#include "HUDWidget.h"
+// #include "HUDWidget.h"
+#include "CollectorPlayerState.h"
 #include "IndividualItem.h"
 #include "MenuCallingPlayerController.h"
 #include "TestCharacter.h"
-#include "Viewports.h"
-#include "Components/WidgetComponent.h"
+// #include "Viewports.h"
+// #include "Components/WidgetComponent.h"
 
 AIndividualGameMode::AIndividualGameMode()
 {
-	DefaultPawnClass = ATestCharacter::StaticClass();
+	// DefaultPawnClass = ATestCharacter::StaticClass();
 	// DefaultPawnClass = ABasePlayerCharacter::StaticClass();
-	// DefaultPawnClass = AArmedCharacter::StaticClass();
+	DefaultPawnClass = AArmedCharacter::StaticClass();
 	// PlayerControllerClass = AInGamePlayerController::StaticClass();
+	PlayerControllerClass = AMenuCallingPlayerController::StaticClass();
 	// PlayerStateClass = AInGamePlayerState::StaticClass();
-
+	PlayerStateClass = ACollectorPlayerState::StaticClass();
+	
 	ItemMaxCount = 3;
 	PosMinCount = 1;
 	PosMaxCount = 6;
@@ -28,8 +31,8 @@ AIndividualGameMode::AIndividualGameMode()
 	pos_05 = (FVector(1000.0f, 1000.0f, 0.0f));
 	pos_06 = (FVector(1000.0f, 1200.0f, 0.0f));
 
-	Minutes = 3;
-	Seconds = 1;
+	// Minutes = 3;
+	// Seconds = 1;
 }
 
 void AIndividualGameMode::PostInitializeComponents()
@@ -88,32 +91,32 @@ void AIndividualGameMode::RandomSpawn()
 	}
 }
 
-int32 AIndividualGameMode::GetMinutes()
-{
-	return Minutes;
-}
-
-int32 AIndividualGameMode::GetSeconds()
-{
-	return Seconds;
-}
-
-int32 AIndividualGameMode::SetMinutes(int32 Value)
-{
-	return Minutes = Value;
-}
-
-int32 AIndividualGameMode::SetSeconds(int32 Value)
-{
-	return Seconds = Value;
-}
-
-int32 AIndividualGameMode::MinusMinutes(int32 Value)
-{
-	return Minutes -= Value;
-}
-
-int32 AIndividualGameMode::MinusSeconds(int32 Value)
-{
-	return Seconds -= Value;
-}
+// int32 AIndividualGameMode::GetMinutes()
+// {
+// 	return Minutes;
+// }
+//
+// int32 AIndividualGameMode::GetSeconds()
+// {
+// 	return Seconds;
+// }
+//
+// int32 AIndividualGameMode::SetMinutes(int32 Value)
+// {
+// 	return Minutes = Value;
+// }
+//
+// int32 AIndividualGameMode::SetSeconds(int32 Value)
+// {
+// 	return Seconds = Value;
+// }
+//
+// int32 AIndividualGameMode::MinusMinutes(int32 Value)
+// {
+// 	return Minutes -= Value;
+// }
+//
+// int32 AIndividualGameMode::MinusSeconds(int32 Value)
+// {
+// 	return Seconds -= Value;
+// }
