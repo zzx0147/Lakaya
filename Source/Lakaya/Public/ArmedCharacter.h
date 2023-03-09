@@ -20,8 +20,6 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void PossessedBy(AController* NewController) override;
-	virtual void UnPossessed() override;
 
 public:
 	/**
@@ -68,7 +66,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	class UDataTable* WeaponClassDataTable;
-	
-	UPROPERTY(Replicated)
+
+	UPROPERTY(Replicated, VisibleAnywhere)
 	class UWeaponComponent* PrimaryWeapon;
 };

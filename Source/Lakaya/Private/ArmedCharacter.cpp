@@ -58,20 +58,6 @@ AArmedCharacter::AArmedCharacter()
 	if (DataFinder.Succeeded()) WeaponClassDataTable = DataFinder.Object;
 }
 
-void AArmedCharacter::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-
-	if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
-}
-
-void AArmedCharacter::UnPossessed()
-{
-	Super::UnPossessed();
-
-	if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(WeaponControlContext);
-}
-
 void AArmedCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -84,13 +70,13 @@ void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponClassRowName)
 
 	PrimaryWeapon = Cast<UWeaponComponent>(
 		AddComponentByClass(Data->WeaponClass.LoadSynchronous(), false, FTransform::Identity, false));
-	
+
 	if (!PrimaryWeapon)
 	{
 		UE_LOG(LogActor, Warning, TEXT("PrimaryWeapon was setted as nullptr"));
 		return;
 	}
-	
+
 	PrimaryWeapon->RequestSetupData(Data->AssetRowName);
 	PrimaryWeapon->SetIsReplicated(true);
 }
@@ -115,7 +101,9 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 void AArmedCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	SetupPrimaryWeapon(TEXT("Test"));
+
+	if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
+	if (HasAuthority()) SetupPrimaryWeapon(TEXT("Test"));
 }
 
 void AArmedCharacter::FireStart(const FInputActionValue& Value)

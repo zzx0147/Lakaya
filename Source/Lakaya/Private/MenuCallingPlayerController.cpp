@@ -7,24 +7,6 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 
-void AMenuCallingPlayerController::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// In a dedicated server, the following logic is not necessary.
-	if (IsRunningDedicatedServer()) return;
-
-	if (const auto Subsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
-		Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
-}
-
-void AMenuCallingPlayerController::OnPossess(APawn* InPawn)
-{
-	Super::OnPossess(InPawn);
-
-	if (!HasAuthority()) return;
-}
-
 void AMenuCallingPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -63,17 +45,29 @@ AMenuCallingPlayerController::AMenuCallingPlayerController()
 	if (ArmorFinder.Succeeded()) ArmorLoadoutAction = ArmorFinder.Object;
 }
 
+void AMenuCallingPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (auto LocalPlayer = GetLocalPlayer())
+		if (const auto Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+			Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
+}
+
 void AMenuCallingPlayerController::MenuHandler(const FInputActionValue& Value)
 {
 	//TODO: UI를 띄웁니다.
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Menu"));
 }
 
 void AMenuCallingPlayerController::WeaponHandler(const FInputActionValue& Value)
 {
 	//TODO: UI를 띄웁니다.
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("WeaponLoadout"));
 }
 
 void AMenuCallingPlayerController::ArmorHandler(const FInputActionValue& Value)
 {
 	//TODO: UI를 띄웁니다.
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ArmorLoadout"));
 }
