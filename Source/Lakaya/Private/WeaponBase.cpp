@@ -3,6 +3,32 @@
 
 #include "WeaponBase.h"
 
+bool UWeaponBase::CallRemoteFunction(UFunction* Function, void* Parms, FOutParmRec* OutParms, FFrame* Stack)
+{
+	AActor* Actor = nullptr;
+	if (GetOuter()->IsA(AActor::StaticClass())) Actor = Cast<AActor>(GetOuter());
+	else if (GetOuter()->IsA(UActorComponent::StaticClass())) Actor = Cast<UActorComponent>(GetOuter())->GetOwner();
+
+	if (!Actor) return false;
+
+	if (auto Driver = Actor->GetNetDriver())
+	{
+		Driver->ProcessRemoteFunction(Actor, Function, Parms, OutParms, Stack, this);
+		return true;
+	}
+
+	return false;
+}
+
+int32 UWeaponBase::GetFunctionCallspace(UFunction* Function, FFrame* Stack)
+{
+	AActor* Actor = nullptr;
+	if (GetOuter()->IsA(UActorComponent::StaticClass())) Actor = Cast<UActorComponent>(GetOuter())->GetOwner();
+	else Actor = Cast<AActor>(GetOuter());
+
+	return Actor ? Actor->GetFunctionCallspace(Function, Stack) : FunctionCallspace::Local;
+}
+
 void UWeaponBase::ApplyEvent(const uint8& EventNumber, const float& RequestTime)
 {
 	auto CurrentTime = GetServerTime();
