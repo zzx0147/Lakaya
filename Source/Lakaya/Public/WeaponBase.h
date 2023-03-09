@@ -29,7 +29,7 @@ class LAKAYA_API UWeaponBase : public UObject
 public:
 	virtual bool IsNameStableForNetworking() const override { return false; }
 	virtual bool IsSupportedForNetworking() const override { return true; }
-	
+
 	UFUNCTION(NetMulticast, Reliable)
 	void SetupData(const FName& RowName);
 
@@ -37,7 +37,7 @@ public:
 	inline void SetEnabled(const bool& Enabled) { bIsEnabled = Enabled; }
 
 protected:
-	virtual void SetupData_Implementation(const FName& RowName) { bIsEnabled = true; }
+	virtual void SetupData_Implementation(const FName& RowName) { return; }
 	inline float GetServerTime() { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
 
 	/**
@@ -73,5 +73,5 @@ private:
 	std::priority_queue<FEventInfoStruct, std::vector<FEventInfoStruct>, std::greater<FEventInfoStruct>> PriorityQueue;
 	FTimerHandle EventTimer;
 	float CurrentEventExecutionTime = MAX_flt;
-	bool bIsEnabled;
+	bool bIsEnabled = true;
 };
