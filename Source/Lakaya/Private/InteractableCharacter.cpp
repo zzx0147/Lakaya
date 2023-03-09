@@ -15,7 +15,7 @@ AInteractableCharacter::AInteractableCharacter()
 	if (IsRunningDedicatedServer()) return;
 	
 	InteractionRange = 500;
-	CollisionChannel = ECC_GameTraceChannel3;
+	CollisionChannel = ECC_Camera;
 
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> InteractionContextFinder(
 		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_InteractionControl'"));
