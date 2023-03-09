@@ -20,6 +20,7 @@ class LAKAYA_API IInteractable
 {
 	GENERATED_BODY()
 
+	//TODO: 소유가 없는 액터에서 RPC를 호출하는 경우 함수가 호출되지 않고 무시됩니다. 따라서 IntractableCharacter에서 서버 RPC를 선언하고, 다시 IInteractable에 다음 행동을 질의하는 식으로 로직이 변경되어야 합니다.
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	/**
