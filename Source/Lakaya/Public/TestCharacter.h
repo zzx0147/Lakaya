@@ -12,14 +12,14 @@ class LAKAYA_API ATestCharacter : public ACharacter
 public:
 	ATestCharacter();
 
-	class UHUDWidget* GetHUDWidget() const;
+	// class UHUDWidget* GetHUDWidget() const;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = UI)
-	TSubclassOf<class UHUDWidget> HUDWidgetClass;
+	// UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = UI)
+	// TSubclassOf<class UHUDWidget> HUDWidgetClass;
 
-private:
-	class UHUDWidget* HUDWidget;
+// private:
+	// class UHUDWidget* HUDWidget;
 
 protected:
 	virtual void BeginPlay() override;
@@ -43,5 +43,4 @@ private:
 	void MoveRight(float Value);
 	void Turn(float Value);
 	void LookUp(float Value);
-
 };

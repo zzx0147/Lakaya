@@ -60,26 +60,13 @@ AMovableCharacter::AMovableCharacter()
 void AMovableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-}
 
-void AMovableCharacter::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-
-	if (IsRunningDedicatedServer()) return;
-
-	const auto PlayerController = Cast<APlayerController>(NewController);
-	if (!PlayerController || !PlayerController->IsLocalController()) return;
-
-	InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	if (InputSystem.IsValid()) InputSystem->AddMappingContext(MovementContext, MovementContextPriority);
-}
-
-void AMovableCharacter::UnPossessed()
-{
-	Super::UnPossessed();
-
-	if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(MovementContext);
+	if (auto PlayerController = Cast<APlayerController>(Controller))
+		if (auto LocalPlayer = PlayerController->GetLocalPlayer())
+		{
+			InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+			if (InputSystem.IsValid()) InputSystem->AddMappingContext(MovementContext, MovementContextPriority);
+		}
 }
 
 void AMovableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

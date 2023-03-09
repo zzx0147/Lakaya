@@ -58,20 +58,6 @@ AArmedCharacter::AArmedCharacter()
 	if (DataFinder.Succeeded()) WeaponClassDataTable = DataFinder.Object;
 }
 
-void AArmedCharacter::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-
-	if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
-}
-
-void AArmedCharacter::UnPossessed()
-{
-	Super::UnPossessed();
-
-	if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(WeaponControlContext);
-}
-
 void AArmedCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -115,6 +101,8 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 void AArmedCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
 	if (HasAuthority()) SetupPrimaryWeapon(TEXT("Test"));
 }
 
