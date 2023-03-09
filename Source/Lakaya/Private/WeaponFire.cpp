@@ -35,6 +35,7 @@ void UWeaponFire::ExecuteEvent(const uint8& EventNumber)
 
 void UWeaponFire::FireStart_Implementation(const float& Time)
 {
+	UE_LOG(LogTemp, Warning, TEXT("IsServer : %d"), GetWorld()->IsServer());
 	if (!GetIsEnabled()) return;
 	FireStartNotify(Time);
 	ApplyEvent(FireStartEvent, Time);

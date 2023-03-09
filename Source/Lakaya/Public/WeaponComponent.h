@@ -44,13 +44,13 @@ private:
 	T* CreateSingleSubObject(UClass* SubObjectClass, const FName& DataRowName);
 
 public:
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, VisibleAnywhere)
 	UWeaponFire* FireSubObject;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, VisibleAnywhere)
 	UWeaponAbility* AbilitySubObject;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, VisibleAnywhere)
 	UWeaponReload* ReloadSubObject;
 
 protected:
