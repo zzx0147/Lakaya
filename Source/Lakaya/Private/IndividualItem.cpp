@@ -4,6 +4,7 @@
 AIndividualItem::AIndividualItem()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	ActorHasTag("Interactable");
 	
 	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TRIGGER"));
 	Box = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BOX"));
@@ -28,7 +29,6 @@ AIndividualItem::AIndividualItem()
 void AIndividualItem::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 void AIndividualItem::PostInitializeComponents()

@@ -53,8 +53,4 @@ public:
 		const auto Object = Cast<UObject>(this);
 		Func(Object, Object->GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), Caller);
 	}
-
-	// static void Execute_InteractionStart(UObject* Object, const float& X, APawn* Pawn);
-	//
-	// static void Execute_InteractionStop(UObject* Object, const float& X, APawn* Pawn);
 };

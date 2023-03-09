@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "DamageableCharacter.h"
+#include "Interactable.h"
 #include "UObject/WeakInterfacePtr.h"
 #include "InteractableCharacter.generated.h"
 
@@ -19,7 +20,7 @@ public:
 	AInteractableCharacter();
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
