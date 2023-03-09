@@ -5,6 +5,8 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "IndividualGameMode.h"
+#include "IndividualItem.h"
 #include "Camera/CameraComponent.h"
 #include "InputMappingContext.h"
 #include "Interactable.h"
@@ -26,35 +28,9 @@ AInteractableCharacter::AInteractableCharacter()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionStopFinder
 	(TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_InteractionStop'"));
 	
-	if (InteractionContextFinder.Succeeded())
-	{
-		InteractionContext = InteractionContextFinder.Object;
-		UE_LOG(LogTemp, Warning, TEXT("InteractionContextFinder is Succeeded"));		
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InteractionContextFinder is Null"));
-	}
-	
-	if (InteractionStartFinder.Succeeded())
-	{
-		InteractionStartAction = InteractionStartFinder.Object;
-		UE_LOG(LogTemp, Warning, TEXT("InteractionStartFinder is Succeeded"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InteractionStartFinder is Null"));
-	}
-	
-	if (InteractionStopFinder.Succeeded())
-	{
-		InteractionStopAction = InteractionStopFinder.Object;
-		UE_LOG(LogTemp, Warning, TEXT("InteractionStopFinder is Succeeded"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InteractionStopFinder is Null"));
-	}
+	if (InteractionContextFinder.Succeeded()) InteractionContext = InteractionContextFinder.Object;
+	if (InteractionStartFinder.Succeeded()) InteractionStartAction = InteractionStartFinder.Object;
+	if (InteractionStopFinder.Succeeded()) InteractionStopAction = InteractionStopFinder.Object;
 }
 
 void AInteractableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -74,6 +50,8 @@ void AInteractableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	TraceQueryParams.AddIgnoredActor(this);
+	InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
+	
 }
 
 void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -85,8 +63,8 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	// Add interaction context when overlapped by trigger
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
-	if (!InputSystem->HasMappingContext(InteractionContext))
-		InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
+	// if (!InputSystem->HasMappingContext(InteractionContext))
+	// 	InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
 
 void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
@@ -98,12 +76,11 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	// Remove interaction context when far away from triggers
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	--InteractableCount;
-	if (InteractableCount == 0) InputSystem->RemoveMappingContext(InteractionContext);
+	// if (InteractableCount == 0) InputSystem->RemoveMappingContext(InteractionContext);
 }
 
 void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("InteractionStart Function Start !"));
 	FHitResult HitResult;
 	const auto Location = GetCamera()->GetComponentLocation();
 	const auto End = Location + GetCamera()->GetForwardVector() * InteractionRange;
@@ -115,17 +92,26 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 		UE_LOG(LogTemp, Warning, TEXT("Line trace failed to find an interactable object"));
 		return;
 	}
-
+		
+	if (HitResult.GetActor()->ActorHasTag("Interactable"))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Interactable is Succeeded."));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Tag Not Euqlas Interactable."));
+		return;
+	}
+	
 	InteractingActor = Cast<IInteractable>(HitResult.GetActor());
 	//TODO: 상호작용중에 캐릭터가 이동할 수 없도록 해야 합니다.
 
-	// if (InteractingActor.IsValid()) InteractingActor->Invoke(IInteractable::Execute_InteractionStart, this);
 	if (!InteractingActor.IsValid())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Interactable object does not implement IInteractable interface"));
 		return;
 	}
-
+	
 	InteractingActor->Invoke(IInteractable::Execute_InteractionStart, this);
 }
 
