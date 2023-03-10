@@ -86,7 +86,6 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 		return;
 
 	InteractingActor = Cast<IInteractable>(HitResult.GetActor());
-	//TODO: 상호작용중에 캐릭터가 이동할 수 없도록 해야 합니다.
 	if (InteractingActor.IsValid()) InteractingActor->Invoke(IInteractable::Execute_InteractionStart, this);
 }
 

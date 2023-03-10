@@ -27,7 +27,7 @@ class LAKAYA_API UWeaponBase : public UObject
 	};
 
 public:
-	//TODO: UObject는 기본적으로 RPC가 지원되지 않습니다. 리플리케이션이 되고 안되고는 아무런 관련이 없습니다. 아래의 4가지 함수가 구현되어야 합니다.
+	//TODO: 아래의 함수들을 다른 클래스를 만들어 분리합니다.
 	virtual bool IsNameStableForNetworking() const override { return false; }
 	virtual bool IsSupportedForNetworking() const override { return true; }
 	virtual bool CallRemoteFunction(UFunction* Function, void* Parms, FOutParmRec* OutParms, FFrame* Stack) override;
