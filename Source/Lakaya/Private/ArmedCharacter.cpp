@@ -79,7 +79,7 @@ void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponClassRowName)
 
 	PrimaryWeapon->RequestSetupData(Data->AssetRowName);
 	PrimaryWeapon->SetIsReplicated(true);
-	UE_LOG(LogTemp, Warning, TEXT("Component Replication : %d"), PrimaryWeapon->GetIsReplicated());
+	if (!PrimaryWeapon->GetIsReplicated()) UE_LOG(LogTemp, Warning, TEXT("PrimaryWeapon is NOT replicated"));
 }
 
 void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -109,7 +109,7 @@ void AArmedCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UE_LOG(LogTemp, Warning, TEXT("Actor Replication : %d"), GetIsReplicated());
+	if (!GetIsReplicated()) UE_LOG(LogTemp, Warning, TEXT("ArmedCharacter is NOT replicated"));
 	if (HasAuthority()) SetupPrimaryWeapon(TEXT("Test"));
 	if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
 }

@@ -27,14 +27,15 @@ protected:
 	virtual void SetupData();
 
 public:
-	inline float GetServerTime() { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
-	inline void FireStart() { if (FireSubObject) FireSubObject->FireStart(GetServerTime()); }
-	inline void FireStop() { if (FireSubObject) FireSubObject->FireStop(GetServerTime()); }
-	inline void SwitchSelector() { if (FireSubObject) FireSubObject->SwitchSelector(GetServerTime()); }
+	inline void FireStart() { if (FireSubObject) FireSubObject->FireStart(); }
+	inline void FireStop() { if (FireSubObject) FireSubObject->FireStop(); }
+	inline void SwitchSelector() { if (FireSubObject) FireSubObject->SwitchSelector(); }
 	inline void AbilityStart() { if (AbilitySubObject) AbilitySubObject->AbilityStart(); }
 	inline void AbilityStop() { if (AbilitySubObject) AbilitySubObject->AbilityStop(); }
-	inline void ReloadStart() { if (ReloadSubObject) ReloadSubObject->ReloadStart(GetServerTime()); }
-	inline void ReloadStop() { if (ReloadSubObject) ReloadSubObject->ReloadStop(GetServerTime()); }
+	inline void ReloadStart() { if (ReloadSubObject) ReloadSubObject->ReloadStart(); }
+	inline void ReloadStop() { if (ReloadSubObject) ReloadSubObject->ReloadStop(); }
+
+	//TODO: 비활성화하려는 대상의 형식을 파악하고 비활성화하도록 로직을 수정해야 합니다.
 	inline void SetFireEnabled(const bool& Enabled) { if (FireSubObject) FireSubObject->SetEnabled(Enabled); }
 	inline void SetAbilityEnabled(const bool& Enabled) { if (AbilitySubObject) AbilitySubObject->SetEnabled(Enabled); }
 	inline void SetReloadEnabled(const bool& Enabled) { if (ReloadSubObject) ReloadSubObject->SetEnabled(Enabled); }

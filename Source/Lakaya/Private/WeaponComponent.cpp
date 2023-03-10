@@ -43,9 +43,12 @@ void UWeaponComponent::SetupData()
 	ReloadSubObject = CreateSingleSubObject<UWeaponReload>(Data->ReloadClassPath.LoadSynchronous(),
 	                                                       Data->ReloadRowName);
 
-	UE_LOG(LogTemp, Warning, TEXT("Fire Replication : %d"), IsReplicatedSubObjectRegistered(FireSubObject));
-	UE_LOG(LogTemp, Warning, TEXT("Ability Replication : %d"), IsReplicatedSubObjectRegistered(AbilitySubObject));
-	UE_LOG(LogTemp, Warning, TEXT("Reload Replication : %d"), IsReplicatedSubObjectRegistered(ReloadSubObject));
+	if (!IsReplicatedSubObjectRegistered(FireSubObject))
+		UE_LOG(LogTemp, Warning, TEXT("FireSubObject is NOT replicated"));
+	if (!IsReplicatedSubObjectRegistered(AbilitySubObject))
+		UE_LOG(LogTemp, Warning, TEXT("AbilitySubObject is NOT replicated"));
+	if (!IsReplicatedSubObjectRegistered(ReloadSubObject))
+		UE_LOG(LogTemp, Warning, TEXT("ReloadSubObject is NOT replicated"));
 }
 
 void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

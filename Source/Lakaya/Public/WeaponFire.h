@@ -17,9 +17,9 @@ class LAKAYA_API UWeaponFire : public UWeaponBase
 protected:
 	enum EWeaponFireEvent : uint8
 	{
-		FireStartEvent,
-		FireStopEvent,
-		SwitchSelectorEvent,
+		RequestFireStartEvent,
+		RequestFireStopEvent,
+		RequestSwitchSelectorEvent,
 		FireStartNotifyEvent,
 		FireStopNotifyEvent,
 		SwitchSelectorNotifyEvent
@@ -28,17 +28,20 @@ protected:
 	virtual void ExecuteEvent(const uint8& EventNumber) override;
 
 public:
-	//TODO: 클라이언트에서 처리가능한 부분은 클라이언트에서 최대한 처리를 하고 서버 RPC를 콜하도록 로직을 변경해야 합니다.
-	UFUNCTION(Server, Reliable)
-	void FireStart(const float& Time);
-
-	UFUNCTION(Server, Reliable)
-	void FireStop(const float& Time);
-
-	UFUNCTION(Server, Reliable)
-	void SwitchSelector(const float& Time);
+	virtual void FireStart();
+	virtual void FireStop();
+	virtual void SwitchSelector();
 
 protected:
+	UFUNCTION(Server, Reliable)
+	void RequestFireStart(const float& Time);
+
+	UFUNCTION(Server, Reliable)
+	void RequestFireStop(const float& Time);
+
+	UFUNCTION(Server, Reliable)
+	void RequestSwitchSelector(const float& Time);
+
 	UFUNCTION(NetMulticast, Reliable)
 	void FireStartNotify(const float& Time);
 
@@ -48,9 +51,9 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void SwitchSelectorNotify(const float& Time);
 
-	virtual void FireStart_Implementation(const float& Time);
-	virtual void FireStop_Implementation(const float& Time);
-	virtual void SwitchSelector_Implementation(const float& Time);
+	virtual void RequestFireStart_Implementation(const float& Time);
+	virtual void RequestFireStop_Implementation(const float& Time);
+	virtual void RequestSwitchSelector_Implementation(const float& Time);
 	virtual void FireStartNotify_Implementation(const float& Time);
 	virtual void FireStopNotify_Implementation(const float& Time);
 	virtual void SwitchSelectorNotify_Implementation(const float& Time);
