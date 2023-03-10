@@ -29,20 +29,6 @@ const uint8& ACollectorPlayerState::GetPoint() const
 	return Point;
 }
 
-ACollectorPlayerState* ACollectorPlayerState::GetCollectorPlayerState(AActor* Actor)
-{
-	if (!Actor) return nullptr;
-
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(Actor->GetWorld(), 0);
-	if (!PlayerController) return nullptr;
-
-	APawn* PlayerPawn = PlayerController->GetPawn();
-	if (!PlayerPawn) return nullptr;
-
-	return Cast<ACollectorPlayerState>(PlayerPawn->GetPlayerState());
-	
-}
-
 void ACollectorPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

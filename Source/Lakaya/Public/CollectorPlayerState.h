@@ -22,8 +22,6 @@ public:
 	void ResetPoint();
 	const uint8& GetPoint() const;
 
-	static ACollectorPlayerState* GetCollectorPlayerState(AActor* Actor);
-	
 private:
 	 // Client must NOT change this value
 	 UPROPERTY(Replicated, Transient)

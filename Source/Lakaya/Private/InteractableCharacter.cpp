@@ -48,6 +48,15 @@ void AInteractableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	TraceQueryParams.AddIgnoredActor(this);
+	// TODO : 주석 해제
+	// if (!InputSystem->HasMappingContext(InteractionContext))
+	// InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
+	if (auto PlayerController = Cast<APlayerController>(Controller))
+		if (auto LocalPlayer = PlayerController->GetLocalPlayer())
+		{
+			InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+			if (InputSystem.IsValid()) InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
+		}
 }
 
 void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -59,8 +68,9 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	// Add interaction context when overlapped by trigger
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
-	if (!InputSystem->HasMappingContext(InteractionContext))
-		InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
+	// TODO : 주석 해제
+	// if (!InputSystem->HasMappingContext(InteractionContext))
+	// 	InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
 
 void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
@@ -72,7 +82,8 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	// Remove interaction context when far away from triggers
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	--InteractableCount;
-	if (InteractableCount == 0) InputSystem->RemoveMappingContext(InteractionContext);
+	// TODO : 주석해제
+	// if (InteractableCount == 0) InputSystem->RemoveMappingContext(InteractionContext);
 }
 
 void AInteractableCharacter::RequestInteractionStart_Implementation(const float& Time, AActor* Actor)

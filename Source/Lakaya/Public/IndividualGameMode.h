@@ -16,22 +16,28 @@ public:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
 public:
-	void RandomSpawn();
+	void InitRandomSpawn();
+	void SpawnItem();
 	
 public:
 	TArray<int32> VectorArray;
-	int32 ItemMaxCount;
-	int32 PosMinCount;
-	int32 PosMaxCount;
+	const int32 ItemMaxCount = 3;
+	const int32 PosMinCount = 1;
+	const int32 PosMaxCount = 6;
+	const int32 PosX = 1000;
 	
-	// TODO
-	FVector pos_01;
-	FVector pos_02;
-	FVector pos_03;
-	FVector pos_04;
-	FVector pos_05;
-	FVector pos_06;
+	const TArray<FVector> ItemPositions = {
+		FVector(PosX, 200, 0),
+		FVector(PosX, 400, 0),
+		FVector(PosX, 600, 0),
+		FVector(PosX, 800, 0),
+		FVector(PosX, 1000, 0),
+		FVector(PosX, 1200, 0)
+	};
 
+private:
+	FTimerHandle TimerHandle_SpawnItem;
+	
 private:
 	// int32 Minutes;
 	// int32 Seconds;

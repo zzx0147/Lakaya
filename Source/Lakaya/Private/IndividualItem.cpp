@@ -32,23 +32,6 @@ AIndividualItem::AIndividualItem()
 void AIndividualItem::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// for (const auto& Tag : Tags)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("- %s"), *Tag.ToString());
-	// }
-	
-	// const FColor TriggerColor = FColor(255, 0, 0);
-	//
-	// DrawDebugBox(
-	// 	GetWorld(),
-	// 	GetActorLocation(),
-	// 	GetComponentsBoundingBox().GetExtent(),
-	// 	TriggerColor,
-	// 	true,
-	// 	-1,
-	// 	0,
-	// 	10);
 }
 
 void AIndividualItem::PostInitializeComponents()
@@ -64,28 +47,35 @@ void AIndividualItem::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AIndividualItem::InteractionStart_Implementation(const float& Time, APawn* Caller)
-{
-	UE_LOG(LogTemp, Warning, TEXT("InteractionStart_Implementation Function "));
-}
-
-void AIndividualItem::InteractionStop_Implementation(const float& Time, APawn* Caller)
+void AIndividualItem::InteractionStart(const float& Time, APawn* Caller)
 {
 	GetItem();
 
-	ACollectorPlayerState* CollectorPlayerState = ACollectorPlayerState::GetCollectorPlayerState(Caller);
-	if (CollectorPlayerState)
+	if (Caller && Caller->GetController())
 	{
-		// CollectorPlayerState를 사용하여 을 수행합니다
-		CollectorPlayerState->GainPoint(1);
-		UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 point"), *CollectorPlayerState->GetPlayerName());
-		UE_LOG(LogTemp, Warning, TEXT("Player Totla Point : %d"), CollectorPlayerState->GetPoint());
+		ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
+		if (CollectorPlayerState)
+		{
+			// Use CollectorPlayerState to do something
+			CollectorPlayerState->GainPoint(1);
+			UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 point"), *CollectorPlayerState->GetPlayerName());
+			UE_LOG(LogTemp, Warning, TEXT("Player Total Point: %d"), CollectorPlayerState->GetPoint());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
+		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("CollectorPlayer is Null."));
+		UE_LOG(LogTemp, Warning, TEXT("Invalid Caller or Controller."));
 	}
-	
+
+	UE_LOG(LogTemp, Warning, TEXT("InteractionStart_Implementation Function "));
+}
+
+void AIndividualItem::InteractionStop(const float& Time, APawn* Caller)
+{
 	UE_LOG(LogTemp, Warning, TEXT("InteractionStop_Implementation Function "));
 }
 
@@ -106,8 +96,8 @@ void AIndividualItem::GetItem()
 	}
 	else
 	{
+		GameMode->SpawnItem();
 		GameMode->VectorArray.Remove(ItemNumber);
-		GameMode->RandomSpawn();
 	}
 	
 	Destroy();

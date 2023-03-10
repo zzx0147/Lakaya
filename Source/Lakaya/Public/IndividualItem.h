@@ -23,8 +23,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	virtual void InteractionStart_Implementation(const float& Time, APawn* Caller);
-	virtual void InteractionStop_Implementation(const float& Time, APawn* Caller);
+	virtual void InteractionStart(const float& Time, APawn* Caller) override;
+	virtual void InteractionStop(const float& Time, APawn* Caller) override;
 	
 public:
 	UPROPERTY(VisibleAnywhere, Category = Box)
