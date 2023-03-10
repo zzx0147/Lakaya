@@ -17,6 +17,7 @@ class LAKAYA_API AArmedCharacter : public AInteractableCharacter
 public:
 	AArmedCharacter();
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	virtual ELifetimeCondition AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const override;
 
 protected:
 	virtual void BeginPlay() override;

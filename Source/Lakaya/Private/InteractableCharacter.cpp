@@ -5,8 +5,6 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "IndividualGameMode.h"
-#include "IndividualItem.h"
 #include "Camera/CameraComponent.h"
 #include "InputMappingContext.h"
 #include "Interactable.h"
@@ -15,19 +13,19 @@
 AInteractableCharacter::AInteractableCharacter()
 {
 	if (IsRunningDedicatedServer()) return;
-	
+
 	InteractionRange = 500;
 	CollisionChannel = ECC_Camera;
 
-	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> InteractionContextFinder
-	(TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_InteractionControl'"));
+	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> InteractionContextFinder(
+		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_InteractionControl'"));
 
-	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionStartFinder
-	(TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_InteractionStart'"));
-	
-	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionStopFinder
-	(TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_InteractionStop'"));
-	
+	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionStartFinder(
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_InteractionStart'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionStopFinder(
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_InteractionStop'"));
+
 	if (InteractionContextFinder.Succeeded()) InteractionContext = InteractionContextFinder.Object;
 	if (InteractionStartFinder.Succeeded()) InteractionStartAction = InteractionStartFinder.Object;
 	if (InteractionStopFinder.Succeeded()) InteractionStopAction = InteractionStopFinder.Object;
@@ -50,8 +48,6 @@ void AInteractableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	TraceQueryParams.AddIgnoredActor(this);
-	if (!InputSystem->HasMappingContext(InteractionContext))
-		InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
 
 void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -59,12 +55,12 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	Super::NotifyActorBeginOverlap(OtherActor);
 
 	if (!IsOwnedByLocalPlayer()) return;
-	
+
 	// Add interaction context when overlapped by trigger
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
-	// if (!InputSystem->HasMappingContext(InteractionContext))
-	// 	InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
+	if (!InputSystem->HasMappingContext(InteractionContext))
+		InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
 
 void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
@@ -72,11 +68,21 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	Super::NotifyActorEndOverlap(OtherActor);
 
 	if (!IsOwnedByLocalPlayer()) return;
-	
+
 	// Remove interaction context when far away from triggers
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	--InteractableCount;
-	// if (InteractableCount == 0) InputSystem->RemoveMappingContext(InteractionContext);
+	if (InteractableCount == 0) InputSystem->RemoveMappingContext(InteractionContext);
+}
+
+void AInteractableCharacter::RequestInteractionStart_Implementation(const float& Time, AActor* Actor)
+{
+	if (auto Interactable = Cast<IInteractable>(Actor)) Interactable->InteractionStart(Time, this);
+}
+
+void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor)
+{
+	if (auto Interactable = Cast<IInteractable>(Actor)) Interactable->InteractionStop(Time, this);
 }
 
 void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
@@ -86,36 +92,20 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 	const auto End = Location + GetCamera()->GetForwardVector() * InteractionRange;
 
 	DrawDebugLine(GetWorld(), Location, End, FColor::Yellow, false, 2);
-	
 	if (!GetWorld()->LineTraceSingleByChannel(HitResult, Location, End, CollisionChannel, TraceQueryParams))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Line trace failed to find an interactable object"));
 		return;
-	}
-		
-	// if (HitResult.GetActor()->ActorHasTag("Interactable"))
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Interactable is Succeeded."));
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Tag Not Euqlas Interactable."));
-	// 	return;
-	// }
-	
-	InteractingActor = Cast<IInteractable>(HitResult.GetActor());
-	//TODO: 상호작용중에 캐릭터가 이동할 수 없도록 해야 합니다.
 
-	if (!InteractingActor.IsValid())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Interactable object does not implement IInteractable interface"));
-		return;
-	}
-	
-	InteractingActor->Invoke(IInteractable::Execute_InteractionStart, this);
+	if (auto Actor = HitResult.GetActor())
+		if (Actor->Implements<UInteractable>())
+		{
+			RequestInteractionStart(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), Actor);
+			InteractingActor = Actor;
+		}
 }
 
 void AInteractableCharacter::InteractionStop(const FInputActionValue& Value)
 {
-	if (InteractingActor.IsValid()) InteractingActor->Invoke(IInteractable::Execute_InteractionStop, this);
+	if (!InteractingActor.IsValid()) return;
+	RequestInteractionStop(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), InteractingActor.Get());
+	InteractingActor = nullptr;
 }

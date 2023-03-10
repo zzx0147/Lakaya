@@ -26,6 +26,12 @@ protected:
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
+	UFUNCTION(Server, Reliable)
+	void RequestInteractionStart(const float& Time, AActor* Actor);
+
+	UFUNCTION(Server, Reliable)
+	void RequestInteractionStop(const float& Time, AActor* Actor);
+
 private:
 	void InteractionStart(const FInputActionValue& Value);
 	void InteractionStop(const FInputActionValue& Value);
@@ -49,6 +55,6 @@ private:
 	TEnumAsByte<ECollisionChannel> CollisionChannel;
 
 	uint8 InteractableCount;
-	TWeakInterfacePtr<class IInteractable> InteractingActor;
+	TWeakObjectPtr<AActor> InteractingActor;
 	FCollisionQueryParams TraceQueryParams;
 };
