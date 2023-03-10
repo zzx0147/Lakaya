@@ -35,7 +35,6 @@ void UWeaponFire::ExecuteEvent(const uint8& EventNumber)
 
 void UWeaponFire::FireStart_Implementation(const float& Time)
 {
-	//TODO: 하위 클래스에게 Notify를 할지 말지 여부를 질의하고 Notify를 호출하게끔 구조를 조금 변경합니다.
 	if (!GetIsEnabled()) return;
 	FireStartNotify(Time);
 	ApplyEvent(FireStartEvent, Time);

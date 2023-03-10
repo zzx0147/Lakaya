@@ -14,22 +14,41 @@ class LAKAYA_API UWeaponAbility : public UWeaponBase
 {
 	GENERATED_BODY()
 
-public:
-	UFUNCTION(Server, Reliable)
-	void AbilityStart(const float& Time);
+protected:
+	enum EWeaponAbilityEvent : uint8
+	{
+		RequestAbilityStartEvent,
+		RequestAbilityStopEvent,
+		AbilityStartNotifyEvent,
+		AbilityStopNotifyEvent
+	};
 
-	UFUNCTION(Server, Reliable)
-	void AbilityStop(const float& Time);
+	virtual void ExecuteEvent(const uint8& EventNumber) override;
+
+public:
+	virtual void AbilityStart() { return; }
+	virtual void AbilityStop() { return; }
 
 protected:
+	UFUNCTION(Server, Reliable)
+	void RequestAbilityStart(const float& Time);
+
+	UFUNCTION(Server, Reliable)
+	void RequestAbilityStop(const float& Time);
+
 	UFUNCTION(NetMulticast, Reliable)
 	void AbilityStartNotify(const float& Time);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void AbilityStopNotify(const float& Time);
 
-	virtual void AbilityStart_Implementation(const float& Time) { return; }
-	virtual void AbilityStop_Implementation(const float& Time) { return; }
-	virtual void AbilityStartNotify_Implementation(const float& Time) { return; }
-	virtual void AbilityStopNotify_Implementation(const float& Time) { return; }
+	virtual void RequestAbilityStart_Implementation(const float& Time);
+	virtual void RequestAbilityStop_Implementation(const float& Time);
+	virtual void AbilityStartNotify_Implementation(const float& Time);
+	virtual void AbilityStopNotify_Implementation(const float& Time);
+
+	virtual void OnAbilityStart() { return; }
+	virtual void OnAbilityStop() { return; }
+	virtual void OnAbilityStartNotify() { return; }
+	virtual void OnAbilityStopNotify() { return; }
 };
