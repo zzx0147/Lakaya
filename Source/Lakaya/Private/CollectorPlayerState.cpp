@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "CollectorPlayerState.h"
 
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 void ACollectorPlayerState::GainPoint(const uint8& GainedPoint)
@@ -12,8 +12,11 @@ void ACollectorPlayerState::GainPoint(const uint8& GainedPoint)
 		UE_LOG(LogSecurity, Warning, TEXT("Client trying to gain a point. there is an logic error or client cheated"));
 		return;
 	}
-	
+
 	Point += GainedPoint;
+
+	// 점수가 변경 됐을 경우, 다른 클라이언트들에게 동기화
+	OnRep_Score();
 }
 
 void ACollectorPlayerState::ResetPoint()
@@ -24,6 +27,20 @@ void ACollectorPlayerState::ResetPoint()
 const uint8& ACollectorPlayerState::GetPoint() const
 {
 	return Point;
+}
+
+ACollectorPlayerState* ACollectorPlayerState::GetCollectorPlayerState(AActor* Actor)
+{
+	if (!Actor) return nullptr;
+
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(Actor->GetWorld(), 0);
+	if (!PlayerController) return nullptr;
+
+	APawn* PlayerPawn = PlayerController->GetPawn();
+	if (!PlayerPawn) return nullptr;
+
+	return Cast<ACollectorPlayerState>(PlayerPawn->GetPlayerState());
+	
 }
 
 void ACollectorPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

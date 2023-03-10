@@ -1,5 +1,8 @@
 #include "IndividualItem.h"
+
+#include "CollectorPlayerState.h"
 #include "IndividualGameMode.h"
+#include "MenuCallingPlayerController.h"
 
 AIndividualItem::AIndividualItem()
 {
@@ -30,10 +33,10 @@ void AIndividualItem::BeginPlay()
 {
 	Super::BeginPlay();
 
-	for (const auto& Tag : Tags)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("- %s"), *Tag.ToString());
-	}
+	// for (const auto& Tag : Tags)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("- %s"), *Tag.ToString());
+	// }
 	
 	// const FColor TriggerColor = FColor(255, 0, 0);
 	//
@@ -68,16 +71,20 @@ void AIndividualItem::InteractionStart_Implementation(const float& Time, APawn* 
 
 void AIndividualItem::InteractionStop_Implementation(const float& Time, APawn* Caller)
 {
-	AIndividualGameMode* GameMode = GetWorld()->GetAuthGameMode<AIndividualGameMode>();
-	
-	if (GameMode)
+	GetItem();
+
+	ACollectorPlayerState* CollectorPlayerState = ACollectorPlayerState::GetCollectorPlayerState(Caller);
+	if (CollectorPlayerState)
 	{
-		GameMode->VectorArray.Remove(ItemNumber);
-		GameMode->RandomSpawn();
+		// CollectorPlayerState를 사용하여 을 수행합니다
+		CollectorPlayerState->GainPoint(1);
+		UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 point"), *CollectorPlayerState->GetPlayerName());
+		UE_LOG(LogTemp, Warning, TEXT("Player Totla Point : %d"), CollectorPlayerState->GetPoint());
 	}
-	else return;
-	
-	Destroy();
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CollectorPlayer is Null."));
+	}
 	
 	UE_LOG(LogTemp, Warning, TEXT("InteractionStop_Implementation Function "));
 }
@@ -89,16 +96,18 @@ int32 AIndividualItem::GetItemNumber()
 
 void AIndividualItem::GetItem()
 {
-	AIndividualGameMode* GameMode = GetWorld()->GetAuthGameMode<AIndividualGameMode>();
+	UE_LOG(LogTemp, Warning, TEXT("GetItem !"));
+	AIndividualGameMode* GameMode = Cast<AIndividualGameMode>(GetWorld()->GetAuthGameMode());
 	
-	if (GameMode)
+	if (!GameMode)
 	{
-		GameMode->VectorArray.Remove(ItemNumber);
-		GameMode->RandomSpawn();
+		UE_LOG(LogTemp, Warning, TEXT("GameMode is Null."));
+		return;
 	}
 	else
 	{
-		return;
+		GameMode->VectorArray.Remove(ItemNumber);
+		GameMode->RandomSpawn();
 	}
 	
 	Destroy();

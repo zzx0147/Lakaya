@@ -35,13 +35,11 @@ public:
 
 public:
 	int32 GetItemNumber();
+	void GetItem();
 	
 public:
 	int32 ItemNumber;
 
-public:
-	void GetItem();
-	
 private:
 	// UFUNCTION()
 	// void OnCharacterOverlap(UPrimitiveComponent* OverlappedComp,
