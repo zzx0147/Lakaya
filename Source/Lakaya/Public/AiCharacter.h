@@ -16,12 +16,7 @@ class LAKAYA_API AAiCharacter : public ACharacter
 
 public:
 	AAiCharacter();
-
-protected:
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
-
-private:
-	// AI 동작에 필요한 변수와 함수들을 선언합니다.
+	
 };
 
