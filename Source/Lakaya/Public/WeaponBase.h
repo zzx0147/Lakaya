@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Object.h"
 #include "queue"
+#include "RemoteCallableSubObject.h"
 #include "GameFramework/GameStateBase.h"
 #include "WeaponBase.generated.h"
 
@@ -13,7 +13,7 @@
  * 
  */
 UCLASS(Config=Game, Abstract)
-class LAKAYA_API UWeaponBase : public UObject
+class LAKAYA_API UWeaponBase : public URemoteCallableSubObject
 {
 	GENERATED_BODY()
 
@@ -27,11 +27,7 @@ class LAKAYA_API UWeaponBase : public UObject
 	};
 
 public:
-	//TODO: 아래의 함수들을 다른 클래스를 만들어 분리합니다.
 	virtual bool IsNameStableForNetworking() const override { return false; }
-	virtual bool IsSupportedForNetworking() const override { return true; }
-	virtual bool CallRemoteFunction(UFunction* Function, void* Parms, FOutParmRec* OutParms, FFrame* Stack) override;
-	virtual int32 GetFunctionCallspace(UFunction* Function, FFrame* Stack) override;
 
 	UFUNCTION(NetMulticast, Reliable)
 	void SetupData(const FName& RowName);
