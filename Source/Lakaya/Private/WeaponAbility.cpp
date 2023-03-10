@@ -28,6 +28,16 @@ void UWeaponAbility::ExecuteEvent(const uint8& EventNumber)
 	}
 }
 
+void UWeaponAbility::AbilityStart()
+{
+	RequestAbilityStart(GetServerTime());
+}
+
+void UWeaponAbility::AbilityStop()
+{
+	RequestAbilityStop(GetServerTime());
+}
+
 void UWeaponAbility::RequestAbilityStart_Implementation(const float& Time)
 {
 	if (!GetIsEnabled()) return;

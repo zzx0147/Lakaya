@@ -26,8 +26,8 @@ protected:
 	virtual void ExecuteEvent(const uint8& EventNumber) override;
 
 public:
-	virtual void AbilityStart() { return; }
-	virtual void AbilityStop() { return; }
+	virtual void AbilityStart();
+	virtual void AbilityStop();
 
 protected:
 	UFUNCTION(Server, Reliable)
