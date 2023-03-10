@@ -20,38 +20,19 @@ class LAKAYA_API IInteractable
 {
 	GENERATED_BODY()
 
-	//TODO: 소유가 없는 액터에서 RPC를 호출하는 경우 함수가 호출되지 않고 무시됩니다. 따라서 IntractableCharacter에서 서버 RPC를 선언하고, 다시 IInteractable에 다음 행동을 질의하는 식으로 로직이 변경되어야 합니다.
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	/**
-	 * @brief 인터렉션 시작을 서버에 요청합니다. 직접 호출하는 대신 Invoke 함수를 사용하여 호출하세요.
-	 * @param Time 클라이언트에서 인터렉션을 시작한 시간입니다.
-	 * @param CallerID 플레이어의 UniqueID입니다.
+	 * @brief 캐릭터가 이 액터와 인터렉션을 시작했을 때 호출됩니다.
+	 * @param Time 캐릭터가 인터렉션을 시작한 시간입니다.
+	 * @param Caller 인터렉션을 요청한 캐릭터입니다.
 	 */
-	UFUNCTION(Server, Reliable, WithValidation)
 	virtual void InteractionStart(const float& Time, APawn* Caller);
-
-	virtual bool InteractionStart_Validate(const float& Time, APawn* Caller) { return true; }
-
+	
 	/**
-	 * @brief 인터렉션 중단을 서버에 요청합니다. 직접 호출하는 대신 Invoke 함수를 사용하여 호출하세요.
-	 * @param Time 클라이언트에서 인터렉션을 중단한 시간입니다.
-	 * @param CallerID 플레이어의 UniqueID입니다.
+	 * @brief 캐릭터가 인터렉션을 중단한 경우에 호출됩니다.
+	 * @param Time 캐릭터가 인터렉션을 중단한 시간입니다.
+	 * @param Caller 인터렉션을 중단한 캐릭터입니다.
 	 */
-	UFUNCTION(Server, Reliable, WithValidation)
 	virtual void InteractionStop(const float& Time, APawn* Caller);
-
-	virtual bool InteractionStop_Validate(const float& Time, APawn* Caller) { return true; }
-
-
-	/**
-	 * @brief 인터페이스의 이벤트 함수를 호출하는 절차의 편의를 위해 만들어진 함수입니다.
-	 * @param Func 호출하려는 이벤트 함수
-	 * @param Caller 호출하는 APawn
-	 */
-	inline void Invoke(void (*Func)(UObject*, const float&, APawn*), APawn* Caller)
-	{
-		const auto Object = Cast<UObject>(this);
-		Func(Object, Object->GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), Caller);
-	}
 };

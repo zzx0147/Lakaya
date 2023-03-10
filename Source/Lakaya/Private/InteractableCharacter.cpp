@@ -13,7 +13,7 @@
 AInteractableCharacter::AInteractableCharacter()
 {
 	if (IsRunningDedicatedServer()) return;
-	
+
 	InteractionRange = 500;
 	CollisionChannel = ECC_Camera;
 
@@ -55,7 +55,7 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	Super::NotifyActorBeginOverlap(OtherActor);
 
 	if (!IsOwnedByLocalPlayer()) return;
-	
+
 	// Add interaction context when overlapped by trigger
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
@@ -68,11 +68,23 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	Super::NotifyActorEndOverlap(OtherActor);
 
 	if (!IsOwnedByLocalPlayer()) return;
-	
+
 	// Remove interaction context when far away from triggers
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	--InteractableCount;
 	if (InteractableCount == 0) InputSystem->RemoveMappingContext(InteractionContext);
+}
+
+void AInteractableCharacter::RequestInteractionStart_Implementation(const float& Time, AActor* Actor)
+{
+	UE_LOG(LogTemp, Warning, TEXT("ServerStart"));
+	if (auto Interactable = Cast<IInteractable>(Actor)) Interactable->InteractionStart(Time, this);
+}
+
+void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor)
+{
+	UE_LOG(LogTemp, Warning, TEXT("ServerStop"));
+	if (auto Interactable = Cast<IInteractable>(Actor)) Interactable->InteractionStop(Time, this);
 }
 
 void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
@@ -85,11 +97,20 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 	if (!GetWorld()->LineTraceSingleByChannel(HitResult, Location, End, CollisionChannel, TraceQueryParams))
 		return;
 
-	InteractingActor = Cast<IInteractable>(HitResult.GetActor());
-	if (InteractingActor.IsValid()) InteractingActor->Invoke(IInteractable::Execute_InteractionStart, this);
+	UE_LOG(LogTemp, Warning, TEXT("Hitted"));
+	if (auto Actor = HitResult.GetActor())
+		if (Actor->Implements<UInteractable>())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Confirmed"));
+			RequestInteractionStart(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), Actor);
+			InteractingActor = Actor;
+		}
 }
 
 void AInteractableCharacter::InteractionStop(const FInputActionValue& Value)
 {
-	if (InteractingActor.IsValid()) InteractingActor->Invoke(IInteractable::Execute_InteractionStop, this);
+	if (!InteractingActor.IsValid()) return;
+	UE_LOG(LogTemp, Warning, TEXT("InteractionStop"));
+	RequestInteractionStop(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), InteractingActor.Get());
+	InteractingActor = nullptr;
 }
