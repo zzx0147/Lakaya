@@ -77,13 +77,11 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 
 void AInteractableCharacter::RequestInteractionStart_Implementation(const float& Time, AActor* Actor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ServerStart"));
 	if (auto Interactable = Cast<IInteractable>(Actor)) Interactable->InteractionStart(Time, this);
 }
 
 void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ServerStop"));
 	if (auto Interactable = Cast<IInteractable>(Actor)) Interactable->InteractionStop(Time, this);
 }
 
@@ -97,11 +95,9 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 	if (!GetWorld()->LineTraceSingleByChannel(HitResult, Location, End, CollisionChannel, TraceQueryParams))
 		return;
 
-	UE_LOG(LogTemp, Warning, TEXT("Hitted"));
 	if (auto Actor = HitResult.GetActor())
 		if (Actor->Implements<UInteractable>())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Confirmed"));
 			RequestInteractionStart(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), Actor);
 			InteractingActor = Actor;
 		}
@@ -110,7 +106,6 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 void AInteractableCharacter::InteractionStop(const FInputActionValue& Value)
 {
 	if (!InteractingActor.IsValid()) return;
-	UE_LOG(LogTemp, Warning, TEXT("InteractionStop"));
 	RequestInteractionStop(GetWorld()->GetGameState()->GetServerWorldTimeSeconds(), InteractingActor.Get());
 	InteractingActor = nullptr;
 }
