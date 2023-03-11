@@ -10,6 +10,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DataTable.h"
+#include "GameFramework/SpringArmComponent.h"
 
 URiffleFire::URiffleFire()
 {
@@ -23,10 +24,10 @@ void URiffleFire::OnFireStart()
 {
 	Super::OnFireStart();
 	auto& TimerManager = GetWorld()->GetTimerManager();
-	
+
 	if (TimerManager.IsTimerActive(SelectorTimer) || GunComponent.IsValid() && GunComponent->GetRemainBullets() == 0)
 		return;
-	
+
 	if (TimerManager.IsTimerActive(FireTimer)) OnNestedFire();
 	else OnFreshFire();
 }
@@ -101,6 +102,7 @@ void URiffleFire::SetupData_Implementation(const FName& RowName)
 	BaseDamage = Data->BaseDamage;
 	FireDelay = 60 / Data->FireRate;
 	FireRange = Data->FireRange;
+	SqrFireRange = FMath::Square(FireRange);
 	SwitchingDelay = Data->SelectorSwitchingDelay;
 }
 
@@ -113,23 +115,20 @@ void URiffleFire::TraceFire()
 	}
 	--FireCount;
 
-	//TODO: 사거리를 제한하는 로직을 추가합니다.
 	FHitResult HitResult;
-	const auto CameraLocation = Character->GetCamera()->GetComponentLocation();
-	const auto CameraForward = CameraLocation + Character->GetCamera()->GetForwardVector() * TraceCameraRange;
-	FVector AimPoint;
+	auto CameraLocation = Character->GetCamera()->GetComponentLocation();
+	auto Distance = Character->GetSpringArm()->TargetArmLength;
 
-	// Get camera watching point
-	DrawDebugLine(GetWorld(), CameraLocation, CameraForward, FColor::Green, false, 1);
-	if (GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, CameraForward, ECC_Camera, TraceQueryParams))
-		AimPoint = HitResult.ImpactPoint;
-	else AimPoint = CameraForward;
+	// FireRange는 캐릭터를 기준으로 정의된 값이므로 캐릭터와 카메라의 거리를 더해줍니다.
+	auto Destination = CameraLocation + Character->GetCamera()->GetForwardVector() * (FireRange + Distance);
 
-	// Trace from actor to camera watching point
-	const auto& Location = Character->GetActorLocation();
-	DrawDebugLine(GetWorld(), Location, AimPoint, FColor::Red, false, 1);
-	if (!GetWorld()->LineTraceSingleByChannel(HitResult, Location, AimPoint, ECC_GameTraceChannel2, TraceQueryParams))
+	// Trace from camera
+	DrawDebugLine(GetWorld(), CameraLocation, Destination, FColor::Red, false, 1);
+	if (!GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, Destination, ECC_Camera, TraceQueryParams))
 		return;
+
+	// 캐릭터를 기준으로 FireRange보다 밖에 있는 경우 배제합니다.
+	if (SqrFireRange < (HitResult.ImpactPoint - Character->GetActorLocation()).SquaredLength()) return;
 
 	UGameplayStatics::ApplyDamage(HitResult.GetActor(), BaseDamage, Character->GetController(),
 	                              Character.Get(), nullptr);
