@@ -18,6 +18,7 @@ public:
 public:
 	void InitRandomSpawn();
 	void SpawnItem();
+	void OnItemSpawned();
 	
 public:
 	TArray<int32> VectorArray;
@@ -37,18 +38,4 @@ public:
 
 private:
 	FTimerHandle TimerHandle_SpawnItem;
-	
-private:
-	// int32 Minutes;
-	// int32 Seconds;
-
-public:
-	// int32 GetMinutes();
-	// int32 GetSeconds();
-	//
-	// int32 SetMinutes(int32 Value);
-	// int32 SetSeconds(int32 Value);
-	//
-	// int32 MinusMinutes(int32 Value);
-	// int32 MinusSeconds(int32 Value);
 };

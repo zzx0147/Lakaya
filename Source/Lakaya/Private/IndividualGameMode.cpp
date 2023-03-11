@@ -11,24 +11,13 @@ AIndividualGameMode::AIndividualGameMode()
 	DefaultPawnClass = AArmedCharacter::StaticClass();
 	PlayerControllerClass = AMenuCallingPlayerController::StaticClass();
 	PlayerStateClass = ACollectorPlayerState::StaticClass();
-	
-	// ItemMaxCount = 3;
-	// PosMinCount = 1;
-	// PosMaxCount = 6;
-	// PosX = 1000;
-
-	// Minutes = 3;
-	// Seconds = 1;
 }
 
 void AIndividualGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	for (int i = 0; i < ItemMaxCount; i++)
-	{
-		InitRandomSpawn();
-	}
+	InitRandomSpawn();
 }
 
 void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
@@ -78,41 +67,22 @@ void AIndividualGameMode::InitRandomSpawn()
 		item->SetActorRelativeLocation(FVector(ItemPositions[5]));
 		break;
 	}
-	
+
+	OnItemSpawned();
 }
 
 void AIndividualGameMode::SpawnItem()
 {
-	// TODO : 시간 조정.
+	// TODO : 기획서에 맞게 시간 수정.
 	GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::InitRandomSpawn, 1.0f, false);
 }
 
-// int32 AIndividualGameMode::GetMinutes()
-// {
-// 	return Minutes;
-// }
-//
-// int32 AIndividualGameMode::GetSeconds()
-// {
-// 	return Seconds;
-// }
-//
-// int32 AIndividualGameMode::SetMinutes(int32 Value)
-// {
-// 	return Minutes = Value;
-// }
-//
-// int32 AIndividualGameMode::SetSeconds(int32 Value)
-// {
-// 	return Seconds = Value;
-// }
-//
-// int32 AIndividualGameMode::MinusMinutes(int32 Value)
-// {
-// 	return Minutes -= Value;
-// }
-//
-// int32 AIndividualGameMode::MinusSeconds(int32 Value)
-// {
-// 	return Seconds -= Value;
-// }
+void AIndividualGameMode::OnItemSpawned()
+{
+	int32 NumSpawnedItems = VectorArray.Num();
+
+	if (NumSpawnedItems < ItemMaxCount)
+	{
+		GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::InitRandomSpawn, 1.0f, false);
+	}
+}

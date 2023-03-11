@@ -29,6 +29,34 @@ const uint8& ACollectorPlayerState::GetPoint() const
 	return Point;
 }
 
+void ACollectorPlayerState::GainEnergy(const uint8& GainedEnergy)
+{
+	if (!HasAuthority())
+	{
+		UE_LOG(LogSecurity, Warning, TEXT("Client trying to gain a Energy, there is an logic error or client cheated"));
+		return;
+	}
+
+	Energy += GainedEnergy;
+
+	// 획득 에너지 갯수가 변경 됐을 경우, 다른 클라이언트들에게 동기화
+	OnRep_Energy();
+}
+
+void ACollectorPlayerState::ResetEnergy()
+{
+	Energy = 0;
+}
+
+const uint8& ACollectorPlayerState::GetEnergy() const
+{
+	return Energy;
+}
+
+void ACollectorPlayerState::OnRep_Energy()
+{
+}
+
 void ACollectorPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

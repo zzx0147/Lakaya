@@ -22,8 +22,17 @@ public:
 	void ResetPoint();
 	const uint8& GetPoint() const;
 
+	void GainEnergy(const uint8& GainedEnergy);
+	void ResetEnergy();
+	const uint8& GetEnergy() const;
+
+	UFUNCTION()
+	void OnRep_Energy();
 private:
 	 // Client must NOT change this value
 	 UPROPERTY(Replicated, Transient)
 	 uint8 Point;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Energy, Transient)
+	uint8 Energy;
 };

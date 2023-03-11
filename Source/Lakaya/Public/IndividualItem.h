@@ -26,20 +26,24 @@ private:
 	virtual void InteractionStart(const float& Time, APawn* Caller) override;
 	virtual void InteractionStop(const float& Time, APawn* Caller) override;
 	
-public:
-	UPROPERTY(VisibleAnywhere, Category = Box)
+private:
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UBoxComponent* Trigger;
 
-	UPROPERTY(VisibleAnywhere, Category = Box)
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* Box;
 
 public:
-	int32 GetItemNumber();
-	void GetItem();
+	UPROPERTY(EditAnywhere, Category = "Item")
+	int32 ItemNumber;
 	
 public:
-	int32 ItemNumber;
+	UFUNCTION(Category = "Item")
+	int32 GetItemNumber() { return ItemNumber; }
 
+	UFUNCTION(Category = "Item")
+	void GetItem();
+	
 private:
 	// UFUNCTION()
 	// void OnCharacterOverlap(UPrimitiveComponent* OverlappedComp,

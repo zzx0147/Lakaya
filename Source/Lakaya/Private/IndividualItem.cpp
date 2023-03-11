@@ -9,8 +9,8 @@ AIndividualItem::AIndividualItem()
 	PrimaryActorTick.bCanEverTick = false;
 	Tags.Add("Interactable");
 	
-	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TRIGGER"));
-	Box = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BOX"));
+	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("Trigger"));
+	Box = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Box"));
 
 	RootComponent = Trigger;
 	Box->SetupAttachment(RootComponent);
@@ -20,7 +20,7 @@ AIndividualItem::AIndividualItem()
 	if (SM_BOX.Succeeded())
 		Box->SetStaticMesh(SM_BOX.Object);
 	
-	Trigger->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+	Trigger->SetRelativeLocation(FVector::ZeroVector);
 
 	// Collision Profile
 	// Trigger->SetCollisionProfileName(TEXT("IndividualItem"));
@@ -57,9 +57,10 @@ void AIndividualItem::InteractionStart(const float& Time, APawn* Caller)
 		if (CollectorPlayerState)
 		{
 			// Use CollectorPlayerState to do something
-			CollectorPlayerState->GainPoint(1);
-			UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 point"), *CollectorPlayerState->GetPlayerName());
-			UE_LOG(LogTemp, Warning, TEXT("Player Total Point: %d"), CollectorPlayerState->GetPoint());
+			// CollectorPlayerState->GainPoint(1);
+			CollectorPlayerState->GainEnergy(1);
+			UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 Energy"), *CollectorPlayerState->GetPlayerName());
+			UE_LOG(LogTemp, Warning, TEXT("Player Total Energy: %d"), CollectorPlayerState->GetEnergy());
 		}
 		else
 		{
@@ -77,11 +78,6 @@ void AIndividualItem::InteractionStart(const float& Time, APawn* Caller)
 void AIndividualItem::InteractionStop(const float& Time, APawn* Caller)
 {
 	UE_LOG(LogTemp, Warning, TEXT("InteractionStop_Implementation Function "));
-}
-
-int32 AIndividualItem::GetItemNumber()
-{
-	return ItemNumber;
 }
 
 void AIndividualItem::GetItem()
