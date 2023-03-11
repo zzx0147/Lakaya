@@ -76,7 +76,7 @@ T* UWeaponComponent::CreateSingleSubObject(UClass* SubObjectClass, const FName& 
 		return nullptr;
 	}
 
-	AddReplicatedSubObject(Ptr);
 	Ptr->SetupData(DataRowName);
+	AddReplicatedSubObject(Ptr);
 	return Ptr;
 }
