@@ -7,11 +7,6 @@
 #include "Camera/CameraComponent.h"
 #include "Net/UnrealNetwork.h"
 
-UZoomAbility::UZoomAbility()
-{
-	FOVMultiplier = 0.5f;
-}
-
 void UZoomAbility::AbilityStart()
 {
 	if (Camera.IsValid()) Camera->SetFieldOfView(Camera->FieldOfView * FOVMultiplier);
@@ -24,10 +19,11 @@ void UZoomAbility::AbilityStop()
 	else UE_LOG(LogNetSubObject, Warning, TEXT("Camera is Invalid!"));
 }
 
-void UZoomAbility::SetupData_Implementation(const FName& RowName)
+void UZoomAbility::SetupData(const FName& RowName)
 {
-	Super::SetupData_Implementation(RowName);
-	
+	Super::SetupData(RowName);
+
+	FOVMultiplier = 0.5f;
 	if (auto Outer = Cast<UActorComponent>(GetOuter()))
 		if (auto Actor = Cast<AThirdPersonCharacter>(Outer->GetOwner()))
 		{
@@ -41,5 +37,6 @@ void UZoomAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UZoomAbility, Camera);
+	DOREPLIFETIME_CONDITION(UZoomAbility, Camera, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(UZoomAbility, FOVMultiplier, COND_OwnerOnly);
 }

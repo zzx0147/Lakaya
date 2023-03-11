@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DataTable.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Net/UnrealNetwork.h"
 
 URiffleFire::URiffleFire()
 {
@@ -20,13 +21,33 @@ URiffleFire::URiffleFire()
 	if (TableFinder.Succeeded()) WeaponFireDataTable = TableFinder.Object;
 }
 
+void URiffleFire::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(URiffleFire, BaseDamage, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(URiffleFire, FireDelay, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(URiffleFire, FireRange, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(URiffleFire, SqrFireRange, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(URiffleFire, SwitchingDelay, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(URiffleFire, GunComponent, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(URiffleFire, Character, COND_InitialOnly);
+}
+
+
 void URiffleFire::OnFireStart()
 {
 	Super::OnFireStart();
 	auto& TimerManager = GetWorld()->GetTimerManager();
 
-	if (TimerManager.IsTimerActive(SelectorTimer) || GunComponent.IsValid() && GunComponent->GetRemainBullets() == 0)
+	if (TimerManager.IsTimerActive(SelectorTimer))
 		return;
+
+	if (GunComponent.IsValid() && GunComponent->GetRemainBullets() == 0)
+	{
+		EmptyMagazine();
+		return;
+	}
 
 	if (TimerManager.IsTimerActive(FireTimer)) OnNestedFire();
 	else OnFreshFire();
@@ -56,7 +77,8 @@ void URiffleFire::OnSwitchSelector()
 		return;
 	}
 
-	GetWorld()->GetTimerManager().SetTimer(SelectorTimer, this, &URiffleFire::UpdateFireMode, FireDelay);
+	GetWorld()->GetTimerManager().SetTimer(SelectorTimer, this, &URiffleFire::UpdateFireMode,
+	                                       SwitchingDelay - LockstepDelay);
 }
 
 void URiffleFire::OnFireStartNotify()
@@ -77,9 +99,9 @@ void URiffleFire::OnSwitchSelectorNotify()
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Switch"));
 }
 
-void URiffleFire::SetupData_Implementation(const FName& RowName)
+void URiffleFire::SetupData(const FName& RowName)
 {
-	Super::SetupData_Implementation(RowName);
+	Super::SetupData(RowName);
 
 	auto Component = Cast<UActorComponent>(GetOuter());
 	if (Component == nullptr)
@@ -106,14 +128,26 @@ void URiffleFire::SetupData_Implementation(const FName& RowName)
 	SwitchingDelay = Data->SelectorSwitchingDelay;
 }
 
+void URiffleFire::EmptyMagazine_Implementation()
+{
+	if (GunComponent.IsValid()) GunComponent->ReloadStart();
+}
+
 void URiffleFire::TraceFire()
 {
-	if (FireCount == 0 || GunComponent.IsValid() && !GunComponent->CostBullets(1))
+	if (FireCount == 0)
 	{
 		StopFire();
 		return;
 	}
 	--FireCount;
+
+	if (GunComponent.IsValid() && !GunComponent->CostBullets(1))
+	{
+		EmptyMagazine();
+		StopFire();
+		return;
+	}
 
 	FHitResult HitResult;
 	auto CameraLocation = Character->GetCamera()->GetComponentLocation();
@@ -136,6 +170,7 @@ void URiffleFire::TraceFire()
 
 void URiffleFire::StopFire()
 {
+	FireCount = 0;
 	GetWorld()->GetTimerManager().ClearTimer(FireTimer);
 }
 

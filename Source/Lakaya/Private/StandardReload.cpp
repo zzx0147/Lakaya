@@ -6,6 +6,7 @@
 #include "GunComponent.h"
 #include "WeaponReloadData.h"
 #include "Engine/DataTable.h"
+#include "Net/UnrealNetwork.h"
 
 UStandardReload::UStandardReload()
 {
@@ -15,9 +16,17 @@ UStandardReload::UStandardReload()
 	if (TableFinder.Succeeded()) ReloadTable = TableFinder.Object;
 }
 
-void UStandardReload::SetupData_Implementation(const FName& RowName)
+void UStandardReload::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	Super::SetupData_Implementation(RowName);
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(UStandardReload, GunComponent, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(UStandardReload, ReloadDelay, COND_InitialOnly);
+}
+
+void UStandardReload::SetupData(const FName& RowName)
+{
+	Super::SetupData(RowName);
 
 	GunComponent = Cast<UGunComponent>(GetOuter());
 
@@ -32,7 +41,8 @@ void UStandardReload::OnReloadStart()
 	if (GunComponent.IsValid()) GunComponent->SetFireEnabled(false);
 	auto& TimerManager = GetWorld()->GetTimerManager();
 	if (TimerManager.IsTimerActive(ReloadTimer)) return;
-	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &UStandardReload::ReloadCallback, ReloadDelay);
+	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &UStandardReload::ReloadCallback,
+	                                       ReloadDelay - LockstepDelay);
 }
 
 void UStandardReload::OnReloadStartNotify()
