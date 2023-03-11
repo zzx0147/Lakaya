@@ -68,7 +68,7 @@ void AIndividualGameMode::InitRandomSpawn()
 		break;
 	}
 
-	OnItemSpawned();
+	ItemNumCheck();
 }
 
 void AIndividualGameMode::SpawnItem()
@@ -77,12 +77,10 @@ void AIndividualGameMode::SpawnItem()
 	GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::InitRandomSpawn, 1.0f, false);
 }
 
-void AIndividualGameMode::OnItemSpawned()
+void AIndividualGameMode::ItemNumCheck()
 {
 	int32 NumSpawnedItems = VectorArray.Num();
 
 	if (NumSpawnedItems < ItemMaxCount)
-	{
 		GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::InitRandomSpawn, 1.0f, false);
-	}
 }

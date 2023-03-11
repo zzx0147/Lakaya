@@ -18,7 +18,7 @@ public:
 public:
 	void InitRandomSpawn();
 	void SpawnItem();
-	void OnItemSpawned();
+	void ItemNumCheck();
 	
 public:
 	TArray<int32> VectorArray;

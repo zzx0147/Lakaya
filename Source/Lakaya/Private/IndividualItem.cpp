@@ -22,10 +22,6 @@ AIndividualItem::AIndividualItem()
 	
 	Trigger->SetRelativeLocation(FVector::ZeroVector);
 
-	// Collision Profile
-	// Trigger->SetCollisionProfileName(TEXT("IndividualItem"));
-	// Box->SetCollisionProfileName(TEXT("NoCollision"));
-
 	bReplicates = true;
 }
 
@@ -38,8 +34,6 @@ void AIndividualItem::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	// 등록
-	// Trigger->OnComponentBeginOverlap.AddDynamic(this, &AIndividualItem::OnCharacterOverlap);
 }
 
 void AIndividualItem::Tick(float DeltaTime)
@@ -56,7 +50,6 @@ void AIndividualItem::InteractionStart(const float& Time, APawn* Caller)
 		ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
 		if (CollectorPlayerState)
 		{
-			// Use CollectorPlayerState to do something
 			// CollectorPlayerState->GainPoint(1);
 			CollectorPlayerState->GainEnergy(1);
 			UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 Energy"), *CollectorPlayerState->GetPlayerName());
@@ -72,12 +65,12 @@ void AIndividualItem::InteractionStart(const float& Time, APawn* Caller)
 		UE_LOG(LogTemp, Warning, TEXT("Invalid Caller or Controller."));
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("InteractionStart_Implementation Function "));
+	UE_LOG(LogTemp, Warning, TEXT("InteractionStart Function."));
 }
 
 void AIndividualItem::InteractionStop(const float& Time, APawn* Caller)
 {
-	UE_LOG(LogTemp, Warning, TEXT("InteractionStop_Implementation Function "));
+	UE_LOG(LogTemp, Warning, TEXT("InteractionStop Function."));
 }
 
 void AIndividualItem::GetItem()
@@ -98,8 +91,3 @@ void AIndividualItem::GetItem()
 	
 	Destroy();
 }
-
-// void AIndividualItem::OnCharacterOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-                                         // UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-// {
-// }
