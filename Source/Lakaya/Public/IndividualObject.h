@@ -23,6 +23,10 @@ public:
 private:
 	virtual void InteractionStart(const float& Time, APawn* Caller) override;
 	virtual void InteractionStop(const float& Time, APawn* Caller) override;
+
+	void AutomaticInteractionStop();
+
+	void MakeAvailable();
 	
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
@@ -31,7 +35,13 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* Cylinder;
 
-public:
+private:
+	const float MaxInteractionDuration = 4;
 	float InteractingStartTime;
 	float InteractingStopTime;
+
+	bool bIsAvailable;
+	
+	FTimerHandle InteractionTimerHandle;
+	FTimerHandle AvailableTimerHandle;
 };

@@ -21,6 +21,8 @@ AIndividualObject::AIndividualObject()
 	
 	Trigger->SetRelativeLocation(FVector::ZeroVector);
 
+	bIsAvailable = true;
+	
 	bReplicates = true;
 }
 
@@ -36,37 +38,80 @@ void AIndividualObject::Tick(float DeltaTime)
 
 void AIndividualObject::InteractionStart(const float& Time, APawn* Caller)
 {
+	if (!bIsAvailable)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Not Available."));
+		return;
+	}
+	
 	UE_LOG(LogTemp, Warning, TEXT("Cylinder InteractionStart !"));
 
 	InteractingStartTime = UGameplayStatics::GetRealTimeSeconds(this);	
-	
+
+	GetWorldTimerManager().SetTimer(InteractionTimerHandle, this, &AIndividualObject::AutomaticInteractionStop, MaxInteractionDuration, false);
 }
 
 void AIndividualObject::InteractionStop(const float& Time, APawn* Caller)
 {
+	if (!bIsAvailable)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Not Available."));
+		return;
+	}
+	
 	UE_LOG(LogTemp, Warning, TEXT("Cylinder InteractionStop !"));
 
 	InteractingStopTime = UGameplayStatics::GetRealTimeSeconds(this);
 
+	// InteractionStop 기능에서 타이머가 이미 만료되었는지 확인. 그렇지 않은 경우 타이머를 취소.
+	if (GetWorldTimerManager().IsTimerActive(InteractionTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(InteractionTimerHandle);
+	}
+	
 	float InteractionDuration = InteractingStopTime - InteractingStartTime;
 	UE_LOG(LogTemp, Warning, TEXT("Interaction Duration : %f seconds"), InteractionDuration);
-	
-	// if (Caller && Caller->GetController())
-	// {
-	// 	ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
-	// 	if (CollectorPlayerState)
-	// 	{
-	// 		CollectorPlayerState->GetEnergy();
-	// 		UE_LOG(LogTemp, Warning, TEXT("Player is interacting with an object."));
-	// 		UE_LOG(LogTemp, Warning, TEXT("Player Total Energy : %d"), CollectorPlayerState->GetEnergy());
-	// 	}
-	// 	else
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
-	// 	}
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Invalid Caller or Controller."));
-	// }
+
+	if (InteractionDuration > 4.0f)
+	{
+		if (Caller && Caller->GetController())
+		{
+			ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
+			if (CollectorPlayerState)
+			{
+				uint8 CurrentEnergy = CollectorPlayerState->GetEnergy();
+				CollectorPlayerState->GainPoint(CurrentEnergy);
+				CollectorPlayerState->ResetEnergy();
+				UE_LOG(LogTemp, Warning, TEXT("Player Total Point : %d"), CollectorPlayerState->GetPoint());
+				UE_LOG(LogTemp, Warning, TEXT("Player Current Energy Num : %d"), CollectorPlayerState->GetEnergy());
+				bIsAvailable = false;
+				GetWorldTimerManager().SetTimer(AvailableTimerHandle, this, &AIndividualObject::MakeAvailable, 30.0f, false);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is Null."));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Invalid Caller or Controller."));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Interaction Failed."));
+	}
+
+}
+
+void AIndividualObject::AutomaticInteractionStop()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Cylinder AutomaticInteractionStop !"));
+
+	InteractionStop(MaxInteractionDuration, nullptr);
+}
+
+void AIndividualObject::MakeAvailable()
+{
+	bIsAvailable = true;
 }
