@@ -5,6 +5,7 @@
 #include "IndividualItem.h"
 #include "MenuCallingPlayerController.h"
 #include "TestCharacter.h"
+#include "DamageableCharacter.h"
 
 AIndividualGameMode::AIndividualGameMode()
 {

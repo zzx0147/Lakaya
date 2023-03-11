@@ -3,8 +3,9 @@
 
 #include "DamageableCharacter.h"
 
+#include "CollectorPlayerState.h"
 #include "Net/UnrealNetwork.h"
-
+#include "IndividualGameMode.h"
 
 ADamageableCharacter::ADamageableCharacter()
 {
@@ -64,4 +65,22 @@ void ADamageableCharacter::OnTakeAnyDamageCallback(AActor* DamagedActor, float D
 void ADamageableCharacter::OnKillCharacterCallback(AController* EventInstigator, AActor* DamageCauser)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
+
+	if (EventInstigator == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EventInstigator is null."));
+		return;
+	}
+	
+	ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(EventInstigator->PlayerState);
+	if (CollectorPlayerState)
+	{
+		CollectorPlayerState->GainPoint(2);
+		UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 2 Point."), *CollectorPlayerState->GetPlayerName());
+		UE_LOG(LogTemp, Warning, TEXT("Player Total Point : %d"), CollectorPlayerState->GetPoint());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
+	}
 }

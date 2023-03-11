@@ -19,7 +19,7 @@ public:
 	void InitRandomSpawn();
 	void SpawnItem();
 	void ItemNumCheck();
-	
+
 public:
 	TArray<int32> VectorArray;
 	const int32 ItemMaxCount = 3;
