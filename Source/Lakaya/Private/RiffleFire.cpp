@@ -64,6 +64,8 @@ void URiffleFire::OnSwitchSelector()
 	Super::OnSwitchSelector();
 	if (IsOnFiring()) return;
 
+	if (GunComponent.IsValid()) GunComponent->SetReloadEnabled(false);
+
 	switch (DesiredSelector)
 	{
 	case EGunSelector::Semi: DesiredSelector = EGunSelector::Burst;
@@ -177,6 +179,7 @@ void URiffleFire::StopFire()
 void URiffleFire::UpdateFireMode()
 {
 	Selector = DesiredSelector;
+	if (GunComponent.IsValid()) GunComponent->SetReloadEnabled(true);
 }
 
 void URiffleFire::OnNestedFire()
