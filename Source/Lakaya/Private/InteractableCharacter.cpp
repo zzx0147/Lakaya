@@ -105,7 +105,7 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 	DrawDebugLine(GetWorld(), Location, End, FColor::Yellow, false, 2);
 	if (!GetWorld()->LineTraceSingleByChannel(HitResult, Location, End, CollisionChannel, TraceQueryParams))
 		return;
-
+	
 	if (auto Actor = HitResult.GetActor())
 		if (Actor->Implements<UInteractable>())
 		{

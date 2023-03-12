@@ -76,6 +76,16 @@ void ADamageableCharacter::OnKillCharacterCallback(AController* EventInstigator,
 	if (CollectorPlayerState)
 	{
 		CollectorPlayerState->GainPoint(2);
+		AIndividualGameMode* GameMode = Cast<AIndividualGameMode>(GetWorld()->GetAuthGameMode());
+		if (!GameMode)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
+			return;
+		}
+		else
+		{
+			GameMode->OnKillCharacter(EventInstigator, DamageCauser);
+		}
 		UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 2 Point."), *CollectorPlayerState->GetPlayerName());
 		UE_LOG(LogTemp, Warning, TEXT("Player Total Point : %d"), CollectorPlayerState->GetPoint());
 	}

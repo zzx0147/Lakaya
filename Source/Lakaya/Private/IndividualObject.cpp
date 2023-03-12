@@ -1,6 +1,7 @@
 #include "IndividualObject.h"
 
 #include "CollectorPlayerState.h"
+#include "DamageableCharacter.h"
 #include "Kismet/GameplayStatics.h"
 
 AIndividualObject::AIndividualObject()
@@ -77,6 +78,7 @@ void AIndividualObject::InteractionStop(const float& Time, APawn* Caller)
 		if (Caller && Caller->GetController())
 		{
 			ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
+			// ADamageableCharacter* DamageableCharacter = Cast<ADamageableCharacter>(Caller->GetController()->PlayerState);
 			if (CollectorPlayerState)
 			{
 				uint8 CurrentEnergy = CollectorPlayerState->GetEnergy();
@@ -84,6 +86,7 @@ void AIndividualObject::InteractionStop(const float& Time, APawn* Caller)
 				CollectorPlayerState->ResetEnergy();
 				UE_LOG(LogTemp, Warning, TEXT("Player Total Point : %d"), CollectorPlayerState->GetPoint());
 				UE_LOG(LogTemp, Warning, TEXT("Player Current Energy Num : %d"), CollectorPlayerState->GetEnergy());
+				// UE_LOG(LogTemp, Warning, TEXT("Player Current Health : %f"), DamageableCharacter->GetHealth());
 				bIsAvailable = false;
 				GetWorldTimerManager().SetTimer(AvailableTimerHandle, this, &AIndividualObject::MakeAvailable, 30.0f, false);
 			}

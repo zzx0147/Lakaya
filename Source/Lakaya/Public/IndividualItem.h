@@ -35,11 +35,11 @@ private:
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Item")
-	int32 ItemNumber;
+	uint8 ItemNumber;
 	
 public:
 	UFUNCTION(Category = "Item")
-	int32 GetItemNumber() { return ItemNumber; }
+	uint8 GetItemNumber() { return ItemNumber; }
 
 	UFUNCTION(Category = "Item")
 	void GetItem();
