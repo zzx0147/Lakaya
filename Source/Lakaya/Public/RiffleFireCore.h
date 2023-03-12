@@ -23,24 +23,24 @@ class LAKAYA_API URiffleFireCore : public UWeaponFire
 	GENERATED_BODY()
 
 protected:
-	void FireStartCore(FTimerHandle& GunSelectorTimer, FTimerHandle& GunFireTimer,
+	void FireStartCore(FTimerHandle& SelectorTimer, FTimerHandle& FireTimer,
 	                   std::function<bool()> EmptyDeterminant, std::function<void()> OnEmptyMag,
-	                   std::function<void()> NestedFire, std::function<void()> FreshFire);
+	                   std::function<void()> OnNestedFire, std::function<void()> OnFreshFire);
 
-	void FireStopCore(const EGunSelector& GunSelector, uint16& GunFireCount);
+	void FireStopCore(const EGunSelector& Selector, uint16& FireCount);
 
-	void SwitchSelectorCore(const uint16& GunFireCount, EGunSelector& GunSelector, FTimerHandle& GunSelectorTimer,
+	void SwitchSelectorCore(const uint16& FireCount, EGunSelector& DesiredSelector, FTimerHandle& SelectorTimer,
 	                        std::function<void()> OnUpdateSelector);
 
-	void NestedFireCore(const EGunSelector& GunSelector, uint16& GunFireCount);
+	void NestedFireCore(const EGunSelector& Selector, uint16& FireCount);
 
-	void FreshFireCore(const EGunSelector& GunSelector, uint16& GunFireCount, FTimerHandle& FireTimerHandle,
-	                   std::function<void()> FireFunction);
+	void FreshFireCore(const EGunSelector& Selector, uint16& FireCount, FTimerHandle& FireTimer,
+	                   std::function<void()> RepeatFireFunction);
 
-	void FireCallback(uint16& GunFireCount, FTimerHandle& FireTimerHandle, std::function<bool()> EmptyDeterminant,
-	                  std::function<void()> OnEmpty, std::function<void()> FireFunction);
+	void FireCallback(uint16& FireCount, FTimerHandle& FireTimer, std::function<bool()> EmptyDeterminant,
+	                  std::function<void()> OnEmpty, std::function<void()> OnSingleFire);
 
-	void StopFireCore(uint16& GunFireCount, FTimerHandle& FireTimerHandle);
+	void StopFireCore(uint16& FireCount, FTimerHandle& FireTimer);
 
 	UPROPERTY(Replicated)
 	TWeakObjectPtr<class UGunComponent> GunComponent;
