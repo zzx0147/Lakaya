@@ -25,7 +25,6 @@ private:
 	void EmptyMagazine();
 	
 	void TraceFire();
-	void UpdateFireMode();
 
 	UPROPERTY(EditAnywhere, Category=DataTable)
 	class UDataTable* WeaponFireDataTable;

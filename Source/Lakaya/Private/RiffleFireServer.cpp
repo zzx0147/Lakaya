@@ -25,7 +25,6 @@ void URiffleFireServer::OnFireStart()
 {
 	Super::OnFireStart();
 	FireStartCore(SelectorTimer, FireTimer,
-	              [this] { return GunComponent.IsValid() && GunComponent->GetRemainBullets() <= 0; },
 	              [this] { EmptyMagazine(); },
 	              [this] { NestedFireCore(Selector, FireCount); },
 	              [this]
@@ -53,7 +52,8 @@ void URiffleFireServer::OnFireStop()
 void URiffleFireServer::OnSwitchSelector()
 {
 	Super::OnSwitchSelector();
-	SwitchSelectorCore(FireCount, DesiredSelector, SelectorTimer, [this] { UpdateFireMode(); });
+	SwitchSelectorCore(FireCount, DesiredSelector, SelectorTimer,
+	                   [this] { UpdateSelector(DesiredSelector, Selector); });
 }
 
 void URiffleFireServer::SetupData(const FName& RowName)
@@ -109,10 +109,4 @@ void URiffleFireServer::TraceFire()
 
 	UGameplayStatics::ApplyDamage(HitResult.GetActor(), BaseDamage, Character->GetController(),
 	                              Character.Get(), nullptr);
-}
-
-void URiffleFireServer::UpdateFireMode()
-{
-	Selector = DesiredSelector;
-	if (GunComponent.IsValid()) GunComponent->SetReloadEnabled(true);
 }

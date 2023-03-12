@@ -24,7 +24,7 @@ class LAKAYA_API URiffleFireCore : public UWeaponFire
 
 protected:
 	void FireStartCore(FTimerHandle& SelectorTimer, FTimerHandle& FireTimer,
-	                   std::function<bool()> EmptyDeterminant, std::function<void()> OnEmptyMag,
+	                   std::function<void()> OnEmptyMag,
 	                   std::function<void()> OnNestedFire, std::function<void()> OnFreshFire);
 
 	void FireStopCore(const EGunSelector& Selector, uint16& FireCount);
@@ -42,10 +42,15 @@ protected:
 
 	void StopFireCore(uint16& FireCount, FTimerHandle& FireTimer);
 
+	void UpdateSelector(EGunSelector& DesiredSelector, EGunSelector& Selector);
+
+	UFUNCTION()
+	virtual void OnRep_Character() { return; }
+
 	UPROPERTY(Replicated)
 	TWeakObjectPtr<class UGunComponent> GunComponent;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_Character)
 	TWeakObjectPtr<class AThirdPersonCharacter> Character;
 
 	UPROPERTY(Replicated)

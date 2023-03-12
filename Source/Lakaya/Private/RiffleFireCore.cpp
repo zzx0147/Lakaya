@@ -20,7 +20,7 @@ void URiffleFireCore::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 }
 
 void URiffleFireCore::FireStartCore(FTimerHandle& SelectorTimer, FTimerHandle& FireTimer,
-                                    std::function<bool()> EmptyDeterminant, std::function<void()> OnEmptyMag,
+                                    std::function<void()> OnEmptyMag,
                                     std::function<void()> OnNestedFire, std::function<void()> OnFreshFire)
 {
 	auto& TimerManager = GetWorld()->GetTimerManager();
@@ -28,7 +28,7 @@ void URiffleFireCore::FireStartCore(FTimerHandle& SelectorTimer, FTimerHandle& F
 	if (TimerManager.IsTimerActive(SelectorTimer))
 		return;
 
-	if (EmptyDeterminant())
+	if (GunComponent.IsValid() && GunComponent->GetRemainBullets() <= 0)
 	{
 		if (OnEmptyMag != nullptr) OnEmptyMag();
 		return;
@@ -128,4 +128,10 @@ void URiffleFireCore::StopFireCore(uint16& FireCount, FTimerHandle& FireTimer)
 {
 	FireCount = 0;
 	GetWorld()->GetTimerManager().ClearTimer(FireTimer);
+}
+
+void URiffleFireCore::UpdateSelector(EGunSelector& DesiredSelector, EGunSelector& Selector)
+{
+	Selector = DesiredSelector;
+	if (GunComponent.IsValid()) GunComponent->SetReloadEnabled(true);
 }
