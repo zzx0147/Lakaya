@@ -72,9 +72,9 @@ void URiffleFireCore::NestedFireCore(const EGunSelector& Selector, uint16& FireC
 	{
 	case EGunSelector::Semi:
 		if (FireCount == 0) FireCount = 1;
-		break;
 	case EGunSelector::Burst:
 		if (FireCount == 0) FireCount = 3;
+		if (GunComponent.IsValid()) GunComponent->SetReloadEnabled(false);
 		break;
 	case EGunSelector::Auto:
 		FireCount = MAX_uint16;
@@ -101,6 +101,7 @@ void URiffleFireCore::FreshFireCore(const EGunSelector& Selector, uint16& FireCo
 		return;
 	}
 
+	if (GunComponent.IsValid()) GunComponent->SetReloadEnabled(false);
 	GetWorld()->GetTimerManager().SetTimer(FireTimer, RepeatFireFunction, FireDelay, true, 0.f);
 }
 
@@ -113,9 +114,11 @@ void URiffleFireCore::FireCallback(uint16& FireCount, FTimerHandle& FireTimer, s
 		return;
 	}
 	--FireCount;
+	if (FireCount == 0 && GunComponent.IsValid()) GunComponent->SetReloadEnabled(true);
 
 	if (EmptyDeterminant())
 	{
+		if (GunComponent.IsValid()) GunComponent->SetReloadEnabled(true);
 		if (OnEmpty != nullptr) OnEmpty();
 		StopFireCore(FireCount, FireTimer);
 		return;

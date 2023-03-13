@@ -13,11 +13,11 @@
 AMovableCharacter::AMovableCharacter()
 {
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 	RunMultiplier = 2.0;
 
-	// Character must look at the camera is looking at
-	bUseControllerRotationYaw = true;
-	bUseControllerRotationPitch = bUseControllerRotationRoll = false;
+	bUseControllerRotationYaw = bUseControllerRotationPitch = true;
+	bUseControllerRotationRoll = false;
 	GetSpringArm()->bUsePawnControlRotation = true;
 
 	// In a dedicated server, the following logic is not necessary.
