@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Image.h"
+#include "Components/Button.h"
 #include "GameLobbyWidget.generated.h"
 /**
  * 
@@ -23,11 +24,32 @@ protected:
 public:
 
 protected:
-	UFUNCTION(BlueprintCallable);
+	//UFUNCTION(BlueprintCallable)
 	void ChangeSelectedCharacterImage(FString ImagePath);
+
+	UFUNCTION()
+	void OnClickedCitizenButton();
+
+	UFUNCTION()
+	void OnClickedGovernmentManButton();
+
+	UFUNCTION()
+	void OnClickedGangsterButton();
+
+
 
 protected:
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	UImage* SelectedCharacterImage;
+
+	UPROPERTY(VisibleAnywhere)
+	UButton* CitizenButton;
+
+	UPROPERTY(VisibleAnywhere)
+	UButton* GovernmentManButton;
+
+	UPROPERTY(VisibleAnywhere)
+	UButton* GangsterButton;
+
 };
