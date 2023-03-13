@@ -38,8 +38,8 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 	// TODO : 특정 조건에 충족하면, 게임 시작.
 	// if (NumPlayers == MaxPlayers)
 	// {
-			// TODO : Start the game
-			// GameState = EGameState::Progress;
+	//		TODO : Start the game
+	//		GameState = EGameState::Progress;
 	// }
 }
 

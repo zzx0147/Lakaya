@@ -37,8 +37,10 @@ private:
 	EGameState GameState;
 	
 public:
+	// TODO : 기획에 따라서 변경될 수 있음.
 	const uint8 MaxPlayers = 6;
-	
+
+	// TODO : 기획에 따라서 변경될 수 있음.
 	TArray<uint8> VectorArray;
 	const uint8 ItemMaxCount = 3;
 	const uint8 PosMinCount = 1;
