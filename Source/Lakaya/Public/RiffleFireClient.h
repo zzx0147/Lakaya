@@ -15,6 +15,8 @@ class LAKAYA_API URiffleFireClient : public URiffleFireServer
 	GENERATED_BODY()
 
 protected:
+	virtual void FireStart() override;
+	virtual void FireStop() override;
 	virtual void OnFireStartNotify() override;
 	virtual void OnFireStopNotify() override;
 	virtual void OnSwitchSelectorNotify() override;

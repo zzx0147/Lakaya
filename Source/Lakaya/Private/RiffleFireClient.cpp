@@ -8,6 +8,16 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
+void URiffleFireClient::FireStart()
+{
+	Super::FireStart();
+}
+
+void URiffleFireClient::FireStop()
+{
+	if (Selector == EGunSelector::Auto) RequestFireStop(GetServerTime());
+}
+
 void URiffleFireClient::OnFireStartNotify()
 {
 	Super::OnFireStartNotify();
@@ -22,7 +32,7 @@ void URiffleFireClient::OnFireStartNotify()
 			                            FireCallback(FireCount, FireTimer,
 			                                         [this]
 			                                         {
-			                                         	//TODO: 생각보다 총알이 빠르게 리플리케이트 된 경우 1발정도 차이가 생길 수 있습니다.
+				                                         //TODO: 생각보다 총알이 빠르게 리플리케이트 된 경우 1발정도 차이가 생길 수 있습니다.
 				                                         return GunComponent.IsValid() &&
 					                                         GunComponent->GetRemainBullets() <= 0;
 			                                         },
