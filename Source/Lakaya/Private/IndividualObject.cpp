@@ -1,5 +1,4 @@
 #include "IndividualObject.h"
-
 #include "CollectorPlayerState.h"
 #include "DamageableCharacter.h"
 #include "Kismet/GameplayStatics.h"
@@ -102,7 +101,6 @@ void AIndividualObject::InteractionStop(const float& Time, APawn* Caller)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Interaction Failed."));
 	}
-
 }
 
 void AIndividualObject::AutomaticInteractionStop()

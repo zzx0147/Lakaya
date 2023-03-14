@@ -34,6 +34,8 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 
 	UE_LOG(LogTemp, Warning, TEXT("The Player has entered the game."));
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
+
+	
 	
 	// TODO : 특정 조건에 충족하면, 게임 시작.
 	// if (NumPlayers == MaxPlayers)
@@ -120,38 +122,68 @@ void AIndividualGameMode::ItemNumCheck()
 		GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::InitRandomSpawn, 1.0f, false);
 }
 
-void AIndividualGameMode::OnKillCharacter(AController* EventInstigator, AActor* DamageCauser)
+void AIndividualGameMode::OnKilledCharacter(AController* KilledCharacter)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnKillCharacter has been called !"));
 
+	if (KilledCharacter == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_KilledCharacter is null."));	
+		return;
+	}
+
 	TArray<AActor*> PlayerStartActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStartActors);
+	
+	if (PlayerStartActors.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No Player start actors found."));
+		return;
+	}
 
 	APlayerStart* RandomPlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() -1)]);
 
-	// if (EventInstigator == nullptr || DamageCauser == nullptr)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("One or both of the inputs is null."));
-	// 	return;
-	// }
-	//
-	// if (EventInstigator == DamageCauser)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("EventInstigator and DamageCauser are referencing the same object."));
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("EventInstigator and DamageCauser are referencing different objects."));
-	// }
-	
-	if (APawn* DeadPlayerPawn = Cast<APawn>(DamageCauser))
+	if (APawn* KilledPlayerPawn = Cast<APawn>(KilledCharacter))
 	{
 		FVector NewLocation = RandomPlayerStart->GetActorLocation();
-		DeadPlayerPawn->SetActorLocation(NewLocation);
+		KilledPlayerPawn->SetActorLocation(NewLocation);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("DeadPlayerPawn is null."));
+		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_KilledCharacter is null."));
 		return;
 	}
 }
+
+// void AIndividualGameMode::OnKillCharacter(AController* EventInstigator, AActor* DamageCauser)
+// {
+// 	UE_LOG(LogTemp, Warning, TEXT("OnKillCharacter has been called !"));
+//
+// 	if (EventInstigator == nullptr || DamageCauser == nullptr)
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("One or both of the inputs is null."));
+// 		return;
+// 	}
+//
+// 	TArray<AActor*> PlayerStartActors;
+// 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStartActors);
+//
+// 	if (PlayerStartActors.Num() == 0)
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("No Player start actors found."));
+// 		return;
+// 	}
+// 	
+// 	APlayerStart* RandomPlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() -1)]);
+//
+// 	if (APawn* DeadPlayerPawn = Cast<APawn>(DamageCauser))
+// 	{
+// 		FVector NewLocation = RandomPlayerStart->GetActorLocation();
+// 		DeadPlayerPawn->SetActorLocation(NewLocation);
+// 	}
+// 	else
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("DeadPlayerPawn is null."));
+// 		return;
+// 	}
+// }

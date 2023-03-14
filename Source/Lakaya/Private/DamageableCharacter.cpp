@@ -60,37 +60,64 @@ void ADamageableCharacter::OnTakeAnyDamageCallback(AActor* DamagedActor, float D
                                                    AController* InstigatedBy, AActor* DamageCauser)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Damaged : %f"), Damage));
+
+	AIndividualGameMode* GameMode = Cast<AIndividualGameMode>(GetWorld()->GetAuthGameMode());
+	if (!GameMode)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
+		return;
+	}
+	else
+	{
+		AController* KilledCharacter = nullptr;
+		if (DamagedActor->IsA<AController>())
+		{
+			KilledCharacter = Cast<AController>(DamagedActor);
+		}
+		else if (DamagedActor->GetInstigator())
+		{
+			KilledCharacter = DamagedActor->GetInstigator()->GetController();
+		}
+
+		if (!KilledCharacter)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("DamageableCharacter_KilledCharacter is null."));
+			return;
+		}
+            
+		GameMode->OnKilledCharacter(KilledCharacter);
+	}
 }
 
 void ADamageableCharacter::OnKillCharacterCallback(AController* EventInstigator, AActor* DamageCauser)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
 
-	if (EventInstigator == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("EventInstigator is null."));
-		return;
-	}
-	
-	ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(EventInstigator->PlayerState);
-	if (CollectorPlayerState)
-	{
-		CollectorPlayerState->GainPoint(2);
-		AIndividualGameMode* GameMode = Cast<AIndividualGameMode>(GetWorld()->GetAuthGameMode());
-		if (!GameMode)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
-			return;
-		}
-		else
-		{
-			GameMode->OnKillCharacter(EventInstigator, DamageCauser);
-		}
-		UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 2 Point."), *CollectorPlayerState->GetPlayerName());
-		UE_LOG(LogTemp, Warning, TEXT("Player Total Point : %d"), CollectorPlayerState->GetPoint());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
-	}
+	// if (EventInstigator == nullptr)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("EventInstigator is null."));
+	// 	return;
+	// }
+	//
+	// ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(EventInstigator->PlayerState);
+	// if (CollectorPlayerState)
+	// {
+	// 	CollectorPlayerState->GainPoint(2);
+	// 	AIndividualGameMode* GameMode = Cast<AIndividualGameMode>(GetWorld()->GetAuthGameMode());
+	// 	if (!GameMode)
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
+	// 		return;
+	// 	}
+	// 	else
+	// 	{
+	// 		GameMode->OnKillCharacter(EventInstigator, DamageCauser);
+	// 	}
+	// 	UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 2 Point."), *CollectorPlayerState->GetPlayerName());
+	// 	UE_LOG(LogTemp, Warning, TEXT("Player Total Point : %d"), CollectorPlayerState->GetPoint());
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
+	// }
 }

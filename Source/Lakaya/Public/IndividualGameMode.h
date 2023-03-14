@@ -30,8 +30,8 @@ public:
 	void ItemNumCheck();
 
 public:
-	void OnKillCharacter(AController* EventInstigator, AActor* DamageCauser);
-
+	// void OnKillCharacter(AController* EventInstigator, AActor* DamageCauser);
+	void OnKilledCharacter(AController* KilledCharacter);
 private:
 	uint8 NumPlayers;
 	EGameState GameState;
@@ -58,4 +58,5 @@ public:
 
 private:
 	FTimerHandle TimerHandle_SpawnItem;
+	
 };
