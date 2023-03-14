@@ -92,6 +92,16 @@ bool AMovableCharacter::IsOwnedByLocalPlayer() const
 	return PlayerController && PlayerController->IsLocalController();
 }
 
+void AMovableCharacter::RequestRun_Implementation()
+{
+	GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
+}
+
+void AMovableCharacter::RequestStopRun_Implementation()
+{
+	GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
+}
+
 void AMovableCharacter::Move(const FInputActionValue& Value)
 {
 	const auto Vector = Value.Get<FVector2D>();
@@ -121,11 +131,10 @@ void AMovableCharacter::UnCrouching(const FInputActionValue& Value)
 
 void AMovableCharacter::Run(const FInputActionValue& Value)
 {
-	GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
+	RequestRun();
 }
 
 void AMovableCharacter::StopRunning(const FInputActionValue& Value)
 {
-	// This can causing problem when change RunMultiplier until running
-	GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
+	RequestStopRun();
 }
