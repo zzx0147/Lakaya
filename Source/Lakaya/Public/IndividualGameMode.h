@@ -31,7 +31,7 @@ public:
 
 public:
 	// void OnKillCharacter(AController* EventInstigator, AActor* DamageCauser);
-	void OnKilledCharacter(AController* KilledCharacter);
+	void OnKilledCharacter(AController* KilledCharacter, AController* EventInstigator);
 private:
 	uint8 NumPlayers;
 	EGameState GameState;
@@ -46,6 +46,8 @@ public:
 	const uint8 PosMinCount = 1;
 	const uint8 PosMaxCount = 6;
 	const int32 PosX = 1000;
+
+	const uint8 PlayerRespawnTime = 1;
 	
 	const TArray<FVector> ItemPositions = {
 		FVector(PosX, 200, 0),

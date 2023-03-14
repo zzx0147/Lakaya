@@ -60,33 +60,6 @@ void ADamageableCharacter::OnTakeAnyDamageCallback(AActor* DamagedActor, float D
                                                    AController* InstigatedBy, AActor* DamageCauser)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Damaged : %f"), Damage));
-
-	// AIndividualGameMode* GameMode = Cast<AIndividualGameMode>(GetWorld()->GetAuthGameMode());
-	// if (!GameMode)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
-	// 	return;
-	// }
-	// else
-	// {
-	// 	AController* KilledCharacter = nullptr;
-	// 	if (DamagedActor->IsA<AController>())
-	// 	{
-	// 		KilledCharacter = Cast<AController>(DamagedActor);
-	// 	}
-	// 	else if (DamagedActor->GetInstigator())
-	// 	{
-	// 		KilledCharacter = DamagedActor->GetInstigator()->GetController();
-	// 	}
-	//
-	// 	if (!KilledCharacter)
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("DamageableCharacter_KilledCharacter is null."));
-	// 		return;
-	// 	}
- //            
-	// 	GameMode->OnKilledCharacter(KilledCharacter);
-	// }
 }
 
 void ADamageableCharacter::OnKillCharacterCallback(AController* KilledController, AActor* KilledActor,
@@ -102,6 +75,6 @@ void ADamageableCharacter::OnKillCharacterCallback(AController* KilledController
 	}
 	else
 	{
-		GameMode->OnKilledCharacter(KilledController);
+		GameMode->OnKilledCharacter(KilledController, EventInstigator);
 	}
 }

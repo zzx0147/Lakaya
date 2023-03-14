@@ -124,68 +124,58 @@ void AIndividualGameMode::ItemNumCheck()
 		GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::InitRandomSpawn, 1.0f, false);
 }
 
-void AIndividualGameMode::OnKilledCharacter(AController* KilledCharacter)
+void AIndividualGameMode::OnKilledCharacter(AController* KilledCharacter, AController* EventInstigator)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnKillCharacter has been called !"));
 
-	if (KilledCharacter == nullptr)
+	if (EventInstigator == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_KilledCharacter is null."));	
+		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_EventInstigator is null."));
 		return;
 	}
 
-	TArray<AActor*> PlayerStartActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStartActors);
-	
-	if (PlayerStartActors.Num() == 0)
+	// Get the player state from the event instigator's controller
+	ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(EventInstigator->GetCharacter()->GetController()->PlayerState);
+	if (CollectorPlayerState == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No Player start actors found."));
+		UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
 		return;
 	}
-	
-	APlayerStart* RandomPlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() -1)]);
-	
-	if (APawn* KilledPlayerPawn = Cast<APawn>(KilledCharacter))
-	{
-		FVector NewLocation = RandomPlayerStart->GetActorLocation();
-		KilledPlayerPawn->SetActorLocation(NewLocation);
-	}
-	else
+
+	// Award the player 2 points for the kill
+	CollectorPlayerState->GainPoint(2);
+	UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 2 points."), *CollectorPlayerState->GetPlayerName());
+	UE_LOG(LogTemp, Warning, TEXT("Player total points: %d"), CollectorPlayerState->GetPoint());
+
+	if (KilledCharacter == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_KilledCharacter is null."));
 		return;
 	}
-}
 
-// void AIndividualGameMode::OnKillCharacter(AController* EventInstigator, AActor* DamageCauser)
-// {
-// 	UE_LOG(LogTemp, Warning, TEXT("OnKillCharacter has been called !"));
-//
-// 	if (EventInstigator == nullptr || DamageCauser == nullptr)
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("One or both of the inputs is null."));
-// 		return;
-// 	}
-//
-// 	TArray<AActor*> PlayerStartActors;
-// 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStartActors);
-//
-// 	if (PlayerStartActors.Num() == 0)
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("No Player start actors found."));
-// 		return;
-// 	}
-// 	
-// 	APlayerStart* RandomPlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() -1)]);
-//
-// 	if (APawn* DeadPlayerPawn = Cast<APawn>(DamageCauser))
-// 	{
-// 		FVector NewLocation = RandomPlayerStart->GetActorLocation();
-// 		DeadPlayerPawn->SetActorLocation(NewLocation);
-// 	}
-// 	else
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("DeadPlayerPawn is null."));
-// 		return;
-// 	}
-// }
+	// Find a random player start location
+	TArray<AActor*> PlayerStartActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStartActors);
+
+	if (PlayerStartActors.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No player start actors found."));
+		return;
+	}
+
+	APlayerStart* RandomPlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
+
+	if (KilledCharacter->GetPawn() != nullptr)
+	{
+		KilledCharacter->GetPawn()->SetActorLocation(RandomPlayerStart->GetActorLocation());
+	}
+	else if (KilledCharacter->GetCharacter() != nullptr)
+	{
+		KilledCharacter->GetCharacter()->SetActorLocation(RandomPlayerStart->GetActorLocation());
+	}
+	else
+	{
+			UE_LOG(LogTemp, Warning, TEXT("KilledCharacter is not a pawn or an actor."));
+			return;
+	}
+}
