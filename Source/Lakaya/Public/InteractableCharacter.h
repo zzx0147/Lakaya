@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DamageableCharacter.h"
-#include "Interactable.h"
+#include "ArmedCharacter.h"
+#include "GameFramework/GameStateBase.h"
 #include "UObject/WeakInterfacePtr.h"
 #include "InteractableCharacter.generated.h"
 
@@ -12,7 +12,7 @@
  * 
  */
 UCLASS()
-class LAKAYA_API AInteractableCharacter : public ADamageableCharacter
+class LAKAYA_API AInteractableCharacter : public AArmedCharacter
 {
 	GENERATED_BODY()
 
@@ -20,17 +20,27 @@ public:
 	AInteractableCharacter();
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-	
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
+public:
+	UFUNCTION(NetMulticast, Reliable)
+	void OnInteractionSuccess();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void OnInteractionCanceled();
+
+protected:
 	UFUNCTION(Server, Reliable)
 	void RequestInteractionStart(const float& Time, AActor* Actor);
 
 	UFUNCTION(Server, Reliable)
 	void RequestInteractionStop(const float& Time, AActor* Actor);
+
+	inline float GetServerTime() { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
 
 private:
 	void InteractionStart(const FInputActionValue& Value);

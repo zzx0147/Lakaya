@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MovableCharacter.h"
+#include "FocusableCharacter.h"
 #include "DamageableCharacter.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FKillCharacterSignature, AController*, EventInstigator, AActor*,
-                                             DamageCauser);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FKillCharacterSignature, AController*, KilledController, AActor*,
+                                              KilledActor, AController*, EventInstigator, AActor*, Causer);
 
 UCLASS()
-class LAKAYA_API ADamageableCharacter : public AMovableCharacter
+class LAKAYA_API ADamageableCharacter : public AFocusableCharacter
 {
 	GENERATED_BODY()
 
@@ -47,10 +47,11 @@ protected:
 private:
 	UFUNCTION()
 	void OnTakeAnyDamageCallback(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
-	                                     AController* InstigatedBy, AActor* DamageCauser);
+	                             AController* InstigatedBy, AActor* DamageCauser);
 
 	UFUNCTION()
-	void OnKillCharacterCallback(AController* EventInstigator, AActor* DamageCauser);
+	void OnKillCharacterCallback(AController* KilledController, AActor* KilledActor, AController* EventInstigator,
+	                             AActor* DamageCauser);
 
 public:
 	UPROPERTY(Replicated)

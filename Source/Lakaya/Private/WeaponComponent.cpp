@@ -37,11 +37,10 @@ void UWeaponComponent::SetupData()
 	auto Data = WeaponAssetDataTable->FindRow<FWeaponAssetData>(RequestedRowName,TEXT("WeaponComponent"));
 	if (!Data) return;
 
-	FireSubObject = CreateSingleSubObject<UWeaponFire>(Data->FireClassPath.LoadSynchronous(), Data->FireRowName);
-	AbilitySubObject = CreateSingleSubObject<UWeaponAbility>(Data->AbilityClassPath.LoadSynchronous(),
+	FireSubObject = CreateSingleSubObject<UWeaponFire>(Data->FireClass.LoadSynchronous(), Data->FireRowName);
+	AbilitySubObject = CreateSingleSubObject<UWeaponAbility>(Data->AbilityClass.LoadSynchronous(),
 	                                                         Data->AbilityRowName);
-	ReloadSubObject = CreateSingleSubObject<UWeaponReload>(Data->ReloadClassPath.LoadSynchronous(),
-	                                                       Data->ReloadRowName);
+	ReloadSubObject = CreateSingleSubObject<UWeaponReload>(Data->ReloadClass.LoadSynchronous(), Data->ReloadRowName);
 
 	if (!IsReplicatedSubObjectRegistered(FireSubObject))
 		UE_LOG(LogTemp, Warning, TEXT("FireSubObject is NOT replicated"));

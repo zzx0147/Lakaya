@@ -29,14 +29,12 @@ class LAKAYA_API UWeaponBase : public URemoteCallableSubObject
 public:
 	virtual bool IsNameStableForNetworking() const override { return false; }
 
-	UFUNCTION(NetMulticast, Reliable)
-	void SetupData(const FName& RowName);
+	virtual void SetupData(const FName& RowName) { return; }
 
 	inline const bool& GetIsEnabled() const { return bIsEnabled; }
 	inline void SetEnabled(const bool& Enabled) { bIsEnabled = Enabled; }
 
 protected:
-	virtual void SetupData_Implementation(const FName& RowName) { return; }
 	inline float GetServerTime() { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
 
 	/**

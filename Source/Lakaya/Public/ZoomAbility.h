@@ -15,19 +15,16 @@ class LAKAYA_API UZoomAbility : public UWeaponAbility
 	GENERATED_BODY()
 
 public:
-	UZoomAbility();
-	
 	virtual void AbilityStart() override;
 	virtual void AbilityStop() override;
 
 protected:
-	virtual void SetupData_Implementation(const FName& RowName) override;
+	virtual void SetupData(const FName& RowName) override;
 
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(Replicated)
 	float FOVMultiplier;
 
-	//Is this only way to set Camera..?
 	UPROPERTY(Replicated)
 	TWeakObjectPtr<class UCameraComponent> Camera;
 };
