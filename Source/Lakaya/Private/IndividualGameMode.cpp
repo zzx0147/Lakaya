@@ -165,17 +165,37 @@ void AIndividualGameMode::OnKilledCharacter(AController* KilledCharacter, AContr
 
 	APlayerStart* RandomPlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
 
-	if (KilledCharacter->GetPawn() != nullptr)
+	APawn* KilledPawn = Cast<APawn>(KilledCharacter->GetPawn());
+	ACharacter* KilledCharacterActor = Cast<ACharacter>(KilledCharacter->GetCharacter());
+	
+	if (KilledPawn != nullptr)
 	{
-		KilledCharacter->GetPawn()->SetActorLocation(RandomPlayerStart->GetActorLocation());
+		KilledPawn->SetActorLocation(RandomPlayerStart->GetActorLocation());
 	}
-	else if (KilledCharacter->GetCharacter() != nullptr)
+	else if (KilledCharacter != nullptr)
 	{
-		KilledCharacter->GetCharacter()->SetActorLocation(RandomPlayerStart->GetActorLocation());
+		KilledCharacterActor->SetActorLocation(RandomPlayerStart->GetActorLocation());
 	}
 	else
 	{
 			UE_LOG(LogTemp, Warning, TEXT("KilledCharacter is not a pawn or an actor."));
 			return;
 	}
+
+	ACollectorPlayerState* KilledPlayerState = Cast<ACollectorPlayerState>(KilledCharacter->GetCharacter()->GetController()->PlayerState);
+	if (KilledCharacter == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("KilledPlayerState is null."));
+		return;
+	}
+
+	ADamageableCharacter* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
+	if (KilledDamageableCharacter == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("KilledDamageableCharacter is null."));
+		return;
+	}
+	
+	KilledPlayerState->ResetEnergy();
+	KilledDamageableCharacter->FullHealth();
 }

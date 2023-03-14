@@ -30,7 +30,8 @@ public:
 
 	inline virtual const float& GetMaximumHealth() const { return MaximumHealth; }
 	inline virtual const float& GetHealth() const { return Health; }
-
+	inline virtual const float& FullHealth() { return Health = MaximumHealth; }
+	
 protected:
 	/**
 	 * @brief 최대 체력이 리플리케이트된 후 호출되는 이벤트 함수입니다. 서버측에서는 호출되지 않습니다.
