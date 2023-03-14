@@ -41,7 +41,7 @@ void ADamageableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
 {
-	OnKillCharacter.Broadcast(EventInstigator, DamageCauser);
+	OnKillCharacter.Broadcast(GetController(), this, EventInstigator, DamageCauser);
 }
 
 void ADamageableCharacter::OnRep_MaximumHealth()
@@ -61,7 +61,8 @@ void ADamageableCharacter::OnTakeAnyDamageCallback(AActor* DamagedActor, float D
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Damaged : %f"), Damage));
 }
 
-void ADamageableCharacter::OnKillCharacterCallback(AController* EventInstigator, AActor* DamageCauser)
+void ADamageableCharacter::OnKillCharacterCallback(AController* KilledController, AActor* KilledActor,
+                                                   AController* EventInstigator, AActor* DamageCauser)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
 }
