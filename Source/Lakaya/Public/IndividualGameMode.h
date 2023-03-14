@@ -30,7 +30,6 @@ public:
 	void ItemNumCheck();
 
 public:
-	// void OnKillCharacter(AController* EventInstigator, AActor* DamageCauser);
 	void OnKilledCharacter(AController* KilledCharacter, AController* EventInstigator);
 private:
 	uint8 NumPlayers;

@@ -144,9 +144,11 @@ void AIndividualGameMode::OnKilledCharacter(AController* KilledCharacter, AContr
 
 	// Award the player 2 points for the kill
 	CollectorPlayerState->GainPoint(2);
+	CollectorPlayerState->GainMoney(1);
 	UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 2 points."), *CollectorPlayerState->GetPlayerName());
-	UE_LOG(LogTemp, Warning, TEXT("Player total points: %d"), CollectorPlayerState->GetPoint());
-
+	UE_LOG(LogTemp, Warning, TEXT("Player Total points: %d"), CollectorPlayerState->GetPoint());
+	UE_LOG(LogTemp, Warning, TEXT("Player Totla Money : %d"), CollectorPlayerState->GetMoney());
+	
 	if (KilledCharacter == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_KilledCharacter is null."));
