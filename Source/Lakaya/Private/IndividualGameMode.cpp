@@ -6,11 +6,13 @@
 #include "MenuCallingPlayerController.h"
 #include "TestCharacter.h"
 #include "DamageableCharacter.h"
+#include "InteractableCharacter.h"
 #include "GameFramework/PlayerStart.h"
 
 AIndividualGameMode::AIndividualGameMode()
 {
-	DefaultPawnClass = AArmedCharacter::StaticClass();
+	// DefaultPawnClass = AArmedCharacter::StaticClass();
+	DefaultPawnClass = AInteractableCharacter::StaticClass();
 	PlayerControllerClass = AMenuCallingPlayerController::StaticClass();
 	PlayerStateClass = ACollectorPlayerState::StaticClass();
 
@@ -140,9 +142,9 @@ void AIndividualGameMode::OnKilledCharacter(AController* KilledCharacter)
 		UE_LOG(LogTemp, Warning, TEXT("No Player start actors found."));
 		return;
 	}
-
+	
 	APlayerStart* RandomPlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() -1)]);
-
+	
 	if (APawn* KilledPlayerPawn = Cast<APawn>(KilledCharacter))
 	{
 		FVector NewLocation = RandomPlayerStart->GetActorLocation();
