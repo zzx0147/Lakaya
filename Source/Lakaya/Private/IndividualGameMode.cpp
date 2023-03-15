@@ -210,11 +210,24 @@ void AIndividualGameMode::OnKilledCharacter(AController* KilledCharacter, AContr
 		RespawnTimers.Remove(KilledCharacter);
 	}
 
-	FTimerHandle NewTimer;
-	GetWorldTimerManager().SetTimer(NewTimer, [this, KilledCharacter](){ RespawnPlayer(KilledCharacter); }, PlayerRespawnTime, false);
-	RespawnTimers.Add(KilledCharacter, NewTimer);
-	
-	// FTimerHandle& RespawnTimer = RespawnTimers.FindOrAdd(KilledCharacter);
-	// GetWorldTimerManager().SetTimer(RespawnTimer, [this, KilledCharacter](){ RespawnPlayer(KilledCharacter); }, PlayerRespawnTime, false);
-	// GetWorldTimerManager().ClearTimer(RespawnTimer);
+	TArray<AController*> DeadPlayers;
+	DeadPlayers.Add(KilledCharacter);
+
+	for (auto& Pair : RespawnTimers)
+	{
+		FTimerHandle& Timer = Pair.Value;
+		AController* Player = Pair.Key;
+
+		if (GetWorldTimerManager().IsTimerActive(Timer))
+		{
+			DeadPlayers.Add(Player);
+		}
+	}
+
+	for (AController* DeadPlayer : DeadPlayers)
+	{
+		FTimerHandle NewTimer;
+		GetWorldTimerManager().SetTimer(NewTimer, [this, KilledCharacter](){ RespawnPlayer(KilledCharacter); }, PlayerRespawnTime, false);
+		RespawnTimers.Add(DeadPlayer, NewTimer);
+	}
 }
