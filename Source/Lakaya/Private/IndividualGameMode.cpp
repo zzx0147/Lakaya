@@ -2,11 +2,11 @@
 #include "ArmedCharacter.h"
 #include "MovableCharacter.h"
 #include "CollectorPlayerState.h"
-#include "IndividualItem.h"
+#include "IndividualEnergy.h"
 #include "MenuCallingPlayerController.h"
 #include "DamageableCharacter.h"
+#include "IndividualStaticEnergy.h"
 #include "InteractableCharacter.h"
-// #include "TimerManager.h"
 #include "GameFramework/PlayerStart.h"
 
 AIndividualGameMode::AIndividualGameMode()
@@ -74,52 +74,57 @@ void AIndividualGameMode::InitRandomSpawn()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("중복"));
+		UE_LOG(LogTemp, Warning, TEXT("Duplication."));
 		InitRandomSpawn();
 		return;
 	}
 
-	AActor* item = GetWorld()->SpawnActor(AIndividualItem::StaticClass());
-	AIndividualItem* DividualItem = Cast<AIndividualItem>(item);
-	DividualItem->ItemNumber = PosNumber;
+	AActor* item = GetWorld()->SpawnActor(AIndividualStaticEnergy::StaticClass());
+	AIndividualStaticEnergy* DividualItem = Cast<AIndividualStaticEnergy>(item);
+	DividualItem->StaticEnergyNumber = PosNumber;
 
 	// TODO : 상호작용 오브젝트 나오면 위치 배치 후 오브젝트 위치 값을 불러오기.
 	switch (PosNumber)
 	{
 	case 1:
-		item->SetActorRelativeLocation(FVector(ItemPositions[0]));
+		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[0]));
 		break;
 	case 2:
-		item->SetActorRelativeLocation(FVector(ItemPositions[1]));
+		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[1]));
 		break;
 	case 3:
-		item->SetActorRelativeLocation(FVector(ItemPositions[2]));
+		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[2]));
 		break;
 	case 4:
-		item->SetActorRelativeLocation(FVector(ItemPositions[3]));
+		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[3]));
 		break;
 	case 5:
-		item->SetActorRelativeLocation(FVector(ItemPositions[4]));
+		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[4]));
 		break;
 	case 6:
-		item->SetActorRelativeLocation(FVector(ItemPositions[5]));
+		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[5]));
 		break;
 	}
 
-	ItemNumCheck();
+	StaticEnergyNumCheck();
 }
 
-void AIndividualGameMode::SpawnItem()
+void AIndividualGameMode::SpawnStaticEnergy()
 {
 	// TODO : 기획서에 맞게 시간 수정.
 	GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::InitRandomSpawn, 1.0f, false);
 }
 
-void AIndividualGameMode::ItemNumCheck()
+void AIndividualGameMode::SpawnDropEnergy()
 {
-	int32 NumSpawnedItems = VectorArray.Num();
+	
+}
 
-	if (NumSpawnedItems < ItemMaxCount)
+void AIndividualGameMode::StaticEnergyNumCheck()
+{
+	int32 SpawnedStaticEnergyNum = VectorArray.Num();
+
+	if (SpawnedStaticEnergyNum < StaticEnergyMaxCount)
 		GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::InitRandomSpawn, 1.0f, false);
 }
 

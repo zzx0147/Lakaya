@@ -26,8 +26,9 @@ public:
 	
 public:
 	void InitRandomSpawn();
-	void SpawnItem();
-	void ItemNumCheck();
+	void SpawnStaticEnergy();
+	void SpawnDropEnergy();
+	void StaticEnergyNumCheck();
 	void RespawnPlayer(AController* Controller);
 	void OnKilledCharacter(AController* KilledCharacter, AController* EventInstigator);
 private:
@@ -40,14 +41,14 @@ public:
 
 	// TODO : 기획에 따라서 변경될 수 있음.
 	TArray<uint8> VectorArray;
-	const uint8 ItemMaxCount = 3;
+	const uint8 StaticEnergyMaxCount = 3;
 	const uint8 PosMinCount = 1;
 	const uint8 PosMaxCount = 6;
 	const int32 PosX = 1000;
 
 	const uint8 PlayerRespawnTime = 3;
 	
-	const TArray<FVector> ItemPositions = {
+	const TArray<FVector> StaticEnergyPositions = {
 		FVector(PosX, 200, 0),
 		FVector(PosX, 400, 0),
 		FVector(PosX, 600, 0),

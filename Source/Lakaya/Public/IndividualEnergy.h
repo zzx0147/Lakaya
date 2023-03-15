@@ -3,17 +3,17 @@
 #include "EngineMinimal.h"
 #include "Interactable.h"
 #include "GameFramework/Actor.h"
-#include "IndividualItem.generated.h"
+#include "IndividualEnergy.generated.h"
 
 DECLARE_DELEGATE(FDelegate);
 
 UCLASS()
-class LAKAYA_API AIndividualItem : public AActor, public IInteractable
+class LAKAYA_API AIndividualEnergy : public AActor, public IInteractable
 {
 	GENERATED_BODY()
 	
 public:	
-	AIndividualItem();
+	AIndividualEnergy();
 
 protected:
 	virtual auto BeginPlay() -> void override;
@@ -35,13 +35,12 @@ private:
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Item")
-	uint8 ItemNumber;
+	uint8 StaticEnergyNumber;
 	
 public:
 	UFUNCTION(Category = "Item")
-	uint8 GetItemNumber() { return ItemNumber; }
+	uint8 GetItemNumber() { return StaticEnergyNumber; }
 
 	UFUNCTION(Category = "Item")
 	void GetItem();
-
 };
