@@ -4,14 +4,13 @@
 #include "CollectorPlayerState.h"
 #include "IndividualItem.h"
 #include "MenuCallingPlayerController.h"
-#include "TestCharacter.h"
 #include "DamageableCharacter.h"
 #include "InteractableCharacter.h"
+// #include "TimerManager.h"
 #include "GameFramework/PlayerStart.h"
 
 AIndividualGameMode::AIndividualGameMode()
 {
-	// DefaultPawnClass = AArmedCharacter::StaticClass();
 	DefaultPawnClass = AInteractableCharacter::StaticClass();
 	PlayerControllerClass = AMenuCallingPlayerController::StaticClass();
 	PlayerStateClass = ACollectorPlayerState::StaticClass();
@@ -124,6 +123,55 @@ void AIndividualGameMode::ItemNumCheck()
 		GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::InitRandomSpawn, 1.0f, false);
 }
 
+void AIndividualGameMode::RespawnPlayer(AController* Controller)
+{
+	// Find a random player start location
+	TArray<AActor*> PlayerStartActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStartActors);
+
+	if (PlayerStartActors.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No player start actors found."));
+		return;
+	}
+
+	APlayerStart* RandomPlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
+
+	APawn* KilledPawn = Cast<APawn>(Controller->GetPawn());
+	ACharacter* KilledCharacterActor = Cast<ACharacter>(Controller->GetCharacter());
+	
+	if (KilledPawn != nullptr)
+	{
+		KilledPawn->SetActorLocation(RandomPlayerStart->GetActorLocation());
+	}
+	else if (Controller != nullptr)
+	{
+		KilledCharacterActor->SetActorLocation(RandomPlayerStart->GetActorLocation());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("KilledCharacter is not a pawn or an actor."));
+		return;
+	}
+
+	ACollectorPlayerState* KilledPlayerState = Cast<ACollectorPlayerState>(Controller->GetCharacter()->GetController()->PlayerState);
+	if (Controller == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("KilledPlayerState is null."));
+		return;
+	}
+
+	ADamageableCharacter* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
+	if (KilledDamageableCharacter == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("KilledDamageableCharacter is null."));
+		return;
+	}
+	
+	KilledPlayerState->ResetEnergy();
+	KilledDamageableCharacter->FullHealth();
+}
+
 void AIndividualGameMode::OnKilledCharacter(AController* KilledCharacter, AController* EventInstigator)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnKillCharacter has been called !"));
@@ -148,56 +196,25 @@ void AIndividualGameMode::OnKilledCharacter(AController* KilledCharacter, AContr
 	UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 2 points."), *CollectorPlayerState->GetPlayerName());
 	UE_LOG(LogTemp, Warning, TEXT("Player Total points: %d"), CollectorPlayerState->GetPoint());
 	UE_LOG(LogTemp, Warning, TEXT("Player Totla Money : %d"), CollectorPlayerState->GetMoney());
-	
+
 	if (KilledCharacter == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_KilledCharacter is null."));
 		return;
 	}
 
-	// Find a random player start location
-	TArray<AActor*> PlayerStartActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStartActors);
-
-	if (PlayerStartActors.Num() == 0)
+	FTimerHandle* ExistingTimer = RespawnTimers.Find(KilledCharacter);
+	if (ExistingTimer != nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No player start actors found."));
-		return;
+		GetWorldTimerManager().ClearTimer(*ExistingTimer);
+		RespawnTimers.Remove(KilledCharacter);
 	}
 
-	APlayerStart* RandomPlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
-
-	APawn* KilledPawn = Cast<APawn>(KilledCharacter->GetPawn());
-	ACharacter* KilledCharacterActor = Cast<ACharacter>(KilledCharacter->GetCharacter());
+	FTimerHandle NewTimer;
+	GetWorldTimerManager().SetTimer(NewTimer, [this, KilledCharacter](){ RespawnPlayer(KilledCharacter); }, PlayerRespawnTime, false);
+	RespawnTimers.Add(KilledCharacter, NewTimer);
 	
-	if (KilledPawn != nullptr)
-	{
-		KilledPawn->SetActorLocation(RandomPlayerStart->GetActorLocation());
-	}
-	else if (KilledCharacter != nullptr)
-	{
-		KilledCharacterActor->SetActorLocation(RandomPlayerStart->GetActorLocation());
-	}
-	else
-	{
-			UE_LOG(LogTemp, Warning, TEXT("KilledCharacter is not a pawn or an actor."));
-			return;
-	}
-
-	ACollectorPlayerState* KilledPlayerState = Cast<ACollectorPlayerState>(KilledCharacter->GetCharacter()->GetController()->PlayerState);
-	if (KilledCharacter == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("KilledPlayerState is null."));
-		return;
-	}
-
-	ADamageableCharacter* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
-	if (KilledDamageableCharacter == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("KilledDamageableCharacter is null."));
-		return;
-	}
-	
-	KilledPlayerState->ResetEnergy();
-	KilledDamageableCharacter->FullHealth();
+	// FTimerHandle& RespawnTimer = RespawnTimers.FindOrAdd(KilledCharacter);
+	// GetWorldTimerManager().SetTimer(RespawnTimer, [this, KilledCharacter](){ RespawnPlayer(KilledCharacter); }, PlayerRespawnTime, false);
+	// GetWorldTimerManager().ClearTimer(RespawnTimer);
 }

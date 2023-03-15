@@ -28,8 +28,7 @@ public:
 	void InitRandomSpawn();
 	void SpawnItem();
 	void ItemNumCheck();
-
-public:
+	void RespawnPlayer(AController* Controller);
 	void OnKilledCharacter(AController* KilledCharacter, AController* EventInstigator);
 private:
 	uint8 NumPlayers;
@@ -59,5 +58,7 @@ public:
 
 private:
 	FTimerHandle TimerHandle_SpawnItem;
-	
+
+	UPROPERTY()
+	TMap<AController*, FTimerHandle> RespawnTimers;
 };
