@@ -79,6 +79,7 @@ void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponClassRowName)
 
 	PrimaryWeapon->RequestSetupData(Data->AssetRowName);
 	PrimaryWeapon->SetIsReplicated(true);
+	if (!PrimaryWeapon->GetIsReplicated()) UE_LOG(LogTemp, Warning, TEXT("PrimaryWeapon is NOT replicated"));
 }
 
 void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -98,12 +99,19 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	}
 }
 
+ELifetimeCondition AArmedCharacter::AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const
+{
+	if (ComponentToReplicate->IsA(UWeaponComponent::StaticClass())) return COND_None;
+	return Super::AllowActorComponentToReplicate(ComponentToReplicate);
+}
+
 void AArmedCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
+	if (!GetIsReplicated()) UE_LOG(LogTemp, Warning, TEXT("ArmedCharacter is NOT replicated"));
 	if (HasAuthority()) SetupPrimaryWeapon(TEXT("Test"));
+	if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
 }
 
 void AArmedCharacter::FireStart(const FInputActionValue& Value)

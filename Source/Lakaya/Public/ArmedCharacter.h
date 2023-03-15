@@ -3,20 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InteractableCharacter.h"
+#include "DamageableCharacter.h"
 #include "ArmedCharacter.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API AArmedCharacter : public AInteractableCharacter
+class LAKAYA_API AArmedCharacter : public ADamageableCharacter
 {
 	GENERATED_BODY()
 
 public:
 	AArmedCharacter();
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	virtual ELifetimeCondition AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const override;
 
 protected:
 	virtual void BeginPlay() override;

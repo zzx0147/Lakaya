@@ -17,12 +17,20 @@ public:
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
-	bool IsOwnedByLocalPlayer() const;
-
 protected:
 	virtual void BeginPlay() override;
 
+public:
+	bool IsOwnedByLocalPlayer() const;
+	//TODO: 오너를 제외한 클라이언트에서는 이 캐릭터의 회전을 시뮬레이트합니다.
+
 private:
+	UFUNCTION(Server, Reliable)
+	void RequestRun();
+
+	UFUNCTION(Server,Reliable)
+	void RequestStopRun();
+
 	// Input event functions
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);

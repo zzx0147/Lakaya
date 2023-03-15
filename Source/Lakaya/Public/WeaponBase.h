@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Object.h"
 #include "queue"
+#include "RemoteCallableSubObject.h"
 #include "GameFramework/GameStateBase.h"
 #include "WeaponBase.generated.h"
 
@@ -13,7 +13,7 @@
  * 
  */
 UCLASS(Config=Game, Abstract)
-class LAKAYA_API UWeaponBase : public UObject
+class LAKAYA_API UWeaponBase : public URemoteCallableSubObject
 {
 	GENERATED_BODY()
 
@@ -28,16 +28,13 @@ class LAKAYA_API UWeaponBase : public UObject
 
 public:
 	virtual bool IsNameStableForNetworking() const override { return false; }
-	virtual bool IsSupportedForNetworking() const override { return true; }
 
-	UFUNCTION(NetMulticast, Reliable)
-	void SetupData(const FName& RowName);
+	virtual void SetupData(const FName& RowName) { return; }
 
 	inline const bool& GetIsEnabled() const { return bIsEnabled; }
 	inline void SetEnabled(const bool& Enabled) { bIsEnabled = Enabled; }
 
 protected:
-	virtual void SetupData_Implementation(const FName& RowName) { return; }
 	inline float GetServerTime() { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
 
 	/**

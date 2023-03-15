@@ -17,7 +17,7 @@ public:
 	UStandardReload();
 
 protected:
-	virtual void SetupData_Implementation(const FName& RowName) override;
+	virtual void SetupData(const FName& RowName) override;
 	virtual void OnReloadStart() override;
 	virtual void OnReloadStartNotify() override;
 
@@ -26,9 +26,12 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	class UDataTable* ReloadTable;
-	
+
+	UPROPERTY(Replicated)
 	TWeakObjectPtr<class UGunComponent> GunComponent;
-	FTimerHandle ReloadTimer;
-	
+
+	UPROPERTY(Replicated)
 	float ReloadDelay;
+	
+	FTimerHandle ReloadTimer;
 };
