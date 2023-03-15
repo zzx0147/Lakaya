@@ -16,8 +16,5 @@ class LAKAYA_API AAiCharacterController : public AAIController
 
 public:
 	AAiCharacterController();
-	virtual void BeginPlay() override;
-	virtual void OnPossess(APawn* InPawn) override;
-	virtual void OnUnPossess() override;
 
 };
