@@ -8,16 +8,6 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
-void URiffleFireClient::FireStart()
-{
-	Super::FireStart();
-}
-
-void URiffleFireClient::FireStop()
-{
-	if (Selector == EGunSelector::Auto) RequestFireStop(GetServerTime());
-}
-
 void URiffleFireClient::OnFireStartNotify()
 {
 	Super::OnFireStartNotify();
