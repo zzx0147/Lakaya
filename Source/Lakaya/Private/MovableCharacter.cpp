@@ -13,7 +13,7 @@
 AMovableCharacter::AMovableCharacter()
 {
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
-	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
 	RunMultiplier = 2.0;
 
 	bUseControllerRotationYaw = bUseControllerRotationPitch = true;

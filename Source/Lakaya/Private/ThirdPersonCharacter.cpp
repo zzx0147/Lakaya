@@ -4,6 +4,7 @@
 #include "ThirdPersonCharacter.h"
 
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
 AThirdPersonCharacter::AThirdPersonCharacter()
@@ -13,4 +14,15 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
+
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.TickGroup = TG_PostUpdateWork;
+
+	GetCapsuleComponent()->SetCapsuleHalfHeight(34.f);
+}
+
+void AThirdPersonCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	GetMesh()->SetWorldRotation(FRotator::ZeroRotator);
 }

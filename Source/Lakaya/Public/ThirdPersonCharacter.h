@@ -19,6 +19,9 @@ public:
 	inline class UCameraComponent* GetCamera() { return Camera; }
 	inline const class UCameraComponent* GetCamera() const { return Camera; }
 
+protected:
+	virtual void Tick(float DeltaSeconds) override;
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class USpringArmComponent* SpringArm;
