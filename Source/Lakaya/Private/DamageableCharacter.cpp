@@ -3,6 +3,8 @@
 
 #include "DamageableCharacter.h"
 
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -41,6 +43,9 @@ void ADamageableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
 {
+	GetCharacterMovement()->DisableMovement();
+	//TODO: 트레이스 충돌은 꺼지지만, 여전히 다른 캐릭터의 움직임을 제한하고 있습니다..
+	SetActorEnableCollision(false);
 	OnKillCharacter.Broadcast(GetController(), this, EventInstigator, DamageCauser);
 }
 

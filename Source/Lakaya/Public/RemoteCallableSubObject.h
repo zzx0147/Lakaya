@@ -18,4 +18,11 @@ public:
 	virtual bool IsSupportedForNetworking() const override { return true; }
 	virtual bool CallRemoteFunction(UFunction* Function, void* Parms, FOutParmRec* OutParms, FFrame* Stack) override;
 	virtual int32 GetFunctionCallspace(UFunction* Function, FFrame* Stack) override;
+
+protected:
+	/**
+	 * @brief Outer가 UActorComponent이거나 아닌 경우에 대해 간단히 AActor를 탐색해봅니다.
+	 * @return 탐색결과입니다. nullptr일 수 있습니다.
+	 */
+	AActor* FindActor();
 };

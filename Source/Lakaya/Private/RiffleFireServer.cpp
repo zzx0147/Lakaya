@@ -4,7 +4,6 @@
 #include "RiffleFireServer.h"
 
 #include "GunComponent.h"
-#include "ThirdPersonCharacter.h"
 #include "WeaponFireData.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/GameStateBase.h"
@@ -24,21 +23,23 @@ URiffleFireServer::URiffleFireServer()
 void URiffleFireServer::OnFireStart()
 {
 	Super::OnFireStart();
-	FireStartCore(SelectorTimer, FireTimer,
-	              [this] { EmptyMagazine(); },
-	              [this] { NestedFireCore(Selector, FireCount); },
+	FireStartCore(FireTimer,
+	              [this] { return Character->SetFocus(EFocusKey::MainHand); },
+	              [this] { ContinuousFireCore(Selector, FireCount); },
 	              [this]
 	              {
 		              FreshFireCore(Selector, FireCount, FireTimer,
 		                            [this]
 		                            {
 			                            FireCallback(FireCount, FireTimer,
+			                                         [this] { return !GunComponent->CostBullets(1); },
 			                                         [this]
 			                                         {
-				                                         return GunComponent.IsValid() && !GunComponent->CostBullets(1);
+				                                         Character->ReleaseFocus(EFocusKey::MainHand);
+				                                         EmptyMagazine();
 			                                         },
-			                                         [this] { EmptyMagazine(); },
-			                                         [this] { TraceFire(); });
+			                                         [this] { TraceFire(); },
+			                                         [this] { Character->ReleaseFocus(EFocusKey::MainHand); });
 		                            });
 	              });
 }
@@ -46,14 +47,15 @@ void URiffleFireServer::OnFireStart()
 void URiffleFireServer::OnFireStop()
 {
 	Super::OnFireStop();
-	FireStopCore(Selector, FireCount);
+	FireStopCore(Selector, FireCount, false);
 }
 
 void URiffleFireServer::OnSwitchSelector()
 {
 	Super::OnSwitchSelector();
-	SwitchSelectorCore(FireCount, DesiredSelector, SelectorTimer,
-	                   [this] { UpdateSelector(DesiredSelector, Selector); });
+	SwitchSelectorCore(DesiredSelector, SelectorTimer,
+	                   [this] { UpdateSelector(DesiredSelector, Selector, false); },
+	                   [this] { return !Character->SetFocus(EFocusKey::MainHand); });
 }
 
 void URiffleFireServer::SetupData(const FName& RowName)
@@ -63,15 +65,15 @@ void URiffleFireServer::SetupData(const FName& RowName)
 	auto Component = Cast<UActorComponent>(GetOuter());
 	if (Component == nullptr)
 	{
-		UE_LOG(LogNetSubObject, Error, TEXT("Outer was not UActorComponent!"));
+		UE_LOG(LogNetSubObject, Fatal, TEXT("Outer was not UActorComponent!"));
 		return;
 	}
 	GunComponent = Cast<UGunComponent>(Component);
 
-	Character = Cast<AThirdPersonCharacter>(Component->GetOwner());
+	Character = Cast<AFocusableCharacter>(Component->GetOwner());
 	if (!Character.IsValid())
 	{
-		UE_LOG(LogNetSubObject, Error, TEXT("Attached Actor was not AThirdPersonCharacter."));
+		UE_LOG(LogNetSubObject, Fatal, TEXT("Attached Actor was not AThirdPersonCharacter."));
 		return;
 	}
 
@@ -87,7 +89,7 @@ void URiffleFireServer::SetupData(const FName& RowName)
 
 void URiffleFireServer::EmptyMagazine_Implementation()
 {
-	if (GunComponent.IsValid()) GunComponent->ReloadStart();
+	GunComponent->ReloadStart();
 }
 
 void URiffleFireServer::TraceFire()

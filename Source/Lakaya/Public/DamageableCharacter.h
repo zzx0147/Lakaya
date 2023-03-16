@@ -6,6 +6,7 @@
 #include "FocusableCharacter.h"
 #include "DamageableCharacter.generated.h"
 
+//TODO: 이벤트로 변경하고, NetMulticast RPC함수에서 이벤트를 호출하도록 구조를 변경합니다.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FKillCharacterSignature, AController*, KilledController, AActor*,
                                               KilledActor, AController*, EventInstigator, AActor*, Causer);
 
@@ -44,14 +45,13 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_Health();
 
-private:
 	UFUNCTION()
-	void OnTakeAnyDamageCallback(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
-	                             AController* InstigatedBy, AActor* DamageCauser);
+	virtual void OnTakeAnyDamageCallback(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
+	                                     AController* InstigatedBy, AActor* DamageCauser);
 
 	UFUNCTION()
-	void OnKillCharacterCallback(AController* KilledController, AActor* KilledActor, AController* EventInstigator,
-	                             AActor* DamageCauser);
+	virtual void OnKillCharacterCallback(AController* KilledController, AActor* KilledActor,
+	                                     AController* EventInstigator, AActor* DamageCauser);
 
 public:
 	UPROPERTY(Replicated)
