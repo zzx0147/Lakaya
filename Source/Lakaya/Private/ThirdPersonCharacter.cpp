@@ -5,12 +5,14 @@
 
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
 AThirdPersonCharacter::AThirdPersonCharacter()
 {
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(RootComponent);
+	SpringArm->bUsePawnControlRotation = true;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
@@ -18,11 +20,17 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PostUpdateWork;
 
-	GetCapsuleComponent()->SetCapsuleHalfHeight(34.f);
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCapsuleComponent()->SetCapsuleHalfHeight(GetCapsuleComponent()->GetUnscaledCapsuleRadius());
+	bUseControllerRotationYaw = bUseControllerRotationPitch = true;
+	bUseControllerRotationRoll = false;
+	YawClutch = false;
 }
 
 void AThirdPersonCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	GetMesh()->SetWorldRotation(FRotator::ZeroRotator);
+	auto Rotation = FRotator::ZeroRotator;
+	if (!YawClutch) Rotation.Yaw = RootComponent->GetComponentRotation().Yaw;
+	GetMesh()->SetWorldRotation(Rotation);
 }

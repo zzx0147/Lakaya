@@ -5,20 +5,13 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "InputMappingContext.h"
-#include "Kismet/GameplayStatics.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 AMovableCharacter::AMovableCharacter()
 {
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
-	GetCharacterMovement()->bOrientRotationToMovement = false;
 	RunMultiplier = 2.0;
-
-	bUseControllerRotationYaw = bUseControllerRotationPitch = true;
-	bUseControllerRotationRoll = false;
-	GetSpringArm()->bUsePawnControlRotation = true;
 
 	// In a dedicated server, the following logic is not necessary.
 	if (IsRunningDedicatedServer()) return;
