@@ -20,9 +20,13 @@ class LAKAYA_API AIndividualGameMode : public ALakayaDefalutPlayGameMode
 public:
 	AIndividualGameMode();
 
+	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
+
+public:
+	void OnPlayerJoined(APlayerController* PlayerController);
 	
 public:
 	void InitRandomSpawn();
@@ -30,7 +34,11 @@ public:
 	void SpawnDropEnergy();
 	void StaticEnergyNumCheck();
 	void RespawnPlayer(AController* Controller);
-	void OnKilledCharacter(AController* KilledCharacter, AController* EventInstigator);
+	
+	// void OnKilledCharacter(AController* KilledCharacter, AController* EventInstigator);
+	UFUNCTION()
+	void OnKilledCharacter(AController* InstigatorController, AActor* DamageCauser, AController* VictimController, AActor* Victim);
+	
 private:
 	uint8 NumPlayers;
 	EGameState GameState;

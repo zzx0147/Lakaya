@@ -18,12 +18,21 @@ AIndividualGameMode::AIndividualGameMode()
 	NumPlayers = 0;
 }
 
+void AIndividualGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(*Iterator);
+		OnPlayerJoined(PlayerController);
+	}
+}
+
 void AIndividualGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	// GameState = EGameState::Wait;
-	
 	InitRandomSpawn();
 }
 
@@ -31,36 +40,52 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 
+	OnPlayerJoined(NewPlayer);
+	
 	NumPlayers++;
 
 	UE_LOG(LogTemp, Warning, TEXT("The Player has entered the game."));
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
-
-	
-	
-	// TODO : 특정 조건에 충족하면, 게임 시작.
-	// if (NumPlayers == MaxPlayers)
-	// {
-	//		TODO : Start the game
-	//		GameState = EGameState::Progress;
-	// }
 }
 
 void AIndividualGameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
 
+	ADamageableCharacter* DamageableCharacter = Cast<ADamageableCharacter>(Exiting->GetPawn());
+	if (DamageableCharacter)
+	{
+		DamageableCharacter->OnKillCharacterNotify.RemoveAll(this);	
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("DamageableCharacter is null."));
+		return;
+	}
+	
 	NumPlayers--;
 	UE_LOG(LogTemp, Warning, TEXT("The Player has left the game."));
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
+}
 
-	// TODO : 게임종료 조건
-	// if ()
-	// {
-	// 	GameState = EGameState::Finish;
-	//
-	// 	TODO : Cleanup and exit the game;
-	// }
+void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
+{
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableCharacter::StaticClass(), FoundActors);
+
+	for (auto Actor : FoundActors)
+	{
+		ADamageableCharacter* MyActor = Cast<ADamageableCharacter>(Actor);
+		if (MyActor)
+		{
+			MyActor->OnKillCharacterNotify.AddUObject(this, &AIndividualGameMode::OnKilledCharacter);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("MyActor is null."));
+			return;
+		}
+	}
 }
 
 void AIndividualGameMode::InitRandomSpawn()
@@ -128,9 +153,8 @@ void AIndividualGameMode::StaticEnergyNumCheck()
 		GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::InitRandomSpawn, 1.0f, false);
 }
 
-void AIndividualGameMode::RespawnPlayer(AController* Controller)
+void AIndividualGameMode::RespawnPlayer(AController* KilledController)
 {
-	// Find a random player start location
 	TArray<AActor*> PlayerStartActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStartActors);
 
@@ -142,14 +166,14 @@ void AIndividualGameMode::RespawnPlayer(AController* Controller)
 
 	APlayerStart* RandomPlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
 
-	APawn* KilledPawn = Cast<APawn>(Controller->GetPawn());
-	ACharacter* KilledCharacterActor = Cast<ACharacter>(Controller->GetCharacter());
+	APawn* KilledPawn = Cast<APawn>(KilledController->GetPawn());
+	ACharacter* KilledCharacterActor = Cast<ACharacter>(KilledController->GetCharacter());
 	
 	if (KilledPawn != nullptr)
 	{
 		KilledPawn->SetActorLocation(RandomPlayerStart->GetActorLocation());
 	}
-	else if (Controller != nullptr)
+	else if (KilledController != nullptr)
 	{
 		KilledCharacterActor->SetActorLocation(RandomPlayerStart->GetActorLocation());
 	}
@@ -159,8 +183,8 @@ void AIndividualGameMode::RespawnPlayer(AController* Controller)
 		return;
 	}
 
-	ACollectorPlayerState* KilledPlayerState = Cast<ACollectorPlayerState>(Controller->GetCharacter()->GetController()->PlayerState);
-	if (Controller == nullptr)
+	ACollectorPlayerState* KilledPlayerState = Cast<ACollectorPlayerState>(KilledController->GetCharacter()->GetController()->PlayerState);
+	if (KilledController == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("KilledPlayerState is null."));
 		return;
@@ -177,18 +201,18 @@ void AIndividualGameMode::RespawnPlayer(AController* Controller)
 	KilledDamageableCharacter->FullHealth();
 }
 
-void AIndividualGameMode::OnKilledCharacter(AController* KilledCharacter, AController* EventInstigator)
+void AIndividualGameMode::OnKilledCharacter(AController* InstigatorController, AActor* DamageCauser,
+	AController* VictimController, AActor* Victim)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnKillCharacter has been called !"));
-
-	if (EventInstigator == nullptr)
+	
+	if (InstigatorController == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_EventInstigator is null."));
 		return;
 	}
 
-	// Get the player state from the event instigator's controller
-	ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(EventInstigator->GetCharacter()->GetController()->PlayerState);
+	ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(InstigatorController->GetCharacter()->GetController()->PlayerState);
 	if (CollectorPlayerState == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
@@ -200,23 +224,23 @@ void AIndividualGameMode::OnKilledCharacter(AController* KilledCharacter, AContr
 	CollectorPlayerState->GainMoney(1);
 	UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 2 points."), *CollectorPlayerState->GetPlayerName());
 	UE_LOG(LogTemp, Warning, TEXT("Player Total points: %d"), CollectorPlayerState->GetPoint());
-	UE_LOG(LogTemp, Warning, TEXT("Player Totla Money : %d"), CollectorPlayerState->GetMoney());
+	UE_LOG(LogTemp, Warning, TEXT("Player Total Money : %d"), CollectorPlayerState->GetMoney());
 
-	if (KilledCharacter == nullptr)
+	if (VictimController == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_KilledCharacter is null."));
 		return;
 	}
-
-	FTimerHandle* ExistingTimer = RespawnTimers.Find(KilledCharacter);
+	
+	FTimerHandle* ExistingTimer = RespawnTimers.Find(VictimController);
 	if (ExistingTimer != nullptr)
 	{
 		GetWorldTimerManager().ClearTimer(*ExistingTimer);
-		RespawnTimers.Remove(KilledCharacter);
+		RespawnTimers.Remove(VictimController);
 	}
 
 	TArray<AController*> DeadPlayers;
-	DeadPlayers.Add(KilledCharacter);
+	DeadPlayers.Add(VictimController);
 
 	for (auto& Pair : RespawnTimers)
 	{
@@ -232,7 +256,7 @@ void AIndividualGameMode::OnKilledCharacter(AController* KilledCharacter, AContr
 	for (AController* DeadPlayer : DeadPlayers)
 	{
 		FTimerHandle NewTimer;
-		GetWorldTimerManager().SetTimer(NewTimer, [this, KilledCharacter](){ RespawnPlayer(KilledCharacter); }, PlayerRespawnTime, false);
+		GetWorldTimerManager().SetTimer(NewTimer, [this, DeadPlayer](){ RespawnPlayer(DeadPlayer); }, PlayerRespawnTime, false);
 		RespawnTimers.Add(DeadPlayer, NewTimer);
 	}
 }

@@ -6,7 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
-
+#include "IndividualGameMode.h"
 
 ADamageableCharacter::ADamageableCharacter()
 {

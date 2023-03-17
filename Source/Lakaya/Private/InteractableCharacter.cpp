@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "InteractableCharacter.h"
 
 #include "EnhancedInputComponent.h"
@@ -69,8 +66,8 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
 	// TODO : 주석 해제
-	// if (!InputSystem->HasMappingContext(InteractionContext))
-	// 	InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
+	if (!InputSystem->HasMappingContext(InteractionContext))
+		InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
 
 void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
