@@ -1,14 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "DamageableCharacter.h"
 
-<<<<<<< HEAD
 #include "CollectorPlayerState.h"
-=======
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
->>>>>>> Yongwoo
 #include "Net/UnrealNetwork.h"
 #include "IndividualGameMode.h"
 
@@ -86,7 +80,6 @@ void ADamageableCharacter::OnTakeAnyDamageCallback(AActor* DamagedActor, float D
 
 void ADamageableCharacter::RespawnNotify_Implementation()
 {
-<<<<<<< HEAD
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
 
 	AIndividualGameMode* GameMode = Cast<AIndividualGameMode>(GetWorld()->GetAuthGameMode());
@@ -100,7 +93,5 @@ void ADamageableCharacter::RespawnNotify_Implementation()
 		GameMode->OnKilledCharacter(KilledController, EventInstigator);
 	}
 }
-=======
 	OnRespawnCharacterNotify.Broadcast(this);
 }
->>>>>>> Yongwoo
