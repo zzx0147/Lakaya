@@ -71,15 +71,10 @@ void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponClassRowName)
 	PrimaryWeapon = Cast<UWeaponComponent>(
 		AddComponentByClass(Data->WeaponClass.LoadSynchronous(), false, FTransform::Identity, false));
 
-	if (!PrimaryWeapon)
-	{
-		UE_LOG(LogActor, Warning, TEXT("PrimaryWeapon was setted as nullptr"));
-		return;
-	}
-
+	if (!PrimaryWeapon) UE_LOG(LogActor, Fatal, TEXT("PrimaryWeapon was setted as nullptr"));
 	PrimaryWeapon->RequestSetupData(Data->AssetRowName);
 	PrimaryWeapon->SetIsReplicated(true);
-	if (!PrimaryWeapon->GetIsReplicated()) UE_LOG(LogTemp, Warning, TEXT("PrimaryWeapon is NOT replicated"));
+	if (!PrimaryWeapon->GetIsReplicated()) UE_LOG(LogTemp, Fatal, TEXT("PrimaryWeapon is NOT replicated"));
 }
 
 void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -109,9 +104,16 @@ void AArmedCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (!GetIsReplicated()) UE_LOG(LogTemp, Warning, TEXT("ArmedCharacter is NOT replicated"));
+	if (!GetIsReplicated()) UE_LOG(LogTemp, Fatal, TEXT("ArmedCharacter is NOT replicated"));
 	if (HasAuthority()) SetupPrimaryWeapon(TEXT("Test"));
 	if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
+}
+
+void AArmedCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::KillCharacter(EventInstigator, DamageCauser);
+	auto Causer = Cast<AArmedCharacter>(DamageCauser);
+	if (Causer) PrimaryWeapon->UpgradeWeapon();
 }
 
 void AArmedCharacter::FireStart(const FInputActionValue& Value)

@@ -6,9 +6,7 @@
 #include "FocusableCharacter.h"
 #include "DamageableCharacter.generated.h"
 
-//TODO: 이벤트로 변경하고, NetMulticast RPC함수에서 이벤트를 호출하도록 구조를 변경합니다.
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FKillCharacterSignature, AController*, KilledController, AActor*,
-                                              KilledActor, AController*, EventInstigator, AActor*, Causer);
+DECLARE_EVENT_FourParams(ADamageableCharacter, FKillCharacterSignature, AController*, AActor*, AController*, AActor*);
 
 UCLASS()
 class LAKAYA_API ADamageableCharacter : public AFocusableCharacter
@@ -18,10 +16,17 @@ class LAKAYA_API ADamageableCharacter : public AFocusableCharacter
 public:
 	ADamageableCharacter();
 
-	virtual void BeginPlay() override;
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 
+protected:
+	virtual void BeginPlay() override;
+
+public:
+	inline virtual const float& GetMaximumHealth() const { return MaximumHealth; }
+	inline virtual const float& GetHealth() const { return Health; }
+
+protected:
 	/**
 	 * @brief 이 캐릭터를 처치합니다.
 	 * @param EventInstigator 처치한 컨트롤러
@@ -29,10 +34,6 @@ public:
 	 */
 	virtual void KillCharacter(AController* EventInstigator, AActor* DamageCauser);
 
-	inline virtual const float& GetMaximumHealth() const { return MaximumHealth; }
-	inline virtual const float& GetHealth() const { return Health; }
-
-protected:
 	/**
 	 * @brief 최대 체력이 리플리케이트된 후 호출되는 이벤트 함수입니다. 서버측에서는 호출되지 않습니다.
 	 */
@@ -53,9 +54,12 @@ protected:
 	virtual void OnKillCharacterCallback(AController* KilledController, AActor* KilledActor,
 	                                     AController* EventInstigator, AActor* DamageCauser);
 
+private:
+	UFUNCTION(NetMulticast, Reliable)
+	void KillCharacterNotify(AController* EventInstigator, AActor* DamageCauser);
+
 public:
-	UPROPERTY(Replicated)
-	FKillCharacterSignature OnKillCharacter;
+	FKillCharacterSignature OnKillCharacterNotify;
 
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_MaximumHealth)

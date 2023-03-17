@@ -20,7 +20,7 @@ void ADamageableCharacter::BeginPlay()
 	if (IsRunningDedicatedServer()) return;
 
 	OnTakeAnyDamage.AddDynamic(this, &ADamageableCharacter::OnTakeAnyDamageCallback);
-	OnKillCharacter.AddDynamic(this, &ADamageableCharacter::OnKillCharacterCallback);
+	OnKillCharacterNotify.AddUObject(this, &ADamageableCharacter::OnKillCharacterCallback);
 }
 
 float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -28,6 +28,7 @@ float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 {
 	auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	Health -= Damage;
+	if (Health > MaximumHealth) Health = MaximumHealth;
 	if (Health <= 0.f) KillCharacter(EventInstigator, DamageCauser);
 	return Damage;
 }
@@ -36,7 +37,6 @@ void ADamageableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ADamageableCharacter, OnKillCharacter);
 	DOREPLIFETIME(ADamageableCharacter, MaximumHealth);
 	DOREPLIFETIME(ADamageableCharacter, Health);
 }
@@ -46,7 +46,12 @@ void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* D
 	GetCharacterMovement()->DisableMovement();
 	//TODO: 트레이스 충돌은 꺼지지만, 여전히 다른 캐릭터의 움직임을 제한하고 있습니다..
 	SetActorEnableCollision(false);
-	OnKillCharacter.Broadcast(GetController(), this, EventInstigator, DamageCauser);
+	KillCharacterNotify(EventInstigator, DamageCauser);
+}
+
+void ADamageableCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
+{
+	OnKillCharacterNotify.Broadcast(GetController(), this, EventInstigator, DamageCauser);
 }
 
 void ADamageableCharacter::OnRep_MaximumHealth()

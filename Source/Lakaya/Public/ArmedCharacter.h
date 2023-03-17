@@ -21,6 +21,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void KillCharacter(AController* EventInstigator, AActor* DamageCauser) override;
 
 public:
 	/**

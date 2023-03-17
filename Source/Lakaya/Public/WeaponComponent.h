@@ -22,6 +22,7 @@ public:
 	virtual void ReadyForReplication() override;
 
 	virtual void RequestSetupData(const FName& RowName);
+	virtual void UpgradeWeapon();
 
 protected:
 	virtual void SetupData();

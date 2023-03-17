@@ -32,6 +32,12 @@ void UWeaponComponent::RequestSetupData(const FName& RowName)
 	if (IsReadyForReplication()) SetupData();
 }
 
+void UWeaponComponent::UpgradeWeapon()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Upgraded"));
+	//TODO: 무기가 업그레이드 될 때 어떤 행동을 할 지 정의합니다.
+}
+
 void UWeaponComponent::SetupData()
 {
 	auto Data = WeaponAssetDataTable->FindRow<FWeaponAssetData>(RequestedRowName,TEXT("WeaponComponent"));
