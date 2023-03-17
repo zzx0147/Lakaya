@@ -87,12 +87,16 @@ bool AMovableCharacter::IsOwnedByLocalPlayer() const
 
 void AMovableCharacter::RequestRun_Implementation()
 {
+	if (bIsRunning) return;
 	GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
+	bIsRunning = true;
 }
 
 void AMovableCharacter::RequestStopRun_Implementation()
 {
+	if (!bIsRunning) return;
 	GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
+	bIsRunning = false;
 }
 
 void AMovableCharacter::Move(const FInputActionValue& Value)

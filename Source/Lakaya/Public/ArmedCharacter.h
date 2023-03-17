@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "DamageableCharacter.h"
+#include "EnhancedInputSubsystems.h"
 #include "ArmedCharacter.generated.h"
 
 /**
@@ -16,12 +17,16 @@ class LAKAYA_API AArmedCharacter : public ADamageableCharacter
 
 public:
 	AArmedCharacter();
+
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-	virtual ELifetimeCondition AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const override;
+	virtual ELifetimeCondition
+	AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const override;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void KillCharacter(AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void RespawnNotify_Implementation() override;
 
 public:
 	/**
@@ -38,6 +43,16 @@ private:
 	void AbilityStop(const FInputActionValue& Value);
 	void ReloadStart(const FInputActionValue& Value);
 	void ReloadStop(const FInputActionValue& Value);
+
+	inline void AddInputContext()
+	{
+		if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
+	}
+
+	inline void RemoveInputContext()
+	{
+		if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(WeaponControlContext);
+	}
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Context")
 	UInputMappingContext* WeaponControlContext;

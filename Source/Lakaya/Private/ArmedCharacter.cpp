@@ -106,7 +106,7 @@ void AArmedCharacter::BeginPlay()
 
 	if (!GetIsReplicated()) UE_LOG(LogTemp, Fatal, TEXT("ArmedCharacter is NOT replicated"));
 	if (HasAuthority()) SetupPrimaryWeapon(TEXT("Test"));
-	if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
+	AddInputContext();
 }
 
 void AArmedCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
@@ -114,6 +114,18 @@ void AArmedCharacter::KillCharacter(AController* EventInstigator, AActor* Damage
 	Super::KillCharacter(EventInstigator, DamageCauser);
 	auto Causer = Cast<AArmedCharacter>(DamageCauser);
 	if (Causer) PrimaryWeapon->UpgradeWeapon();
+}
+
+void AArmedCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::KillCharacterNotify_Implementation(EventInstigator, DamageCauser);
+	RemoveInputContext();
+}
+
+void AArmedCharacter::RespawnNotify_Implementation()
+{
+	Super::RespawnNotify_Implementation();
+	AddInputContext();
 }
 
 void AArmedCharacter::FireStart(const FInputActionValue& Value)

@@ -27,7 +27,7 @@ private:
 	UFUNCTION(Server, Reliable)
 	void RequestRun();
 
-	UFUNCTION(Server,Reliable)
+	UFUNCTION(Server, Reliable)
 	void RequestStopRun();
 
 	// Input event functions
@@ -71,4 +71,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Movement)
 	float RunMultiplier;
+
+	bool bIsRunning;
 };

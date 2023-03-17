@@ -20,7 +20,6 @@ void ADamageableCharacter::BeginPlay()
 	if (IsRunningDedicatedServer()) return;
 
 	OnTakeAnyDamage.AddDynamic(this, &ADamageableCharacter::OnTakeAnyDamageCallback);
-	OnKillCharacterNotify.AddUObject(this, &ADamageableCharacter::OnKillCharacterCallback);
 }
 
 float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -41,6 +40,13 @@ void ADamageableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(ADamageableCharacter, Health);
 }
 
+void ADamageableCharacter::Respawn()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	SetActorEnableCollision(true);
+	RespawnNotify();
+}
+
 void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
 {
 	GetCharacterMovement()->DisableMovement();
@@ -52,16 +58,19 @@ void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* D
 void ADamageableCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
 {
 	OnKillCharacterNotify.Broadcast(GetController(), this, EventInstigator, DamageCauser);
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
 }
 
 void ADamageableCharacter::OnRep_MaximumHealth()
 {
+	OnMaximumHealthReplicated.Broadcast(this, MaximumHealth);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red,
 	                                 FString::Printf(TEXT("MaximumHealth Changed : %f"), MaximumHealth));
 }
 
 void ADamageableCharacter::OnRep_Health()
 {
+	OnHealthReplicated.Broadcast(this, Health);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Health Changed : %f"), Health));
 }
 
@@ -71,8 +80,7 @@ void ADamageableCharacter::OnTakeAnyDamageCallback(AActor* DamagedActor, float D
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Damaged : %f"), Damage));
 }
 
-void ADamageableCharacter::OnKillCharacterCallback(AController* KilledController, AActor* KilledActor,
-                                                   AController* EventInstigator, AActor* DamageCauser)
+void ADamageableCharacter::RespawnNotify_Implementation()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
+	OnRespawnCharacterNotify.Broadcast(this);
 }
