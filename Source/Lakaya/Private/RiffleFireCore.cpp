@@ -4,6 +4,7 @@
 #include "RiffleFireCore.h"
 
 #include "GunComponent.h"
+#include "FocusableCharacter.h"
 #include "Net/UnrealNetwork.h"
 
 void URiffleFireCore::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -19,36 +20,33 @@ void URiffleFireCore::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME_CONDITION(URiffleFireCore, Character, COND_InitialOnly);
 }
 
-void URiffleFireCore::FireStartCore(FTimerHandle& SelectorTimer, FTimerHandle& FireTimer,
-                                    std::function<void()> OnEmptyMag,
-                                    std::function<void()> OnNestedFire, std::function<void()> OnFreshFire)
+void URiffleFireCore::FireStartCore(FTimerHandle& FireTimer, std::function<bool()>
+                                    FocusableDeterminant, std::function<void()> OnContinuousFire,
+                                    std::function<void()> OnFreshFire)
+{
+	if (FocusableDeterminant()) OnFreshFire();
+	else if (GetWorld()->GetTimerManager().IsTimerActive(FireTimer)) OnContinuousFire();
+}
+
+void URiffleFireCore::FireStopCore(const EGunSelector& Selector, uint16& FireCount, const bool& IsSimulated)
+{
+	if (Selector == EGunSelector::Auto)
+	{
+		FireCount = 0;
+		Character->ReleaseFocus(EFocusKey::MainHand, IsSimulated);
+	}
+}
+
+void URiffleFireCore::SwitchSelectorCore(EGunSelector& DesiredSelector, FTimerHandle& SelectorTimer,
+                                         std::function<void()> OnUpdateSelector,
+                                         std::function<bool()> NotFocusableDeterminant)
 {
 	auto& TimerManager = GetWorld()->GetTimerManager();
-
-	if (TimerManager.IsTimerActive(SelectorTimer))
-		return;
-
-	if (GunComponent.IsValid() && GunComponent->GetRemainBullets() <= 0)
+	if (NotFocusableDeterminant() && !TimerManager.IsTimerActive(SelectorTimer))
 	{
-		if (OnEmptyMag != nullptr) OnEmptyMag();
+		UE_LOG(LogNetSubObject, Log, TEXT("Skip switching selector"));
 		return;
 	}
-
-	if (TimerManager.IsTimerActive(FireTimer)) OnNestedFire();
-	else OnFreshFire();
-}
-
-void URiffleFireCore::FireStopCore(const EGunSelector& Selector, uint16& FireCount)
-{
-	if (Selector == EGunSelector::Auto) FireCount = 0;
-}
-
-void URiffleFireCore::SwitchSelectorCore(const uint16& FireCount, EGunSelector& DesiredSelector,
-                                         FTimerHandle& SelectorTimer, std::function<void()> OnUpdateSelector)
-{
-	if (FireCount != 0) return;
-
-	if (GunComponent.IsValid()) GunComponent->SetReloadEnabled(false);
 
 	switch (DesiredSelector)
 	{
@@ -63,30 +61,60 @@ void URiffleFireCore::SwitchSelectorCore(const uint16& FireCount, EGunSelector& 
 		return;
 	}
 
-	GetWorld()->GetTimerManager().SetTimer(SelectorTimer, OnUpdateSelector, SwitchingDelay - LockstepDelay, false);
+	TimerManager.SetTimer(SelectorTimer, OnUpdateSelector, SwitchingDelay - LockstepDelay, false);
+	GEngine->AddOnScreenDebugMessage(-1, 3, Character->HasAuthority() ? FColor::White : FColor::Red,
+	                                 TEXT("Switch timer setted"));
 }
 
-void URiffleFireCore::NestedFireCore(const EGunSelector& Selector, uint16& FireCount)
+void URiffleFireCore::ContinuousFireCore(const EGunSelector& Selector, uint16& FireCount)
 {
-	switch (Selector)
-	{
-	case EGunSelector::Semi:
-		if (FireCount == 0) FireCount = 1;
-	case EGunSelector::Burst:
-		if (FireCount == 0) FireCount = 3;
-		if (GunComponent.IsValid()) GunComponent->SetReloadEnabled(false);
-		break;
-	case EGunSelector::Auto:
-		FireCount = MAX_uint16;
-		break;
-	default:
-		UE_LOG(LogActorComponent, Error, TEXT("GunSelector was not EFireMode"));
-		return;
-	}
+	if (FireCount != 0) return;
+	SetFireCount(Selector, FireCount);
+	UE_LOG(LogNetSubObject, Log, TEXT("FireCount setted by NestedFireCore"));
 }
 
 void URiffleFireCore::FreshFireCore(const EGunSelector& Selector, uint16& FireCount, FTimerHandle& FireTimer,
                                     std::function<void()> RepeatFireFunction)
+{
+	SetFireCount(Selector, FireCount);
+	GetWorld()->GetTimerManager().SetTimer(FireTimer, RepeatFireFunction, FireDelay, true, 0.f);
+	GEngine->AddOnScreenDebugMessage(-1, 3, Character->HasAuthority() ? FColor::White : FColor::Red,
+	                                 TEXT("FireTimer setted"));
+}
+
+void URiffleFireCore::FireCallback(uint16& FireCount, FTimerHandle& FireTimer, std::function<bool()> EmptyDeterminant,
+                                   std::function<void()> OnEmpty, std::function<void()> OnSingleFire,
+                                   std::function<void()> OnFirePreEnding)
+{
+	if (FireCount == 1) OnFirePreEnding();
+	else if (FireCount == 0)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FireTimer);
+		GEngine->AddOnScreenDebugMessage(-1, 3, Character->HasAuthority() ? FColor::White : FColor::Red,
+		                                 TEXT("FireTimer expired"));
+		return;
+	}
+	--FireCount;
+
+	if (EmptyDeterminant())
+	{
+		FireCount = 0;
+		if (OnEmpty != nullptr) OnEmpty();
+		return;
+	}
+
+	OnSingleFire();
+}
+
+void URiffleFireCore::UpdateSelector(EGunSelector& DesiredSelector, EGunSelector& Selector, const bool& IsSimulated)
+{
+	Selector = DesiredSelector;
+	Character->ReleaseFocus(EFocusKey::MainHand, IsSimulated);
+	GEngine->AddOnScreenDebugMessage(-1, 3, IsSimulated ? FColor::Red : FColor::White,
+	                                 TEXT("Selector updated"));
+}
+
+void URiffleFireCore::SetFireCount(const EGunSelector& Selector, uint16& FireCount)
 {
 	switch (Selector)
 	{
@@ -100,41 +128,4 @@ void URiffleFireCore::FreshFireCore(const EGunSelector& Selector, uint16& FireCo
 		UE_LOG(LogActorComponent, Error, TEXT("GunSelector was not EFireMode"));
 		return;
 	}
-
-	if (GunComponent.IsValid()) GunComponent->SetReloadEnabled(false);
-	GetWorld()->GetTimerManager().SetTimer(FireTimer, RepeatFireFunction, FireDelay, true, 0.f);
-}
-
-void URiffleFireCore::FireCallback(uint16& FireCount, FTimerHandle& FireTimer, std::function<bool()> EmptyDeterminant,
-                                   std::function<void()> OnEmpty, std::function<void()> OnSingleFire)
-{
-	if (FireCount == 0)
-	{
-		StopFireCore(FireCount, FireTimer);
-		return;
-	}
-	--FireCount;
-	if (FireCount == 0 && GunComponent.IsValid()) GunComponent->SetReloadEnabled(true);
-
-	if (EmptyDeterminant())
-	{
-		if (GunComponent.IsValid()) GunComponent->SetReloadEnabled(true);
-		if (OnEmpty != nullptr) OnEmpty();
-		StopFireCore(FireCount, FireTimer);
-		return;
-	}
-
-	OnSingleFire();
-}
-
-void URiffleFireCore::StopFireCore(uint16& FireCount, FTimerHandle& FireTimer)
-{
-	FireCount = 0;
-	GetWorld()->GetTimerManager().ClearTimer(FireTimer);
-}
-
-void URiffleFireCore::UpdateSelector(EGunSelector& DesiredSelector, EGunSelector& Selector)
-{
-	Selector = DesiredSelector;
-	if (GunComponent.IsValid()) GunComponent->SetReloadEnabled(true);
 }

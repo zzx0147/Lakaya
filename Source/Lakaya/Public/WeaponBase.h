@@ -31,9 +31,6 @@ public:
 
 	virtual void SetupData(const FName& RowName) { return; }
 
-	inline const bool& GetIsEnabled() const { return bIsEnabled; }
-	inline void SetEnabled(const bool& Enabled) { bIsEnabled = Enabled; }
-
 protected:
 	inline float GetServerTime() { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
 
@@ -70,5 +67,4 @@ private:
 	std::priority_queue<FEventInfoStruct, std::vector<FEventInfoStruct>, std::greater<FEventInfoStruct>> PriorityQueue;
 	FTimerHandle EventTimer;
 	float CurrentEventExecutionTime = MAX_flt;
-	bool bIsEnabled = true;
 };
