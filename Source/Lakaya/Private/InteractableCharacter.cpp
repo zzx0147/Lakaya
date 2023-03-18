@@ -77,13 +77,13 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 
 void AInteractableCharacter::OnInteractionSuccess_Implementation()
 {
-	FocusSpace[EFocusKey::MainHand] = false;
+	SimulatedFocusSpace[EFocusKey::MainHand] = false;
 	InteractingActor = nullptr;
 }
 
 void AInteractableCharacter::OnInteractionCanceled_Implementation()
 {
-	FocusSpace[EFocusKey::MainHand] = false;
+	SimulatedFocusSpace[EFocusKey::MainHand] = false;
 	InteractingActor = nullptr;
 }
 
@@ -92,7 +92,7 @@ void AInteractableCharacter::RequestInteractionStart_Implementation(const float&
 	if (IsFocussed(EFocusKey::MainHand)) OnInteractionCanceled();
 	else if (auto Interactable = Cast<IInteractable>(Actor))
 	{
-		FocusSpace.FindOrAdd(EFocusKey::MainHand);
+		FocusSpace.FindOrAdd(EFocusKey::MainHand) = true;
 		Interactable->InteractionStart(Time, this);
 	}
 	else UE_LOG(LogActor, Warning, TEXT("Requested interaction actor was not IInteractable"));
@@ -110,7 +110,7 @@ void AInteractableCharacter::RequestInteractionStop_Implementation(const float& 
 
 void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 {
-	if (IsFocussed(EFocusKey::MainHand)) return;
+	if (IsFocussed(EFocusKey::MainHand,true)) return;
 	FHitResult HitResult;
 	const auto Location = GetCamera()->GetComponentLocation();
 	const auto End = Location + GetCamera()->GetForwardVector() * InteractionRange;
@@ -122,7 +122,7 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 	if (auto Actor = HitResult.GetActor())
 		if (Actor->Implements<UInteractable>())
 		{
-			FocusSpace.FindOrAdd(EFocusKey::MainHand);
+			SimulatedFocusSpace.FindOrAdd(EFocusKey::MainHand) = true;
 			RequestInteractionStart(GetServerTime(), Actor);
 			InteractingActor = Actor;
 		}
@@ -131,7 +131,7 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 void AInteractableCharacter::InteractionStop(const FInputActionValue& Value)
 {
 	if (!InteractingActor.IsValid()) return;
-	FocusSpace[EFocusKey::MainHand] = false;
+	SimulatedFocusSpace[EFocusKey::MainHand] = false;
 	RequestInteractionStop(GetServerTime(), InteractingActor.Get());
 	InteractingActor = nullptr;
 }

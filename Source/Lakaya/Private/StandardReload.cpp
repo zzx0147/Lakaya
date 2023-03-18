@@ -3,6 +3,7 @@
 
 #include "StandardReload.h"
 
+#include "FocusableCharacter.h"
 #include "GunComponent.h"
 #include "WeaponReloadData.h"
 #include "Engine/DataTable.h"
@@ -20,6 +21,7 @@ void UStandardReload::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME_CONDITION(UStandardReload, Character, COND_InitialOnly);
 	DOREPLIFETIME_CONDITION(UStandardReload, GunComponent, COND_InitialOnly);
 	DOREPLIFETIME_CONDITION(UStandardReload, ReloadDelay, COND_InitialOnly);
 }
@@ -28,7 +30,10 @@ void UStandardReload::SetupData(const FName& RowName)
 {
 	Super::SetupData(RowName);
 
+	Character = Cast<AFocusableCharacter>(FindActor());
 	GunComponent = Cast<UGunComponent>(GetOuter());
+	if (Character.IsStale()) UE_LOG(LogNetSubObject, Fatal, TEXT("UStandardReload::Character was stale!"));
+	if (GunComponent.IsStale()) UE_LOG(LogNetSubObject, Fatal, TEXT("UStandardReload::GunComponent was stale!"));
 
 	auto Data = ReloadTable->FindRow<FWeaponReloadData>(RowName,TEXT("StandardReload"));
 	ReloadDelay = Data->ReloadDelay;
@@ -38,25 +43,43 @@ void UStandardReload::OnReloadStart()
 {
 	Super::OnReloadStart();
 
-	if (GunComponent.IsValid()) GunComponent->SetFireEnabled(false);
-	auto& TimerManager = GetWorld()->GetTimerManager();
-	if (TimerManager.IsTimerActive(ReloadTimer)) return;
-	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &UStandardReload::ReloadCallback,
-	                                       ReloadDelay - LockstepDelay);
+	UE_LOG(LogNetSubObject, Log, TEXT("OnReloadStart"));
+
+	if (!Character->SetFocus(EFocusKey::MainHand))
+	{
+		UE_LOG(LogNetSubObject, Log, TEXT("It was not focusable"));
+		return;
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(ReloadTimer,
+	                                       [this]
+	                                       {
+		                                       GunComponent->Reload();
+		                                       ReloadCallback();
+	                                       },
+	                                       ReloadDelay - LockstepDelay, false);
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Reload Started"));
 }
 
 void UStandardReload::OnReloadStartNotify()
 {
 	Super::OnReloadStartNotify();
 
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::White,TEXT("Reload"));
+	if (!Character->SetFocus(EFocusKey::MainHand, true))
+	{
+		UE_LOG(LogNetSubObject, Log, TEXT("Reload ignored in OnReloadStartNotify"));
+		return;
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(ClientReloadTimer,
+	                                       [this] { ReloadCallback(true); },
+	                                       ReloadDelay - LockstepDelay, false);
 }
 
-void UStandardReload::ReloadCallback()
+void UStandardReload::ReloadCallback(const bool& IsSimulated)
 {
-	if (GunComponent.IsValid())
-	{
-		GunComponent->Reload();
-		GunComponent->SetFireEnabled(true);
-	}
+	UE_LOG(LogNetSubObject, Log, TEXT("ReloadCallback"));
+	Character->ReleaseFocus(EFocusKey::MainHand, IsSimulated);
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, IsSimulated ? FColor::Red : FColor::White,
+	                                 TEXT("Reload Complete"));
 }

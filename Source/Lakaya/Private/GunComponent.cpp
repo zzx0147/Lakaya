@@ -26,6 +26,7 @@ UGunComponent::UGunComponent()
 
 void UGunComponent::Reload()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Reloading"));
 	RemainBullets = MagazineCapacity;
 }
 

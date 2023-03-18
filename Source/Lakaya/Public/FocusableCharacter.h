@@ -16,8 +16,17 @@ class LAKAYA_API AFocusableCharacter : public AMovableCharacter
 {
 	GENERATED_BODY()
 
-protected:
-	TMap<EFocusKey, bool> FocusSpace;
+public:
+	bool SetFocus(const EFocusKey& Key, const bool& IsSimulated = false);
+	void ReleaseFocus(const EFocusKey& Key, const bool& IsSimulated = false);
+	bool IsFocussed(const EFocusKey& Key, const bool& IsSimulated = false);
 
-	inline bool IsFocussed(const EFocusKey& Key) { return FocusSpace.Contains(Key) && FocusSpace[Key]; }
+protected:
+	inline TMap<EFocusKey, bool>& GetFocusSpace(const bool& IsSimulated = false)
+	{
+		return IsSimulated ? SimulatedFocusSpace : FocusSpace;
+	}
+
+	TMap<EFocusKey, bool> FocusSpace;
+	TMap<EFocusKey, bool> SimulatedFocusSpace;
 };

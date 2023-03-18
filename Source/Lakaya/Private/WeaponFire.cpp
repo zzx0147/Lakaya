@@ -50,39 +50,33 @@ void UWeaponFire::SwitchSelector()
 
 void UWeaponFire::RequestFireStart_Implementation(const float& Time)
 {
-	if (!GetIsEnabled()) return;
 	FireStartNotify(Time);
 	ApplyEvent(RequestFireStartEvent, Time);
 }
 
 void UWeaponFire::RequestFireStop_Implementation(const float& Time)
 {
-	if (!GetIsEnabled()) return;
 	FireStopNotify(Time);
 	ApplyEvent(RequestFireStopEvent, Time);
 }
 
 void UWeaponFire::RequestSwitchSelector_Implementation(const float& Time)
 {
-	if (!GetIsEnabled()) return;
 	SwitchSelectorNotify(Time);
 	ApplyEvent(RequestSwitchSelectorEvent, Time);
 }
 
 void UWeaponFire::FireStartNotify_Implementation(const float& Time)
 {
-	if (!GetIsEnabled()) return;
 	ApplyEvent(FireStartNotifyEvent, Time);
 }
 
 void UWeaponFire::FireStopNotify_Implementation(const float& Time)
 {
-	if (!GetIsEnabled()) return;
 	ApplyEvent(FireStopNotifyEvent, Time);
 }
 
 void UWeaponFire::SwitchSelectorNotify_Implementation(const float& Time)
 {
-	if (!GetIsEnabled()) return;
 	ApplyEvent(SwitchSelectorNotifyEvent, Time);
 }

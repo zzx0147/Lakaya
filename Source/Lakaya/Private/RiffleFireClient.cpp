@@ -8,36 +8,22 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
-void URiffleFireClient::FireStart()
-{
-	Super::FireStart();
-}
-
-void URiffleFireClient::FireStop()
-{
-	if (Selector == EGunSelector::Auto) RequestFireStop(GetServerTime());
-}
-
 void URiffleFireClient::OnFireStartNotify()
 {
 	Super::OnFireStartNotify();
-	FireStartCore(SelectorTimer, FireTimer,
-	              nullptr,
-	              [this] { NestedFireCore(Selector, FireCount); },
+	FireStartCore(FireTimer,
+	              [this] { return Character->SetFocus(EFocusKey::MainHand, true); },
+	              [this] { ContinuousFireCore(Selector, FireCount); },
 	              [this]
 	              {
 		              FreshFireCore(Selector, FireCount, FireTimer,
 		                            [this]
 		                            {
 			                            FireCallback(FireCount, FireTimer,
-			                                         [this]
-			                                         {
-				                                         //TODO: 생각보다 총알이 빠르게 리플리케이트 된 경우 1발정도 차이가 생길 수 있습니다.
-				                                         return GunComponent.IsValid() &&
-					                                         GunComponent->GetRemainBullets() <= 0;
-			                                         },
-			                                         nullptr,
-			                                         [this] { TraceVisualize(); });
+			                                         [this] { return GunComponent->GetRemainBullets() <= 0; },
+			                                         [this] { Character->ReleaseFocus(EFocusKey::MainHand, true); },
+			                                         [this] { TraceVisualize(); },
+			                                         [this] { Character->ReleaseFocus(EFocusKey::MainHand, true); });
 		                            });
 	              });
 }
@@ -45,14 +31,15 @@ void URiffleFireClient::OnFireStartNotify()
 void URiffleFireClient::OnFireStopNotify()
 {
 	Super::OnFireStopNotify();
-	FireStopCore(Selector, FireCount);
+	FireStopCore(Selector, FireCount, true);
 }
 
 void URiffleFireClient::OnSwitchSelectorNotify()
 {
 	Super::OnSwitchSelectorNotify();
-	SwitchSelectorCore(FireCount, DesiredSelector, SelectorTimer,
-	                   [this] { UpdateSelector(DesiredSelector, Selector); });
+	SwitchSelectorCore(DesiredSelector, SelectorTimer,
+	                   [this] { UpdateSelector(DesiredSelector, Selector, true); },
+	                   [this] { return !Character->SetFocus(EFocusKey::MainHand, true); });
 }
 
 void URiffleFireClient::OnRep_Character()

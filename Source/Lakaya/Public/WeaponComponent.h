@@ -22,6 +22,7 @@ public:
 	virtual void ReadyForReplication() override;
 
 	virtual void RequestSetupData(const FName& RowName);
+	virtual void UpgradeWeapon();
 
 protected:
 	virtual void SetupData();
@@ -34,11 +35,6 @@ public:
 	inline void AbilityStop() { if (AbilitySubObject) AbilitySubObject->AbilityStop(); }
 	inline void ReloadStart() { if (ReloadSubObject) ReloadSubObject->ReloadStart(); }
 	inline void ReloadStop() { if (ReloadSubObject) ReloadSubObject->ReloadStop(); }
-
-	//TODO: 비활성화하려는 대상의 형식을 파악하고 비활성화하도록 로직을 수정해야 합니다.
-	inline void SetFireEnabled(const bool& Enabled) { if (FireSubObject) FireSubObject->SetEnabled(Enabled); }
-	inline void SetAbilityEnabled(const bool& Enabled) { if (AbilitySubObject) AbilitySubObject->SetEnabled(Enabled); }
-	inline void SetReloadEnabled(const bool& Enabled) { if (ReloadSubObject) ReloadSubObject->SetEnabled(Enabled); }
 
 private:
 	template <class T>

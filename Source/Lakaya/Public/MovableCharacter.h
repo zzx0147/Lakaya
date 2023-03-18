@@ -22,13 +22,12 @@ protected:
 
 public:
 	bool IsOwnedByLocalPlayer() const;
-	//TODO: 오너를 제외한 클라이언트에서는 이 캐릭터의 회전을 시뮬레이트합니다.
 
 private:
 	UFUNCTION(Server, Reliable)
 	void RequestRun();
 
-	UFUNCTION(Server,Reliable)
+	UFUNCTION(Server, Reliable)
 	void RequestStopRun();
 
 	// Input event functions
@@ -72,4 +71,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Movement)
 	float RunMultiplier;
+
+	bool bIsRunning;
 };
