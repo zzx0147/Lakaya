@@ -32,7 +32,7 @@ void UGameLobbyWidget::NativeConstruct()
 	};
 
 	DraggableWeaponButtonArray =
-	{ 
+	{
 		Cast<UButton>(GetWidgetFromName(TEXT("DraggableWeapon1_Btn"))),
 		Cast<UButton>(GetWidgetFromName(TEXT("DraggableWeapon2_Btn"))),
 		Cast<UButton>(GetWidgetFromName(TEXT("DraggableWeapon3_Btn"))),
@@ -217,7 +217,10 @@ void UGameLobbyWidget::OnReleasedDraggableWeaponButton(int WeaponNum)
 
 	/*GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("%f:::%f"), ViewportPos.X, ViewportPos.Y));
 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, FString::Printf(TEXT("%f:::%f"), ImageSize.X, ImageSize.Y));*/
-	int32 TargetImageNum = GetWeaponSlotAtLocation(DragImage->GetCachedGeometry().GetAbsolutePosition());
+	
+	//GetAbsolutePosition은 좌상단 기준, 드래그 이미지의 중앙을 기준으로 드랍하기 위해 AbsoluteSize의 절반을 더함
+
+	int32 TargetImageNum = GetWeaponSlotAtLocation(DragImage->GetCachedGeometry().GetAbsolutePosition() + DragImage->GetCachedGeometry().GetAbsoluteSize()/2);
 
 	if (-1 < TargetImageNum && TargetImageNum < WeaponSlotArray.Num())
 	{
