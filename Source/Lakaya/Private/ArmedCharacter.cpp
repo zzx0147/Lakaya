@@ -58,20 +58,6 @@ AArmedCharacter::AArmedCharacter()
 	if (DataFinder.Succeeded()) WeaponClassDataTable = DataFinder.Object;
 }
 
-void AArmedCharacter::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-
-	if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
-}
-
-void AArmedCharacter::UnPossessed()
-{
-	Super::UnPossessed();
-
-	if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(WeaponControlContext);
-}
-
 void AArmedCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -85,14 +71,10 @@ void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponClassRowName)
 	PrimaryWeapon = Cast<UWeaponComponent>(
 		AddComponentByClass(Data->WeaponClass.LoadSynchronous(), false, FTransform::Identity, false));
 
-	if (!PrimaryWeapon)
-	{
-		UE_LOG(LogActor, Warning, TEXT("PrimaryWeapon was setted as nullptr"));
-		return;
-	}
-
+	if (!PrimaryWeapon) UE_LOG(LogActor, Fatal, TEXT("PrimaryWeapon was setted as nullptr"));
 	PrimaryWeapon->RequestSetupData(Data->AssetRowName);
 	PrimaryWeapon->SetIsReplicated(true);
+	if (!PrimaryWeapon->GetIsReplicated()) UE_LOG(LogTemp, Fatal, TEXT("PrimaryWeapon is NOT replicated"));
 }
 
 void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -112,10 +94,38 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	}
 }
 
+ELifetimeCondition AArmedCharacter::AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const
+{
+	if (ComponentToReplicate->IsA(UWeaponComponent::StaticClass())) return COND_None;
+	return Super::AllowActorComponentToReplicate(ComponentToReplicate);
+}
+
 void AArmedCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (!GetIsReplicated()) UE_LOG(LogTemp, Fatal, TEXT("ArmedCharacter is NOT replicated"));
 	if (HasAuthority()) SetupPrimaryWeapon(TEXT("Test"));
+	AddInputContext();
+}
+
+void AArmedCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::KillCharacter(EventInstigator, DamageCauser);
+	auto Causer = Cast<AArmedCharacter>(DamageCauser);
+	if (Causer) PrimaryWeapon->UpgradeWeapon();
+}
+
+void AArmedCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::KillCharacterNotify_Implementation(EventInstigator, DamageCauser);
+	RemoveInputContext();
+}
+
+void AArmedCharacter::RespawnNotify_Implementation()
+{
+	Super::RespawnNotify_Implementation();
+	AddInputContext();
 }
 
 void AArmedCharacter::FireStart(const FInputActionValue& Value)

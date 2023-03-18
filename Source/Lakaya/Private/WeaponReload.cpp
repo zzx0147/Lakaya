@@ -28,28 +28,34 @@ void UWeaponReload::ExecuteEvent(const uint8& EventNumber)
 	}
 }
 
-void UWeaponReload::ReloadStart_Implementation(const float& Time)
+void UWeaponReload::ReloadStart()
 {
-	if (!GetIsEnabled()) return;
+	RequestReloadStart(GetServerTime());
+}
+
+void UWeaponReload::ReloadStop()
+{
+	RequestReloadStop(GetServerTime());
+}
+
+void UWeaponReload::RequestReloadStart_Implementation(const float& Time)
+{
 	ReloadStartNotify(Time);
 	ApplyEvent(ReloadStartEvent, Time);
 }
 
-void UWeaponReload::ReloadStop_Implementation(const float& Time)
+void UWeaponReload::RequestReloadStop_Implementation(const float& Time)
 {
-	if (!GetIsEnabled()) return;
 	ReloadStopNotify(Time);
 	ApplyEvent(ReloadStopEvent, Time);
 }
 
 void UWeaponReload::ReloadStartNotify_Implementation(const float& Time)
 {
-	if (!GetIsEnabled()) return;
 	ApplyEvent(ReloadStartNotifyEvent, Time);
 }
 
 void UWeaponReload::ReloadStopNotify_Implementation(const float& Time)
 {
-	if (!GetIsEnabled()) return;
 	ApplyEvent(ReloadStopNotifyEvent, Time);
 }

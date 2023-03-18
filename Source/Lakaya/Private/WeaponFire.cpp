@@ -8,13 +8,13 @@ void UWeaponFire::ExecuteEvent(const uint8& EventNumber)
 	Super::ExecuteEvent(EventNumber);
 	switch (EventNumber)
 	{
-	case FireStartEvent:
+	case RequestFireStartEvent:
 		OnFireStart();
 		break;
-	case FireStopEvent:
+	case RequestFireStopEvent:
 		OnFireStop();
 		break;
-	case SwitchSelectorEvent:
+	case RequestSwitchSelectorEvent:
 		OnSwitchSelector();
 		break;
 	case FireStartNotifyEvent:
@@ -33,41 +33,50 @@ void UWeaponFire::ExecuteEvent(const uint8& EventNumber)
 	}
 }
 
-void UWeaponFire::FireStart_Implementation(const float& Time)
+void UWeaponFire::FireStart()
 {
-	if (!GetIsEnabled()) return;
+	RequestFireStart(GetServerTime());
+}
+
+void UWeaponFire::FireStop()
+{
+	RequestFireStop(GetServerTime());
+}
+
+void UWeaponFire::SwitchSelector()
+{
+	RequestSwitchSelector(GetServerTime());
+}
+
+void UWeaponFire::RequestFireStart_Implementation(const float& Time)
+{
 	FireStartNotify(Time);
-	ApplyEvent(FireStartEvent, Time);
+	ApplyEvent(RequestFireStartEvent, Time);
 }
 
-void UWeaponFire::FireStop_Implementation(const float& Time)
+void UWeaponFire::RequestFireStop_Implementation(const float& Time)
 {
-	if (!GetIsEnabled()) return;
 	FireStopNotify(Time);
-	ApplyEvent(FireStopEvent, Time);
+	ApplyEvent(RequestFireStopEvent, Time);
 }
 
-void UWeaponFire::SwitchSelector_Implementation(const float& Time)
+void UWeaponFire::RequestSwitchSelector_Implementation(const float& Time)
 {
-	if (!GetIsEnabled()) return;
 	SwitchSelectorNotify(Time);
-	ApplyEvent(SwitchSelectorEvent, Time);
+	ApplyEvent(RequestSwitchSelectorEvent, Time);
 }
 
 void UWeaponFire::FireStartNotify_Implementation(const float& Time)
 {
-	if (!GetIsEnabled()) return;
 	ApplyEvent(FireStartNotifyEvent, Time);
 }
 
 void UWeaponFire::FireStopNotify_Implementation(const float& Time)
 {
-	if (!GetIsEnabled()) return;
 	ApplyEvent(FireStopNotifyEvent, Time);
 }
 
 void UWeaponFire::SwitchSelectorNotify_Implementation(const float& Time)
 {
-	if (!GetIsEnabled()) return;
 	ApplyEvent(SwitchSelectorNotifyEvent, Time);
 }

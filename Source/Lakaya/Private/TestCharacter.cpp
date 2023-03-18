@@ -2,18 +2,18 @@
 
 #include "IndividualGameMode.h"
 #include "IndividualItem.h"
-#include "HUDWidget.h"
-#include "Components/TextBlock.h"
+// #include "HUDWidget.h"
+// #include "Components/TextBlock.h"
 
 ATestCharacter::ATestCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	static ConstructorHelpers::FClassFinder<UHUDWidget> UI_HUD_C(TEXT("/Game/KDJ/UI/UI_Timer.UI_Timer_C"));
-	if (UI_HUD_C.Succeeded())
-	{
-		HUDWidgetClass = UI_HUD_C.Class;
-	}
+	// static ConstructorHelpers::FClassFinder<UHUDWidget> UI_HUD_C(TEXT("/Game/KDJ/UI/UI_Timer.UI_Timer_C"));
+	// if (UI_HUD_C.Succeeded())
+	// {
+	// 	HUDWidgetClass = UI_HUD_C.Class;
+	// }
 	
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
@@ -38,17 +38,17 @@ ATestCharacter::ATestCharacter()
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Character"));
 }
 
-UHUDWidget* ATestCharacter::GetHUDWidget() const
-{
-	return HUDWidget;
-}
+// UHUDWidget* ATestCharacter::GetHUDWidget() const
+// {
+// 	return HUDWidget;
+// }
 
 void ATestCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	HUDWidget = CreateWidget<UHUDWidget>(GetWorld(), HUDWidgetClass);
-	HUDWidget->AddToViewport();
+	// HUDWidget = CreateWidget<UHUDWidget>(GetWorld(), HUDWidgetClass);
+	// HUDWidget->AddToViewport();
 }
 
 void ATestCharacter::SetSpringArm()

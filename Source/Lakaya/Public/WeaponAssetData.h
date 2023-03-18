@@ -13,19 +13,19 @@ struct FWeaponAssetData : public FTableRowBase
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Fire)
-	TSoftClassPtr<class UWeaponFire> FireClassPath;
+	TSoftClassPtr<class UWeaponFire> FireClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Fire)
 	FName FireRowName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Ability)
-	TSoftClassPtr<class UWeaponAbility> AbilityClassPath;
+	TSoftClassPtr<class UWeaponAbility> AbilityClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Ability)
 	FName AbilityRowName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Reload)
-	TSoftClassPtr<class UWeaponReload> ReloadClassPath;
+	TSoftClassPtr<class UWeaponReload> ReloadClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Reload)
 	FName ReloadRowName;

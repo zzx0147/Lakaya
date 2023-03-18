@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WeaponReload.h"
+#include "FocusableCharacter.h"
 #include "StandardReload.generated.h"
 
 /**
@@ -13,22 +14,30 @@ UCLASS()
 class LAKAYA_API UStandardReload : public UWeaponReload
 {
 	GENERATED_BODY()
+
 public:
 	UStandardReload();
 
 protected:
-	virtual void SetupData_Implementation(const FName& RowName) override;
+	virtual void SetupData(const FName& RowName) override;
 	virtual void OnReloadStart() override;
 	virtual void OnReloadStartNotify() override;
 
 private:
-	void ReloadCallback();
-	
+	void ReloadCallback(const bool& IsSimulated = false);
+
 	UPROPERTY(EditAnywhere)
 	class UDataTable* ReloadTable;
-	
+
+	UPROPERTY(Replicated)
+	TWeakObjectPtr<AFocusableCharacter> Character;
+
+	UPROPERTY(Replicated)
 	TWeakObjectPtr<class UGunComponent> GunComponent;
-	FTimerHandle ReloadTimer;
-	
+
+	UPROPERTY(Replicated)
 	float ReloadDelay;
+
+	FTimerHandle ReloadTimer;
+	FTimerHandle ClientReloadTimer;
 };

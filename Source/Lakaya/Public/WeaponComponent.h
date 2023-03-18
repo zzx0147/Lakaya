@@ -22,35 +22,32 @@ public:
 	virtual void ReadyForReplication() override;
 
 	virtual void RequestSetupData(const FName& RowName);
+	virtual void UpgradeWeapon();
 
 protected:
 	virtual void SetupData();
 
 public:
-	inline float GetServerTime() { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
-	inline void FireStart() { if (FireSubObject) FireSubObject->FireStart(GetServerTime()); }
-	inline void FireStop() { if (FireSubObject) FireSubObject->FireStop(GetServerTime()); }
-	inline void SwitchSelector() { if (FireSubObject) FireSubObject->SwitchSelector(GetServerTime()); }
-	inline void AbilityStart() { if (AbilitySubObject) AbilitySubObject->AbilityStart(GetServerTime()); }
-	inline void AbilityStop() { if (AbilitySubObject) AbilitySubObject->AbilityStop(GetServerTime()); }
-	inline void ReloadStart() { if (ReloadSubObject) ReloadSubObject->ReloadStart(GetServerTime()); }
-	inline void ReloadStop() { if (ReloadSubObject) ReloadSubObject->ReloadStop(GetServerTime()); }
-	inline void SetFireEnabled(const bool& Enabled) { if (FireSubObject) FireSubObject->SetEnabled(Enabled); }
-	inline void SetAbilityEnabled(const bool& Enabled) { if (AbilitySubObject) AbilitySubObject->SetEnabled(Enabled); }
-	inline void SetReloadEnabled(const bool& Enabled) { if (ReloadSubObject) ReloadSubObject->SetEnabled(Enabled); }
+	inline void FireStart() { if (FireSubObject) FireSubObject->FireStart(); }
+	inline void FireStop() { if (FireSubObject) FireSubObject->FireStop(); }
+	inline void SwitchSelector() { if (FireSubObject) FireSubObject->SwitchSelector(); }
+	inline void AbilityStart() { if (AbilitySubObject) AbilitySubObject->AbilityStart(); }
+	inline void AbilityStop() { if (AbilitySubObject) AbilitySubObject->AbilityStop(); }
+	inline void ReloadStart() { if (ReloadSubObject) ReloadSubObject->ReloadStart(); }
+	inline void ReloadStop() { if (ReloadSubObject) ReloadSubObject->ReloadStop(); }
 
 private:
 	template <class T>
 	T* CreateSingleSubObject(UClass* SubObjectClass, const FName& DataRowName);
 
 public:
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, VisibleAnywhere)
 	UWeaponFire* FireSubObject;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, VisibleAnywhere)
 	UWeaponAbility* AbilitySubObject;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, VisibleAnywhere)
 	UWeaponReload* ReloadSubObject;
 
 protected:
@@ -75,7 +72,7 @@ T* UWeaponComponent::CreateSingleSubObject(UClass* SubObjectClass, const FName& 
 		return nullptr;
 	}
 
-	AddReplicatedSubObject(Ptr);
 	Ptr->SetupData(DataRowName);
+	AddReplicatedSubObject(Ptr);
 	return Ptr;
 }

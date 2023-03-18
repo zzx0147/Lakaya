@@ -14,10 +14,16 @@ class LAKAYA_API AThirdPersonCharacter : public ACharacter
 public:
 	AThirdPersonCharacter();
 
+protected:
+	virtual void Tick(float DeltaSeconds) override;
+
+public:
 	inline class USpringArmComponent* GetSpringArm() { return SpringArm; }
 	inline const class USpringArmComponent* GetSpringArm() const { return SpringArm; }
 	inline class UCameraComponent* GetCamera() { return Camera; }
 	inline const class UCameraComponent* GetCamera() const { return Camera; }
+	inline const bool& GetYawClutch() const { return YawClutch; }
+	inline void SetYawClutch(const bool& Enable) { YawClutch = Enable; }
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -25,4 +31,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class UCameraComponent* Camera;
+
+	UPROPERTY(EditAnywhere)
+	bool YawClutch;
 };

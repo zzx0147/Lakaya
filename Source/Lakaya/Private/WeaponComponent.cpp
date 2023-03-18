@@ -32,16 +32,28 @@ void UWeaponComponent::RequestSetupData(const FName& RowName)
 	if (IsReadyForReplication()) SetupData();
 }
 
+void UWeaponComponent::UpgradeWeapon()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Upgraded"));
+	//TODO: 무기가 업그레이드 될 때 어떤 행동을 할 지 정의합니다.
+}
+
 void UWeaponComponent::SetupData()
 {
 	auto Data = WeaponAssetDataTable->FindRow<FWeaponAssetData>(RequestedRowName,TEXT("WeaponComponent"));
 	if (!Data) return;
 
-	FireSubObject = CreateSingleSubObject<UWeaponFire>(Data->FireClassPath.LoadSynchronous(), Data->FireRowName);
-	AbilitySubObject = CreateSingleSubObject<UWeaponAbility>(Data->AbilityClassPath.LoadSynchronous(),
+	FireSubObject = CreateSingleSubObject<UWeaponFire>(Data->FireClass.LoadSynchronous(), Data->FireRowName);
+	AbilitySubObject = CreateSingleSubObject<UWeaponAbility>(Data->AbilityClass.LoadSynchronous(),
 	                                                         Data->AbilityRowName);
-	ReloadSubObject = CreateSingleSubObject<UWeaponReload>(Data->ReloadClassPath.LoadSynchronous(),
-	                                                       Data->ReloadRowName);
+	ReloadSubObject = CreateSingleSubObject<UWeaponReload>(Data->ReloadClass.LoadSynchronous(), Data->ReloadRowName);
+
+	if (!IsReplicatedSubObjectRegistered(FireSubObject))
+		UE_LOG(LogTemp, Warning, TEXT("FireSubObject is NOT replicated"));
+	if (!IsReplicatedSubObjectRegistered(AbilitySubObject))
+		UE_LOG(LogTemp, Warning, TEXT("AbilitySubObject is NOT replicated"));
+	if (!IsReplicatedSubObjectRegistered(ReloadSubObject))
+		UE_LOG(LogTemp, Warning, TEXT("ReloadSubObject is NOT replicated"));
 }
 
 void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

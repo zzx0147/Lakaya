@@ -5,20 +5,13 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "InputMappingContext.h"
-#include "Kismet/GameplayStatics.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 AMovableCharacter::AMovableCharacter()
 {
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 	RunMultiplier = 2.0;
-
-	// Character must look at the camera is looking at
-	bUseControllerRotationYaw = true;
-	bUseControllerRotationPitch = bUseControllerRotationRoll = false;
-	GetSpringArm()->bUsePawnControlRotation = true;
 
 	// In a dedicated server, the following logic is not necessary.
 	if (IsRunningDedicatedServer()) return;
@@ -60,26 +53,13 @@ AMovableCharacter::AMovableCharacter()
 void AMovableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-}
 
-void AMovableCharacter::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-
-	if (IsRunningDedicatedServer()) return;
-
-	const auto PlayerController = Cast<APlayerController>(NewController);
-	if (!PlayerController || !PlayerController->IsLocalController()) return;
-
-	InputSystem = PlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	if (InputSystem.IsValid()) InputSystem->AddMappingContext(MovementContext, MovementContextPriority);
-}
-
-void AMovableCharacter::UnPossessed()
-{
-	Super::UnPossessed();
-
-	if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(MovementContext);
+	if (auto PlayerController = Cast<APlayerController>(Controller))
+		if (auto LocalPlayer = PlayerController->GetLocalPlayer())
+		{
+			InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+			if (InputSystem.IsValid()) InputSystem->AddMappingContext(MovementContext, MovementContextPriority);
+		}
 }
 
 void AMovableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -103,6 +83,20 @@ bool AMovableCharacter::IsOwnedByLocalPlayer() const
 {
 	const auto PlayerController = Cast<APlayerController>(GetOwner());
 	return PlayerController && PlayerController->IsLocalController();
+}
+
+void AMovableCharacter::RequestRun_Implementation()
+{
+	if (bIsRunning) return;
+	GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
+	bIsRunning = true;
+}
+
+void AMovableCharacter::RequestStopRun_Implementation()
+{
+	if (!bIsRunning) return;
+	GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
+	bIsRunning = false;
 }
 
 void AMovableCharacter::Move(const FInputActionValue& Value)
@@ -134,11 +128,10 @@ void AMovableCharacter::UnCrouching(const FInputActionValue& Value)
 
 void AMovableCharacter::Run(const FInputActionValue& Value)
 {
-	GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
+	RequestRun();
 }
 
 void AMovableCharacter::StopRunning(const FInputActionValue& Value)
 {
-	// This can causing problem when change RunMultiplier until running
-	GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
+	RequestStopRun();
 }

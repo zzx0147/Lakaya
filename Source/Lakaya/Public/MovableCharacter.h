@@ -17,14 +17,19 @@ public:
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
-	bool IsOwnedByLocalPlayer() const;
-
 protected:
 	virtual void BeginPlay() override;
-	virtual void PossessedBy(AController* NewController) override;
-	virtual void UnPossessed() override;
+
+public:
+	bool IsOwnedByLocalPlayer() const;
 
 private:
+	UFUNCTION(Server, Reliable)
+	void RequestRun();
+
+	UFUNCTION(Server, Reliable)
+	void RequestStopRun();
+
 	// Input event functions
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
@@ -66,4 +71,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Movement)
 	float RunMultiplier;
+
+	bool bIsRunning;
 };

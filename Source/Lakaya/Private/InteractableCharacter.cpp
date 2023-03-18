@@ -13,9 +13,9 @@
 AInteractableCharacter::AInteractableCharacter()
 {
 	if (IsRunningDedicatedServer()) return;
-	
+
 	InteractionRange = 500;
-	CollisionChannel = ECC_GameTraceChannel3;
+	CollisionChannel = ECC_Camera;
 
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> InteractionContextFinder(
 		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_InteractionControl'"));
@@ -55,7 +55,7 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	Super::NotifyActorBeginOverlap(OtherActor);
 
 	if (!IsOwnedByLocalPlayer()) return;
-	
+
 	// Add interaction context when overlapped by trigger
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
@@ -68,15 +68,49 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	Super::NotifyActorEndOverlap(OtherActor);
 
 	if (!IsOwnedByLocalPlayer()) return;
-	
+
 	// Remove interaction context when far away from triggers
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	--InteractableCount;
 	if (InteractableCount == 0) InputSystem->RemoveMappingContext(InteractionContext);
 }
 
+void AInteractableCharacter::OnInteractionSuccess_Implementation()
+{
+	SimulatedFocusSpace[EFocusKey::MainHand] = false;
+	InteractingActor = nullptr;
+}
+
+void AInteractableCharacter::OnInteractionCanceled_Implementation()
+{
+	SimulatedFocusSpace[EFocusKey::MainHand] = false;
+	InteractingActor = nullptr;
+}
+
+void AInteractableCharacter::RequestInteractionStart_Implementation(const float& Time, AActor* Actor)
+{
+	if (IsFocussed(EFocusKey::MainHand)) OnInteractionCanceled();
+	else if (auto Interactable = Cast<IInteractable>(Actor))
+	{
+		FocusSpace.FindOrAdd(EFocusKey::MainHand) = true;
+		Interactable->InteractionStart(Time, this);
+	}
+	else UE_LOG(LogActor, Warning, TEXT("Requested interaction actor was not IInteractable"));
+}
+
+void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor)
+{
+	if (auto Interactable = Cast<IInteractable>(Actor))
+	{
+		FocusSpace[EFocusKey::MainHand] = false;
+		Interactable->InteractionStop(Time, this);
+	}
+	else UE_LOG(LogActor, Warning, TEXT("Requested interaction actor was not IInteractable"));
+}
+
 void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 {
+	if (IsFocussed(EFocusKey::MainHand,true)) return;
 	FHitResult HitResult;
 	const auto Location = GetCamera()->GetComponentLocation();
 	const auto End = Location + GetCamera()->GetForwardVector() * InteractionRange;
@@ -85,12 +119,19 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 	if (!GetWorld()->LineTraceSingleByChannel(HitResult, Location, End, CollisionChannel, TraceQueryParams))
 		return;
 
-	InteractingActor = Cast<IInteractable>(HitResult.GetActor());
-	//TODO: 상호작용중에 캐릭터가 이동할 수 없도록 해야 합니다.
-	if (InteractingActor.IsValid()) InteractingActor->Invoke(IInteractable::Execute_InteractionStart, this);
+	if (auto Actor = HitResult.GetActor())
+		if (Actor->Implements<UInteractable>())
+		{
+			SimulatedFocusSpace.FindOrAdd(EFocusKey::MainHand) = true;
+			RequestInteractionStart(GetServerTime(), Actor);
+			InteractingActor = Actor;
+		}
 }
 
 void AInteractableCharacter::InteractionStop(const FInputActionValue& Value)
 {
-	if (InteractingActor.IsValid()) InteractingActor->Invoke(IInteractable::Execute_InteractionStop, this);
+	if (!InteractingActor.IsValid()) return;
+	SimulatedFocusSpace[EFocusKey::MainHand] = false;
+	RequestInteractionStop(GetServerTime(), InteractingActor.Get());
+	InteractingActor = nullptr;
 }
