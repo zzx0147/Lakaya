@@ -21,7 +21,6 @@ AIndividualGameMode::AIndividualGameMode()
 void AIndividualGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 void AIndividualGameMode::PostInitializeComponents()
