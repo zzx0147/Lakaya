@@ -7,6 +7,8 @@
 #include "Components/CanvasPanelSlot.h"
 #include "Components/CanvasPanel.h"
 #include "Components/GridSlot.h"
+#include "Components/Image.h"
+#include "Components/Button.h"
 
 UGameLobbyWidget::UGameLobbyWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
