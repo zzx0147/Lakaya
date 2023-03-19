@@ -29,15 +29,14 @@ public:
 	void OnPlayerJoined(APlayerController* PlayerController);
 	
 public:
-	void InitRandomSpawn();
+	void SpawnStaticEnergyAtRandomPosition();
 	void SpawnStaticEnergy();
 	void SpawnDropEnergy();
 	void StaticEnergyNumCheck();
 	void RespawnPlayer(AController* Controller);
 	
-	// void OnKilledCharacter(AController* KilledCharacter, AController* EventInstigator);
 	UFUNCTION()
-	void OnKilledCharacter(AController* InstigatorController, AActor* DamageCauser, AController* VictimController, AActor* Victim);
+	void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser);
 	
 private:
 	uint8 NumPlayers;
@@ -65,6 +64,9 @@ public:
 		FVector(PosX, 1200, 0)
 	};
 
+private:
+	TSet<APlayerController*> RegisteredPlayers;
+	
 private:
 	FTimerHandle TimerHandle_SpawnItem;
 

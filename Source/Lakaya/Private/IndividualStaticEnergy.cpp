@@ -1,6 +1,7 @@
 #include "IndividualStaticEnergy.h"
 #include "CollectorPlayerState.h"
 #include "IndividualGameMode.h"
+#include "InteractableCharacter.h"
 
 void AIndividualStaticEnergy::BeginPlay()
 {
@@ -28,6 +29,13 @@ void AIndividualStaticEnergy::InteractionStart(const float& Time, APawn* Caller)
 		ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
 		if (CollectorPlayerState)
 		{
+			AInteractableCharacter* Character = Cast<AInteractableCharacter>(Caller);
+			if (Character == nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("InteractionStart_Character is null."));
+				return;
+			}
+			// Character->OnInteractionSuccess();
 			CollectorPlayerState->GainEnergy(1);
 			UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 Energy"), *CollectorPlayerState->GetPlayerName());
 			UE_LOG(LogTemp, Warning, TEXT("Player Total Energy: %d"), CollectorPlayerState->GetEnergy());
@@ -35,17 +43,46 @@ void AIndividualStaticEnergy::InteractionStart(const float& Time, APawn* Caller)
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
+			return;
 		}
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Invalid Caller or Controller."));
 	}
+
+	// ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
+	// if (CollectorPlayerState)
+	// {
+	// 	AInteractableCharacter* Character = Cast<AInteractableCharacter>(Caller->GetController());
+	// 	if (Character == nullptr)
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("InteractionStart_Character is null."));
+	// 		return;
+	// 	}
+	// 	Character->OnInteractionSuccess();
+	// 	CollectorPlayerState->GainEnergy(1);
+	// 	UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 Energy"), *CollectorPlayerState->GetPlayerName());
+	// 	UE_LOG(LogTemp, Warning, TEXT("Player Total Energy: %d"), CollectorPlayerState->GetEnergy());
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
+	// 	return;
+	// }
 }
 
 void AIndividualStaticEnergy::InteractionStop(const float& Time, APawn* Caller)
 {
 	UE_LOG(LogTemp, Warning, TEXT("InteractionStop Function."));
+	AInteractableCharacter* Character = Cast<AInteractableCharacter>(Caller->GetController());
+	if (Character == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InteractionStop_Character is null."));
+		return;
+	}
+
+	Character->OnInteractionCanceled();
 }
 
 void AIndividualEnergy::GetItem()

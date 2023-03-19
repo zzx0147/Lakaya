@@ -22,18 +22,13 @@ void AIndividualGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
-	{
-		APlayerController* PlayerController = Cast<APlayerController>(*Iterator);
-		OnPlayerJoined(PlayerController);
-	}
 }
 
 void AIndividualGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	InitRandomSpawn();
+	SpawnStaticEnergyAtRandomPosition();
 }
 
 void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
@@ -70,6 +65,11 @@ void AIndividualGameMode::Logout(AController* Exiting)
 
 void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
 {
+	if (RegisteredPlayers.Contains(PlayerController))
+	{
+		return;
+	}
+
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableCharacter::StaticClass(), FoundActors);
 
@@ -86,9 +86,11 @@ void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
 			return;
 		}
 	}
+
+	RegisteredPlayers.Add(PlayerController);
 }
 
-void AIndividualGameMode::InitRandomSpawn()
+void AIndividualGameMode::SpawnStaticEnergyAtRandomPosition()
 {
 	int32 PosNumber = FMath::RandRange(PosMinCount, PosMaxCount);
 
@@ -100,7 +102,7 @@ void AIndividualGameMode::InitRandomSpawn()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Duplication."));
-		InitRandomSpawn();
+		SpawnStaticEnergyAtRandomPosition();
 		return;
 	}
 
@@ -137,7 +139,7 @@ void AIndividualGameMode::InitRandomSpawn()
 void AIndividualGameMode::SpawnStaticEnergy()
 {
 	// TODO : 기획서에 맞게 시간 수정.
-	GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::InitRandomSpawn, 1.0f, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::SpawnStaticEnergyAtRandomPosition, 1.0f, false);
 }
 
 void AIndividualGameMode::SpawnDropEnergy()
@@ -150,7 +152,7 @@ void AIndividualGameMode::StaticEnergyNumCheck()
 	int32 SpawnedStaticEnergyNum = VectorArray.Num();
 
 	if (SpawnedStaticEnergyNum < StaticEnergyMaxCount)
-		GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::InitRandomSpawn, 1.0f, false);
+		GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::SpawnStaticEnergyAtRandomPosition, 1.0f, false);
 }
 
 void AIndividualGameMode::RespawnPlayer(AController* KilledController)
@@ -199,10 +201,10 @@ void AIndividualGameMode::RespawnPlayer(AController* KilledController)
 	
 	KilledPlayerState->ResetEnergy();
 	KilledDamageableCharacter->FullHealth();
+	KilledDamageableCharacter->Respawn();
 }
 
-void AIndividualGameMode::OnKilledCharacter(AController* InstigatorController, AActor* DamageCauser,
-	AController* VictimController, AActor* Victim)
+void AIndividualGameMode::OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnKillCharacter has been called !"));
 	
@@ -231,28 +233,28 @@ void AIndividualGameMode::OnKilledCharacter(AController* InstigatorController, A
 		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_KilledCharacter is null."));
 		return;
 	}
-	
+
 	FTimerHandle* ExistingTimer = RespawnTimers.Find(VictimController);
 	if (ExistingTimer != nullptr)
 	{
 		GetWorldTimerManager().ClearTimer(*ExistingTimer);
 		RespawnTimers.Remove(VictimController);
 	}
-
+	
 	TArray<AController*> DeadPlayers;
 	DeadPlayers.Add(VictimController);
-
+	
 	for (auto& Pair : RespawnTimers)
 	{
 		FTimerHandle& Timer = Pair.Value;
 		AController* Player = Pair.Key;
-
+	
 		if (GetWorldTimerManager().IsTimerActive(Timer))
 		{
 			DeadPlayers.Add(Player);
 		}
 	}
-
+	
 	for (AController* DeadPlayer : DeadPlayers)
 	{
 		FTimerHandle NewTimer;
