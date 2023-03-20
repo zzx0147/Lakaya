@@ -19,7 +19,7 @@ UGamePlayWidget::UGamePlayWidget(const FObjectInitializer& ObjectInitializer) : 
 void UGamePlayWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	CharacterPortraitImage = Cast<UImage>(GetWidgetFromName("CharacterPortrait_Img"));
+	CharacterPortraitImage = Cast<UImage>(GetWidgetFromName(TEXT("CharacterPortrait_Img")));
 
 	CharacterPortraitTextureArray =
 	{
@@ -30,19 +30,19 @@ void UGamePlayWidget::NativeConstruct()
 
 	KillLogElementArray =
 	{
-		Cast<UKillLogElement>(GetWidgetFromName("WBP_KillLogElement1")),
-		Cast<UKillLogElement>(GetWidgetFromName("WBP_KillLogElement2")),
-		Cast<UKillLogElement>(GetWidgetFromName("WBP_KillLogElement3"))
+		Cast<UKillLogElement>(GetWidgetFromName(TEXT("WBP_KillLogElement1"))),
+		Cast<UKillLogElement>(GetWidgetFromName(TEXT("WBP_KillLogElement2"))),
+		Cast<UKillLogElement>(GetWidgetFromName(TEXT("WBP_KillLogElement3")))
 	};
 
 	SkillProgressBarArray =
 	{
-		Cast<UProgressBar>(GetWidgetFromName("Skill1_Prb")),
-		Cast<UProgressBar>(GetWidgetFromName("Skill2_Prb")),
+		Cast<UProgressBar>(GetWidgetFromName(TEXT("Skill1_Prb"))),
+		Cast<UProgressBar>(GetWidgetFromName(TEXT("Skill2_Prb"))),
 	};
 
 
-	HelpBodyPanel = Cast<UCanvasPanel>(GetWidgetFromName("HelpBodyPanel"));
+	HelpBodyPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("HelpBodyPanel")));
 
 	ConsecutiveKillsProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("ConsecutiveKills_Prb")));
 
