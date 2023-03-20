@@ -2,6 +2,7 @@
 
 #include "EngineMinimal.h"
 #include "LakayaDefalutPlayGameMode.h"
+#include "DropEnergyPool.h"
 #include "IndividualGameMode.generated.h"
 
 UENUM()
@@ -25,18 +26,22 @@ public:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
 
-public:
-	void OnPlayerJoined(APlayerController* PlayerController);
 	
 public:
-	void SpawnStaticEnergyAtRandomPosition();
-	void SpawnStaticEnergy();
-	void SpawnDropEnergy();
-	void StaticEnergyNumCheck();
-	void RespawnPlayer(AController* Controller);
-	
 	UFUNCTION()
 	void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser);
+	
+	void OnPlayerJoined(APlayerController* PlayerController);
+	void RespawnPlayer(AController* Controller);
+	
+	void SpawnStaticEnergyAtRandomPosition();
+	void SpawnStaticEnergy();
+	void StaticEnergyNumCheck();
+
+	void SpawnDropEnergy(AController* DeadPlayer);
+
+private:
+	ADropEnergyPool* DropEnergyPool;
 	
 private:
 	uint8 NumPlayers;

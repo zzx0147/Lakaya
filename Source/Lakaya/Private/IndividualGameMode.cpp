@@ -8,6 +8,8 @@
 #include "IndividualStaticEnergy.h"
 #include "InteractableCharacter.h"
 #include "GameFramework/PlayerStart.h"
+#include "IndividualDropEnergy.h"
+#include "DropEnergyPool.h"
 
 AIndividualGameMode::AIndividualGameMode()
 {
@@ -21,6 +23,11 @@ AIndividualGameMode::AIndividualGameMode()
 void AIndividualGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+
+	DropEnergyPool = GetWorld()->SpawnActor<ADropEnergyPool>(ADropEnergyPool::StaticClass());
+	DropEnergyPool->Initialize(30);
+	// DropEnergyPool->SetReplicates(true);
+	// DropEnergyPool->SetReplicateMovement(true);
 }
 
 void AIndividualGameMode::PostInitializeComponents()
@@ -141,9 +148,21 @@ void AIndividualGameMode::SpawnStaticEnergy()
 	GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::SpawnStaticEnergyAtRandomPosition, 1.0f, false);
 }
 
-void AIndividualGameMode::SpawnDropEnergy()
+void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
 {
+	// TODO : 오브젝트풀링을 이용해서 기존에 생성되었던 드랍에너지를 가져와서
+	// 사망한 플레이어에게서 드랍된 것처럼 보이게끔 구현.
+	AIndividualDropEnergy* DropEnergy = DropEnergyPool->GetDropEnergy();
+	if (DropEnergy == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("DropEnergy is null."));
+		return;
+	}
+
+	DropEnergy->SetDropEnergy(DeadPlayer);
 	
+	// TODO : 상호작용 완료 시 적용해야 할 것
+	// DropEnergyPool->ReturnDropEnergy(DropEnergy);
 }
 
 void AIndividualGameMode::StaticEnergyNumCheck()
@@ -227,6 +246,12 @@ void AIndividualGameMode::OnKilledCharacter(AController* VictimController, AActo
 	UE_LOG(LogTemp, Warning, TEXT("Player Total points: %d"), CollectorPlayerState->GetPoint());
 	UE_LOG(LogTemp, Warning, TEXT("Player Total Money : %d"), CollectorPlayerState->GetMoney());
 
+	for (uint8 i = 0 ; i < CollectorPlayerState->GetEnergy(); i++)
+	{
+		SpawnDropEnergy(VictimController);
+		UE_LOG(LogTemp, Warning, TEXT("For SpawnDropEnergy."));
+	}
+	
 	if (VictimController == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_KilledCharacter is null."));
