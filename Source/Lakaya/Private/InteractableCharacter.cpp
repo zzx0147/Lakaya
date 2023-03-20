@@ -54,63 +54,79 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
-	if (!IsOwnedByLocalPlayer()) return;
-
 	// Add interaction context when overlapped by trigger
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
 	if (!InputSystem->HasMappingContext(InteractionContext))
+	{
 		InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
+		GEngine->AddOnScreenDebugMessage(-1,3,FColor::Yellow,TEXT("Interaction context added"));
+	}
 }
 
 void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorEndOverlap(OtherActor);
 
-	if (!IsOwnedByLocalPlayer()) return;
-
 	// Remove interaction context when far away from triggers
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	--InteractableCount;
-	if (InteractableCount == 0) InputSystem->RemoveMappingContext(InteractionContext);
+	if (InteractableCount == 0)
+	{
+		InputSystem->RemoveMappingContext(InteractionContext);
+		GEngine->AddOnScreenDebugMessage(-1,3,FColor::Yellow,TEXT("Interaction context removed"));
+	}
 }
 
-void AInteractableCharacter::OnInteractionSuccess_Implementation()
+bool AInteractableCharacter::RequestInteractionStart_Validate(const float& Time, AActor* Actor)
 {
-	SimulatedFocusSpace[EFocusKey::MainHand] = false;
-	InteractingActor = nullptr;
+	return Actor && Actor->Implements<UInteractable>()
+		&& SetFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting);
 }
 
-void AInteractableCharacter::OnInteractionCanceled_Implementation()
+void AInteractableCharacter::InteractionEndedNotify_Implementation(const float& Time, bool IsSuccess)
 {
-	SimulatedFocusSpace[EFocusKey::MainHand] = false;
-	InteractingActor = nullptr;
+	if (HasAuthority() && !ReleaseFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
+		UE_LOG(LogActor, Error, TEXT("Focus release fail on InteractionEnding with authority!"));
+
+	if (IsOwnedByLocalPlayer())
+	{
+		if (!ReleaseFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
+			UE_LOG(LogActor, Error, TEXT("Focus release fail on InteractionEnding by local player"));
+
+		InteractingActor = nullptr;
+	}
+
+	ReleaseFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting);
+	OnInteractionEnded.Broadcast(Time, IsSuccess);
+}
+
+void AInteractableCharacter::InteractionStartNotify_Implementation(const float& Time, AActor* Actor)
+{
+	if (!SetFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
+		UE_LOG(LogActor, Error, TEXT("Focus release fail on InteractionStartNotify with Simulated"));
+
+	OnInteractionStarted.Broadcast(Time, Actor);
 }
 
 void AInteractableCharacter::RequestInteractionStart_Implementation(const float& Time, AActor* Actor)
 {
-	if (IsFocussed(EFocusKey::MainHand)) OnInteractionCanceled();
-	else if (auto Interactable = Cast<IInteractable>(Actor))
-	{
-		FocusSpace.FindOrAdd(EFocusKey::MainHand) = true;
-		Interactable->InteractionStart(Time, this);
-	}
-	else UE_LOG(LogActor, Warning, TEXT("Requested interaction actor was not IInteractable"));
+	Cast<IInteractable>(Actor)->InteractionStart(GetServerTime(), this);
 }
 
 void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor)
 {
-	if (auto Interactable = Cast<IInteractable>(Actor))
-	{
-		FocusSpace[EFocusKey::MainHand] = false;
-		Interactable->InteractionStop(Time, this);
-	}
-	else UE_LOG(LogActor, Warning, TEXT("Requested interaction actor was not IInteractable"));
+	Cast<IInteractable>(Actor)->InteractionStop(GetServerTime(), this);
+}
+
+bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, AActor* Actor)
+{
+	return Actor && Actor->Implements<UInteractable>()
+		&& ReleaseFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting);
 }
 
 void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 {
-	if (IsFocussed(EFocusKey::MainHand,true)) return;
 	FHitResult HitResult;
 	const auto Location = GetCamera()->GetComponentLocation();
 	const auto End = Location + GetCamera()->GetForwardVector() * InteractionRange;
@@ -120,9 +136,9 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 		return;
 
 	if (auto Actor = HitResult.GetActor())
-		if (Actor->Implements<UInteractable>())
+		if (Actor->Implements<UInteractable>()
+			&& SetFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
 		{
-			SimulatedFocusSpace.FindOrAdd(EFocusKey::MainHand) = true;
 			RequestInteractionStart(GetServerTime(), Actor);
 			InteractingActor = Actor;
 		}
@@ -131,7 +147,8 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 void AInteractableCharacter::InteractionStop(const FInputActionValue& Value)
 {
 	if (!InteractingActor.IsValid()) return;
-	SimulatedFocusSpace[EFocusKey::MainHand] = false;
+	if (!ReleaseFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
+		UE_LOG(LogActor, Error, TEXT("Focus release fail on InteractionStop!"));
 	RequestInteractionStop(GetServerTime(), InteractingActor.Get());
 	InteractingActor = nullptr;
 }

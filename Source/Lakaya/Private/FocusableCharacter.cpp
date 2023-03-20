@@ -21,9 +21,12 @@ bool AFocusableCharacter::ReleaseFocus(const EFocusContext& Context, const EFocu
 bool AFocusableCharacter::IsFocussed(const EFocusContext& Context, const EFocusSpace& Space,
                                      const EFocusState& State) const
 {
-	if (!FocusMap.Contains(Context) || !FocusMap[Context].Contains(Space)) return false;
-	auto& CurrentState = FocusMap[Context][Space];
-	return CurrentState != EFocusState::None && CurrentState != State;
+	if (FocusMap.Contains(Context) && FocusMap[Context].Contains(Space))
+	{
+		auto& CurrentState = FocusMap[Context][Space];
+		return CurrentState != EFocusState::None && CurrentState != State;
+	}
+	return false;
 }
 
 bool AFocusableCharacter::IsFocussedBy(const EFocusContext& Context, const EFocusSpace& Space,
