@@ -3,21 +3,32 @@
 
 #include "FocusableCharacter.h"
 
-bool AFocusableCharacter::SetFocus(const EFocusKey& Key, const bool& IsSimulated)
+bool AFocusableCharacter::SetFocus(const EFocusContext& Context, const EFocusSpace& Space, const EFocusState& State)
 {
-	if (IsFocussed(Key, IsSimulated)) return false;
-	(IsSimulated ? SimulatedFocusSpace : FocusSpace).FindOrAdd(Key) = true;
+	if (IsFocussed(Context, Space)) return false;
+	GetFocusState(Context, Space) = State;
 	return true;
 }
 
-void AFocusableCharacter::ReleaseFocus(const EFocusKey& Key, const bool& IsSimulated)
+bool AFocusableCharacter::ReleaseFocus(const EFocusContext& Context, const EFocusSpace& Space, const EFocusState& State)
 {
-	auto& Map = GetFocusSpace(IsSimulated);
-	if (Map.Contains(Key)) Map[Key] = false;
+	auto& CurrentState = GetFocusState(Context, Space);
+	if (CurrentState == EFocusState::None || CurrentState != State && State != EFocusState::Force) return false;
+	CurrentState = EFocusState::None;
+	return true;
 }
 
-bool AFocusableCharacter::IsFocussed(const EFocusKey& Key, const bool& IsSimulated)
+bool AFocusableCharacter::IsFocussed(const EFocusContext& Context, const EFocusSpace& Space,
+                                     const EFocusState& State) const
 {
-	auto& Map = GetFocusSpace(IsSimulated);
-	return Map.Contains(Key) && Map[Key];
+	if (!FocusMap.Contains(Context) || !FocusMap[Context].Contains(Space)) return false;
+	auto& CurrentState = FocusMap[Context][Space];
+	return CurrentState != EFocusState::None && CurrentState != State;
+}
+
+bool AFocusableCharacter::IsFocussedBy(const EFocusContext& Context, const EFocusSpace& Space,
+                                       const EFocusState& State) const
+{
+	if (!FocusMap.Contains(Context) || !FocusMap[Context].Contains(Space)) return State == EFocusState::None;
+	return FocusMap[Context][Space] == State;
 }
