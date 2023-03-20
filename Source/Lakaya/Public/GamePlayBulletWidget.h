@@ -22,11 +22,17 @@ protected:
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
+protected:
+	void OnChangeRemainBullets(int16 NewRemainBullets);
+	void OnChangeMagazineCapacity(int16 NewMagazineCapacity);
+
 public:
 
 protected:
 
-	UTextBlock
-	
-	
+	UTextBlock* RemainBulletsText;
+	UTextBlock* MagazineCapacityText;
+
+	int16 RemainBullets;
+	int16 MagazineCapacity;
 };

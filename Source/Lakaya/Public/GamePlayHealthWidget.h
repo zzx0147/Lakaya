@@ -28,11 +28,7 @@ protected:
 
 public:
 protected:
-
-
-	UFUNCTION(BlueprintCallable)
 	void OnChangeHealth(AActor* Character, const float& NewHealth);
-	UFUNCTION(BlueprintCallable)
 	void OnChangeMaximumHealth(AActor* Character, const float& NewMaximumHealth);
 	
 	void UpdateHealthProgressBar();

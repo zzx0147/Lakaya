@@ -18,9 +18,9 @@ void UGamePlayHealthWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	HealthProgressBar = Cast<UProgressBar>(GetWidgetFromName("HPBar_Prb"));
-	HealthText = Cast<UTextBlock>(GetWidgetFromName("Health_Text"));
-	MaximumHealthText = Cast<UTextBlock>(GetWidgetFromName("MaximumHealth_Text"));
+	HealthProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("HPBar_Prb")));
+	HealthText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Health_Text")));
+	MaximumHealthText = Cast<UTextBlock>(GetWidgetFromName(TEXT("MaximumHealth_Text")));
 
 	check(HealthText);
 	check(MaximumHealthText);
@@ -52,7 +52,8 @@ void UGamePlayHealthWidget::OnChangeHealth(AActor* Character, const float& NewHe
 void UGamePlayHealthWidget::OnChangeMaximumHealth(AActor* Character, const float& NewMaximumHealth)
 {
 	MaximumHealth = NewMaximumHealth;
-	MaximumHealthText->SetText(FText::AsNumber(floor(MaximumHealth)));
+
+	MaximumHealthText->SetText(FText::FromString(FString::Printf(TEXT("/%f"), MaximumHealth)));
 	UpdateHealthProgressBar();
 }
 

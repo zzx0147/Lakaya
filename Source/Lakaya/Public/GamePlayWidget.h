@@ -12,9 +12,7 @@
  */
 
 class UImage;
-
 class UKillLogElement;
-
 class UCanvasPanel;
 
 UCLASS()
@@ -23,7 +21,8 @@ class LAKAYA_API UGamePlayWidget : public UGamePlayBulletWidget
 	GENERATED_BODY()
 	
 public:
-	
+	UGamePlayWidget(const FObjectInitializer& ObjectInitializer);
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -35,7 +34,7 @@ public:
 	void SetCharacterPortrait(int32 CharacterNum);
 
 protected:
-
+	void OnChangeConsecutiveKills(int NewConsecutiveKills);
 
 
 protected:
@@ -44,6 +43,9 @@ protected:
 	UCanvasPanel* HelpBodyPanel;
 	TArray<UKillLogElement*> KillLogElementArray;
 	TArray<UProgressBar*> SkillProgressBarArray;
+	UProgressBar* ConsecutiveKillsProgressBar;
+	int16 ConsecutiveKills;
+	int16 MaximumConsecutiveKills;
 private:
 	
 };
