@@ -36,5 +36,5 @@ private:
 	UStaticMeshComponent* Sphere;
 	
 private:
-	uint8 const LifeTime = 20;
+	uint8 const LifeTime = 5;
 };

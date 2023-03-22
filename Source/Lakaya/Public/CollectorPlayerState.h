@@ -44,5 +44,5 @@ private:
 	uint8 Point;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Energy, Transient)
-	uint8 Energy;
+	uint8 Energy = 2;
 };

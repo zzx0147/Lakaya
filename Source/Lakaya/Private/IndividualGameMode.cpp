@@ -159,6 +159,9 @@ void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
 		return;
 	}
 
+	UE_LOG(LogTemp, Warning, TEXT("Pool Num : %d"), DropEnergyPool->InactiveDropEnergys.Num());
+
+	// 위치 조정
 	DropEnergy->SetDropEnergy(DeadPlayer);
 	
 	// TODO : 상호작용 완료 시 적용해야 할 것
@@ -246,6 +249,7 @@ void AIndividualGameMode::OnKilledCharacter(AController* VictimController, AActo
 	UE_LOG(LogTemp, Warning, TEXT("Player Total points: %d"), CollectorPlayerState->GetPoint());
 	UE_LOG(LogTemp, Warning, TEXT("Player Total Money : %d"), CollectorPlayerState->GetMoney());
 
+	// Spawn Drop Energy
 	for (uint8 i = 0 ; i < CollectorPlayerState->GetEnergy(); i++)
 	{
 		SpawnDropEnergy(VictimController);

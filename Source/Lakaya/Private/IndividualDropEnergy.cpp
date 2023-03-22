@@ -54,5 +54,5 @@ void AIndividualDropEnergy::Deactivate()
 {
 	SetActorHiddenInGame(true);
 	SetActorEnableCollision(false);
-	SetLifeSpan(LifeTime);
+	// SetLifeSpan(LifeTime);
 }
