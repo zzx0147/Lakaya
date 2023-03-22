@@ -26,8 +26,6 @@ void AIndividualGameMode::BeginPlay()
 
 	DropEnergyPool = GetWorld()->SpawnActor<ADropEnergyPool>(ADropEnergyPool::StaticClass());
 	DropEnergyPool->Initialize(30);
-	// DropEnergyPool->SetReplicates(true);
-	// DropEnergyPool->SetReplicateMovement(true);
 }
 
 void AIndividualGameMode::PostInitializeComponents()
@@ -145,7 +143,7 @@ void AIndividualGameMode::SpawnStaticEnergyAtRandomPosition()
 void AIndividualGameMode::SpawnStaticEnergy()
 {
 	// TODO : 기획서에 맞게 시간 수정.
-	GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::SpawnStaticEnergyAtRandomPosition, 1.0f, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_SpawnStaticEnergy, this, &AIndividualGameMode::SpawnStaticEnergyAtRandomPosition, 1.0f, false);
 }
 
 void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
@@ -173,7 +171,7 @@ void AIndividualGameMode::StaticEnergyNumCheck()
 	int32 SpawnedStaticEnergyNum = VectorArray.Num();
 
 	if (SpawnedStaticEnergyNum < StaticEnergyMaxCount)
-		GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &AIndividualGameMode::SpawnStaticEnergyAtRandomPosition, 1.0f, false);
+		GetWorldTimerManager().SetTimer(TimerHandle_SpawnStaticEnergy, this, &AIndividualGameMode::SpawnStaticEnergyAtRandomPosition, 1.0f, false);
 }
 
 void AIndividualGameMode::RespawnPlayer(AController* KilledController)

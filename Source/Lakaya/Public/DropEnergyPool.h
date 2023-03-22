@@ -20,7 +20,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	void Initialize(uint8 PoolSize);
+	void Initialize(int32 PoolSize);
 	AIndividualDropEnergy* GetDropEnergy();
 	void ReturnDropEnergy(AIndividualDropEnergy* DropEnergy);
 

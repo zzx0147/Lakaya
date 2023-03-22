@@ -27,6 +27,7 @@ private:
 public:
 	void SetDropEnergy(AController* DeadPlayer);
 	void Deactivate();
+	void DeactivateAfterDelay(AActor* DropEnergy);
 	
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
@@ -34,7 +35,4 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* Sphere;
-	
-private:
-	uint8 const LifeTime = 5;
 };

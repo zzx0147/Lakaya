@@ -73,8 +73,8 @@ private:
 	TSet<APlayerController*> RegisteredPlayers;
 	
 private:
-	FTimerHandle TimerHandle_SpawnItem;
-
+	FTimerHandle TimerHandle_SpawnStaticEnergy;
+	
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;
 };
