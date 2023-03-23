@@ -25,7 +25,6 @@ public:
 	virtual void PostInitializeComponents() override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
-
 	
 public:
 	UFUNCTION()
@@ -39,7 +38,6 @@ public:
 	void StaticEnergyNumCheck();
 
 	void SpawnDropEnergy(AController* DeadPlayer);
-
 private:
 	ADropEnergyPool* DropEnergyPool;
 	
@@ -71,10 +69,9 @@ public:
 
 private:
 	TSet<APlayerController*> RegisteredPlayers;
+	UPROPERTY()
+	TMap<AController*, FTimerHandle> RespawnTimers;
 	
 private:
 	FTimerHandle TimerHandle_SpawnStaticEnergy;
-	
-	UPROPERTY()
-	TMap<AController*, FTimerHandle> RespawnTimers;
 };

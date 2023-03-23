@@ -1,5 +1,6 @@
-#include "IndividualGameMode.h"
 #include "IndividualDropEnergy.h"
+#include "IndividualGameMode.h"
+#include "DropEnergyPool.h"
 
 AIndividualDropEnergy::AIndividualDropEnergy()
 {
@@ -50,14 +51,17 @@ void AIndividualDropEnergy::SetDropEnergy(AController* DeadPlayer)
 	UE_LOG(LogTemp, Warning, TEXT("SetDropEnergy Function()"));
 }
 
+void AIndividualDropEnergy::Activate()
+{
+	SetActorHiddenInGame(false);
+	SetActorEnableCollision(true);
+	IsActive = true;
+}
+
 void AIndividualDropEnergy::Deactivate()
 {
 	SetActorHiddenInGame(true);
 	SetActorEnableCollision(false);
+	IsActive = false;
 }
 
-void AIndividualDropEnergy::DeactivateAfterDelay(AActor* DropEnergy)
-{
-	FTimerHandle TimerHandle_DespawnDelay;
-	GetWorldTimerManager().SetTimer(TimerHandle_DespawnDelay, this, &AIndividualDropEnergy::Deactivate, 3.0f, false);
-}

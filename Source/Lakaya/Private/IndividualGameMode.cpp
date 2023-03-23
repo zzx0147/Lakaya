@@ -10,6 +10,7 @@
 #include "GameFramework/PlayerStart.h"
 #include "IndividualDropEnergy.h"
 #include "DropEnergyPool.h"
+#include "EngineUtils.h"
 
 AIndividualGameMode::AIndividualGameMode()
 {
@@ -25,6 +26,7 @@ void AIndividualGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	DropEnergyPool = GetWorld()->SpawnActor<ADropEnergyPool>(ADropEnergyPool::StaticClass());
+	
 	DropEnergyPool->Initialize(30);
 }
 
@@ -156,14 +158,13 @@ void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
 		UE_LOG(LogTemp, Warning, TEXT("DropEnergy is null."));
 		return;
 	}
-
+	
 	UE_LOG(LogTemp, Warning, TEXT("Pool Num : %d"), DropEnergyPool->InactiveDropEnergys.Num());
 
 	// 위치 조정
 	DropEnergy->SetDropEnergy(DeadPlayer);
-	
-	// TODO : 상호작용 완료 시 적용해야 할 것
-	// DropEnergyPool->ReturnDropEnergy(DropEnergy);
+
+	// 생명 주기
 }
 
 void AIndividualGameMode::StaticEnergyNumCheck()

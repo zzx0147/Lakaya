@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-// #include "DropEnergyPool.h"
 #include "Interactable.h"
 #include "Components/SphereComponent.h"
 #include "IndividualDropEnergy.generated.h"
@@ -26,8 +25,8 @@ private:
 
 public:
 	void SetDropEnergy(AController* DeadPlayer);
+	void Activate();
 	void Deactivate();
-	void DeactivateAfterDelay(AActor* DropEnergy);
 	
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
@@ -35,4 +34,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* Sphere;
+
+public:
+	bool IsActive;
 };
