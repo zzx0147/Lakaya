@@ -10,3 +10,7 @@ void UKillLogElement::NativeConstruct()
 void UKillLogElement::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 }
+
+void UKillLogElement::SetData()
+{
+}

@@ -4,21 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "GamePlayWidget.generated.h"
+#include "GamePlaySkillWidget.generated.h"
 
 /**
- * 
+ *
  */
 
+class UProgressBar;
+
 UCLASS()
-class LAKAYA_API UGamePlayWidget : public UUserWidget 
+class LAKAYA_API UGamePlaySkillWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
 public:
-	UGamePlayWidget(const FObjectInitializer& ObjectInitializer);
+	UGamePlaySkillWidget(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+private:
+	TArray<UProgressBar*> SkillProgressBarArray;
 };

@@ -4,21 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "GamePlayWidget.generated.h"
+#include "GamePlayKillLogWidget.generated.h"
 
 /**
- * 
+ *
  */
 
+class UKillLogElement;
+
 UCLASS()
-class LAKAYA_API UGamePlayWidget : public UUserWidget 
+class LAKAYA_API UGamePlayKillLogWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
 public:
-	UGamePlayWidget(const FObjectInitializer& ObjectInitializer);
+	UGamePlayKillLogWidget(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+private:
+	TArray<UKillLogElement*> KillLogElementArray;
 };

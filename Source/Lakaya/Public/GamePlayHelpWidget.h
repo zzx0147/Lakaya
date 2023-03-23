@@ -4,21 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "GamePlayWidget.generated.h"
+#include "GamePlayHelpWidget.generated.h"
 
 /**
- * 
+ *
  */
 
+class UCanvasPanel;
+
 UCLASS()
-class LAKAYA_API UGamePlayWidget : public UUserWidget 
+class LAKAYA_API UGamePlayHelpWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
 public:
-	UGamePlayWidget(const FObjectInitializer& ObjectInitializer);
+	UGamePlayHelpWidget(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+private:
+	UCanvasPanel* HelpBodyPanel;
 };
