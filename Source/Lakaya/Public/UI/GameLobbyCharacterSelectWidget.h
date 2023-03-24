@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameLobbyWeaponSelectWidget.h"
+#include "UI/GameLobbyWeaponSelectWidget.h"
 #include "GameLobbyCharacterSelectWidget.generated.h"
 
 

@@ -1,4 +1,4 @@
-#include "GameLobbyWeaponSelectWidget.h"
+#include "UI/GameLobbyWeaponSelectWidget.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Blueprint/SlateBlueprintLibrary.h"
 #include "Components/CanvasPanelSlot.h"

@@ -1,4 +1,4 @@
-#include "GameLobbyCharacterSelectWidget.h"
+#include "UI/GameLobbyCharacterSelectWidget.h"
 #include "Components/Image.h"
 #include "Components/Button.h"
 

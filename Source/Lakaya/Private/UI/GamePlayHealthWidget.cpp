@@ -1,6 +1,6 @@
 #define DO_CHECK 1
 
-#include "GamePlayHealthWidget.h"
+#include "UI/GamePlayHealthWidget.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "DamageableCharacter.h"

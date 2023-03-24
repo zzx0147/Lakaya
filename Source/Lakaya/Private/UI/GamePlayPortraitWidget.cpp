@@ -1,6 +1,6 @@
 #define DO_CHECK 1
 
-#include "GamePlayPortraitWidget.h"
+#include "UI/GamePlayPortraitWidget.h"
 #include "Components/Image.h"
 
 UGamePlayPortraitWidget::UGamePlayPortraitWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)

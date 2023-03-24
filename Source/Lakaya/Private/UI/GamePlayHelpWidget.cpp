@@ -1,6 +1,6 @@
 #define DO_CHECK 1
 
-#include "GamePlayHelpWidget.h"
+#include "UI/GamePlayHelpWidget.h"
 #include "Components/CanvasPanel.h"
 
 UGamePlayHelpWidget::UGamePlayHelpWidget(const FObjectInitializer& ObjectInitializer) :Super(ObjectInitializer)

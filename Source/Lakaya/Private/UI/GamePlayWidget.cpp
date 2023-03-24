@@ -2,7 +2,7 @@
 
 #define DO_CHECK 1
 
-#include "GamePlayWidget.h"
+#include "UI/GamePlayWidget.h"
 
 UGamePlayWidget::UGamePlayWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
