@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Interactable.h"
+#include "Interactable/Interactable.h"
 #include "Components/SphereComponent.h"
 #include "IndividualDropEnergy.generated.h"
 

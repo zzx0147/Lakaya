@@ -62,6 +62,6 @@ public:
 	virtual void OnInteractionStop(APawn* Caller) { return; }
 
 
-	virtual void InteractionStart(const float& Time, APawn* Caller);
-	virtual void InteractionStop(const float& Time, APawn* Caller);
+	virtual void InteractionStart(const float& Time, APawn* Caller) { return; }
+	virtual void InteractionStop(const float& Time, APawn* Caller) { return; }
 };

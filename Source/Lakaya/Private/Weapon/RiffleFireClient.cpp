@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "RiffleFireClient.h"
+#include "Weapon/RiffleFireClient.h"
 
-#include "GunComponent.h"
-#include "ThirdPersonCharacter.h"
+#include "Weapon/GunComponent.h"
+#include "Character/ThirdPersonCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/ArrowComponent.h"
 #include "GameFramework/SpringArmComponent.h"

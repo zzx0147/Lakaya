@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GunComponent.h"
+#include "Weapon/GunComponent.h"
 
-#include "GunAssetData.h"
+#include "Weapon/GunAssetData.h"
 #include "Engine/DataTable.h"
 #include "Net/UnrealNetwork.h"
 

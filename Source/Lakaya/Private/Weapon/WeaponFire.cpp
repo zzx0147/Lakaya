@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "WeaponFire.h"
+#include "Weapon/WeaponFire.h"
 
 void UWeaponFire::ExecuteEvent(const uint8& EventNumber)
 {

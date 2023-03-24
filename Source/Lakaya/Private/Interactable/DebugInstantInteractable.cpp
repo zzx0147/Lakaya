@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "DebugInstantInteractable.h"
+#include "Interactable/DebugInstantInteractable.h"
 
-#include "InteractableCharacter.h"
+#include "Character/InteractableCharacter.h"
 #include "Components/SphereComponent.h"
 
 ADebugInstantInteractable::ADebugInstantInteractable()
