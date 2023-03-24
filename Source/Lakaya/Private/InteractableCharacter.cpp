@@ -60,7 +60,7 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	if (!InputSystem->HasMappingContext(InteractionContext))
 	{
 		InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
-		GEngine->AddOnScreenDebugMessage(-1,3,FColor::Yellow,TEXT("Interaction context added"));
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context added"));
 	}
 }
 
@@ -74,55 +74,125 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	if (InteractableCount == 0)
 	{
 		InputSystem->RemoveMappingContext(InteractionContext);
-		GEngine->AddOnScreenDebugMessage(-1,3,FColor::Yellow,TEXT("Interaction context removed"));
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context removed"));
 	}
+}
+
+void AInteractableCharacter::InitiateInteractionStart(const float& Time, AActor* Actor, const float& Duration)
+{
+	// Execute InteractionStartNotify when Duration is longer then LockstepDelay
+	if (Duration > LockstepDelay)
+	{
+		InteractionStartNotify(Time, Actor, Duration);
+		return;
+	}
+
+	InitiateLockstepEvent(Time, [this,Actor]
+	{
+		// Execute OnInteractionStart when It's focusable
+		if (IsFocussedBy(EFocusContext::Server, EFocusSpace::MainHand))
+			Cast<IInteractable>(Actor)->OnInteractionStart(this);
+		else UE_LOG(LogActor, Error, TEXT("FocusState was not None on InitiateInteractionStart! FocusState was %d"),
+		            GetFocusState(EFocusContext::Server,EFocusSpace::MainHand));
+	});
+}
+
+void AInteractableCharacter::NoticeInstantInteractionLocal()
+{
+	if (ReleaseFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
+		InteractingActor = nullptr;
+	else UE_LOG(LogActor, Error, TEXT("Fail to release focus on NoticeInstantInteractionLocal! FocusState was %d"),
+	            GetFocusState(EFocusContext::Owner,EFocusSpace::MainHand));
+}
+
+void AInteractableCharacter::InteractionStopNotify_Implementation(const float& Time, AActor* Actor)
+{
+	InitiateLockstepEvent(Time, [this,Time,Actor]
+	{
+		if (HasAuthority())
+		{
+			if (ReleaseFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
+				Cast<IInteractable>(Actor)->OnInteractionStop(this);
+			else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStopNotify with authority!"));
+		}
+
+		if (ReleaseFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
+			OnInteractionStoppedNotify.Broadcast(Time);
+		else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStopNotify!"));
+	});
+}
+
+void AInteractableCharacter::InteractionStartNotify_Implementation(const float& Time, AActor* Actor,
+                                                                   const float& Duration)
+{
+	InitiateLockstepEvent(Time, [this,Time,Actor,Duration]
+	{
+		// Execute OnInteractionStart when It's server and focusable.
+		if (HasAuthority())
+		{
+			if (SetFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
+				Cast<IInteractable>(Actor)->OnInteractionStart(this);
+			else UE_LOG(LogActor, Error,
+			            TEXT("Fail to set focus on InteractionStartNotify with authority! FocusState was %d"),
+			            GetFocusState(EFocusContext::Server,EFocusSpace::MainHand));
+		}
+
+		if (SetFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
+		{
+			if (IsOwnedByLocalPlayer())
+				GetWorldTimerManager().SetTimer(OwnerInteractionTimer, [this]
+				{
+					if (!ReleaseFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
+						UE_LOG(LogActor, Error,
+					       TEXT("Fail to release focus on InteractionStartNotify owner context! FocusState was %d"),
+					       GetFocusState(EFocusContext::Owner,EFocusSpace::MainHand));
+				}, Duration - LockstepDelay, false);
+
+			GetWorldTimerManager().SetTimer(InteractionTimer, [this]
+			{
+				if (!ReleaseFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
+					UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStartNotify! FocusState was %d"),
+				       GetFocusState(EFocusContext::Simulated,EFocusSpace::MainHand));
+			}, Duration, false);
+			OnInteractionStarted.Broadcast(Time, Actor, Duration);
+		}
+		else UE_LOG(LogActor, Error, TEXT("Fail to set focus on InteractionStartNotify! FocusState was %d"),
+		            GetFocusState(EFocusContext::Simulated,EFocusSpace::MainHand));
+	});
 }
 
 bool AInteractableCharacter::RequestInteractionStart_Validate(const float& Time, AActor* Actor)
 {
-	return Actor && Actor->Implements<UInteractable>()
-		&& SetFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting);
-}
-
-void AInteractableCharacter::InteractionEndedNotify_Implementation(const float& Time, bool IsSuccess)
-{
-	if (HasAuthority() && !ReleaseFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
-		UE_LOG(LogActor, Error, TEXT("Focus release fail on InteractionEnding with authority!"));
-
-	if (IsOwnedByLocalPlayer())
-	{
-		if (!ReleaseFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
-			UE_LOG(LogActor, Error, TEXT("Focus release fail on InteractionEnding by local player"));
-
-		InteractingActor = nullptr;
-	}
-
-	ReleaseFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting);
-	OnInteractionEnded.Broadcast(Time, IsSuccess);
-}
-
-void AInteractableCharacter::InteractionStartNotify_Implementation(const float& Time, AActor* Actor)
-{
-	if (!SetFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
-		UE_LOG(LogActor, Error, TEXT("Focus release fail on InteractionStartNotify with Simulated"));
-
-	OnInteractionStarted.Broadcast(Time, Actor);
+	return Actor && Actor->Implements<UInteractable>();
 }
 
 void AInteractableCharacter::RequestInteractionStart_Implementation(const float& Time, AActor* Actor)
 {
-	Cast<IInteractable>(Actor)->InteractionStart(GetServerTime(), this);
-}
-
-void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor)
-{
-	Cast<IInteractable>(Actor)->InteractionStop(GetServerTime(), this);
+	Cast<IInteractable>(Actor)->OnServerInteractionBegin(GetServerTime(), this);
 }
 
 bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, AActor* Actor)
 {
-	return Actor && Actor->Implements<UInteractable>()
-		&& ReleaseFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting);
+	return Actor && Actor->Implements<UInteractable>();
+}
+
+void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor)
+{
+	if (IsFocussedBy(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
+		Cast<IInteractable>(Actor)->OnServerInteractionStopBegin(GetServerTime(), this);
+	else UE_LOG(LogActor, Error, TEXT("InteractionStop was requested but It was not focussed by Interacting!"));
+}
+
+void AInteractableCharacter::InitiateLockstepEvent(const float& Time, std::function<void()> Callback)
+{
+	auto TimerDelay = Time + LockstepDelay - GetServerTime();
+	if (TimerDelay > 0)
+	{
+		TSharedPtr<FTimerHandle> Timer = MakeShared<FTimerHandle>();
+		GetWorldTimerManager().SetTimer(*Timer, [Callback,Ptr = Timer] { Callback(); }, TimerDelay, false);
+	}
+	else if (TimerDelay == 0) Callback();
+	else UE_LOG(LogActor, Warning, TEXT("InititateLockstepEvent::TimerDelay was negative number! (%f)"), TimerDelay);
 }
 
 void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
@@ -132,23 +202,26 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 	const auto End = Location + GetCamera()->GetForwardVector() * InteractionRange;
 
 	DrawDebugLine(GetWorld(), Location, End, FColor::Yellow, false, 2);
-	if (!GetWorld()->LineTraceSingleByChannel(HitResult, Location, End, CollisionChannel, TraceQueryParams))
-		return;
-
-	if (auto Actor = HitResult.GetActor())
-		if (Actor->Implements<UInteractable>()
-			&& SetFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
-		{
-			RequestInteractionStart(GetServerTime(), Actor);
-			InteractingActor = Actor;
-		}
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, Location, End, CollisionChannel, TraceQueryParams))
+		if (auto Actor = HitResult.GetActor())
+			if (Actor->Implements<UInteractable>()
+				&& SetFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
+			{
+				//When hit actor was implement IInteractable and this character was Focusable
+				Cast<IInteractable>(Actor)->OnLocalInteractionBegin(this);
+				RequestInteractionStart(GetServerTime(), Actor);
+				InteractingActor = Actor;
+			}
 }
 
 void AInteractableCharacter::InteractionStop(const FInputActionValue& Value)
 {
 	if (!InteractingActor.IsValid()) return;
-	if (!ReleaseFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
-		UE_LOG(LogActor, Error, TEXT("Focus release fail on InteractionStop!"));
-	RequestInteractionStop(GetServerTime(), InteractingActor.Get());
-	InteractingActor = nullptr;
+	if (ReleaseFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
+	{
+		Cast<IInteractable>(InteractingActor.Get())->OnLocalInteractionStopBegin(this);
+		RequestInteractionStop(GetServerTime(), InteractingActor.Get());
+		InteractingActor = nullptr;
+	}
+	else UE_LOG(LogActor, Error, TEXT("It was posssible to InteractionStop but It was not focussed by Interacting!"))
 }

@@ -29,9 +29,6 @@ enum class EFocusState : uint8
 	//FocusSpace가 비어있음을 의미합니다. 다른 행동을 수행할 수 있습니다.
 	None = 0,
 
-	//강제적인 점유해제시 사용됩니다. 점유를 시도할 때 사용되는 값은 아닙니다.
-	Force,
-
 	//사격중임을 나타냅니다.
 	Firing,
 
@@ -61,6 +58,14 @@ public:
 	bool SetFocus(const EFocusContext& Context, const EFocusSpace& Space, const EFocusState& State);
 
 	/**
+	 * @brief 강제로 FocusSpace를 점유합니다. 기존 State를 무시하긴 하지만, 로그를 남깁니다.
+	 * @param Context 점유할 컨텍스트입니다.
+	 * @param Space 점유할 FocusSpace입니다.
+	 * @param State 어느 FocusState로 점유할지 선택합니다.
+	 */
+	void SetFocusForce(const EFocusContext& Context, const EFocusSpace& Space, const EFocusState& State);
+
+	/**
 	 * @brief FocusSpace에서 점유 해제를 시도합니다.
 	 * @param Context 점유 해제를 시도할 컨텍스트입니다.
 	 * @param Space 점유를 해제할 FocusSpace입니다.
@@ -68,6 +73,16 @@ public:
 	 * @return 점유 해제 성공여부를 나타냅니다. 만약 FocusState가 None이었던 경우 false가 반환됩니다.
 	 */
 	bool ReleaseFocus(const EFocusContext& Context, const EFocusSpace& Space, const EFocusState& State);
+
+
+	/**
+	 * @brief FocusSpace에 대해 강제로 점유를 해제합니다.
+	 * @param Context 점유를 해제할 컨텍스트입니다.
+	 * @param Space 점유를 해제할 FocusSpace입니다. 
+	 * @param State 디버깅 옵션입니다. FocusState와 다른 경우 로그를 남깁니다.
+	 */
+	void ReleaseFocusForce(const EFocusContext& Context, const EFocusSpace& Space,
+	                       const EFocusState& State = EFocusState::None);
 
 	/**
 	 * @brief 현재 FocusSpace가 사용되고 있는지 여부를 조사합니다.
@@ -90,7 +105,7 @@ public:
 	bool IsFocussedBy(const EFocusContext& Context, const EFocusSpace& Space,
 	                  const EFocusState& State = EFocusState::None) const;
 
-private:
+protected:
 	/**
 	 * @brief 어떤 FocusSpace의 상태를 받아옵니다.
 	 * @param Context FocusSpace의 컨텍스트입니다.
@@ -102,5 +117,6 @@ private:
 		return FocusMap.FindOrAdd(Context).FindOrAdd(Space);
 	}
 
+private:
 	TMap<EFocusContext, TMap<EFocusSpace, EFocusState>> FocusMap;
 };
