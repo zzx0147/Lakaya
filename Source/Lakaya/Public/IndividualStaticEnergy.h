@@ -4,9 +4,6 @@
 #include "IndividualEnergy.h"
 #include "IndividualStaticEnergy.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class LAKAYA_API AIndividualStaticEnergy : public AIndividualEnergy
 {
