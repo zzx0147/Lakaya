@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "InteractableCharacter.h"
+#include "Character/InteractableCharacter.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "InputMappingContext.h"
-#include "Interactable.h"
+#include "Interactable/Interactable.h"
 #include "GameFramework/GameStateBase.h"
 
 AInteractableCharacter::AInteractableCharacter()

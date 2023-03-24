@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "DamageableCharacter.h"
+#include "Character/DamageableCharacter.h"
 
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
-#include "IndividualGameMode.h"
+#include "GameMode/IndividualGameMode.h"
 
 ADamageableCharacter::ADamageableCharacter()
 {

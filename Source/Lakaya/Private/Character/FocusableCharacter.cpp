@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "FocusableCharacter.h"
+#include "Character/FocusableCharacter.h"
 
 bool AFocusableCharacter::SetFocus(const EFocusContext& Context, const EFocusSpace& Space, const EFocusState& State)
 {

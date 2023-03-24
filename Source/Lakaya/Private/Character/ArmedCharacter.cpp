@@ -1,16 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ArmedCharacter.h"
+#include "Character/ArmedCharacter.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "WeaponAbility.h"
-#include "WeaponClassData.h"
-#include "WeaponComponent.h"
-#include "WeaponFire.h"
-#include "WeaponReload.h"
+#include "Weapon/WeaponAbility.h"
+#include "Weapon/WeaponClassData.h"
+#include "Weapon/WeaponComponent.h"
+#include "Weapon/WeaponFire.h"
+#include "Weapon/WeaponReload.h"
 #include "Engine/DataTable.h"
 #include "Net/UnrealNetwork.h"
 
