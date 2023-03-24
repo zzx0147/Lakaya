@@ -32,8 +32,8 @@ protected:
 
 public:
 	/**
-	 * @brief 인터렉션 시작 절차를 시작합니다.
-	 * @param Time 인터렉션이 마무리되는 시간입니다.
+	 * @brief 인터렉션 시작 절차를 시작합니다. 반드시 서버에서 호출해야 합니다.
+	 * @param Time 인터렉션 시작 입력이 시작된 시간입니다.
 	 * @param Actor 인터렉션을 시작하는 대상 액터입니다.
 	 * @param Duration 인터렉션이 수행되는 시간입니다. 시간이 긴 경우 모든 클라이언트에게 전파됩니다.
 	 */
@@ -44,6 +44,11 @@ public:
 	 */
 	void NoticeInstantInteractionLocal();
 
+	/**
+	 * @brief 인터렉션 중단 절차를 시작합니다. 반드시 서버에서 호출해야 합니다.
+	 * @param Time 인터렉션 중단 입력이 시작된 시간입니다.
+	 * @param Actor 인터렉션 중단 대상 액터입니다.
+	 */
 	UFUNCTION(NetMulticast, Reliable)
 	void InteractionStopNotify(const float& Time, AActor* Actor);
 

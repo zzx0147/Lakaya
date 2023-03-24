@@ -140,20 +140,31 @@ void AInteractableCharacter::InteractionStartNotify_Implementation(const float& 
 		if (SetFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
 		{
 			if (IsOwnedByLocalPlayer())
+			{
 				GetWorldTimerManager().SetTimer(OwnerInteractionTimer, [this]
 				{
-					if (!ReleaseFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
+					if (ReleaseFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
+					{
+						InteractingActor = nullptr;
+						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,
+						                                 TEXT("Interaction Completed in Owner!"));
+					}
+					else
 						UE_LOG(LogActor, Error,
 					       TEXT("Fail to release focus on InteractionStartNotify owner context! FocusState was %d"),
 					       GetFocusState(EFocusContext::Owner,EFocusSpace::MainHand));
 				}, Duration - LockstepDelay, false);
+			}
 
 			GetWorldTimerManager().SetTimer(InteractionTimer, [this]
 			{
-				if (!ReleaseFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
-					UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStartNotify! FocusState was %d"),
-				       GetFocusState(EFocusContext::Simulated,EFocusSpace::MainHand));
+				if (ReleaseFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
+					GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Green,
+					                                 TEXT("Interaction Completed in Simulated!"));
+				else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStartNotify! FocusState was %d"),
+				            GetFocusState(EFocusContext::Simulated,EFocusSpace::MainHand));
 			}, Duration, false);
+			
 			OnInteractionStarted.Broadcast(Time, Actor, Duration);
 		}
 		else UE_LOG(LogActor, Error, TEXT("Fail to set focus on InteractionStartNotify! FocusState was %d"),
@@ -208,9 +219,9 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 				&& SetFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
 			{
 				//When hit actor was implement IInteractable and this character was Focusable
+				InteractingActor = Actor;
 				Cast<IInteractable>(Actor)->OnLocalInteractionBegin(this);
 				RequestInteractionStart(GetServerTime(), Actor);
-				InteractingActor = Actor;
 			}
 }
 
