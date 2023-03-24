@@ -33,7 +33,9 @@ void URiffleFireCore::FireStopCore(const EGunSelector& Selector, uint16& FireCou
 	if (Selector == EGunSelector::Auto)
 	{
 		FireCount = 0;
-		Character->ReleaseFocus(EFocusKey::MainHand, IsSimulated);
+		if (!Character->ReleaseFocus(IsSimulated ? EFocusContext::Simulated : EFocusContext::Server,
+		                             EFocusSpace::MainHand, EFocusState::Firing))
+			UE_LOG(LogNetSubObject, Error, TEXT("Fail to release focus on FireStopCore!"))
 	}
 }
 
@@ -109,7 +111,9 @@ void URiffleFireCore::FireCallback(uint16& FireCount, FTimerHandle& FireTimer, s
 void URiffleFireCore::UpdateSelector(EGunSelector& DesiredSelector, EGunSelector& Selector, const bool& IsSimulated)
 {
 	Selector = DesiredSelector;
-	Character->ReleaseFocus(EFocusKey::MainHand, IsSimulated);
+	if (!Character->ReleaseFocus(IsSimulated ? EFocusContext::Simulated : EFocusContext::Server,
+	                             EFocusSpace::MainHand, EFocusState::Switching))
+		UE_LOG(LogNetSubObject, Error, TEXT("Fail to release focus on UpdateSelector!"));
 	GEngine->AddOnScreenDebugMessage(-1, 3, IsSimulated ? FColor::Red : FColor::White,
 	                                 TEXT("Selector updated"));
 }

@@ -5,17 +5,18 @@
 #include "CoreMinimal.h"
 #include "Interactable.h"
 #include "GameFramework/Actor.h"
-#include "DebugInteractable.generated.h"
+#include "DebugInstantInteractable.generated.h"
 
 UCLASS()
-class LAKAYA_API ADebugInteractable : public AActor, public IInteractable
+class LAKAYA_API ADebugInstantInteractable : public AActor, public IInteractable
 {
 	GENERATED_BODY()
 
 public:
-	ADebugInteractable();
-	virtual void InteractionStart(const float& Time, APawn* Caller) override;
-	virtual void InteractionStop(const float& Time, APawn* Caller) override;
+	ADebugInstantInteractable();
+	virtual void OnLocalInteractionBegin(APawn* Caller) override;
+	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
+	virtual void OnInteractionStart(APawn* Caller) override;
 
 private:
 	UPROPERTY(EditAnywhere)

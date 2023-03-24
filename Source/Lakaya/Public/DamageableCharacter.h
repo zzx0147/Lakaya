@@ -79,6 +79,9 @@ private:
 	void RespawnNotify();
 
 public:
+	/**
+	 * @brief 캐릭터가 사망했을 때 호출됩니다. 앞의 컨트롤러와 액터는 사망한 캐릭터, 뒤의 컨트롤러와 액터는 죽인 캐릭터를 의미합니다.
+	 */
 	FKillCharacterSignature OnKillCharacterNotify;
 	FRespawnSignature OnRespawnCharacterNotify;
 	FMaximumHealthSignature OnMaximumHealthReplicated;

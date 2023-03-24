@@ -12,7 +12,10 @@ void URiffleFireClient::OnFireStartNotify()
 {
 	Super::OnFireStartNotify();
 	FireStartCore(FireTimer,
-	              [this] { return Character->SetFocus(EFocusKey::MainHand, true); },
+	              [this]
+	              {
+		              return Character->SetFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Firing);
+	              },
 	              [this] { ContinuousFireCore(Selector, FireCount); },
 	              [this]
 	              {
@@ -21,9 +24,19 @@ void URiffleFireClient::OnFireStartNotify()
 		                            {
 			                            FireCallback(FireCount, FireTimer,
 			                                         [this] { return GunComponent->GetRemainBullets() <= 0; },
-			                                         [this] { Character->ReleaseFocus(EFocusKey::MainHand, true); },
+			                                         [this]
+			                                         {
+				                                         Character->ReleaseFocus(
+					                                         EFocusContext::Simulated, EFocusSpace::MainHand,
+					                                         EFocusState::Firing);
+			                                         },
 			                                         [this] { TraceVisualize(); },
-			                                         [this] { Character->ReleaseFocus(EFocusKey::MainHand, true); });
+			                                         [this]
+			                                         {
+				                                         Character->ReleaseFocus(
+					                                         EFocusContext::Simulated, EFocusSpace::MainHand,
+					                                         EFocusState::Firing);
+			                                         });
 		                            });
 	              });
 }
@@ -39,7 +52,11 @@ void URiffleFireClient::OnSwitchSelectorNotify()
 	Super::OnSwitchSelectorNotify();
 	SwitchSelectorCore(DesiredSelector, SelectorTimer,
 	                   [this] { UpdateSelector(DesiredSelector, Selector, true); },
-	                   [this] { return !Character->SetFocus(EFocusKey::MainHand, true); });
+	                   [this]
+	                   {
+		                   return !Character->SetFocus(EFocusContext::Simulated, EFocusSpace::MainHand,
+		                                               EFocusState::Switching);
+	                   });
 }
 
 void URiffleFireClient::OnRep_Character()
