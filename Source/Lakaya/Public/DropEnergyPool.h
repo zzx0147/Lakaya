@@ -30,4 +30,8 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 	TArray<AIndividualDropEnergy*> InactiveDropEnergys;
+
+private:
+	float ElapsedTime = 0.0f;
+	bool InitPool = false;
 };

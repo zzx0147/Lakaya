@@ -1,6 +1,8 @@
 #include "IndividualDropEnergy.h"
+#include "CollectorPlayerState.h"
 #include "IndividualGameMode.h"
-#include "DropEnergyPool.h"
+#include "InteractableCharacter.h"
+#include "Chaos/PBDRigidClustering.h"
 
 AIndividualDropEnergy::AIndividualDropEnergy()
 {
@@ -38,6 +40,36 @@ void AIndividualDropEnergy::Tick(float DeltaTime)
 void AIndividualDropEnergy::InteractionStart(const float& Time, APawn* Caller)
 {
 	UE_LOG(LogTemp, Warning, TEXT("InteractionStart !"));
+	
+	if (Caller && Caller->GetController())
+	{
+		ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
+		if (CollectorPlayerState)
+		{
+			AInteractableCharacter* Character = Cast<AInteractableCharacter>(Caller);
+			if (Character == nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("InteractionStart_Character is null."));
+				return;
+			}
+			// TODO : Interactionable, InteractionableCharacter 완성 시 적용.
+			// Character->OnInteractionSuccess();
+			CollectorPlayerState->GainEnergy(1);
+			UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 Energy"), *CollectorPlayerState->GetPlayerName());
+			UE_LOG(LogTemp, Warning, TEXT("Player Total Energy: %d"), CollectorPlayerState->GetEnergy());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
+			return;
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Invalid Caller or Controller."));
+	}
+
+	Deactivate();
 }
 
 void AIndividualDropEnergy::InteractionStop(const float& Time, APawn* Caller)
@@ -64,4 +96,3 @@ void AIndividualDropEnergy::Deactivate()
 	SetActorEnableCollision(false);
 	IsActive = false;
 }
-

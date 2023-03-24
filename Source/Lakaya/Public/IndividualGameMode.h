@@ -38,6 +38,7 @@ public:
 	void StaticEnergyNumCheck();
 
 	void SpawnDropEnergy(AController* DeadPlayer);
+
 private:
 	ADropEnergyPool* DropEnergyPool;
 	

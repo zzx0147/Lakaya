@@ -2,7 +2,8 @@
 
 ADropEnergyPool::ADropEnergyPool()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	// TODO : 테스트를 위해 true. 나중에 false로 수정해야 함
+	PrimaryActorTick.bCanEverTick = true;
 
 	DropEnergyClass = AIndividualDropEnergy::StaticClass();
 	
@@ -18,6 +19,18 @@ void ADropEnergyPool::BeginPlay()
 void ADropEnergyPool::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// TODO : 테스트를 위한 코드들. 나중에 전부 주석처리 및 삭제해야 함
+	if (!InitPool) return;
+
+	ElapsedTime += DeltaTime;
+
+	if (FMath::IsNearlyEqual(ElapsedTime, 1.0f, 0.1f))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Tick_InactiveDropEnergys Num : %d"), InactiveDropEnergys.Num());
+		
+		ElapsedTime = 0.0f;
+	}
 }
 
 void ADropEnergyPool::Initialize(int32 PoolSize)
@@ -26,10 +39,10 @@ void ADropEnergyPool::Initialize(int32 PoolSize)
 	{
 		AIndividualDropEnergy* DropEnergy = GetWorld()->SpawnActor<AIndividualDropEnergy>(DropEnergyClass);
 		InactiveDropEnergys.Add(DropEnergy);
-		UE_LOG(LogTemp, Warning, TEXT("Add Succeess."));
-		// UE_LOG(LogTemp, Warning, TEXT("머리털 다 빠지겠다"));
-		UE_LOG(LogTemp, Warning, TEXT("InactiveDropEnergys Num : %d"), InactiveDropEnergys.Num());
+		UE_LOG(LogTemp, Warning, TEXT("Initialize_InactiveDropEnergys Num : %d"), InactiveDropEnergys.Num());
 	}
+
+	InitPool = true;
 }
 
 AIndividualDropEnergy* ADropEnergyPool::GetDropEnergy()
@@ -38,7 +51,6 @@ AIndividualDropEnergy* ADropEnergyPool::GetDropEnergy()
 	{
 		AIndividualDropEnergy* DropEnergy = InactiveDropEnergys.Pop();
 		DropEnergy->Activate();
-		UE_LOG(LogTemp, Warning, TEXT("Pop Succeess."));
 		return DropEnergy;
 	}
 	else
@@ -51,9 +63,7 @@ AIndividualDropEnergy* ADropEnergyPool::GetDropEnergy()
 		}
 
 		InactiveDropEnergys.Add(DropEnergy);
-		UE_LOG(LogTemp, Warning, TEXT("DropEnergyPool_Add Succeess"));
 		AIndividualDropEnergy* PopDropEnergy = InactiveDropEnergys.Pop();
-		UE_LOG(LogTemp, Warning, TEXT("DropEnergyPool_Pop Succeess"));
 		PopDropEnergy->Activate();
 		return PopDropEnergy;
 	}
@@ -61,6 +71,12 @@ AIndividualDropEnergy* ADropEnergyPool::GetDropEnergy()
 
 void ADropEnergyPool::ReturnDropEnergy(AIndividualDropEnergy* DropEnergy)
 {
+	if (DropEnergy == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ADropEnergyPool_ReturnDropEnergy is null."));
+		return;
+	}
+	
 	DropEnergy->Deactivate();
 	InactiveDropEnergys.Add(DropEnergy);
 }
