@@ -69,7 +69,7 @@ void UGameLobbyWeaponSelectWidget::NativeTick(const FGeometry& MyGeometry, float
 {
 	Super::NativeTick(MyGeometry,InDeltaTime);
 
-	if (isDragOn)//µå·¡±×°¡ ÄÑÁø µ¿¾È ¸¶¿ì½ºÀÇ À§Ä¡¸¦ °è¼Ó °¡Á®¿Í CurrentMousePositionWhileDrag¸¦ ¾÷µ¥ÀÌÆ®ÇÏ°í DragImage¸¦ ¸¶¿ì½º À§Ä¡·Î °è¼Ó ÀÌµ¿½ÃÅ²´Ù
+	if (isDragOn)//ë“œë˜ê·¸ê°€ ì¼œì§„ ë™ì•ˆ ë§ˆìš°ìŠ¤ì˜ ìœ„ì¹˜ë¥¼ ê³„ì† ê°€ì ¸ì™€ CurrentMousePositionWhileDragë¥¼ ì—…ë°ì´íŠ¸í•˜ê³  DragImageë¥¼ ë§ˆìš°ìŠ¤ ìœ„ì¹˜ë¡œ ê³„ì† ì´ë™ì‹œí‚¨ë‹¤
 	{
 		FGeometry Geo = UWidgetLayoutLibrary::GetViewportWidgetGeometry(this);
 		FVector2d MousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(this);
@@ -104,7 +104,7 @@ void UGameLobbyWeaponSelectWidget::OnPressedDraggableWeapon4Button()
 
 void UGameLobbyWeaponSelectWidget::OnPressDraggableWeaponButton(int WeaponNum)
 {
-	//¹öÆ°ÀÌ ´­¸®¸é isDragOnÀ» ture·Î ¼³Á¤ÇÏ°í DragImageÀÇ ÅØ½ºÃ³¸¦ ¼±ÅÃÇÑ ¹«±âÀÇ ¾ÆÀÌÄÜ ÅØ½ºÃ³·Î º¯°æÇÑ µÚ VisibleÀ» ÄÒ´Ù
+	//ë²„íŠ¼ì´ ëˆŒë¦¬ë©´ isDragOnì„ tureë¡œ ì„¤ì •í•˜ê³  DragImageì˜ í…ìŠ¤ì²˜ë¥¼ ì„ íƒí•œ ë¬´ê¸°ì˜ ì•„ì´ì½˜ í…ìŠ¤ì²˜ë¡œ ë³€ê²½í•œ ë’¤ Visibleì„ ì¼ ë‹¤
 	isDragOn = true;
 	DragImage->SetBrushFromTexture(WeaponIconTextureArray[WeaponNum]);
 	DragImage->SetVisibility(ESlateVisibility::Visible);
@@ -132,13 +132,13 @@ void UGameLobbyWeaponSelectWidget::OnReleasedDraggableWeapon4Button()
 
 void UGameLobbyWeaponSelectWidget::OnReleasedDraggableWeaponButton(int WeaponNum)
 {
-	//¹öÆ°ÀÌ ¸±¸®ÁîµÇ¸é µå·¡±×°¡ ³¡³­´Ù´Â ÀÇ¹ÌÀÌ¹Ç·Î isDragOnÀ» false·Î ¼³Á¤ÇÑ´Ù
+	//ë²„íŠ¼ì´ ë¦´ë¦¬ì¦ˆë˜ë©´ ë“œë˜ê·¸ê°€ ëë‚œë‹¤ëŠ” ì˜ë¯¸ì´ë¯€ë¡œ isDragOnì„ falseë¡œ ì„¤ì •í•œë‹¤
 	isDragOn = false;
 	
-	//GetAbsolutePositionÀº ÁÂ»ó´Ü ±âÁØ, µå·¡±× ÀÌ¹ÌÁöÀÇ Áß¾ÓÀ» ±âÁØÀ¸·Î µå¶øÇÏ±â À§ÇØ AbsoluteSizeÀÇ Àı¹İÀ» ´õÇÔ
+	//GetAbsolutePositionì€ ì¢Œìƒë‹¨ ê¸°ì¤€, ë“œë˜ê·¸ ì´ë¯¸ì§€ì˜ ì¤‘ì•™ì„ ê¸°ì¤€ìœ¼ë¡œ ë“œëí•˜ê¸° ìœ„í•´ AbsoluteSizeì˜ ì ˆë°˜ì„ ë”í•¨
 	int32 TargetImageNum = GetWeaponSlotAtLocation(DragImage->GetCachedGeometry().GetAbsolutePosition() + DragImage->GetCachedGeometry().GetAbsoluteSize()/2);
 
-	//DragImageÀÇ AbsoluteLocationÀ» ±âÁØÀ¸·Î µå¶øµÈ À§Ä¡¸¦
+	//DragImageì˜ AbsoluteLocationì„ ê¸°ì¤€ìœ¼ë¡œ ë“œëëœ ìœ„ì¹˜ë¥¼
 	if (-1 < TargetImageNum && TargetImageNum < WeaponSlotArray.Num())
 	{
 		WeaponSlotArray[TargetImageNum]->SetBrushFromTexture(WeaponIconTextureArray[WeaponNum]);

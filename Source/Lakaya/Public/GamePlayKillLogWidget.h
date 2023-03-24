@@ -6,7 +6,7 @@
 
 class UKillLogElement;
 
-//ÇÃ·¹ÀÌ UIÁß Å³ ·Î±×¸¦ Ç¥±âÇÏ´Â Å¬·¡½ºÀÔ´Ï´Ù
+//í”Œë ˆì´ UIì¤‘ í‚¬ ë¡œê·¸ë¥¼ í‘œê¸°í•˜ëŠ” í´ë˜ìŠ¤ì…ë‹ˆë‹¤
 UCLASS()
 class LAKAYA_API UGamePlayKillLogWidget : public UUserWidget
 {
@@ -19,5 +19,5 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 private:
-	TArray<UKillLogElement*> KillLogElementArray;//Å³ ·Î±×¸¦ Ç¥±âÇÏ´Â ¿¤¸®¸ÕÆ® ¹è¿­
+	TArray<UKillLogElement*> KillLogElementArray;//í‚¬ ë¡œê·¸ë¥¼ í‘œê¸°í•˜ëŠ” ì—˜ë¦¬ë¨¼íŠ¸ ë°°ì—´
 };

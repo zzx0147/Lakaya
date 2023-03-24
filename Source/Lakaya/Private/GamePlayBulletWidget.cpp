@@ -14,7 +14,7 @@ void UGamePlayBulletWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	//ÃÊ±âÈ­ ÈÄ ³ÎÃ¼Å©
+	//ì´ˆê¸°í™” í›„ ë„ì²´í¬
 #pragma region InitAndNullCheck
 
 	RemainBulletsText = Cast<UTextBlock>(GetWidgetFromName(TEXT("RemainBullets_Text")));
@@ -34,14 +34,14 @@ void UGamePlayBulletWidget::NativeTick(const FGeometry& MyGeometry, float InDelt
 
 void UGamePlayBulletWidget::OnChangeRemainBullets(int16 NewRemainBullets)
 {
-	//¾÷µ¥ÀÌÆ®µÈ ÃÑ¾Ë °¹¼ö¸¦ ÀúÀåÇÏ°í ÅØ½ºÆ®·Î Ç¥±â
+	//ì—…ë°ì´íŠ¸ëœ ì´ì•Œ ê°¯ìˆ˜ë¥¼ ì €ì¥í•˜ê³  í…ìŠ¤íŠ¸ë¡œ í‘œê¸°
 	RemainBullets = NewRemainBullets;
 	RemainBulletsText->SetText(FText::AsNumber(NewRemainBullets));
 }
 
 void UGamePlayBulletWidget::OnChangeMagazineCapacity(int16 NewMagazineCapacity)
 {
-	//¾÷µ¥ÀÌÆ®µÈ ÃÖ´ë ÃÑ¾Ë °¹¼ö¸¦ ÀúÀåÇÏ°í ÅØ½ºÆ®·Î Ç¥±â(¾Õ¿¡ /¸¦ ºÙ¿©¼­ Ç¥±â)
+	//ì—…ë°ì´íŠ¸ëœ ìµœëŒ€ ì´ì•Œ ê°¯ìˆ˜ë¥¼ ì €ì¥í•˜ê³  í…ìŠ¤íŠ¸ë¡œ í‘œê¸°(ì•ì— /ë¥¼ ë¶™ì—¬ì„œ í‘œê¸°)
 	MagazineCapacity = NewMagazineCapacity;
 	MagazineCapacityText->SetText(FText::FromString(FString::Printf(TEXT("/%d"), NewMagazineCapacity)));
 }

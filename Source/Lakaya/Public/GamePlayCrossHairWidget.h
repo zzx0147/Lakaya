@@ -6,7 +6,7 @@
 
 class UImage;
 
-//Å©·Î½ºÇì¾î Ç¥±â Å¬·¡½º
+//í¬ë¡œìŠ¤í—¤ì–´ í‘œê¸° í´ë˜ìŠ¤
 UCLASS()
 class LAKAYA_API UGamePlayCrosshairWidget : public UUserWidget
 {
@@ -19,5 +19,5 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 private:
-	UImage* CrosshairImage;//Å©·Î½ºÇì¾î¸¦ Ç¥±âÇÏ´Â À§Á¬
+	UImage* CrosshairImage;//í¬ë¡œìŠ¤í—¤ì–´ë¥¼ í‘œê¸°í•˜ëŠ” ìœ„ì ¯
 };

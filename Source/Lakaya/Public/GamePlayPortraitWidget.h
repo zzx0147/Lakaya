@@ -7,7 +7,7 @@
 class UImage;
 class UTexture2D;
 
-//ÇÃ·¹ÀÌ UI Áß Ä³¸¯ÅÍ ÃÊ»óÈ­¸¦ °ü¸®ÇÏ´Â Å¬·¡½ºÀÔ´Ï´Ù
+//í”Œë ˆì´ UI ì¤‘ ìºë¦­í„° ì´ˆìƒí™”ë¥¼ ê´€ë¦¬í•˜ëŠ” í´ë˜ìŠ¤ì…ë‹ˆë‹¤
 UCLASS()
 class LAKAYA_API UGamePlayPortraitWidget : public UUserWidget
 {
@@ -20,10 +20,10 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 public:
-	//Ä³¸¯ÅÍ ³Ñ¹ö¸¦ ±âÁØÀ¸·Î ÃÊ»óÈ­¸¦ º¯°æ
+	//ìºë¦­í„° ë„˜ë²„ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì´ˆìƒí™”ë¥¼ ë³€ê²½
 	void SetCharacterPortrait(int32 CharacterNum);
 
 private:
-	UImage* CharacterPortraitImage;//Ä³¸¯ÅÍ ÃÊ»óÈ­¸¦ Ç¥±âÇÏ´Â Image À§Á¬
-	TArray<UTexture2D*> CharacterPortraitTextureArray;//Ç¥±âµÉ ÃÊ»óÈ­ ÅØ½ºÃ³ ¹è¿­
+	UImage* CharacterPortraitImage;//ìºë¦­í„° ì´ˆìƒí™”ë¥¼ í‘œê¸°í•˜ëŠ” Image ìœ„ì ¯
+	TArray<UTexture2D*> CharacterPortraitTextureArray;//í‘œê¸°ë  ì´ˆìƒí™” í…ìŠ¤ì²˜ ë°°ì—´
 };

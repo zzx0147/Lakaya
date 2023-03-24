@@ -15,7 +15,7 @@ UGamePlayHealthWidget::UGamePlayHealthWidget(const FObjectInitializer& ObjectIni
 void UGamePlayHealthWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	//ÃÊ±âÈ­ ÈÄ ³ÎÃ¼Å©
+	//ì´ˆê¸°í™” í›„ ë„ì²´í¬
 #pragma region InitAndNullCheck
 
 	HealthProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("HPBar_Prb")));
@@ -28,10 +28,10 @@ void UGamePlayHealthWidget::NativeConstruct()
 
 #pragma endregion
 
-	//Ã¼·Â ¹Ù¸¦ ÃÖ´ëÄ¡·Î ±âº» ¼³Á¤
+	//ì²´ë ¥ ë°”ë¥¼ ìµœëŒ€ì¹˜ë¡œ ê¸°ë³¸ ì„¤ì •
 	HealthProgressBar->SetPercent(1.0f);
 
-	//DamageableCharacter¿¡ µ¨¸®°ÔÀÌÆ®¸¦ µî·Ï
+	//DamageableCharacterì— ë¸ë¦¬ê²Œì´íŠ¸ë¥¼ ë“±ë¡
 	ADamageableCharacter* DamageableCharacter = Cast<ADamageableCharacter>(GetOwningPlayer()->GetPawn());
 
 	if (DamageableCharacter != nullptr)
@@ -48,25 +48,25 @@ void UGamePlayHealthWidget::NativeTick(const FGeometry& MyGeometry, float InDelt
 
 void UGamePlayHealthWidget::OnChangeHealth(AActor* Character, const float& NewHealth)
 {
-	//¾÷µ¥ÀÌÆ®µÈ Ã¼·ÂÀ» ÀúÀåÇÏ°í ¼Ò¼öÁ¡À» ¹ö¸° µÚ ÅØ½ºÆ®·Î Ç¥±â
+	//ì—…ë°ì´íŠ¸ëœ ì²´ë ¥ì„ ì €ì¥í•˜ê³  ì†Œìˆ˜ì ì„ ë²„ë¦° ë’¤ í…ìŠ¤íŠ¸ë¡œ í‘œê¸°
 	Health = NewHealth;
 	HealthText->SetText(FText::AsNumber(floor(Health)));
-	//Ã¼·Â ¹Ù ¾÷µ¥ÀÌÆ®
+	//ì²´ë ¥ ë°” ì—…ë°ì´íŠ¸
 	UpdateHealthProgressBar();
 }
 
 void UGamePlayHealthWidget::OnChangeMaximumHealth(AActor* Character, const float& NewMaximumHealth)
 {
-	//¾÷µ¥ÀÌÆ®µÈ ÃÖ´ë Ã¼·ÂÀ» ÀúÀåÇÏ°í ¼Ò¼öÁ¡À» ¹ö¸°µÚ ÅØ½ºÆ®·Î Ç¥±â(¸Ç ¾Õ¿¡ /¸¦ ºÙ¿©¼­ Ç¥±â)
+	//ì—…ë°ì´íŠ¸ëœ ìµœëŒ€ ì²´ë ¥ì„ ì €ì¥í•˜ê³  ì†Œìˆ˜ì ì„ ë²„ë¦°ë’¤ í…ìŠ¤íŠ¸ë¡œ í‘œê¸°(ë§¨ ì•ì— /ë¥¼ ë¶™ì—¬ì„œ í‘œê¸°)
 	MaximumHealth = NewMaximumHealth;
 	MaximumHealthText->SetText(FText::FromString(FString::Printf(TEXT("/%f"), MaximumHealth)));
-	//Ã¼·Â¹Ù ¾÷µ¥ÀÌÆ®
+	//ì²´ë ¥ë°” ì—…ë°ì´íŠ¸
 	UpdateHealthProgressBar();
 }
 
 void UGamePlayHealthWidget::UpdateHealthProgressBar()
 {
-	//Ã¼·Â ¹Ù ¾÷µ¥ÀÌÆ®
+	//ì²´ë ¥ ë°” ì—…ë°ì´íŠ¸
 	HealthProgressBar->SetPercent(Health / MaximumHealth);
 }
 

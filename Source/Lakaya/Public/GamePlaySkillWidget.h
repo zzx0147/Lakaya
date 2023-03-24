@@ -6,7 +6,7 @@
 
 class UProgressBar;
 
-// ÇÃ·¹ÀÌ UIÁß ½ºÅ³ ÄğÅ¸ÀÓÀ» Ç¥±âÇÏ´Â UI¸¦ °ü¸®ÇÏ´Â Å¬·¡½ºÀÔ´Ï´Ù
+// í”Œë ˆì´ UIì¤‘ ìŠ¤í‚¬ ì¿¨íƒ€ì„ì„ í‘œê¸°í•˜ëŠ” UIë¥¼ ê´€ë¦¬í•˜ëŠ” í´ë˜ìŠ¤ì…ë‹ˆë‹¤
 UCLASS()
 class LAKAYA_API UGamePlaySkillWidget : public UUserWidget
 {
@@ -19,5 +19,5 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 private:
-	TArray<UProgressBar*> SkillProgressBarArray; //½ºÅ³ ÄğÅ¸ÀÓÀ» Ç¥±âÇÏ´Â ProgressBar ¹è¿­ÀÔ´Ï´Ù
+	TArray<UProgressBar*> SkillProgressBarArray; //ìŠ¤í‚¬ ì¿¨íƒ€ì„ì„ í‘œê¸°í•˜ëŠ” ProgressBar ë°°ì—´ì…ë‹ˆë‹¤
 };

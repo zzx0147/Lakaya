@@ -13,7 +13,7 @@ void UGamePlayCrosshairWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	//ÃÊ±âÈ­ ÈÄ ³ÎÃ¼Å©
+	//ì´ˆê¸°í™” í›„ ë„ì²´í¬
 #pragma region InitAndNullCheck
 
 	CrosshairImage = Cast<UImage>(GetWidgetFromName(TEXT("Crosshair_Img")));

@@ -5,7 +5,7 @@
 #include "GameLobbyCharacterSelectWidget.generated.h"
 
 
-//������ ĳ���Ͱ� ����Ǿ��� �� �۵��ϴ� ��������Ʈ, �ش� ĳ������ �̸��� �Ѱ��ݴϴ�
+//선택한 캐릭터가 변경되었을 때 작동하는 델리게이트, 해당 캐릭터의 이름을 넘겨줍니다
 DECLARE_MULTICAST_DELEGATE_OneParam(OnChangeSelectedCharacterDelegate, FName)
 
 UCLASS()

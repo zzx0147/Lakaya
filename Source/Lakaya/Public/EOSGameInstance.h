@@ -12,7 +12,7 @@
  *
  */
 
-//Äü Á¶ÀÎ ¿Ï·á½Ã ÄÝ¹éÇØÁÖ´Â µ¨¸®°ÔÀÌÆ®
+//í€µ ì¡°ì¸ ì™„ë£Œì‹œ ì½œë°±í•´ì£¼ëŠ” ë¸ë¦¬ê²Œì´íŠ¸
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickJoinSessionComplete,bool,IsSucsess);
 
 UCLASS()

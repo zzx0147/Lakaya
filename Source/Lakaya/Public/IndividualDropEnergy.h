@@ -38,7 +38,7 @@ private:
 public:
 	bool IsActive;
 
-	// IInteractableÀ»(¸¦) ÅëÇØ »ó¼ÓµÊ
+	// IInteractableì„(ë¥¼) í†µí•´ ìƒì†ë¨
 	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
 	virtual void OnInteractionStart(APawn* Caller) override;
 };
