@@ -3,7 +3,7 @@
 #include "UI/GamePlayHealthWidget.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
-#include "DamageableCharacter.h"
+#include "Character/DamageableCharacter.h"
 
 
 UGamePlayHealthWidget::UGamePlayHealthWidget(const FObjectInitializer& ObjectInitializer) :Super(ObjectInitializer)
