@@ -4,6 +4,14 @@
 #include "LakayaDefalutPlayGameMode.h"
 #include "IndividualGameMode.generated.h"
 
+UENUM()
+enum class EGameState : uint8
+{
+	Wait UMETA(DisplayName = "Wait"),
+	Progress UMETA(DisplayName = "In Progress"),
+	Finish UMETA(DisplayName = "Exit")
+};
+
 UCLASS()
 class LAKAYA_API AIndividualGameMode : public ALakayaDefalutPlayGameMode
 {
@@ -14,35 +22,44 @@ public:
 
 	virtual void PostInitializeComponents() override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+	virtual void Logout(AController* Exiting) override;
+	
+public:
+	void InitRandomSpawn();
+	void SpawnStaticEnergy();
+	void SpawnDropEnergy();
+	void StaticEnergyNumCheck();
+	void RespawnPlayer(AController* Controller);
+	void OnKilledCharacter(AController* KilledCharacter, AController* EventInstigator);
+private:
+	uint8 NumPlayers;
+	EGameState GameState;
+	
+public:
+	// TODO : 기획에 따라서 변경될 수 있음.
+	const uint8 MaxPlayers = 6;
 
-public:
-	void RandomSpawn();
+	// TODO : 기획에 따라서 변경될 수 있음.
+	TArray<uint8> VectorArray;
+	const uint8 StaticEnergyMaxCount = 3;
+	const uint8 PosMinCount = 1;
+	const uint8 PosMaxCount = 6;
+	const int32 PosX = 1000;
+
+	const uint8 PlayerRespawnTime = 3;
 	
-public:
-	TArray<int32> VectorArray;
-	int32 ItemMaxCount;
-	int32 PosMinCount;
-	int32 PosMaxCount;
-	
-	// TODO
-	FVector pos_01;
-	FVector pos_02;
-	FVector pos_03;
-	FVector pos_04;
-	FVector pos_05;
-	FVector pos_06;
+	const TArray<FVector> StaticEnergyPositions = {
+		FVector(PosX, 200, 0),
+		FVector(PosX, 400, 0),
+		FVector(PosX, 600, 0),
+		FVector(PosX, 800, 0),
+		FVector(PosX, 1000, 0),
+		FVector(PosX, 1200, 0)
+	};
 
 private:
-	// int32 Minutes;
-	// int32 Seconds;
+	FTimerHandle TimerHandle_SpawnItem;
 
-public:
-	// int32 GetMinutes();
-	// int32 GetSeconds();
-	//
-	// int32 SetMinutes(int32 Value);
-	// int32 SetSeconds(int32 Value);
-	//
-	// int32 MinusMinutes(int32 Value);
-	// int32 MinusSeconds(int32 Value);
+	UPROPERTY()
+	TMap<AController*, FTimerHandle> RespawnTimers;
 };

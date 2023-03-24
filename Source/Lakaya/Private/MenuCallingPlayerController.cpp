@@ -3,9 +3,11 @@
 
 #include "MenuCallingPlayerController.h"
 
+#include "CollectorPlayerState.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "GameFramework/PlayerState.h"
 
 void AMenuCallingPlayerController::SetupInputComponent()
 {

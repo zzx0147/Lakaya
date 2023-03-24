@@ -27,6 +27,7 @@ private:
 	void WeaponHandler(const FInputActionValue& Value);
 	void ArmorHandler(const FInputActionValue& Value);
 
+private:
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
 
