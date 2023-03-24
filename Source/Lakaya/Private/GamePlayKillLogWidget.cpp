@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #define DO_CHECK 1
 
 #include "GamePlayKillLogWidget.h"
@@ -13,6 +11,8 @@ void UGamePlayKillLogWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	//초기화 후 널 체크
+#pragma region InitAndNullCheck
 
 	KillLogElementArray =
 	{
@@ -23,10 +23,10 @@ void UGamePlayKillLogWidget::NativeConstruct()
 
 	for (auto temp : KillLogElementArray) { check(temp != nullptr) }
 
+#pragma endregion
 }
 
 void UGamePlayKillLogWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-
 }

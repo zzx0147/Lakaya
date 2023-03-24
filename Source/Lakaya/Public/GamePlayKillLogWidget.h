@@ -1,17 +1,12 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "GamePlayKillLogWidget.generated.h"
 
-/**
- *
- */
-
 class UKillLogElement;
 
+//플레이 UI중 킬 로그를 표기하는 클래스입니다
 UCLASS()
 class LAKAYA_API UGamePlayKillLogWidget : public UUserWidget
 {
@@ -24,5 +19,5 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 private:
-	TArray<UKillLogElement*> KillLogElementArray;
+	TArray<UKillLogElement*> KillLogElementArray;//킬 로그를 표기하는 엘리먼트 배열
 };

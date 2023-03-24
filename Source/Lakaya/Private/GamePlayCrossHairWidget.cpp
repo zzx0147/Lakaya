@@ -12,8 +12,15 @@ UGamePlayCrosshairWidget::UGamePlayCrosshairWidget(const FObjectInitializer& Obj
 void UGamePlayCrosshairWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	//초기화 후 널체크
+#pragma region InitAndNullCheck
+
 	CrosshairImage = Cast<UImage>(GetWidgetFromName(TEXT("Crosshair_Img")));
 	check(CrosshairImage != nullptr);
+
+#pragma endregion
+
 }
 
 void UGamePlayCrosshairWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)

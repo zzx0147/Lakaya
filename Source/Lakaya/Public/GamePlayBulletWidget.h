@@ -1,14 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "GamePlayBulletWidget.generated.h"
-
-/**
- * 
- */
 
 class UTextBlock;
 
@@ -28,9 +22,9 @@ protected:
 	void OnChangeMagazineCapacity(int16 NewMagazineCapacity);
 
 private:
-	UTextBlock* RemainBulletsText;
-	UTextBlock* MagazineCapacityText;
+	UTextBlock* RemainBulletsText;//남은 총알을 표기하는 텍스트
+	UTextBlock* MagazineCapacityText;//최대 총알을 표기하는 텍스트
 
-	int16 RemainBullets;
-	int16 MagazineCapacity;
+	int16 RemainBullets;//남은 총알
+	int16 MagazineCapacity;//최대 총알
 };

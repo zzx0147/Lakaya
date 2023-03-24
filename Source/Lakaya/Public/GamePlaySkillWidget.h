@@ -1,17 +1,12 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "GamePlaySkillWidget.generated.h"
 
-/**
- *
- */
-
 class UProgressBar;
 
+// 플레이 UI중 스킬 쿨타임을 표기하는 UI를 관리하는 클래스입니다
 UCLASS()
 class LAKAYA_API UGamePlaySkillWidget : public UUserWidget
 {
@@ -24,5 +19,5 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 private:
-	TArray<UProgressBar*> SkillProgressBarArray;
+	TArray<UProgressBar*> SkillProgressBarArray; //스킬 쿨타임을 표기하는 ProgressBar 배열입니다
 };
