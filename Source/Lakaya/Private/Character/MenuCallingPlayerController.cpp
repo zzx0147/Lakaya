@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "MenuCallingPlayerController.h"
+#include "Character/MenuCallingPlayerController.h"
 
-#include "CollectorPlayerState.h"
+#include "Character/CollectorPlayerState.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"

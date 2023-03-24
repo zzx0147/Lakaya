@@ -1,7 +1,7 @@
-#include "TestCharacter.h"
+#include "Character/TestCharacter.h"
 
-#include "IndividualGameMode.h"
-#include "IndividualEnergy.h"
+#include "GameMode/IndividualGameMode.h"
+#include "Individual/IndividualEnergy.h"
 // #include "HUDWidget.h"
 // #include "Components/TextBlock.h"
 

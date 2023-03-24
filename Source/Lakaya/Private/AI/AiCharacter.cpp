@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AiCharacter.h"
-#include "ArmedCharacter.h"
-#include "AiCharacterController.h"
+#include "AI/AiCharacter.h"
+#include "Character/ArmedCharacter.h"
+#include "AI/AiCharacterController.h"
 
 
 AAiCharacter::AAiCharacter() // 생성자
