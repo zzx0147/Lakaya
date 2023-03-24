@@ -114,3 +114,11 @@ void AIndividualObject::MakeAvailable()
 {
 	bIsAvailable = true;
 }
+
+void AIndividualObject::OnServerInteractionBegin(const float& Time, APawn* Caller)
+{
+}
+
+void AIndividualObject::OnInteractionStart(APawn* Caller)
+{
+}

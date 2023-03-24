@@ -37,4 +37,8 @@ private:
 
 public:
 	bool IsActive;
+
+	// IInteractable을(를) 통해 상속됨
+	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
+	virtual void OnInteractionStart(APawn* Caller) override;
 };

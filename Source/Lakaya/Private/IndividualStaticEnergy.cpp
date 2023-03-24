@@ -62,7 +62,7 @@ void AIndividualStaticEnergy::InteractionStop(const float& Time, APawn* Caller)
 		return;
 	}
 
-	Character->OnInteractionCanceled();
+	//Character->OnInteractionCanceled();
 }
 
 void AIndividualEnergy::SpawnEnergy()
@@ -82,4 +82,12 @@ void AIndividualEnergy::SpawnEnergy()
 	}
 	
 	Destroy();
+}
+
+void AIndividualEnergy::OnServerInteractionBegin(const float& Time, APawn* Caller)
+{
+}
+
+void AIndividualEnergy::OnInteractionStart(APawn* Caller)
+{
 }
