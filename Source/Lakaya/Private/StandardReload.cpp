@@ -45,7 +45,7 @@ void UStandardReload::OnReloadStart()
 
 	UE_LOG(LogNetSubObject, Log, TEXT("OnReloadStart"));
 
-	if (!Character->SetFocus(EFocusKey::MainHand))
+	if (!Character->SetFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Reloading))
 	{
 		UE_LOG(LogNetSubObject, Log, TEXT("It was not focusable"));
 		return;
@@ -65,7 +65,7 @@ void UStandardReload::OnReloadStartNotify()
 {
 	Super::OnReloadStartNotify();
 
-	if (!Character->SetFocus(EFocusKey::MainHand, true))
+	if (!Character->SetFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Reloading))
 	{
 		UE_LOG(LogNetSubObject, Log, TEXT("Reload ignored in OnReloadStartNotify"));
 		return;
@@ -79,7 +79,8 @@ void UStandardReload::OnReloadStartNotify()
 void UStandardReload::ReloadCallback(const bool& IsSimulated)
 {
 	UE_LOG(LogNetSubObject, Log, TEXT("ReloadCallback"));
-	Character->ReleaseFocus(EFocusKey::MainHand, IsSimulated);
+	Character->ReleaseFocus(IsSimulated ? EFocusContext::Simulated : EFocusContext::Server, EFocusSpace::MainHand,
+	                        EFocusState::Reloading);
 	GEngine->AddOnScreenDebugMessage(-1, 3.f, IsSimulated ? FColor::Red : FColor::White,
 	                                 TEXT("Reload Complete"));
 }

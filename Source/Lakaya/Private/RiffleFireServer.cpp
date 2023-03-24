@@ -24,7 +24,10 @@ void URiffleFireServer::OnFireStart()
 {
 	Super::OnFireStart();
 	FireStartCore(FireTimer,
-	              [this] { return Character->SetFocus(EFocusKey::MainHand); },
+	              [this]
+	              {
+		              return Character->SetFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Firing);
+	              },
 	              [this] { ContinuousFireCore(Selector, FireCount); },
 	              [this]
 	              {
@@ -35,11 +38,18 @@ void URiffleFireServer::OnFireStart()
 			                                         [this] { return !GunComponent->CostBullets(1); },
 			                                         [this]
 			                                         {
-				                                         Character->ReleaseFocus(EFocusKey::MainHand);
+				                                         Character->ReleaseFocus(
+					                                         EFocusContext::Server, EFocusSpace::MainHand,
+					                                         EFocusState::Firing);
 				                                         EmptyMagazine();
 			                                         },
 			                                         [this] { TraceFire(); },
-			                                         [this] { Character->ReleaseFocus(EFocusKey::MainHand); });
+			                                         [this]
+			                                         {
+				                                         Character->ReleaseFocus(
+					                                         EFocusContext::Server, EFocusSpace::MainHand,
+					                                         EFocusState::Firing);
+			                                         });
 		                            });
 	              });
 }
@@ -55,7 +65,11 @@ void URiffleFireServer::OnSwitchSelector()
 	Super::OnSwitchSelector();
 	SwitchSelectorCore(DesiredSelector, SelectorTimer,
 	                   [this] { UpdateSelector(DesiredSelector, Selector, false); },
-	                   [this] { return !Character->SetFocus(EFocusKey::MainHand); });
+	                   [this]
+	                   {
+		                   return !Character->SetFocus(EFocusContext::Server, EFocusSpace::MainHand,
+		                                               EFocusState::Switching);
+	                   });
 }
 
 void URiffleFireServer::SetupData(const FName& RowName)

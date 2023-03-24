@@ -42,5 +42,5 @@ public:
 	uint8 GetItemNumber() { return StaticEnergyNumber; }
 
 	UFUNCTION(Category = "Item")
-	void GetItem();
+	void SpawnEnergy();
 };
