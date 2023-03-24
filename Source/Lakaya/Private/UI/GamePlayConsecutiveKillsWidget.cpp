@@ -1,6 +1,6 @@
 #define DO_CHECK 1
 
-#include "GamePlayConsecutiveKillsWidget.h"
+#include "UI/GamePlayConsecutiveKillsWidget.h"
 #include "Components/ProgressBar.h"
 
 UGamePlayConsecutiveKillsWidget::UGamePlayConsecutiveKillsWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)

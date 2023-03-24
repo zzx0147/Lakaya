@@ -1,6 +1,6 @@
 #define DO_CHECK 1
 
-#include "GamePlaySkillWidget.h"
+#include "UI/GamePlaySkillWidget.h"
 #include "Components/ProgressBar.h"
 
 UGamePlaySkillWidget::UGamePlaySkillWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)

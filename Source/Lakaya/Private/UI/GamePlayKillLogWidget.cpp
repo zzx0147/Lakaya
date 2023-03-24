@@ -1,7 +1,7 @@
 #define DO_CHECK 1
 
-#include "GamePlayKillLogWidget.h"
-#include "KillLogElement.h"
+#include "UI/GamePlayKillLogWidget.h"
+#include "UI/KillLogElement.h"
 
 UGamePlayKillLogWidget::UGamePlayKillLogWidget(const FObjectInitializer& ObjectInitializer) :Super(ObjectInitializer)
 {
