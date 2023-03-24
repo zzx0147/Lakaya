@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "RiffleFireCore.h"
+#include "Weapon/RiffleFireCore.h"
 
-#include "GunComponent.h"
-#include "FocusableCharacter.h"
+#include "Weapon/GunComponent.h"
+#include "Character/FocusableCharacter.h"
 #include "Net/UnrealNetwork.h"
 
 void URiffleFireCore::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "DebugLongInteractable.h"
+#include "Interactable/DebugLongInteractable.h"
 
-#include "InteractableCharacter.h"
+#include "Character/InteractableCharacter.h"
 
 
 // Sets default values

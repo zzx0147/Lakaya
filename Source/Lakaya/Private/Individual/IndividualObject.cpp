@@ -1,6 +1,6 @@
-#include "IndividualObject.h"
-#include "CollectorPlayerState.h"
-#include "DamageableCharacter.h"
+#include "Individual/IndividualObject.h"
+#include "Character/CollectorPlayerState.h"
+#include "Character/DamageableCharacter.h"
 #include "Kismet/GameplayStatics.h"
 
 AIndividualObject::AIndividualObject()

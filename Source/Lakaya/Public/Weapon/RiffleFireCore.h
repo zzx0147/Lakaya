@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FocusableCharacter.h"
+#include "Character/FocusableCharacter.h"
 #include "WeaponFire.h"
 #include "RiffleFireCore.generated.h"
 

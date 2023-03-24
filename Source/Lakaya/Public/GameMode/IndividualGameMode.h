@@ -2,7 +2,7 @@
 
 #include "EngineMinimal.h"
 #include "LakayaDefalutPlayGameMode.h"
-#include "DropEnergyPool.h"
+#include "Individual/DropEnergyPool.h"
 #include "IndividualGameMode.generated.h"
 
 UENUM()

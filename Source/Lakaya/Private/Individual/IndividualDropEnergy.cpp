@@ -1,7 +1,7 @@
-#include "IndividualDropEnergy.h"
-#include "CollectorPlayerState.h"
-#include "IndividualGameMode.h"
-#include "InteractableCharacter.h"
+#include "Individual/IndividualDropEnergy.h"
+#include "Character/CollectorPlayerState.h"
+#include "GameMode/IndividualGameMode.h"
+#include "Character/InteractableCharacter.h"
 #include "Chaos/PBDRigidClustering.h"
 
 AIndividualDropEnergy::AIndividualDropEnergy()

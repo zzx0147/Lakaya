@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EngineMinimal.h"
-#include "Interactable.h"
+#include "Interactable/Interactable.h"
 #include "GameFramework/Actor.h"
 #include "IndividualEnergy.generated.h"
 

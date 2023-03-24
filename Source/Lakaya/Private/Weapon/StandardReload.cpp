@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "StandardReload.h"
+#include "Weapon/StandardReload.h"
 
-#include "FocusableCharacter.h"
-#include "GunComponent.h"
-#include "WeaponReloadData.h"
+#include "Character/FocusableCharacter.h"
+#include "Weapon/GunComponent.h"
+#include "Weapon/WeaponReloadData.h"
 #include "Engine/DataTable.h"
 #include "Net/UnrealNetwork.h"
 

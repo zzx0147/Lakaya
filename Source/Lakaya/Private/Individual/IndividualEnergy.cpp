@@ -1,7 +1,7 @@
-#include "IndividualEnergy.h"
-#include "CollectorPlayerState.h"
-#include "IndividualGameMode.h"
-#include "MenuCallingPlayerController.h"
+#include "Individual/IndividualEnergy.h"
+#include "Character/CollectorPlayerState.h"
+#include "GameMode/IndividualGameMode.h"
+#include "Character/MenuCallingPlayerController.h"
 
 AIndividualEnergy::AIndividualEnergy()
 {

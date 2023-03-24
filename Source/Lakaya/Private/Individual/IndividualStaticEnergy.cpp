@@ -1,7 +1,7 @@
-#include "IndividualStaticEnergy.h"
-#include "CollectorPlayerState.h"
-#include "IndividualGameMode.h"
-#include "InteractableCharacter.h"
+#include "Individual/IndividualStaticEnergy.h"
+#include "Character/CollectorPlayerState.h"
+#include "GameMode/IndividualGameMode.h"
+#include "Character/InteractableCharacter.h"
 
 void AIndividualStaticEnergy::BeginPlay()
 {

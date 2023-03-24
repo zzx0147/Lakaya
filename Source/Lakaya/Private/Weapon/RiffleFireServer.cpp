@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "RiffleFireServer.h"
+#include "Weapon/RiffleFireServer.h"
 
-#include "GunComponent.h"
-#include "WeaponFireData.h"
+#include "Weapon/GunComponent.h"
+#include "Weapon/WeaponFireData.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "Kismet/GameplayStatics.h"

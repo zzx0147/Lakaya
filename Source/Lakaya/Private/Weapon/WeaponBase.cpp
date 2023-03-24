@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "WeaponBase.h"
+#include "Weapon/WeaponBase.h"
 
 void UWeaponBase::ApplyEvent(const uint8& EventNumber, const float& RequestTime)
 {

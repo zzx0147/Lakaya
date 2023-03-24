@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WeaponReload.h"
-#include "FocusableCharacter.h"
+#include "Character/FocusableCharacter.h"
 #include "StandardReload.generated.h"
 
 /**
