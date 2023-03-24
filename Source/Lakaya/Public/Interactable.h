@@ -60,4 +60,8 @@ public:
 	 * @param Caller 인터렉션을 중단한 캐릭터입니다.
 	 */
 	virtual void OnInteractionStop(APawn* Caller) { return; }
+
+
+	virtual void InteractionStart(const float& Time, APawn* Caller);
+	virtual void InteractionStop(const float& Time, APawn* Caller);
 };

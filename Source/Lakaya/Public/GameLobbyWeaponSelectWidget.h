@@ -7,8 +7,8 @@
 class UImage;
 class UButton;
 
-//¼±ÅÃÇÑ ¹«±â°¡ º¯°æµÇ¾úÀ» ¶§ ÀÛµ¿ÇÏ´Â µ¨¸®°ÔÀÌÆ®, º¯°æµÈ ¹«±âÀÇ ½½·Ô ³Ñ¹ö¿Í º¯°æµÈ ¹«±â ÀÌ¸§À» ¹İÈ¯ÇÕ´Ï´Ù
-//param1: ¹«±â ³Ñ¹ö, param2 ¹«±â ÀÌ¸§
+//ì„ íƒí•œ ë¬´ê¸°ê°€ ë³€ê²½ë˜ì—ˆì„ ë•Œ ì‘ë™í•˜ëŠ” ë¸ë¦¬ê²Œì´íŠ¸, ë³€ê²½ëœ ë¬´ê¸°ì˜ ìŠ¬ë¡¯ ë„˜ë²„ì™€ ë³€ê²½ëœ ë¬´ê¸° ì´ë¦„ì„ ë°˜í™˜í•©ë‹ˆë‹¤
+//param1: ë¬´ê¸° ë„˜ë²„, param2 ë¬´ê¸° ì´ë¦„
 DECLARE_MULTICAST_DELEGATE_TwoParams(OnChangeSelectedWeaponDelegate,int32,FName)
 
 UCLASS()
@@ -25,7 +25,7 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 protected:
-	//¹«±â ¹öÆ°ÀÌ ´­·ÈÀ» ¶§ È£ÃâµÇ´Â ÇÔ¼öµé °¢ ÇÔ¼öµéÀº °¢ ¹öÆ°°ú ¿¬°á µÇ¾îÀÖÀ¸¸ç ´©¸¥ ¹öÆ°ÀÇ ³Ñ¹ö¸¦ OnPressDraggableWeaponButton(int)·Î ³Ñ±ä´Ù
+	//ë¬´ê¸° ë²„íŠ¼ì´ ëˆŒë ¸ì„ ë•Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ë“¤ ê° í•¨ìˆ˜ë“¤ì€ ê° ë²„íŠ¼ê³¼ ì—°ê²° ë˜ì–´ìˆìœ¼ë©° ëˆ„ë¥¸ ë²„íŠ¼ì˜ ë„˜ë²„ë¥¼ OnPressDraggableWeaponButton(int)ë¡œ ë„˜ê¸´ë‹¤
 	UFUNCTION()
 	void OnPressedDraggableWeapon1Button();
 	UFUNCTION()
@@ -37,7 +37,7 @@ protected:
 
 	void OnPressDraggableWeaponButton(int WeaponNum);
 
-	//¹«±â ¹öÆ°ÀÌ ¸±¸®Áî µÆÀ» ¶§ È£ÃâµÇ´Â ÇÔ¼öµé °¢ ÇÔ¼öµéÀº °¢ ¹öÆ°°ú ¿¬°á µÇ¾îÀÖÀ¸¸ç ¶¼Áø ¹öÆ°ÀÇ ³Ñ¹ö¸¦ OnReleasedDraggableWeaponButton(int)·Î ³Ñ±ä´Ù
+	//ë¬´ê¸° ë²„íŠ¼ì´ ë¦´ë¦¬ì¦ˆ ëì„ ë•Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ë“¤ ê° í•¨ìˆ˜ë“¤ì€ ê° ë²„íŠ¼ê³¼ ì—°ê²° ë˜ì–´ìˆìœ¼ë©° ë–¼ì§„ ë²„íŠ¼ì˜ ë„˜ë²„ë¥¼ OnReleasedDraggableWeaponButton(int)ë¡œ ë„˜ê¸´ë‹¤
 	UFUNCTION()
 	void OnReleasedDraggableWeapon1Button();
 	UFUNCTION()
@@ -49,23 +49,23 @@ protected:
 
 	void OnReleasedDraggableWeaponButton(int WeaponNum);
 
-	//AbsoluteLocation È­¸éÀÇ Æ¯Á¤ À§Ä¡ÀÇ Àı´ë ÁÂÇ¥
-	//È­¸éÀÇ Æ¯Á¤ À§Ä¡¿¡ Á¸ÀçÇÏ´Â ¹«±â ½½·ÔÀÇ ³Ñ¹ö¸¦ ¹İÈ¯ÇÏ´Â ÇÔ¼ö, ¹«±â ½½·ÔÀÌ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì -1À» ¹İÈ¯, WeaponSlotArray¿¡ ÀúÀåµÈ ¹«±â ½½·Ô¸¸ Å½»öÇÕ´Ï´Ù
+	//AbsoluteLocation í™”ë©´ì˜ íŠ¹ì • ìœ„ì¹˜ì˜ ì ˆëŒ€ ì¢Œí‘œ
+	//í™”ë©´ì˜ íŠ¹ì • ìœ„ì¹˜ì— ì¡´ì¬í•˜ëŠ” ë¬´ê¸° ìŠ¬ë¡¯ì˜ ë„˜ë²„ë¥¼ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜, ë¬´ê¸° ìŠ¬ë¡¯ì´ ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš° -1ì„ ë°˜í™˜, WeaponSlotArrayì— ì €ì¥ëœ ë¬´ê¸° ìŠ¬ë¡¯ë§Œ íƒìƒ‰í•©ë‹ˆë‹¤
 	int32 GetWeaponSlotAtLocation(FVector2D AbsoluteLocation);
 
 public:
-	//¼±ÅÃÇÑ ¹«±â°¡ º¯°æµÇ¾úÀ» ¶§ ÀÛµ¿ÇÏ´Â µ¨¸®°ÔÀÌÆ®
+	//ì„ íƒí•œ ë¬´ê¸°ê°€ ë³€ê²½ë˜ì—ˆì„ ë•Œ ì‘ë™í•˜ëŠ” ë¸ë¦¬ê²Œì´íŠ¸
 	OnChangeSelectedWeaponDelegate OnChangeSelectedWeapon;
 
 protected:
-	bool isDragOn = false;//µå·¡±×ÁßÀÎÁö¸¦ Ç¥±âÇÏ´Â ÇÃ·¡±×, ¹öÆ°ÀÌ ´­¸®¸é true ¸±¸®ÁîµÇ¸é false
-	UImage* DragImage;//µå·¡±×Áß¿¡ ¸¶¿ì½º¸¦ µû¶ó´Ù´Ï´Â ¹İÅõ¸íÇÑ ÀÌ¹ÌÁö
+	bool isDragOn = false;//ë“œë˜ê·¸ì¤‘ì¸ì§€ë¥¼ í‘œê¸°í•˜ëŠ” í”Œë˜ê·¸, ë²„íŠ¼ì´ ëˆŒë¦¬ë©´ true ë¦´ë¦¬ì¦ˆë˜ë©´ false
+	UImage* DragImage;//ë“œë˜ê·¸ì¤‘ì— ë§ˆìš°ìŠ¤ë¥¼ ë”°ë¼ë‹¤ë‹ˆëŠ” ë°˜íˆ¬ëª…í•œ ì´ë¯¸ì§€
 
-	FVector2D CurrentMousePositionWhileDrag;//µå·¡±×Áß ¾÷µ¥ÀÌÆ®µÇ´Â ¸¶¿ì½º Æ÷Áö¼Ç
+	FVector2D CurrentMousePositionWhileDrag;//ë“œë˜ê·¸ì¤‘ ì—…ë°ì´íŠ¸ë˜ëŠ” ë§ˆìš°ìŠ¤ í¬ì§€ì…˜
 
-	TArray<FName> WeaponNameArray;//¹«±â ÀÌ¸§À» ÀúÀåÇÏ´Â ¹è¿­
-	TArray<UImage*> WeaponSlotArray;//¹«±â ½½·Ô ¹è¿­, ÀÌ ¹è¿­¿¡ ÀúÀåµÈ ¹«±â ½½·Ô¸¸ÀÌ GetWeaponSlotAtLocation¿¡¼­ Å½»öµË´Ï´Ù
-	TArray<UButton*> DraggableWeaponButtonArray;//µå·¡±× °¡´ÉÇÑ ¹«±â ¹öÆ° ¹è¿­
-	TArray<UTexture2D*> WeaponIconTextureArray;//¹«±â ¹öÆ°°ú ½½·Ô¿¡ »ç¿ëµÇ´Â ¹öÆ° ¾ÆÀÌÄÜ ÅØ½ºÃ³
-	TArray<int32> SelectedWeaponArray;//¹«±â ½½·Ô¿¡ ÀúÀåµÈ ¼±ÅÃµÈ ¹«±âµéÀ» ÀúÀåÇÏ´Â ¹è¿­
+	TArray<FName> WeaponNameArray;//ë¬´ê¸° ì´ë¦„ì„ ì €ì¥í•˜ëŠ” ë°°ì—´
+	TArray<UImage*> WeaponSlotArray;//ë¬´ê¸° ìŠ¬ë¡¯ ë°°ì—´, ì´ ë°°ì—´ì— ì €ì¥ëœ ë¬´ê¸° ìŠ¬ë¡¯ë§Œì´ GetWeaponSlotAtLocationì—ì„œ íƒìƒ‰ë©ë‹ˆë‹¤
+	TArray<UButton*> DraggableWeaponButtonArray;//ë“œë˜ê·¸ ê°€ëŠ¥í•œ ë¬´ê¸° ë²„íŠ¼ ë°°ì—´
+	TArray<UTexture2D*> WeaponIconTextureArray;//ë¬´ê¸° ë²„íŠ¼ê³¼ ìŠ¬ë¡¯ì— ì‚¬ìš©ë˜ëŠ” ë²„íŠ¼ ì•„ì´ì½˜ í…ìŠ¤ì²˜
+	TArray<int32> SelectedWeaponArray;//ë¬´ê¸° ìŠ¬ë¡¯ì— ì €ì¥ëœ ì„ íƒëœ ë¬´ê¸°ë“¤ì„ ì €ì¥í•˜ëŠ” ë°°ì—´
 };

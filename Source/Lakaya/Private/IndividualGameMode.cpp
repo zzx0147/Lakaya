@@ -11,7 +11,7 @@
 #include "IndividualDropEnergy.h"
 #include "DropEnergyPool.h"
 #include "EngineUtils.h"
-#include "Windows/WindowsApplication.h"
+//#include "Windows/WindowsApplication.h"
 
 AIndividualGameMode::AIndividualGameMode()
 {

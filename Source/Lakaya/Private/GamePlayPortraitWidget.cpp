@@ -11,7 +11,7 @@ void UGamePlayPortraitWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	//ÃÊ±âÈ­ ÈÄ ³Î Ã¼Å©
+	//ì´ˆê¸°í™” í›„ ë„ ì²´í¬
 #pragma region InitAndNullCheck
 
 	CharacterPortraitImage = Cast<UImage>(GetWidgetFromName(TEXT("CharacterPortrait_Img")));
@@ -28,7 +28,7 @@ void UGamePlayPortraitWidget::NativeConstruct()
 
 #pragma endregion
 
-	//±âº» ÃÊ»óÈ­¸¦ 0¹ø(½Ã¹Î)À¸·Î ¼³Á¤
+	//ê¸°ë³¸ ì´ˆìƒí™”ë¥¼ 0ë²ˆ(ì‹œë¯¼)ìœ¼ë¡œ ì„¤ì •
 	SetCharacterPortrait(0);
 }
 
@@ -39,9 +39,9 @@ void UGamePlayPortraitWidget::NativeTick(const FGeometry& MyGeometry, float InDe
 
 void UGamePlayPortraitWidget::SetCharacterPortrait(int32 CharacterNum)
 {
-	//Ä³¸¯ÅÍ ³Ñ¹ö¸¦ ¹ş¾î³ª´Â °æ¿ì Á¾·á
+	//ìºë¦­í„° ë„˜ë²„ë¥¼ ë²—ì–´ë‚˜ëŠ” ê²½ìš° ì¢…ë£Œ
 	if (CharacterNum < 0 || CharacterPortraitTextureArray.Num() <= CharacterNum) return;
 
-	//Ä³¸¯ÅÍ ³Ñ¹ö¸¦ ±âÁØÀ¸·Î ¹è¿­¿¡¼­ ÅØ½ºÃ³¸¦ °¡Á®¿Í ÀÌ¹ÌÁö¸¦ º¯°æ
+	//ìºë¦­í„° ë„˜ë²„ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ë°°ì—´ì—ì„œ í…ìŠ¤ì²˜ë¥¼ ê°€ì ¸ì™€ ì´ë¯¸ì§€ë¥¼ ë³€ê²½
 	CharacterPortraitImage->SetBrushFromTexture(CharacterPortraitTextureArray[CharacterNum]);
 }

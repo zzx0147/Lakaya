@@ -18,11 +18,11 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 protected:
-	//¿¬¼Ó Ã³Ä¡°¡ º¯°æµÉ ¶§ È£ÃâµÇ´Â ÇÔ¼ö(¿¬°áÀº ¾ÈµÇ¾îÀÖÀ½)
+	//ì—°ì† ì²˜ì¹˜ê°€ ë³€ê²½ë  ë•Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜(ì—°ê²°ì€ ì•ˆë˜ì–´ìˆìŒ)
 	void OnChangeConsecutiveKills(int NewConsecutiveKills);
 
 private:
-	UProgressBar* ConsecutiveKillsProgressBar;//¿¬¼ÓÃ³Ä¡¸¦ Ç¥±âÇÏ´Â ÇÁ·Î±×·¡½º ¹Ù
-	int16 ConsecutiveKills;//¿¬¼ÓÃ³Ä¡ È½¼ö
-	int16 MaximumConsecutiveKills;//¿¬¼ÓÃ³Ä¡ ÃÖ´ë È½¼ö 
+	UProgressBar* ConsecutiveKillsProgressBar;//ì—°ì†ì²˜ì¹˜ë¥¼ í‘œê¸°í•˜ëŠ” í”„ë¡œê·¸ë˜ìŠ¤ ë°”
+	int16 ConsecutiveKills;//ì—°ì†ì²˜ì¹˜ íšŸìˆ˜
+	int16 MaximumConsecutiveKills;//ì—°ì†ì²˜ì¹˜ ìµœëŒ€ íšŸìˆ˜ 
 };

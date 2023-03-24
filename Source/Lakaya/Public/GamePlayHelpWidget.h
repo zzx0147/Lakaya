@@ -6,7 +6,7 @@
 
 class UCanvasPanel;
 
-//ÇÃ·¹ÀÌ UIÁß µµ¿ò¸»À» °ü¸®ÇÏ´Â Å¬·¡½ºÀÔ´Ï´Ù
+//í”Œë ˆì´ UIì¤‘ ë„ì›€ë§ì„ ê´€ë¦¬í•˜ëŠ” í´ë˜ìŠ¤ì…ë‹ˆë‹¤
 UCLASS()
 class LAKAYA_API UGamePlayHelpWidget : public UUserWidget
 {
@@ -19,5 +19,5 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 private:
-	UCanvasPanel* HelpBodyPanel;//µµ¿ò¸»ÀÌ Ç¥±âµÇ´Â ÆĞ³ÎÀÔ´Ï´Ù
+	UCanvasPanel* HelpBodyPanel;//ë„ì›€ë§ì´ í‘œê¸°ë˜ëŠ” íŒ¨ë„ì…ë‹ˆë‹¤
 };

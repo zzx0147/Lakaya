@@ -12,7 +12,7 @@ UGamePlayConsecutiveKillsWidget::UGamePlayConsecutiveKillsWidget(const FObjectIn
 void UGamePlayConsecutiveKillsWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	//ÃÊ±âÈ­ ÈÄ ³ÎÃ¼Å©
+	//ì´ˆê¸°í™” í›„ ë„ì²´í¬
 #pragma region InitAndNullCheck
 
 	ConsecutiveKillsProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("ConsecutiveKills_Prb")));
@@ -28,7 +28,7 @@ void UGamePlayConsecutiveKillsWidget::NativeTick(const FGeometry& MyGeometry, fl
 
 void UGamePlayConsecutiveKillsWidget::OnChangeConsecutiveKills(int NewConsecutiveKills)
 {
-	//»õ·Î¿î ¿¬¼ÓÃ³Ä¡ °ªÀ» ÀúÀåÈÄ ÇÁ·Î±×·¡½º¹Ù ¾÷µ¥ÀÌÆ®
+	//ìƒˆë¡œìš´ ì—°ì†ì²˜ì¹˜ ê°’ì„ ì €ì¥í›„ í”„ë¡œê·¸ë˜ìŠ¤ë°” ì—…ë°ì´íŠ¸
 	ConsecutiveKills = NewConsecutiveKills;
 	ConsecutiveKillsProgressBar->SetPercent((float)ConsecutiveKills / MaximumConsecutiveKills);
 }

@@ -7,7 +7,7 @@
 class UTextBlock;
 class UProgressBar;
 
-//Ã¼·ÂÀ» Ç¥±âÇÏ´Â Å¬·¡½º
+//ì²´ë ¥ì„ í‘œê¸°í•˜ëŠ” í´ë˜ìŠ¤
 UCLASS()
 class LAKAYA_API UGamePlayHealthWidget : public UUserWidget
 {
@@ -20,18 +20,18 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 protected:
-	//DamageableCharacterÀÇ Ã¼·Â µ¨¸®°ÔÀÌÆ®¿¡ µî·ÏµÇ´Â ÇÔ¼ö, Ã¼·ÂÀÌ º¯°æµÉ ¶§ È£Ãâ
+	//DamageableCharacterì˜ ì²´ë ¥ ë¸ë¦¬ê²Œì´íŠ¸ì— ë“±ë¡ë˜ëŠ” í•¨ìˆ˜, ì²´ë ¥ì´ ë³€ê²½ë  ë•Œ í˜¸ì¶œ
 	void OnChangeHealth(AActor* Character, const float& NewHealth);
-	//DamageableCharacterÀÇ ÃÖ´ë Ã¼·Â µ¨¸®°ÔÀÌÆ®¿¡ µî·ÏµÇ´Â ÇÔ¼ö, ÃÖ´ë Ã¼·ÂÀÌ º¯°æµÉ ¶§ È£Ãâ
+	//DamageableCharacterì˜ ìµœëŒ€ ì²´ë ¥ ë¸ë¦¬ê²Œì´íŠ¸ì— ë“±ë¡ë˜ëŠ” í•¨ìˆ˜, ìµœëŒ€ ì²´ë ¥ì´ ë³€ê²½ë  ë•Œ í˜¸ì¶œ
 	void OnChangeMaximumHealth(AActor* Character, const float& NewMaximumHealth);
-	//Ã¼·Â ÇÁ·Î±×·¡½º ¹Ù¸¦ ¾÷µ¥ÀÌÆ®ÇÏ´Â ÇÔ¼ö
+	//ì²´ë ¥ í”„ë¡œê·¸ë˜ìŠ¤ ë°”ë¥¼ ì—…ë°ì´íŠ¸í•˜ëŠ” í•¨ìˆ˜
 	void UpdateHealthProgressBar();
 
 private:
-	UProgressBar* HealthProgressBar;//Ã¼·ÂÀ» Ç¥±âÇÏ´Â ÇÁ·Î±×·¡½º ¹Ù
-	UTextBlock* HealthText;//Ã¼·ÂÀ» Ç¥±âÇÏ´Â ÅØ½ºÆ®
-	UTextBlock* MaximumHealthText;//ÃÖ´ë Ã¼·ÂÀ» Ç¥±âÇÏ´Â ÅØ½ºÆ®
+	UProgressBar* HealthProgressBar;//ì²´ë ¥ì„ í‘œê¸°í•˜ëŠ” í”„ë¡œê·¸ë˜ìŠ¤ ë°”
+	UTextBlock* HealthText;//ì²´ë ¥ì„ í‘œê¸°í•˜ëŠ” í…ìŠ¤íŠ¸
+	UTextBlock* MaximumHealthText;//ìµœëŒ€ ì²´ë ¥ì„ í‘œê¸°í•˜ëŠ” í…ìŠ¤íŠ¸
 
-	float MaximumHealth;//ÃÖ´ë Ã¼·Â °ª
-	float Health;//Ã¼·Â °ª
+	float MaximumHealth;//ìµœëŒ€ ì²´ë ¥ ê°’
+	float Health;//ì²´ë ¥ ê°’
 };

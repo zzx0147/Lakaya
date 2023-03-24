@@ -22,9 +22,9 @@ protected:
 	void OnChangeMagazineCapacity(int16 NewMagazineCapacity);
 
 private:
-	UTextBlock* RemainBulletsText;//³²Àº ÃÑ¾ËÀ» Ç¥±âÇÏ´Â ÅØ½ºÆ®
-	UTextBlock* MagazineCapacityText;//ÃÖ´ë ÃÑ¾ËÀ» Ç¥±âÇÏ´Â ÅØ½ºÆ®
+	UTextBlock* RemainBulletsText;//ë‚¨ì€ ì´ì•Œì„ í‘œê¸°í•˜ëŠ” í…ìŠ¤íŠ¸
+	UTextBlock* MagazineCapacityText;//ìµœëŒ€ ì´ì•Œì„ í‘œê¸°í•˜ëŠ” í…ìŠ¤íŠ¸
 
-	int16 RemainBullets;//³²Àº ÃÑ¾Ë
-	int16 MagazineCapacity;//ÃÖ´ë ÃÑ¾Ë
+	int16 RemainBullets;//ë‚¨ì€ ì´ì•Œ
+	int16 MagazineCapacity;//ìµœëŒ€ ì´ì•Œ
 };

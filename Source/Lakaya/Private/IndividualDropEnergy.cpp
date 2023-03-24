@@ -96,3 +96,11 @@ void AIndividualDropEnergy::Deactivate()
 	SetActorEnableCollision(false);
 	IsActive = false;
 }
+
+void AIndividualDropEnergy::OnServerInteractionBegin(const float& Time, APawn* Caller)
+{
+}
+
+void AIndividualDropEnergy::OnInteractionStart(APawn* Caller)
+{
+}

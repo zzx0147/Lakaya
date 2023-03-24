@@ -11,7 +11,7 @@ void UGamePlayKillLogWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	//ÃÊ±âÈ­ ÈÄ ³Î Ã¼Å©
+	//ì´ˆê¸°í™” í›„ ë„ ì²´í¬
 #pragma region InitAndNullCheck
 
 	KillLogElementArray =
