@@ -18,6 +18,15 @@ UStandardReload::UStandardReload()
 	if (TableFinder.Succeeded()) ReloadTable = TableFinder.Object;
 }
 
+void UStandardReload::SetIsReload_Implementation(bool bIsReload)
+{
+	UCharAnimInstance* AnimInstance = Cast<UCharAnimInstance>(Character->GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetIsReload(bIsReload);
+	}
+}
+
 void UStandardReload::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -46,11 +55,7 @@ void UStandardReload::OnReloadStart()
 
 	UE_LOG(LogNetSubObject, Log, TEXT("OnReloadStart"));
 
-	UCharAnimInstance* AnimInstance = Cast<UCharAnimInstance>(Character->GetMesh()->GetAnimInstance());
-	if (AnimInstance)
-	{
-		AnimInstance->SetIsReload(true);
-	}
+	SetIsReload(true);
 
 	if (!Character->SetFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Reloading))
 	{
@@ -90,9 +95,5 @@ void UStandardReload::ReloadCallback(const bool& IsSimulated)
 	                        EFocusState::Reloading);
 	GEngine->AddOnScreenDebugMessage(-1, 3.f, IsSimulated ? FColor::Red : FColor::White,
 	                                 TEXT("Reload Complete"));
-	UCharAnimInstance* AnimInstance = Cast<UCharAnimInstance>(Character->GetMesh()->GetAnimInstance());
-	if (AnimInstance)
-	{
-		AnimInstance->SetIsReload(false);
-	}
+	SetIsReload(false);
 }

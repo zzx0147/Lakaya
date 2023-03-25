@@ -26,10 +26,4 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Crouch")
 	void SetIsCrouching(bool CrouchValue);
 	
-	// UFUNCTION()
-	// void OnRep_Reload();
-
-private:
-	// UPROPERTY(ReplicatedUsing = OnRep_Reload, Transient)
-	// uint8 Reloads;
 };
