@@ -189,9 +189,7 @@ bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, 
 
 void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor)
 {
-	if (IsFocussedBy(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
-		Cast<IInteractable>(Actor)->OnServerInteractionStopBegin(GetServerTime(), this);
-	else UE_LOG(LogActor, Error, TEXT("InteractionStop was requested but It was not focussed by Interacting!"));
+	Cast<IInteractable>(Actor)->OnServerInteractionStopBegin(GetServerTime(), this);
 }
 
 void AInteractableCharacter::InitiateLockstepEvent(const float& Time, std::function<void()> Callback)
