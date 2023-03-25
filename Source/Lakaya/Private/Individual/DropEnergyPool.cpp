@@ -21,16 +21,16 @@ void ADropEnergyPool::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// TODO : 테스트를 위한 코드들. 나중에 전부 주석처리 및 삭제해야 함
-	if (!InitPool) return;
-
-	ElapsedTime += DeltaTime;
-
-	if (FMath::IsNearlyEqual(ElapsedTime, 1.0f, 0.1f))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Tick_InactiveDropEnergys Num : %d"), InactiveDropEnergys.Num());
-		
-		ElapsedTime = 0.0f;
-	}
+	// if (!InitPool) return;
+	//
+	// ElapsedTime += DeltaTime;
+	//
+	// if (FMath::IsNearlyEqual(ElapsedTime, 1.0f, 0.1f))
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("Tick_InactiveDropEnergys Num : %d"), InactiveDropEnergys.Num());
+	// 	
+	// 	ElapsedTime = 0.0f;
+	// }
 }
 
 void ADropEnergyPool::Initialize(int32 PoolSize)

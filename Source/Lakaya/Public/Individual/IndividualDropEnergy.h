@@ -20,25 +20,23 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	virtual void InteractionStart(const float& Time, APawn* Caller) override;
-	virtual void InteractionStop(const float& Time, APawn* Caller) override;
+	virtual void OnLocalInteractionBegin(APawn* Caller) override;
+	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
+	virtual void OnInteractionStart(APawn* Caller) override;
 
-public:
-	void SetDropEnergy(AController* DeadPlayer);
-	void Activate();
-	void Deactivate();
-	
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USphereComponent* Trigger;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* Sphere;
+	
+public:
+	void SetDropEnergy(AController* DeadPlayer);
+
+	void Activate();
+	void Deactivate();
 
 public:
 	bool IsActive;
-
-	// IInteractable을(를) 통해 상속됨
-	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
-	virtual void OnInteractionStart(APawn* Caller) override;
 };

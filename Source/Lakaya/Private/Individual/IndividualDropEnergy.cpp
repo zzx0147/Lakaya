@@ -37,44 +37,47 @@ void AIndividualDropEnergy::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AIndividualDropEnergy::InteractionStart(const float& Time, APawn* Caller)
+void AIndividualDropEnergy::OnLocalInteractionBegin(APawn* Caller)
 {
-	UE_LOG(LogTemp, Warning, TEXT("InteractionStart !"));
-	
-	if (Caller && Caller->GetController())
-	{
-		ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
-		if (CollectorPlayerState)
-		{
-			AInteractableCharacter* Character = Cast<AInteractableCharacter>(Caller);
-			if (Character == nullptr)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("InteractionStart_Character is null."));
-				return;
-			}
-			// TODO : Interactionable, InteractionableCharacter 완성 시 적용.
-			// Character->OnInteractionSuccess();
-			CollectorPlayerState->GainEnergy(1);
-			UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 Energy"), *CollectorPlayerState->GetPlayerName());
-			UE_LOG(LogTemp, Warning, TEXT("Player Total Energy: %d"), CollectorPlayerState->GetEnergy());
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
-			return;
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Invalid Caller or Controller."));
-	}
-
-	Deactivate();
 }
 
-void AIndividualDropEnergy::InteractionStop(const float& Time, APawn* Caller)
+void AIndividualDropEnergy::OnServerInteractionBegin(const float& Time, APawn* Caller)
 {
-	UE_LOG(LogTemp, Warning, TEXT("InteractionStop !"));
+}
+
+void AIndividualDropEnergy::OnInteractionStart(APawn* Caller)
+{
+	// UE_LOG(LogTemp, Warning, TEXT("InteractionStart !"));
+	//
+	// if (Caller && Caller->GetController())
+	// {
+	// 	ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
+	// 	if (CollectorPlayerState)
+	// 	{
+	// 		AInteractableCharacter* Character = Cast<AInteractableCharacter>(Caller);
+	// 		if (Character == nullptr)
+	// 		{
+	// 			UE_LOG(LogTemp, Warning, TEXT("InteractionStart_Character is null."));
+	// 			return;
+	// 		}
+	// 		// TODO : Interactionable, InteractionableCharacter 완성 시 적용.
+	// 		// Character->OnInteractionSuccess();
+	// 		CollectorPlayerState->GainEnergy(1);
+	// 		UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 Energy"), *CollectorPlayerState->GetPlayerName());
+	// 		UE_LOG(LogTemp, Warning, TEXT("Player Total Energy: %d"), CollectorPlayerState->GetEnergy());
+	// 	}
+	// 	else
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
+	// 		return;
+	// 	}
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("Invalid Caller or Controller."));
+	// }
+	//
+	// Deactivate();
 }
 
 void AIndividualDropEnergy::SetDropEnergy(AController* DeadPlayer)
@@ -95,12 +98,4 @@ void AIndividualDropEnergy::Deactivate()
 	SetActorHiddenInGame(true);
 	SetActorEnableCollision(false);
 	IsActive = false;
-}
-
-void AIndividualDropEnergy::OnServerInteractionBegin(const float& Time, APawn* Caller)
-{
-}
-
-void AIndividualDropEnergy::OnInteractionStart(APawn* Caller)
-{
 }

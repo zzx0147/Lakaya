@@ -1,6 +1,5 @@
 #include "GameMode/IndividualGameMode.h"
 #include "Character/CollectorPlayerState.h"
-#include "Individual/IndividualEnergy.h"
 #include "Character/MenuCallingPlayerController.h"
 #include "Individual/IndividualStaticEnergy.h"
 #include "Character/InteractableCharacter.h"
@@ -11,10 +10,24 @@
 
 AIndividualGameMode::AIndividualGameMode()
 {
-	DefaultPawnClass = AInteractableCharacter::StaticClass();
+	static ConstructorHelpers::FObjectFinder<UBlueprint> PlayerPawnObject(TEXT("/Game/Characters/LakayaCharacter/Dummy/BP_PlayerDummy"));
+	if (!PlayerPawnObject.Succeeded())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to find player pawn blueprint."));
+		return;
+	}
+
+	UClass* PlayerPawnClass = PlayerPawnObject.Object->GeneratedClass;
+	if (!PlayerPawnClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to get generated class from player pawn blueprint."));
+		return;
+	}
+
+	DefaultPawnClass = PlayerPawnClass;
 	PlayerControllerClass = AMenuCallingPlayerController::StaticClass();
 	PlayerStateClass = ACollectorPlayerState::StaticClass();
-
+	
 	NumPlayers = 0;
 }
 
@@ -23,15 +36,12 @@ void AIndividualGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	DropEnergyPool = GetWorld()->SpawnActor<ADropEnergyPool>(ADropEnergyPool::StaticClass());
-	
 	DropEnergyPool->Initialize(30);
 }
 
 void AIndividualGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
-	SpawnStaticEnergyAtRandomPosition();
 }
 
 void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
@@ -93,58 +103,6 @@ void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
 	RegisteredPlayers.Add(PlayerController);
 }
 
-void AIndividualGameMode::SpawnStaticEnergyAtRandomPosition()
-{
-	int32 PosNumber = FMath::RandRange(PosMinCount, PosMaxCount);
-
-	bool bContain = VectorArray.Contains(PosNumber);
-	if (!bContain)
-	{
-		VectorArray.Add(PosNumber);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Duplication."));
-		SpawnStaticEnergyAtRandomPosition();
-		return;
-	}
-
-	AActor* item = GetWorld()->SpawnActor(AIndividualStaticEnergy::StaticClass());
-	AIndividualStaticEnergy* DividualItem = Cast<AIndividualStaticEnergy>(item);
-	DividualItem->StaticEnergyNumber = PosNumber;
-
-	// TODO : 상호작용 오브젝트 나오면 위치 배치 후 오브젝트 위치 값을 불러오기.
-	switch (PosNumber)
-	{
-	case 1:
-		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[0]));
-		break;
-	case 2:
-		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[1]));
-		break;
-	case 3:
-		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[2]));
-		break;
-	case 4:
-		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[3]));
-		break;
-	case 5:
-		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[4]));
-		break;
-	case 6:
-		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[5]));
-		break;
-	}
-
-	StaticEnergyNumCheck();
-}
-
-void AIndividualGameMode::SpawnStaticEnergy()
-{
-	// TODO : 기획서에 맞게 시간 수정.
-	GetWorldTimerManager().SetTimer(TimerHandle_SpawnStaticEnergy, this, &AIndividualGameMode::SpawnStaticEnergyAtRandomPosition, 1.0f, false);
-}
-
 void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
 {
 	// 사망한 플레이어에게서 드랍된 것처럼 보이게끔 구현.
@@ -197,14 +155,6 @@ void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
 	// 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 	// 	DropEnergyPool->ReturnDropEnergy(DropEnergy);
 	// }, 3.0f, false);
-}
-
-void AIndividualGameMode::StaticEnergyNumCheck()
-{
-	int32 SpawnedStaticEnergyNum = VectorArray.Num();
-
-	if (SpawnedStaticEnergyNum < StaticEnergyMaxCount)
-		GetWorldTimerManager().SetTimer(TimerHandle_SpawnStaticEnergy, this, &AIndividualGameMode::SpawnStaticEnergyAtRandomPosition, 1.0f, false);
 }
 
 void AIndividualGameMode::RespawnPlayer(AController* KilledController)
