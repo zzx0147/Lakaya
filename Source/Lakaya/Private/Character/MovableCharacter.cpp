@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "Character/CharAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AMovableCharacter::AMovableCharacter()
@@ -119,11 +120,21 @@ void AMovableCharacter::Look(const FInputActionValue& Value)
 void AMovableCharacter::Crouching(const FInputActionValue& Value)
 {
 	Crouch();
+	UCharAnimInstance* AnimInstance = Cast<UCharAnimInstance>(Controller->GetCharacter()->GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetIsCrouching(true);
+	}
 }
 
 void AMovableCharacter::UnCrouching(const FInputActionValue& Value)
 {
 	UnCrouch();
+	UCharAnimInstance* AnimInstance = Cast<UCharAnimInstance>(Controller->GetCharacter()->GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetIsCrouching(false);
+	}
 }
 
 void AMovableCharacter::Run(const FInputActionValue& Value)

@@ -3,3 +3,12 @@
 
 #include "Character/CharAnimInstance.h"
 
+void UCharAnimInstance::SetIsReload(bool ReloadValue)
+{
+	bIsReload = ReloadValue;
+}
+
+void UCharAnimInstance::SetIsCrouching(bool CrouchValue)
+{
+	bIsCrouch = CrouchValue;
+}

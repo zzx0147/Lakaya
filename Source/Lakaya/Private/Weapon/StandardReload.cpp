@@ -3,6 +3,7 @@
 
 #include "Weapon/StandardReload.h"
 
+#include "Character/CharAnimInstance.h"
 #include "Character/FocusableCharacter.h"
 #include "Weapon/GunComponent.h"
 #include "Weapon/WeaponReloadData.h"
@@ -45,6 +46,12 @@ void UStandardReload::OnReloadStart()
 
 	UE_LOG(LogNetSubObject, Log, TEXT("OnReloadStart"));
 
+	UCharAnimInstance* AnimInstance = Cast<UCharAnimInstance>(Character->GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetIsReload(true);
+	}
+
 	if (!Character->SetFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Reloading))
 	{
 		UE_LOG(LogNetSubObject, Log, TEXT("It was not focusable"));
@@ -83,4 +90,9 @@ void UStandardReload::ReloadCallback(const bool& IsSimulated)
 	                        EFocusState::Reloading);
 	GEngine->AddOnScreenDebugMessage(-1, 3.f, IsSimulated ? FColor::Red : FColor::White,
 	                                 TEXT("Reload Complete"));
+	UCharAnimInstance* AnimInstance = Cast<UCharAnimInstance>(Character->GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetIsReload(false);
+	}
 }
