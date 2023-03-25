@@ -164,6 +164,17 @@ void AInteractableCharacter::InteractionStartNotify_Implementation(const float& 
 
 			GetWorldTimerManager().SetTimer(InteractionTimer, [this]
 			{
+				if (HasAuthority())
+				{
+					if (ReleaseFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
+						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,
+						                                 TEXT("Interaction Completed in Server!"));
+					else
+						UE_LOG(LogActor, Error,
+					       TEXT("Fail to release focus on InteractionStartNotify with authority! FocusState was %d"),
+					       GetFocusState(EFocusContext::Server,EFocusSpace::MainHand));
+				}
+
 				if (ReleaseFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
 					GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Green,
 					                                 TEXT("Interaction Completed in Simulated!"));
