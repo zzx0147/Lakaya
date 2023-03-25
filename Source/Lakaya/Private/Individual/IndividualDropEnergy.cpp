@@ -39,16 +39,21 @@ void AIndividualDropEnergy::Tick(float DeltaTime)
 
 void AIndividualDropEnergy::OnLocalInteractionBegin(APawn* Caller)
 {
+	// if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	// 	CastedCaller->NoticeInstantInteractionLocal();
+	// else UE_LOG(LogActor, Error, TEXT("OnLocalInteractionBegin::Caller was not AInteractableCharacter!"));
 }
 
 void AIndividualDropEnergy::OnServerInteractionBegin(const float& Time, APawn* Caller)
 {
+	// if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	// 	CastedCaller->InitiateInteractionStart(Time, this);
 }
 
 void AIndividualDropEnergy::OnInteractionStart(APawn* Caller)
 {
-	// UE_LOG(LogTemp, Warning, TEXT("InteractionStart !"));
-	//
+	// UE_LOG(LogTemp, Warning, TEXT("DropEnergy Interaction."));
+	
 	// if (Caller && Caller->GetController())
 	// {
 	// 	ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
@@ -60,8 +65,6 @@ void AIndividualDropEnergy::OnInteractionStart(APawn* Caller)
 	// 			UE_LOG(LogTemp, Warning, TEXT("InteractionStart_Character is null."));
 	// 			return;
 	// 		}
-	// 		// TODO : Interactionable, InteractionableCharacter 완성 시 적용.
-	// 		// Character->OnInteractionSuccess();
 	// 		CollectorPlayerState->GainEnergy(1);
 	// 		UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 Energy"), *CollectorPlayerState->GetPlayerName());
 	// 		UE_LOG(LogTemp, Warning, TEXT("Player Total Energy: %d"), CollectorPlayerState->GetEnergy());

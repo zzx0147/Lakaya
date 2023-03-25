@@ -2,7 +2,9 @@
 
 #include "EngineMinimal.h"
 #include "LakayaDefalutPlayGameMode.h"
+#include "tiffio.h"
 #include "Individual/DropEnergyPool.h"
+#include "Misc/LowLevelTestAdapter.h"
 #include "IndividualGameMode.generated.h"
 
 UENUM()
@@ -20,7 +22,7 @@ class LAKAYA_API AIndividualGameMode : public ALakayaDefalutPlayGameMode
 
 private:
 	AIndividualGameMode();
-
+	
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
@@ -56,4 +58,12 @@ private:
 	
 private:
 	FTimerHandle TimerHandle_SpawnStaticEnergy;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MyBlueprint")
+	bool bMyBooleanVarible;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MyBlueprintClass")
+	UClass* MyPrintClass;
 };

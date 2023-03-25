@@ -118,7 +118,7 @@ void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
 
 	// TODO : N초 후에도 이 액터가 살아있다면 자동 소멸
 	// 생명 주기
-	FTimerHandle TimerHandle;
+	// FTimerHandle TimerHandle;
 	// GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, DropEnergy, &TimerHandle](const FTimerHandle InTimerHandle)
 	// {
 	// 	if (IsValid(DropEnergy))
@@ -229,6 +229,12 @@ void AIndividualGameMode::OnKilledCharacter(AController* VictimController, AActo
 	UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 2 points."), *CollectorPlayerState->GetPlayerName());
 	UE_LOG(LogTemp, Warning, TEXT("Player Total points: %d"), CollectorPlayerState->GetPoint());
 	UE_LOG(LogTemp, Warning, TEXT("Player Total Money : %d"), CollectorPlayerState->GetMoney());
+	
+	if (VictimController == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_KilledCharacter is null."));
+		return;
+	}
 
 	// Spawn Drop Energy
 	for (uint8 i = 0 ; i < CollectorPlayerState->GetEnergy(); i++)
@@ -237,12 +243,6 @@ void AIndividualGameMode::OnKilledCharacter(AController* VictimController, AActo
 		UE_LOG(LogTemp, Warning, TEXT("For SpawnDropEnergy."));
 	}
 	
-	if (VictimController == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_KilledCharacter is null."));
-		return;
-	}
-
 	FTimerHandle* ExistingTimer = RespawnTimers.Find(VictimController);
 	if (ExistingTimer != nullptr)
 	{

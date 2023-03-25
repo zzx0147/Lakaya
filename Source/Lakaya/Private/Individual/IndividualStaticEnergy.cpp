@@ -2,6 +2,7 @@
 #include "Character/CollectorPlayerState.h"
 #include "GameMode/IndividualGameMode.h"
 #include "Character/InteractableCharacter.h"
+#include "Net/UnrealNetwork.h"
 
 AIndividualStaticEnergy::AIndividualStaticEnergy()
 {
@@ -39,6 +40,13 @@ void AIndividualStaticEnergy::PostInitializeComponents()
 void AIndividualStaticEnergy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AIndividualStaticEnergy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// DOREPLIFETIME(AIndividualStaticEnergy, Owner);
 }
 
 void AIndividualStaticEnergy::OnLocalInteractionBegin(APawn* Caller)

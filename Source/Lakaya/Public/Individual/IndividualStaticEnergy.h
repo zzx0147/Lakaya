@@ -20,6 +20,7 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 private:
 	virtual void OnLocalInteractionBegin(APawn* Caller) override;
 	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
