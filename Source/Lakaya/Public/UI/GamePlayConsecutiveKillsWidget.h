@@ -6,6 +6,7 @@
 
 class UProgressBar;
 
+//연속처치 표기 클래스
 UCLASS()
 class LAKAYA_API UGamePlayConsecutiveKillsWidget : public UUserWidget
 {

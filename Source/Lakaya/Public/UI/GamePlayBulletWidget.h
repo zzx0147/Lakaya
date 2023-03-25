@@ -6,6 +6,7 @@
 
 class UTextBlock;
 
+//총알 갯수 표기 클래스
 UCLASS()
 class LAKAYA_API UGamePlayBulletWidget : public UUserWidget
 {

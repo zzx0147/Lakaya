@@ -11,6 +11,7 @@ class UButton;
 //param1: 무기 넘버, param2 무기 이름
 DECLARE_MULTICAST_DELEGATE_TwoParams(OnChangeSelectedWeaponDelegate,int32,FName)
 
+//무기 선택 UI 클래스
 UCLASS()
 class LAKAYA_API UGameLobbyWeaponSelectWidget : public UUserWidget
 {
@@ -25,6 +26,7 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 protected:
+	//버튼에 바인딩되는 함수들은 UFUNTION을 사용해야함
 	//무기 버튼이 눌렸을 때 호출되는 함수들 각 함수들은 각 버튼과 연결 되어있으며 누른 버튼의 넘버를 OnPressDraggableWeaponButton(int)로 넘긴다
 	UFUNCTION()
 	void OnPressedDraggableWeapon1Button();

@@ -15,11 +15,12 @@ UGameLobbyWeaponSelectWidget::UGameLobbyWeaponSelectWidget(const FObjectInitiali
 void UGameLobbyWeaponSelectWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
+	//초기화 후 널체크
 #pragma region InitAndNullCheck
 
 	WeaponSlotArray =
-	{ 
+	{
 		Cast<UImage>(GetWidgetFromName(TEXT("WeaponSlot1_Img"))),
 		Cast<UImage>(GetWidgetFromName(TEXT("WeaponSlot2_Img")))
 	};
@@ -46,13 +47,14 @@ void UGameLobbyWeaponSelectWidget::NativeConstruct()
 
 	SelectedWeaponArray = { 0, 1 };
 
-	for (auto temp : WeaponSlotArray) {check(temp != nullptr) }
+	for (auto temp : WeaponSlotArray) { check(temp != nullptr) }
 	for (auto temp : DraggableWeaponButtonArray) { check(temp != nullptr) }
 	for (auto temp : WeaponIconTextureArray) { check(temp != nullptr) }
 	check(DragImage != nullptr);
 
 #pragma endregion
-	
+
+	//버튼 함수 바인딩
 	DraggableWeaponButtonArray[0]->OnPressed.AddDynamic(this, &UGameLobbyWeaponSelectWidget::OnPressedDraggableWeapon1Button);
 	DraggableWeaponButtonArray[1]->OnPressed.AddDynamic(this, &UGameLobbyWeaponSelectWidget::OnPressedDraggableWeapon2Button);
 	DraggableWeaponButtonArray[2]->OnPressed.AddDynamic(this, &UGameLobbyWeaponSelectWidget::OnPressedDraggableWeapon3Button);
@@ -67,15 +69,14 @@ void UGameLobbyWeaponSelectWidget::NativeConstruct()
 
 void UGameLobbyWeaponSelectWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
-	Super::NativeTick(MyGeometry,InDeltaTime);
+	Super::NativeTick(MyGeometry, InDeltaTime);
 
 	if (isDragOn)//드래그가 켜진 동안 마우스의 위치를 계속 가져와 CurrentMousePositionWhileDrag를 업데이트하고 DragImage를 마우스 위치로 계속 이동시킨다
 	{
 		FGeometry Geo = UWidgetLayoutLibrary::GetViewportWidgetGeometry(this);
 		FVector2d MousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(this);
-		
-		UCanvasPanelSlot* CanvasPanelSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(DragImage);
 
+		UCanvasPanelSlot* CanvasPanelSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(DragImage);
 		CanvasPanelSlot->SetPosition(MousePos);
 
 		CurrentMousePositionWhileDrag = MousePos;
@@ -134,37 +135,40 @@ void UGameLobbyWeaponSelectWidget::OnReleasedDraggableWeaponButton(int WeaponNum
 {
 	//버튼이 릴리즈되면 드래그가 끝난다는 의미이므로 isDragOn을 false로 설정한다
 	isDragOn = false;
-	
-	//GetAbsolutePosition은 좌상단 기준, 드래그 이미지의 중앙을 기준으로 드랍하기 위해 AbsoluteSize의 절반을 더함
-	int32 TargetImageNum = GetWeaponSlotAtLocation(DragImage->GetCachedGeometry().GetAbsolutePosition() + DragImage->GetCachedGeometry().GetAbsoluteSize()/2);
 
-	//DragImage의 AbsoluteLocation을 기준으로 드랍된 위치를
+	//GetAbsolutePosition은 좌상단 기준, 드래그 이미지의 중앙을 기준으로 드랍하기 위해 AbsoluteSize의 절반을 더함
+	//DragImage의 중앙 위치에 있는 WeaponSlot을 찾음(마우스 포지션이 아니라 DragImage 위치로 계산하는건 마우스 포지션을 Absolute Location으로 바꿔주는 함수가 없어서... 구찮...)
+	int32 TargetImageNum = GetWeaponSlotAtLocation(DragImage->GetCachedGeometry().GetAbsolutePosition() + DragImage->GetCachedGeometry().GetAbsoluteSize() / 2);
+
+	//받아온 TargetSlot이 문제가 없다면 데이터와 슬롯의 텍스처를 변경해줌
 	if (-1 < TargetImageNum && TargetImageNum < WeaponSlotArray.Num())
 	{
 		WeaponSlotArray[TargetImageNum]->SetBrushFromTexture(WeaponIconTextureArray[WeaponNum]);
 		DraggableWeaponButtonArray[SelectedWeaponArray[TargetImageNum]]->SetIsEnabled(true);
 		DraggableWeaponButtonArray[WeaponNum]->SetIsEnabled(false);
 		SelectedWeaponArray[TargetImageNum] = WeaponNum;
-		OnChangeSelectedWeapon.Broadcast(TargetImageNum,WeaponNameArray[WeaponNum]);
+		OnChangeSelectedWeapon.Broadcast(TargetImageNum, WeaponNameArray[WeaponNum]);
 	}
-	
+
+	//드래그가 종료되었으니 드래그 이미지를 숨김
 	DragImage->SetVisibility(ESlateVisibility::Hidden);
 }
 
 
 int32 UGameLobbyWeaponSelectWidget::GetWeaponSlotAtLocation(FVector2D AbsoluteLocation)
-{
+{ 
 	for (int i = 0; i < WeaponSlotArray.Num(); ++i)
 	{
 		FGeometry GeometryTemp = WeaponSlotArray[i]->GetCachedGeometry();
 		FVector2d LeftTop = GeometryTemp.GetAbsolutePosition();
 		FVector2D RightBottom = LeftTop + GeometryTemp.GetAbsoluteSize();
-		
+
+		//AbsoluteLocation에 슬롯이 있다면 해당 슬롯 번호를 반환
 		if (LeftTop.X <= AbsoluteLocation.X && AbsoluteLocation.X <= RightBottom.X && LeftTop.Y <= AbsoluteLocation.Y && AbsoluteLocation.Y <= RightBottom.Y)
-		{
 			return i;
-		}
+
 	}
 
+	//없다면 -1 반환
 	return -1;
 }
