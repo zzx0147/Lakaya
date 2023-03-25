@@ -112,12 +112,18 @@ void AInteractableCharacter::InteractionStopNotify_Implementation(const float& T
 		if (HasAuthority())
 		{
 			if (ReleaseFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
+			{
+				GetWorldTimerManager().ClearTimer(OwnerInteractionTimer);
 				Cast<IInteractable>(Actor)->OnInteractionStop(this);
+			}
 			else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStopNotify with authority!"));
 		}
 
 		if (ReleaseFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
+		{
+			GetWorldTimerManager().ClearTimer(InteractionTimer);
 			OnInteractionStoppedNotify.Broadcast(Time);
+		}
 		else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStopNotify!"));
 	});
 }
