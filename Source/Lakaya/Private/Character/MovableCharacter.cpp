@@ -55,6 +55,8 @@ void AMovableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (!HasAuthority()) GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
+
 	if (auto PlayerController = Cast<APlayerController>(Controller))
 		if (auto LocalPlayer = PlayerController->GetLocalPlayer())
 		{

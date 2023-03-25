@@ -112,12 +112,18 @@ void AInteractableCharacter::InteractionStopNotify_Implementation(const float& T
 		if (HasAuthority())
 		{
 			if (ReleaseFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
+			{
+				GetWorldTimerManager().ClearTimer(OwnerInteractionTimer);
 				Cast<IInteractable>(Actor)->OnInteractionStop(this);
+			}
 			else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStopNotify with authority!"));
 		}
 
 		if (ReleaseFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
+		{
+			GetWorldTimerManager().ClearTimer(InteractionTimer);
 			OnInteractionStoppedNotify.Broadcast(Time);
+		}
 		else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStopNotify!"));
 	});
 }
@@ -158,6 +164,17 @@ void AInteractableCharacter::InteractionStartNotify_Implementation(const float& 
 
 			GetWorldTimerManager().SetTimer(InteractionTimer, [this]
 			{
+				if (HasAuthority())
+				{
+					if (ReleaseFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
+						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,
+						                                 TEXT("Interaction Completed in Server!"));
+					else
+						UE_LOG(LogActor, Error,
+					       TEXT("Fail to release focus on InteractionStartNotify with authority! FocusState was %d"),
+					       GetFocusState(EFocusContext::Server,EFocusSpace::MainHand));
+				}
+
 				if (ReleaseFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
 					GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Green,
 					                                 TEXT("Interaction Completed in Simulated!"));
@@ -189,9 +206,7 @@ bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, 
 
 void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor)
 {
-	if (IsFocussedBy(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
-		Cast<IInteractable>(Actor)->OnServerInteractionStopBegin(GetServerTime(), this);
-	else UE_LOG(LogActor, Error, TEXT("InteractionStop was requested but It was not focussed by Interacting!"));
+	Cast<IInteractable>(Actor)->OnServerInteractionStopBegin(GetServerTime(), this);
 }
 
 void AInteractableCharacter::InitiateLockstepEvent(const float& Time, std::function<void()> Callback)
