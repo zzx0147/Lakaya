@@ -8,9 +8,20 @@
 #include "Components/ArrowComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
+void URiffleFireClient::SetIsGPSFire_Implementation(bool bIsGPSFire)
+{
+	UCharAnimInstance* AnimInstance =
+	Cast<UCharAnimInstance>(Character->GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetIsGPSFire(bIsGPSFire);
+	}
+}
+
 void URiffleFireClient::OnFireStartNotify()
 {
 	Super::OnFireStartNotify();
+	SetIsGPSFire(true);
 	FireStartCore(FireTimer, EFocusContext::Simulated,
 	              [this] { SetFireCount(Selector, FireCount); },
 	              [this]
@@ -34,6 +45,7 @@ void URiffleFireClient::OnFireStartNotify()
 void URiffleFireClient::OnFireStopNotify()
 {
 	Super::OnFireStopNotify();
+	SetIsGPSFire(false);
 	FireStopCore(Selector, FireCount, EFocusContext::Simulated);
 }
 
