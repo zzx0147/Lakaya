@@ -23,18 +23,14 @@ URiffleFireServer::URiffleFireServer()
 void URiffleFireServer::OnFireStart()
 {
 	Super::OnFireStart();
-	FireStartCore(FireTimer,
-	              [this]
-	              {
-		              return Character->SetFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Firing);
-	              },
-	              [this] { ContinuousFireCore(Selector, FireCount); },
+	FireStartCore(FireTimer, EFocusContext::Server,
+	              [this] { SetFireCount(Selector, FireCount); },
 	              [this]
 	              {
 		              FreshFireCore(Selector, FireCount, FireTimer,
 		                            [this]
 		                            {
-			                            FireCallback(FireCount, FireTimer,
+			                            FireCallback(FireCount, FireTimer, EFocusContext::Server,
 			                                         [this] { return !GunComponent->CostBullets(1); },
 			                                         [this]
 			                                         {
@@ -43,13 +39,7 @@ void URiffleFireServer::OnFireStart()
 					                                         EFocusState::Firing);
 				                                         EmptyMagazine();
 			                                         },
-			                                         [this] { TraceFire(); },
-			                                         [this]
-			                                         {
-				                                         Character->ReleaseFocus(
-					                                         EFocusContext::Server, EFocusSpace::MainHand,
-					                                         EFocusState::Firing);
-			                                         });
+			                                         [this] { TraceFire(); });
 		                            });
 	              });
 }
@@ -57,19 +47,14 @@ void URiffleFireServer::OnFireStart()
 void URiffleFireServer::OnFireStop()
 {
 	Super::OnFireStop();
-	FireStopCore(Selector, FireCount, false);
+	FireStopCore(Selector, FireCount, EFocusContext::Server);
 }
 
 void URiffleFireServer::OnSwitchSelector()
 {
 	Super::OnSwitchSelector();
-	SwitchSelectorCore(DesiredSelector, SelectorTimer,
-	                   [this] { UpdateSelector(DesiredSelector, Selector, false); },
-	                   [this]
-	                   {
-		                   return !Character->SetFocus(EFocusContext::Server, EFocusSpace::MainHand,
-		                                               EFocusState::Switching);
-	                   });
+	SwitchSelectorCore(DesiredSelector, SelectorTimer, EFocusContext::Server,
+	                   [this] { UpdateSelector(DesiredSelector, Selector, EFocusContext::Server); });
 }
 
 void URiffleFireServer::SetupData(const FName& RowName)
