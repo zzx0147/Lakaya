@@ -2,7 +2,6 @@
 #include "Character/CollectorPlayerState.h"
 #include "GameMode/IndividualGameMode.h"
 #include "Character/InteractableCharacter.h"
-#include "Chaos/PBDRigidClustering.h"
 
 AIndividualDropEnergy::AIndividualDropEnergy()
 {
@@ -23,7 +22,7 @@ AIndividualDropEnergy::AIndividualDropEnergy()
 	Trigger->SetRelativeLocation(FVector::ZeroVector);
 
 	Deactivate();
-	
+    
 	bReplicates = true;
 }
 
@@ -37,17 +36,28 @@ void AIndividualDropEnergy::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AIndividualDropEnergy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+}
+
 void AIndividualDropEnergy::OnLocalInteractionBegin(APawn* Caller)
 {
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	{
+		UE_LOG(LogActor, Error, TEXT("1"));
 		CastedCaller->NoticeInstantInteractionLocal();
+	}
 	else UE_LOG(LogActor, Error, TEXT("OnLocalInteractionBegin::Caller was not AInteractableCharacter!"));
 }
 
 void AIndividualDropEnergy::OnServerInteractionBegin(const float& Time, APawn* Caller)
 {
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	{
+		UE_LOG(LogActor, Error, TEXT("2"));
 		CastedCaller->InitiateInteractionStart(Time, this);
+	}
 }
 
 void AIndividualDropEnergy::OnInteractionStart(APawn* Caller)
@@ -87,19 +97,18 @@ void AIndividualDropEnergy::OnInteractionStart(APawn* Caller)
 void AIndividualDropEnergy::SetDropEnergy(AController* DeadPlayer)
 {
 	SetActorLocation(DeadPlayer->GetCharacter()->GetActorLocation());
-	UE_LOG(LogTemp, Warning, TEXT("SetDropEnergy Function()"));
 }
 
 void AIndividualDropEnergy::Activate()
 {
+	IsActive = true;
 	SetActorHiddenInGame(false);
 	SetActorEnableCollision(true);
-	IsActive = true;
 }
 
 void AIndividualDropEnergy::Deactivate()
 {
+	IsActive = false;
 	SetActorHiddenInGame(true);
 	SetActorEnableCollision(false);
-	IsActive = false;
 }

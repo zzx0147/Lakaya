@@ -105,8 +105,6 @@ void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
 
 void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
 {
-	UE_LOG(LogTemp, Warning, TEXT("SpawnDropEnergy Function()"));
-	
 	// 사망한 플레이어에게서 드랍된 것처럼 보이게끔 구현.
 	AIndividualDropEnergy* DropEnergy = DropEnergyPool->GetDropEnergy();
 	if (DropEnergy == nullptr)
@@ -185,8 +183,6 @@ void AIndividualGameMode::RespawnPlayer(AController* KilledController)
 
 void AIndividualGameMode::OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnKillCharacter has been called !"));
-	
 	if (InstigatorController == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_EventInstigator is null."));
@@ -224,7 +220,6 @@ void AIndividualGameMode::OnKilledCharacter(AController* VictimController, AActo
 	for (uint8 i = 0 ; i < VictimCollectorPlayerState->GetEnergy(); i++)
 	{
 		SpawnDropEnergy(VictimController);
-		UE_LOG(LogTemp, Warning, TEXT("For SpawnDropEnergy."));
 	}
 	
 	FTimerHandle* ExistingTimer = RespawnTimers.Find(VictimController);

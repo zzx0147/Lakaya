@@ -19,11 +19,12 @@ protected:
 protected:
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 private:
 	virtual void OnLocalInteractionBegin(APawn* Caller) override;
 	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
 	virtual void OnInteractionStart(APawn* Caller) override;
-
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USphereComponent* Trigger;
@@ -36,7 +37,7 @@ public:
 
 	void Activate();
 	void Deactivate();
-
+	
 public:
 	bool IsActive;
 

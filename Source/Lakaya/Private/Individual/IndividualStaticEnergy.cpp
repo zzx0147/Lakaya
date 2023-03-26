@@ -50,14 +50,20 @@ void AIndividualStaticEnergy::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 void AIndividualStaticEnergy::OnLocalInteractionBegin(APawn* Caller)
 {
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	{
 		CastedCaller->NoticeInstantInteractionLocal();
+		UE_LOG(LogActor, Error, TEXT("1"));
+	}
 	else UE_LOG(LogActor, Error, TEXT("OnLocalInteractionBegin::Caller was not AInteractableCharacter!"));
 }
 
 void AIndividualStaticEnergy::OnServerInteractionBegin(const float& Time, APawn* Caller)
 {
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	{
 		CastedCaller->InitiateInteractionStart(Time, this);
+		UE_LOG(LogActor, Error, TEXT("2"));
+	}
 }
 
 void AIndividualStaticEnergy::OnInteractionStart(APawn* Caller)
@@ -81,8 +87,8 @@ void AIndividualStaticEnergy::OnInteractionStart(APawn* Caller)
 				UE_LOG(LogTemp, Warning, TEXT("OnInteractionStart_Character is null."));
 				return;
 			}
+			
 			CollectorPlayerState->GainEnergy(1);
-			// UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 Energy"), *CollectorPlayerState->GetPlayerName());
 			UE_LOG(LogTemp, Warning, TEXT("Player Total Energy: %d"), CollectorPlayerState->GetEnergy());
 			bIsAvailable = false;
 		}

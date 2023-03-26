@@ -58,12 +58,4 @@ private:
 	
 private:
 	FTimerHandle TimerHandle_SpawnStaticEnergy;
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MyBlueprint")
-	bool bMyBooleanVarible;
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MyBlueprintClass")
-	UClass* MyPrintClass;
 };
