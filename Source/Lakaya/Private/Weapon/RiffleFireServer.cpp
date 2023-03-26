@@ -34,10 +34,13 @@ void URiffleFireServer::OnFireStart()
 			                                         [this] { return !GunComponent->CostBullets(1); },
 			                                         [this]
 			                                         {
-				                                         Character->ReleaseFocus(
+				                                         if (!Character->ReleaseFocus(
 					                                         EFocusContext::Server, EFocusSpace::MainHand,
-					                                         EFocusState::Firing);
-				                                         EmptyMagazine();
+					                                         EFocusState::Firing))
+					                                         UE_LOG(LogNetSubObject, Error,
+				                                                TEXT(
+					                                                "Fail to release focus on OnFireStart with authority!"
+				                                                ));
 			                                         },
 			                                         [this] { TraceFire(); });
 		                            });
@@ -53,8 +56,7 @@ void URiffleFireServer::OnFireStop()
 void URiffleFireServer::OnSwitchSelector()
 {
 	Super::OnSwitchSelector();
-	SwitchSelectorCore(DesiredSelector, SelectorTimer, EFocusContext::Server,
-	                   [this] { UpdateSelector(DesiredSelector, Selector, EFocusContext::Server); });
+	SwitchSelectorCore(DesiredSelector, Selector, SelectorTimer, EFocusContext::Server);
 }
 
 void URiffleFireServer::SetupData(const FName& RowName)

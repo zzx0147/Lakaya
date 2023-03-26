@@ -40,8 +40,7 @@ void URiffleFireClient::OnFireStopNotify()
 void URiffleFireClient::OnSwitchSelectorNotify()
 {
 	Super::OnSwitchSelectorNotify();
-	SwitchSelectorCore(DesiredSelector, SelectorTimer, EFocusContext::Simulated,
-	                   [this] { UpdateSelector(DesiredSelector, Selector, EFocusContext::Simulated); });
+	SwitchSelectorCore(DesiredSelector, Selector, SelectorTimer, EFocusContext::Simulated);
 }
 
 void URiffleFireClient::OnRep_Character()

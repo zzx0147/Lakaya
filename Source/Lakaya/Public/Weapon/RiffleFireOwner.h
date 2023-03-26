@@ -13,4 +13,16 @@ UCLASS()
 class LAKAYA_API URiffleFireOwner : public URiffleFireClient
 {
 	GENERATED_BODY()
+
+public:
+	virtual void FireStart() override;
+	virtual void FireStop() override;
+	virtual void SwitchSelector() override;
+
+private:
+	FTimerHandle FireTimer;
+	FTimerHandle SelectorTimer;
+	EGunSelector Selector;
+	EGunSelector DesiredSelector;
+	uint16 FireCount;
 };

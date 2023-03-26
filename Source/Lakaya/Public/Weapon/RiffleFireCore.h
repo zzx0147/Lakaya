@@ -28,19 +28,19 @@ protected:
 	                   std::function<void()> OnContinuousFire, std::function<void()> OnFreshFire,
 	                   std::function<void()> OnElse = nullptr);
 
-	void FireStopCore(const EGunSelector& Selector, uint16& FireCount, const EFocusContext& FocusContext);
+	void FireStopCore(const EGunSelector& Selector, uint16& FireCount, const EFocusContext& FocusContext,
+	                  std::function<void()> OnStop = nullptr);
 
-	void SwitchSelectorCore(EGunSelector& DesiredSelector, FTimerHandle& SelectorTimer,
-	                        const EFocusContext& FocusContext, std::function<void()> OnUpdateSelector);
+	void SwitchSelectorCore(EGunSelector& DesiredSelector, EGunSelector& Selector,
+	                        FTimerHandle& SelectorTimer, const EFocusContext& FocusContext,
+	                        std::function<void()> OnDesiredSelectorUpdated = nullptr);
 
 	void FreshFireCore(const EGunSelector& Selector, uint16& FireCount, FTimerHandle& FireTimer,
 	                   std::function<void()> RepeatFireFunction);
 
 	void FireCallback(uint16& FireCount, FTimerHandle& FireTimer, const EFocusContext& FocusContext,
 	                  std::function<bool()> EmptyPredicate, std::function<void()> OnEmpty,
-	                  std::function<void()> OnSingleFire);
-
-	void UpdateSelector(EGunSelector& DesiredSelector, EGunSelector& Selector, const EFocusContext& FocusContext);
+	                  std::function<void()> OnSingleFire = nullptr);
 
 	void SetFireCount(const EGunSelector& Selector, uint16& FireCount);
 

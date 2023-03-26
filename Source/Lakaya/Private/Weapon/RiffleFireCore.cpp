@@ -30,18 +30,24 @@ void URiffleFireCore::FireStartCore(FTimerHandle& FireTimer, const EFocusContext
 	else UE_LOG(LogNetSubObject, Log, TEXT("FireStartCore skipped!"));
 }
 
-void URiffleFireCore::FireStopCore(const EGunSelector& Selector, uint16& FireCount, const EFocusContext& FocusContext)
+void URiffleFireCore::FireStopCore(const EGunSelector& Selector, uint16& FireCount, const EFocusContext& FocusContext,
+                                   std::function<void()> OnStop)
 {
 	if (Selector == EGunSelector::Auto)
 	{
-		if (Character->ReleaseFocus(FocusContext, EFocusSpace::MainHand, EFocusState::Firing)) FireCount = 0;
+		if (Character->ReleaseFocus(FocusContext, EFocusSpace::MainHand, EFocusState::Firing))
+		{
+			FireCount = 0;
+			if (OnStop) OnStop();
+		}
 		else UE_LOG(LogNetSubObject, Error, TEXT("Fail to release focus on FireStopCore with %d context!"),
 		            FocusContext);
 	}
 }
 
-void URiffleFireCore::SwitchSelectorCore(EGunSelector& DesiredSelector, FTimerHandle& SelectorTimer,
-                                         const EFocusContext& FocusContext, std::function<void()> OnUpdateSelector)
+void URiffleFireCore::SwitchSelectorCore(EGunSelector& DesiredSelector, EGunSelector& Selector,
+                                         FTimerHandle& SelectorTimer, const EFocusContext& FocusContext,
+                                         std::function<void()> OnDesiredSelectorUpdated)
 {
 	auto& TimerManager = GetWorld()->GetTimerManager();
 
@@ -63,7 +69,17 @@ void URiffleFireCore::SwitchSelectorCore(EGunSelector& DesiredSelector, FTimerHa
 		return;
 	}
 
-	TimerManager.SetTimer(SelectorTimer, OnUpdateSelector, SwitchingDelay - LockstepDelay, false);
+	TimerManager.SetTimer(SelectorTimer, [this,&DesiredSelector,&Selector,FocusContext]
+	{
+		if (Character->ReleaseFocus(FocusContext, EFocusSpace::MainHand, EFocusState::Switching))
+		{
+			Selector = DesiredSelector;
+			GEngine->AddOnScreenDebugMessage(-1, 3, GetDebugColor(FocusContext),TEXT("Selector updated"));
+		}
+		else UE_LOG(LogNetSubObject, Error,
+		            TEXT("Fail to release focus on UpdateSelector with %d context!"), FocusContext);
+	}, SwitchingDelay - LockstepDelay, false);
+	if (OnDesiredSelectorUpdated) OnDesiredSelectorUpdated();
 	GEngine->AddOnScreenDebugMessage(-1, 3, GetDebugColor(FocusContext),TEXT("Switch timer setted!"));
 }
 
@@ -99,16 +115,6 @@ void URiffleFireCore::FireCallback(uint16& FireCount, FTimerHandle& FireTimer, c
 	}
 
 	if (OnSingleFire) OnSingleFire();
-}
-
-void URiffleFireCore::UpdateSelector(EGunSelector& DesiredSelector, EGunSelector& Selector, const EFocusContext& FocusContext)
-{
-	if (Character->ReleaseFocus(FocusContext, EFocusSpace::MainHand, EFocusState::Switching))
-	{
-		Selector = DesiredSelector;
-		GEngine->AddOnScreenDebugMessage(-1, 3, GetDebugColor(FocusContext),TEXT("Selector updated"));
-	}
-	else UE_LOG(LogNetSubObject, Error, TEXT("Fail to release focus on UpdateSelector with %d context!"), FocusContext);
 }
 
 void URiffleFireCore::SetFireCount(const EGunSelector& Selector, uint16& FireCount)
