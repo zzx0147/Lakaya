@@ -45,8 +45,6 @@ void AIndividualStaticEnergy::Tick(float DeltaTime)
 void AIndividualStaticEnergy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	// DOREPLIFETIME(AIndividualStaticEnergy, Owner);
 }
 
 void AIndividualStaticEnergy::OnLocalInteractionBegin(APawn* Caller)

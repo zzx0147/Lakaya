@@ -39,4 +39,7 @@ public:
 
 public:
 	bool IsActive;
+
+public:
+	FTimerHandle VisibilityTimerHandle;
 };
