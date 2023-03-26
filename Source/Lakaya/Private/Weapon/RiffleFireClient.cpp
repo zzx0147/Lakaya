@@ -4,37 +4,21 @@
 #include "Weapon/RiffleFireClient.h"
 
 #include "Weapon/GunComponent.h"
-#include "Character/ThirdPersonCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/ArrowComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
-void URiffleFireClient::SetIsGPSFire_Implementation(bool bIsGPSFire)
-{
-	UCharAnimInstance* AnimInstance =
-	Cast<UCharAnimInstance>(Character->GetMesh()->GetAnimInstance());
-	if (AnimInstance)
-	{
-		AnimInstance->SetIsGPSFire(bIsGPSFire);
-	}
-}
-
 void URiffleFireClient::OnFireStartNotify()
 {
 	Super::OnFireStartNotify();
-	SetIsGPSFire(true);
-	FireStartCore(FireTimer,
-	              [this]
-	              {
-		              return Character->SetFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Firing);
-	              },
-	              [this] { ContinuousFireCore(Selector, FireCount); },
+	FireStartCore(FireTimer, EFocusContext::Simulated,
+	              [this] { SetFireCount(Selector, FireCount); },
 	              [this]
 	              {
 		              FreshFireCore(Selector, FireCount, FireTimer,
 		                            [this]
 		                            {
-			                            FireCallback(FireCount, FireTimer,
+			                            FireCallback(FireCount, FireTimer, EFocusContext::Simulated,
 			                                         [this] { return GunComponent->GetRemainBullets() <= 0; },
 			                                         [this]
 			                                         {
@@ -42,13 +26,7 @@ void URiffleFireClient::OnFireStartNotify()
 					                                         EFocusContext::Simulated, EFocusSpace::MainHand,
 					                                         EFocusState::Firing);
 			                                         },
-			                                         [this] { TraceVisualize(); },
-			                                         [this]
-			                                         {
-				                                         Character->ReleaseFocus(
-					                                         EFocusContext::Simulated, EFocusSpace::MainHand,
-					                                         EFocusState::Firing);
-			                                         });
+			                                         [this] { TraceVisualize(); });
 		                            });
 	              });
 }
@@ -56,20 +34,13 @@ void URiffleFireClient::OnFireStartNotify()
 void URiffleFireClient::OnFireStopNotify()
 {
 	Super::OnFireStopNotify();
-	SetIsGPSFire(false);
-	FireStopCore(Selector, FireCount, true);
+	FireStopCore(Selector, FireCount, EFocusContext::Simulated);
 }
 
 void URiffleFireClient::OnSwitchSelectorNotify()
 {
 	Super::OnSwitchSelectorNotify();
-	SwitchSelectorCore(DesiredSelector, SelectorTimer,
-	                   [this] { UpdateSelector(DesiredSelector, Selector, true); },
-	                   [this]
-	                   {
-		                   return !Character->SetFocus(EFocusContext::Simulated, EFocusSpace::MainHand,
-		                                               EFocusState::Switching);
-	                   });
+	SwitchSelectorCore(DesiredSelector, Selector, SelectorTimer, EFocusContext::Simulated);
 }
 
 void URiffleFireClient::OnRep_Character()
@@ -89,7 +60,7 @@ void URiffleFireClient::TraceVisualize()
 		if (UStaticMeshComponent* StaticMeshComp = Cast<UStaticMeshComponent>(SkeletalMeshComp->GetChildComponent(0)))
 			if (UArrowComponent* ArrowComp = Cast<UArrowComponent>(StaticMeshComp->GetChildComponent(0)))
 				StartPoint = ArrowComp->GetComponentLocation();
-	
+
 	auto CameraLocation = Character->GetCamera()->GetComponentLocation();
 	auto Distance = Character->GetSpringArm()->TargetArmLength;
 

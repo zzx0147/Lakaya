@@ -10,7 +10,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class LAKAYA_API URiffleFireClient : public URiffleFireServer
 {
 	GENERATED_BODY()
