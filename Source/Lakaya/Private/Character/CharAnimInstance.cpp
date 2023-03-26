@@ -3,6 +3,11 @@
 
 #include "Character/CharAnimInstance.h"
 
+void UCharAnimInstance::SetIsGPSFire(bool GPSFireValue)
+{
+	bIsGPSFire = GPSFireValue;
+}
+
 void UCharAnimInstance::SetIsReload(bool ReloadValue)
 {
 	bIsReload = ReloadValue;
