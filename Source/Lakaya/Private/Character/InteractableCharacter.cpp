@@ -78,6 +78,12 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	}
 }
 
+void AInteractableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::KillCharacter(EventInstigator, DamageCauser);
+	if (InteractingActor.IsValid()) Cast<IInteractable>(InteractingActor)->OnCharacterDead(this);
+}
+
 void AInteractableCharacter::InitiateInteractionStart(const float& Time, AActor* Actor, const float& Duration)
 {
 	// Execute InteractionStartNotify when Duration is longer then LockstepDelay
@@ -183,7 +189,7 @@ void AInteractableCharacter::InteractionStartNotify_Implementation(const float& 
 				else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStartNotify! FocusState was %d"),
 				            GetFocusState(EFocusContext::Simulated,EFocusSpace::MainHand));
 			}, Duration, false);
-			
+
 			OnInteractionStarted.Broadcast(Time, Actor, Duration);
 		}
 		else UE_LOG(LogActor, Error, TEXT("Fail to set focus on InteractionStartNotify! FocusState was %d"),
