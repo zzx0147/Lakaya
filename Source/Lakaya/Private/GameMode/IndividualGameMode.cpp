@@ -1,6 +1,5 @@
 #include "GameMode/IndividualGameMode.h"
 #include "Character/CollectorPlayerState.h"
-#include "Individual/IndividualEnergy.h"
 #include "Character/MenuCallingPlayerController.h"
 #include "Individual/IndividualStaticEnergy.h"
 #include "Character/InteractableCharacter.h"
@@ -11,10 +10,24 @@
 
 AIndividualGameMode::AIndividualGameMode()
 {
-	DefaultPawnClass = AInteractableCharacter::StaticClass();
+	static ConstructorHelpers::FObjectFinder<UBlueprint> PlayerPawnObject(TEXT("/Game/Characters/LakayaCharacter/Dummy/BP_PlayerDummy"));
+	if (!PlayerPawnObject.Succeeded())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to find player pawn blueprint."));
+		return;
+	}
+
+	UClass* PlayerPawnClass = PlayerPawnObject.Object->GeneratedClass;
+	if (!PlayerPawnClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to get generated class from player pawn blueprint."));
+		return;
+	}
+
+	DefaultPawnClass = PlayerPawnClass;
 	PlayerControllerClass = AMenuCallingPlayerController::StaticClass();
 	PlayerStateClass = ACollectorPlayerState::StaticClass();
-
+	
 	NumPlayers = 0;
 }
 
@@ -22,16 +35,13 @@ void AIndividualGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	DropEnergyPool = GetWorld()->SpawnActor<ADropEnergyPool>(ADropEnergyPool::StaticClass());
-	
-	DropEnergyPool->Initialize(30);
+	// DropEnergyPool = GetWorld()->SpawnActor<ADropEnergyPool>(ADropEnergyPool::StaticClass());
+	// DropEnergyPool->Initialize(30);
 }
 
 void AIndividualGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
-	SpawnStaticEnergyAtRandomPosition();
 }
 
 void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
@@ -93,62 +103,11 @@ void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
 	RegisteredPlayers.Add(PlayerController);
 }
 
-void AIndividualGameMode::SpawnStaticEnergyAtRandomPosition()
-{
-	int32 PosNumber = FMath::RandRange(PosMinCount, PosMaxCount);
-
-	bool bContain = VectorArray.Contains(PosNumber);
-	if (!bContain)
-	{
-		VectorArray.Add(PosNumber);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Duplication."));
-		SpawnStaticEnergyAtRandomPosition();
-		return;
-	}
-
-	AActor* item = GetWorld()->SpawnActor(AIndividualStaticEnergy::StaticClass());
-	AIndividualStaticEnergy* DividualItem = Cast<AIndividualStaticEnergy>(item);
-	DividualItem->StaticEnergyNumber = PosNumber;
-
-	// TODO : 상호작용 오브젝트 나오면 위치 배치 후 오브젝트 위치 값을 불러오기.
-	switch (PosNumber)
-	{
-	case 1:
-		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[0]));
-		break;
-	case 2:
-		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[1]));
-		break;
-	case 3:
-		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[2]));
-		break;
-	case 4:
-		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[3]));
-		break;
-	case 5:
-		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[4]));
-		break;
-	case 6:
-		item->SetActorRelativeLocation(FVector(StaticEnergyPositions[5]));
-		break;
-	}
-
-	StaticEnergyNumCheck();
-}
-
-void AIndividualGameMode::SpawnStaticEnergy()
-{
-	// TODO : 기획서에 맞게 시간 수정.
-	GetWorldTimerManager().SetTimer(TimerHandle_SpawnStaticEnergy, this, &AIndividualGameMode::SpawnStaticEnergyAtRandomPosition, 1.0f, false);
-}
-
 void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
 {
-	// 사망한 플레이어에게서 드랍된 것처럼 보이게끔 구현.
-	AIndividualDropEnergy* DropEnergy = DropEnergyPool->GetDropEnergy();
+	
+	
+	AIndividualDropEnergy* DropEnergy = GetWorld()->SpawnActor<AIndividualDropEnergy>();
 	if (DropEnergy == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("DropEnergy is null."));
@@ -156,55 +115,13 @@ void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
 	}
 	
 	// 위치 조정
-	DropEnergy->SetDropEnergy(DeadPlayer);
-
-	// TODO : N초 후에도 이 액터가 살아있다면 자동 소멸
+	DropEnergy->LocationSetDropEnergy(DeadPlayer);
+	
 	// 생명 주기
-	FTimerHandle TimerHandle;
-	// GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, DropEnergy, &TimerHandle](const FTimerHandle InTimerHandle)
-	// {
-	// 	if (IsValid(DropEnergy))
-	// 	{
-	// 		// If time has elapsed, if DropEnergy exists (if no one has eaten it), return automatically.
-	// 		DropEnergyPool->ReturnDropEnergy(DropEnergy);
-	// 	}
-	// 	else
-	// 	{
-	// 		// If DropEnergy is deleted by player interaction
-	// 		// UE_LOG(LogTemp, Warning, TEXT("DropEnergy is Dropped."));
-	// 		DropEnergyPool->ReturnDropEnergy(DropEnergy);
-	// 	}
-	//
-	// 	GetWorld()->GetTimerManager().ClearTimer(InTimerHandle);
-	// 	DropEnergyPool->ReturnDropEnergy(DropEnergy);
-	//
-	// }, 3.0f, false);
-
-	// GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, DropEnergy, &TimerHandle](const FTimerHandle& InTimerHandle)
-	// {
-	// 	if(IsValid(DropEnergy)())
-	// 	{
-	// 		// 시간이 지났을 경우, DropEnergy가 존재하다면(아무도 먹지 않았을 경우) 자동으로 Return.
-	// 		DropEnergyPool->ReturnDropEnergy(DropEnergy);
-	// 	}
-	// 	else
-	// 	{
-	// 		// DropEnergy가 플레이어의 상호작용에 의해 삭제됐을 경우
-	// 		// UE_LOG(LogTemp, Warning, TEXT("DropEnergy is Dropped."));
-	// 		DropEnergyPool->ReturnDropEnergy(DropEnergy);
-	// 	}
-	//
-	// 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
-	// 	DropEnergyPool->ReturnDropEnergy(DropEnergy);
-	// }, 3.0f, false);
-}
-
-void AIndividualGameMode::StaticEnergyNumCheck()
-{
-	int32 SpawnedStaticEnergyNum = VectorArray.Num();
-
-	if (SpawnedStaticEnergyNum < StaticEnergyMaxCount)
-		GetWorldTimerManager().SetTimer(TimerHandle_SpawnStaticEnergy, this, &AIndividualGameMode::SpawnStaticEnergyAtRandomPosition, 1.0f, false);
+	GetWorld()->GetTimerManager().SetTimer(DropEnergy->VisibilityTimerHandle, [DropEnergy]()
+   {
+		DropEnergy->Destroy();
+   }, 3.0f, false);
 }
 
 void AIndividualGameMode::RespawnPlayer(AController* KilledController)
@@ -258,34 +175,25 @@ void AIndividualGameMode::RespawnPlayer(AController* KilledController)
 
 void AIndividualGameMode::OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnKillCharacter has been called !"));
-	
 	if (InstigatorController == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_EventInstigator is null."));
 		return;
 	}
 
-	ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(InstigatorController->GetCharacter()->GetController()->PlayerState);
-	if (CollectorPlayerState == nullptr)
+	ACollectorPlayerState* InstigatorCollectorPlayerState = Cast<ACollectorPlayerState>(InstigatorController->GetCharacter()->GetController()->PlayerState);
+	if (InstigatorCollectorPlayerState == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
 		return;
 	}
 
 	// Award the player 2 points for the kill
-	CollectorPlayerState->GainPoint(2);
-	CollectorPlayerState->GainMoney(1);
-	UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 2 points."), *CollectorPlayerState->GetPlayerName());
-	UE_LOG(LogTemp, Warning, TEXT("Player Total points: %d"), CollectorPlayerState->GetPoint());
-	UE_LOG(LogTemp, Warning, TEXT("Player Total Money : %d"), CollectorPlayerState->GetMoney());
-
-	// Spawn Drop Energy
-	for (uint8 i = 0 ; i < CollectorPlayerState->GetEnergy(); i++)
-	{
-		SpawnDropEnergy(VictimController);
-		UE_LOG(LogTemp, Warning, TEXT("For SpawnDropEnergy."));
-	}
+	InstigatorCollectorPlayerState->GainPoint(2);
+	InstigatorCollectorPlayerState->GainMoney(1);
+	UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 2 points."), *InstigatorCollectorPlayerState->GetPlayerName());
+	UE_LOG(LogTemp, Warning, TEXT("Player Total points: %d"), InstigatorCollectorPlayerState->GetPoint());
+	UE_LOG(LogTemp, Warning, TEXT("Player Total Money : %d"), InstigatorCollectorPlayerState->GetMoney());
 	
 	if (VictimController == nullptr)
 	{
@@ -293,6 +201,19 @@ void AIndividualGameMode::OnKilledCharacter(AController* VictimController, AActo
 		return;
 	}
 
+	ACollectorPlayerState* VictimCollectorPlayerState = Cast<ACollectorPlayerState>(VictimController->GetCharacter()->GetController()->PlayerState);
+	if (VictimCollectorPlayerState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("VictimCollectorPlayerState cast failed."));
+		return;
+	}
+	
+	// Spawn Drop Energy
+	for (uint8 i = 0 ; i < VictimCollectorPlayerState->GetEnergy(); i++)
+	{
+		SpawnDropEnergy(VictimController);
+	}
+	
 	FTimerHandle* ExistingTimer = RespawnTimers.Find(VictimController);
 	if (ExistingTimer != nullptr)
 	{
@@ -321,3 +242,38 @@ void AIndividualGameMode::OnKilledCharacter(AController* VictimController, AActo
 		RespawnTimers.Add(DeadPlayer, NewTimer);
 	}
 }
+
+// 사망한 플레이어에게서 드랍된 것처럼 보이게끔 구현.
+// AIndividualDropEnergy* DropEnergy = DropEnergyPool->GetDropEnergy();
+// if (DropEnergy == nullptr)
+// {
+// UE_LOG(LogTemp, Warning, TEXT("DropEnergy is null."));
+// return;
+// }
+
+// bool AIndividualGameMode::CheckDropEnergyActorPresence(AIndividualDropEnergy* DropEnergy) const
+// {
+// 	// Check if the pointer to the DropEnergy actor is valid
+// 	if (!DropEnergy)
+// 	{
+// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("DropEnergy actor pointer is invalid."));
+// 		return false;
+// 	}
+// 	
+// 	// Retrieve the DropEnergyActor from the game mode
+// 	AIndividualDropEnergy* DropEnergyActor = DropEnergy;
+//     
+// 	// Check if the actor is initialized, tick enabled, and not being destroyed
+// 	if (DropEnergyActor && DropEnergyActor->IsActorInitialized() && DropEnergyActor->IsActorTickEnabled() && !DropEnergyActor->IsActorBeingDestroyed())
+// 	{
+// 		// The client is aware of the existence of the DropEnergy actor
+// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("DroipEnergyActor is Available."));
+// 		return true;
+// 	}
+// 	else
+// 	{
+// 		// The client is not aware of the existence of the DropEnergy actor
+// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("DroipEnergyActor is Not Available."));
+// 		return false;
+// 	}
+// }

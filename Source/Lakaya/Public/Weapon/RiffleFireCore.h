@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/FocusableCharacter.h"
 #include "WeaponFire.h"
 #include "RiffleFireCore.generated.h"
 
@@ -44,10 +43,6 @@ protected:
 
 	void SetFireCount(const EGunSelector& Selector, uint16& FireCount);
 
-private:
-	virtual FColor GetDebugColor(const EFocusContext& FocusContext);
-
-protected:
 	UFUNCTION()
 	virtual void OnRep_Character() { return; }
 
