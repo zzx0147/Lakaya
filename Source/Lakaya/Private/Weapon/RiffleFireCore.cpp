@@ -20,11 +20,11 @@ void URiffleFireCore::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 }
 
 void URiffleFireCore::FireStartCore(FTimerHandle& FireTimer, const EFocusContext& FocusContext,
-                                    std::function<void()> OnContinuousFire, std::function<void()> OnFreshFire,
-                                    std::function<void()> OnElse)
+                                    const uint16& FireCount, std::function<void()> OnContinuousFire,
+                                    std::function<void()> OnFreshFire, std::function<void()> OnElse)
 {
 	auto IsFocusable = Character->SetFocus(FocusContext, EFocusSpace::MainHand, EFocusState::Firing);
-	if (GetWorld()->GetTimerManager().IsTimerActive(FireTimer)) OnContinuousFire();
+	if (GetWorld()->GetTimerManager().IsTimerActive(FireTimer)) { if (FireCount == 0) OnContinuousFire(); }
 	else if (IsFocusable) OnFreshFire();
 	else if (OnElse) OnElse();
 	else UE_LOG(LogNetSubObject, Log, TEXT("FireStartCore skipped!"));
@@ -78,7 +78,7 @@ void URiffleFireCore::SwitchSelectorCore(EGunSelector& DesiredSelector, EGunSele
 		}
 		else UE_LOG(LogNetSubObject, Error,
 		            TEXT("Fail to release focus on UpdateSelector with %d context!"), FocusContext);
-	}, SwitchingDelay - LockstepDelay, false);
+	}, SwitchingDelay, false);
 	if (OnDesiredSelectorUpdated) OnDesiredSelectorUpdated();
 	GEngine->AddOnScreenDebugMessage(-1, 3, GetDebugColor(FocusContext),TEXT("Switch timer setted!"));
 }

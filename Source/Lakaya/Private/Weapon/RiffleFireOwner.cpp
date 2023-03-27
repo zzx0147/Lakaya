@@ -7,30 +7,26 @@
 
 void URiffleFireOwner::FireStart()
 {
-	FireStartCore(FireTimer, EFocusContext::Owner,
-	              [this]
-	              {
-		              Super::FireStart();
-		              SetFireCount(Selector, FireCount);
-	              },
-	              [this]
-	              {
-		              Super::FireStart();
-		              FreshFireCore(Selector, FireCount, FireTimer,
-		                            [this]
-		                            {
-			                            FireCallback(FireCount, FireTimer, EFocusContext::Owner,
-			                                         [this] { return GunComponent->GetRemainBullets() <= 0; },
-			                                         [this]
-			                                         {
-				                                         if (Character->ReleaseFocus(EFocusContext::Owner,
-					                                         EFocusSpace::MainHand, EFocusState::Firing))
-					                                         GunComponent->ReloadStart();
-				                                         else UE_LOG(LogNetSubObject, Error,
-				                                                     TEXT("Fail to release focus on FireStart!"));
-			                                         });
-		                            });
-	              });
+	FireStartCore(FireTimer, EFocusContext::Owner, FireCount, [this]
+	{
+		Super::FireStart();
+		SetFireCount(Selector, FireCount);
+	}, [this]
+	{
+		Super::FireStart();
+		FreshFireCore(Selector, FireCount, FireTimer, [this]
+		{
+			FireCallback(FireCount, FireTimer, EFocusContext::Owner, [this]
+			{
+				return GunComponent->GetRemainBullets() <= 0;
+			}, [this]
+			{
+				if (Character->ReleaseFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Firing))
+					GunComponent->ReloadStart();
+				else UE_LOG(LogNetSubObject, Error, TEXT("Fail to release focus on FireStart!"));
+			});
+		});
+	});
 }
 
 void URiffleFireOwner::FireStop()

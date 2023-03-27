@@ -25,8 +25,8 @@ class LAKAYA_API URiffleFireCore : public UWeaponFire
 
 protected:
 	void FireStartCore(FTimerHandle& FireTimer, const EFocusContext& FocusContext,
-	                   std::function<void()> OnContinuousFire, std::function<void()> OnFreshFire,
-	                   std::function<void()> OnElse = nullptr);
+	                   const uint16& FireCount, std::function<void()> OnContinuousFire,
+	                   std::function<void()> OnFreshFire, std::function<void()> OnElse = nullptr);
 
 	void FireStopCore(const EGunSelector& Selector, uint16& FireCount, const EFocusContext& FocusContext,
 	                  std::function<void()> OnStop = nullptr);
