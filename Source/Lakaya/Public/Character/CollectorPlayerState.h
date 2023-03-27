@@ -15,6 +15,8 @@ class LAKAYA_API ACollectorPlayerState : public APlayerState
 	GENERATED_BODY()
 
 public:
+	ACollectorPlayerState();
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
@@ -29,20 +31,24 @@ public:
 	void GainMoney(const uint8& GainedMoney);
 	void ResetMoney();
 	const uint8& GetMoney() const;
+
+private:
+	UPROPERTY(ReplicatedUsing = OnRep_Point, Transient)
+	uint8 Point;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Money, Transient)
+	uint8 Money;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_Energy, Transient)
+	uint8 Energy;
+
+private:
+	UFUNCTION()
+	void OnRep_Point();
+	
+	UFUNCTION()
+	void OnRep_Money();
 	
 	UFUNCTION()
 	void OnRep_Energy();
-
-	UFUNCTION()
-	void OnRep_Money();
-private:
-	 // Client must NOT change this value
-	UPROPERTY(ReplicatedUsing = OnRep_Money, Transient)
-	uint8 Money;
-
-	UPROPERTY(Replicated, Transient)
-	uint8 Point;
-
-	UPROPERTY(ReplicatedUsing = OnRep_Energy, Transient)
-	uint8 Energy = 1;
 };
