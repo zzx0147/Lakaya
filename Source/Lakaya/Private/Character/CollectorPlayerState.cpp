@@ -7,7 +7,7 @@
 ACollectorPlayerState::ACollectorPlayerState()
 {
 	Point = 0;
-	Energy = 0;
+	Energy = 1;
 	Money = 0;
 }
 
@@ -51,7 +51,7 @@ void ACollectorPlayerState::GainEnergy(const uint8& GainedEnergy)
 
 void ACollectorPlayerState::ResetEnergy()
 {
-	Energy = 0;
+	Energy = 1;
 }
 
 const uint8& ACollectorPlayerState::GetEnergy() const

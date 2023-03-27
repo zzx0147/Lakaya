@@ -1,8 +1,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/BoxComponent.h"
 #include "Interactable/Interactable.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/Actor.h"
 #include "IndividualStaticEnergy.generated.h"
 
 UCLASS()
@@ -28,10 +29,10 @@ private:
 	
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UBoxComponent* Trigger;
+	UCapsuleComponent* Trigger;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* Box;
+	UStaticMeshComponent* Cylinder;
 	
 public:
 	void MakeAvailable();

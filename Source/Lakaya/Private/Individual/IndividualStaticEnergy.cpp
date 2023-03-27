@@ -9,16 +9,17 @@ AIndividualStaticEnergy::AIndividualStaticEnergy()
 	PrimaryActorTick.bCanEverTick = false;
 	Tags.Add("Interactable");
 	
-	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("Trigger"));
-	Box = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Box"));
+	Trigger = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Trigger"));
+	Cylinder = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Cylinder"));
 
 	RootComponent = Trigger;
-	Box->SetupAttachment(RootComponent);
+	Cylinder->SetupAttachment(RootComponent);
 
-	Trigger->SetBoxExtent(FVector(50.0f, 50.0f, 50.0f));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_BOX(TEXT("/Game/Dev/KDJ/Box_D50973B1.Box_D50973B1"));
-	if (SM_BOX.Succeeded())
-		Box->SetStaticMesh(SM_BOX.Object);
+	Trigger->SetCapsuleSize(50.0f, 50.0f, true);
+	Trigger->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Antenna(TEXT("/Game/Dev/KDJ/antenna_high.antenna_high"));
+	if (SM_Antenna.Succeeded())
+		Cylinder->SetStaticMesh(SM_Antenna.Object);
 	
 	Trigger->SetRelativeLocation(FVector::ZeroVector);
 
@@ -68,11 +69,15 @@ void AIndividualStaticEnergy::OnServerInteractionBegin(const float& Time, APawn*
 
 void AIndividualStaticEnergy::OnInteractionStart(APawn* Caller)
 {
+	// 비활성중이면 상호작용x
 	if (!bIsAvailable)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("StaticEnergy Not Available."));
 		return;
 	}
+
+	// TODO : 상호작용 시작하는 애니메이션 실행
+	// Animation
 	
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("StaticEnergy Get !"));
 	

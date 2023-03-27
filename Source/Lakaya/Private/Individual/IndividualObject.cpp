@@ -60,6 +60,9 @@ void AIndividualObject::OnInteractionStart(APawn* Caller)
 
 	InteractingStartTime = UGameplayStatics::GetRealTimeSeconds(this);
 
+	// TODO : 상호작용 시작하는 애니메이션 실행
+	// Animation
+	
 	// 시작 한 후 4초가 지나면 자동으로 성공.
 	GetWorldTimerManager().SetTimer(InteractionTimerHandle, this, &AIndividualObject::AutomaticInteractionStop, MaxInteractionDuration, false);
 }
@@ -85,8 +88,6 @@ void AIndividualObject::OnInteractionStop(APawn* Caller)
 		return;
 	}
 	
-	UE_LOG(LogTemp, Warning, TEXT("Cylinder InteractionStop !"));
-
 	InteractingStopTime = UGameplayStatics::GetRealTimeSeconds(this);
 
 	//InteractionStop 기능에서 타이머가 이미 만료되었는지 확인. 그렇지 않은 경우 타이머를 취소.
@@ -129,6 +130,9 @@ void AIndividualObject::OnInteractionStop(APawn* Caller)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Interaction Failed."));
 	}
+
+	// TODO : 상호작용 끝나는 애니메이션 실행
+	// Animation
 }
 
 void AIndividualObject::AutomaticInteractionStop()
