@@ -6,7 +6,6 @@
 #include "queue"
 #include "RemoteCallableSubObject.h"
 #include "GameFramework/GameStateBase.h"
-#include "Character/FocusableCharacter.h"
 #include "WeaponBase.generated.h"
 
 
@@ -55,8 +54,6 @@ protected:
 	 * @param CurrentTime 현재 시간입니다.
 	 */
 	virtual void ExecuteLateEvent(const uint8& EventNumber, const float& RequestTime, const float& CurrentTime);
-
-	virtual FColor GetDebugColor(const EFocusContext& FocusContext);
 
 private:
 	void EventTimerCallback();

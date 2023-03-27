@@ -17,18 +17,16 @@ class LAKAYA_API UStandardReload : public UWeaponReload
 
 public:
 	UStandardReload();
-	// UFUNCTION(NetMulticast, Reliable)
-	// void SetIsReload(bool bIsReload);
+	UFUNCTION(NetMulticast, Reliable)
+	void SetIsReload(bool bIsReload);
 
 protected:
 	virtual void SetupData(const FName& RowName) override;
-	virtual void ReloadStart() override;
 	virtual void OnReloadStart() override;
 	virtual void OnReloadStartNotify() override;
 
 private:
-	void ReloadCore(const EFocusContext& FocusContext, std::function<void()> OnFocus = nullptr,
-	                std::function<void()> OnRelease = nullptr, std::function<void()> OnElse = nullptr);
+	void ReloadCallback(const bool& IsSimulated = false);
 
 	UPROPERTY(EditAnywhere)
 	class UDataTable* ReloadTable;
@@ -41,4 +39,7 @@ private:
 
 	UPROPERTY(Replicated)
 	float ReloadDelay;
+
+	FTimerHandle ReloadTimer;
+	FTimerHandle ClientReloadTimer;
 };

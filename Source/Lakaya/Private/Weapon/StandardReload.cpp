@@ -3,6 +3,7 @@
 
 #include "Weapon/StandardReload.h"
 
+#include "Character/CharAnimInstance.h"
 #include "Character/FocusableCharacter.h"
 #include "Weapon/GunComponent.h"
 #include "Weapon/WeaponReloadData.h"
@@ -15,6 +16,15 @@ UStandardReload::UStandardReload()
 		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/WeaponReloadDataTable'"));
 
 	if (TableFinder.Succeeded()) ReloadTable = TableFinder.Object;
+}
+
+void UStandardReload::SetIsReload_Implementation(bool bIsReload)
+{
+	UCharAnimInstance* AnimInstance = Cast<UCharAnimInstance>(Character->GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->SetIsReload(bIsReload);
+	}
 }
 
 void UStandardReload::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -39,47 +49,51 @@ void UStandardReload::SetupData(const FName& RowName)
 	ReloadDelay = Data->ReloadDelay;
 }
 
-void UStandardReload::ReloadStart()
-{
-	ReloadCore(EFocusContext::Owner, [this] { Super::ReloadStart(); });
-}
-
 void UStandardReload::OnReloadStart()
 {
 	Super::OnReloadStart();
-	ReloadCore(EFocusContext::Server, nullptr, [this] { GunComponent->Reload(); },
-	           [this] { UE_LOG(LogNetSubObject, Error, TEXT("Fail to set focus on OnReloadStart!")); });
+
+	UE_LOG(LogNetSubObject, Log, TEXT("OnReloadStart"));
+
+	SetIsReload(true);
+
+	if (!Character->SetFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Reloading))
+	{
+		UE_LOG(LogNetSubObject, Log, TEXT("It was not focusable"));
+		return;
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(ReloadTimer,
+	                                       [this]
+	                                       {
+		                                       GunComponent->Reload();
+		                                       ReloadCallback();
+	                                       },
+	                                       ReloadDelay - LockstepDelay, false);
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Reload Started"));
 }
 
 void UStandardReload::OnReloadStartNotify()
 {
 	Super::OnReloadStartNotify();
-	ReloadCore(EFocusContext::Simulated, nullptr, nullptr,
-	           [this] { UE_LOG(LogNetSubObject, Error, TEXT("Fail to set focus on OnReloadStartNotify!")); });
+
+	if (!Character->SetFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Reloading))
+	{
+		UE_LOG(LogNetSubObject, Log, TEXT("Reload ignored in OnReloadStartNotify"));
+		return;
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(ClientReloadTimer,
+	                                       [this] { ReloadCallback(true); },
+	                                       ReloadDelay - LockstepDelay, false);
 }
 
-void UStandardReload::ReloadCore(const EFocusContext& FocusContext, std::function<void()> OnFocus,
-                                 std::function<void()> OnRelease, std::function<void()> OnElse)
+void UStandardReload::ReloadCallback(const bool& IsSimulated)
 {
-	if (Character->SetFocus(FocusContext, EFocusSpace::MainHand, EFocusState::Reloading))
-	{
-		if (OnFocus) OnFocus();
-
-		TSharedPtr<FTimerHandle> ReloadTimer = MakeShared<FTimerHandle>();
-
-		GetWorld()->GetTimerManager().SetTimer(*ReloadTimer, [this, FocusContext, OnRelease, ReloadTimer]
-		{
-			if (Character->ReleaseFocus(FocusContext, EFocusSpace::MainHand, EFocusState::Reloading))
-			{
-				if (OnRelease) OnRelease();
-				GEngine->AddOnScreenDebugMessage(-1, 3.f, GetDebugColor(FocusContext),TEXT("Reload Complete!"));
-			}
-			else
-				UE_LOG(LogNetSubObject, Error, TEXT("Fail to release focus on ReloadCore with %d context!"), FocusContext);
-		}, ReloadDelay, false);
-
-		GEngine->AddOnScreenDebugMessage(-1, 3, GetDebugColor(FocusContext),TEXT("Reload Timer Setted!"));
-	}
-	else if (OnElse) OnElse();
-	else UE_LOG(LogNetSubObject, Log, TEXT("Skip ReloadCore!"));
+	UE_LOG(LogNetSubObject, Log, TEXT("ReloadCallback"));
+	Character->ReleaseFocus(IsSimulated ? EFocusContext::Simulated : EFocusContext::Server, EFocusSpace::MainHand,
+	                        EFocusState::Reloading);
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, IsSimulated ? FColor::Red : FColor::White,
+	                                 TEXT("Reload Complete"));
+	SetIsReload(false);
 }

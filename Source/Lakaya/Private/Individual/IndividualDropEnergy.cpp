@@ -2,6 +2,7 @@
 #include "Character/CollectorPlayerState.h"
 #include "GameMode/IndividualGameMode.h"
 #include "Character/InteractableCharacter.h"
+#include "Chaos/PBDRigidClustering.h"
 
 AIndividualDropEnergy::AIndividualDropEnergy()
 {
@@ -21,10 +22,8 @@ AIndividualDropEnergy::AIndividualDropEnergy()
 	
 	Trigger->SetRelativeLocation(FVector::ZeroVector);
 
-	// Deactivate();
-	// SetReplicates(true);
-	// SetReplicateMovement(true);
-
+	Deactivate();
+	
 	bReplicates = true;
 }
 
@@ -33,91 +32,75 @@ void AIndividualDropEnergy::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AIndividualDropEnergy::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-}
-
 void AIndividualDropEnergy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-void AIndividualDropEnergy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void AIndividualDropEnergy::InteractionStart(const float& Time, APawn* Caller)
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-}
-
-void AIndividualDropEnergy::OnLocalInteractionBegin(APawn* Caller)
-{
-	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
-	{
-		UE_LOG(LogActor, Error, TEXT("1"));
-		CastedCaller->NoticeInstantInteractionLocal();
-	}
-	else UE_LOG(LogActor, Error, TEXT("OnLocalInteractionBegin::Caller was not AInteractableCharacter!"));
-}
-
-void AIndividualDropEnergy::OnServerInteractionBegin(const float& Time, APawn* Caller)
-{
-	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
-	{
-		UE_LOG(LogActor, Error, TEXT("2"));
-		CastedCaller->InitiateInteractionStart(Time, this);
-	}
-}
-
-void AIndividualDropEnergy::OnInteractionStart(APawn* Caller)
-{
-	UE_LOG(LogTemp, Warning, TEXT("DropEnergy Interaction."));
-
+	UE_LOG(LogTemp, Warning, TEXT("InteractionStart !"));
+	
 	if (Caller && Caller->GetController())
 	{
 		ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
 		if (CollectorPlayerState)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("OnInteractionStart: CollectorPlayerState is not null."));
 			AInteractableCharacter* Character = Cast<AInteractableCharacter>(Caller);
 			if (Character == nullptr)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("OnInteractionStart: Character is null."));
+				UE_LOG(LogTemp, Warning, TEXT("InteractionStart_Character is null."));
 				return;
 			}
-
+			// TODO : Interactionable, InteractionableCharacter 완성 시 적용.
+			// Character->OnInteractionSuccess();
 			CollectorPlayerState->GainEnergy(1);
 			UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 Energy"), *CollectorPlayerState->GetPlayerName());
 			UE_LOG(LogTemp, Warning, TEXT("Player Total Energy: %d"), CollectorPlayerState->GetEnergy());
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("OnInteractionStart: CollectorPlayerState is null."));
+			UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
 			return;
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OnInteractionStart: Invalid Caller or Controller."));
+		UE_LOG(LogTemp, Warning, TEXT("Invalid Caller or Controller."));
 	}
 
-	// Deactivate();
-	Destroy();
+	Deactivate();
 }
 
-void AIndividualDropEnergy::LocationSetDropEnergy(AController* DeadPlayer)
+void AIndividualDropEnergy::InteractionStop(const float& Time, APawn* Caller)
+{
+	UE_LOG(LogTemp, Warning, TEXT("InteractionStop !"));
+}
+
+void AIndividualDropEnergy::SetDropEnergy(AController* DeadPlayer)
 {
 	SetActorLocation(DeadPlayer->GetCharacter()->GetActorLocation());
+	UE_LOG(LogTemp, Warning, TEXT("SetDropEnergy Function()"));
 }
 
-// void AIndividualDropEnergy::Activate()
-// {
-// 	IsActive = true;
-// 	SetActorHiddenInGame(false);
-// 	SetActorEnableCollision(true);
-// }
-//
-// void AIndividualDropEnergy::Deactivate()
-// {
-// 	IsActive = false;
-// 	SetActorHiddenInGame(true);
-// 	SetActorEnableCollision(false);
-// }
+void AIndividualDropEnergy::Activate()
+{
+	SetActorHiddenInGame(false);
+	SetActorEnableCollision(true);
+	IsActive = true;
+}
+
+void AIndividualDropEnergy::Deactivate()
+{
+	SetActorHiddenInGame(true);
+	SetActorEnableCollision(false);
+	IsActive = false;
+}
+
+void AIndividualDropEnergy::OnServerInteractionBegin(const float& Time, APawn* Caller)
+{
+}
+
+void AIndividualDropEnergy::OnInteractionStart(APawn* Caller)
+{
+}

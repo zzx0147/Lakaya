@@ -48,8 +48,6 @@ void AInteractableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	TraceQueryParams.AddIgnoredActor(this);
-
-	if (InputSystem.IsValid()) InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
 
 void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -59,12 +57,11 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	// Add interaction context when overlapped by trigger
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
-	// TODO : 주석제거
-	// if (!InputSystem->HasMappingContext(InteractionContext))
-	// {
-	// 	InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
-	// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context added"));
-	// }
+	if (!InputSystem->HasMappingContext(InteractionContext))
+	{
+		InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context added"));
+	}
 }
 
 void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
@@ -74,12 +71,11 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	// Remove interaction context when far away from triggers
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	--InteractableCount;
-	// TODO : 주석제거
-	// if (InteractableCount == 0)
-	// {
-	// 	InputSystem->RemoveMappingContext(InteractionContext);
-	// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context removed"));
-	// }
+	if (InteractableCount == 0)
+	{
+		InputSystem->RemoveMappingContext(InteractionContext);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context removed"));
+	}
 }
 
 void AInteractableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)

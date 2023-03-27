@@ -132,3 +132,14 @@ void URiffleFireCore::SetFireCount(const EGunSelector& Selector, uint16& FireCou
 		return;
 	}
 }
+
+FColor URiffleFireCore::GetDebugColor(const EFocusContext& FocusContext)
+{
+	switch (FocusContext)
+	{
+	case EFocusContext::Server: return FColor::White;
+	case EFocusContext::Simulated: return FColor::Green;
+	case EFocusContext::Owner: return FColor::Yellow;
+	default: return FColor::Black;
+	}
+}

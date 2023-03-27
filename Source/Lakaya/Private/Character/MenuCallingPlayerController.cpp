@@ -8,7 +8,6 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "GameFramework/PlayerState.h"
-#include "UI/GameScoreBoardWidget.h"
 
 void AMenuCallingPlayerController::SetupInputComponent()
 {
@@ -55,16 +54,6 @@ void AMenuCallingPlayerController::BeginPlay()
 	if (auto LocalPlayer = GetLocalPlayer())
 		if (const auto Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
 			Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
-
-	UGameScoreBoardWidget* ScoreBoardWidget = NewObject<UGameScoreBoardWidget>(this, UGameScoreBoardWidget::StaticClass());
-	if (ScoreBoardWidget)
-	{
-		ScoreBoardWidget->AddToViewport();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ScoreBoardWidget is null."));
-	}
 }
 
 void AMenuCallingPlayerController::MenuHandler(const FInputActionValue& Value)

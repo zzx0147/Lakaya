@@ -19,17 +19,6 @@ void UWeaponBase::ExecuteLateEvent(const uint8& EventNumber, const float& Reques
 	       RequestTime, CurrentTime);
 }
 
-FColor UWeaponBase::GetDebugColor(const EFocusContext& FocusContext)
-{
-	switch (FocusContext)
-	{
-	case EFocusContext::Server: return FColor::White;
-	case EFocusContext::Simulated: return FColor::Green;
-	case EFocusContext::Owner: return FColor::Yellow;
-	default: return FColor::Black;
-	}
-}
-
 void UWeaponBase::EventTimerCallback()
 {
 	float NextEventRemainTime;
