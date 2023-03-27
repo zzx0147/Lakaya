@@ -54,6 +54,8 @@ void AMovableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (!HasAuthority()) GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
+
 	if (auto PlayerController = Cast<APlayerController>(Controller))
 		if (auto LocalPlayer = PlayerController->GetLocalPlayer())
 		{
@@ -133,5 +135,6 @@ void AMovableCharacter::Run(const FInputActionValue& Value)
 
 void AMovableCharacter::StopRunning(const FInputActionValue& Value)
 {
+	//TODO: RPC 함수가 조금 운나쁘게 호출되는 경우 쉬프트를 떼더라도 달리기가 멈추지 않는 문제가 발생합니다.
 	RequestStopRun();
 }

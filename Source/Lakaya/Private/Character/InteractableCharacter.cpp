@@ -82,6 +82,12 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	// }
 }
 
+void AInteractableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::KillCharacter(EventInstigator, DamageCauser);
+	if (InteractingActor.IsValid()) Cast<IInteractable>(InteractingActor)->OnCharacterDead(this);
+}
+
 void AInteractableCharacter::InitiateInteractionStart(const float& Time, AActor* Actor, const float& Duration)
 {
 	// Execute InteractionStartNotify when Duration is longer then LockstepDelay
@@ -151,6 +157,7 @@ void AInteractableCharacter::InteractionStartNotify_Implementation(const float& 
 		{
 			if (IsOwnedByLocalPlayer())
 			{
+				// 오너 컨텍스트는 LockstepDelay만큼 일찍 포커스를 해제합니다.
 				GetWorldTimerManager().SetTimer(OwnerInteractionTimer, [this]
 				{
 					if (ReleaseFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
@@ -166,6 +173,7 @@ void AInteractableCharacter::InteractionStartNotify_Implementation(const float& 
 				}, Duration - LockstepDelay, false);
 			}
 
+			// 서버와 시뮬레이트 컨텍스트는 Duration만큼 기다린 후 포커스를 해제합니다.
 			GetWorldTimerManager().SetTimer(InteractionTimer, [this]
 			{
 				if (HasAuthority())
@@ -185,7 +193,7 @@ void AInteractableCharacter::InteractionStartNotify_Implementation(const float& 
 				else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStartNotify! FocusState was %d"),
 				            GetFocusState(EFocusContext::Simulated,EFocusSpace::MainHand));
 			}, Duration, false);
-			
+
 			OnInteractionStarted.Broadcast(Time, Actor, Duration);
 		}
 		else UE_LOG(LogActor, Error, TEXT("Fail to set focus on InteractionStartNotify! FocusState was %d"),

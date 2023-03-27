@@ -39,48 +39,47 @@ void UStandardReload::SetupData(const FName& RowName)
 	ReloadDelay = Data->ReloadDelay;
 }
 
+void UStandardReload::ReloadStart()
+{
+	ReloadCore(EFocusContext::Owner, [this] { Super::ReloadStart(); });
+}
+
 void UStandardReload::OnReloadStart()
 {
 	Super::OnReloadStart();
-
-	UE_LOG(LogNetSubObject, Log, TEXT("OnReloadStart"));
-
-	if (!Character->SetFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Reloading))
-	{
-		UE_LOG(LogNetSubObject, Log, TEXT("It was not focusable"));
-		return;
-	}
-
-	GetWorld()->GetTimerManager().SetTimer(ReloadTimer,
-	                                       [this]
-	                                       {
-		                                       GunComponent->Reload();
-		                                       ReloadCallback();
-	                                       },
-	                                       ReloadDelay - LockstepDelay, false);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Reload Started"));
+	ReloadCore(EFocusContext::Server, nullptr, [this] { GunComponent->Reload(); },
+	           [this] { UE_LOG(LogNetSubObject, Error, TEXT("Fail to set focus on OnReloadStart!")); });
 }
 
 void UStandardReload::OnReloadStartNotify()
 {
 	Super::OnReloadStartNotify();
-
-	if (!Character->SetFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Reloading))
-	{
-		UE_LOG(LogNetSubObject, Log, TEXT("Reload ignored in OnReloadStartNotify"));
-		return;
-	}
-
-	GetWorld()->GetTimerManager().SetTimer(ClientReloadTimer,
-	                                       [this] { ReloadCallback(true); },
-	                                       ReloadDelay - LockstepDelay, false);
+	ReloadCore(EFocusContext::Simulated, nullptr, nullptr,
+	           [this] { UE_LOG(LogNetSubObject, Error, TEXT("Fail to set focus on OnReloadStartNotify!")); });
 }
 
-void UStandardReload::ReloadCallback(const bool& IsSimulated)
+void UStandardReload::ReloadCore(const EFocusContext& FocusContext, std::function<void()> OnFocus,
+                                 std::function<void()> OnRelease, std::function<void()> OnElse)
 {
-	UE_LOG(LogNetSubObject, Log, TEXT("ReloadCallback"));
-	Character->ReleaseFocus(IsSimulated ? EFocusContext::Simulated : EFocusContext::Server, EFocusSpace::MainHand,
-	                        EFocusState::Reloading);
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, IsSimulated ? FColor::Red : FColor::White,
-	                                 TEXT("Reload Complete"));
+	if (Character->SetFocus(FocusContext, EFocusSpace::MainHand, EFocusState::Reloading))
+	{
+		if (OnFocus) OnFocus();
+
+		TSharedPtr<FTimerHandle> ReloadTimer = MakeShared<FTimerHandle>();
+
+		GetWorld()->GetTimerManager().SetTimer(*ReloadTimer, [this, FocusContext, OnRelease, ReloadTimer]
+		{
+			if (Character->ReleaseFocus(FocusContext, EFocusSpace::MainHand, EFocusState::Reloading))
+			{
+				if (OnRelease) OnRelease();
+				GEngine->AddOnScreenDebugMessage(-1, 3.f, GetDebugColor(FocusContext),TEXT("Reload Complete!"));
+			}
+			else
+				UE_LOG(LogNetSubObject, Error, TEXT("Fail to release focus on ReloadCore with %d context!"), FocusContext);
+		}, ReloadDelay, false);
+
+		GEngine->AddOnScreenDebugMessage(-1, 3, GetDebugColor(FocusContext),TEXT("Reload Timer Setted!"));
+	}
+	else if (OnElse) OnElse();
+	else UE_LOG(LogNetSubObject, Log, TEXT("Skip ReloadCore!"));
 }

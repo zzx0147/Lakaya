@@ -4,7 +4,6 @@
 #include "Weapon/RiffleFireClient.h"
 
 #include "Weapon/GunComponent.h"
-#include "Character/ThirdPersonCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/ArrowComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -12,18 +11,14 @@
 void URiffleFireClient::OnFireStartNotify()
 {
 	Super::OnFireStartNotify();
-	FireStartCore(FireTimer,
-	              [this]
-	              {
-		              return Character->SetFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Firing);
-	              },
-	              [this] { ContinuousFireCore(Selector, FireCount); },
+	FireStartCore(FireTimer, EFocusContext::Simulated,
+	              [this] { SetFireCount(Selector, FireCount); },
 	              [this]
 	              {
 		              FreshFireCore(Selector, FireCount, FireTimer,
 		                            [this]
 		                            {
-			                            FireCallback(FireCount, FireTimer,
+			                            FireCallback(FireCount, FireTimer, EFocusContext::Simulated,
 			                                         [this] { return GunComponent->GetRemainBullets() <= 0; },
 			                                         [this]
 			                                         {
@@ -31,13 +26,7 @@ void URiffleFireClient::OnFireStartNotify()
 					                                         EFocusContext::Simulated, EFocusSpace::MainHand,
 					                                         EFocusState::Firing);
 			                                         },
-			                                         [this] { TraceVisualize(); },
-			                                         [this]
-			                                         {
-				                                         Character->ReleaseFocus(
-					                                         EFocusContext::Simulated, EFocusSpace::MainHand,
-					                                         EFocusState::Firing);
-			                                         });
+			                                         [this] { TraceVisualize(); });
 		                            });
 	              });
 }
@@ -45,19 +34,13 @@ void URiffleFireClient::OnFireStartNotify()
 void URiffleFireClient::OnFireStopNotify()
 {
 	Super::OnFireStopNotify();
-	FireStopCore(Selector, FireCount, true);
+	FireStopCore(Selector, FireCount, EFocusContext::Simulated);
 }
 
 void URiffleFireClient::OnSwitchSelectorNotify()
 {
 	Super::OnSwitchSelectorNotify();
-	SwitchSelectorCore(DesiredSelector, SelectorTimer,
-	                   [this] { UpdateSelector(DesiredSelector, Selector, true); },
-	                   [this]
-	                   {
-		                   return !Character->SetFocus(EFocusContext::Simulated, EFocusSpace::MainHand,
-		                                               EFocusState::Switching);
-	                   });
+	SwitchSelectorCore(DesiredSelector, Selector, SelectorTimer, EFocusContext::Simulated);
 }
 
 void URiffleFireClient::OnRep_Character()
@@ -70,17 +53,14 @@ void URiffleFireClient::OnRep_Character()
 void URiffleFireClient::TraceVisualize()
 {
 	FHitResult HitResult;
+	auto StartPoint = Character->GetActorLocation();
 
-	//TODO: BP_PlayerDummy 블루프린트 클래스에 [스켈레탈 메시 -> 스태틱 메시 -> 화살표 컴포넌트(Muzzle)] 의 위치를 받아 MuzzleLocation에 저장
-	USkeletalMeshComponent* SkeletalMeshComp = Character->GetMesh();
-	UStaticMeshComponent* StaticMeshComp = Cast<UStaticMeshComponent>(SkeletalMeshComp->GetChildComponent(0));
-	UArrowComponent* ArrowComp = Cast<UArrowComponent>(StaticMeshComp->GetChildComponent(0));
-	FVector MuzzleLocation = ArrowComp->GetComponentLocation();
-	
-	//TODO: 추후 총기 이펙트의 시작지점은 총구위치가 되도록 변경해야 합니다.
-	//auto StartPoint = Character->GetActorLocation();
-	//TODO: 총구 위치 변경함
-	auto StartPoint = MuzzleLocation;
+	//BP_PlayerDummy 블루프린트 클래스에 [스켈레탈 메시 -> 스태틱 메시 -> 화살표 컴포넌트(Muzzle)] 의 위치를 받아 MuzzleLocation에 저장
+	if (USkeletalMeshComponent* SkeletalMeshComp = Character->GetMesh())
+		if (UStaticMeshComponent* StaticMeshComp = Cast<UStaticMeshComponent>(SkeletalMeshComp->GetChildComponent(0)))
+			if (UArrowComponent* ArrowComp = Cast<UArrowComponent>(StaticMeshComp->GetChildComponent(0)))
+				StartPoint = ArrowComp->GetComponentLocation();
+
 	auto CameraLocation = Character->GetCamera()->GetComponentLocation();
 	auto Distance = Character->GetSpringArm()->TargetArmLength;
 
