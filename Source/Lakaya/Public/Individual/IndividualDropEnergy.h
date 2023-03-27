@@ -1,8 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Interactable/Interactable.h"
 #include "Components/SphereComponent.h"
+#include "Interactable/Interactable.h"
 #include "IndividualDropEnergy.generated.h"
 
 UCLASS()
@@ -15,7 +15,8 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
-
+	virtual void PostInitializeComponents() override;
+	
 protected:
 	virtual void Tick(float DeltaTime) override;
 
@@ -25,21 +26,22 @@ private:
 	virtual void OnLocalInteractionBegin(APawn* Caller) override;
 	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
 	virtual void OnInteractionStart(APawn* Caller) override;
+	
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USphereComponent* Trigger;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* Sphere;
-	
+
 public:
-	void SetDropEnergy(AController* DeadPlayer);
+	void LocationSetDropEnergy(AController* DeadPlayer);
 
 	void Activate();
 	void Deactivate();
-	
+
 public:
-	bool IsActive;
+	bool IsActive = false;
 
 public:
 	FTimerHandle VisibilityTimerHandle;

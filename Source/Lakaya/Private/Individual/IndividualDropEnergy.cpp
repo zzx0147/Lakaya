@@ -21,14 +21,21 @@ AIndividualDropEnergy::AIndividualDropEnergy()
 	
 	Trigger->SetRelativeLocation(FVector::ZeroVector);
 
-	Deactivate();
-    
+	// Deactivate();
+	// SetReplicates(true);
+	// SetReplicateMovement(true);
+
 	bReplicates = true;
 }
 
 void AIndividualDropEnergy::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void AIndividualDropEnergy::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 }
 
 void AIndividualDropEnergy::Tick(float DeltaTime)
@@ -63,52 +70,54 @@ void AIndividualDropEnergy::OnServerInteractionBegin(const float& Time, APawn* C
 void AIndividualDropEnergy::OnInteractionStart(APawn* Caller)
 {
 	UE_LOG(LogTemp, Warning, TEXT("DropEnergy Interaction."));
-	
+
 	if (Caller && Caller->GetController())
 	{
 		ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
 		if (CollectorPlayerState)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("OnInteractionStart: CollectorPlayerState is not null."));
 			AInteractableCharacter* Character = Cast<AInteractableCharacter>(Caller);
 			if (Character == nullptr)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("InteractionStart_Character is null."));
+				UE_LOG(LogTemp, Warning, TEXT("OnInteractionStart: Character is null."));
 				return;
 			}
-			
+
 			CollectorPlayerState->GainEnergy(1);
 			UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 Energy"), *CollectorPlayerState->GetPlayerName());
 			UE_LOG(LogTemp, Warning, TEXT("Player Total Energy: %d"), CollectorPlayerState->GetEnergy());
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
+			UE_LOG(LogTemp, Warning, TEXT("OnInteractionStart: CollectorPlayerState is null."));
 			return;
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Invalid Caller or Controller."));
+		UE_LOG(LogTemp, Warning, TEXT("OnInteractionStart: Invalid Caller or Controller."));
 	}
-	
-	Deactivate();
+
+	// Deactivate();
+	Destroy();
 }
 
-void AIndividualDropEnergy::SetDropEnergy(AController* DeadPlayer)
+void AIndividualDropEnergy::LocationSetDropEnergy(AController* DeadPlayer)
 {
 	SetActorLocation(DeadPlayer->GetCharacter()->GetActorLocation());
 }
 
-void AIndividualDropEnergy::Activate()
-{
-	IsActive = true;
-	SetActorHiddenInGame(false);
-	SetActorEnableCollision(true);
-}
-
-void AIndividualDropEnergy::Deactivate()
-{
-	IsActive = false;
-	SetActorHiddenInGame(true);
-	SetActorEnableCollision(false);
-}
+// void AIndividualDropEnergy::Activate()
+// {
+// 	IsActive = true;
+// 	SetActorHiddenInGame(false);
+// 	SetActorEnableCollision(true);
+// }
+//
+// void AIndividualDropEnergy::Deactivate()
+// {
+// 	IsActive = false;
+// 	SetActorHiddenInGame(true);
+// 	SetActorEnableCollision(false);
+// }

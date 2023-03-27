@@ -35,8 +35,8 @@ void AIndividualGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	DropEnergyPool = GetWorld()->SpawnActor<ADropEnergyPool>(ADropEnergyPool::StaticClass());
-	DropEnergyPool->Initialize(30);
+	// DropEnergyPool = GetWorld()->SpawnActor<ADropEnergyPool>(ADropEnergyPool::StaticClass());
+	// DropEnergyPool->Initialize(30);
 }
 
 void AIndividualGameMode::PostInitializeComponents()
@@ -105,8 +105,9 @@ void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
 
 void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
 {
-	// 사망한 플레이어에게서 드랍된 것처럼 보이게끔 구현.
-	AIndividualDropEnergy* DropEnergy = DropEnergyPool->GetDropEnergy();
+	
+	
+	AIndividualDropEnergy* DropEnergy = GetWorld()->SpawnActor<AIndividualDropEnergy>();
 	if (DropEnergy == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("DropEnergy is null."));
@@ -114,21 +115,12 @@ void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
 	}
 	
 	// 위치 조정
-	DropEnergy->SetDropEnergy(DeadPlayer);
-
+	DropEnergy->LocationSetDropEnergy(DeadPlayer);
+	
 	// 생명 주기
 	GetWorld()->GetTimerManager().SetTimer(DropEnergy->VisibilityTimerHandle, [DropEnergy]()
    {
-		if (DropEnergy->IsHidden())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Hidden true"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Hidden false"));
-		}
-		
-		// DropEnergyPool->ReturnDropEnergy(DropEnergy);
+		DropEnergy->Destroy();
    }, 3.0f, false);
 }
 
@@ -250,3 +242,38 @@ void AIndividualGameMode::OnKilledCharacter(AController* VictimController, AActo
 		RespawnTimers.Add(DeadPlayer, NewTimer);
 	}
 }
+
+// 사망한 플레이어에게서 드랍된 것처럼 보이게끔 구현.
+// AIndividualDropEnergy* DropEnergy = DropEnergyPool->GetDropEnergy();
+// if (DropEnergy == nullptr)
+// {
+// UE_LOG(LogTemp, Warning, TEXT("DropEnergy is null."));
+// return;
+// }
+
+// bool AIndividualGameMode::CheckDropEnergyActorPresence(AIndividualDropEnergy* DropEnergy) const
+// {
+// 	// Check if the pointer to the DropEnergy actor is valid
+// 	if (!DropEnergy)
+// 	{
+// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("DropEnergy actor pointer is invalid."));
+// 		return false;
+// 	}
+// 	
+// 	// Retrieve the DropEnergyActor from the game mode
+// 	AIndividualDropEnergy* DropEnergyActor = DropEnergy;
+//     
+// 	// Check if the actor is initialized, tick enabled, and not being destroyed
+// 	if (DropEnergyActor && DropEnergyActor->IsActorInitialized() && DropEnergyActor->IsActorTickEnabled() && !DropEnergyActor->IsActorBeingDestroyed())
+// 	{
+// 		// The client is aware of the existence of the DropEnergy actor
+// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("DroipEnergyActor is Available."));
+// 		return true;
+// 	}
+// 	else
+// 	{
+// 		// The client is not aware of the existence of the DropEnergy actor
+// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("DroipEnergyActor is Not Available."));
+// 		return false;
+// 	}
+// }

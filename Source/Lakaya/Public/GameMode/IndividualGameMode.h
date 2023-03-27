@@ -37,7 +37,7 @@ private:
 	void RespawnPlayer(AController* Controller);
 
 	void SpawnDropEnergy(AController* DeadPlayer);
-
+	
 private:
 	ADropEnergyPool* DropEnergyPool;
 	
