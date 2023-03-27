@@ -11,24 +11,23 @@
 void URiffleFireClient::OnFireStartNotify()
 {
 	Super::OnFireStartNotify();
-	FireStartCore(FireTimer, EFocusContext::Simulated,
-	              [this] { SetFireCount(Selector, FireCount); },
-	              [this]
-	              {
-		              FreshFireCore(Selector, FireCount, FireTimer,
-		                            [this]
-		                            {
-			                            FireCallback(FireCount, FireTimer, EFocusContext::Simulated,
-			                                         [this] { return GunComponent->GetRemainBullets() <= 0; },
-			                                         [this]
-			                                         {
-				                                         Character->ReleaseFocus(
-					                                         EFocusContext::Simulated, EFocusSpace::MainHand,
-					                                         EFocusState::Firing);
-			                                         },
-			                                         [this] { TraceVisualize(); });
-		                            });
-	              });
+	FireStartCore(FireTimer, EFocusContext::Simulated, FireCount, [this]
+	{
+		SetFireCount(Selector, FireCount);
+	}, [this]
+	{
+		FreshFireCore(Selector, FireCount, FireTimer, [this]
+		{
+			FireCallback(FireCount, FireTimer, EFocusContext::Simulated, [this]
+			{
+				return GunComponent->GetRemainBullets() <= 0;
+			}, [this]
+			{
+				if (!Character->ReleaseFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Firing))
+					UE_LOG(LogNetSubObject, Error, TEXT("Fail to release focus on OnFireStartNotify!"));
+			}, [this] { TraceVisualize(); });
+		});
+	});
 }
 
 void URiffleFireClient::OnFireStopNotify()
