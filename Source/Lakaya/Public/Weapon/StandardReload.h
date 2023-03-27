@@ -17,6 +17,8 @@ class LAKAYA_API UStandardReload : public UWeaponReload
 
 public:
 	UStandardReload();
+	UFUNCTION(NetMulticast, Reliable)
+	void SetIsReload(bool bIsReload);
 
 protected:
 	virtual void SetupData(const FName& RowName) override;

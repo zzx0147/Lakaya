@@ -14,7 +14,16 @@ class LAKAYA_API UCharAnimInstance : public UAnimInstance
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Reload")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reload")
 	bool bIsReload;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crouch")
+	bool bIsCrouch;
+	
+	UFUNCTION(BlueprintCallable, Category = "Reload")
+	void SetIsReload(bool ReloadValue);
+
+	UFUNCTION(BlueprintCallable, Category = "Crouch")
+	void SetIsCrouching(bool CrouchValue);
 	
 };
