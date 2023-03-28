@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "FocusableCharacter.h"
 #include "CharAnimInstance.generated.h"
 /**
  * 
@@ -23,13 +24,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crouch")
 	bool bIsCrouch;
 
-	UFUNCTION(BlueprintCallable, Category = "Fire")
-	void SetIsGPSFire(bool GPSFireValue);
-	
-	UFUNCTION(BlueprintCallable, Category = "Reload")
-	void SetIsReload(bool ReloadValue);
-
 	UFUNCTION(BlueprintCallable, Category = "Crouch")
 	void SetIsCrouching(bool CrouchValue);
+
+	UFUNCTION(BlueprintCallable, Category = "Focus")
+	void SetState(EFocusState state);
 	
+	virtual void NativeBeginPlay() override;
 };

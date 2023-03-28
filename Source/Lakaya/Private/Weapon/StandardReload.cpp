@@ -18,16 +18,6 @@ UStandardReload::UStandardReload()
 	if (TableFinder.Succeeded()) ReloadTable = TableFinder.Object;
 }
 
-// void UStandardReload::SetIsReload_Implementation(bool bIsReload)
-// {
-// 	UCharAnimInstance* AnimInstance =
-// 		Cast<UCharAnimInstance>(Character->GetMesh()->GetAnimInstance());
-// 	if (AnimInstance)
-// 	{
-// 		AnimInstance->SetIsReload(bIsReload);
-// 	}
-// }
-
 void UStandardReload::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -53,7 +43,6 @@ void UStandardReload::SetupData(const FName& RowName)
 void UStandardReload::ReloadStart()
 {
 	ReloadCore(EFocusContext::Owner, [this] { Super::ReloadStart(); });
-	//SetIsReload(true);
 }
 
 void UStandardReload::OnReloadStart()
@@ -85,7 +74,6 @@ void UStandardReload::ReloadCore(const EFocusContext& FocusContext, std::functio
 			{
 				if (OnRelease) OnRelease();
 				GEngine->AddOnScreenDebugMessage(-1, 3.f, GetDebugColor(FocusContext),TEXT("Reload Complete!"));
-				//SetIsReload(false);
 			}
 			else
 				UE_LOG(LogNetSubObject, Error, TEXT("Fail to release focus on ReloadCore with %d context!"), FocusContext);
