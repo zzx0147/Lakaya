@@ -126,7 +126,6 @@ private:
 	}
 
 public:
-	UPROPERTY(EditAnywhere)
 	TMap<EFocusContext, TMap<EFocusSpace, FFocusChangedSignature>> OnFocusChanged;
 
 private:

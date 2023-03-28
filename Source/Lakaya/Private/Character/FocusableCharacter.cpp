@@ -18,6 +18,7 @@ void AFocusableCharacter::SetFocusForce(const EFocusContext& Context, const EFoc
 	if (CurrentState != EFocusState::None)
 		UE_LOG(LogActor, Warning, TEXT("FocusState was not None! It was %d"), CurrentState);
 	CurrentState = State;
+	BroadcastFocusEvent(Context, Space, State);
 }
 
 bool AFocusableCharacter::ReleaseFocus(const EFocusContext& Context, const EFocusSpace& Space, const EFocusState& State)
@@ -36,6 +37,7 @@ void AFocusableCharacter::ReleaseFocusForce(const EFocusContext& Context, const 
 	if (State != EFocusState::None && State != CurrentState)
 		UE_LOG(LogActor, Error, TEXT("Current state matching error on ReleaseFocusForce!"));
 	CurrentState = EFocusState::None;
+	BroadcastFocusEvent(Context, Space, State);
 }
 
 bool AFocusableCharacter::IsFocussed(const EFocusContext& Context, const EFocusSpace& Space,
