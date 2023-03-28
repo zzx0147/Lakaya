@@ -25,7 +25,13 @@ public:
 	virtual void UpgradeWeapon();
 
 protected:
+	virtual void BeginPlay() override;
+
+protected:
 	virtual void SetupData();
+
+	//UFUNCTION( Client , Reliable )
+	virtual void SetupUI();
 
 public:
 	inline void FireStart() { if (FireSubObject) FireSubObject->FireStart(); }
@@ -58,6 +64,10 @@ protected:
 
 private:
 	bool bIsDataSetupRequested;
+
+private:
+	class UGamePlayConsecutiveKillsWidget* ConsecutiveKillsWidget;
+	int8 UpgradeLevel;
 };
 
 template <class T>

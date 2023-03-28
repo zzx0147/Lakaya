@@ -113,7 +113,7 @@ void AArmedCharacter::KillCharacter(AController* EventInstigator, AActor* Damage
 {
 	Super::KillCharacter(EventInstigator, DamageCauser);
 	auto Causer = Cast<AArmedCharacter>(DamageCauser);
-	if (Causer) PrimaryWeapon->UpgradeWeapon();
+	if (Causer) Causer->PrimaryWeapon->UpgradeWeapon();
 }
 
 void AArmedCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)

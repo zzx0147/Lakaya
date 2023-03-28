@@ -18,9 +18,14 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
+public:
+	void SetConsecutiveKills(int8 NewConsecutiveKills);
+
 protected:
 	//연속 처치가 변경될 때 호출되는 함수(연결은 안되어있음)
-	void OnChangeConsecutiveKills(int NewConsecutiveKills);
+	void OnChangeConsecutiveKills(int8 NewConsecutiveKills);
+
+
 
 private:
 	UProgressBar* ConsecutiveKillsProgressBar;//연속처치를 표기하는 프로그래스 바

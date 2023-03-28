@@ -26,7 +26,12 @@ void UGamePlayConsecutiveKillsWidget::NativeTick(const FGeometry& MyGeometry, fl
 	Super::NativeTick(MyGeometry, InDeltaTime);
 }
 
-void UGamePlayConsecutiveKillsWidget::OnChangeConsecutiveKills(int NewConsecutiveKills)
+void UGamePlayConsecutiveKillsWidget::SetConsecutiveKills(int8 NewConsecutiveKills)
+{
+	OnChangeConsecutiveKills(NewConsecutiveKills);
+}
+
+void UGamePlayConsecutiveKillsWidget::OnChangeConsecutiveKills(int8 NewConsecutiveKills)
 {
 	//새로운 연속처치 값을 저장후 프로그래스바 업데이트
 	ConsecutiveKills = NewConsecutiveKills;

@@ -7,11 +7,15 @@
 #include "Weapon/WeaponFire.h"
 #include "Engine/DataTable.h"
 #include "Net/UnrealNetwork.h"
+#include "UI/GamePlayConsecutiveKillsWidget.h"
+#include "GameFramework/PlayerController.h"
+#include "GameFramework/Character.h"
 
 UWeaponComponent::UWeaponComponent()
 {
 	bReplicateUsingRegisteredSubObjectList = true;
 	bIsDataSetupRequested = false;
+	UpgradeLevel = 0;
 
 	static const ConstructorHelpers::FObjectFinder<UDataTable> DataFinder(
 		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/WeaponAssetDataTable'"));
@@ -35,7 +39,23 @@ void UWeaponComponent::RequestSetupData(const FName& RowName)
 void UWeaponComponent::UpgradeWeapon()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Upgraded"));
+	UpgradeLevel++;
+	if (ConsecutiveKillsWidget != nullptr)
+	{
+		ConsecutiveKillsWidget->SetConsecutiveKills(UpgradeLevel);
+		
+	}
+
 	//TODO: 무기가 업그레이드 될 때 어떤 행동을 할 지 정의합니다.
+}
+
+void UWeaponComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	
+
+	//SetupUI();
 }
 
 void UWeaponComponent::SetupData()
@@ -54,6 +74,38 @@ void UWeaponComponent::SetupData()
 		UE_LOG(LogTemp, Warning, TEXT("AbilitySubObject is NOT replicated"));
 	if (!IsReplicatedSubObjectRegistered(ReloadSubObject))
 		UE_LOG(LogTemp, Warning, TEXT("ReloadSubObject is NOT replicated"));
+}
+
+void UWeaponComponent::SetupUI()
+{
+	UClass* ConsecutiveKiilsWidgetClass = LoadClass<UGamePlayConsecutiveKillsWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_GamePlayConsecutiveKillsWidget.WBP_GamePlayConsecutiveKillsWidget_C"));
+	if (ConsecutiveKiilsWidgetClass != nullptr)
+	{
+		ACharacter* MyCharacter = Cast<ACharacter>(this->GetOwner());
+		if (MyCharacter != nullptr)
+		{
+			APlayerController* MyController = Cast<APlayerController>(MyCharacter->GetController());
+			if (MyController != nullptr)
+			{
+				ConsecutiveKillsWidget = CreateWidget<UGamePlayConsecutiveKillsWidget>(MyController, ConsecutiveKiilsWidgetClass);
+				if (ConsecutiveKillsWidget != nullptr)
+				{
+					APlayerController* Owner = ConsecutiveKillsWidget->GetOwningPlayer();
+					if (Owner != nullptr)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Owner is Avaliable"));
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Owner is Not Avaliable"));
+					}
+
+					ConsecutiveKillsWidget->AddToViewport();
+					ConsecutiveKillsWidget->SetConsecutiveKills(0);
+				}
+			}
+		}
+	}
 }
 
 void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
