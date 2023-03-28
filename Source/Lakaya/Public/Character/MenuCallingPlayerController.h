@@ -24,8 +24,8 @@ protected:
 
 private:
 	void MenuHandler(const FInputActionValue& Value);
-	void WeaponHandler(const FInputActionValue& Value);
-	void ArmorHandler(const FInputActionValue& Value);
+	void LoadoutHandler(const FInputActionValue& Value);
+	void ScoreHandler(const FInputActionValue& Value);
 
 private:
 	UPROPERTY(EditAnywhere, Category=Input)
@@ -38,8 +38,8 @@ private:
 	class UInputAction* MenuAction;
 
 	UPROPERTY(EditAnywhere, Category=Input)
-	UInputAction* WeaponLoadoutAction;
+	UInputAction* LoadoutAction;
 
-	UPROPERTY(EditAnywhere, Category=Input)
-	UInputAction* ArmorLoadoutAction;
+	UPROPERTY(EditAnywhere)
+	UInputAction* ScoreAction;
 };
