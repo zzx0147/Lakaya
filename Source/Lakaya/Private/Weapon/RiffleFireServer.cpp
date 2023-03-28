@@ -23,53 +23,35 @@ URiffleFireServer::URiffleFireServer()
 void URiffleFireServer::OnFireStart()
 {
 	Super::OnFireStart();
-	FireStartCore(FireTimer,
-	              [this]
-	              {
-		              return Character->SetFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Firing);
-	              },
-	              [this] { ContinuousFireCore(Selector, FireCount); },
-	              [this]
-	              {
-		              FreshFireCore(Selector, FireCount, FireTimer,
-		                            [this]
-		                            {
-			                            FireCallback(FireCount, FireTimer,
-			                                         [this] { return !GunComponent->CostBullets(1); },
-			                                         [this]
-			                                         {
-				                                         Character->ReleaseFocus(
-					                                         EFocusContext::Server, EFocusSpace::MainHand,
-					                                         EFocusState::Firing);
-				                                         EmptyMagazine();
-			                                         },
-			                                         [this] { TraceFire(); },
-			                                         [this]
-			                                         {
-				                                         Character->ReleaseFocus(
-					                                         EFocusContext::Server, EFocusSpace::MainHand,
-					                                         EFocusState::Firing);
-			                                         });
-		                            });
-	              });
+	FireStartCore(FireTimer, EFocusContext::Server, FireCount, [this]
+	{
+		SetFireCount(Selector, FireCount);
+	}, [this]
+	{
+		FreshFireCore(Selector, FireCount, FireTimer, [this]
+		{
+			FireCallback(FireCount, FireTimer, EFocusContext::Server, [this]
+			{
+				return !GunComponent->CostBullets(1);
+			}, [this]
+			{
+				if (!Character->ReleaseFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Firing))
+					UE_LOG(LogNetSubObject, Error, TEXT("Fail to release focus on OnFireStart with authority!"));
+			}, [this] { TraceFire(); });
+		});
+	});
 }
 
 void URiffleFireServer::OnFireStop()
 {
 	Super::OnFireStop();
-	FireStopCore(Selector, FireCount, false);
+	FireStopCore(Selector, FireCount, EFocusContext::Server);
 }
 
 void URiffleFireServer::OnSwitchSelector()
 {
 	Super::OnSwitchSelector();
-	SwitchSelectorCore(DesiredSelector, SelectorTimer,
-	                   [this] { UpdateSelector(DesiredSelector, Selector, false); },
-	                   [this]
-	                   {
-		                   return !Character->SetFocus(EFocusContext::Server, EFocusSpace::MainHand,
-		                                               EFocusState::Switching);
-	                   });
+	SwitchSelectorCore(DesiredSelector, Selector, SelectorTimer, EFocusContext::Server);
 }
 
 void URiffleFireServer::SetupData(const FName& RowName)

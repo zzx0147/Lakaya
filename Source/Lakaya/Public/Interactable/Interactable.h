@@ -61,6 +61,12 @@ public:
 	 */
 	virtual void OnInteractionStop(APawn* Caller) { return; }
 
+	/**
+	 * @brief 인터렉션 중이던 캐릭터가 사망하면 호출됩니다. 이 함수는 서버측에서 호출됩니다.
+	 * @param Caller 사망한 캐릭터입니다.
+	 */
+	virtual void OnCharacterDead(APawn* Caller) { return; }
+
 
 	virtual void InteractionStart(const float& Time, APawn* Caller) { return; }
 	virtual void InteractionStop(const float& Time, APawn* Caller) { return; }

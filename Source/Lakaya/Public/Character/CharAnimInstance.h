@@ -14,11 +14,17 @@ class LAKAYA_API UCharAnimInstance : public UAnimInstance
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire")
+	bool bIsGPSFire;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reload")
 	bool bIsReload;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crouch")
 	bool bIsCrouch;
+
+	UFUNCTION(BlueprintCallable, Category = "Fire")
+	void SetIsGPSFire(bool GPSFireValue);
 	
 	UFUNCTION(BlueprintCallable, Category = "Reload")
 	void SetIsReload(bool ReloadValue);

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Interactable/Interactable.h"
 #include "Components/SphereComponent.h"
+#include "Interactable/Interactable.h"
 #include "IndividualDropEnergy.generated.h"
 
 UCLASS()
@@ -15,18 +15,17 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
-
+	virtual void PostInitializeComponents() override;
+	
 protected:
 	virtual void Tick(float DeltaTime) override;
 
-private:
-	virtual void InteractionStart(const float& Time, APawn* Caller) override;
-	virtual void InteractionStop(const float& Time, APawn* Caller) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-public:
-	void SetDropEnergy(AController* DeadPlayer);
-	void Activate();
-	void Deactivate();
+private:
+	virtual void OnLocalInteractionBegin(APawn* Caller) override;
+	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
+	virtual void OnInteractionStart(APawn* Caller) override;
 	
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
@@ -36,9 +35,14 @@ private:
 	UStaticMeshComponent* Sphere;
 
 public:
-	bool IsActive;
+	void LocationSetDropEnergy(AController* DeadPlayer);
 
-	// IInteractable을(를) 통해 상속됨
-	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
-	virtual void OnInteractionStart(APawn* Caller) override;
+	void Activate();
+	void Deactivate();
+
+public:
+	bool IsActive = false;
+
+public:
+	FTimerHandle VisibilityTimerHandle;
 };

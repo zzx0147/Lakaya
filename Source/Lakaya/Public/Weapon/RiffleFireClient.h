@@ -4,15 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "RiffleFireServer.h"
+#include "Character/CharAnimInstance.h"
 #include "RiffleFireClient.generated.h"
 
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class LAKAYA_API URiffleFireClient : public URiffleFireServer
 {
 	GENERATED_BODY()
+
+public:
+	UFUNCTION(NetMulticast, Reliable)
+	void SetIsGPSFire(bool bIsGPSFire);
 
 protected:
 	virtual void OnFireStartNotify() override;

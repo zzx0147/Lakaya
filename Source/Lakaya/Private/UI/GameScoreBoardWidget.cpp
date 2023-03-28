@@ -13,12 +13,15 @@ UGameScoreBoardWidget::UGameScoreBoardWidget(const FObjectInitializer& ObjectIni
 {
 }
 
-
-
 void UGameScoreBoardWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	ScoreBoardPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("ScoreBoard_Pan")));
+	if (ScoreBoardPanel == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ScoreBoardPanel is null."));
+		return;
+	}
 
 	InitScoreBoardElements(6);
 }
@@ -36,13 +39,13 @@ void UGameScoreBoardWidget::InitScoreBoardElements(int8 ElementsNum)
 	}
 
 	//ScoreBoardElement의 블루프린트 위젯 클래스를 로드
-	UClass* temp = LoadClass<UUserWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_ScoreBoardElement.WBP_ScoreBoardElement_C"));
+	UClass* ScoreBoardElementClass  = LoadClass<UUserWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_ScoreBoardElement.WBP_ScoreBoardElement_C"));
 
-	if (temp != nullptr)
+	if (ScoreBoardElementClass  != nullptr)
 	{
 		for (int8 i = 0; i < ElementsNum; i++)
 		{
-			UUserWidget* newWidget = CreateWidget<UUserWidget>(this, temp);
+			UUserWidget* newWidget = CreateWidget<UUserWidget>(this, ScoreBoardElementClass );
 			if (newWidget != nullptr)
 			{
 				ScoreBoardPanel->AddChild(newWidget);

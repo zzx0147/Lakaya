@@ -22,11 +22,13 @@ public:
 
 protected:
 	virtual void SetupData(const FName& RowName) override;
+	virtual void ReloadStart() override;
 	virtual void OnReloadStart() override;
 	virtual void OnReloadStartNotify() override;
 
 private:
-	void ReloadCallback(const bool& IsSimulated = false);
+	void ReloadCore(const EFocusContext& FocusContext, std::function<void()> OnFocus = nullptr,
+	                std::function<void()> OnRelease = nullptr, std::function<void()> OnElse = nullptr);
 
 	UPROPERTY(EditAnywhere)
 	class UDataTable* ReloadTable;
@@ -39,7 +41,4 @@ private:
 
 	UPROPERTY(Replicated)
 	float ReloadDelay;
-
-	FTimerHandle ReloadTimer;
-	FTimerHandle ClientReloadTimer;
 };

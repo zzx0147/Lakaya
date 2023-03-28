@@ -48,6 +48,8 @@ void AInteractableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	TraceQueryParams.AddIgnoredActor(this);
+
+	if (InputSystem.IsValid()) InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
 
 void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -57,11 +59,12 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	// Add interaction context when overlapped by trigger
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
-	if (!InputSystem->HasMappingContext(InteractionContext))
-	{
-		InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context added"));
-	}
+	// TODO : 주석제거
+	// if (!InputSystem->HasMappingContext(InteractionContext))
+	// {
+	// 	InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
+	// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context added"));
+	// }
 }
 
 void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
@@ -71,11 +74,18 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	// Remove interaction context when far away from triggers
 	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	--InteractableCount;
-	if (InteractableCount == 0)
-	{
-		InputSystem->RemoveMappingContext(InteractionContext);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context removed"));
-	}
+	// TODO : 주석제거
+	// if (InteractableCount == 0)
+	// {
+	// 	InputSystem->RemoveMappingContext(InteractionContext);
+	// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context removed"));
+	// }
+}
+
+void AInteractableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::KillCharacter(EventInstigator, DamageCauser);
+	if (InteractingActor.IsValid()) Cast<IInteractable>(InteractingActor)->OnCharacterDead(this);
 }
 
 void AInteractableCharacter::InitiateInteractionStart(const float& Time, AActor* Actor, const float& Duration)
@@ -147,6 +157,7 @@ void AInteractableCharacter::InteractionStartNotify_Implementation(const float& 
 		{
 			if (IsOwnedByLocalPlayer())
 			{
+				// 오너 컨텍스트는 LockstepDelay만큼 일찍 포커스를 해제합니다.
 				GetWorldTimerManager().SetTimer(OwnerInteractionTimer, [this]
 				{
 					if (ReleaseFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
@@ -162,6 +173,7 @@ void AInteractableCharacter::InteractionStartNotify_Implementation(const float& 
 				}, Duration - LockstepDelay, false);
 			}
 
+			// 서버와 시뮬레이트 컨텍스트는 Duration만큼 기다린 후 포커스를 해제합니다.
 			GetWorldTimerManager().SetTimer(InteractionTimer, [this]
 			{
 				if (HasAuthority())
@@ -181,7 +193,7 @@ void AInteractableCharacter::InteractionStartNotify_Implementation(const float& 
 				else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStartNotify! FocusState was %d"),
 				            GetFocusState(EFocusContext::Simulated,EFocusSpace::MainHand));
 			}, Duration, false);
-			
+
 			OnInteractionStarted.Broadcast(Time, Actor, Duration);
 		}
 		else UE_LOG(LogActor, Error, TEXT("Fail to set focus on InteractionStartNotify! FocusState was %d"),

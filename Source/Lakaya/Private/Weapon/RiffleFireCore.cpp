@@ -4,7 +4,6 @@
 #include "Weapon/RiffleFireCore.h"
 
 #include "Weapon/GunComponent.h"
-#include "Character/FocusableCharacter.h"
 #include "Net/UnrealNetwork.h"
 
 void URiffleFireCore::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -20,35 +19,42 @@ void URiffleFireCore::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME_CONDITION(URiffleFireCore, Character, COND_InitialOnly);
 }
 
-void URiffleFireCore::FireStartCore(FTimerHandle& FireTimer, std::function<bool()>
-                                    FocusableDeterminant, std::function<void()> OnContinuousFire,
-                                    std::function<void()> OnFreshFire)
+void URiffleFireCore::FireStartCore(FTimerHandle& FireTimer, const EFocusContext& FocusContext,
+                                    const uint16& FireCount, std::function<void()> OnContinuousFire,
+                                    std::function<void()> OnFreshFire, std::function<void()> OnElse)
 {
-	if (FocusableDeterminant()) OnFreshFire();
-	else if (GetWorld()->GetTimerManager().IsTimerActive(FireTimer)) OnContinuousFire();
+	auto IsFocusable = Character->SetFocus(FocusContext, EFocusSpace::MainHand, EFocusState::Firing);
+	if (GetWorld()->GetTimerManager().IsTimerActive(FireTimer)) { if (FireCount == 0) OnContinuousFire(); }
+	else if (IsFocusable) OnFreshFire();
+	else if (OnElse) OnElse();
+	else UE_LOG(LogNetSubObject, Log, TEXT("FireStartCore skipped!"));
 }
 
-void URiffleFireCore::FireStopCore(const EGunSelector& Selector, uint16& FireCount, const bool& IsSimulated)
+void URiffleFireCore::FireStopCore(const EGunSelector& Selector, uint16& FireCount, const EFocusContext& FocusContext,
+                                   std::function<void()> OnStop)
 {
 	if (Selector == EGunSelector::Auto)
 	{
-		FireCount = 0;
-		if (!Character->ReleaseFocus(IsSimulated ? EFocusContext::Simulated : EFocusContext::Server,
-		                             EFocusSpace::MainHand, EFocusState::Firing))
-			UE_LOG(LogNetSubObject, Error, TEXT("Fail to release focus on FireStopCore!"))
+		if (Character->ReleaseFocus(FocusContext, EFocusSpace::MainHand, EFocusState::Firing))
+		{
+			FireCount = 0;
+			if (OnStop) OnStop();
+		}
+		else UE_LOG(LogNetSubObject, Error, TEXT("Fail to release focus on FireStopCore with %d context!"),
+		            FocusContext);
 	}
 }
 
-void URiffleFireCore::SwitchSelectorCore(EGunSelector& DesiredSelector, FTimerHandle& SelectorTimer,
-                                         std::function<void()> OnUpdateSelector,
-                                         std::function<bool()> NotFocusableDeterminant)
+void URiffleFireCore::SwitchSelectorCore(EGunSelector& DesiredSelector, EGunSelector& Selector,
+                                         FTimerHandle& SelectorTimer, const EFocusContext& FocusContext,
+                                         std::function<void()> OnDesiredSelectorUpdated)
 {
 	auto& TimerManager = GetWorld()->GetTimerManager();
-	if (NotFocusableDeterminant() && !TimerManager.IsTimerActive(SelectorTimer))
-	{
-		UE_LOG(LogNetSubObject, Log, TEXT("Skip switching selector"));
+
+	// 조정간을 조정중이지 않으면서 Focusable도 아니라면 스킵합니다.
+	if (!Character->SetFocus(FocusContext, EFocusSpace::MainHand, EFocusState::Switching)
+		&& !TimerManager.IsTimerActive(SelectorTimer))
 		return;
-	}
 
 	switch (DesiredSelector)
 	{
@@ -63,16 +69,18 @@ void URiffleFireCore::SwitchSelectorCore(EGunSelector& DesiredSelector, FTimerHa
 		return;
 	}
 
-	TimerManager.SetTimer(SelectorTimer, OnUpdateSelector, SwitchingDelay - LockstepDelay, false);
-	GEngine->AddOnScreenDebugMessage(-1, 3, Character->HasAuthority() ? FColor::White : FColor::Red,
-	                                 TEXT("Switch timer setted"));
-}
-
-void URiffleFireCore::ContinuousFireCore(const EGunSelector& Selector, uint16& FireCount)
-{
-	if (FireCount != 0) return;
-	SetFireCount(Selector, FireCount);
-	UE_LOG(LogNetSubObject, Log, TEXT("FireCount setted by NestedFireCore"));
+	TimerManager.SetTimer(SelectorTimer, [this,&DesiredSelector,&Selector,FocusContext]
+	{
+		if (Character->ReleaseFocus(FocusContext, EFocusSpace::MainHand, EFocusState::Switching))
+		{
+			Selector = DesiredSelector;
+			GEngine->AddOnScreenDebugMessage(-1, 3, GetDebugColor(FocusContext),TEXT("Selector updated"));
+		}
+		else UE_LOG(LogNetSubObject, Error,
+		            TEXT("Fail to release focus on UpdateSelector with %d context!"), FocusContext);
+	}, SwitchingDelay, false);
+	if (OnDesiredSelectorUpdated) OnDesiredSelectorUpdated();
+	GEngine->AddOnScreenDebugMessage(-1, 3, GetDebugColor(FocusContext),TEXT("Switch timer setted!"));
 }
 
 void URiffleFireCore::FreshFireCore(const EGunSelector& Selector, uint16& FireCount, FTimerHandle& FireTimer,
@@ -80,42 +88,33 @@ void URiffleFireCore::FreshFireCore(const EGunSelector& Selector, uint16& FireCo
 {
 	SetFireCount(Selector, FireCount);
 	GetWorld()->GetTimerManager().SetTimer(FireTimer, RepeatFireFunction, FireDelay, true, 0.f);
-	GEngine->AddOnScreenDebugMessage(-1, 3, Character->HasAuthority() ? FColor::White : FColor::Red,
-	                                 TEXT("FireTimer setted"));
 }
 
-void URiffleFireCore::FireCallback(uint16& FireCount, FTimerHandle& FireTimer, std::function<bool()> EmptyDeterminant,
-                                   std::function<void()> OnEmpty, std::function<void()> OnSingleFire,
-                                   std::function<void()> OnFirePreEnding)
+void URiffleFireCore::FireCallback(uint16& FireCount, FTimerHandle& FireTimer, const EFocusContext& FocusContext,
+                                   std::function<bool()> EmptyPredicate, std::function<void()> OnEmpty,
+                                   std::function<void()> OnSingleFire)
 {
-	if (FireCount == 1) OnFirePreEnding();
+	if (FireCount == 1)
+	{
+		if (!Character->ReleaseFocus(FocusContext, EFocusSpace::MainHand, EFocusState::Firing))
+			UE_LOG(LogNetSubObject, Error, TEXT("Fail to release focus on FireCallback with %d context!"), FocusContext);
+	}
 	else if (FireCount == 0)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(FireTimer);
-		GEngine->AddOnScreenDebugMessage(-1, 3, Character->HasAuthority() ? FColor::White : FColor::Red,
-		                                 TEXT("FireTimer expired"));
+		GEngine->AddOnScreenDebugMessage(-1, 3, GetDebugColor(FocusContext),TEXT("FireTimer expired!"));
 		return;
 	}
 	--FireCount;
 
-	if (EmptyDeterminant())
+	if (EmptyPredicate())
 	{
 		FireCount = 0;
-		if (OnEmpty != nullptr) OnEmpty();
+		if (OnEmpty) OnEmpty();
 		return;
 	}
 
-	OnSingleFire();
-}
-
-void URiffleFireCore::UpdateSelector(EGunSelector& DesiredSelector, EGunSelector& Selector, const bool& IsSimulated)
-{
-	Selector = DesiredSelector;
-	if (!Character->ReleaseFocus(IsSimulated ? EFocusContext::Simulated : EFocusContext::Server,
-	                             EFocusSpace::MainHand, EFocusState::Switching))
-		UE_LOG(LogNetSubObject, Error, TEXT("Fail to release focus on UpdateSelector!"));
-	GEngine->AddOnScreenDebugMessage(-1, 3, IsSimulated ? FColor::Red : FColor::White,
-	                                 TEXT("Selector updated"));
+	if (OnSingleFire) OnSingleFire();
 }
 
 void URiffleFireCore::SetFireCount(const EGunSelector& Selector, uint16& FireCount)
@@ -129,7 +128,7 @@ void URiffleFireCore::SetFireCount(const EGunSelector& Selector, uint16& FireCou
 	case EGunSelector::Auto: FireCount = MAX_uint16;
 		break;
 	default:
-		UE_LOG(LogActorComponent, Error, TEXT("GunSelector was not EFireMode"));
+		UE_LOG(LogNetSubObject, Error, TEXT("Selector was not EFireMode!"));
 		return;
 	}
 }

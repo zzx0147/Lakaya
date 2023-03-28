@@ -2,6 +2,31 @@
 #include "Character/CollectorPlayerState.h"
 #include "GameMode/IndividualGameMode.h"
 #include "Character/InteractableCharacter.h"
+#include "Net/UnrealNetwork.h"
+
+AIndividualStaticEnergy::AIndividualStaticEnergy()
+{
+	PrimaryActorTick.bCanEverTick = false;
+	Tags.Add("Interactable");
+	
+	Trigger = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Trigger"));
+	Cylinder = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Cylinder"));
+
+	RootComponent = Trigger;
+	Cylinder->SetupAttachment(RootComponent);
+
+	Trigger->SetCapsuleSize(50.0f, 50.0f, true);
+	Trigger->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Antenna(TEXT("/Game/Dev/KDJ/antenna_high.antenna_high"));
+	if (SM_Antenna.Succeeded())
+		Cylinder->SetStaticMesh(SM_Antenna.Object);
+	
+	Trigger->SetRelativeLocation(FVector::ZeroVector);
+
+	bIsAvailable = true;
+	
+	bReplicates = true;
+}
 
 void AIndividualStaticEnergy::BeginPlay()
 {
@@ -18,9 +43,43 @@ void AIndividualStaticEnergy::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AIndividualStaticEnergy::InteractionStart(const float& Time, APawn* Caller)
+void AIndividualStaticEnergy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	UE_LOG(LogTemp, Warning, TEXT("InteractionStart Function."));
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+}
+
+void AIndividualStaticEnergy::OnLocalInteractionBegin(APawn* Caller)
+{
+	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	{
+		UE_LOG(LogActor, Error, TEXT("1"));
+		CastedCaller->NoticeInstantInteractionLocal();
+	}
+	else UE_LOG(LogActor, Error, TEXT("OnLocalInteractionBegin::Caller was not AInteractableCharacter!"));
+}
+
+void AIndividualStaticEnergy::OnServerInteractionBegin(const float& Time, APawn* Caller)
+{
+	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	{
+		UE_LOG(LogActor, Error, TEXT("2"));
+		CastedCaller->InitiateInteractionStart(Time, this);
+	}
+}
+
+void AIndividualStaticEnergy::OnInteractionStart(APawn* Caller)
+{
+	// 비활성중이면 상호작용x
+	if (!bIsAvailable)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("StaticEnergy Not Available."));
+		return;
+	}
+
+	// TODO : 상호작용 시작하는 애니메이션 실행
+	// Animation
+	
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("StaticEnergy Get !"));
 	
 	if (Caller && Caller->GetController())
 	{
@@ -30,13 +89,13 @@ void AIndividualStaticEnergy::InteractionStart(const float& Time, APawn* Caller)
 			AInteractableCharacter* Character = Cast<AInteractableCharacter>(Caller);
 			if (Character == nullptr)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("InteractionStart_Character is null."));
+				UE_LOG(LogTemp, Warning, TEXT("OnInteractionStart_Character is null."));
 				return;
 			}
-			// Character->OnInteractionSuccess();
+			
 			CollectorPlayerState->GainEnergy(1);
-			UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 Energy"), *CollectorPlayerState->GetPlayerName());
 			UE_LOG(LogTemp, Warning, TEXT("Player Total Energy: %d"), CollectorPlayerState->GetEnergy());
+			bIsAvailable = false;
 		}
 		else
 		{
@@ -49,45 +108,11 @@ void AIndividualStaticEnergy::InteractionStart(const float& Time, APawn* Caller)
 		UE_LOG(LogTemp, Warning, TEXT("Invalid Caller or Controller."));
 	}
 
-	SpawnEnergy();
+	// TODO : N초 후 StaticEnergy bIsAvailable = true로 변경
+	GetWorldTimerManager().SetTimer(AvailableTimerHandle, this, &AIndividualStaticEnergy::MakeAvailable, 3.0f, false);
 }
 
-void AIndividualStaticEnergy::InteractionStop(const float& Time, APawn* Caller)
+void AIndividualStaticEnergy::MakeAvailable()
 {
-	UE_LOG(LogTemp, Warning, TEXT("InteractionStop Function."));
-	AInteractableCharacter* Character = Cast<AInteractableCharacter>(Caller->GetController());
-	if (Character == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InteractionStop_Character is null."));
-		return;
-	}
-
-	//Character->OnInteractionCanceled();
-}
-
-void AIndividualEnergy::SpawnEnergy()
-{
-	UE_LOG(LogTemp, Warning, TEXT("GetEnergy !"));
-	AIndividualGameMode* GameMode = Cast<AIndividualGameMode>(GetWorld()->GetAuthGameMode());
-	
-	if (!GameMode)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
-		return;
-	}
-	else
-	{
-		GameMode->SpawnStaticEnergy();
-		GameMode->VectorArray.Remove(StaticEnergyNumber);
-	}
-	
-	Destroy();
-}
-
-void AIndividualEnergy::OnServerInteractionBegin(const float& Time, APawn* Caller)
-{
-}
-
-void AIndividualEnergy::OnInteractionStart(APawn* Caller)
-{
+	bIsAvailable = true;
 }
