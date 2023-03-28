@@ -102,8 +102,6 @@ void AMovableCharacter::SetIsCrouching_Implementation(bool bIsCrouching)
 void AMovableCharacter::RequestRun_Implementation()
 {
 	if (bIsRunning) return;
-	//GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
-	if (HasAuthority())
 		GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
 	bIsRunning = true;
 }
@@ -111,8 +109,6 @@ void AMovableCharacter::RequestRun_Implementation()
 void AMovableCharacter::RequestStopRun_Implementation()
 {
 	if (!bIsRunning) return;
-	//GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
-	if (HasAuthority())
 		GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
 	bIsRunning = false;
 }

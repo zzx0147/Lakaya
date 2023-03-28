@@ -6,6 +6,7 @@
 #include "MovableCharacter.h"
 #include "FocusableCharacter.generated.h"
 
+UENUM(BlueprintType)
 enum class EFocusContext : uint8
 {
 	//서버측에서 시뮬레이트되고있는 FocusSpace를 구분하기 위해 사용됩니다.
@@ -18,12 +19,14 @@ enum class EFocusContext : uint8
 	Owner
 };
 
+UENUM(BlueprintType)
 enum class EFocusSpace : uint8
 {
 	//손으로 하는 주된 행동을 제약하기 위해 사용됩니다. 예를 들어, 재장전, 사격, 조정간 조정 등이 동시에 이뤄질 수 없게 할 때 사용됩니다.
 	MainHand
 };
 
+UENUM(BlueprintType)
 enum class EFocusState : uint8
 {
 	//FocusSpace가 비어있음을 의미합니다. 다른 행동을 수행할 수 있습니다.
@@ -102,6 +105,7 @@ public:
 	 * @param State 이 FocusState에 의해 점유되었는지 조사합니다.
 	 * @return FocusState가 State와 같다면 true, 그렇지 않다면 false를 반환합니다.
 	 */
+	UFUNCTION(BlueprintCallable)
 	bool IsFocussedBy(const EFocusContext& Context, const EFocusSpace& Space,
 	                  const EFocusState& State = EFocusState::None) const;
 
