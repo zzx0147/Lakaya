@@ -45,7 +45,7 @@ void UWeaponFire::FireStop()
 
 void UWeaponFire::SwitchSelector()
 {
-	RequestSwitchSelector(GetServerTime());
+	// RequestSwitchSelector(GetServerTime());
 }
 
 void UWeaponFire::RequestFireStart_Implementation(const float& Time)
@@ -62,8 +62,8 @@ void UWeaponFire::RequestFireStop_Implementation(const float& Time)
 
 void UWeaponFire::RequestSwitchSelector_Implementation(const float& Time)
 {
-	SwitchSelectorNotify(Time);
-	ApplyEvent(RequestSwitchSelectorEvent, Time);
+	// SwitchSelectorNotify(Time);
+	// ApplyEvent(RequestSwitchSelectorEvent, Time);
 }
 
 void UWeaponFire::FireStartNotify_Implementation(const float& Time)
@@ -78,5 +78,5 @@ void UWeaponFire::FireStopNotify_Implementation(const float& Time)
 
 void UWeaponFire::SwitchSelectorNotify_Implementation(const float& Time)
 {
-	ApplyEvent(SwitchSelectorNotifyEvent, Time);
+	// ApplyEvent(SwitchSelectorNotifyEvent, Time);
 }
