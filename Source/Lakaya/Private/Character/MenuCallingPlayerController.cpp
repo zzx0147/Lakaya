@@ -17,10 +17,10 @@ void AMenuCallingPlayerController::SetupInputComponent()
 	if (const auto Component = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		Component->BindAction(MenuAction, ETriggerEvent::Triggered, this, &AMenuCallingPlayerController::MenuHandler);
-		Component->BindAction(WeaponLoadoutAction, ETriggerEvent::Triggered, this,
-		                      &AMenuCallingPlayerController::WeaponHandler);
-		Component->BindAction(ArmorLoadoutAction, ETriggerEvent::Triggered, this,
-		                      &AMenuCallingPlayerController::ArmorHandler);
+		Component->BindAction(LoadoutAction, ETriggerEvent::Triggered, this,
+		                      &AMenuCallingPlayerController::LoadoutHandler);
+		Component->BindAction(ScoreAction, ETriggerEvent::Triggered, this,
+		                      &AMenuCallingPlayerController::ScoreHandler);
 	}
 }
 
@@ -37,37 +37,37 @@ AMenuCallingPlayerController::AMenuCallingPlayerController()
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Menu'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> WeaponFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_WeaponLoadout'"));
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Loadout'"));
 
-	static const ConstructorHelpers::FObjectFinder<UInputAction> ArmorFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ArmorLoadout'"));
+	static const ConstructorHelpers::FObjectFinder<UInputAction> ScoreFinder(
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ScoreBoard'"));
 
 	if (ContextFinder.Succeeded()) InterfaceInputContext = ContextFinder.Object;
 	if (MenuFinder.Succeeded()) MenuAction = MenuFinder.Object;
-	if (WeaponFinder.Succeeded()) WeaponLoadoutAction = WeaponFinder.Object;
-	if (ArmorFinder.Succeeded()) ArmorLoadoutAction = ArmorFinder.Object;
+	if (WeaponFinder.Succeeded()) LoadoutAction = WeaponFinder.Object;
+	if (ScoreFinder.Succeeded()) ScoreAction = ScoreFinder.Object;
 }
 
 void AMenuCallingPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	if (auto LocalPlayer = GetLocalPlayer())
 	{
 		if (const auto Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
 		{
 			Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
-
-			// UClass* ScoreBoardElementClass  = LoadClass<UGameScoreBoardWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_GameScoreBoardWidget.WBP_GameScoreBoardWidget_C"));
-			// UGameScoreBoardWidget* newWidget = CreateWidget<UGameScoreBoardWidget>(this, ScoreBoardElementClass );
-			// if (newWidget)
-			// {
-			// 	newWidget->AddToViewport();
-			// }
-			// else
-			// {
-			// 	UE_LOG(LogTemp, Warning, TEXT("ScoreBoardWidget is null."));
-			// }
+			
+			UClass* ScoreBoardWidget  = LoadClass<UGameScoreBoardWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_GameScoreBoardWidget.WBP_GameScoreBoardWidget_C"));
+			UGameScoreBoardWidget* newWidget = CreateWidget<UGameScoreBoardWidget>(this, ScoreBoardWidget );
+			if (newWidget)
+			{
+				newWidget->AddToViewport();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("ScoreBoardWidget is null."));
+			}
 		}
 	}
 }
@@ -78,14 +78,12 @@ void AMenuCallingPlayerController::MenuHandler(const FInputActionValue& Value)
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Menu"));
 }
 
-void AMenuCallingPlayerController::WeaponHandler(const FInputActionValue& Value)
+void AMenuCallingPlayerController::LoadoutHandler(const FInputActionValue& Value)
 {
 	//TODO: UI를 띄웁니다.
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("WeaponLoadout"));
 }
 
-void AMenuCallingPlayerController::ArmorHandler(const FInputActionValue& Value)
+void AMenuCallingPlayerController::ScoreHandler(const FInputActionValue& Value)
 {
-	//TODO: UI를 띄웁니다.
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ArmorLoadout"));
 }
