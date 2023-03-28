@@ -43,7 +43,6 @@ void UWeaponComponent::UpgradeWeapon()
 	if (ConsecutiveKillsWidget != nullptr)
 	{
 		ConsecutiveKillsWidget->SetConsecutiveKills(UpgradeLevel);
-		
 	}
 
 	//TODO: 무기가 업그레이드 될 때 어떤 행동을 할 지 정의합니다.
@@ -52,10 +51,7 @@ void UWeaponComponent::UpgradeWeapon()
 void UWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	
-
-	//SetupUI();
+	SetupUI();
 }
 
 void UWeaponComponent::SetupData()
@@ -98,6 +94,7 @@ void UWeaponComponent::SetupUI()
 					else
 					{
 						UE_LOG(LogTemp, Warning, TEXT("Owner is Not Avaliable"));
+						return;
 					}
 
 					ConsecutiveKillsWidget->AddToViewport();
@@ -108,6 +105,15 @@ void UWeaponComponent::SetupUI()
 	}
 }
 
+void UWeaponComponent::OnRep_UpgradeLevel()
+{
+	if (ConsecutiveKillsWidget != nullptr)
+	{
+		ConsecutiveKillsWidget->SetConsecutiveKills(UpgradeLevel);
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Cyan, FString::Printf(TEXT("OnRepUpgradeLevel")));
+}
+
 void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -115,4 +121,5 @@ void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(UWeaponComponent, FireSubObject);
 	DOREPLIFETIME(UWeaponComponent, AbilitySubObject);
 	DOREPLIFETIME(UWeaponComponent, ReloadSubObject);
+	DOREPLIFETIME(UWeaponComponent, UpgradeLevel);
 }

@@ -26,12 +26,14 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
 	virtual void SetupData();
-
-	//UFUNCTION( Client , Reliable )
 	virtual void SetupUI();
+
+	UFUNCTION()
+	virtual void OnRep_UpgradeLevel();
 
 public:
 	inline void FireStart() { if (FireSubObject) FireSubObject->FireStart(); }
@@ -67,6 +69,8 @@ private:
 
 private:
 	class UGamePlayConsecutiveKillsWidget* ConsecutiveKillsWidget;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_UpgradeLevel)
 	int8 UpgradeLevel;
 };
 
