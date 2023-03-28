@@ -45,6 +45,8 @@ enum class EFocusState : uint8
 	Interacting
 };
 
+DECLARE_EVENT_OneParam(AFocusableCharacter, FFocusChangedSignature, EFocusState);
+
 UCLASS()
 class LAKAYA_API AFocusableCharacter : public AMovableCharacter
 {
@@ -120,6 +122,15 @@ protected:
 	{
 		return FocusMap.FindOrAdd(Context).FindOrAdd(Space);
 	}
+
+private:
+	inline void BroadcastFocusEvent(const EFocusContext& Context, const EFocusSpace& Space, const EFocusState& State)
+	{
+		OnFocusChanged.FindOrAdd(Context).FindOrAdd(Space).Broadcast(State);
+	}
+
+public:
+	TMap<EFocusContext, TMap<EFocusSpace, FFocusChangedSignature>> OnFocusChanged;
 
 private:
 	TMap<EFocusContext, TMap<EFocusSpace, EFocusState>> FocusMap;
