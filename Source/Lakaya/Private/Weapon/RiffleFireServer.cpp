@@ -15,7 +15,7 @@
 URiffleFireServer::URiffleFireServer()
 {
 	static const ConstructorHelpers::FObjectFinder<UDataTable> TableFinder(
-		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/WeaponFireDataTable'"));
+		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/DT_WeaponFireDataTable'"));
 
 	if (TableFinder.Succeeded()) WeaponFireDataTable = TableFinder.Object;
 }

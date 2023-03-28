@@ -13,7 +13,7 @@
 UStandardReload::UStandardReload()
 {
 	static const ConstructorHelpers::FObjectFinder<UDataTable> TableFinder(
-		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/WeaponReloadDataTable'"));
+		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/DT_WeaponReloadDataTable'"));
 
 	if (TableFinder.Succeeded()) ReloadTable = TableFinder.Object;
 }
