@@ -14,7 +14,7 @@ UWeaponComponent::UWeaponComponent()
 	bIsDataSetupRequested = false;
 
 	static const ConstructorHelpers::FObjectFinder<UDataTable> DataFinder(
-		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/WeaponAssetDataTable'"));
+		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/DT_WeaponAssetDataTable'"));
 
 	if (DataFinder.Succeeded()) WeaponAssetDataTable = DataFinder.Object;
 }

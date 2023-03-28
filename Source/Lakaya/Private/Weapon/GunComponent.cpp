@@ -19,7 +19,7 @@ void UGunComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 UGunComponent::UGunComponent()
 {
 	static const ConstructorHelpers::FObjectFinder<UDataTable> DataFinder(
-		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/GunAssetDataTable'"));
+		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/DT_GunAssetDataTable'"));
 
 	if (DataFinder.Succeeded()) WeaponAssetDataTable = DataFinder.Object;
 }
