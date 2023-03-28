@@ -47,6 +47,13 @@ enum class EFocusState : uint8
 
 DECLARE_EVENT_OneParam(AFocusableCharacter, FFocusChangedSignature, EFocusState);
 
+struct FFocusStruct
+{
+public:
+	EFocusState State;
+	FFocusChangedSignature Event;
+};
+
 UCLASS()
 class LAKAYA_API AFocusableCharacter : public AMovableCharacter
 {
@@ -111,6 +118,17 @@ public:
 	bool IsFocussedBy(const EFocusContext& Context, const EFocusSpace& Space,
 	                  const EFocusState& State = EFocusState::None) const;
 
+	/**
+	 * @brief FocusState가 변경되었을 때 호출되는 이벤트를 찾습니다.
+	 * @param Context 이벤트의 컨텍스트입니다.
+	 * @param Space 이벤트의 FocusSpace입니다.
+	 * @return 해당 컨텍스트와 스페이스에 해당하는 이벤트입니다.
+	 */
+	inline FFocusChangedSignature& GetFocusChangedEvent(const EFocusContext& Context, const EFocusSpace& Space)
+	{
+		return FocusMap.FindOrAdd(Context).FindOrAdd(Space).Event;
+	}
+
 protected:
 	/**
 	 * @brief 어떤 FocusSpace의 상태를 받아옵니다.
@@ -118,20 +136,20 @@ protected:
 	 * @param Space 상태를 받아올 FocusSpace입니다.
 	 * @return 현재 FocusState입니다.
 	 */
-	inline EFocusState& GetFocusState(const EFocusContext& Context, const EFocusSpace& Space)
+	inline const EFocusState GetFocusState(const EFocusContext& Context, const EFocusSpace& Space) const
 	{
-		return FocusMap.FindOrAdd(Context).FindOrAdd(Space);
+		if (!FocusMap.Contains(Context) || FocusMap[Context].Contains(Space)) return EFocusState::None;
+		else return FocusMap[Context][Space].State;
 	}
 
 private:
-	inline void BroadcastFocusEvent(const EFocusContext& Context, const EFocusSpace& Space, const EFocusState& State)
+	inline EFocusState& InternalGetFocusState(const EFocusContext& Context, const EFocusSpace& Space)
 	{
-		OnFocusChanged.FindOrAdd(Context).FindOrAdd(Space).Broadcast(State);
+		return FocusMap.FindOrAdd(Context).FindOrAdd(Space).State;
 	}
 
-public:
-	TMap<EFocusContext, TMap<EFocusSpace, FFocusChangedSignature>> OnFocusChanged;
+	void BroadcastFocusEvent(const EFocusContext& Context, const EFocusSpace& Space, const EFocusState& State);
 
 private:
-	TMap<EFocusContext, TMap<EFocusSpace, EFocusState>> FocusMap;
+	TMap<EFocusContext, TMap<EFocusSpace, FFocusStruct>> FocusMap;
 };
