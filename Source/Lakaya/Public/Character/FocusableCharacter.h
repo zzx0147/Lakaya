@@ -127,14 +127,15 @@ public:
 
 protected:
 	/**
-	 * @brief 어떤 FocusSpace의 상태를 받아옵니다. 아직 존재하지 않는 경우 None이 반환됩니다.
+	 * @brief 어떤 FocusSpace의 상태를 받아옵니다.
 	 * @param Context FocusSpace의 컨텍스트입니다.
 	 * @param Space 상태를 받아올 FocusSpace입니다.
 	 * @return 현재 FocusState입니다.
 	 */
-	inline const EFocusState& GetFocusState(const EFocusContext& Context, const EFocusSpace& Space)
+	inline const EFocusState GetFocusState(const EFocusContext& Context, const EFocusSpace& Space) const
 	{
-		return FocusMap.FindOrAdd(Context).FindOrAdd(Space).State;
+		if (!FocusMap.Contains(Context) || FocusMap[Context].Contains(Space)) return EFocusState::None;
+		else return FocusMap[Context][Space].State;
 	}
 
 private:
