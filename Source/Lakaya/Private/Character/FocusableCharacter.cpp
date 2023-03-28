@@ -7,6 +7,7 @@ bool AFocusableCharacter::SetFocus(const EFocusContext& Context, const EFocusSpa
 {
 	if (IsFocussed(Context, Space)) return false;
 	GetFocusState(Context, Space) = State;
+	BroadcastFocusEvent(Context, Space, State);
 	return true;
 }
 
@@ -24,6 +25,7 @@ bool AFocusableCharacter::ReleaseFocus(const EFocusContext& Context, const EFocu
 	auto& CurrentState = GetFocusState(Context, Space);
 	if (CurrentState == EFocusState::None || CurrentState != State) return false;
 	CurrentState = EFocusState::None;
+	BroadcastFocusEvent(Context, Space, State);
 	return true;
 }
 
