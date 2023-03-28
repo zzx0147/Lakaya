@@ -9,9 +9,9 @@
 UENUM(BlueprintType)
 enum class EGunSelector : uint8
 {
+	Auto,
 	Semi,
-	Burst,
-	Auto
+	Burst
 };
 
 /**

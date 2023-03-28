@@ -15,7 +15,6 @@ void UGunComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(UGunComponent, RemainBullets);
 }
 
-
 UGunComponent::UGunComponent()
 {
 	static const ConstructorHelpers::FObjectFinder<UDataTable> DataFinder(
