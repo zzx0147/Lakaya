@@ -53,17 +53,22 @@ void AMenuCallingPlayerController::BeginPlay()
 	Super::BeginPlay();
 	
 	if (auto LocalPlayer = GetLocalPlayer())
+	{
 		if (const auto Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+		{
 			Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 
-	UGameScoreBoardWidget* ScoreBoardWidget = NewObject<UGameScoreBoardWidget>(this, UGameScoreBoardWidget::StaticClass());
-	if (ScoreBoardWidget)
-	{
-		ScoreBoardWidget->AddToViewport();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ScoreBoardWidget is null."));
+			// UClass* ScoreBoardElementClass  = LoadClass<UGameScoreBoardWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_GameScoreBoardWidget.WBP_GameScoreBoardWidget_C"));
+			// UGameScoreBoardWidget* newWidget = CreateWidget<UGameScoreBoardWidget>(this, ScoreBoardElementClass );
+			// if (newWidget)
+			// {
+			// 	newWidget->AddToViewport();
+			// }
+			// else
+			// {
+			// 	UE_LOG(LogTemp, Warning, TEXT("ScoreBoardWidget is null."));
+			// }
+		}
 	}
 }
 

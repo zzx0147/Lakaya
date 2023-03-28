@@ -10,9 +10,10 @@
 UENUM()
 enum class EGameState : uint8
 {
-	Wait UMETA(DisplayName = "Wait"),
-	Progress UMETA(DisplayName = "In Progress"),
-	Finish UMETA(DisplayName = "Exit")
+	StandBy UMETA(DisplayName = "StandBy"), // 다른 플레이어 입장 대기 상태
+	SelectWait UMETA(DisplayName = "SelectWait"), // 무기 및 캐릭터 선택 대기 상태
+	Progress UMETA(DisplayName = "Progress"), // 게임진행 상태
+	Finish UMETA(DisplayName = "Finish") // 게임종료 상태
 };
 
 UCLASS()
