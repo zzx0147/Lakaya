@@ -8,6 +8,7 @@ enum class UpgradeTypeEnum : uint8
 {
 	Bullet,
 	Damage,
+	Range,
 	SkillRange,
-	SkillDamage
+	SkillDamage,
 };

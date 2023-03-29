@@ -21,6 +21,11 @@ UWeaponComponent::UWeaponComponent()
 		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/WeaponAssetDataTable'"));
 
 	if (DataFinder.Succeeded()) WeaponAssetDataTable = DataFinder.Object;
+
+	//static const ConstructorHelpers::FObjectFinder<UDataTable> TestUpgradeDataFinder(
+	//	TEXT("/Game/DataTable/DT_TestUpgrade"));
+
+	//if (TestUpgradeDataFinder.Succeeded()) WeaponUpgradeDataTable = TestUpgradeDataFinder.Object;
 }
 
 void UWeaponComponent::ReadyForReplication()
@@ -63,6 +68,8 @@ void UWeaponComponent::SetupData()
 	AbilitySubObject = CreateSingleSubObject<UWeaponAbility>(Data->AbilityClass.LoadSynchronous(),
 	                                                         Data->AbilityRowName);
 	ReloadSubObject = CreateSingleSubObject<UWeaponReload>(Data->ReloadClass.LoadSynchronous(), Data->ReloadRowName);
+	
+	WeaponUpgradeDataTable = Data->UpgradeTable.LoadSynchronous();
 
 	if (!IsReplicatedSubObjectRegistered(FireSubObject))
 		UE_LOG(LogTemp, Warning, TEXT("FireSubObject is NOT replicated"));
@@ -70,6 +77,8 @@ void UWeaponComponent::SetupData()
 		UE_LOG(LogTemp, Warning, TEXT("AbilitySubObject is NOT replicated"));
 	if (!IsReplicatedSubObjectRegistered(ReloadSubObject))
 		UE_LOG(LogTemp, Warning, TEXT("ReloadSubObject is NOT replicated"));
+	if (WeaponUpgradeDataTable == nullptr)
+		UE_LOG(LogTemp, Fatal, TEXT("UpgradeDataTable is not Found Please Check WeaponAssetDataTable"));
 }
 
 void UWeaponComponent::SetupUI()

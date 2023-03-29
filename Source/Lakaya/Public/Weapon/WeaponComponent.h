@@ -64,14 +64,18 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UDataTable* WeaponAssetDataTable;
 
+	UPROPERTY(EditAnywhere)
+	class UDataTable* WeaponUpgradeDataTable;
+
+	UPROPERTY(ReplicatedUsing = OnRep_UpgradeLevel)
+	int8 UpgradeLevel;
+
 private:
 	bool bIsDataSetupRequested;
 
 private:
 	class UGamePlayConsecutiveKillsWidget* ConsecutiveKillsWidget;
 	
-	UPROPERTY(ReplicatedUsing = OnRep_UpgradeLevel)
-	int8 UpgradeLevel;
 };
 
 template <class T>
