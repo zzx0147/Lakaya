@@ -40,12 +40,13 @@ public:
 
 protected:
 	virtual void SetupData() override;
+	virtual void SetupUI() override;
 
 	UFUNCTION()
-	virtual void OnRep_MagazineCapacity() { return; }
+	virtual void OnRep_MagazineCapacity();
 
 	UFUNCTION()
-	virtual void OnRep_RemainBullets() { return; }
+	virtual void OnRep_RemainBullets();
 
 private:
 

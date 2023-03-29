@@ -8,6 +8,7 @@
 #include "Engine/DataTable.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/GamePlayConsecutiveKillsWidget.h"
+#include "UI/GamePlayBulletWidget.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Character.h"
 
@@ -31,19 +32,27 @@ UWeaponComponent::UWeaponComponent()
 void UWeaponComponent::ReadyForReplication()
 {
 	Super::ReadyForReplication();
-	if (bIsDataSetupRequested) SetupData();
+	if (bIsDataSetupRequested)
+	{
+		SetupData();
+		SetupUI();//리슨 서버 위젯 생성
+	}
 }
 
 void UWeaponComponent::RequestSetupData(const FName& RowName)
 {
 	RequestedRowName = RowName;
 	bIsDataSetupRequested = true;
-	if (IsReadyForReplication()) SetupData();
+	if (IsReadyForReplication())
+	{
+		SetupData();
+		SetupUI();//리슨 서버 위젯 생성
+	}
 }
 
 void UWeaponComponent::UpgradeWeapon()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Upgraded"));
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Upgraded"));
 	UpgradeLevel++;
 	if (ConsecutiveKillsWidget != nullptr)
 	{
@@ -56,19 +65,27 @@ void UWeaponComponent::UpgradeWeapon()
 void UWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	SetupUI();
+	ACharacter* MyCharacter = Cast<ACharacter>(this->GetOwner());
+	if (MyCharacter != nullptr)
+	{
+		APlayerController* MyController = Cast<APlayerController>(MyCharacter->GetController());
+		if (MyController != nullptr)
+		{
+			SetupUI();//클라이언트 위젯 생성
+		}
+	}
 }
 
 void UWeaponComponent::SetupData()
 {
-	auto Data = WeaponAssetDataTable->FindRow<FWeaponAssetData>(RequestedRowName,TEXT("WeaponComponent"));
+	auto Data = WeaponAssetDataTable->FindRow<FWeaponAssetData>(RequestedRowName, TEXT("WeaponComponent"));
 	if (!Data) return;
 
 	FireSubObject = CreateSingleSubObject<UWeaponFire>(Data->FireClass.LoadSynchronous(), Data->FireRowName);
 	AbilitySubObject = CreateSingleSubObject<UWeaponAbility>(Data->AbilityClass.LoadSynchronous(),
-	                                                         Data->AbilityRowName);
+		Data->AbilityRowName);
 	ReloadSubObject = CreateSingleSubObject<UWeaponReload>(Data->ReloadClass.LoadSynchronous(), Data->ReloadRowName);
-	
+
 	WeaponUpgradeDataTable = Data->UpgradeTable.LoadSynchronous();
 
 	if (!IsReplicatedSubObjectRegistered(FireSubObject))
@@ -84,31 +101,25 @@ void UWeaponComponent::SetupData()
 void UWeaponComponent::SetupUI()
 {
 	UClass* ConsecutiveKiilsWidgetClass = LoadClass<UGamePlayConsecutiveKillsWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_GamePlayConsecutiveKillsWidget.WBP_GamePlayConsecutiveKillsWidget_C"));
-	if (ConsecutiveKiilsWidgetClass != nullptr)
-	{
-		ACharacter* MyCharacter = Cast<ACharacter>(this->GetOwner());
-		if (MyCharacter != nullptr)
-		{
-			APlayerController* MyController = Cast<APlayerController>(MyCharacter->GetController());
-			if (MyController != nullptr)
-			{
-				ConsecutiveKillsWidget = CreateWidget<UGamePlayConsecutiveKillsWidget>(MyController, ConsecutiveKiilsWidgetClass);
-				if (ConsecutiveKillsWidget != nullptr)
-				{
-					APlayerController* Owner = ConsecutiveKillsWidget->GetOwningPlayer();
-					if (Owner != nullptr)
-					{
-						UE_LOG(LogTemp, Warning, TEXT("Owner is Avaliable"));
-					}
-					else
-					{
-						UE_LOG(LogTemp, Warning, TEXT("Owner is Not Avaliable"));
-						return;
-					}
 
-					ConsecutiveKillsWidget->AddToViewport();
-					ConsecutiveKillsWidget->SetConsecutiveKills(0);
-				}
+	if (ConsecutiveKiilsWidgetClass == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ConsecutiveKillsWidget Does not Loaded Please Check Path"));
+		return;
+	}
+
+	ACharacter* MyCharacter = Cast<ACharacter>(this->GetOwner());
+	if (MyCharacter != nullptr)
+	{
+		APlayerController* MyController = Cast<APlayerController>(MyCharacter->GetController());
+		if (MyController != nullptr)
+		{
+			ConsecutiveKillsWidget = CreateWidget<UGamePlayConsecutiveKillsWidget>(MyController, ConsecutiveKiilsWidgetClass);
+
+			if (ConsecutiveKillsWidget != nullptr)
+			{
+				ConsecutiveKillsWidget->AddToViewport();
+				ConsecutiveKillsWidget->SetConsecutiveKills(0);
 			}
 		}
 	}

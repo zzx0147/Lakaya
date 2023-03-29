@@ -18,7 +18,7 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
-protected:
+public:
 	void OnChangeRemainBullets(int16 NewRemainBullets);
 	void OnChangeMagazineCapacity(int16 NewMagazineCapacity);
 

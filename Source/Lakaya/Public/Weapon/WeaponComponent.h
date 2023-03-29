@@ -70,12 +70,11 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_UpgradeLevel)
 	int8 UpgradeLevel;
 
-private:
-	bool bIsDataSetupRequested;
+	class UGamePlayConsecutiveKillsWidget* ConsecutiveKillsWidget;
+	class UGamePlayBulletWidget* BulletWidget;
 
 private:
-	class UGamePlayConsecutiveKillsWidget* ConsecutiveKillsWidget;
-	
+	bool bIsDataSetupRequested;
 };
 
 template <class T>
