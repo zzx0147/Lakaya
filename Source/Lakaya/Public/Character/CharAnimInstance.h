@@ -17,9 +17,15 @@ class LAKAYA_API UCharAnimInstance : public UAnimInstance
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire")
 	bool bIsGPSFire;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	bool bIsSwitching;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reload")
 	bool bIsReload;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interacting")
+	bool bIsInteracting;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crouch")
 	bool bIsCrouch;

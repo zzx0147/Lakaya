@@ -88,17 +88,6 @@ bool AMovableCharacter::IsOwnedByLocalPlayer() const
 	return PlayerController && PlayerController->IsLocalController();
 }
 
-// TODO:CharAnimInstance에 있는 앉기 불변수를 애니메이션에서 참,거짓일때 재생하고 여기서 참조를 받음
-void AMovableCharacter::SetIsCrouching_Implementation(bool bIsCrouching)
-{
-	UCharAnimInstance* AnimInstance =
-	Cast<UCharAnimInstance>(GetMesh()->GetAnimInstance());
-	if (AnimInstance)
-	{
-		AnimInstance->SetIsCrouching(bIsCrouching);
-	}
-}
-
 void AMovableCharacter::RequestRun_Implementation()
 {
 	if (bIsRunning) return;
@@ -111,17 +100,6 @@ void AMovableCharacter::RequestStopRun_Implementation()
 	if (!bIsRunning) return;
 		GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
 	bIsRunning = false;
-}
-
-// TODO:위에 참조를 받은 함수에 true, false를 넣고 서버통신
-void AMovableCharacter::RequestServerCrouching_Implementation()
-{
-	SetIsCrouching(true);
-}
-
-void AMovableCharacter::RequestServerStopCrouching_Implementation()
-{
-	SetIsCrouching(false);
 }
 
 void AMovableCharacter::Move(const FInputActionValue& Value)
@@ -144,15 +122,11 @@ void AMovableCharacter::Look(const FInputActionValue& Value)
 void AMovableCharacter::Crouching(const FInputActionValue& Value)
 {
 	Crouch();
-	SetIsCrouching(true);
-	RequestServerCrouching();
 }
 
 void AMovableCharacter::UnCrouching(const FInputActionValue& Value)
 {
 	UnCrouch();
-	SetIsCrouching(false);
-	RequestServerStopCrouching();
 }
 
 void AMovableCharacter::Run(const FInputActionValue& Value)

@@ -14,17 +14,21 @@ void UCharAnimInstance::SetState(EFocusState state)
 	{
 	case EFocusState::None:
 		bIsGPSFire = false;
+		bIsSwitching = false;
 		bIsReload = false;
+		bIsInteracting = false;
 		break;
 	case EFocusState::Firing:
 		bIsGPSFire = true;
 		break;
 	case EFocusState::Switching:
+		bIsSwitching = true;
 		break;
 	case EFocusState::Reloading:
 		bIsReload = true;
 		break;
 	case EFocusState::Interacting:
+		bIsInteracting = true;
 		break;
 	default:;
 	}
