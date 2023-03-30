@@ -19,6 +19,16 @@ void URiffleFireCore::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME_CONDITION(URiffleFireCore, Character, COND_InitialOnly);
 }
 
+float URiffleFireCore::GetBaseDamage()
+{
+	return BaseDamage;
+}
+
+void URiffleFireCore::SetBaseDamage(float newBaseDamage)
+{
+	BaseDamage = newBaseDamage;
+}
+
 void URiffleFireCore::FireStartCore(FTimerHandle& FireTimer, const EFocusContext& FocusContext,
                                     const uint16& FireCount, std::function<void()> OnContinuousFire,
                                     std::function<void()> OnFreshFire, std::function<void()> OnElse)
