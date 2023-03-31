@@ -36,16 +36,22 @@ public:
 	 */
 	virtual bool CostBullets(const uint16& Bullets);
 
+	virtual void UpgradeWeapon() override;
+
 protected:
 	virtual void SetupData() override;
+	virtual void SetupUI() override;
 
 	UFUNCTION()
-	virtual void OnRep_MagazineCapacity() { return; }
+	virtual void OnRep_MagazineCapacity();
 
 	UFUNCTION()
-	virtual void OnRep_RemainBullets() { return; }
+	virtual void OnRep_RemainBullets();
 
 private:
+
+	uint16 OriginMagazineCapacity;
+
 	UPROPERTY(ReplicatedUsing = OnRep_MagazineCapacity)
 	uint16 MagazineCapacity;
 

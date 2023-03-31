@@ -31,6 +31,12 @@ void AThirdPersonCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	auto Rotation = FRotator::ZeroRotator;
-	if (!YawClutch) Rotation.Yaw = RootComponent->GetComponentRotation().Yaw - 90;
+	auto Location = RootComponent->GetComponentLocation();
+	
+	if (!YawClutch)
+		Rotation.Yaw = RootComponent->GetComponentRotation().Yaw - 90;
+	Location.Z = RootComponent->GetComponentLocation().Z - 36;
+	
 	GetMesh()->SetWorldRotation(Rotation);
+	GetMesh()->SetWorldLocation(Location);
 }

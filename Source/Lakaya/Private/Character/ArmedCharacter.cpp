@@ -45,7 +45,7 @@ AArmedCharacter::AArmedCharacter()
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ReloadStop'"));
 
 	static const ConstructorHelpers::FObjectFinder<UDataTable> DataFinder(
-		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/WeaponClassDataTable'"));
+		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/DT_WeaponClassDataTable'"));
 
 	if (ContextFinder.Succeeded()) WeaponControlContext = ContextFinder.Object;
 	if (FireStartFinder.Succeeded()) FireStartAction = FireStartFinder.Object;
@@ -113,7 +113,7 @@ void AArmedCharacter::KillCharacter(AController* EventInstigator, AActor* Damage
 {
 	Super::KillCharacter(EventInstigator, DamageCauser);
 	auto Causer = Cast<AArmedCharacter>(DamageCauser);
-	if (Causer) PrimaryWeapon->UpgradeWeapon();
+	if (Causer) Causer->PrimaryWeapon->UpgradeWeapon();
 }
 
 void AArmedCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)

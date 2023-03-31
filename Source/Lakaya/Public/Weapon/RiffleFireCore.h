@@ -9,9 +9,9 @@
 UENUM(BlueprintType)
 enum class EGunSelector : uint8
 {
+	Auto,
 	Semi,
-	Burst,
-	Auto
+	Burst
 };
 
 /**
@@ -21,6 +21,10 @@ UCLASS(Abstract)
 class LAKAYA_API URiffleFireCore : public UWeaponFire
 {
 	GENERATED_BODY()
+public:
+	float GetBaseDamage();
+	void SetBaseDamage(float newBaseDamage);
+
 
 protected:
 	void FireStartCore(FTimerHandle& FireTimer, const EFocusContext& FocusContext,

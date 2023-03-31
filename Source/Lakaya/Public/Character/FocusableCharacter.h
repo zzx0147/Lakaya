@@ -6,6 +6,7 @@
 #include "MovableCharacter.h"
 #include "FocusableCharacter.generated.h"
 
+UENUM(BlueprintType)
 enum class EFocusContext : uint8
 {
 	//서버측에서 시뮬레이트되고있는 FocusSpace를 구분하기 위해 사용됩니다.
@@ -18,12 +19,14 @@ enum class EFocusContext : uint8
 	Owner
 };
 
+UENUM(BlueprintType)
 enum class EFocusSpace : uint8
 {
 	//손으로 하는 주된 행동을 제약하기 위해 사용됩니다. 예를 들어, 재장전, 사격, 조정간 조정 등이 동시에 이뤄질 수 없게 할 때 사용됩니다.
 	MainHand
 };
 
+UENUM(BlueprintType)
 enum class EFocusState : uint8
 {
 	//FocusSpace가 비어있음을 의미합니다. 다른 행동을 수행할 수 있습니다.
@@ -40,6 +43,15 @@ enum class EFocusState : uint8
 
 	//상호작용중임을 나타냅니다.
 	Interacting
+};
+
+DECLARE_EVENT_OneParam(AFocusableCharacter, FFocusChangedSignature, EFocusState);
+
+struct FFocusStruct
+{
+public:
+	EFocusState State;
+	FFocusChangedSignature Event;
 };
 
 UCLASS()
@@ -102,8 +114,20 @@ public:
 	 * @param State 이 FocusState에 의해 점유되었는지 조사합니다.
 	 * @return FocusState가 State와 같다면 true, 그렇지 않다면 false를 반환합니다.
 	 */
+	UFUNCTION(BlueprintCallable)
 	bool IsFocussedBy(const EFocusContext& Context, const EFocusSpace& Space,
 	                  const EFocusState& State = EFocusState::None) const;
+
+	/**
+	 * @brief FocusState가 변경되었을 때 호출되는 이벤트를 찾습니다.
+	 * @param Context 이벤트의 컨텍스트입니다.
+	 * @param Space 이벤트의 FocusSpace입니다.
+	 * @return 해당 컨텍스트와 스페이스에 해당하는 이벤트입니다.
+	 */
+	inline FFocusChangedSignature& GetFocusChangedEvent(const EFocusContext& Context, const EFocusSpace& Space)
+	{
+		return FocusMap.FindOrAdd(Context).FindOrAdd(Space).Event;
+	}
 
 protected:
 	/**
@@ -112,11 +136,20 @@ protected:
 	 * @param Space 상태를 받아올 FocusSpace입니다.
 	 * @return 현재 FocusState입니다.
 	 */
-	inline EFocusState& GetFocusState(const EFocusContext& Context, const EFocusSpace& Space)
+	inline const EFocusState GetFocusState(const EFocusContext& Context, const EFocusSpace& Space) const
 	{
-		return FocusMap.FindOrAdd(Context).FindOrAdd(Space);
+		if (!FocusMap.Contains(Context) || FocusMap[Context].Contains(Space)) return EFocusState::None;
+		else return FocusMap[Context][Space].State;
 	}
 
 private:
-	TMap<EFocusContext, TMap<EFocusSpace, EFocusState>> FocusMap;
+	inline EFocusState& InternalGetFocusState(const EFocusContext& Context, const EFocusSpace& Space)
+	{
+		return FocusMap.FindOrAdd(Context).FindOrAdd(Space).State;
+	}
+
+	void BroadcastFocusEvent(const EFocusContext& Context, const EFocusSpace& Space, const EFocusState& State);
+
+private:
+	TMap<EFocusContext, TMap<EFocusSpace, FFocusStruct>> FocusMap;
 };
