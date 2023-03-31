@@ -38,7 +38,6 @@ public:
 private:
 	void FireStart(const FInputActionValue& Value);
 	void FireStop(const FInputActionValue& Value);
-	void SwitchSelector(const FInputActionValue& Value);
 	void AbilityStart(const FInputActionValue& Value);
 	void AbilityStop(const FInputActionValue& Value);
 	void ReloadStart(const FInputActionValue& Value);
@@ -65,9 +64,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* FireStopAction;
-
-	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
-	UInputAction* SwitchSelectorAction;
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* AbilityStartAction;

@@ -63,7 +63,4 @@ protected:
 
 	UPROPERTY(Replicated)
 	float SqrFireRange;
-
-	UPROPERTY(Replicated)
-	float SwitchingDelay;
 };

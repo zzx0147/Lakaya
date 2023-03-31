@@ -30,7 +30,6 @@ protected:
 public:
 	inline void FireStart() { if (FireSubObject) FireSubObject->FireStart(); }
 	inline void FireStop() { if (FireSubObject) FireSubObject->FireStop(); }
-	inline void SwitchSelector() { if (FireSubObject) FireSubObject->SwitchSelector(); }
 	inline void AbilityStart() { if (AbilitySubObject) AbilitySubObject->AbilityStart(); }
 	inline void AbilityStop() { if (AbilitySubObject) AbilitySubObject->AbilityStop(); }
 	inline void ReloadStart() { if (ReloadSubObject) ReloadSubObject->ReloadStart(); }

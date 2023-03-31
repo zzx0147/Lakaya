@@ -18,7 +18,6 @@ protected:
 	virtual void SetupData(const FName& RowName) override;
 	virtual void OnFireStart() override;
 	virtual void OnFireStop() override;
-	virtual void OnSwitchSelector() override;
 
 private:
 	UFUNCTION(Client, Reliable)
@@ -29,11 +28,8 @@ private:
 	UPROPERTY(EditAnywhere, Category=DataTable)
 	class UDataTable* WeaponFireDataTable;
 
-	// Variables for implementation
 	FCollisionQueryParams TraceQueryParams;
 	FTimerHandle FireTimer;
-	FTimerHandle SelectorTimer;
 	EGunSelector Selector;
-	EGunSelector DesiredSelector;
 	uint16 FireCount;
 };
