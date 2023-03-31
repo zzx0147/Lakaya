@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
+#include "UI/LoadingWidget.h"
 #include "MenuCallingPlayerController.generated.h"
 
 /**
@@ -27,6 +28,10 @@ private:
 	void LoadoutHandler(const FInputActionValue& Value);
 	void ScoreHandler(const FInputActionValue& Value);
 
+public:
+	void CreateLoadingWidget();
+	void CreateScoreBoardWidget();
+
 private:
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
@@ -42,4 +47,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UInputAction* ScoreAction;
+
+	FTimerHandle TimerHandle;
 };

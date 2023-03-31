@@ -8,7 +8,10 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "GameFramework/PlayerState.h"
+#include "GameMode/IndividualGameState.h"
 #include "UI/GameScoreBoardWidget.h"
+#include "UI/LoadingWidget.h"
+#include "Blueprint/UserWidget.h"
 
 void AMenuCallingPlayerController::SetupInputComponent()
 {
@@ -53,18 +56,24 @@ void AMenuCallingPlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	if (auto LocalPlayer = GetLocalPlayer())
+	{
 		if (const auto Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+		{
 			Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 
-	UGameScoreBoardWidget* ScoreBoardWidget = NewObject<UGameScoreBoardWidget>(
-		this, UGameScoreBoardWidget::StaticClass());
-	if (ScoreBoardWidget)
-	{
-		ScoreBoardWidget->AddToViewport();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ScoreBoardWidget is null."));
+			#pragma region Update UI
+			
+			if (GetWorld()->GetGameState() == nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("GetGameState is null."));
+				return;
+			}
+			
+			CreateLoadingWidget();
+			CreateScoreBoardWidget();
+
+			#pragma endregion 
+		}
 	}
 }
 
@@ -82,4 +91,49 @@ void AMenuCallingPlayerController::LoadoutHandler(const FInputActionValue& Value
 
 void AMenuCallingPlayerController::ScoreHandler(const FInputActionValue& Value)
 {
+}
+
+void AMenuCallingPlayerController::CreateLoadingWidget()
+{
+	if (IsLocalPlayerController())
+	{
+		// 로딩 위젯
+		UClass* LoadingWidgetClass = LoadClass<ULoadingWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_LoadingWidget.WBP_LoadingWidget_C"));
+		if (LoadingWidgetClass == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("LoadingWidgetClass is null."));
+			return;
+		}
+			
+		ULoadingWidget* LoadingWidget = CreateWidget<ULoadingWidget>(this, LoadingWidgetClass);
+		if (LoadingWidget == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("LoadingWidget is null."));
+			return;
+		}
+	
+		LoadingWidget->AddToViewport();
+	}
+}
+
+void AMenuCallingPlayerController::CreateScoreBoardWidget()
+{
+	if (IsLocalController())
+	{
+		// 스코어보드 위젯
+		UClass* ScoreBoardWidgetClass  = LoadClass<UGameScoreBoardWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_GameScoreBoardWidget.WBP_GameScoreBoardWidget_C"));
+		if (ScoreBoardWidgetClass == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ScoreBoardWidgetClass is null."));
+			return;
+		}
+			
+		UGameScoreBoardWidget* ScoreBoardWidget = CreateWidget<UGameScoreBoardWidget>(this, ScoreBoardWidgetClass );
+		if (ScoreBoardWidget == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ScoreBoardWidget is null."));
+			return;
+		}
+		ScoreBoardWidget->AddToViewport();
+	}
 }
