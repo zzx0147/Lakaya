@@ -26,6 +26,7 @@ void AIndividualGameState::OnRep_NumPlayers()
 {
 	// 새로운 값으로 다른 클라이언트들에게 알림
 	UE_LOG(LogTemp, Warning, TEXT("NumPlayers : %d"), NumPlayers);
+	OnChangeJoinedPlayers.Broadcast(NumPlayers);
 }
 
 void AIndividualGameState::SetNumPlayers(int32 NewNumPlayers)
