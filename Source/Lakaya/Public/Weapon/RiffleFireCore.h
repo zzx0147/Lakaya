@@ -21,6 +21,10 @@ UCLASS(Abstract)
 class LAKAYA_API URiffleFireCore : public UWeaponFire
 {
 	GENERATED_BODY()
+public:
+	float GetBaseDamage();
+	void SetBaseDamage(float newBaseDamage);
+
 
 protected:
 	void FireStartCore(FTimerHandle& FireTimer, const EFocusContext& FocusContext,

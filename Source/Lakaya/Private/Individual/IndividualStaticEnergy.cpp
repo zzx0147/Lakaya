@@ -52,7 +52,6 @@ void AIndividualStaticEnergy::OnLocalInteractionBegin(APawn* Caller)
 {
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
 	{
-		UE_LOG(LogActor, Error, TEXT("1"));
 		CastedCaller->NoticeInstantInteractionLocal();
 	}
 	else UE_LOG(LogActor, Error, TEXT("OnLocalInteractionBegin::Caller was not AInteractableCharacter!"));
@@ -62,7 +61,6 @@ void AIndividualStaticEnergy::OnServerInteractionBegin(const float& Time, APawn*
 {
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
 	{
-		UE_LOG(LogActor, Error, TEXT("2"));
 		CastedCaller->InitiateInteractionStart(Time, this);
 	}
 }

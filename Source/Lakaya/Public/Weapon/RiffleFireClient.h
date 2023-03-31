@@ -15,10 +15,6 @@ class LAKAYA_API URiffleFireClient : public URiffleFireServer
 {
 	GENERATED_BODY()
 
-public:
-	UFUNCTION(NetMulticast, Reliable)
-	void SetIsGPSFire(bool bIsGPSFire);
-
 protected:
 	virtual void OnFireStartNotify() override;
 	virtual void OnFireStopNotify() override;

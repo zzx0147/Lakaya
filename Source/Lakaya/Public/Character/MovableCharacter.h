@@ -22,9 +22,6 @@ protected:
 
 public:
 	bool IsOwnedByLocalPlayer() const;
-	
-	UFUNCTION(NetMulticast, Reliable)
-	void SetIsCrouching(bool bIsCrouching);
 
 private:
 	UFUNCTION(Server, Reliable)
@@ -32,14 +29,6 @@ private:
 
 	UFUNCTION(Server, Reliable)
 	void RequestStopRun();
-
-	// TODO:앉기를 서버에 신호를 보내고 멀티캐스트로 클라에 뿌리기
-	// Crouching Animation Server Sending and Receiving
-	UFUNCTION(Server, Reliable)
-	void RequestServerCrouching();
-	
-	UFUNCTION(Server, Reliable)
-	void RequestServerStopCrouching();
 
 	// Input event functions
 	void Move(const FInputActionValue& Value);
