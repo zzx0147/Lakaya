@@ -68,9 +68,10 @@ void AMenuCallingPlayerController::BeginPlay()
 				UE_LOG(LogTemp, Warning, TEXT("GetGameState is null."));
 				return;
 			}
-			
-			CreateLoadingWidget();
-			CreateScoreBoardWidget();
+
+			// 로딩 부분
+			// CreateLoadingWidget();
+			// CreateScoreBoardWidget();
 
 			#pragma endregion 
 		}

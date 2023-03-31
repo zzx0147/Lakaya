@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "IndividualGameMode.h"
 #include "GameFramework/GameState.h"
 #include "IndividualGameState.generated.h"
 
@@ -21,6 +22,8 @@ class LAKAYA_API AIndividualGameState : public AGameState
 	GENERATED_BODY()
 
 public:
+	virtual void BeginPlay() override;
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
@@ -40,7 +43,6 @@ public:
 	EGameState CurrentGameState = EGameState::StandBy;
 	
 private:
-	
 	UFUNCTION()
 	void OnRep_NumPlayers();
 
@@ -48,4 +50,6 @@ private:
 	void OnRep_GameState();
 
 	uint8 MaxPlayers = 6;
+private:
+	// AIndividualGameMode* GameMode;
 };

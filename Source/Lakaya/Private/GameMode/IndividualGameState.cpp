@@ -7,6 +7,13 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
+void AIndividualGameState::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// GameMode = Cast<AIndividualGameMode>(GetWorld()->GetAuthGameMode());
+}
+	
 void AIndividualGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -29,21 +36,33 @@ void AIndividualGameState::SetNumPlayers(int32 NewNumPlayers)
 
 void AIndividualGameState::OnRep_GameState()
 {
-	// TArray<AActor*> FoundActors;
-	// UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACollectorPlayerState::StaticClass(), FoundActors);
-
-	// for (AActor* FoundActor : FoundActors)
+	// GameMode = Cast<AIndividualGameMode>(GetWorld()->GetAuthGameMode());
+	//
+	// if (GameMode == nullptr)
 	// {
-		// ACollectorPlayerState* PlayerState = FoundActor->getplayer
+	// 	UE_LOG(LogTemp, Warning, TEXT("GameState_GameMode is null."));
+	// 	return;
 	// }
-	
-	// for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	//
+	// if (GameMode->RegisteredPlayers.IsEmpty())
 	// {
-	// 	APlayerController* PC = It->Get();
-	// 	if (PC && PC->IsLocalController())
+	// 	UE_LOG(LogTemp, Warning, TEXT("GameState_RegisteredPlayers is Empty"));
+	// 	return;
+	// }
+
+	// UE_LOG(LogTemp, Warning, TEXT("PlayArray %d"), PlayerArray.Num());
+	// for (APlayerState* State : PlayerArray)
+	// {
+	// 	APlayerController* PlayerController = Cast<APlayerController>(State->GetPlayerController());
+	// 	if (PlayerController == nullptr)
 	// 	{
-	// 		// 게임상태가 바뀔 때, 모든 클라이언트들의 위젯을 업데이트
-	// 		UE_LOG(LogTemp, Warning, TEXT("CurrentGameState : %s"), CurrentGameState);
+	// 		UE_LOG(LogTemp, Warning, TEXT("GameState_PlayerController is null."));
+	// 		return;
+	// 	}
+	// 	else
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("GameState_PlayerController is avaliable."));
+	// 		return;
 	// 	}
 	// }
 }

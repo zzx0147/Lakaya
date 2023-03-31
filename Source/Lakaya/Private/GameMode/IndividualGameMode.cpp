@@ -7,7 +7,7 @@
 #include "Individual/IndividualDropEnergy.h"
 #include "Individual/DropEnergyPool.h"
 #include "EngineUtils.h"
-#include "SWarningOrErrorBox.h"
+// #include "SWarningOrErrorBox.h"
 #include "Blueprint/WidgetTree.h"
 #include "GameMode/IndividualGameState.h"
 #include "Net/UnrealNetwork.h"
@@ -65,6 +65,7 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_IndividualGameState is null."));
 		return;
 	}
+	
 	int32 CurrentPlayerNum = IndividualGameState->PlayerArray.Num();
 	IndividualGameState->SetNumPlayers(CurrentPlayerNum);
 }
@@ -79,26 +80,27 @@ void AIndividualGameMode::HandleMatchIsWaitingToStart()
 	// CheckStartMatch();
 }
 
-bool AIndividualGameMode::ReadyToStartMatch_Implementation()
-{
-	if (GetNumPlayers() >= 3)
-	{
-		// 플레이어 인원이 특정 인원 만큼 접속을 했다면 총기 선택창으로.
-		AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
-		if (IndividualGameState == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("IndividualGameState is null."));
-		}
-		IndividualGameState->CurrentGameState = EGameState::SelectWait;
-		
-		return true;
-	}
-	else
-	{
-		// 플레이어 인원이 특정 인원 만큼 접속을 못했다면 무한 대기.
-		return false;
-	}
-}
+// bool AIndividualGameMode::ReadyToStartMatch_Implementation()
+// {
+// 	if (GetNumPlayers() >= 3)
+// 	{
+// 		// 플레이어 인원이 특정 인원 만큼 접속을 했다면 총기 선택창으로.
+// 		AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
+// 		if (IndividualGameState == nullptr)
+// 		{
+// 			UE_LOG(LogTemp, Warning, TEXT("IndividualGameState is null."));
+// 		}
+// 		
+// 		IndividualGameState->CurrentGameState = EGameState::SelectWait;
+// 		
+// 		return true;
+// 	}
+// 	else
+// 	{
+// 		// 플레이어 인원이 특정 인원 만큼 접속을 못했다면 무한 대기.
+// 		return false;
+// 	}
+// }
 
 void AIndividualGameMode::HandleMatchHasStarted()
 {
@@ -145,27 +147,28 @@ void AIndividualGameMode::Logout(AController* Exiting)
 
 void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
 {
-	if (RegisteredPlayers.Contains(PlayerController))
-		return;
+	// if (RegisteredPlayers.Contains(PlayerController))
+	// 	return;
+	//
+	// TArray<AActor*> FoundActors;
+	// UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableCharacter::StaticClass(), FoundActors);
+	//
+	// for (auto Actor : FoundActors)
+	// {
+	// 	ADamageableCharacter* MyActor = Cast<ADamageableCharacter>(Actor);
+	// 	if (MyActor)
+	// 	{
+	// 		MyActor->OnKillCharacterNotify.AddUObject(this, &AIndividualGameMode::OnKilledCharacter);
+	// 	}
+	// 	else
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("MyActor is null."));
+	// 		return;
+	// 	}
+	// }
+	//
+	// RegisteredPlayers.Add(PlayerController);
 
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableCharacter::StaticClass(), FoundActors);
-
-	for (auto Actor : FoundActors)
-	{
-		ADamageableCharacter* MyActor = Cast<ADamageableCharacter>(Actor);
-		if (MyActor)
-		{
-			MyActor->OnKillCharacterNotify.AddUObject(this, &AIndividualGameMode::OnKilledCharacter);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("MyActor is null."));
-			return;
-		}
-	}
-
-	RegisteredPlayers.Add(PlayerController);
 	
 }
 
