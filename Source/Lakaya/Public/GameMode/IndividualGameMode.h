@@ -31,7 +31,7 @@ private:
 	// ReadyToStartMatch (경기 시작 준비)가 true를 반환하는 경우, 또는 StartMatch가 호출된 경우 다음 상태로 전환.
 	virtual void HandleMatchIsWaitingToStart() override;
 	virtual bool ReadyToStartMatch_Implementation() override;
-	virtual void StartMatch() override;
+	// virtual void StartMatch() override;
 	void DelayedStartMatch();
 	
 	// InProgress (진행중)
@@ -65,7 +65,7 @@ private:
 
 public:
 	uint8 PlayerRespawnTime = 3;
-	bool bTimerSet = false;
+	bool bWaitToStart = false;
 	
 public:
 	UPROPERTY()
@@ -81,7 +81,7 @@ private:
 private:
 	FTimerHandle TimerHandle_SpawnStaticEnergy;
 	FTimerHandle TimerHandle_CheckStartMatch;
-	FTimerHandle TimerHandle_ReadyToStart;
+	FTimerHandle TimerHandle_DelayedStart;
 	
 public:
 	FOnGameModeInitialized OnGameModeInitialized;

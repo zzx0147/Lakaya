@@ -28,6 +28,8 @@ AIndividualGameMode::AIndividualGameMode()
 		return;
 	}
 
+	// bDelayedStart = false;
+	
 	DefaultPawnClass = PlayerPawnClass;
 	PlayerControllerClass = AMenuCallingPlayerController::StaticClass();
 	PlayerStateClass = ACollectorPlayerState::StaticClass();
@@ -66,6 +68,11 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 	
 	int32 CurrentPlayerNum = IndividualGameState->PlayerArray.Num();
 	IndividualGameState->SetNumPlayers(CurrentPlayerNum);
+
+	if (GetNumPlayers() >= 2)
+	{
+		GetWorldTimerManager().SetTimer(TimerHandle_DelayedStart, this, &AIndividualGameMode::DelayedStartMatch, 5.0f, false);
+	}
 }
 
 void AIndividualGameMode::HandleMatchIsWaitingToStart()
@@ -81,13 +88,6 @@ void AIndividualGameMode::HandleMatchIsWaitingToStart()
 
 bool AIndividualGameMode::ReadyToStartMatch_Implementation()
 {
-	bool bIsReady = Super::ReadyToStartMatch_Implementation();
-	if (!bIsReady)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ReadyToStartMatch_Implementation failed Super::ReadyToStartMatch_Implementation check."));
-		return false;
-	}
-	
 	if (GetNumPlayers() < 2)
 	{
 		return false;
@@ -98,29 +98,19 @@ bool AIndividualGameMode::ReadyToStartMatch_Implementation()
 		return false;
 	}
 
-	DelayedStartMatch();
+	if (!bWaitToStart) return false;
 	
 	return true;
 }
 
-void AIndividualGameMode::StartMatch()
-{
-// 	UE_LOG(LogTemp, Warning, TEXT("StartMatch()"));
-//
-// 	if (!ReadyToStartMatch_Implementation())
-// 	{
-// 		return;
-// 	}
-}
-
 void AIndividualGameMode::DelayedStartMatch()
 {
-	UE_LOG(LogTemp, Warning, TEXT("DelayedStartMatch()"));
+	bWaitToStart = true;
+}
 
-	float Delay = 5.0f;
-	GetWorldTimerManager().SetTimer(TimerHandle_ReadyToStart, this, &AIndividualGameMode::StartMatch, Delay);
-
-	SetMatchState(MatchState::InProgress);
+void AIndividualGameMode::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	APawn* PlayerPawn = PlayerController->GetPawn();
 	AArmedCharacter* Armed = Cast<AArmedCharacter>(PlayerPawn);
@@ -132,12 +122,7 @@ void AIndividualGameMode::DelayedStartMatch()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Failed to cast pawn to AArmedCharacter"));
 	}
-}
-
-void AIndividualGameMode::HandleMatchHasStarted()
-{
-	Super::HandleMatchHasStarted();
-
+	
 	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasStarted"));
 }
