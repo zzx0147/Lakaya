@@ -14,21 +14,21 @@
 
 AIndividualGameMode::AIndividualGameMode()
 {
-	static ConstructorHelpers::FObjectFinder<UBlueprint> PlayerPawnObject(TEXT("/Game/Characters/LakayaCharacter/Dummy/BP_PlayerDummy"));
+	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnObject(TEXT("/Game/Characters/LakayaCharacter/Dummy/BP_PlayerDummy"));
 	if (!PlayerPawnObject.Succeeded())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to find player pawn blueprint."));
 		return;
 	}
 
-	UClass* PlayerPawnClass = PlayerPawnObject.Object->GeneratedClass;
-	if (!PlayerPawnClass)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to get generated class from player pawn blueprint."));
-		return;
-	}
+	//UClass* PlayerPawnClass = PlayerPawnObject.Object->StaticClass();
+	//if (!PlayerPawnClass)
+	//{
+	//	UE_LOG(LogTemp, Error, TEXT("Failed to get generated class from player pawn blueprint."));
+	//	return;
+	//}
 
-	DefaultPawnClass = PlayerPawnClass;
+	DefaultPawnClass = PlayerPawnObject.Class;
 	PlayerControllerClass = AMenuCallingPlayerController::StaticClass();
 	PlayerStateClass = ACollectorPlayerState::StaticClass();
 	GameStateClass = AIndividualGameState::StaticClass();
@@ -88,7 +88,7 @@ bool AIndividualGameMode::ReadyToStartMatch_Implementation()
 		return false;
 	}
 	
-	if (GetNumPlayers() < 2)
+	if (GetNumPlayers() < 1)
 	{
 		return false;
 	}
