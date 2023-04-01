@@ -69,7 +69,7 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 	int32 CurrentPlayerNum = IndividualGameState->PlayerArray.Num();
 	IndividualGameState->SetNumPlayers(CurrentPlayerNum);
 
-	if (GetNumPlayers() >= 2)
+	if (GetNumPlayers() >= IndividualGameState->GetMaxPlayers())
 	{
 		GetWorldTimerManager().SetTimer(TimerHandle_DelayedStart, this, &AIndividualGameMode::DelayedStartMatch, 5.0f, false);
 	}
@@ -78,7 +78,15 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 void AIndividualGameMode::HandleMatchIsWaitingToStart()
 {
 	Super::HandleMatchIsWaitingToStart();
-
+	AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
+	if (IndividualGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameMode_IndividualGameState is null."));
+		return;
+	}
+	
+	IndividualGameState->SetGameState(EGameState::StandByToPregressLoading);
+	
 	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchIsWaitingToStart"));
 
@@ -88,17 +96,21 @@ void AIndividualGameMode::HandleMatchIsWaitingToStart()
 
 bool AIndividualGameMode::ReadyToStartMatch_Implementation()
 {
-	if (GetNumPlayers() < 2)
-	{
-		return false;
-	}
-	
 	if (GetMatchState() != MatchState::WaitingToStart)
 	{
 		return false;
 	}
 
 	if (!bWaitToStart) return false;
+
+	AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
+	if (IndividualGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameMode_IndividualGameSate is null."));
+		return false;
+	}
+	
+	IndividualGameState->SetGameState(EGameState::Progress);
 	
 	return true;
 }
@@ -110,6 +122,7 @@ void AIndividualGameMode::DelayedStartMatch()
 
 void AIndividualGameMode::HandleMatchHasStarted()
 {
+	// 게임 시작 후, 서버 측 클라에게 UI바인딩.
 	Super::HandleMatchHasStarted();
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	APawn* PlayerPawn = PlayerController->GetPawn();

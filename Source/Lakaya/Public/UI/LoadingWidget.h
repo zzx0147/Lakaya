@@ -5,6 +5,7 @@
 #include "Components/TextBlock.h"
 #include "GameFramework/HUD.h"
 #include "GameMode/IndividualGameMode.h"
+#include "GameMode/IndividualGameState.h"
 #include "LoadingWidget.generated.h"
 
 UCLASS()
@@ -20,6 +21,10 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* LoadingWidgetText;
 
+public:
+	UFUNCTION()
+	void ReMoveLoadingWidget(EGameState ChangeGamState);
+	
 public:
 	UFUNCTION()
 	void OnChangeJoinedPlayers(int32 Number, int32 MaxPlayers);

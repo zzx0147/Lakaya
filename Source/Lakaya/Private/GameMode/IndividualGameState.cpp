@@ -35,6 +35,7 @@ void AIndividualGameState::SetNumPlayers(int32 NewNumPlayers)
 
 void AIndividualGameState::OnRep_GameState()
 {
+	OnChangeGameState.Broadcast(CurrentGameState);
 }
 
 void AIndividualGameState::SetGameState(EGameState NewGameState)
