@@ -39,8 +39,7 @@ private:
 	// 경기 시작 대기 중 처리. (액터 틱은 이루어지지만, 플레이어는 아직 스폰 되어 있지 않음)
 	// ReadyToStartMatch (경기 시작 준비)가 true를 반환하는 경우, 또는 StartMatch가 호출된 경우 다음 상태로 전환.
 	virtual void HandleMatchIsWaitingToStart() override;
-	virtual bool ReadyToStartMatch_Implementation() override;
-	virtual void StartMatch() override;
+	// virtual bool ReadyToStartMatch_Implementation() override;
 	
 	// InProgress (진행중)
 	// 여기에 들어갈 때 HandleMatchHasStarted()함수 호출

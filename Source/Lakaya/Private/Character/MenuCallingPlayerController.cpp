@@ -54,7 +54,7 @@ AMenuCallingPlayerController::AMenuCallingPlayerController()
 void AMenuCallingPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	if (auto LocalPlayer = GetLocalPlayer())
 	{
 		if (const auto Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
@@ -70,7 +70,7 @@ void AMenuCallingPlayerController::BeginPlay()
 			}
 
 			// 로딩 부분
-			CreateLoadingWidget();
+			// CreateLoadingWidget();
 			// CreateScoreBoardWidget();
 
 			#pragma endregion 

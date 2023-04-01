@@ -29,9 +29,6 @@ protected:
 	virtual void RespawnNotify_Implementation() override;
 
 public:
-	void CallBeginPlay();
-	
-public:
 	/**
 	 * @brief 캐릭터의 첫번째 무기를 설정합니다.
 	 * @param WeaponClassRowName WeaponAssetDataTable에서의 RowName

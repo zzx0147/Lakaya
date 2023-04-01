@@ -7,13 +7,11 @@
 #include "GameFramework/GameState.h"
 #include "IndividualGameState.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeJoinedPlayers, int32);
-
 UENUM()
 enum class EGameState : uint8
 {
 	StandBy UMETA(DisplayName = "StandBy"), // 다른 플레이어 입장 대기 상태
-	// SelectWait UMETA(DisplayName = "SelectWait"), // 무기 및 캐릭터 선택 대기 상태
+	SelectWait UMETA(DisplayName = "SelectWait"), // 무기 및 캐릭터 선택 대기 상태
 	Progress UMETA(DisplayName = "Progress"), // 게임진행 상태
 	Finish UMETA(DisplayName = "Finish") // 게임종료 상태
 };
@@ -52,7 +50,6 @@ private:
 	void OnRep_GameState();
 
 	uint8 MaxPlayers = 6;
-public:
-	FOnChangeJoinedPlayers OnChangeJoinedPlayers;
+private:
 	// AIndividualGameMode* GameMode;
 };

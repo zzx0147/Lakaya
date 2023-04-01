@@ -6,7 +6,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "Character/MenuCallingPlayerController.h"
 #include "Weapon/WeaponAbility.h"
 #include "Weapon/WeaponClassData.h"
 #include "Weapon/WeaponComponent.h"
@@ -57,10 +56,6 @@ AArmedCharacter::AArmedCharacter()
 	if (ReloadStartFinder.Succeeded()) ReloadStartAction = ReloadStartFinder.Object;
 	if (ReloadStopFinder.Succeeded()) ReloadStopAction = ReloadStopFinder.Object;
 	if (DataFinder.Succeeded()) WeaponClassDataTable = DataFinder.Object;
-
-	// if (!GetIsReplicated()) UE_LOG(LogTemp, Fatal, TEXT("ArmedCharacter is NOT replicated"));
-	// if (HasAuthority()) SetupPrimaryWeapon(TEXT("Test"));
-	// AddInputContext();
 }
 
 void AArmedCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -85,7 +80,7 @@ void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponClassRowName)
 void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	
+
 	if (const auto CastedComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		CastedComponent->BindAction(FireStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::FireStart);
@@ -108,7 +103,7 @@ ELifetimeCondition AArmedCharacter::AllowActorComponentToReplicate(const UActorC
 void AArmedCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	if (!GetIsReplicated()) UE_LOG(LogTemp, Fatal, TEXT("ArmedCharacter is NOT replicated"));
 	if (HasAuthority()) SetupPrimaryWeapon(TEXT("Test"));
 	AddInputContext();
@@ -131,11 +126,6 @@ void AArmedCharacter::RespawnNotify_Implementation()
 {
 	Super::RespawnNotify_Implementation();
 	AddInputContext();
-}
-
-void AArmedCharacter::CallBeginPlay()
-{
-	BeginPlay();
 }
 
 void AArmedCharacter::FireStart(const FInputActionValue& Value)
