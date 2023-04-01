@@ -5,15 +5,6 @@
 #include "Individual/DropEnergyPool.h"
 #include "IndividualGameMode.generated.h"
 
-// UENUM()
-// enum class EGameState : uint8
-// {
-// 	StandBy UMETA(DisplayName = "StandBy"), // 다른 플레이어 입장 대기 상태
-// 	SelectWait UMETA(DisplayName = "SelectWait"), // 무기 및 캐릭터 선택 대기 상태
-// 	Progress UMETA(DisplayName = "Progress"), // 게임진행 상태
-// 	Finish UMETA(DisplayName = "Finish") // 게임종료 상태
-// };
-
 DECLARE_MULTICAST_DELEGATE(FOnGameModeInitialized);
 
 UCLASS()
@@ -39,7 +30,9 @@ private:
 	// 경기 시작 대기 중 처리. (액터 틱은 이루어지지만, 플레이어는 아직 스폰 되어 있지 않음)
 	// ReadyToStartMatch (경기 시작 준비)가 true를 반환하는 경우, 또는 StartMatch가 호출된 경우 다음 상태로 전환.
 	virtual void HandleMatchIsWaitingToStart() override;
-	// virtual bool ReadyToStartMatch_Implementation() override;
+	virtual bool ReadyToStartMatch_Implementation() override;
+	virtual void StartMatch() override;
+	void DelayedStartMatch();
 	
 	// InProgress (진행중)
 	// 여기에 들어갈 때 HandleMatchHasStarted()함수 호출
@@ -72,6 +65,7 @@ private:
 
 public:
 	uint8 PlayerRespawnTime = 3;
+	bool bTimerSet = false;
 	
 public:
 	UPROPERTY()
@@ -87,6 +81,7 @@ private:
 private:
 	FTimerHandle TimerHandle_SpawnStaticEnergy;
 	FTimerHandle TimerHandle_CheckStartMatch;
+	FTimerHandle TimerHandle_ReadyToStart;
 	
 public:
 	FOnGameModeInitialized OnGameModeInitialized;

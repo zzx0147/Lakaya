@@ -7,6 +7,8 @@
 #include "GameFramework/GameState.h"
 #include "IndividualGameState.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnChangeJoinedPlayers, int32, int32)
+
 UENUM()
 enum class EGameState : uint8
 {
@@ -50,6 +52,6 @@ private:
 	void OnRep_GameState();
 
 	uint8 MaxPlayers = 6;
-private:
-	// AIndividualGameMode* GameMode;
+public:
+	FOnChangeJoinedPlayers OnChangeJoinedPlayers;
 };

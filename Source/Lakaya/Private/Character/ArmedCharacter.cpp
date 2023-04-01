@@ -128,6 +128,11 @@ void AArmedCharacter::RespawnNotify_Implementation()
 	AddInputContext();
 }
 
+void AArmedCharacter::CallBeginPlay()
+{
+	BeginPlay();
+}
+
 void AArmedCharacter::FireStart(const FInputActionValue& Value)
 {
 	PrimaryWeapon->FireStart();

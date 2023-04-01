@@ -70,7 +70,7 @@ void AMenuCallingPlayerController::BeginPlay()
 			}
 
 			// 로딩 부분
-			// CreateLoadingWidget();
+			CreateLoadingWidget();
 			// CreateScoreBoardWidget();
 
 			#pragma endregion 

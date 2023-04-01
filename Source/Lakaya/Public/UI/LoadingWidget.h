@@ -18,16 +18,11 @@ private:
 	virtual void NativeOnInitialized() override;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* MaxPlayersText;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* JoinedPlayersText;
+	UTextBlock* LoadingWidgetText;
 
 public:
 	UFUNCTION()
-	void InitMaxPlayers(int32 Number);
-	UFUNCTION()
-	void OnChangeJoinedPlayers(int32 Number);
+	void OnChangeJoinedPlayers(int32 Number, int32 MaxPlayers);
 
 	FTimerHandle TimerHandle;
 };

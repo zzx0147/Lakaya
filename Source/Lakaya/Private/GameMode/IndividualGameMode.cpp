@@ -7,7 +7,6 @@
 #include "Individual/IndividualDropEnergy.h"
 #include "Individual/DropEnergyPool.h"
 #include "EngineUtils.h"
-// #include "SWarningOrErrorBox.h"
 #include "Blueprint/WidgetTree.h"
 #include "GameMode/IndividualGameState.h"
 #include "Net/UnrealNetwork.h"
@@ -52,7 +51,6 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 	Super::PostLogin(NewPlayer);
 	
 	OnPlayerJoined(NewPlayer);
-
 	
 	UE_LOG(LogTemp, Warning, TEXT("The Player has entered the game."));
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
@@ -76,31 +74,65 @@ void AIndividualGameMode::HandleMatchIsWaitingToStart()
 
 	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchIsWaitingToStart"));
+
+	// 게임시작 조건
 	ReadyToStartMatch();
-	// CheckStartMatch();
 }
 
-// bool AIndividualGameMode::ReadyToStartMatch_Implementation()
-// {
-// 	if (GetNumPlayers() >= 3)
+bool AIndividualGameMode::ReadyToStartMatch_Implementation()
+{
+	bool bIsReady = Super::ReadyToStartMatch_Implementation();
+	if (!bIsReady)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ReadyToStartMatch_Implementation failed Super::ReadyToStartMatch_Implementation check."));
+		return false;
+	}
+	
+	if (GetNumPlayers() < 2)
+	{
+		return false;
+	}
+	
+	if (GetMatchState() != MatchState::WaitingToStart)
+	{
+		return false;
+	}
+
+	DelayedStartMatch();
+	
+	return true;
+}
+
+void AIndividualGameMode::StartMatch()
+{
+// 	UE_LOG(LogTemp, Warning, TEXT("StartMatch()"));
+//
+// 	if (!ReadyToStartMatch_Implementation())
 // 	{
-// 		// 플레이어 인원이 특정 인원 만큼 접속을 했다면 총기 선택창으로.
-// 		AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
-// 		if (IndividualGameState == nullptr)
-// 		{
-// 			UE_LOG(LogTemp, Warning, TEXT("IndividualGameState is null."));
-// 		}
-// 		
-// 		IndividualGameState->CurrentGameState = EGameState::SelectWait;
-// 		
-// 		return true;
+// 		return;
 // 	}
-// 	else
-// 	{
-// 		// 플레이어 인원이 특정 인원 만큼 접속을 못했다면 무한 대기.
-// 		return false;
-// 	}
-// }
+}
+
+void AIndividualGameMode::DelayedStartMatch()
+{
+	UE_LOG(LogTemp, Warning, TEXT("DelayedStartMatch()"));
+
+	float Delay = 5.0f;
+	GetWorldTimerManager().SetTimer(TimerHandle_ReadyToStart, this, &AIndividualGameMode::StartMatch, Delay);
+
+	SetMatchState(MatchState::InProgress);
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	APawn* PlayerPawn = PlayerController->GetPawn();
+	AArmedCharacter* Armed = Cast<AArmedCharacter>(PlayerPawn);
+	if (Armed)
+	{
+		Armed->CallBeginPlay();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to cast pawn to AArmedCharacter"));
+	}
+}
 
 void AIndividualGameMode::HandleMatchHasStarted()
 {
@@ -147,29 +179,27 @@ void AIndividualGameMode::Logout(AController* Exiting)
 
 void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
 {
-	// if (RegisteredPlayers.Contains(PlayerController))
-	// 	return;
-	//
-	// TArray<AActor*> FoundActors;
-	// UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableCharacter::StaticClass(), FoundActors);
-	//
-	// for (auto Actor : FoundActors)
-	// {
-	// 	ADamageableCharacter* MyActor = Cast<ADamageableCharacter>(Actor);
-	// 	if (MyActor)
-	// 	{
-	// 		MyActor->OnKillCharacterNotify.AddUObject(this, &AIndividualGameMode::OnKilledCharacter);
-	// 	}
-	// 	else
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("MyActor is null."));
-	// 		return;
-	// 	}
-	// }
-	//
-	// RegisteredPlayers.Add(PlayerController);
-
+	if (RegisteredPlayers.Contains(PlayerController))
+		return;
 	
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableCharacter::StaticClass(), FoundActors);
+	
+	for (auto Actor : FoundActors)
+	{
+		ADamageableCharacter* MyActor = Cast<ADamageableCharacter>(Actor);
+		if (MyActor)
+		{
+			MyActor->OnKillCharacterNotify.AddUObject(this, &AIndividualGameMode::OnKilledCharacter);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("MyActor is null."));
+			return;
+		}
+	}
+	
+	RegisteredPlayers.Add(PlayerController);
 }
 
 void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
