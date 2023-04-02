@@ -23,8 +23,8 @@ class LAKAYA_API URiffleFireCore : public UWeaponFire
 	GENERATED_BODY()
 public:
 	float GetBaseDamage();
+	float GetOriginBaseDamage();
 	void SetBaseDamage(float newBaseDamage);
-
 
 protected:
 	void FireStartCore(FTimerHandle& FireTimer, const EFocusContext& FocusContext,
@@ -55,6 +55,8 @@ protected:
 
 	UPROPERTY(ReplicatedUsing=OnRep_Character)
 	TWeakObjectPtr<class AFocusableCharacter> Character;
+
+	float OriginBaseDamage;
 
 	UPROPERTY(Replicated)
 	float BaseDamage;

@@ -24,6 +24,11 @@ float URiffleFireCore::GetBaseDamage()
 	return BaseDamage;
 }
 
+float URiffleFireCore::GetOriginBaseDamage()
+{
+	return OriginBaseDamage;
+}
+
 void URiffleFireCore::SetBaseDamage(float newBaseDamage)
 {
 	BaseDamage = newBaseDamage;

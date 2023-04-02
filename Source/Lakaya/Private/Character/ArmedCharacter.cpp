@@ -112,6 +112,7 @@ void AArmedCharacter::BeginPlay()
 void AArmedCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::KillCharacter(EventInstigator, DamageCauser);
+	PrimaryWeapon->UpgradeInitialize();
 	auto Causer = Cast<AArmedCharacter>(DamageCauser);
 	if (Causer) Causer->PrimaryWeapon->UpgradeWeapon();
 }

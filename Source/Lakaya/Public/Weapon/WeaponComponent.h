@@ -23,6 +23,7 @@ public:
 
 	virtual void RequestSetupData(const FName& RowName);
 	virtual void UpgradeWeapon();
+	virtual void UpgradeInitialize();
 
 protected:
 	virtual void BeginPlay() override;
@@ -31,6 +32,7 @@ protected:
 protected:
 	virtual void SetupData();
 	virtual void SetupUI();
+
 
 	UFUNCTION()
 	virtual void OnRep_UpgradeLevel();
