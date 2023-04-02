@@ -11,6 +11,7 @@
 #include "UI/GamePlayBulletWidget.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Character.h"
+#include "UI/GameTimeWidget.h"
 
 UWeaponComponent::UWeaponComponent()
 {

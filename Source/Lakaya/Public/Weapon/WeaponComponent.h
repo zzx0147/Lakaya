@@ -31,6 +31,7 @@ protected:
 protected:
 	virtual void SetupData();
 	virtual void SetupUI();
+	
 
 	UFUNCTION()
 	virtual void OnRep_UpgradeLevel();

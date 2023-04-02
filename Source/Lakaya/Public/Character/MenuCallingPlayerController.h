@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
+#include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
 #include "MenuCallingPlayerController.generated.h"
 
@@ -22,7 +23,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
-
+	
 private:
 	void MenuHandler(const FInputActionValue& Value);
 	void LoadoutHandler(const FInputActionValue& Value);
@@ -30,9 +31,9 @@ private:
 
 public:
 	void CreateLoadingWidget();
+	void CreateGameTimeWidget();
 	void CreateScoreBoardWidget();
 
-	// void ReMoveLoadingWidget();
 private:
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
@@ -53,4 +54,5 @@ private:
 
 public:
 	ULoadingWidget* LoadingWidget;
+	UGameTimeWidget* GameTimeWidget;
 };

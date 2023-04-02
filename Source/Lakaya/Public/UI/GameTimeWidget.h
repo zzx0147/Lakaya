@@ -1,30 +1,33 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
-#include "GameFramework/HUD.h"
-#include "GameMode/IndividualGameMode.h"
 #include "GameMode/IndividualGameState.h"
-#include "LoadingWidget.generated.h"
+#include "GameTimeWidget.generated.h"
 
+/**
+ * 
+ */
 UCLASS()
-class LAKAYA_API ULoadingWidget : public UUserWidget
+class LAKAYA_API UGameTimeWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 private:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* LoadingWidgetText;
-
-public:
-	UFUNCTION()
-	void ReMoveLoadingWidget(EGameState ChangeGamState);
 	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* GameTimeText;
+
 public:
 	UFUNCTION()
-	void OnChangeJoinedPlayers(int32 Number, int32 MaxPlayers);
+	void ReMoveGameTimeWidget(EGameState ChangeGameState);
+
+public:
+	UFUNCTION()
+	void OnChangeTime(int32 Min, int32 Sec);
 };
