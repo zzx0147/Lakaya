@@ -35,11 +35,6 @@ void ULoadingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
     Super::NativeTick(MyGeometry, InDeltaTime);
 }
 
-void ULoadingWidget::NativeOnInitialized()
-{
-    Super::NativeOnInitialized();
-}
-
 void ULoadingWidget::OnChangeJoinedPlayers(int32 JoinedPlayers, int32 MaxPlayer)
 {
     if (JoinedPlayers == MaxPlayer)

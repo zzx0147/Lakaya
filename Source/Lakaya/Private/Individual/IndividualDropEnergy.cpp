@@ -52,7 +52,6 @@ void AIndividualDropEnergy::OnLocalInteractionBegin(APawn* Caller)
 {
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
 	{
-		UE_LOG(LogActor, Error, TEXT("1"));
 		CastedCaller->NoticeInstantInteractionLocal();
 	}
 	else UE_LOG(LogActor, Error, TEXT("OnLocalInteractionBegin::Caller was not AInteractableCharacter!"));
@@ -62,7 +61,6 @@ void AIndividualDropEnergy::OnServerInteractionBegin(const float& Time, APawn* C
 {
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
 	{
-		UE_LOG(LogActor, Error, TEXT("2"));
 		CastedCaller->InitiateInteractionStart(Time, this);
 	}
 }
@@ -85,6 +83,7 @@ void AIndividualDropEnergy::OnInteractionStart(APawn* Caller)
 			}
 
 			CollectorPlayerState->GainEnergy(1);
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("GetEnergy !"));
 			UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 1 Energy"), *CollectorPlayerState->GetPlayerName());
 			UE_LOG(LogTemp, Warning, TEXT("Player Total Energy: %d"), CollectorPlayerState->GetEnergy());
 		}

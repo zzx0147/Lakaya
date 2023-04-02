@@ -18,6 +18,8 @@ void AIndividualGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 	DOREPLIFETIME(AIndividualGameState, NumPlayers);
 	DOREPLIFETIME(AIndividualGameState, CurrentGameState);
+	DOREPLIFETIME(AIndividualGameState, Min);
+	DOREPLIFETIME(AIndividualGameState, Sec);
 }
 
 void AIndividualGameState::OnRep_NumPlayers()
@@ -36,6 +38,16 @@ void AIndividualGameState::SetNumPlayers(int32 NewNumPlayers)
 void AIndividualGameState::OnRep_GameState()
 {
 	OnChangeGameState.Broadcast(CurrentGameState);
+}
+
+void AIndividualGameState::OnRep_Min()
+{
+	OnChangeTime.Broadcast(Min, Sec);
+}
+
+void AIndividualGameState::OnRep_Sec()
+{
+	OnChangeTime.Broadcast(Min, Sec);
 }
 
 void AIndividualGameState::SetGameState(EGameState NewGameState)

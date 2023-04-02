@@ -32,6 +32,7 @@ protected:
 protected:
 	virtual void SetupData();
 	virtual void SetupUI();
+	
 
 
 	UFUNCTION()
