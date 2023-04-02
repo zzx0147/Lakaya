@@ -1,4 +1,7 @@
 #include "Individual/IndividualObject.h"
+
+#include <SPIRV-Reflect/SPIRV-Reflect/include/spirv/unified1/spirv.h>
+
 #include "Character/CollectorPlayerState.h"
 #include "Character/DamageableCharacter.h"
 #include "Character/InteractableCharacter.h"
@@ -122,6 +125,7 @@ void AIndividualObject::OnInteractionStop(APawn* Caller)
 	UE_LOG(LogTemp, Warning, TEXT("InteractingStopTime : %f seconds"), InteractingStopTime);
 	UE_LOG(LogTemp, Warning, TEXT("InteractingStartTime : %f seconds"), InteractingStartTime);
 	UE_LOG(LogTemp, Warning, TEXT("Interaction Duration : %f seconds"), InteractionDuration);
+
 	
 	if (InteractionDuration > 4.0f)
 	{
@@ -131,6 +135,8 @@ void AIndividualObject::OnInteractionStop(APawn* Caller)
 			uint8 CurrentEnergy = CollectorPlayerState->GetEnergy();
 			CollectorPlayerState->GainPoint(CurrentEnergy);
 			CollectorPlayerState->ResetEnergy();
+
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction success."));
 			UE_LOG(LogTemp, Warning, TEXT("Player Total Point : %d"), CollectorPlayerState->GetPoint());
 			UE_LOG(LogTemp, Warning, TEXT("Player Current Energy Num : %d"), CollectorPlayerState->GetEnergy());
 			bIsAvailable = false;
@@ -145,10 +151,11 @@ void AIndividualObject::OnInteractionStop(APawn* Caller)
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Interaction Failed."));
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction Failed."));
 		return;
 	}
 
-	InteractingStartTime = 0.0f;
+	// InteractingStartTime = 0.0f;
 	
 	// TODO : 애니메이션 적용
 	// 긴 상호작용 애니메이션 끝나는 지점.
