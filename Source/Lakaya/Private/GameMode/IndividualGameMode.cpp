@@ -50,7 +50,7 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 	
-	OnPlayerJoined(NewPlayer);
+	// OnPlayerJoined(NewPlayer);
 	
 	UE_LOG(LogTemp, Warning, TEXT("The Player has entered the game."));
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
@@ -66,61 +66,62 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 	
 	int32 CurrentPlayerNum = IndividualGameState->PlayerArray.Num();
 	IndividualGameState->SetNumPlayers(CurrentPlayerNum);
+
+	if (GetNumPlayers() >= IndividualGameState->GetMaxPlayers())
+	{
+		GetWorldTimerManager().SetTimer(TimerHandle_DelayedStart, this, &AIndividualGameMode::DelayedStartMatch, 5.0f, false);
+	}
 }
 
 void AIndividualGameMode::HandleMatchIsWaitingToStart()
 {
 	Super::HandleMatchIsWaitingToStart();
-
+	AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
+	if (IndividualGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameMode_IndividualGameState is null."));
+		return;
+	}
+	
+	IndividualGameState->SetGameState(EGameState::StandByToPregressLoading);
+	
 	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchIsWaitingToStart"));
 
 	// 게임시작 조건
-	ReadyToStartMatch();
+	ReadyToStartMatch();x
 }
 
 bool AIndividualGameMode::ReadyToStartMatch_Implementation()
 {
-	bool bIsReady = Super::ReadyToStartMatch_Implementation();
-	if (!bIsReady)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ReadyToStartMatch_Implementation failed Super::ReadyToStartMatch_Implementation check."));
-		return false;
-	}
-	
-	if (GetNumPlayers() < 1)
-	{
-		return false;
-	}
-	
 	if (GetMatchState() != MatchState::WaitingToStart)
 	{
 		return false;
 	}
 
-	DelayedStartMatch();
+	if (!bWaitToStart) return false;
+
+	AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
+	if (IndividualGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameMode_IndividualGameSate is null."));
+		return false;
+	}
+	
+	IndividualGameState->SetGameState(EGameState::Progress);
 	
 	return true;
 }
 
-void AIndividualGameMode::StartMatch()
-{
-// 	UE_LOG(LogTemp, Warning, TEXT("StartMatch()"));
-//
-// 	if (!ReadyToStartMatch_Implementation())
-// 	{
-// 		return;
-// 	}
-}
-
 void AIndividualGameMode::DelayedStartMatch()
 {
-	UE_LOG(LogTemp, Warning, TEXT("DelayedStartMatch()"));
+	bWaitToStart = true;
+}
 
-	float Delay = 5.0f;
-	GetWorldTimerManager().SetTimer(TimerHandle_ReadyToStart, this, &AIndividualGameMode::StartMatch, Delay);
-
-	SetMatchState(MatchState::InProgress);
+void AIndividualGameMode::HandleMatchHasStarted()
+{
+	// 게임 시작 후, 서버 측 클라에게 UI바인딩.
+	Super::HandleMatchHasStarted();
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	APawn* PlayerPawn = PlayerController->GetPawn();
 	AArmedCharacter* Armed = Cast<AArmedCharacter>(PlayerPawn);
@@ -132,12 +133,9 @@ void AIndividualGameMode::DelayedStartMatch()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Failed to cast pawn to AArmedCharacter"));
 	}
-}
 
-void AIndividualGameMode::HandleMatchHasStarted()
-{
-	Super::HandleMatchHasStarted();
-
+	OnPlayerJoined();
+	
 	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasStarted"));
 }
@@ -177,10 +175,10 @@ void AIndividualGameMode::Logout(AController* Exiting)
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
 }
 
-void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
+void AIndividualGameMode::OnPlayerJoined()
 {
-	if (RegisteredPlayers.Contains(PlayerController))
-		return;
+	// if (RegisteredPlayers.Contains(PlayerController))
+		// return;
 	
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableCharacter::StaticClass(), FoundActors);
@@ -191,6 +189,7 @@ void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
 		if (MyActor)
 		{
 			MyActor->OnKillCharacterNotify.AddUObject(this, &AIndividualGameMode::OnKilledCharacter);
+			UE_LOG(LogTemp, Warning, TEXT("PlayerController OnKillCharacterNotify Binding."));
 		}
 		else
 		{
@@ -199,7 +198,7 @@ void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
 		}
 	}
 	
-	RegisteredPlayers.Add(PlayerController);
+	// RegisteredPlayers.Add(PlayerController);
 }
 
 void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
@@ -306,7 +305,7 @@ void AIndividualGameMode::OnKilledCharacter(AController* VictimController, AActo
 	}
 	
 	// Spawn Drop Energy
-	for (uint8 i = 0 ; i < VictimCollectorPlayerState->GetEnergy(); i++)
+	for (uint8 i = 0 ; i <= VictimCollectorPlayerState->GetEnergy(); i++)
 	{
 		SpawnDropEnergy(VictimController);
 	}

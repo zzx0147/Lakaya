@@ -88,8 +88,6 @@ void AIndividualObject::OnInteractionStop(APawn* Caller)
 		return;
 	}
 	
-	InteractingStopTime = UGameplayStatics::GetRealTimeSeconds(this);
-
 	//InteractionStop 기능에서 타이머가 이미 만료되었는지 확인. 그렇지 않은 경우 타이머를 취소.
 	if (GetWorldTimerManager().IsTimerActive(InteractionTimerHandle))
 	{
@@ -100,7 +98,7 @@ void AIndividualObject::OnInteractionStop(APawn* Caller)
 	float InteractionDuration = InteractingStopTime - InteractingStartTime;
 	
 	UE_LOG(LogTemp, Warning, TEXT("Interaction Duration : %f seconds"), InteractionDuration);
-
+	
 	if (InteractionDuration > 4.0f)
 	{
 		if (Caller && Caller->GetController())
@@ -139,7 +137,8 @@ void AIndividualObject::AutomaticInteractionStop()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Cylinder AutomaticInteractionStop !"));
 
-	InteractionStop(MaxInteractionDuration, nullptr);
+	// InteractionStop(MaxInteractionDuration, nullptr);
+	
 }
 
 void AIndividualObject::MakeAvailable()

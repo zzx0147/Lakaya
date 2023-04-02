@@ -1,4 +1,6 @@
 #include "UI/LoadingWidget.h"
+
+#include "Character/MenuCallingPlayerController.h"
 #include "GameMode/IndividualGameMode.h"
 #include "GameMode/IndividualGameState.h"
 #include "Net/UnrealNetwork.h"
@@ -25,6 +27,7 @@ void ULoadingWidget::NativeConstruct()
     }
 
     IndividualGameState->OnChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
+    IndividualGameState->OnChangeGameState.AddUObject(this, &ULoadingWidget::ReMoveLoadingWidget);
 }
 
 void ULoadingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -39,5 +42,20 @@ void ULoadingWidget::NativeOnInitialized()
 
 void ULoadingWidget::OnChangeJoinedPlayers(int32 JoinedPlayers, int32 MaxPlayer)
 {
+    if (JoinedPlayers == MaxPlayer)
+    {
+        LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("곧 게임을 시작합니다."))));
+        return;
+    }
+    
     LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), JoinedPlayers, MaxPlayer)));
 }
+
+void ULoadingWidget::ReMoveLoadingWidget(EGameState ChangeGamState)
+{
+    if (ChangeGamState == EGameState::Progress)
+    {
+        this->RemoveFromParent();
+    }
+}
+
