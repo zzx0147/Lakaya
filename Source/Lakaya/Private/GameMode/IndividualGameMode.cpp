@@ -28,8 +28,6 @@ AIndividualGameMode::AIndividualGameMode()
 		return;
 	}
 
-	// bDelayedStart = false;
-	
 	DefaultPawnClass = PlayerPawnClass;
 	PlayerControllerClass = AMenuCallingPlayerController::StaticClass();
 	PlayerStateClass = ACollectorPlayerState::StaticClass();
@@ -52,7 +50,7 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 	
-	OnPlayerJoined(NewPlayer);
+	// OnPlayerJoined(NewPlayer);
 	
 	UE_LOG(LogTemp, Warning, TEXT("The Player has entered the game."));
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
@@ -135,6 +133,8 @@ void AIndividualGameMode::HandleMatchHasStarted()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Failed to cast pawn to AArmedCharacter"));
 	}
+
+	OnPlayerJoined();
 	
 	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasStarted"));
@@ -175,10 +175,10 @@ void AIndividualGameMode::Logout(AController* Exiting)
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
 }
 
-void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
+void AIndividualGameMode::OnPlayerJoined()
 {
-	if (RegisteredPlayers.Contains(PlayerController))
-		return;
+	// if (RegisteredPlayers.Contains(PlayerController))
+		// return;
 	
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableCharacter::StaticClass(), FoundActors);
@@ -189,6 +189,7 @@ void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
 		if (MyActor)
 		{
 			MyActor->OnKillCharacterNotify.AddUObject(this, &AIndividualGameMode::OnKilledCharacter);
+			UE_LOG(LogTemp, Warning, TEXT("PlayerController OnKillCharacterNotify Binding."));
 		}
 		else
 		{
@@ -197,7 +198,7 @@ void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
 		}
 	}
 	
-	RegisteredPlayers.Add(PlayerController);
+	// RegisteredPlayers.Add(PlayerController);
 }
 
 void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
@@ -304,7 +305,7 @@ void AIndividualGameMode::OnKilledCharacter(AController* VictimController, AActo
 	}
 	
 	// Spawn Drop Energy
-	for (uint8 i = 0 ; i < VictimCollectorPlayerState->GetEnergy(); i++)
+	for (uint8 i = 0 ; i <= VictimCollectorPlayerState->GetEnergy(); i++)
 	{
 		SpawnDropEnergy(VictimController);
 	}

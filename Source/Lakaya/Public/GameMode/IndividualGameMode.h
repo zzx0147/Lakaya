@@ -57,7 +57,8 @@ private:
 	UFUNCTION()
 	void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser);
 	
-	void OnPlayerJoined(APlayerController* PlayerController);
+	// void OnPlayerJoined(APlayerController* PlayerController);
+	void OnPlayerJoined();
 
 	void RespawnPlayer(AController* Controller);
 
