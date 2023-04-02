@@ -42,6 +42,9 @@ public:
 	UFUNCTION()
 	void SetGameState(EGameState NewGameState);
 
+	UFUNCTION()
+	void SetMinSec();
+	
 	UPROPERTY(ReplicatedUsing = OnRep_NumPlayers)
 	int32 NumPlayers;
 
@@ -57,7 +60,7 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_Min)
 	int32 Min = 3;
 	UPROPERTY(ReplicatedUsing = OnRep_Sec)
-	int32 Sec = 10;
+	int32 Sec = 0;
 	
 private:
 	UFUNCTION()
@@ -73,6 +76,11 @@ private:
 	void OnRep_Sec();
 	
 	uint8 MaxPlayers = 2;
+
+private:
+	// UFUNCTION()
+	// void DecreaseGameTime();
+	
 public:
 	FOnChangeJoinedPlayers OnChangeJoinedPlayers;
 	FOnChangeGameState OnChangeGameState;

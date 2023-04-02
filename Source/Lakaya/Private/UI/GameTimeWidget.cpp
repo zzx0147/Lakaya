@@ -17,15 +17,18 @@ void UGameTimeWidget::NativeConstruct()
 	OnChangeTime(IndividualGameState->GetMin(), IndividualGameState->GetSec());
 	
 	// 바인딩
-	GameTimeText = Cast<UTextBlock>(GetWidgetFromName(TEXT("GameTimeWidget")));
-	if (GameTimeText == nullptr)
+	GameTimeWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("GameTimeWidgetText")));
+	if (GameTimeWidgetText == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameTimeText is null."));
+		UE_LOG(LogTemp, Warning, TEXT("GameTimeWidgetText is null."));
 		return;
 	}
 
+	SetVisibility(ESlateVisibility::Hidden);
+	
 	// TODO : 시간이 바뀔 때마다 위젯 업데이트를 위한 델리게이트 등록
 	IndividualGameState->OnChangeTime.AddUObject(this, &UGameTimeWidget::OnChangeTime);
+	IndividualGameState->OnChangeGameState.AddUObject(this, &UGameTimeWidget::SetGameTimeWidget);
 }
 
 void UGameTimeWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -37,13 +40,19 @@ void UGameTimeWidget::OnChangeTime(int32 Min, int32 Sec)
 {
 	FString MinuteString = FString::Printf(TEXT("%02d"), Min);
 	FString SecondString = FString::Printf(TEXT("%02d"), Sec);
-	FString TimeString = FString::Printf(TEXT("(%s:%s)"), *MinuteString, *SecondString);
-	GameTimeText->SetText(FText::FromString(TimeString));
+	FString TimeString = FString::Printf(TEXT("%s:%s"), *MinuteString, *SecondString);
+	GameTimeWidgetText->SetText(FText::FromString(TimeString));
 	// GameTimeText->SetText(FText::FromString(FString::Printf(TEXT("(%d:%d)"), Min, Sec)));
 }
 
-void UGameTimeWidget::ReMoveGameTimeWidget(EGameState ChangeGameState)
+void UGameTimeWidget::SetGameTimeWidget(EGameState ChangeGameState)
 {
+	if (ChangeGameState == EGameState::Progress)
+	{
+		SetVisibility(ESlateVisibility::Visible);
+		return;
+	}
+	
 	// TODO : 게임 상태 조건
-	this->RemoveFromParent();
+	// this->RemoveFromParent();
 }

@@ -3,6 +3,7 @@
 
 #include "GameMode/IndividualGameState.h"
 
+#include "BehaviorTree/Blackboard/BlackboardKeyType.h"
 #include "Character/CollectorPlayerState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -10,6 +11,9 @@
 void AIndividualGameState::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// FTimerHandle GameTimerHandle;
+	// GetWorldTimerManager().SetTimer(GameTimerHandle, this, &AIndividualGameState::SetMinSec, 1.0f, true);
 }
 	
 void AIndividualGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -56,5 +60,51 @@ void AIndividualGameState::SetGameState(EGameState NewGameState)
 	{
 		CurrentGameState = NewGameState;
 		OnRep_GameState();
+		if (CurrentGameState == EGameState::Progress)
+		{
+			FTimerHandle GameTimerHandle;
+			GetWorldTimerManager().SetTimer(GameTimerHandle, this, &AIndividualGameState::SetMinSec, 1.0f, true);
+		}
 	}
 }
+
+void AIndividualGameState::SetMinSec()
+{
+	if (CurrentGameState == EGameState::Progress)
+	{
+		const float DeltaTime = GetWorld()->GetDeltaSeconds();
+		const float TimeScale = 1.0f;
+		
+		if (Sec <= 0)
+		{
+			if (Min <= 0)
+			{
+				// TODO : 게임종료
+				UE_LOG(LogTemp, Warning, TEXT("게임종료"));
+				return;
+			}
+
+			Min -= 1;
+			Sec = 60;
+			OnRep_Min();
+			OnRep_Sec();
+		}
+
+		Sec -= TimeScale * DeltaTime;
+		// Sec -= 1;
+		OnRep_Sec();
+	}
+}
+
+// void AIndividualGameState::DecreaseGameTime()
+// {
+// 	if (Sec <= 0)
+// 	{
+// 		Min =- 1;
+// 		Sec = 60;
+// 		return;
+// 	}
+// 		
+// 	Sec -= 1.0f;
+// 	UE_LOG(LogTemp, Warning, TEXT("DecreaseGameTime Function."));
+// }

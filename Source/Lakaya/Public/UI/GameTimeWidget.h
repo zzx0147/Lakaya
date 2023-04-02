@@ -21,11 +21,11 @@ private:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* GameTimeText;
+	UTextBlock* GameTimeWidgetText;
 
 public:
 	UFUNCTION()
-	void ReMoveGameTimeWidget(EGameState ChangeGameState);
+	void SetGameTimeWidget(EGameState ChangeGameState);
 
 public:
 	UFUNCTION()

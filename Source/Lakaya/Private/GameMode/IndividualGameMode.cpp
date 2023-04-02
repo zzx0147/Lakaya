@@ -63,7 +63,7 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_IndividualGameState is null."));
 		return;
 	}
-	
+
 	int32 CurrentPlayerNum = IndividualGameState->PlayerArray.Num();
 	IndividualGameState->SetNumPlayers(CurrentPlayerNum);
 
