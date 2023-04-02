@@ -21,7 +21,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	virtual void OnLocalInteractionBegin(APawn* Caller) override;
+	// virtual void OnLocalInteractionBegin(APawn* Caller) override;
 	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
 	virtual void OnInteractionStart(APawn* Caller) override;
 	virtual void OnLocalInteractionStopBegin(APawn* Caller) override;
@@ -48,4 +48,6 @@ private:
 	
 	FTimerHandle InteractionTimerHandle;
 	FTimerHandle AvailableTimerHandle;
+
+	APawn* InteractingPawn;
 };

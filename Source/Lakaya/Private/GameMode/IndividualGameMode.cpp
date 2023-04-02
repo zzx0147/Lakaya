@@ -134,7 +134,7 @@ void AIndividualGameMode::HandleMatchHasStarted()
 		UE_LOG(LogTemp, Warning, TEXT("Failed to cast pawn to AArmedCharacter"));
 	}
 
-	OnPlayerJoined();
+	OnKillNotifyBinding();
 	
 	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasStarted"));
@@ -175,10 +175,8 @@ void AIndividualGameMode::Logout(AController* Exiting)
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
 }
 
-void AIndividualGameMode::OnPlayerJoined()
+void AIndividualGameMode::OnKillNotifyBinding()
 {
-	// if (RegisteredPlayers.Contains(PlayerController))
-		// return;
 	
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableCharacter::StaticClass(), FoundActors);
@@ -197,8 +195,6 @@ void AIndividualGameMode::OnPlayerJoined()
 			return;
 		}
 	}
-	
-	// RegisteredPlayers.Add(PlayerController);
 }
 
 void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
