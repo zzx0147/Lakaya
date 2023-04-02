@@ -53,6 +53,11 @@ void UWeaponComponent::RequestSetupData(const FName& RowName)
 void UWeaponComponent::UpgradeWeapon()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Upgraded"));
+	if (UpgradeLevel > 4)
+	{
+		return;
+	}
+
 	UpgradeLevel++;
 	if (ConsecutiveKillsWidget != nullptr)
 	{
@@ -60,6 +65,15 @@ void UWeaponComponent::UpgradeWeapon()
 	}
 
 	//TODO: 무기가 업그레이드 될 때 어떤 행동을 할 지 정의합니다.
+}
+
+void UWeaponComponent::UpgradeInitialize()
+{
+	UpgradeLevel = 0;
+	if (ConsecutiveKillsWidget != nullptr)
+	{
+		ConsecutiveKillsWidget->SetConsecutiveKills(UpgradeLevel);
+	}
 }
 
 void UWeaponComponent::BeginPlay()
@@ -124,6 +138,7 @@ void UWeaponComponent::SetupUI()
 		}
 	}
 }
+
 
 void UWeaponComponent::OnRep_UpgradeLevel()
 {

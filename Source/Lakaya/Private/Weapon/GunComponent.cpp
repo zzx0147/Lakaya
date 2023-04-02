@@ -60,6 +60,9 @@ bool UGunComponent::CostBullets(const uint16& Bullets)
 void UGunComponent::UpgradeWeapon()
 {
 	Super::UpgradeWeapon();
+
+	if (UpgradeLevel > 4) return;
+
 	FWeaponUpgradeData* Data = WeaponUpgradeDataTable->FindRow<FWeaponUpgradeData>(FName(FString::FromInt(UpgradeLevel)), TEXT("GunComponentUpgradeWeapon"));
 
 	for (auto temp : Data->UpgradeDataArray)
@@ -99,6 +102,18 @@ void UGunComponent::UpgradeWeapon()
 		}
 	}
 
+}
+
+void UGunComponent::UpgradeInitialize()
+{
+	Super::UpgradeInitialize();
+	MagazineCapacity = OriginMagazineCapacity;
+	if (BulletWidget != nullptr)
+		BulletWidget->OnChangeMagazineCapacity(MagazineCapacity);
+
+	auto RiffleFireCoreRef = Cast<URiffleFireCore>(FireSubObject);
+	if (RiffleFireCoreRef != nullptr)
+		RiffleFireCoreRef->SetBaseDamage(RiffleFireCoreRef->GetOriginBaseDamage());
 }
 
 void UGunComponent::SetupData()

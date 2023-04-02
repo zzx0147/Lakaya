@@ -54,7 +54,7 @@ AMenuCallingPlayerController::AMenuCallingPlayerController()
 void AMenuCallingPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	if (auto LocalPlayer = GetLocalPlayer())
 	{
 		if (const auto Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
@@ -106,7 +106,8 @@ void AMenuCallingPlayerController::CreateLoadingWidget()
 			return;
 		}
 			
-		ULoadingWidget* LoadingWidget = CreateWidget<ULoadingWidget>(this, LoadingWidgetClass);
+		// ULoadingWidget* LoadingWidget = CreateWidget<ULoadingWidget>(this, LoadingWidgetClass);
+		LoadingWidget = CreateWidget<ULoadingWidget>(this, LoadingWidgetClass);
 		if (LoadingWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("LoadingWidget is null."));

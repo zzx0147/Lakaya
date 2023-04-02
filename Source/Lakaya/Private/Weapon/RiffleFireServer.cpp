@@ -77,6 +77,7 @@ void URiffleFireServer::SetupData(const FName& RowName)
 
 	auto Data = WeaponFireDataTable->FindRow<FWeaponFireData>(RowName,TEXT("RiffleFire"));
 	BaseDamage = Data->BaseDamage;
+	OriginBaseDamage = BaseDamage;
 	FireDelay = 60 / Data->FireRate;
 	FireRange = Data->FireRange;
 	SqrFireRange = FMath::Square(FireRange);

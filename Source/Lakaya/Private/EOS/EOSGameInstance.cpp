@@ -97,7 +97,7 @@ void UEOSGameInstance::CreateSession()
 					SessionSettings.bAllowJoinInProgress = true;
 					SessionSettings.bAllowJoinViaPresence = true;
 					SessionSettings.bUsesPresence = true;
-					SessionSettings.bUseLobbiesIfAvailable = true;
+					SessionSettings.bUseLobbiesIfAvailable = false;
 					SessionSettings.bAllowJoinViaPresenceFriendsOnly = false;
 					SessionSettings.bAllowInvites = true;
 
@@ -130,7 +130,7 @@ void UEOSGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 		{
 			SessionPtr->ClearOnCreateSessionCompleteDelegates(this);
 			UE_LOG(LogTemp,Warning,TEXT("Start Game Level Open"));
-			UGameplayStatics::OpenLevel(this, FName("TestGamePlayLevel"), true, FString("?listen"));
+			UGameplayStatics::OpenLevel(this, FName("Template_Default"), true, FString("?listen"));
 
 			/*FString ConnectionInfo = FString();
 			SessionPtr->GetResolvedConnectString(SessionName, ConnectionInfo);
@@ -444,7 +444,7 @@ void UEOSGameInstance::StartSession()
 				newSessionSettings.bAllowJoinInProgress = false;
 				newSessionSettings.bAllowJoinViaPresence = true;
 				newSessionSettings.bUsesPresence = true;
-				newSessionSettings.bUseLobbiesIfAvailable = true;
+				newSessionSettings.bUseLobbiesIfAvailable = false;
 				newSessionSettings.bAllowJoinViaPresenceFriendsOnly = false;
 				newSessionSettings.bAllowInvites = false;
 				newSessionSettings.Set(SEARCH_KEYWORDS, FString("LakayaLobby"), EOnlineDataAdvertisementType::ViaOnlineService);

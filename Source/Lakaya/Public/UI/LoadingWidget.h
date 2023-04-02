@@ -5,6 +5,7 @@
 #include "Components/TextBlock.h"
 #include "GameFramework/HUD.h"
 #include "GameMode/IndividualGameMode.h"
+#include "GameMode/IndividualGameState.h"
 #include "LoadingWidget.generated.h"
 
 UCLASS()
@@ -18,16 +19,15 @@ private:
 	virtual void NativeOnInitialized() override;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* MaxPlayersText;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* JoinedPlayersText;
+	UTextBlock* LoadingWidgetText;
 
 public:
 	UFUNCTION()
-	void InitMaxPlayers(int32 Number);
+	void ReMoveLoadingWidget(EGameState ChangeGamState);
+	
+public:
 	UFUNCTION()
-	void OnChangeJoinedPlayers(int32 Number);
+	void OnChangeJoinedPlayers(int32 Number, int32 MaxPlayers);
 
 	FTimerHandle TimerHandle;
 };
