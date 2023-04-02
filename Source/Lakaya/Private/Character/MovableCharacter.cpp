@@ -12,7 +12,7 @@
 AMovableCharacter::AMovableCharacter()
 {
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
-	RunMultiplier = 2.0;
+	RunMultiplier = 1.3;
 
 	// In a dedicated server, the following logic is not necessary.
 	if (IsRunningDedicatedServer()) return;
