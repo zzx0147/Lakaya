@@ -23,6 +23,7 @@ public:
 
 	virtual void RequestSetupData(const FName& RowName);
 	virtual void UpgradeWeapon();
+	virtual void UpgradeInitialize();
 
 protected:
 	virtual void BeginPlay() override;
@@ -33,13 +34,13 @@ protected:
 	virtual void SetupUI();
 	
 
+
 	UFUNCTION()
 	virtual void OnRep_UpgradeLevel();
 
 public:
 	inline void FireStart() { if (FireSubObject) FireSubObject->FireStart(); }
 	inline void FireStop() { if (FireSubObject) FireSubObject->FireStop(); }
-	inline void SwitchSelector() { if (FireSubObject) FireSubObject->SwitchSelector(); }
 	inline void AbilityStart() { if (AbilitySubObject) AbilitySubObject->AbilityStart(); }
 	inline void AbilityStop() { if (AbilitySubObject) AbilitySubObject->AbilityStop(); }
 	inline void ReloadStart() { if (ReloadSubObject) ReloadSubObject->ReloadStart(); }

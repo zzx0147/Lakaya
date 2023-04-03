@@ -13,9 +13,6 @@ struct FWeaponFireData : public FTableRowBase
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Fire)
-	float SelectorSwitchingDelay;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Fire)
 	float FireRate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Fire)

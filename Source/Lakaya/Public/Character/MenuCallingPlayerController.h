@@ -15,6 +15,7 @@
 UCLASS()
 class LAKAYA_API AMenuCallingPlayerController : public APlayerController
 {
+	//TODO: 로드아웃 및 ESC 메뉴를 제외한 다른 기능은 다른 플레이어 컨트롤러에서 하도록 변경해야 합니다.
 	GENERATED_BODY()
 
 public:
@@ -47,7 +48,7 @@ private:
 	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* LoadoutAction;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* ScoreAction;
 
 	FTimerHandle TimerHandle;

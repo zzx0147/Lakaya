@@ -48,12 +48,6 @@ void URiffleFireServer::OnFireStop()
 	FireStopCore(Selector, FireCount, EFocusContext::Server);
 }
 
-void URiffleFireServer::OnSwitchSelector()
-{
-	Super::OnSwitchSelector();
-	SwitchSelectorCore(DesiredSelector, Selector, SelectorTimer, EFocusContext::Server);
-}
-
 void URiffleFireServer::SetupData(const FName& RowName)
 {
 	Super::SetupData(RowName);
@@ -77,10 +71,10 @@ void URiffleFireServer::SetupData(const FName& RowName)
 
 	auto Data = WeaponFireDataTable->FindRow<FWeaponFireData>(RowName,TEXT("RiffleFire"));
 	BaseDamage = Data->BaseDamage;
+	OriginBaseDamage = BaseDamage;
 	FireDelay = 60 / Data->FireRate;
 	FireRange = Data->FireRange;
 	SqrFireRange = FMath::Square(FireRange);
-	SwitchingDelay = Data->SelectorSwitchingDelay;
 }
 
 void URiffleFireServer::EmptyMagazine_Implementation()

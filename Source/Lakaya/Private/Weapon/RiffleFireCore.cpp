@@ -14,7 +14,6 @@ void URiffleFireCore::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME_CONDITION(URiffleFireCore, FireDelay, COND_InitialOnly);
 	DOREPLIFETIME_CONDITION(URiffleFireCore, FireRange, COND_InitialOnly);
 	DOREPLIFETIME_CONDITION(URiffleFireCore, SqrFireRange, COND_InitialOnly);
-	DOREPLIFETIME_CONDITION(URiffleFireCore, SwitchingDelay, COND_InitialOnly);
 	DOREPLIFETIME_CONDITION(URiffleFireCore, GunComponent, COND_InitialOnly);
 	DOREPLIFETIME_CONDITION(URiffleFireCore, Character, COND_InitialOnly);
 }
@@ -22,6 +21,11 @@ void URiffleFireCore::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 float URiffleFireCore::GetBaseDamage()
 {
 	return BaseDamage;
+}
+
+float URiffleFireCore::GetOriginBaseDamage()
+{
+	return OriginBaseDamage;
 }
 
 void URiffleFireCore::SetBaseDamage(float newBaseDamage)
@@ -88,7 +92,7 @@ void URiffleFireCore::SwitchSelectorCore(EGunSelector& DesiredSelector, EGunSele
 		}
 		else UE_LOG(LogNetSubObject, Error,
 		            TEXT("Fail to release focus on UpdateSelector with %d context!"), FocusContext);
-	}, SwitchingDelay, false);
+	}, 1.5f, false);
 	if (OnDesiredSelectorUpdated) OnDesiredSelectorUpdated();
 	GEngine->AddOnScreenDebugMessage(-1, 3, GetDebugColor(FocusContext),TEXT("Switch timer setted!"));
 }
