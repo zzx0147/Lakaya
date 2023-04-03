@@ -23,12 +23,12 @@ void UGameTimeWidget::NativeConstruct()
 		UE_LOG(LogTemp, Warning, TEXT("GameTimeWidgetText is null."));
 		return;
 	}
-
-	SetVisibility(ESlateVisibility::Hidden);
 	
 	// TODO : 시간이 바뀔 때마다 위젯 업데이트를 위한 델리게이트 등록
 	IndividualGameState->OnChangeTime.AddUObject(this, &UGameTimeWidget::OnChangeTime);
 	IndividualGameState->OnChangeGameState.AddUObject(this, &UGameTimeWidget::SetGameTimeWidget);
+
+	SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UGameTimeWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)

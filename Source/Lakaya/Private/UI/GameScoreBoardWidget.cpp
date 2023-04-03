@@ -9,13 +9,16 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/CanvasPanelSlot.h"
 
-UGameScoreBoardWidget::UGameScoreBoardWidget(const FObjectInitializer& ObjectInitializer) :Super(ObjectInitializer)
-{
-}
-
 void UGameScoreBoardWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
+	if (IndividualGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
+		return;
+	}
+	
 	ScoreBoardPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("ScoreBoard_Pan")));
 	if (ScoreBoardPanel == nullptr)
 	{
@@ -24,11 +27,24 @@ void UGameScoreBoardWidget::NativeConstruct()
 	}
 
 	InitScoreBoardElements(6);
+
+	IndividualGameState->OnChangeGameState.AddUObject(this, &UGameScoreBoardWidget::SetGameScoreBoardWidget);
+	
+	SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UGameScoreBoardWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
+}
+
+void UGameScoreBoardWidget::SetGameScoreBoardWidget(EGameState ChangeGameState)
+{
+	if (ChangeGameState == EGameState::Progress)
+	{
+		SetVisibility(ESlateVisibility::Visible);
+		return;
+	}
 }
 
 void UGameScoreBoardWidget::InitScoreBoardElements(int8 ElementsNum)

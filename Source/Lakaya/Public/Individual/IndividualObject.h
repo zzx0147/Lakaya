@@ -40,7 +40,7 @@ private:
 	UStaticMeshComponent* Cylinder;
 
 private:
-	const float MaxInteractionDuration = 4;
+	const float MaxInteractionDuration = 3;
 	float InteractingStartTime;
 	float InteractingStopTime;
 

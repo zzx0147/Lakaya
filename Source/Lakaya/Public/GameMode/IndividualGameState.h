@@ -75,7 +75,7 @@ private:
 	UFUNCTION()
 	void OnRep_Sec();
 	
-	uint8 MaxPlayers = 2;
+	uint8 MaxPlayers = 4;
 
 private:
 	// UFUNCTION()

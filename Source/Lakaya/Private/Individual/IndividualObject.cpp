@@ -127,7 +127,7 @@ void AIndividualObject::OnInteractionStop(APawn* Caller)
 	UE_LOG(LogTemp, Warning, TEXT("Interaction Duration : %f seconds"), InteractionDuration);
 
 	
-	if (InteractionDuration > 4.0f)
+	if (InteractionDuration > MaxInteractionDuration)
 	{
 		ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
 		if (CollectorPlayerState)
