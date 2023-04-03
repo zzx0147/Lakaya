@@ -18,12 +18,14 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
+	inline void SetReturnFunction(std::function<void()> ReturnFunction) { Return = ReturnFunction; }
+
 	/**
 	 * @brief 킬 로그의 내용을 셋업하고 킬 로그를 활성화합니다.
 	 * @param Attacker Victim을 처치한 캐릭터입니다.
 	 * @param Victim 처치당한 캐릭터입니다.
 	 */
-	void SetupKillLog(class ADamageableCharacter* Attacker, class ACharacter* Victim);
+	void SetKillLog(class ADamageableCharacter* Attacker, class ACharacter* Victim);
 
 private:
 	template <class T>
@@ -39,6 +41,7 @@ private:
 	TWeakObjectPtr<UTextBlock> AttackerTextBlock;
 	TWeakObjectPtr<class UImage> WeaponImage;
 	FTimerHandle ShowTimer;
+	std::function<void()> Return;
 
 	UPROPERTY(EditAnywhere)
 	float ShowingTime;
