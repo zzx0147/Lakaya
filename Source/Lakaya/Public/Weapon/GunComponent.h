@@ -37,6 +37,7 @@ public:
 	virtual bool CostBullets(const uint16& Bullets);
 
 	virtual void UpgradeWeapon() override;
+	virtual void UpgradeInitialize() override;
 
 protected:
 	virtual void SetupData() override;

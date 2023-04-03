@@ -33,6 +33,7 @@ public:
 	void CreateLoadingWidget();
 	void CreateScoreBoardWidget();
 
+	// void ReMoveLoadingWidget();
 private:
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
@@ -50,4 +51,7 @@ private:
 	UInputAction* ScoreAction;
 
 	FTimerHandle TimerHandle;
+
+public:
+	ULoadingWidget* LoadingWidget;
 };

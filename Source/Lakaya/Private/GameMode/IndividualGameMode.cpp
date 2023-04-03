@@ -7,7 +7,6 @@
 #include "Individual/IndividualDropEnergy.h"
 #include "Individual/DropEnergyPool.h"
 #include "EngineUtils.h"
-// #include "SWarningOrErrorBox.h"
 #include "Blueprint/WidgetTree.h"
 #include "GameMode/IndividualGameState.h"
 #include "Net/UnrealNetwork.h"
@@ -15,21 +14,21 @@
 
 AIndividualGameMode::AIndividualGameMode()
 {
-	static ConstructorHelpers::FObjectFinder<UBlueprint> PlayerPawnObject(TEXT("/Game/Characters/LakayaCharacter/Dummy/BP_PlayerDummy"));
+	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnObject(TEXT("/Game/Characters/LakayaCharacter/Dummy/BP_PlayerDummy"));
 	if (!PlayerPawnObject.Succeeded())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to find player pawn blueprint."));
 		return;
 	}
 
-	UClass* PlayerPawnClass = PlayerPawnObject.Object->GeneratedClass;
-	if (!PlayerPawnClass)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to get generated class from player pawn blueprint."));
-		return;
-	}
+	//UClass* PlayerPawnClass = PlayerPawnObject.Object->StaticClass();
+	//if (!PlayerPawnClass)
+	//{
+	//	UE_LOG(LogTemp, Error, TEXT("Failed to get generated class from player pawn blueprint."));
+	//	return;
+	//}
 
-	DefaultPawnClass = PlayerPawnClass;
+	DefaultPawnClass = PlayerPawnObject.Class;
 	PlayerControllerClass = AMenuCallingPlayerController::StaticClass();
 	PlayerStateClass = ACollectorPlayerState::StaticClass();
 	GameStateClass = AIndividualGameState::StaticClass();
@@ -51,8 +50,7 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 	
-	OnPlayerJoined(NewPlayer);
-
+	// OnPlayerJoined(NewPlayer);
 	
 	UE_LOG(LogTemp, Warning, TEXT("The Player has entered the game."));
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
@@ -68,44 +66,76 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 	
 	int32 CurrentPlayerNum = IndividualGameState->PlayerArray.Num();
 	IndividualGameState->SetNumPlayers(CurrentPlayerNum);
+
+	if (GetNumPlayers() >= IndividualGameState->GetMaxPlayers())
+	{
+		GetWorldTimerManager().SetTimer(TimerHandle_DelayedStart, this, &AIndividualGameMode::DelayedStartMatch, 5.0f, false);
+	}
 }
 
 void AIndividualGameMode::HandleMatchIsWaitingToStart()
 {
 	Super::HandleMatchIsWaitingToStart();
-
+	AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
+	if (IndividualGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameMode_IndividualGameState is null."));
+		return;
+	}
+	
+	IndividualGameState->SetGameState(EGameState::StandByToPregressLoading);
+	
 	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchIsWaitingToStart"));
-	ReadyToStartMatch();
-	// CheckStartMatch();
+
+	// 게임시작 조건
+	ReadyToStartMatch();x
 }
 
-// bool AIndividualGameMode::ReadyToStartMatch_Implementation()
-// {
-// 	if (GetNumPlayers() >= 3)
-// 	{
-// 		// 플레이어 인원이 특정 인원 만큼 접속을 했다면 총기 선택창으로.
-// 		AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
-// 		if (IndividualGameState == nullptr)
-// 		{
-// 			UE_LOG(LogTemp, Warning, TEXT("IndividualGameState is null."));
-// 		}
-// 		
-// 		IndividualGameState->CurrentGameState = EGameState::SelectWait;
-// 		
-// 		return true;
-// 	}
-// 	else
-// 	{
-// 		// 플레이어 인원이 특정 인원 만큼 접속을 못했다면 무한 대기.
-// 		return false;
-// 	}
-// }
+bool AIndividualGameMode::ReadyToStartMatch_Implementation()
+{
+	if (GetMatchState() != MatchState::WaitingToStart)
+	{
+		return false;
+	}
+
+	if (!bWaitToStart) return false;
+
+	AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
+	if (IndividualGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameMode_IndividualGameSate is null."));
+		return false;
+	}
+	
+	IndividualGameState->SetGameState(EGameState::Progress);
+	
+	return true;
+}
+
+void AIndividualGameMode::DelayedStartMatch()
+{
+	bWaitToStart = true;
+}
 
 void AIndividualGameMode::HandleMatchHasStarted()
 {
+	// 게임 시작 후, 서버 측 클라에게 UI바인딩.
 	Super::HandleMatchHasStarted();
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	APawn* PlayerPawn = PlayerController->GetPawn();
+	AArmedCharacter* Armed = Cast<AArmedCharacter>(PlayerPawn);
+	if (Armed)
+	{
+		Armed->CallBeginPlay();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to cast pawn to AArmedCharacter"));
+	}
 
+	OnPlayerJoined();
+	
 	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasStarted"));
 }
@@ -145,31 +175,30 @@ void AIndividualGameMode::Logout(AController* Exiting)
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
 }
 
-void AIndividualGameMode::OnPlayerJoined(APlayerController* PlayerController)
+void AIndividualGameMode::OnPlayerJoined()
 {
 	// if (RegisteredPlayers.Contains(PlayerController))
-	// 	return;
-	//
-	// TArray<AActor*> FoundActors;
-	// UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableCharacter::StaticClass(), FoundActors);
-	//
-	// for (auto Actor : FoundActors)
-	// {
-	// 	ADamageableCharacter* MyActor = Cast<ADamageableCharacter>(Actor);
-	// 	if (MyActor)
-	// 	{
-	// 		MyActor->OnKillCharacterNotify.AddUObject(this, &AIndividualGameMode::OnKilledCharacter);
-	// 	}
-	// 	else
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("MyActor is null."));
-	// 		return;
-	// 	}
-	// }
-	//
-	// RegisteredPlayers.Add(PlayerController);
-
+		// return;
 	
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableCharacter::StaticClass(), FoundActors);
+	
+	for (auto Actor : FoundActors)
+	{
+		ADamageableCharacter* MyActor = Cast<ADamageableCharacter>(Actor);
+		if (MyActor)
+		{
+			MyActor->OnKillCharacterNotify.AddUObject(this, &AIndividualGameMode::OnKilledCharacter);
+			UE_LOG(LogTemp, Warning, TEXT("PlayerController OnKillCharacterNotify Binding."));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("MyActor is null."));
+			return;
+		}
+	}
+	
+	// RegisteredPlayers.Add(PlayerController);
 }
 
 void AIndividualGameMode::SpawnDropEnergy(AController* DeadPlayer)
@@ -276,7 +305,7 @@ void AIndividualGameMode::OnKilledCharacter(AController* VictimController, AActo
 	}
 	
 	// Spawn Drop Energy
-	for (uint8 i = 0 ; i < VictimCollectorPlayerState->GetEnergy(); i++)
+	for (uint8 i = 0 ; i <= VictimCollectorPlayerState->GetEnergy(); i++)
 	{
 		SpawnDropEnergy(VictimController);
 	}

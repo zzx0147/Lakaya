@@ -70,7 +70,7 @@ void AMenuCallingPlayerController::BeginPlay()
 			}
 
 			// 로딩 부분
-			// CreateLoadingWidget();
+			CreateLoadingWidget();
 			// CreateScoreBoardWidget();
 
 			#pragma endregion 
@@ -106,7 +106,8 @@ void AMenuCallingPlayerController::CreateLoadingWidget()
 			return;
 		}
 			
-		ULoadingWidget* LoadingWidget = CreateWidget<ULoadingWidget>(this, LoadingWidgetClass);
+		// ULoadingWidget* LoadingWidget = CreateWidget<ULoadingWidget>(this, LoadingWidgetClass);
+		LoadingWidget = CreateWidget<ULoadingWidget>(this, LoadingWidgetClass);
 		if (LoadingWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("LoadingWidget is null."));

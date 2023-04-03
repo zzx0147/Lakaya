@@ -106,6 +106,7 @@ void AArmedCharacter::BeginPlay()
 void AArmedCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::KillCharacter(EventInstigator, DamageCauser);
+	PrimaryWeapon->UpgradeInitialize();
 	auto Causer = Cast<AArmedCharacter>(DamageCauser);
 	if (Causer) Causer->PrimaryWeapon->UpgradeWeapon();
 }
@@ -120,6 +121,11 @@ void AArmedCharacter::RespawnNotify_Implementation()
 {
 	Super::RespawnNotify_Implementation();
 	AddInputContext();
+}
+
+void AArmedCharacter::CallBeginPlay()
+{
+	BeginPlay();
 }
 
 void AArmedCharacter::FireStart(const FInputActionValue& Value)
