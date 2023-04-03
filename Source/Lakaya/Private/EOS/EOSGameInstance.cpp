@@ -97,7 +97,7 @@ void UEOSGameInstance::CreateSession()
 					SessionSettings.bAllowJoinInProgress = true;
 					SessionSettings.bAllowJoinViaPresence = true;
 					SessionSettings.bUsesPresence = true;
-					SessionSettings.bUseLobbiesIfAvailable = false;
+					SessionSettings.bUseLobbiesIfAvailable = true;
 					SessionSettings.bAllowJoinViaPresenceFriendsOnly = false;
 					SessionSettings.bAllowInvites = true;
 
@@ -444,7 +444,7 @@ void UEOSGameInstance::StartSession()
 				newSessionSettings.bAllowJoinInProgress = false;
 				newSessionSettings.bAllowJoinViaPresence = true;
 				newSessionSettings.bUsesPresence = true;
-				newSessionSettings.bUseLobbiesIfAvailable = false;
+				newSessionSettings.bUseLobbiesIfAvailable = true;
 				newSessionSettings.bAllowJoinViaPresenceFriendsOnly = false;
 				newSessionSettings.bAllowInvites = false;
 				newSessionSettings.Set(SEARCH_KEYWORDS, FString("LakayaLobby"), EOnlineDataAdvertisementType::ViaOnlineService);
