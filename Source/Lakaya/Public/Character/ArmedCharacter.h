@@ -29,6 +29,9 @@ protected:
 	virtual void RespawnNotify_Implementation() override;
 
 public:
+	void CallBeginPlay();
+	
+public:
 	/**
 	 * @brief 캐릭터의 첫번째 무기를 설정합니다.
 	 * @param WeaponClassRowName WeaponAssetDataTable에서의 RowName
@@ -38,7 +41,6 @@ public:
 private:
 	void FireStart(const FInputActionValue& Value);
 	void FireStop(const FInputActionValue& Value);
-	void SwitchSelector(const FInputActionValue& Value);
 	void AbilityStart(const FInputActionValue& Value);
 	void AbilityStop(const FInputActionValue& Value);
 	void ReloadStart(const FInputActionValue& Value);
@@ -65,9 +67,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* FireStopAction;
-
-	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
-	UInputAction* SwitchSelectorAction;
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* AbilityStartAction;

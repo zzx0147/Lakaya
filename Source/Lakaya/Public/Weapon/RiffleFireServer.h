@@ -6,7 +6,7 @@
 #include "RiffleFireCore.h"
 #include "RiffleFireServer.generated.h"
 
-UCLASS()
+UCLASS(Abstract)
 class LAKAYA_API URiffleFireServer : public URiffleFireCore
 {
 	GENERATED_BODY()
@@ -18,7 +18,6 @@ protected:
 	virtual void SetupData(const FName& RowName) override;
 	virtual void OnFireStart() override;
 	virtual void OnFireStop() override;
-	virtual void OnSwitchSelector() override;
 
 private:
 	UFUNCTION(Client, Reliable)
@@ -29,11 +28,8 @@ private:
 	UPROPERTY(EditAnywhere, Category=DataTable)
 	class UDataTable* WeaponFireDataTable;
 
-	// Variables for implementation
 	FCollisionQueryParams TraceQueryParams;
 	FTimerHandle FireTimer;
-	FTimerHandle SelectorTimer;
 	EGunSelector Selector;
-	EGunSelector DesiredSelector;
 	uint16 FireCount;
 };

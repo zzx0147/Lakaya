@@ -11,13 +11,20 @@ UCLASS()
 class LAKAYA_API UGamePlayKillLogWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
 public:
-	UGamePlayKillLogWidget(const FObjectInitializer& ObjectInitializer);
+	virtual void UpdateKillLogWidget(class ADamageableCharacter* Character);
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 private:
-	TArray<UKillLogElement*> KillLogElementArray;//킬 로그를 표기하는 엘리먼트 배열
+	// ADamageableCharacter::OnKillCharacterNotify 이벤트에 등록된 콜백함수
+	void OnKillCharacterNotify(AController* KilledController, AActor* KilledActor, AController* Instigator,
+	                           AActor* Causer);
+
+	UKillLogElement* MakeFreshElement();
+
+	class UVerticalBox* KillLogBox;
+	TArray<UKillLogElement*> KillLogElementArray; //킬 로그를 표기하는 엘리먼트 배열
 };
