@@ -265,6 +265,7 @@ void UEOSGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCo
 			{
 				UE_LOG(LogTemp, Warning, TEXT("ConnectionInfo is Empty!"));
 				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("ConnectionInfo is Empty!"));
+				OnCreateSessionComplete(NAME_GameSession, true);//만약 세션은 들어왔는데 서버는 없다면 직접 서버를 만든다
 			}
 		}
 	}
@@ -321,7 +322,6 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 						Results.Session.SessionSettings.Get(FName(TEXT("ISJOINABLE")), isJoinable);
 						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Lobby is joinable? %d"), isJoinable));
 
-						
 						if (isJoinable)
 						{
 							const FUniqueNetIdPtr UserId = MyPlayerController->GetLocalPlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
