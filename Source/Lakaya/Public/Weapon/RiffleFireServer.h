@@ -6,7 +6,7 @@
 #include "RiffleFireCore.h"
 #include "RiffleFireServer.generated.h"
 
-UCLASS()
+UCLASS(Abstract)
 class LAKAYA_API URiffleFireServer : public URiffleFireCore
 {
 	GENERATED_BODY()

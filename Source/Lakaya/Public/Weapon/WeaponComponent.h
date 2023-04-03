@@ -23,9 +23,19 @@ public:
 
 	virtual void RequestSetupData(const FName& RowName);
 	virtual void UpgradeWeapon();
+	virtual void UpgradeInitialize();
+
+protected:
+	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
 	virtual void SetupData();
+	virtual void SetupUI();
+
+
+	UFUNCTION()
+	virtual void OnRep_UpgradeLevel();
 
 public:
 	inline void FireStart() { if (FireSubObject) FireSubObject->FireStart(); }
@@ -55,6 +65,15 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	class UDataTable* WeaponAssetDataTable;
+
+	UPROPERTY(EditAnywhere)
+	class UDataTable* WeaponUpgradeDataTable;
+
+	UPROPERTY(ReplicatedUsing = OnRep_UpgradeLevel)
+	int8 UpgradeLevel;
+
+	class UGamePlayConsecutiveKillsWidget* ConsecutiveKillsWidget;
+	class UGamePlayBulletWidget* BulletWidget;
 
 private:
 	bool bIsDataSetupRequested;

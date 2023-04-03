@@ -1,6 +1,7 @@
 #include "Individual/IndividualObject.h"
 #include "Character/CollectorPlayerState.h"
 #include "Character/DamageableCharacter.h"
+#include "Character/InteractableCharacter.h"
 #include "Kismet/GameplayStatics.h"
 
 AIndividualObject::AIndividualObject()
@@ -36,42 +37,68 @@ void AIndividualObject::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AIndividualObject::InteractionStart(const float& Time, APawn* Caller)
+void AIndividualObject::OnLocalInteractionBegin(APawn* Caller)
 {
+}
+
+void AIndividualObject::OnServerInteractionBegin(const float& Time, APawn* Caller)
+{
+	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+		CastedCaller->InitiateInteractionStart(Time, this, 5.f);
+	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionBegin::Caller was not AInteractableCharacter!"));
+}
+
+void AIndividualObject::OnInteractionStart(APawn* Caller)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Interaction Start!"));
+
 	if (!bIsAvailable)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Not Available."));
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Not Available."));
 		return;
 	}
+
+	InteractingStartTime = UGameplayStatics::GetRealTimeSeconds(this);
+
+	// TODO : 상호작용 시작하는 애니메이션 실행
+	// Animation
 	
-	UE_LOG(LogTemp, Warning, TEXT("Cylinder InteractionStart !"));
-
-	InteractingStartTime = UGameplayStatics::GetRealTimeSeconds(this);	
-
+	// 시작 한 후 4초가 지나면 자동으로 성공.
 	GetWorldTimerManager().SetTimer(InteractionTimerHandle, this, &AIndividualObject::AutomaticInteractionStop, MaxInteractionDuration, false);
 }
 
-void AIndividualObject::InteractionStop(const float& Time, APawn* Caller)
+void AIndividualObject::OnLocalInteractionStopBegin(APawn* Caller)
 {
+}
+
+void AIndividualObject::OnServerInteractionStopBegin(const float& Time, APawn* Caller)
+{
+	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+		CastedCaller->InteractionStopNotify(Time, this);
+	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionStopBegin::Caller was not AInteractableCharacter!"));
+}
+
+void AIndividualObject::OnInteractionStop(APawn* Caller)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Interaction Stop!"));
+
 	if (!bIsAvailable)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Not Available."));
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Not Available."));
 		return;
 	}
 	
-	UE_LOG(LogTemp, Warning, TEXT("Cylinder InteractionStop !"));
-
-	InteractingStopTime = UGameplayStatics::GetRealTimeSeconds(this);
-
-	// InteractionStop 기능에서 타이머가 이미 만료되었는지 확인. 그렇지 않은 경우 타이머를 취소.
+	//InteractionStop 기능에서 타이머가 이미 만료되었는지 확인. 그렇지 않은 경우 타이머를 취소.
 	if (GetWorldTimerManager().IsTimerActive(InteractionTimerHandle))
 	{
 		GetWorldTimerManager().ClearTimer(InteractionTimerHandle);
 	}
 	
+	InteractingStopTime = UGameplayStatics::GetRealTimeSeconds(this);
 	float InteractionDuration = InteractingStopTime - InteractingStartTime;
+	
 	UE_LOG(LogTemp, Warning, TEXT("Interaction Duration : %f seconds"), InteractionDuration);
-
+	
 	if (InteractionDuration > 4.0f)
 	{
 		if (Caller && Caller->GetController())
@@ -101,24 +128,20 @@ void AIndividualObject::InteractionStop(const float& Time, APawn* Caller)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Interaction Failed."));
 	}
+
+	// TODO : 상호작용 끝나는 애니메이션 실행
+	// Animation
 }
 
 void AIndividualObject::AutomaticInteractionStop()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Cylinder AutomaticInteractionStop !"));
 
-	InteractionStop(MaxInteractionDuration, nullptr);
+	// InteractionStop(MaxInteractionDuration, nullptr);
+	
 }
 
 void AIndividualObject::MakeAvailable()
 {
 	bIsAvailable = true;
-}
-
-void AIndividualObject::OnServerInteractionBegin(const float& Time, APawn* Caller)
-{
-}
-
-void AIndividualObject::OnInteractionStart(APawn* Caller)
-{
 }

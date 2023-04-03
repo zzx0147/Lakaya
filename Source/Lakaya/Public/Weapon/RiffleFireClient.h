@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "RiffleFireServer.h"
+#include "Character/CharAnimInstance.h"
 #include "RiffleFireClient.generated.h"
 
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class LAKAYA_API URiffleFireClient : public URiffleFireServer
 {
 	GENERATED_BODY()

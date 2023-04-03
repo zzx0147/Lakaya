@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
+#include "UI/LoadingWidget.h"
 #include "MenuCallingPlayerController.generated.h"
 
 /**
@@ -24,9 +25,14 @@ protected:
 
 private:
 	void MenuHandler(const FInputActionValue& Value);
-	void WeaponHandler(const FInputActionValue& Value);
-	void ArmorHandler(const FInputActionValue& Value);
+	void LoadoutHandler(const FInputActionValue& Value);
+	void ScoreHandler(const FInputActionValue& Value);
 
+public:
+	void CreateLoadingWidget();
+	void CreateScoreBoardWidget();
+
+	// void ReMoveLoadingWidget();
 private:
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
@@ -38,8 +44,13 @@ private:
 	class UInputAction* MenuAction;
 
 	UPROPERTY(EditAnywhere, Category=Input)
-	UInputAction* WeaponLoadoutAction;
+	UInputAction* LoadoutAction;
 
-	UPROPERTY(EditAnywhere, Category=Input)
-	UInputAction* ArmorLoadoutAction;
+	UPROPERTY(EditAnywhere)
+	UInputAction* ScoreAction;
+
+	FTimerHandle TimerHandle;
+
+public:
+	ULoadingWidget* LoadingWidget;
 };
