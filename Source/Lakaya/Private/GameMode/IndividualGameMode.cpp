@@ -89,7 +89,7 @@ void AIndividualGameMode::HandleMatchIsWaitingToStart()
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchIsWaitingToStart"));
 
 	// 게임시작 조건
-	ReadyToStartMatch();x
+	ReadyToStartMatch();
 }
 
 bool AIndividualGameMode::ReadyToStartMatch_Implementation()
