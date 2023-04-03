@@ -16,9 +16,9 @@ ABattlePlayerController::ABattlePlayerController()
 	if (!KillLogClass) UE_LOG(LogController, Fatal, TEXT("Fail to find KillLogClass!"));
 }
 
-void ABattlePlayerController::OnCharacterBeginPlay(ACharacter* Character)
+void ABattlePlayerController::OnCharacterBeginPlay(ACharacter* ArgCharacter)
 {
-	if (auto Damageable = Cast<ADamageableCharacter>(Character))
+	if (auto Damageable = Cast<ADamageableCharacter>(ArgCharacter))
 	{
 		if (IsLocalController())
 		{
@@ -28,7 +28,7 @@ void ABattlePlayerController::OnCharacterBeginPlay(ACharacter* Character)
 				KillLogWidget->AddToViewport();
 			}
 
-			KillLogWidget->UpdateKillLogWidget(Cast<ADamageableCharacter>(Character));
+			KillLogWidget->UpdateKillLogWidget(Cast<ADamageableCharacter>(ArgCharacter));
 		}
 	}
 }

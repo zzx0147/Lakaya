@@ -8,6 +8,7 @@
 #include "Individual/DropEnergyPool.h"
 #include "EngineUtils.h"
 #include "Blueprint/WidgetTree.h"
+#include "Character/BattlePlayerController.h"
 #include "GameMode/IndividualGameState.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/LoadingWidget.h"
@@ -29,7 +30,7 @@ AIndividualGameMode::AIndividualGameMode()
 	//}
 
 	DefaultPawnClass = PlayerPawnObject.Class;
-	PlayerControllerClass = AMenuCallingPlayerController::StaticClass();
+	PlayerControllerClass = ABattlePlayerController::StaticClass();
 	PlayerStateClass = ACollectorPlayerState::StaticClass();
 	GameStateClass = AIndividualGameState::StaticClass();
 }

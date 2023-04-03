@@ -14,7 +14,7 @@ class LAKAYA_API ABattlePlayerController : public AMenuCallingPlayerController
 public:
 	ABattlePlayerController();
 
-	virtual void OnCharacterBeginPlay(ACharacter* Character);
+	virtual void OnCharacterBeginPlay(ACharacter* ArgCharacter);
 
 private:
 	UPROPERTY(EditAnywhere)
