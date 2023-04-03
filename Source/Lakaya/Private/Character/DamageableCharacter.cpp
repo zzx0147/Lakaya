@@ -3,6 +3,7 @@
 
 #include "Character/DamageableCharacter.h"
 
+#include "Character/BattlePlayerController.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
@@ -20,6 +21,8 @@ void ADamageableCharacter::BeginPlay()
 	if (IsRunningDedicatedServer()) return;
 
 	OnTakeAnyDamage.AddDynamic(this, &ADamageableCharacter::OnTakeAnyDamageCallback);
+	if (auto BattleController = Cast<ABattlePlayerController>(GetWorld()->GetFirstPlayerController()))
+		BattleController->OnCharacterBeginPlay(this);
 }
 
 float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
