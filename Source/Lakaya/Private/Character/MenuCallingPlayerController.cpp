@@ -62,7 +62,6 @@ void AMenuCallingPlayerController::BeginPlay()
 			Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 
 			#pragma region Update UI
-			
 			if (GetWorld()->GetGameState() == nullptr)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("GetGameState is null."));
@@ -71,8 +70,9 @@ void AMenuCallingPlayerController::BeginPlay()
 
 			// 로딩 부분
 			CreateLoadingWidget();
+			CreateGameTimeWidget();
+			
 			// CreateScoreBoardWidget();
-
 			#pragma endregion 
 		}
 	}
@@ -106,7 +106,6 @@ void AMenuCallingPlayerController::CreateLoadingWidget()
 			return;
 		}
 			
-		// ULoadingWidget* LoadingWidget = CreateWidget<ULoadingWidget>(this, LoadingWidgetClass);
 		LoadingWidget = CreateWidget<ULoadingWidget>(this, LoadingWidgetClass);
 		if (LoadingWidget == nullptr)
 		{
@@ -115,6 +114,29 @@ void AMenuCallingPlayerController::CreateLoadingWidget()
 		}
 	
 		LoadingWidget->AddToViewport();
+	}
+}
+
+void AMenuCallingPlayerController::CreateGameTimeWidget()
+{
+	if (IsLocalPlayerController())
+	{
+		// 로딩 위젯
+		UClass* GameTimeWidgetClass = LoadClass<UGameTimeWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_GameTimeWidget.WBP_GameTimeWidget_C"));
+		if (GameTimeWidgetClass == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GameTimeWidgetClass is null."));
+			return;
+		}
+			
+		GameTimeWidget = CreateWidget<UGameTimeWidget>(this, GameTimeWidgetClass);
+		if (GameTimeWidget == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GameTimeWidget is null."));
+			return;
+		}
+	
+		GameTimeWidget->AddToViewport();
 	}
 }
 

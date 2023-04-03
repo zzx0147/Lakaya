@@ -9,6 +9,7 @@
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnChangeJoinedPlayers, int32, int32)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeGameState, EGameState)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnChangeTime, int32, int32)
 
 UENUM()
 enum class EGameState : uint8
@@ -30,7 +31,7 @@ public:
 	virtual void BeginPlay() override;
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	
 public:
 	UFUNCTION()
 	uint8 GetMaxPlayers() const { return MaxPlayers; }
@@ -41,11 +42,25 @@ public:
 	UFUNCTION()
 	void SetGameState(EGameState NewGameState);
 
+	UFUNCTION()
+	void SetMinSec();
+	
 	UPROPERTY(ReplicatedUsing = OnRep_NumPlayers)
 	int32 NumPlayers;
 
 	UPROPERTY(ReplicatedUsing = OnRep_GameState)
 	EGameState CurrentGameState = EGameState::Menu;
+
+	UFUNCTION()
+	int32 GetMin() {return Min; }
+
+	UFUNCTION()
+	int32 GetSec() {return Sec; }
+private:
+	UPROPERTY(ReplicatedUsing = OnRep_Min)
+	int32 Min = 3;
+	UPROPERTY(ReplicatedUsing = OnRep_Sec)
+	int32 Sec = 0;
 	
 private:
 	UFUNCTION()
@@ -54,10 +69,20 @@ private:
 	UFUNCTION()
 	void OnRep_GameState();
 
+	UFUNCTION()
+	void OnRep_Min();
+	
+	UFUNCTION()
+	void OnRep_Sec();
+	
 	uint8 MaxPlayers = 2;
 
+private:
+	// UFUNCTION()
+	// void DecreaseGameTime();
 	
 public:
 	FOnChangeJoinedPlayers OnChangeJoinedPlayers;
 	FOnChangeGameState OnChangeGameState;
+	FOnChangeTime OnChangeTime;
 };

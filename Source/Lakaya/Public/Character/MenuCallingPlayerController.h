@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
+#include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
 #include "MenuCallingPlayerController.generated.h"
 
@@ -14,6 +15,7 @@
 UCLASS()
 class LAKAYA_API AMenuCallingPlayerController : public APlayerController
 {
+	//TODO: 로드아웃 및 ESC 메뉴를 제외한 다른 기능은 다른 플레이어 컨트롤러에서 하도록 변경해야 합니다.
 	GENERATED_BODY()
 
 public:
@@ -22,7 +24,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
-
+	
 private:
 	void MenuHandler(const FInputActionValue& Value);
 	void LoadoutHandler(const FInputActionValue& Value);
@@ -30,9 +32,9 @@ private:
 
 public:
 	void CreateLoadingWidget();
+	void CreateGameTimeWidget();
 	void CreateScoreBoardWidget();
 
-	// void ReMoveLoadingWidget();
 private:
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
@@ -46,11 +48,12 @@ private:
 	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* LoadoutAction;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* ScoreAction;
 
 	FTimerHandle TimerHandle;
 
 public:
 	ULoadingWidget* LoadingWidget;
+	UGameTimeWidget* GameTimeWidget;
 };

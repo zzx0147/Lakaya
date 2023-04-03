@@ -29,9 +29,6 @@ AArmedCharacter::AArmedCharacter()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> FireStopFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_FireStop'"));
 
-	static const ConstructorHelpers::FObjectFinder<UInputAction> ModeSwitchFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_SwitchFireMode'"));
-
 	static const ConstructorHelpers::FObjectFinder<UInputAction> AbilityStartFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_AbilityStart'"));
 
@@ -50,7 +47,6 @@ AArmedCharacter::AArmedCharacter()
 	if (ContextFinder.Succeeded()) WeaponControlContext = ContextFinder.Object;
 	if (FireStartFinder.Succeeded()) FireStartAction = FireStartFinder.Object;
 	if (FireStopFinder.Succeeded()) FireStopAction = FireStopFinder.Object;
-	if (ModeSwitchFinder.Succeeded()) SwitchSelectorAction = ModeSwitchFinder.Object;
 	if (AbilityStartFinder.Succeeded()) AbilityStartAction = AbilityStartFinder.Object;
 	if (AbilityStopFinder.Succeeded()) AbilityStopAction = AbilityStopFinder.Object;
 	if (ReloadStartFinder.Succeeded()) ReloadStartAction = ReloadStartFinder.Object;
@@ -85,8 +81,6 @@ void AArmedCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	{
 		CastedComponent->BindAction(FireStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::FireStart);
 		CastedComponent->BindAction(FireStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::FireStop);
-		CastedComponent->BindAction(SwitchSelectorAction, ETriggerEvent::Triggered, this,
-		                            &AArmedCharacter::SwitchSelector);
 		CastedComponent->BindAction(AbilityStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::AbilityStart);
 		CastedComponent->BindAction(AbilityStopAction, ETriggerEvent::Triggered, this, &AArmedCharacter::AbilityStop);
 		CastedComponent->BindAction(ReloadStartAction, ETriggerEvent::Triggered, this, &AArmedCharacter::ReloadStart);
@@ -142,11 +136,6 @@ void AArmedCharacter::FireStart(const FInputActionValue& Value)
 void AArmedCharacter::FireStop(const FInputActionValue& Value)
 {
 	PrimaryWeapon->FireStop();
-}
-
-void AArmedCharacter::SwitchSelector(const FInputActionValue& Value)
-{
-	PrimaryWeapon->SwitchSelector();
 }
 
 void AArmedCharacter::AbilityStart(const FInputActionValue& Value)

@@ -14,17 +14,11 @@ void UWeaponFire::ExecuteEvent(const uint8& EventNumber)
 	case RequestFireStopEvent:
 		OnFireStop();
 		break;
-	case RequestSwitchSelectorEvent:
-		OnSwitchSelector();
-		break;
 	case FireStartNotifyEvent:
 		OnFireStartNotify();
 		break;
 	case FireStopNotifyEvent:
 		OnFireStopNotify();
-		break;
-	case SwitchSelectorNotifyEvent:
-		OnSwitchSelectorNotify();
 		break;
 	default:
 		UE_LOG(LogNetSubObject, Warning, TEXT("ExecuteEvent called not initialized eventnumber. It was %d"),
@@ -43,11 +37,6 @@ void UWeaponFire::FireStop()
 	RequestFireStop(GetServerTime());
 }
 
-void UWeaponFire::SwitchSelector()
-{
-	// RequestSwitchSelector(GetServerTime());
-}
-
 void UWeaponFire::RequestFireStart_Implementation(const float& Time)
 {
 	FireStartNotify(Time);
@@ -60,12 +49,6 @@ void UWeaponFire::RequestFireStop_Implementation(const float& Time)
 	ApplyEvent(RequestFireStopEvent, Time);
 }
 
-void UWeaponFire::RequestSwitchSelector_Implementation(const float& Time)
-{
-	// SwitchSelectorNotify(Time);
-	// ApplyEvent(RequestSwitchSelectorEvent, Time);
-}
-
 void UWeaponFire::FireStartNotify_Implementation(const float& Time)
 {
 	ApplyEvent(FireStartNotifyEvent, Time);
@@ -74,9 +57,4 @@ void UWeaponFire::FireStartNotify_Implementation(const float& Time)
 void UWeaponFire::FireStopNotify_Implementation(const float& Time)
 {
 	ApplyEvent(FireStopNotifyEvent, Time);
-}
-
-void UWeaponFire::SwitchSelectorNotify_Implementation(const float& Time)
-{
-	// ApplyEvent(SwitchSelectorNotifyEvent, Time);
 }
