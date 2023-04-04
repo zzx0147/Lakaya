@@ -33,3 +33,9 @@ void URiffleFireOwner::FireStop()
 {
 	FireStopCore(Selector, FireCount, EFocusContext::Owner, [this] { Super::FireStop(); });
 }
+
+void URiffleFireOwner::OnCharacterDead()
+{
+	Super::OnCharacterDead();
+	FireStopCore(Selector, FireCount, EFocusContext::Owner);
+}

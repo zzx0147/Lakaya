@@ -44,6 +44,12 @@ void URiffleFireClient::OnRep_Character()
 	if (Character.IsValid()) TraceQueryParams.AddIgnoredActor(Character.Get());
 }
 
+void URiffleFireClient::OnCharacterDead()
+{
+	Super::OnCharacterDead();
+	OnFireStopNotify();
+}
+
 void URiffleFireClient::TraceVisualize()
 {
 	FHitResult HitResult;

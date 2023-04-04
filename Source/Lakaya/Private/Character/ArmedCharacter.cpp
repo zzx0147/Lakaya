@@ -114,12 +114,14 @@ void AArmedCharacter::KillCharacter(AController* EventInstigator, AActor* Damage
 void AArmedCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::KillCharacterNotify_Implementation(EventInstigator, DamageCauser);
+	PrimaryWeapon->OnCharacterDead();
 	RemoveInputContext();
 }
 
 void AArmedCharacter::RespawnNotify_Implementation()
 {
 	Super::RespawnNotify_Implementation();
+	PrimaryWeapon->OnCharacterRespawn();
 	AddInputContext();
 }
 
