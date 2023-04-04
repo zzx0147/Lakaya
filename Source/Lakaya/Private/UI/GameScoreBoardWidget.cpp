@@ -12,10 +12,10 @@
 void UGameScoreBoardWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
-	if (IndividualGameState == nullptr)
+	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	if (OccupationGameState == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
+		UE_LOG(LogTemp, Warning, TEXT("GameScoreBoardWidget_OccupationGameState is null."));
 		return;
 	}
 	
@@ -28,7 +28,7 @@ void UGameScoreBoardWidget::NativeConstruct()
 
 	InitScoreBoardElements(6);
 
-	IndividualGameState->OnIndividualChangeGameState.AddUObject(this, &UGameScoreBoardWidget::SetGameScoreBoardWidget);
+	OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &UGameScoreBoardWidget::SetGameScoreBoardWidget);
 	
 	SetVisibility(ESlateVisibility::Hidden);
 }
@@ -38,9 +38,9 @@ void UGameScoreBoardWidget::NativeTick(const FGeometry& MyGeometry, float InDelt
 	Super::NativeTick(MyGeometry, InDeltaTime);
 }
 
-void UGameScoreBoardWidget::SetGameScoreBoardWidget(EIndividualGameState ChangeGameState)
+void UGameScoreBoardWidget::SetGameScoreBoardWidget(EOccupationGameState ChangeGameState)
 {
-	if (ChangeGameState == EIndividualGameState::Progress)
+	if (ChangeGameState == EOccupationGameState::Progress)
 	{
 		SetVisibility(ESlateVisibility::Visible);
 		return;

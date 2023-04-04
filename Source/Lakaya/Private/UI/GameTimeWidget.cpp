@@ -3,18 +3,22 @@
 
 #include "UI/GameTimeWidget.h"
 
+#include "GameMode/OccupationGameMode.h"
+#include "GameMode/OccupationGameState.h"
+
 void UGameTimeWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
-	if (IndividualGameState == nullptr)
+	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	if (OccupationGameState == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
+		UE_LOG(LogTemp, Warning, TEXT("GameTimeWidget_GameState is null."));
 		return;
 	}
 
-	OnChangeTime(IndividualGameState->GetMin(), IndividualGameState->GetSec());
+	
+	OnChangeTime(OccupationGameState->GetMin(), OccupationGameState->GetSec());
 	
 	// 바인딩
 	GameTimeWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("GameTimeWidgetText")));
@@ -25,8 +29,8 @@ void UGameTimeWidget::NativeConstruct()
 	}
 	
 	// TODO : 시간이 바뀔 때마다 위젯 업데이트를 위한 델리게이트 등록
-	IndividualGameState->OnIndividualChangeTime.AddUObject(this, &UGameTimeWidget::OnChangeTime);
-	IndividualGameState->OnIndividualChangeGameState.AddUObject(this, &UGameTimeWidget::SetGameTimeWidget);
+	OccupationGameState->OnOccupationChangeTime.AddUObject(this, &UGameTimeWidget::OnChangeTime);
+	OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &UGameTimeWidget::SetGameTimeWidget);
 
 	SetVisibility(ESlateVisibility::Hidden);
 }
@@ -45,9 +49,9 @@ void UGameTimeWidget::OnChangeTime(int32 Min, int32 Sec)
 	// GameTimeText->SetText(FText::FromString(FString::Printf(TEXT("(%d:%d)"), Min, Sec)));
 }
 
-void UGameTimeWidget::SetGameTimeWidget(EIndividualGameState ChangeGameState)
+void UGameTimeWidget::SetGameTimeWidget(EOccupationGameState ChangeGameState)
 {
-	if (ChangeGameState == EIndividualGameState::Progress)
+	if (ChangeGameState == EOccupationGameState::Progress)
 	{
 		SetVisibility(ESlateVisibility::Visible);
 		return;

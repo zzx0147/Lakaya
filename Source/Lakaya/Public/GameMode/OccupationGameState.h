@@ -82,7 +82,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	uint8 MaxPlayers = 2;
 	
-private:
+public:
 	FOnOccupationChangeJoinedPlayers OnOccupationChangeJoinedPlayers;
 	FOnOccupationChangeGameState OnOccupationChangeGameState;
 	FOnOccupationChangeTime OnOccupationChangeTime;

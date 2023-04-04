@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "GameMode/OccupationGameState.h"
 #include "GamePlayHealthWidget.generated.h"
 
 class UTextBlock;
@@ -28,7 +29,7 @@ protected:
 	void UpdateHealthProgressBar();
 
 	UFUNCTION()
-	void SetGamePlayHealthWidget(EIndividualGameState ChangeGameState);
+	void SetGamePlayHealthWidget(EOccupationGameState ChangeGameState);
 	
 private:
 	UProgressBar* HealthProgressBar;//체력을 표기하는 프로그래스 바

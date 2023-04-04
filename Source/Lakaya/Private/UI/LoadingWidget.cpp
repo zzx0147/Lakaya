@@ -9,14 +9,14 @@ void ULoadingWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
-    if (IndividualGameState == nullptr)
+    AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+    if (OccupationGameState == nullptr)
     {
-        UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
+        UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_GameMode is null."));
         return;
     }
 
-    OnChangeJoinedPlayers(IndividualGameState->NumPlayers, IndividualGameState->GetMaxPlayers());
+    OnChangeJoinedPlayers(OccupationGameState->NumPlayers, OccupationGameState->GetMaxPlayers());
 
     // 바인딩
     LoadingWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("LoadingWidgetText")));
@@ -26,8 +26,8 @@ void ULoadingWidget::NativeConstruct()
         return;
     }
 
-    IndividualGameState->OnIndividualChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
-    IndividualGameState->OnIndividualChangeGameState.AddUObject(this, &ULoadingWidget::ReMoveLoadingWidget);
+    OccupationGameState->OnOccupationChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
+    OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &ULoadingWidget::ReMoveLoadingWidget);
 }
 
 void ULoadingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -46,9 +46,9 @@ void ULoadingWidget::OnChangeJoinedPlayers(int32 JoinedPlayers, int32 MaxPlayer)
     LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), JoinedPlayers, MaxPlayer)));
 }
 
-void ULoadingWidget::ReMoveLoadingWidget(EIndividualGameState ChangeGamState)
+void ULoadingWidget::ReMoveLoadingWidget(EOccupationGameState ChangeGamState)
 {
-    if (ChangeGamState == EIndividualGameState::Progress)
+    if (ChangeGamState == EOccupationGameState::Progress)
     {
         this->RemoveFromParent();
     }

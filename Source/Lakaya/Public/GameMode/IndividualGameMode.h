@@ -13,6 +13,9 @@ class LAKAYA_API AIndividualGameMode : public ALakayaDefalutPlayGameMode
 
 private:
 	AIndividualGameMode();
+
+	UPROPERTY(EditDefaultsOnly, Category = "GameMode")
+	FString GameModeIdentifier = "Individual";
 	
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;

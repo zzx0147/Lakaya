@@ -19,6 +19,7 @@ class LAKAYA_API AOccupationGameMode : public ALakayaDefalutPlayGameMode
 private:
 	AOccupationGameMode();
 
+	
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
 

@@ -167,22 +167,71 @@ void AOccupationGameMode::Logout(AController* Exiting)
 void AOccupationGameMode::OnKilledCharacter(AController* VictimController, AActor* Victim,
 	AController* InstigatorController, AActor* DamageCauser)
 {
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableCharacter::StaticClass(), FoundActors);
-	
-	for (auto Actor : FoundActors)
+	if (InstigatorController == nullptr)
 	{
-		ADamageableCharacter* MyActor = Cast<ADamageableCharacter>(Actor);
-		if (MyActor)
+		UE_LOG(LogTemp, Warning, TEXT("IndividualGameMode_EventInstigator is null."));
+		return;
+	}
+
+	ACollectorPlayerState* InstigatorCollectorPlayerState = Cast<ACollectorPlayerState>(InstigatorController->GetCharacter()->GetController()->PlayerState);
+	if (InstigatorCollectorPlayerState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is null."));
+		return;
+	}
+
+	// Award the player 2 points for the kill
+	InstigatorCollectorPlayerState->GainPoint(2);
+	InstigatorCollectorPlayerState->GainMoney(1);
+	UE_LOG(LogTemp, Warning, TEXT("Player %s has gained 2 points."), *InstigatorCollectorPlayerState->GetPlayerName());
+	UE_LOG(LogTemp, Warning, TEXT("Player Total points: %d"), InstigatorCollectorPlayerState->GetPoint());
+	UE_LOG(LogTemp, Warning, TEXT("Player Total Money : %d"), InstigatorCollectorPlayerState->GetMoney());
+	
+	if (VictimController == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_KilledCharacter is null."));
+		return;
+	}
+
+	ACollectorPlayerState* VictimCollectorPlayerState = Cast<ACollectorPlayerState>(VictimController->GetCharacter()->GetController()->PlayerState);
+	if (VictimCollectorPlayerState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("VictimCollectorPlayerState cast failed."));
+		return;
+	}
+	
+	// Spawn Drop Energy (IndividualGameMode)
+	// for (uint8 i = 0 ; i <= VictimCollectorPlayerState->GetEnergy(); i++)
+	// {
+	// 	SpawnDropEnergy(VictimController);
+	// }
+	
+	FTimerHandle* ExistingTimer = RespawnTimers.Find(VictimController);
+	if (ExistingTimer != nullptr)
+	{
+		GetWorldTimerManager().ClearTimer(*ExistingTimer);
+		RespawnTimers.Remove(VictimController);
+	}
+	
+	TArray<AController*> DeadPlayers;
+	DeadPlayers.Add(VictimController);
+	
+	for (auto& Pair : RespawnTimers)
+	{
+		FTimerHandle& Timer = Pair.Value;
+		AController* Player = Pair.Key;
+	
+		if (GetWorldTimerManager().IsTimerActive(Timer))
 		{
-			MyActor->OnKillCharacterNotify.AddUObject(this, &AOccupationGameMode::OnKilledCharacter);
-			UE_LOG(LogTemp, Warning, TEXT("PlayerController OnKillCharacterNotify Binding."));
+			DeadPlayers.Add(Player);
 		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("MyActor is null."));
-			return;
-		}
+	}
+	
+	for (AController* DeadPlayer : DeadPlayers)
+	{
+		FTimerHandle NewTimer;
+		GetWorldTimerManager().SetTimer(NewTimer, [this, DeadPlayer](){ RespawnPlayer(DeadPlayer); }, PlayerRespawnTime, false);
+		RespawnTimers.Add(DeadPlayer, NewTimer);
 	}
 }
 

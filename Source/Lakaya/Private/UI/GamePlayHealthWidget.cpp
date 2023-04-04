@@ -29,10 +29,10 @@ void UGamePlayHealthWidget::NativeConstruct()
 
 #pragma endregion
 
-	AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
-	if (IndividualGameState == nullptr)
+	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	if (OccupationGameState == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
+		UE_LOG(LogTemp, Warning, TEXT("GamePlayHealthWidget_OccupationGameState is null."));
 		return;
 	}
 	
@@ -48,7 +48,7 @@ void UGamePlayHealthWidget::NativeConstruct()
 		DamageableCharacter->OnMaximumHealthReplicated.AddUObject(this, &UGamePlayHealthWidget::OnChangeMaximumHealth);
 	}
 
-	IndividualGameState->OnIndividualChangeGameState.AddUObject(this, &UGamePlayHealthWidget::SetGamePlayHealthWidget);
+	OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &UGamePlayHealthWidget::SetGamePlayHealthWidget);
 	
 	SetVisibility(ESlateVisibility::Hidden);
 }
@@ -81,9 +81,9 @@ void UGamePlayHealthWidget::UpdateHealthProgressBar()
 	HealthProgressBar->SetPercent(Health / MaximumHealth);
 }
 
-void UGamePlayHealthWidget::SetGamePlayHealthWidget(EIndividualGameState ChangeGameState)
+void UGamePlayHealthWidget::SetGamePlayHealthWidget(EOccupationGameState ChangeGameState)
 {
-	if (ChangeGameState == EIndividualGameState::Progress)
+	if (ChangeGameState == EOccupationGameState::Progress)
 	{
 		SetVisibility(ESlateVisibility::Visible);
 		return;
