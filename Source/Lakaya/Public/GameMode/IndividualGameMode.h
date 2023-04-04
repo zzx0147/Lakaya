@@ -2,7 +2,6 @@
 
 #include "EngineMinimal.h"
 #include "LakayaDefalutPlayGameMode.h"
-#include "Individual/DropEnergyPool.h"
 #include "IndividualGameMode.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnGameModeInitialized);
@@ -75,9 +74,6 @@ private:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;
 
-private:
-	ADropEnergyPool* DropEnergyPool;
-	
 private:
 	FTimerHandle TimerHandle_SpawnStaticEnergy;
 	FTimerHandle TimerHandle_CheckStartMatch;

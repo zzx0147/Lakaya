@@ -17,7 +17,7 @@ AIndividualStaticEnergy::AIndividualStaticEnergy()
 
 	Trigger->SetCapsuleSize(50.0f, 50.0f, true);
 	Trigger->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Antenna(TEXT("/Game/Dev/KDJ/antenna_high.antenna_high"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Antenna(TEXT("/Game/Dev/KDJ/Antena/SM_Antenna.SM_Antenna"));
 	if (SM_Antenna.Succeeded())
 		Cylinder->SetStaticMesh(SM_Antenna.Object);
 	

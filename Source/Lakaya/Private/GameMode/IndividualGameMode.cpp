@@ -5,7 +5,6 @@
 #include "Character/InteractableCharacter.h"
 #include "GameFramework/PlayerStart.h"
 #include "Individual/IndividualDropEnergy.h"
-#include "Individual/DropEnergyPool.h"
 #include "EngineUtils.h"
 #include "Blueprint/WidgetTree.h"
 #include "Character/BattlePlayerController.h"

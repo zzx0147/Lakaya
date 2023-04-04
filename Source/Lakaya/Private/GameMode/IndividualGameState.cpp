@@ -95,16 +95,3 @@ void AIndividualGameState::SetMinSec()
 		OnRep_Sec();
 	}
 }
-
-// void AIndividualGameState::DecreaseGameTime()
-// {
-// 	if (Sec <= 0)
-// 	{
-// 		Min =- 1;
-// 		Sec = 60;
-// 		return;
-// 	}
-// 		
-// 	Sec -= 1.0f;
-// 	UE_LOG(LogTemp, Warning, TEXT("DecreaseGameTime Function."));
-// }
