@@ -10,6 +10,7 @@
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
+#include "UI/TeamScoreWidget.h"
 #include "MenuCallingPlayerController.generated.h"
 
 /**
@@ -39,6 +40,7 @@ public:
 	void CreateScoreBoardWidget();
 	void CreateGamePlayCrosshairWidget();
 	void CreateGamePlayHealthWidget();
+	void CreateTeamScoreWidget();
 	
 private:
 	UPROPERTY(EditAnywhere, Category=Input)
@@ -64,4 +66,5 @@ public:
 	UGameScoreBoardWidget* GameScoreBoardWidget;
 	UGamePlayCrosshairWidget* GamePlayCrosshairWidget;
 	UGamePlayHealthWidget* GamePlayHealthWidget;
+	UTeamScoreWidget* TeamScoreWidget;
 };

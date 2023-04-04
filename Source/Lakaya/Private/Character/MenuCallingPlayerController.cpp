@@ -74,6 +74,7 @@ void AMenuCallingPlayerController::BeginPlay()
 			CreateScoreBoardWidget();
 			CreateGamePlayCrosshairWidget();
 			CreateGamePlayHealthWidget();
+			CreateTeamScoreWidget();
 
 			#pragma endregion 
 		}
@@ -206,5 +207,28 @@ void AMenuCallingPlayerController::CreateGamePlayHealthWidget()
 		}
 		
 		GamePlayHealthWidget->AddToViewport();
+	}
+}
+
+void AMenuCallingPlayerController::CreateTeamScoreWidget()
+{
+	if (IsLocalController())
+	{
+		// 스코어보드 위젯
+		UClass* TeamScoreWidgetClass  = LoadClass<UTeamScoreWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_TeamScoreWidget.WBP_TeamScoreWidget_C"));
+		if (TeamScoreWidgetClass == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidgetClass is null."));
+			return;
+		}
+			
+		TeamScoreWidget = CreateWidget<UTeamScoreWidget>(this, TeamScoreWidgetClass );
+		if (TeamScoreWidget == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidget is null."));
+			return;
+		}
+		
+		TeamScoreWidget->AddToViewport();
 	}
 }

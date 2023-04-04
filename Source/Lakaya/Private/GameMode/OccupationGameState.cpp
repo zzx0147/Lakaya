@@ -112,7 +112,6 @@ void AOccupationGameState::SetATeamScore()
 			// ATeamScore += TimeScale * DeltaTime;
 			ATeamScore += 1;
 			OnRep_ATeamScore();
-			UE_LOG(LogTemp, Warning, TEXT("A팀 점수 획득. %d"), ATeamScore);
 		}
 	}
 }
@@ -129,7 +128,6 @@ void AOccupationGameState::SetBTeamScore()
 			// BTeamScore += TimeScale * DeltaTime;;
 			BTeamScore += 1;
 			OnRep_BTeamScore();
-			UE_LOG(LogTemp, Warning, TEXT("B팀 점수 획득. %d"), BTeamScore);
 		}
 	}
 }
@@ -162,11 +160,9 @@ void AOccupationGameState::OnRep_OccupationObjectState()
 void AOccupationGameState::OnRep_ATeamScore()
 {
 	OnOccupationChangeATeamScore.Broadcast(ATeamScore);
-	UE_LOG(LogTemp, Warning, TEXT("OnRep_ATeamScore"));
 }
 
 void AOccupationGameState::OnRep_BTeamScore()
 {
 	OnOccupationChangeBTeamScore.Broadcast(BTeamScore);
-	UE_LOG(LogTemp, Warning, TEXT("OnRep_BTeamScore"));
 }

@@ -53,4 +53,3 @@ void ULoadingWidget::ReMoveLoadingWidget(EOccupationGameState ChangeGamState)
         this->RemoveFromParent();
     }
 }
-
