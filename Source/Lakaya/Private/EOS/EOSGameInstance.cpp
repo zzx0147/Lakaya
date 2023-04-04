@@ -130,7 +130,7 @@ void UEOSGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 		{
 			SessionPtr->ClearOnCreateSessionCompleteDelegates(this);
 			UE_LOG(LogTemp,Warning,TEXT("Start Game Level Open"));
-			UGameplayStatics::OpenLevel(this, FName("Template_Default"), true, FString("?listen"));
+			UGameplayStatics::OpenLevel(this, FName("LV_Lakaya"), true, FString("?listen"));
 
 			/*FString ConnectionInfo = FString();
 			SessionPtr->GetResolvedConnectString(SessionName, ConnectionInfo);
@@ -241,17 +241,28 @@ void UEOSGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCo
 	{
 		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 		{
+			SessionPtr->ClearOnJoinSessionCompleteDelegates(this);
 			FString ConnectionInfo = FString();
 			SessionPtr->GetResolvedConnectString(SessionName, ConnectionInfo);
 
 			if (!ConnectionInfo.IsEmpty())
 			{
+				if(ConnectionInfo.Equals(TEXT("EOS::GameNetDriver:26"))) 
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Session is Available But No Server, Destory Empty Session"));
+
+					SessionPtr->OnDestroySessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnDestorySessionCompleteAndReJoinSession);
+					SessionPtr->DestroySession(SessionName);
+					return;
+					//OnCreateSessionComplete(NAME_GameSession, true);//만약 세션은 들어왔는데 서버는 없다면 직접 서버를 만든다
+				}
+
 				if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
 				{
 					UE_LOG(LogTemp, Warning, TEXT("ClientTravel Start!"));
 					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("ClientTravel Start!"));
-					UE_LOG(LogTemp, Warning, TEXT("ConnectionInfo %s"), *ConnectionInfo);
-					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("ConnectionInfo %s"), *ConnectionInfo));
+					UE_LOG(LogTemp, Warning, TEXT("!!!!!!!!!!%s"), *ConnectionInfo);
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("!!!%s"), *ConnectionInfo));
 					PC->ClientTravel(ConnectionInfo, ETravelType::TRAVEL_Absolute);
 					UE_LOG(LogTemp, Warning, TEXT("ClientTravel END!"));
 				}
@@ -285,7 +296,6 @@ void UEOSGameInstance::QuickJoinSession()
 
 				SearchSettings->QuerySettings.Set(SEARCH_KEYWORDS, FString("LakayaLobby"), EOnlineComparisonOp::Equals);
 				SearchSettings->QuerySettings.Set(SEARCH_LOBBIES, true, EOnlineComparisonOp::Equals);
-				//SearchSettings->QuerySettings.Set(SEARCH_NONEMPTY_SERVERS_ONLY, true, EOnlineComparisonOp::Equals); not working
 				SearchSettings->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 
 				SessionPtr->OnFindSessionsCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnFindSessionCompleteWithQuickJoin);
@@ -300,6 +310,7 @@ void UEOSGameInstance::QuickJoinSession()
 
 void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 {
+
 	UE_LOG(LogTemp, Warning, TEXT("Success: %d"), bWasSuccessful);
 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Success: %d"),bWasSuccessful));
 	if (bWasSuccessful)
@@ -311,17 +322,15 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 			bool IsSuccess = false;
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
-				//SessionPtr->ClearOnFindSessionsCompleteDelegates(this);
+				SessionPtr->ClearOnFindSessionsCompleteDelegates(this);
 				if (SearchSettings->SearchResults.Num())
 				{
-
 					for (const FOnlineSessionSearchResult& Results : SearchSettings->SearchResults)
 					{
 						bool isJoinable;
 						Results.Session.SessionSettings.Get(FName(TEXT("ISJOINABLE")), isJoinable);
 						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Lobby is joinable? %d"), isJoinable));
 
-						
 						if (isJoinable)
 						{
 							const FUniqueNetIdPtr UserId = MyPlayerController->GetLocalPlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
@@ -548,4 +557,17 @@ void UEOSGameInstance::CleanUpSession()
 			UE_LOG(LogTemp, Log, TEXT("Waiting for session to start, and then we will end it to return to main menu"));
 		}
 	}
+}
+
+void UEOSGameInstance::OnDestorySessionCompleteAndReJoinSession(FName SessionName, bool bWasSuccessful)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString::Printf(TEXT("EmptySessionDestoryed ReJoin Start")));
+	if (OnlineSubsystem)
+	{
+		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
+		{
+			SessionPtr->ClearOnDestroySessionCompleteDelegates(this);
+		}
+	}
+	QuickJoinSession();
 }

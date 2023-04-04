@@ -14,52 +14,38 @@ void UGamePlayKillLogWidget::UpdateKillLogWidget(ADamageableCharacter* Character
 	else UE_LOG(LogInit, Error, TEXT("SetupKillLogWidget::Character was nullptr!"));
 }
 
+UGamePlayKillLogWidget::UGamePlayKillLogWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	static const ConstructorHelpers::FClassFinder<UKillLogElement> ElementFinder(
+		TEXT("/Game/Blueprints/UMG/WBP_KillLogElement"));
+
+	ElementClass = ElementFinder.Class;
+	if (!ElementClass) UE_LOG(LogInit, Error, TEXT("Fail to find ElementClass!"));
+}
+
 void UGamePlayKillLogWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	//초기화 후 널 체크
-#pragma region InitAndNullCheck
-
 	KillLogBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("KillLog_Pan")));
 	if (!KillLogBox) UE_LOG(LogInit, Error, TEXT("Fail to find KillLog_Pan!"));
+}
 
-	KillLogElementArray =
+void UGamePlayKillLogWidget::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
+	ElementPool.SetupObjectPool(3, [this]
 	{
-		Cast<UKillLogElement>(GetWidgetFromName(TEXT("WBP_KillLogElement1"))),
-		Cast<UKillLogElement>(GetWidgetFromName(TEXT("WBP_KillLogElement2"))),
-		Cast<UKillLogElement>(GetWidgetFromName(TEXT("WBP_KillLogElement3")))
-	};
-
-	for (auto KillLogElement : KillLogElementArray)
-	{
-		check(KillLogElement != nullptr)
-		KillLogElement->RemoveFromParent();
-	}
-
-#pragma endregion
+		auto Result = NewObject<UKillLogElement>(this, ElementClass);
+		Result->SetReturnFunction([this,Result] { ElementPool.ReturnObject(Result); });
+		return Result;
+	});
 }
 
 void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController, AActor* KilledActor,
                                                    AController* Instigator, AActor* Causer)
 {
-	auto Element = MakeFreshElement();
-	Element->SetupKillLog(Cast<ADamageableCharacter>(Causer), Cast<ACharacter>(KilledActor));
-}
-
-UKillLogElement* UGamePlayKillLogWidget::MakeFreshElement()
-{
-	for (auto Element : KillLogElementArray)
-	{
-		if (Element->GetParent()) continue;
-		else
-		{
-			KillLogBox->AddChild(Element);
-			return Element;
-		}
-	}
-	auto First = KillLogBox->GetChildAt(0);
-	KillLogBox->RemoveChild(First);
-	KillLogBox->AddChild(First);
-	return Cast<UKillLogElement>(First);
+	auto Element = ElementPool.GetObject();
+	KillLogBox->AddChild(Element);
+	Element->SetKillLog(Cast<ADamageableCharacter>(Causer), Cast<ACharacter>(KilledActor));
 }

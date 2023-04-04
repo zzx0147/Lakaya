@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
+#include "UI/GamePlayCrosshairWidget.h"
+#include "UI/GamePlayHealthWidget.h"
+#include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
 #include "MenuCallingPlayerController.generated.h"
@@ -34,7 +37,9 @@ public:
 	void CreateLoadingWidget();
 	void CreateGameTimeWidget();
 	void CreateScoreBoardWidget();
-
+	void CreateGamePlayCrosshairWidget();
+	void CreateGamePlayHealthWidget();
+	
 private:
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
@@ -56,4 +61,7 @@ private:
 public:
 	ULoadingWidget* LoadingWidget;
 	UGameTimeWidget* GameTimeWidget;
+	UGameScoreBoardWidget* GameScoreBoardWidget;
+	UGamePlayCrosshairWidget* GamePlayCrosshairWidget;
+	UGamePlayHealthWidget* GamePlayHealthWidget;
 };
