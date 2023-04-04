@@ -8,7 +8,7 @@
 #include "Components/TextBlock.h"
 #include "GameFramework/PlayerState.h"
 
-void UKillLogElement::SetupKillLog(ADamageableCharacter* Attacker, ACharacter* Victim)
+void UKillLogElement::SetKillLog(ADamageableCharacter* Attacker, ACharacter* Victim)
 {
 	//TODO: 무기의 이미지를 적용합니다.
 	AttackerTextBlock->SetText(FText::FromString(Attacker->GetPlayerState()->GetPlayerName()));
@@ -21,6 +21,7 @@ void UKillLogElement::ShowTimerCallback()
 {
 	SetVisibility(ESlateVisibility::Collapsed);
 	RemoveFromParent();
+	Return();
 }
 
 void UKillLogElement::NativeConstruct()
