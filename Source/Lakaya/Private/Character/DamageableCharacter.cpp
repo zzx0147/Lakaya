@@ -60,6 +60,7 @@ void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* D
 
 void ADamageableCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
 {
+	GetMesh()->SetVisibility(false, true);
 	OnKillCharacterNotify.Broadcast(GetController(), this, EventInstigator, DamageCauser);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
 }
@@ -85,5 +86,6 @@ void ADamageableCharacter::OnTakeAnyDamageCallback(AActor* DamagedActor, float D
 
 void ADamageableCharacter::RespawnNotify_Implementation()
 {
+	GetMesh()->SetVisibility(true, true);
 	OnRespawnCharacterNotify.Broadcast(this);
 }
