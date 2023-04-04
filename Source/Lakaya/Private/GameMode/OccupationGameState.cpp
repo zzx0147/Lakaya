@@ -17,6 +17,10 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(AOccupationGameState, CurrentGameState);
 	DOREPLIFETIME(AOccupationGameState, Min);
 	DOREPLIFETIME(AOccupationGameState, Sec);
+	
+	DOREPLIFETIME(AOccupationGameState, CurrentOccupationObjectState);
+	DOREPLIFETIME(AOccupationGameState, ATeamScore);
+	DOREPLIFETIME(AOccupationGameState, BTeamScore);
 }
 
 void AOccupationGameState::SetNumPlayers(int32 NewNumPlayers)
@@ -30,11 +34,11 @@ void AOccupationGameState::SetGameState(EOccupationGameState NewGameState)
 	if (CurrentGameState != NewGameState)
 	{
 		CurrentGameState = NewGameState;
-		OnRep_GameState();
 		if (CurrentGameState == EOccupationGameState::Progress)
 		{
 			FTimerHandle GameTimerHandle;
 			GetWorldTimerManager().SetTimer(GameTimerHandle, this, &AOccupationGameState::SetMinSec, 1.0f, true);
+			OnRep_GameState();
 		}
 	}
 }
@@ -62,14 +66,74 @@ void AOccupationGameState::SetMinSec()
 		}
 
 		Sec -= TimeScale * DeltaTime;
-		// Sec -= 1;
 		OnRep_Sec();
+	}
+}
+
+void AOccupationGameState::SetOccupationObject(EOccupationObjectState NewObjectState)
+{
+	if (CurrentOccupationObjectState != NewObjectState)
+	{
+		CurrentOccupationObjectState = NewObjectState;
+		if (CurrentOccupationObjectState == EOccupationObjectState::A)
+		{
+			// TODO : 점수 올려 줘야 함
+			if (GetWorldTimerManager().IsTimerActive(TimerHandle_BteamScoreIncrease))
+			{
+				GetWorldTimerManager().ClearTimer(TimerHandle_BteamScoreIncrease);	
+			}
+			
+			GetWorldTimerManager().SetTimer(TimerHandle_AteamScoreIncrease, this, &AOccupationGameState::SetATeamScore, 1.0f, true);
+		
+		}
+		else if (CurrentOccupationObjectState == EOccupationObjectState::B)
+		{
+			if (GetWorldTimerManager().IsTimerActive(TimerHandle_AteamScoreIncrease))
+			{
+				GetWorldTimerManager().ClearTimer(TimerHandle_AteamScoreIncrease);	
+			}
+			
+			GetWorldTimerManager().SetTimer(TimerHandle_BteamScoreIncrease, this, &AOccupationGameState::SetATeamScore, 1.0f, true);
+		}
+
+		OnRep_OccupationObjectState();
+	}
+}
+
+void AOccupationGameState::SetATeamScore()
+{
+	if (CurrentGameState == EOccupationGameState::Progress)
+	{
+		if (CurrentOccupationObjectState == EOccupationObjectState::A)
+		{
+			const float DeltaTime = GetWorld()->GetDeltaSeconds();
+			const float TimeScale = 1.0f;
+
+			ATeamScore += TimeScale * DeltaTime;
+			OnRep_ATeamScore();
+			UE_LOG(LogTemp, Warning, TEXT("A팀 점수 획득"));
+		}
+	}
+}
+
+void AOccupationGameState::SetBTeamScore()
+{
+	if (CurrentGameState == EOccupationGameState::Progress)
+	{
+		if (CurrentOccupationObjectState == EOccupationObjectState::B)
+		{
+			const float DeltaTime = GetWorld()->GetDeltaSeconds();
+			const float TimeScale = 1.0f;
+
+			BTeamScore += TimeScale * DeltaTime;;
+			OnRep_BTeamScore();
+			UE_LOG(LogTemp, Warning, TEXT("B팀 점수 획득"));
+		}
 	}
 }
 
 void AOccupationGameState::OnRep_NumPlayers()
 {
-	// 새로운 값으로 다른 클라이언트들에게 알림
 	OnOccupationChangeJoinedPlayers.Broadcast(NumPlayers, GetMaxPlayers());
 }
 
@@ -86,4 +150,19 @@ void AOccupationGameState::OnRep_Min()
 void AOccupationGameState::OnRep_Sec()
 {
 	OnOccupationChangeTime.Broadcast(Min, Sec);
+}
+
+void AOccupationGameState::OnRep_OccupationObjectState()
+{
+	OnOccupationChangeObjectcState.Broadcast(CurrentOccupationObjectState);
+}
+
+void AOccupationGameState::OnRep_ATeamScore()
+{
+	OnOccupationChangeATeamScore.Broadcast(ATeamScore);
+}
+
+void AOccupationGameState::OnRep_BTeamScore()
+{
+	OnOccupationChangeBTeamScore.Broadcast(BTeamScore);
 }

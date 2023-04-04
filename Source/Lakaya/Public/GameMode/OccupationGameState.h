@@ -10,6 +10,9 @@
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeJoinedPlayers, int32, int32)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeGameState, EOccupationGameState)
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeTime, int32, int32)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeObjectcState, EOccupationObjectState)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamScore, uint8);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamScore, uint8);
 
 UENUM()
 enum class EOccupationGameState : uint8
@@ -20,6 +23,14 @@ enum class EOccupationGameState : uint8
 	StandByToPregressLoading UMETA(DisplayName = "StandByToPregressLoading"),
 	Progress UMETA(DisplayName = "Progress"), // 게임진행 상태
 	Finish UMETA(DisplayName = "Finish") // 게임종료 상태
+};
+
+UENUM()
+enum class EOccupationObjectState : uint8
+{
+	None UMETA(DisplayerName = "None"), // 어느 팀에서도 활성화 되어 있지 않은 상태.
+	A UMETA(DisplayerName = "A"), // A팀에서의 활성화 상태
+	B UMETA(DisplayerName = "B") // B팀에서의 활성화 상태
 };
 
 /**
@@ -47,6 +58,15 @@ public:
 
 	UFUNCTION()
 	void SetMinSec();
+
+	UFUNCTION()
+	void SetOccupationObject(EOccupationObjectState NewObjectState);
+
+	UFUNCTION()
+	void SetATeamScore();
+
+	UFUNCTION()
+	void SetBTeamScore();
 	
 	UPROPERTY(ReplicatedUsing = OnRep_NumPlayers)
 	int32 NumPlayers;
@@ -54,18 +74,34 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_GameState)
 	EOccupationGameState CurrentGameState = EOccupationGameState::Menu;
 
-	UFUNCTION()
-	int32 GetMin() {return Min; }
+	UPROPERTY(ReplicatedUsing = OnRep_OccupationObjectState)
+	EOccupationObjectState CurrentOccupationObjectState = EOccupationObjectState::None;
 
 	UFUNCTION()
-	int32 GetSec() {return Sec; }
-	
+	int32 GetMin() { return Min; }
+
+	UFUNCTION()
+	int32 GetSec() { return Sec; }
+
+	UFUNCTION()
+	uint8 GetATeamScore() { return ATeamScore; }
+
+	UFUNCTION()
+	uint8 GetBTeamScore() { return BTeamScore; }
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_Min)
 	int32 Min = 3;
+
 	UPROPERTY(ReplicatedUsing = OnRep_Sec)
 	int32 Sec = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore)
+	uint8 ATeamScore = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore)
+	uint8 BTeamScore = 0;
 	
+
 private:
 	UFUNCTION()
 	void OnRep_NumPlayers();
@@ -79,11 +115,27 @@ private:
 	UFUNCTION()
 	void OnRep_Sec();
 
+	UFUNCTION()
+	void OnRep_OccupationObjectState();
+
+	UFUNCTION()
+	void OnRep_ATeamScore();
+
+	UFUNCTION()
+	void OnRep_BTeamScore();
+	
 	UPROPERTY(EditAnywhere)
-	uint8 MaxPlayers = 2;
+	uint8 MaxPlayers = 4;
 	
 public:
 	FOnOccupationChangeJoinedPlayers OnOccupationChangeJoinedPlayers;
 	FOnOccupationChangeGameState OnOccupationChangeGameState;
 	FOnOccupationChangeTime OnOccupationChangeTime;
+	FOnOccupationChangeObjectcState OnOccupationChangeObjectcState;
+	FOnOccupationChangeATeamScore OnOccupationChangeATeamScore;
+	FOnOccupationChangeBTeamScore OnOccupationChangeBTeamScore;
+
+private:
+	FTimerHandle TimerHandle_AteamScoreIncrease;
+	FTimerHandle TimerHandle_BteamScoreIncrease;
 };

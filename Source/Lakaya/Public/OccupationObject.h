@@ -35,12 +35,6 @@ private:
 	const float MaxInteractionDuration = 3;
 	float InteractingStartTime;
 	float InteractingStopTime;
-	
-	// UPROPERTY(VisibleAnywhere, Category = "Components")
-	// UCapsuleComponent* Trigger;
-	//
-	// UPROPERTY(VisibleAnywhere, Category = "Components")
-	// UStaticMeshComponent* Cylinder;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UCapsuleComponent* Trigger;
@@ -49,6 +43,6 @@ private:
 	UStaticMeshComponent* Cylinder;
 	
 	FTimerHandle InteractionTimerHandle;
-
+	
 	APawn* InteractingPawn;
 };

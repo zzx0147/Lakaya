@@ -72,7 +72,6 @@ void AOccupationGameMode::HandleMatchIsWaitingToStart()
 	}
 	
 	OccupationGameState->SetGameState(EOccupationGameState::StandByToPregressLoading);
-
 	
 	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchIsWaitingToStart"));
@@ -95,6 +94,30 @@ bool AOccupationGameMode::ReadyToStartMatch_Implementation()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_OccupationGameState is null."));
 		return false;
+	}
+
+	for (int i = 0; i < OccupationGameState->GetMaxPlayers(); i++)
+	{
+		if (OccupationGameState->PlayerArray.IsValidIndex(i))
+		{
+			ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(OccupationGameState->PlayerArray[i]);
+			if (CollectorPlayerState == nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
+				return false;
+			}
+
+			if (i < 3)
+			{
+				CollectorPlayerState->SetPlayerTeamState(EPlayerTeamState::A);
+				UE_LOG(LogTemp, Warning, TEXT("A팀에 배정 되었습니다."));
+			}
+			else
+			{
+				CollectorPlayerState->SetPlayerTeamState(EPlayerTeamState::B);
+				UE_LOG(LogTemp, Warning, TEXT("B팀에 배정 되었습니다."));
+			}
+		}
 	}
 	
 	OccupationGameState->SetGameState(EOccupationGameState::Progress);

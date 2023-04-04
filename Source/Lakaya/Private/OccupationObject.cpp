@@ -6,6 +6,7 @@
 #include "Character/CollectorPlayerState.h"
 #include "Character/InteractableCharacter.h"
 #include "Components/CapsuleComponent.h"
+#include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
 
 AOccupationObject::AOccupationObject()
@@ -60,9 +61,6 @@ void AOccupationObject::OnInteractionStart(APawn* Caller)
 
 	InteractingStartTime = UGameplayStatics::GetRealTimeSeconds(this);
 
-	// TODO : 애니메이션 적용
-	// 긴 상호작용 애니메이션 시작하는 지점.
-	
 	// 시작 한 후 4초가 지나면 자동으로 성공.
 	GetWorldTimerManager().SetTimer(InteractionTimerHandle, this, &AOccupationObject::AutomaticInteractionStop, MaxInteractionDuration, false);
 }
@@ -114,25 +112,39 @@ void AOccupationObject::OnInteractionStop(APawn* Caller)
 	if (InteractionDuration > MaxInteractionDuration)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction success."));
-		// TODO :
 		
-		// ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
-		// if (CollectorPlayerState)
-		// {
-			// uint8 CurrentEnergy = CollectorPlayerState->GetEnergy();
-			// CollectorPlayerState->GainPoint(CurrentEnergy);
-			// CollectorPlayerState->ResetEnergy();
+		ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
+		if (CollectorPlayerState == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_CollectorPlayerstate is null."));
+			return;
+		}
 
-			
-			
-			// UE_LOG(LogTemp, Warning, TEXT("Player Total Point : %d"), CollectorPlayerState->GetPoint());
-			// UE_LOG(LogTemp, Warning, TEXT("Player Current Energy Num : %d"), CollectorPlayerState->GetEnergy());
-		// }
-		// else
-		// {
-			// UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is Null."));
-			// return;
-		// }
+		AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+		if (OccupationGameState == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationGameState is null."));
+			return;
+		}
+
+		// TODO : 상호작용 성공 시 그 팀의 점수 증가
+		FString PlayerStateString = UEnum::GetValueAsString(CollectorPlayerState->GetPlayerTeamState());
+		if (PlayerStateString.Equals("EPlayerTeamState::None", ESearchCase::IgnoreCase))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Suspected player captured successfully."));
+		}
+		else if (PlayerStateString.Equals("EPlayerTeamState::A", ESearchCase::IgnoreCase))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
+		}
+		else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Error ! Error ! Error !"));
+		}
 	}
 	else
 	{
@@ -140,18 +152,12 @@ void AOccupationObject::OnInteractionStop(APawn* Caller)
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction Failed."));
 		return;
 	}
-
-	// InteractingStartTime = 0.0f;
-	
-	// TODO : 애니메이션 적용
-	// 긴 상호작용 애니메이션 끝나는 지점.
 }
 
 void AOccupationObject::AutomaticInteractionStop()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Cylinder AutomaticInteractionStop !"));
 
-	// InteractionStop(MaxInteractionDuration, nullptr);
 	if(InteractingPawn == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AutomaticInteractionStop_InteractingPawn is null."));
