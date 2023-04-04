@@ -21,17 +21,19 @@ AIndividualGameMode::AIndividualGameMode()
 		return;
 	}
 
-	//UClass* PlayerPawnClass = PlayerPawnObject.Object->StaticClass();
-	//if (!PlayerPawnClass)
-	//{
-	//	UE_LOG(LogTemp, Error, TEXT("Failed to get generated class from player pawn blueprint."));
-	//	return;
-	//}
+	static ConstructorHelpers::FClassFinder<AIndividualGameState> GameStateFinder(TEXT("/Game/Blueprints/GameModes/MyIndividualGameState.MyIndividualGameState_C"));
+	if (!GameStateFinder.Succeeded())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to find gamestate blueprint."));
+		return;
+	}
 
+
+	
 	DefaultPawnClass = PlayerPawnObject.Class;
 	PlayerControllerClass = ABattlePlayerController::StaticClass();
 	PlayerStateClass = ACollectorPlayerState::StaticClass();
-	GameStateClass = AIndividualGameState::StaticClass();
+	GameStateClass = GameStateFinder.Class;
 }
 
 void AIndividualGameMode::BeginPlay()

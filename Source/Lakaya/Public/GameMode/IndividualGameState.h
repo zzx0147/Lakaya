@@ -74,7 +74,8 @@ private:
 	
 	UFUNCTION()
 	void OnRep_Sec();
-	
+
+	UPROPERTY(EditAnywhere)
 	uint8 MaxPlayers = 2;
 
 private:
