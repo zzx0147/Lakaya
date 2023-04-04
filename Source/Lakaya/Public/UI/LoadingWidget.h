@@ -22,7 +22,7 @@ private:
 
 public:
 	UFUNCTION()
-	void ReMoveLoadingWidget(EGameState ChangeGamState);
+	void ReMoveLoadingWidget(EIndividualGameState ChangeGamState);
 	
 public:
 	UFUNCTION()

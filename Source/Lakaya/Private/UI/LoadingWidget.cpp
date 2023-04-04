@@ -26,8 +26,8 @@ void ULoadingWidget::NativeConstruct()
         return;
     }
 
-    IndividualGameState->OnChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
-    IndividualGameState->OnChangeGameState.AddUObject(this, &ULoadingWidget::ReMoveLoadingWidget);
+    IndividualGameState->OnIndividualChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
+    IndividualGameState->OnIndividualChangeGameState.AddUObject(this, &ULoadingWidget::ReMoveLoadingWidget);
 }
 
 void ULoadingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -46,9 +46,9 @@ void ULoadingWidget::OnChangeJoinedPlayers(int32 JoinedPlayers, int32 MaxPlayer)
     LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), JoinedPlayers, MaxPlayer)));
 }
 
-void ULoadingWidget::ReMoveLoadingWidget(EGameState ChangeGamState)
+void ULoadingWidget::ReMoveLoadingWidget(EIndividualGameState ChangeGamState)
 {
-    if (ChangeGamState == EGameState::Progress)
+    if (ChangeGamState == EIndividualGameState::Progress)
     {
         this->RemoveFromParent();
     }

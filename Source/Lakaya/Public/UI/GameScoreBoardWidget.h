@@ -19,7 +19,7 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UFUNCTION()
-	void SetGameScoreBoardWidget(EGameState ChangeGameState);
+	void SetGameScoreBoardWidget(EIndividualGameState ChangeGameState);
 	
 public:
 	TArray<UScoreBoardElement*> ScoreBoardElementArray;//스코어보드 Element를 저장하는 배열

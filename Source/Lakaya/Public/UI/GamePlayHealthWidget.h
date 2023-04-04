@@ -28,7 +28,7 @@ protected:
 	void UpdateHealthProgressBar();
 
 	UFUNCTION()
-	void SetGamePlayHealthWidget(EGameState ChangeGameState);
+	void SetGamePlayHealthWidget(EIndividualGameState ChangeGameState);
 	
 private:
 	UProgressBar* HealthProgressBar;//체력을 표기하는 프로그래스 바

@@ -17,7 +17,7 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UFUNCTION()
-	void SetGamePlayCrosshairWidget(EGameState ChangeGameState);
+	void SetGamePlayCrosshairWidget(EIndividualGameState ChangeGameState);
 private:
 	UImage* CrosshairImage;//크로스헤어를 표기하는 위젯
 };

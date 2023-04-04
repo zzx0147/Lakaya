@@ -25,8 +25,8 @@ void UGameTimeWidget::NativeConstruct()
 	}
 	
 	// TODO : 시간이 바뀔 때마다 위젯 업데이트를 위한 델리게이트 등록
-	IndividualGameState->OnChangeTime.AddUObject(this, &UGameTimeWidget::OnChangeTime);
-	IndividualGameState->OnChangeGameState.AddUObject(this, &UGameTimeWidget::SetGameTimeWidget);
+	IndividualGameState->OnIndividualChangeTime.AddUObject(this, &UGameTimeWidget::OnChangeTime);
+	IndividualGameState->OnIndividualChangeGameState.AddUObject(this, &UGameTimeWidget::SetGameTimeWidget);
 
 	SetVisibility(ESlateVisibility::Hidden);
 }
@@ -45,9 +45,9 @@ void UGameTimeWidget::OnChangeTime(int32 Min, int32 Sec)
 	// GameTimeText->SetText(FText::FromString(FString::Printf(TEXT("(%d:%d)"), Min, Sec)));
 }
 
-void UGameTimeWidget::SetGameTimeWidget(EGameState ChangeGameState)
+void UGameTimeWidget::SetGameTimeWidget(EIndividualGameState ChangeGameState)
 {
-	if (ChangeGameState == EGameState::Progress)
+	if (ChangeGameState == EIndividualGameState::Progress)
 	{
 		SetVisibility(ESlateVisibility::Visible);
 		return;

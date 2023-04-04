@@ -28,7 +28,7 @@ void UGameScoreBoardWidget::NativeConstruct()
 
 	InitScoreBoardElements(6);
 
-	IndividualGameState->OnChangeGameState.AddUObject(this, &UGameScoreBoardWidget::SetGameScoreBoardWidget);
+	IndividualGameState->OnIndividualChangeGameState.AddUObject(this, &UGameScoreBoardWidget::SetGameScoreBoardWidget);
 	
 	SetVisibility(ESlateVisibility::Hidden);
 }
@@ -38,9 +38,9 @@ void UGameScoreBoardWidget::NativeTick(const FGeometry& MyGeometry, float InDelt
 	Super::NativeTick(MyGeometry, InDeltaTime);
 }
 
-void UGameScoreBoardWidget::SetGameScoreBoardWidget(EGameState ChangeGameState)
+void UGameScoreBoardWidget::SetGameScoreBoardWidget(EIndividualGameState ChangeGameState)
 {
-	if (ChangeGameState == EGameState::Progress)
+	if (ChangeGameState == EIndividualGameState::Progress)
 	{
 		SetVisibility(ESlateVisibility::Visible);
 		return;

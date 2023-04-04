@@ -25,7 +25,7 @@ private:
 
 public:
 	UFUNCTION()
-	void SetGameTimeWidget(EGameState ChangeGameState);
+	void SetGameTimeWidget(EIndividualGameState ChangeGameState);
 
 public:
 	UFUNCTION()

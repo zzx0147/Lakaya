@@ -48,7 +48,7 @@ void UGamePlayHealthWidget::NativeConstruct()
 		DamageableCharacter->OnMaximumHealthReplicated.AddUObject(this, &UGamePlayHealthWidget::OnChangeMaximumHealth);
 	}
 
-	IndividualGameState->OnChangeGameState.AddUObject(this, &UGamePlayHealthWidget::SetGamePlayHealthWidget);
+	IndividualGameState->OnIndividualChangeGameState.AddUObject(this, &UGamePlayHealthWidget::SetGamePlayHealthWidget);
 	
 	SetVisibility(ESlateVisibility::Hidden);
 }
@@ -81,9 +81,9 @@ void UGamePlayHealthWidget::UpdateHealthProgressBar()
 	HealthProgressBar->SetPercent(Health / MaximumHealth);
 }
 
-void UGamePlayHealthWidget::SetGamePlayHealthWidget(EGameState ChangeGameState)
+void UGamePlayHealthWidget::SetGamePlayHealthWidget(EIndividualGameState ChangeGameState)
 {
-	if (ChangeGameState == EGameState::Progress)
+	if (ChangeGameState == EIndividualGameState::Progress)
 	{
 		SetVisibility(ESlateVisibility::Visible);
 		return;

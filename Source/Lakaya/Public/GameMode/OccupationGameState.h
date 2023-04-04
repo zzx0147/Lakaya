@@ -3,16 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "IndividualGameMode.h"
+#include "OccupationGameMode.h"
 #include "GameFramework/GameState.h"
-#include "IndividualGameState.generated.h"
+#include "OccupationGameState.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnIndividualChangeJoinedPlayers, int32, int32)
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnIndividualChangeGameState, EIndividualGameState)
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnIndividualChangeTime, int32, int32)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeJoinedPlayers, int32, int32)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeGameState, EOccupationGameState)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeTime, int32, int32)
 
 UENUM()
-enum class EIndividualGameState : uint8
+enum class EOccupationGameState : uint8
 {
 	Menu UMETA(DisplayerName = "Menu"), // 메뉴 선택, 설정 ... 상태
 	StandBy UMETA(DisplayName = "StandBy"), // 다른 플레이어 입장 대기 상태
@@ -22,16 +22,19 @@ enum class EIndividualGameState : uint8
 	Finish UMETA(DisplayName = "Finish") // 게임종료 상태
 };
 
+/**
+ * 
+ */
 UCLASS()
-class LAKAYA_API AIndividualGameState : public AGameState
+class LAKAYA_API AOccupationGameState : public AGameState
 {
 	GENERATED_BODY()
 
-public:
+private:
 	virtual void BeginPlay() override;
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 public:
 	UFUNCTION()
 	uint8 GetMaxPlayers() const { return MaxPlayers; }
@@ -40,7 +43,7 @@ public:
 	void SetNumPlayers(int32 NewNumPlayers);
 
 	UFUNCTION()
-	void SetGameState(EIndividualGameState NewGameState);
+	void SetGameState(EOccupationGameState NewGameState);
 
 	UFUNCTION()
 	void SetMinSec();
@@ -49,13 +52,14 @@ public:
 	int32 NumPlayers;
 
 	UPROPERTY(ReplicatedUsing = OnRep_GameState)
-	EIndividualGameState CurrentGameState = EIndividualGameState::Menu;
+	EOccupationGameState CurrentGameState = EOccupationGameState::Menu;
 
 	UFUNCTION()
 	int32 GetMin() {return Min; }
 
 	UFUNCTION()
 	int32 GetSec() {return Sec; }
+	
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_Min)
 	int32 Min = 3;
@@ -77,9 +81,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	uint8 MaxPlayers = 2;
-
-public:
-	FOnIndividualChangeJoinedPlayers OnIndividualChangeJoinedPlayers;
-	FOnIndividualChangeGameState OnIndividualChangeGameState;
-	FOnIndividualChangeTime OnIndividualChangeTime;
+	
+private:
+	FOnOccupationChangeJoinedPlayers OnOccupationChangeJoinedPlayers;
+	FOnOccupationChangeGameState OnOccupationChangeGameState;
+	FOnOccupationChangeTime OnOccupationChangeTime;
 };

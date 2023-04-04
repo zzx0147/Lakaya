@@ -25,7 +25,7 @@ void UGamePlayCrosshairWidget::NativeConstruct()
 		return;
 	}
 
-	IndividualGameState->OnChangeGameState.AddUObject(this, &UGamePlayCrosshairWidget::SetGamePlayCrosshairWidget);
+	IndividualGameState->OnIndividualChangeGameState.AddUObject(this, &UGamePlayCrosshairWidget::SetGamePlayCrosshairWidget);
 
 	SetVisibility(ESlateVisibility::Hidden);
 }
@@ -35,9 +35,9 @@ void UGamePlayCrosshairWidget::NativeTick(const FGeometry& MyGeometry, float InD
 	Super::NativeTick(MyGeometry, InDeltaTime);
 }
 
-void UGamePlayCrosshairWidget::SetGamePlayCrosshairWidget(EGameState ChangeGameState)
+void UGamePlayCrosshairWidget::SetGamePlayCrosshairWidget(EIndividualGameState ChangeGameState)
 {
-	if (ChangeGameState == EGameState::Progress)
+	if (ChangeGameState == EIndividualGameState::Progress)
 	{
 		SetVisibility(ESlateVisibility::Visible);
 		return;
