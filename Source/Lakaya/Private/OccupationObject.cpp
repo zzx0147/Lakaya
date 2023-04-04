@@ -131,18 +131,24 @@ void AOccupationObject::OnInteractionStop(APawn* Caller)
 		if (PlayerStateString.Equals("EPlayerTeamState::None", ESearchCase::IgnoreCase))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Suspected player captured successfully."));
+			return;
 		}
 		else if (PlayerStateString.Equals("EPlayerTeamState::A", ESearchCase::IgnoreCase))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
+			OccupationGameState->SetOccupationObject(EOccupationObjectState::A);
+			return;
 		}
 		else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
+			OccupationGameState->SetOccupationObject(EOccupationObjectState::B);
+			return;
 		}
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Error ! Error ! Error !"));
+			return;
 		}
 	}
 	else

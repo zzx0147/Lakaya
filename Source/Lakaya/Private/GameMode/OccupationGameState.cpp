@@ -47,8 +47,8 @@ void AOccupationGameState::SetMinSec()
 {
 	if (CurrentGameState == EOccupationGameState::Progress)
 	{
-		const float DeltaTime = GetWorld()->GetDeltaSeconds();
-		const float TimeScale = 1.0f;
+		// const float DeltaTime = GetWorld()->GetDeltaSeconds();
+		// const float TimeScale = 1.0f;
 		
 		if (Sec <= 0)
 		{
@@ -65,7 +65,8 @@ void AOccupationGameState::SetMinSec()
 			OnRep_Sec();
 		}
 
-		Sec -= TimeScale * DeltaTime;
+		// Sec -= TimeScale * DeltaTime;
+		Sec -= 1;
 		OnRep_Sec();
 	}
 }
@@ -84,7 +85,6 @@ void AOccupationGameState::SetOccupationObject(EOccupationObjectState NewObjectS
 			}
 			
 			GetWorldTimerManager().SetTimer(TimerHandle_AteamScoreIncrease, this, &AOccupationGameState::SetATeamScore, 1.0f, true);
-		
 		}
 		else if (CurrentOccupationObjectState == EOccupationObjectState::B)
 		{
@@ -93,7 +93,7 @@ void AOccupationGameState::SetOccupationObject(EOccupationObjectState NewObjectS
 				GetWorldTimerManager().ClearTimer(TimerHandle_AteamScoreIncrease);	
 			}
 			
-			GetWorldTimerManager().SetTimer(TimerHandle_BteamScoreIncrease, this, &AOccupationGameState::SetATeamScore, 1.0f, true);
+			GetWorldTimerManager().SetTimer(TimerHandle_BteamScoreIncrease, this, &AOccupationGameState::SetBTeamScore, 1.0f, true);
 		}
 
 		OnRep_OccupationObjectState();
@@ -106,12 +106,13 @@ void AOccupationGameState::SetATeamScore()
 	{
 		if (CurrentOccupationObjectState == EOccupationObjectState::A)
 		{
-			const float DeltaTime = GetWorld()->GetDeltaSeconds();
-			const float TimeScale = 1.0f;
+			// const float DeltaTime = GetWorld()->GetDeltaSeconds();
+			// const float TimeScale = 1.0f;
 
-			ATeamScore += TimeScale * DeltaTime;
+			// ATeamScore += TimeScale * DeltaTime;
+			ATeamScore += 1;
 			OnRep_ATeamScore();
-			UE_LOG(LogTemp, Warning, TEXT("A팀 점수 획득"));
+			UE_LOG(LogTemp, Warning, TEXT("A팀 점수 획득. %d"), ATeamScore);
 		}
 	}
 }
@@ -122,12 +123,13 @@ void AOccupationGameState::SetBTeamScore()
 	{
 		if (CurrentOccupationObjectState == EOccupationObjectState::B)
 		{
-			const float DeltaTime = GetWorld()->GetDeltaSeconds();
-			const float TimeScale = 1.0f;
+			// const float DeltaTime = GetWorld()->GetDeltaSeconds();
+			// const float TimeScale = 1.0f;
 
-			BTeamScore += TimeScale * DeltaTime;;
+			// BTeamScore += TimeScale * DeltaTime;;
+			BTeamScore += 1;
 			OnRep_BTeamScore();
-			UE_LOG(LogTemp, Warning, TEXT("B팀 점수 획득"));
+			UE_LOG(LogTemp, Warning, TEXT("B팀 점수 획득. %d"), BTeamScore);
 		}
 	}
 }
@@ -160,9 +162,11 @@ void AOccupationGameState::OnRep_OccupationObjectState()
 void AOccupationGameState::OnRep_ATeamScore()
 {
 	OnOccupationChangeATeamScore.Broadcast(ATeamScore);
+	UE_LOG(LogTemp, Warning, TEXT("OnRep_ATeamScore"));
 }
 
 void AOccupationGameState::OnRep_BTeamScore()
 {
 	OnOccupationChangeBTeamScore.Broadcast(BTeamScore);
+	UE_LOG(LogTemp, Warning, TEXT("OnRep_BTeamScore"));
 }
