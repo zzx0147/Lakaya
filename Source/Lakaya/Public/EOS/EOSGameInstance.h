@@ -75,6 +75,8 @@ public:
 
 	void CleanUpSession();
 
+	void OnDestorySessionCompleteAndReJoinSession(FName SessionName, bool bWasSuccessful);
+
 public:
 	UPROPERTY(BlueprintAssignable,VisibleAnywhere, BlueprintCallable, Category = "Event")
 	FOnQuickJoinSessionComplete OnQuickJoinSessionComplete;
