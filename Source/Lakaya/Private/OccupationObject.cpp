@@ -126,8 +126,7 @@ void AOccupationObject::OnInteractionStop(APawn* Caller)
 			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationGameState is null."));
 			return;
 		}
-
-		// TODO : 상호작용 성공 시 그 팀의 점수 증가
+		
 		FString PlayerStateString = UEnum::GetValueAsString(CollectorPlayerState->GetPlayerTeamState());
 		if (PlayerStateString.Equals("EPlayerTeamState::None", ESearchCase::IgnoreCase))
 		{

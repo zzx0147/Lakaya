@@ -107,7 +107,7 @@ bool AOccupationGameMode::ReadyToStartMatch_Implementation()
 				return false;
 			}
 
-			if (i < 3)
+			if (i % 2 == 0)
 			{
 				CollectorPlayerState->SetPlayerTeamState(EPlayerTeamState::A);
 				UE_LOG(LogTemp, Warning, TEXT("A팀에 배정 되었습니다."));

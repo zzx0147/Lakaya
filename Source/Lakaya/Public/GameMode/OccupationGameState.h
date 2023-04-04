@@ -125,7 +125,7 @@ private:
 	void OnRep_BTeamScore();
 	
 	UPROPERTY(EditAnywhere)
-	uint8 MaxPlayers = 4;
+	uint8 MaxPlayers = 3;
 	
 public:
 	FOnOccupationChangeJoinedPlayers OnOccupationChangeJoinedPlayers;
