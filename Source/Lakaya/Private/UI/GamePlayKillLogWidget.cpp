@@ -29,7 +29,6 @@ void UGamePlayKillLogWidget::NativeConstruct()
 
 	KillLogBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("KillLog_Pan")));
 	if (!KillLogBox) UE_LOG(LogInit, Error, TEXT("Fail to find KillLog_Pan!"));
-	for (auto& Child : KillLogBox->GetAllChildren()) Child->RemoveFromParent();
 }
 
 void UGamePlayKillLogWidget::NativeOnInitialized()
