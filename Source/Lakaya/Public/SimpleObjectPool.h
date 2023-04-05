@@ -24,7 +24,7 @@ public:
 
 private:
 	std::list<T*> AvailableObjects;
-	std::function<T*()> InstanceMaker;
+	std::function<T*()> InstanceMaker = nullptr;
 };
 
 template <class T>
@@ -38,7 +38,11 @@ void SimpleObjectPool<T>::SetupObjectPool(const uint16& InitialCount, std::funct
 template <class T>
 T* SimpleObjectPool<T>::GetObject()
 {
-	if (AvailableObjects.empty()) return InstanceMaker();
+	if (AvailableObjects.empty())
+	{
+		if (InstanceMaker) return InstanceMaker();
+		else UE_LOG(LogTemp, Error, TEXT("Pool was not setted!"))
+	};
 
 	auto Instance = AvailableObjects.back();
 	AvailableObjects.pop_back();

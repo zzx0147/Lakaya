@@ -21,7 +21,7 @@ void ADamageableCharacter::BeginPlay()
 	if (IsRunningDedicatedServer()) return;
 
 	OnTakeAnyDamage.AddDynamic(this, &ADamageableCharacter::OnTakeAnyDamageCallback);
-	if (auto BattleController = Cast<ABattlePlayerController>(GetWorld()->GetFirstPlayerController()))
+	if (auto BattleController = GetWorld()->GetFirstPlayerController<ABattlePlayerController>())
 		BattleController->OnCharacterBeginPlay(this);
 }
 
