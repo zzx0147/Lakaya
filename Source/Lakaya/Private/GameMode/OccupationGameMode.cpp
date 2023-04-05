@@ -6,7 +6,6 @@
 #include "Character/ArmedCharacter.h"
 #include "Character/BattlePlayerController.h"
 #include "Character/CollectorPlayerState.h"
-#include "GameFramework/PlayerStart.h"
 #include "GameMode/OccupationGameState.h"
 
 AOccupationGameMode::AOccupationGameMode()
@@ -72,12 +71,7 @@ void AOccupationGameMode::HandleMatchIsWaitingToStart()
 	}
 	
 	OccupationGameState->SetGameState(EOccupationGameState::StandByToPregressLoading);
-	
-	// TODO
-	UE_LOG(LogTemp, Error, TEXT("HandleMatchIsWaitingToStart"));
-
-	// 게임시작 조건
-	ReadyToStartMatch();
+	UE_LOG(LogTemp, Log, TEXT("HandleMatchIsWaitingToStart"));
 }
 
 bool AOccupationGameMode::ReadyToStartMatch_Implementation()
