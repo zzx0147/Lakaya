@@ -5,30 +5,39 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
-#include "GameMode/IndividualGameState.h"
 #include "GameMode/OccupationGameState.h"
-#include "GameTimeWidget.generated.h"
+#include "TeamScoreWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API UGameTimeWidget : public UUserWidget
+class LAKAYA_API UTeamScoreWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 private:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	
+
+private:
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* GameTimeWidgetText;
+	UTextBlock* ATeamScoreText;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* BTeamScoreText;
+	
+public:
+	UFUNCTION()
+	void SetTeamScoreWidget(EOccupationGameState ChangeGameState);
 
 public:
 	UFUNCTION()
-	void SetGameTimeWidget(EOccupationGameState ChangeGameState);
-
-public:
+	void ReMoveTeamScoreWidget(EOccupationGameState ChangeGameState);
+	
 	UFUNCTION()
-	void OnChangeTime(int32 Min, int32 Sec);
+	void OnChangeATeamScore(uint8 NewScore);
+	
+	UFUNCTION()
+	void OnChangeBTeamScore(uint8 NewScore);
 };

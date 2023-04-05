@@ -1,13 +1,15 @@
-#include "Individual/IndividualObject.h"
+// Fill out your copyright notice in the Description page of Project Settings.
 
-#include <SPIRV-Reflect/SPIRV-Reflect/include/spirv/unified1/spirv.h>
+
+#include "OccupationObject.h"
 
 #include "Character/CollectorPlayerState.h"
-#include "Character/DamageableCharacter.h"
 #include "Character/InteractableCharacter.h"
+#include "Components/CapsuleComponent.h"
+#include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
 
-AIndividualObject::AIndividualObject()
+AOccupationObject::AOccupationObject()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	Tags.Add("Interactable");
@@ -19,36 +21,33 @@ AIndividualObject::AIndividualObject()
 	Cylinder->SetupAttachment(RootComponent);
 
 	Trigger->SetCapsuleSize(50.0f, 100.0f, true);
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Cylinder (TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Cylinder (TEXT("/Game/Dev/KDJ/Antena/SM_Antenna.SM_Antenna"));
 	if (SM_Cylinder.Succeeded())
 		Cylinder->SetStaticMesh(SM_Cylinder.Object);
 	
 	Trigger->SetRelativeLocation(FVector::ZeroVector);
 
-	bIsAvailable = true;
-	
 	bReplicates = true;
 }
 
-void AIndividualObject::BeginPlay()
+void AOccupationObject::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-void AIndividualObject::Tick(float DeltaTime)
+void AOccupationObject::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-void AIndividualObject::OnServerInteractionBegin(const float& Time, APawn* Caller)
+void AOccupationObject::OnServerInteractionBegin(const float& Time, APawn* Caller)
 {
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
 		CastedCaller->InitiateInteractionStart(Time, this, 3.f);
 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionBegin::Caller was not AInteractableCharacter!"));
 }
 
-// TODO : 애니메이션 적용
-void AIndividualObject::OnInteractionStart(APawn* Caller)
+void AOccupationObject::OnInteractionStart(APawn* Caller)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Interaction Start!"));
 
@@ -57,46 +56,29 @@ void AIndividualObject::OnInteractionStart(APawn* Caller)
 		UE_LOG(LogActor, Error, TEXT("Object is Using."));
 		return;
 	}
-		
-	if (!bIsAvailable)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Not Available."));
-		return;
-	}
 	
 	InteractingPawn = Caller;
 
 	InteractingStartTime = UGameplayStatics::GetRealTimeSeconds(this);
 
-	// TODO : 애니메이션 적용
-	// 긴 상호작용 애니메이션 시작하는 지점.
-	
 	// 시작 한 후 4초가 지나면 자동으로 성공.
-	GetWorldTimerManager().SetTimer(InteractionTimerHandle, this, &AIndividualObject::AutomaticInteractionStop, MaxInteractionDuration, false);
+	GetWorldTimerManager().SetTimer(InteractionTimerHandle, this, &AOccupationObject::AutomaticInteractionStop, MaxInteractionDuration, false);
 }
 
-void AIndividualObject::OnLocalInteractionStopBegin(APawn* Caller)
+void AOccupationObject::OnLocalInteractionStopBegin(APawn* Caller)
 {
 }
 
-void AIndividualObject::OnServerInteractionStopBegin(const float& Time, APawn* Caller)
+void AOccupationObject::OnServerInteractionStopBegin(const float& Time, APawn* Caller)
 {
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
 		CastedCaller->InteractionStopNotify(Time, this);
 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionStopBegin::Caller was not AInteractableCharacter!"));
 }
 
-// TODO : 애니메이션 적용
-void AIndividualObject::OnInteractionStop(APawn* Caller)
+void AOccupationObject::OnInteractionStop(APawn* Caller)
 {
-
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Interaction Stop!"));
-
-	if (!bIsAvailable)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Not Available."));
-		return;
-	}
 
 	if (InteractingPawn == nullptr)
 	{
@@ -129,22 +111,43 @@ void AIndividualObject::OnInteractionStop(APawn* Caller)
 	
 	if (InteractionDuration > MaxInteractionDuration)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction success."));
+		
 		ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
-		if (CollectorPlayerState)
+		if (CollectorPlayerState == nullptr)
 		{
-			uint8 CurrentEnergy = CollectorPlayerState->GetEnergy();
-			CollectorPlayerState->GainPoint(CurrentEnergy);
-			CollectorPlayerState->ResetEnergy();
+			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_CollectorPlayerstate is null."));
+			return;
+		}
 
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction success."));
-			UE_LOG(LogTemp, Warning, TEXT("Player Total Point : %d"), CollectorPlayerState->GetPoint());
-			UE_LOG(LogTemp, Warning, TEXT("Player Current Energy Num : %d"), CollectorPlayerState->GetEnergy());
-			bIsAvailable = false;
-			GetWorldTimerManager().SetTimer(AvailableTimerHandle, this, &AIndividualObject::MakeAvailable, 30.0f, false);
+		AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+		if (OccupationGameState == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationGameState is null."));
+			return;
+		}
+		
+		FString PlayerStateString = UEnum::GetValueAsString(CollectorPlayerState->GetPlayerTeamState());
+		if (PlayerStateString.Equals("EPlayerTeamState::None", ESearchCase::IgnoreCase))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Suspected player captured successfully."));
+			return;
+		}
+		else if (PlayerStateString.Equals("EPlayerTeamState::A", ESearchCase::IgnoreCase))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
+			OccupationGameState->SetOccupationObject(EOccupationObjectState::A);
+			return;
+		}
+		else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
+			OccupationGameState->SetOccupationObject(EOccupationObjectState::B);
+			return;
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is Null."));
+			UE_LOG(LogTemp, Warning, TEXT("Error ! Error ! Error !"));
 			return;
 		}
 	}
@@ -154,18 +157,12 @@ void AIndividualObject::OnInteractionStop(APawn* Caller)
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction Failed."));
 		return;
 	}
-
-	// InteractingStartTime = 0.0f;
-	
-	// TODO : 애니메이션 적용
-	// 긴 상호작용 애니메이션 끝나는 지점.
 }
 
-void AIndividualObject::AutomaticInteractionStop()
+void AOccupationObject::AutomaticInteractionStop()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Cylinder AutomaticInteractionStop !"));
 
-	// InteractionStop(MaxInteractionDuration, nullptr);
 	if(InteractingPawn == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AutomaticInteractionStop_InteractingPawn is null."));
@@ -174,9 +171,4 @@ void AIndividualObject::AutomaticInteractionStop()
 	
 	OnInteractionStop(InteractingPawn);
 	InteractingPawn = nullptr;
-}
-
-void AIndividualObject::MakeAvailable()
-{
-	bIsAvailable = true;
 }

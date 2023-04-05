@@ -36,7 +36,7 @@ void UWeaponComponent::ReadyForReplication()
 	if (bIsDataSetupRequested)
 	{
 		SetupData();
-		SetupUI();//리슨 서버 위젯 생성
+		SetupUI(); //리슨 서버 위젯 생성
 	}
 }
 
@@ -47,7 +47,7 @@ void UWeaponComponent::RequestSetupData(const FName& RowName)
 	if (IsReadyForReplication())
 	{
 		SetupData();
-		SetupUI();//리슨 서버 위젯 생성
+		SetupUI(); //리슨 서버 위젯 생성
 	}
 }
 
@@ -86,7 +86,7 @@ void UWeaponComponent::BeginPlay()
 		APlayerController* MyController = Cast<APlayerController>(MyCharacter->GetController());
 		if (MyController != nullptr)
 		{
-			SetupUI();//클라이언트 위젯 생성
+			SetupUI(); //클라이언트 위젯 생성
 		}
 	}
 }
@@ -98,7 +98,7 @@ void UWeaponComponent::SetupData()
 
 	FireSubObject = CreateSingleSubObject<UWeaponFire>(Data->FireClass.LoadSynchronous(), Data->FireRowName);
 	AbilitySubObject = CreateSingleSubObject<UWeaponAbility>(Data->AbilityClass.LoadSynchronous(),
-		Data->AbilityRowName);
+	                                                         Data->AbilityRowName);
 	ReloadSubObject = CreateSingleSubObject<UWeaponReload>(Data->ReloadClass.LoadSynchronous(), Data->ReloadRowName);
 
 	WeaponUpgradeDataTable = Data->UpgradeTable.LoadSynchronous();
@@ -115,7 +115,8 @@ void UWeaponComponent::SetupData()
 
 void UWeaponComponent::SetupUI()
 {
-	UClass* ConsecutiveKiilsWidgetClass = LoadClass<UGamePlayConsecutiveKillsWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_GamePlayConsecutiveKillsWidget.WBP_GamePlayConsecutiveKillsWidget_C"));
+	UClass* ConsecutiveKiilsWidgetClass = LoadClass<UGamePlayConsecutiveKillsWidget>(
+		nullptr, TEXT("/Game/Blueprints/UMG/WBP_GamePlayConsecutiveKillsWidget.WBP_GamePlayConsecutiveKillsWidget_C"));
 
 	if (ConsecutiveKiilsWidgetClass == nullptr)
 	{
@@ -129,7 +130,8 @@ void UWeaponComponent::SetupUI()
 		APlayerController* MyController = Cast<APlayerController>(MyCharacter->GetController());
 		if (MyController != nullptr)
 		{
-			ConsecutiveKillsWidget = CreateWidget<UGamePlayConsecutiveKillsWidget>(MyController, ConsecutiveKiilsWidgetClass);
+			ConsecutiveKillsWidget = CreateWidget<UGamePlayConsecutiveKillsWidget>(
+				MyController, ConsecutiveKiilsWidgetClass);
 
 			if (ConsecutiveKillsWidget != nullptr)
 			{
@@ -148,6 +150,20 @@ void UWeaponComponent::OnRep_UpgradeLevel()
 		ConsecutiveKillsWidget->SetConsecutiveKills(UpgradeLevel);
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Cyan, FString::Printf(TEXT("OnRepUpgradeLevel")));
+}
+
+void UWeaponComponent::OnCharacterDead()
+{
+	FireSubObject->OnCharacterDead();
+	AbilitySubObject->OnCharacterDead();
+	ReloadSubObject->OnCharacterDead();
+}
+
+void UWeaponComponent::OnCharacterRespawn()
+{
+	FireSubObject->OnCharacterRespawn();
+	AbilitySubObject->OnCharacterRespawn();
+	ReloadSubObject->OnCharacterRespawn();
 }
 
 void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

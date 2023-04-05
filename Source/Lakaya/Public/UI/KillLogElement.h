@@ -18,7 +18,7 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
-	inline void SetReturnFunction(std::function<void()> ReturnFunction) { Return = ReturnFunction; }
+	inline void SetReturnFunction(std::function<void(UKillLogElement*)> ReturnFunction) { Return = ReturnFunction; }
 
 	/**
 	 * @brief 킬 로그의 내용을 셋업하고 킬 로그를 활성화합니다.
@@ -26,6 +26,9 @@ public:
 	 * @param Victim 처치당한 캐릭터입니다.
 	 */
 	void SetKillLog(class ADamageableCharacter* Attacker, class ACharacter* Victim);
+
+	// 킬 로그를 즉시 만료시켜 비활성화 합니다.
+	void ExpireInstant();
 
 private:
 	template <class T>
@@ -35,13 +38,13 @@ private:
 		if (Ptr.IsStale()) UE_LOG(LogInit, Error, TEXT("Fail to find %s!"), *WidgetName.ToString());
 	}
 
-	void ShowTimerCallback();
+	void ExpireKillLog();
 
 	TWeakObjectPtr<class UTextBlock> VictimTextBlock;
 	TWeakObjectPtr<UTextBlock> AttackerTextBlock;
 	TWeakObjectPtr<class UImage> WeaponImage;
 	FTimerHandle ShowTimer;
-	std::function<void()> Return;
+	std::function<void(UKillLogElement*)> Return;
 
 	UPROPERTY(EditAnywhere)
 	float ShowingTime;

@@ -18,14 +18,14 @@ void UGamePlayCrosshairWidget::NativeConstruct()
 
 #pragma endregion
 
-	AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
-	if (IndividualGameState == nullptr)
+	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	if (OccupationGameState == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
+		UE_LOG(LogTemp, Warning, TEXT("GamePlayCrossHairWidget_GameMode is null."));
 		return;
 	}
 
-	IndividualGameState->OnChangeGameState.AddUObject(this, &UGamePlayCrosshairWidget::SetGamePlayCrosshairWidget);
+	OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &UGamePlayCrosshairWidget::SetGamePlayCrosshairWidget);
 
 	SetVisibility(ESlateVisibility::Hidden);
 }
@@ -35,9 +35,9 @@ void UGamePlayCrosshairWidget::NativeTick(const FGeometry& MyGeometry, float InD
 	Super::NativeTick(MyGeometry, InDeltaTime);
 }
 
-void UGamePlayCrosshairWidget::SetGamePlayCrosshairWidget(EGameState ChangeGameState)
+void UGamePlayCrosshairWidget::SetGamePlayCrosshairWidget(EOccupationGameState ChangeGameState)
 {
-	if (ChangeGameState == EGameState::Progress)
+	if (ChangeGameState == EOccupationGameState::Progress)
 	{
 		SetVisibility(ESlateVisibility::Visible);
 		return;

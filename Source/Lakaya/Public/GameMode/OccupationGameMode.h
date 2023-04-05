@@ -1,21 +1,24 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
-#include "EngineMinimal.h"
-#include "LakayaDefalutPlayGameMode.h"
-#include "IndividualGameMode.generated.h"
+#include "CoreMinimal.h"
+#include "GameMode/LakayaDefalutPlayGameMode.h"
+#include "OccupationGameMode.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnGameModeInitialized);
 
+/**
+ * 
+ */
 UCLASS()
-class LAKAYA_API AIndividualGameMode : public ALakayaDefalutPlayGameMode
+class LAKAYA_API AOccupationGameMode : public ALakayaDefalutPlayGameMode
 {
 	GENERATED_BODY()
 
 private:
-	AIndividualGameMode();
+	AOccupationGameMode();
 
-	UPROPERTY(EditDefaultsOnly, Category = "GameMode")
-	FString GameModeIdentifier = "Individual";
 	
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
@@ -42,7 +45,7 @@ private:
 	// ReadyToEndMatch (경기 종료 처리)가 true로 반환하거나, EndMath(경기 종료)가 호출되는 경우 경기가 다음 상태로 전환.
 	virtual void HandleMatchHasStarted() override;
 	
- 	// WaitingPostMath (경기 후 대기)
+	// WaitingPostMath (경기 후 대기)
 	// 여기에 들어설 때 HandleLeavingMap()함수 호출
 	// 액터 틱은 여전히 일어나지만, 새로운 플레이어는 참가할 수 없음. 맵 이동이 시작되면 다음 상태로 전환
 	virtual void HandleMatchHasEnded() override;
@@ -61,27 +64,20 @@ private:
 	
 	void OnKillNotifyBinding();
 
-	void RespawnPlayer(AController* Controller);
-
-	void SpawnDropEnergy(AController* DeadPlayer);
+	void RespawnPlayer(AController* KilledController);
 
 public:
 	uint8 PlayerRespawnTime = 3;
 	bool bWaitToStart = false;
-	
-public:
-	UPROPERTY()
-	TSet<APlayerController*> RegisteredPlayers;
 
 private:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;
 
 private:
-	FTimerHandle TimerHandle_SpawnStaticEnergy;
 	FTimerHandle TimerHandle_CheckStartMatch;
 	FTimerHandle TimerHandle_DelayedStart;
-	
+
 public:
 	FOnGameModeInitialized OnGameModeInitialized;
 };

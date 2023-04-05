@@ -19,6 +19,7 @@ protected:
 	virtual void OnFireStartNotify() override;
 	virtual void OnFireStopNotify() override;
 	virtual void OnRep_Character() override;
+	virtual void OnCharacterDead() override;
 
 private:
 	void TraceVisualize();

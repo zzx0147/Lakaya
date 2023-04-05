@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "GameMode/IndividualGameMode.h"
 #include "GameMode/IndividualGameState.h"
+#include "GameMode/OccupationGameState.h"
 #include "LoadingWidget.generated.h"
 
 UCLASS()
@@ -22,7 +23,7 @@ private:
 
 public:
 	UFUNCTION()
-	void ReMoveLoadingWidget(EGameState ChangeGamState);
+	void ReMoveLoadingWidget(EOccupationGameState ChangeGamState);
 	
 public:
 	UFUNCTION()
