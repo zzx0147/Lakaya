@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "GameMode/IndividualGameMode.h"
+#include "UI/GamePlayHealthWidget.h"
 
 ADamageableCharacter::ADamageableCharacter()
 {
@@ -23,6 +24,37 @@ void ADamageableCharacter::BeginPlay()
 	OnTakeAnyDamage.AddDynamic(this, &ADamageableCharacter::OnTakeAnyDamageCallback);
 	if (auto BattleController = Cast<ABattlePlayerController>(GetWorld()->GetFirstPlayerController()))
 		BattleController->OnCharacterBeginPlay(this);
+
+	if (GetController() == nullptr) return;
+
+	if (GetController()->IsLocalController() && HasAuthority())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Server DCharacter Begin Play"));
+	}
+
+	if (GetController()->IsLocalController())
+	{
+		// 스코어보드 위젯
+		UClass* GamePlayHealthWidgetClass = LoadClass<UGamePlayHealthWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget.WBP_GamePlayHealthWidget_C"));
+		if (GamePlayHealthWidgetClass == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GamePlayHealthWidgetClass is null."));
+			return;
+		}
+
+		APlayerController* MyPlayerController = Cast<APlayerController>(GetController());
+
+		if (MyPlayerController == nullptr) return;
+
+		GamePlayHealthWidget = CreateWidget<UGamePlayHealthWidget>(MyPlayerController, GamePlayHealthWidgetClass);
+		if (GamePlayHealthWidget == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GamePlayHealthWidget is null."));
+			return;
+		}
+		GamePlayHealthWidget->AddToViewport();
+		GamePlayHealthWidget->SetVisibility(ESlateVisibility::Visible);
+	}
 }
 
 float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -30,7 +62,11 @@ float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 {
 	auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	Health -= Damage;
-	if (Health > MaximumHealth) Health = MaximumHealth;
+	if (Health > MaximumHealth)
+	{
+		Health = MaximumHealth;
+	}
+	OnRep_Health();
 	if (Health <= 0.f) KillCharacter(EventInstigator, DamageCauser);
 	return Damage;
 }

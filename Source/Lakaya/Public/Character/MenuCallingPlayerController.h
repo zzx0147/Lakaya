@@ -38,7 +38,6 @@ public:
 	void CreateGameTimeWidget();
 	void CreateScoreBoardWidget();
 	void CreateGamePlayCrosshairWidget();
-	void CreateGamePlayHealthWidget();
 	
 private:
 	UPROPERTY(EditAnywhere, Category=Input)
@@ -63,5 +62,4 @@ public:
 	UGameTimeWidget* GameTimeWidget;
 	UGameScoreBoardWidget* GameScoreBoardWidget;
 	UGamePlayCrosshairWidget* GamePlayCrosshairWidget;
-	UGamePlayHealthWidget* GamePlayHealthWidget;
 };

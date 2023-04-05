@@ -73,7 +73,6 @@ void AMenuCallingPlayerController::BeginPlay()
 			CreateGameTimeWidget();
 			CreateScoreBoardWidget();
 			CreateGamePlayCrosshairWidget();
-			CreateGamePlayHealthWidget();
 
 			#pragma endregion 
 		}
@@ -183,28 +182,5 @@ void AMenuCallingPlayerController::CreateGamePlayCrosshairWidget()
 			return;
 		}
 		GamePlayCrosshairWidget->AddToViewport();
-	}
-}
-
-void AMenuCallingPlayerController::CreateGamePlayHealthWidget()
-{
-	if (IsLocalController())
-	{
-		// 스코어보드 위젯
-		UClass* GamePlayHealthWidgetClass  = LoadClass<UGamePlayHealthWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget.WBP_GamePlayHealthWidget_C"));
-		if (GamePlayHealthWidgetClass == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("GamePlayHealthWidgetClass is null."));
-			return;
-		}
-			
-		GamePlayHealthWidget = CreateWidget<UGamePlayHealthWidget>(this, GamePlayHealthWidgetClass );
-		if (GamePlayHealthWidget == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("GamePlayHealthWidget is null."));
-			return;
-		}
-		
-		GamePlayHealthWidget->AddToViewport();
 	}
 }
