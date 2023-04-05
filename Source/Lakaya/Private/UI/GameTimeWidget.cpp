@@ -17,7 +17,6 @@ void UGameTimeWidget::NativeConstruct()
 		return;
 	}
 
-	
 	OnChangeTime(OccupationGameState->GetMin(), OccupationGameState->GetSec());
 	
 	// 바인딩

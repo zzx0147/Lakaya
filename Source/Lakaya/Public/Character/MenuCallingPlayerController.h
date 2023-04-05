@@ -35,6 +35,27 @@ private:
 	void ScoreHandler(const FInputActionValue& Value);
 
 public:
+	template <typename T>
+	T* CreateWidgetHelper(const FString& Path)
+	{
+		UClass* WidgetClass = LoadClass<T>(nullptr, *Path);
+		if (WidgetClass == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s is null"), *Path);
+			return nullptr;
+		}
+
+		T* Widget = CreateWidget<T>(GetWorld(), WidgetClass);
+		if (Widget == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s Widget is null."), *Path);
+			return nullptr;
+		}
+		
+		Widget->AddToViewport();
+		return Widget;
+	}
+	
 	void CreateLoadingWidget();
 	void CreateGameTimeWidget();
 	void CreateScoreBoardWidget();

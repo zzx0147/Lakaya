@@ -68,7 +68,6 @@ void AMenuCallingPlayerController::BeginPlay()
 				return;
 			}
 
-			// 로딩 부분
 			CreateLoadingWidget();
 			CreateGameTimeWidget();
 			CreateScoreBoardWidget();
@@ -102,21 +101,12 @@ void AMenuCallingPlayerController::CreateLoadingWidget()
 	if (IsLocalPlayerController())
 	{
 		// 로딩 위젯
-		UClass* LoadingWidgetClass = LoadClass<ULoadingWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_LoadingWidget.WBP_LoadingWidget_C"));
-		if (LoadingWidgetClass == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("LoadingWidgetClass is null."));
-			return;
-		}
-			
-		LoadingWidget = CreateWidget<ULoadingWidget>(this, LoadingWidgetClass);
+		LoadingWidget = CreateWidgetHelper<ULoadingWidget>(TEXT("/Game/Blueprints/UMG/WBP_LoadingWidget.WBP_LoadingWidget_C"));
 		if (LoadingWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("LoadingWidget is null."));
 			return;
 		}
-	
-		LoadingWidget->AddToViewport();
 	}
 }
 
@@ -124,22 +114,13 @@ void AMenuCallingPlayerController::CreateGameTimeWidget()
 {
 	if (IsLocalPlayerController())
 	{
-		// 로딩 위젯
-		UClass* GameTimeWidgetClass = LoadClass<UGameTimeWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_GameTimeWidget.WBP_GameTimeWidget_C"));
-		if (GameTimeWidgetClass == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("GameTimeWidgetClass is null."));
-			return;
-		}
-			
-		GameTimeWidget = CreateWidget<UGameTimeWidget>(this, GameTimeWidgetClass);
+		// 게임 시간 위젯
+		GameTimeWidget = CreateWidgetHelper<UGameTimeWidget>(TEXT("/Game/Blueprints/UMG/WBP_GameTimeWidget.WBP_GameTimeWidget_C"));
 		if (GameTimeWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("GameTimeWidget is null."));
 			return;
 		}
-	
-		GameTimeWidget->AddToViewport();
 	}
 }
 
@@ -148,20 +129,12 @@ void AMenuCallingPlayerController::CreateScoreBoardWidget()
 	if (IsLocalController())
 	{
 		// 스코어보드 위젯
-		UClass* ScoreBoardWidgetClass  = LoadClass<UGameScoreBoardWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_GameScoreBoardWidget.WBP_GameScoreBoardWidget_C"));
-		if (ScoreBoardWidgetClass == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("ScoreBoardWidgetClass is null."));
-			return;
-		}
-			
-		GameScoreBoardWidget = CreateWidget<UGameScoreBoardWidget>(this, ScoreBoardWidgetClass );
+		GameScoreBoardWidget = CreateWidgetHelper<UGameScoreBoardWidget>(TEXT("/Game/Blueprints/UMG/WBP_GameScoreBoardWidget.WBP_GameScoreBoardWidget_C"));
 		if (GameScoreBoardWidget == nullptr)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ScoreBoardWidget is null."));
+			UE_LOG(LogTemp, Warning, TEXT("GameScoreBoardWidget is null."));
 			return;
 		}
-		GameScoreBoardWidget->AddToViewport();
 	}
 }
 
@@ -169,21 +142,13 @@ void AMenuCallingPlayerController::CreateGamePlayCrosshairWidget()
 {
 	if (IsLocalController())
 	{
-		// 스코어보드 위젯
-		UClass* GamePlayCrosshairWidgetClass  = LoadClass<UGamePlayCrosshairWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_GamePlayCrosshairWidget.WBP_GamePlayCrosshairWidget_C"));
-		if (GamePlayCrosshairWidgetClass == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("GamePlayCrosshairWidgetClass is null."));
-			return;
-		}
-			
-		GamePlayCrosshairWidget = CreateWidget<UGamePlayCrosshairWidget>(this, GamePlayCrosshairWidgetClass );
+		// 크로스헤어 위젯
+		GamePlayCrosshairWidget = CreateWidgetHelper<UGamePlayCrosshairWidget>(TEXT("/Game/Blueprints/UMG/WBP_GamePlayCrosshairWidget.WBP_GamePlayCrosshairWidget_C"));
 		if (GamePlayCrosshairWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("GamePlayCrosshairWidget is null."));
 			return;
 		}
-		GamePlayCrosshairWidget->AddToViewport();
 	}
 }
 
@@ -191,22 +156,13 @@ void AMenuCallingPlayerController::CreateGamePlayHealthWidget()
 {
 	if (IsLocalController())
 	{
-		// 스코어보드 위젯
-		UClass* GamePlayHealthWidgetClass  = LoadClass<UGamePlayHealthWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget.WBP_GamePlayHealthWidget_C"));
-		if (GamePlayHealthWidgetClass == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("GamePlayHealthWidgetClass is null."));
-			return;
-		}
-			
-		GamePlayHealthWidget = CreateWidget<UGamePlayHealthWidget>(this, GamePlayHealthWidgetClass );
+		// 체력바 위젯
+		GamePlayHealthWidget = CreateWidgetHelper<UGamePlayHealthWidget>(TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget.WBP_GamePlayHealthWidget_C"));
 		if (GamePlayHealthWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("GamePlayHealthWidget is null."));
 			return;
 		}
-		
-		GamePlayHealthWidget->AddToViewport();
 	}
 }
 
@@ -214,21 +170,12 @@ void AMenuCallingPlayerController::CreateTeamScoreWidget()
 {
 	if (IsLocalController())
 	{
-		// 스코어보드 위젯
-		UClass* TeamScoreWidgetClass  = LoadClass<UTeamScoreWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_TeamScoreWidget.WBP_TeamScoreWidget_C"));
-		if (TeamScoreWidgetClass == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidgetClass is null."));
-			return;
-		}
-			
-		TeamScoreWidget = CreateWidget<UTeamScoreWidget>(this, TeamScoreWidgetClass );
+		// 팀 스코어 위젯
+		TeamScoreWidget = CreateWidgetHelper<UTeamScoreWidget>(TEXT("/Game/Blueprints/UMG/WBP_TeamScoreWidget.WBP_TeamScoreWidget_C"));
 		if (TeamScoreWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidget is null."));
 			return;
 		}
-		
-		TeamScoreWidget->AddToViewport();
 	}
 }
