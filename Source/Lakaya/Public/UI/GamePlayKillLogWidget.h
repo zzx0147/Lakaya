@@ -18,7 +18,6 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeOnInitialized() override;
 
 public:
 	virtual void UpdateKillLogWidget(class ADamageableCharacter* Character);
@@ -28,10 +27,15 @@ private:
 	void OnKillCharacterNotify(AController* KilledController, AActor* KilledActor, AController* Instigator,
 	                           AActor* Causer);
 
-
+	// 킬 로그 엘리먼트 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UKillLogElement> ElementClass;
+	TSubclassOf<UKillLogElement> KillLogClass;
+
+	// 화면에 표시할 최대 킬 로그 개수를 지정합니다.
+	UPROPERTY(EditAnywhere)
+	uint8 MaxElementCount;
 
 	class UVerticalBox* KillLogBox;
 	SimpleObjectPool<UKillLogElement> ElementPool;
+	uint8 InitialChildCount;
 };
