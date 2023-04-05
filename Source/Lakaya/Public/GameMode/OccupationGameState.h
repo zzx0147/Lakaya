@@ -55,10 +55,7 @@ public:
 
 	UFUNCTION()
 	void SetGameState(EOccupationGameState NewGameState);
-
-	UFUNCTION()
-	void SetMinSec();
-
+	
 	UFUNCTION()
 	void SetOccupationObject(EOccupationObjectState NewObjectState);
 
@@ -76,31 +73,34 @@ public:
 
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationObjectState)
 	EOccupationObjectState CurrentOccupationObjectState = EOccupationObjectState::None;
-
-	UFUNCTION()
-	int32 GetMin() { return Min; }
-
-	UFUNCTION()
-	int32 GetSec() { return Sec; }
-
+	
 	UFUNCTION()
 	uint8 GetATeamScore() { return ATeamScore; }
 
 	UFUNCTION()
 	uint8 GetBTeamScore() { return BTeamScore; }
+
+	/**
+	 * @brief 매치가 시작되었을 때 호출됩니다. 
+	 * @param MatchTime 매치가 몇초동안 진행되는지 나타냅니다.
+	 */
+	void OnMatchStarted(const float& MatchTime);
+
+	// 남은 매칭 시간을 가져옵니다. 아직 매칭시간 정보가 설정되지 않았거나, 시간이 지나간 경우 0을 반환합니다.
+	float GetRemainMatchTime();
+	
 private:
-	UPROPERTY(ReplicatedUsing = OnRep_Min)
-	int32 Min = 3;
-
-	UPROPERTY(ReplicatedUsing = OnRep_Sec)
-	int32 Sec = 0;
-
 	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore)
 	uint8 ATeamScore = 0;
 
 	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore)
 	uint8 BTeamScore = 0;
-	
+
+	UPROPERTY(Replicated)
+	float StartTime;
+
+	UPROPERTY(Replicated)
+	float MatchEndingTime;
 
 private:
 	UFUNCTION()
@@ -108,12 +108,6 @@ private:
 
 	UFUNCTION()
 	void OnRep_GameState();
-
-	UFUNCTION()
-	void OnRep_Min();
-	
-	UFUNCTION()
-	void OnRep_Sec();
 
 	UFUNCTION()
 	void OnRep_OccupationObjectState();

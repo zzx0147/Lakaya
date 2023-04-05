@@ -3,59 +3,38 @@
 
 #include "UI/GameTimeWidget.h"
 
-#include "GameMode/OccupationGameMode.h"
 #include "GameMode/OccupationGameState.h"
 
 void UGameTimeWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-	if (OccupationGameState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GameTimeWidget_GameState is null."));
-		return;
-	}
+	TimeTextFormat = FText::FromString(TEXT("{0}:{1}"));
 
-	OnChangeTime(OccupationGameState->GetMin(), OccupationGameState->GetSec());
-	
-	// 바인딩
-	GameTimeWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("GameTimeWidgetText")));
-	if (GameTimeWidgetText == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GameTimeWidgetText is null."));
-		return;
-	}
-	
-	// TODO : 시간이 바뀔 때마다 위젯 업데이트를 위한 델리게이트 등록
-	OccupationGameState->OnOccupationChangeTime.AddUObject(this, &UGameTimeWidget::OnChangeTime);
+	OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	if (OccupationGameState.IsStale()) UE_LOG(LogTemp, Error, TEXT("GameTimeWidget_GameState is null."));
 	OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &UGameTimeWidget::SetGameTimeWidget);
 
+	// 바인딩
+	GameTimeWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("GameTimeWidgetText")));
+	if (GameTimeWidgetText == nullptr) UE_LOG(LogTemp, Warning, TEXT("GameTimeWidgetText is null."));
+	
 	SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UGameTimeWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-}
 
-void UGameTimeWidget::OnChangeTime(int32 Min, int32 Sec)
-{
-	FString MinuteString = FString::Printf(TEXT("%02d"), Min);
-	FString SecondString = FString::Printf(TEXT("%02d"), Sec);
-	FString TimeString = FString::Printf(TEXT("%s:%s"), *MinuteString, *SecondString);
-	GameTimeWidgetText->SetText(FText::FromString(TimeString));
-	// GameTimeText->SetText(FText::FromString(FString::Printf(TEXT("(%d:%d)"), Min, Sec)));
+	if (OccupationGameState.IsValid())
+	{
+		auto TotalSeconds = FMath::RoundToInt(OccupationGameState->GetRemainMatchTime());
+		GameTimeWidgetText->SetText(FText::Format(TimeTextFormat, TotalSeconds / 60, TotalSeconds % 60));
+	}
+	else UE_LOG(LogTemp, Warning, TEXT("GameState was nullptr"));
 }
 
 void UGameTimeWidget::SetGameTimeWidget(EOccupationGameState ChangeGameState)
 {
-	if (ChangeGameState == EOccupationGameState::Progress)
-	{
-		SetVisibility(ESlateVisibility::Visible);
-		return;
-	}
-	
-	// TODO : 게임 상태 조건
-	// this->RemoveFromParent();
+	if (ChangeGameState == EOccupationGameState::Progress) SetVisibility(ESlateVisibility::Visible);
 }

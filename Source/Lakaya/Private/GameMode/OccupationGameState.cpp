@@ -15,12 +15,13 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 	DOREPLIFETIME(AOccupationGameState, NumPlayers);
 	DOREPLIFETIME(AOccupationGameState, CurrentGameState);
-	DOREPLIFETIME(AOccupationGameState, Min);
-	DOREPLIFETIME(AOccupationGameState, Sec);
-	
+
 	DOREPLIFETIME(AOccupationGameState, CurrentOccupationObjectState);
 	DOREPLIFETIME(AOccupationGameState, ATeamScore);
 	DOREPLIFETIME(AOccupationGameState, BTeamScore);
+
+	DOREPLIFETIME_CONDITION(AOccupationGameState, StartTime, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(AOccupationGameState, MatchEndingTime, COND_InitialOnly);
 }
 
 void AOccupationGameState::SetNumPlayers(int32 NewNumPlayers)
@@ -36,38 +37,8 @@ void AOccupationGameState::SetGameState(EOccupationGameState NewGameState)
 		CurrentGameState = NewGameState;
 		if (CurrentGameState == EOccupationGameState::Progress)
 		{
-			FTimerHandle GameTimerHandle;
-			GetWorldTimerManager().SetTimer(GameTimerHandle, this, &AOccupationGameState::SetMinSec, 1.0f, true);
 			OnRep_GameState();
 		}
-	}
-}
-
-void AOccupationGameState::SetMinSec()
-{
-	if (CurrentGameState == EOccupationGameState::Progress)
-	{
-		// const float DeltaTime = GetWorld()->GetDeltaSeconds();
-		// const float TimeScale = 1.0f;
-		
-		if (Sec <= 0)
-		{
-			if (Min <= 0)
-			{
-				// TODO : 게임종료
-				UE_LOG(LogTemp, Warning, TEXT("게임종료"));
-				return;
-			}
-
-			Min -= 1;
-			Sec = 60;
-			OnRep_Min();
-			OnRep_Sec();
-		}
-
-		// Sec -= TimeScale * DeltaTime;
-		Sec -= 1;
-		OnRep_Sec();
 	}
 }
 
@@ -132,6 +103,18 @@ void AOccupationGameState::SetBTeamScore()
 	}
 }
 
+void AOccupationGameState::OnMatchStarted(const float& MatchTime)
+{
+	StartTime = GetServerWorldTimeSeconds();
+	MatchEndingTime = StartTime + MatchTime;
+}
+
+float AOccupationGameState::GetRemainMatchTime()
+{
+	auto Current = GetServerWorldTimeSeconds();
+	return MatchEndingTime < Current ? 0 : MatchEndingTime - Current;
+}
+
 void AOccupationGameState::OnRep_NumPlayers()
 {
 	OnOccupationChangeJoinedPlayers.Broadcast(NumPlayers, GetMaxPlayers());
@@ -140,16 +123,6 @@ void AOccupationGameState::OnRep_NumPlayers()
 void AOccupationGameState::OnRep_GameState()
 {
 	OnOccupationChangeGameState.Broadcast(CurrentGameState);
-}
-
-void AOccupationGameState::OnRep_Min()
-{
-	OnOccupationChangeTime.Broadcast(Min, Sec);
-}
-
-void AOccupationGameState::OnRep_Sec()
-{
-	OnOccupationChangeTime.Broadcast(Min, Sec);
 }
 
 void AOccupationGameState::OnRep_OccupationObjectState()

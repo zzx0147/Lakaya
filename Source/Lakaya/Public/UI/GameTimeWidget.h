@@ -20,7 +20,7 @@ class LAKAYA_API UGameTimeWidget : public UUserWidget
 private:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* GameTimeWidgetText;
 
@@ -28,7 +28,9 @@ public:
 	UFUNCTION()
 	void SetGameTimeWidget(EOccupationGameState ChangeGameState);
 
-public:
-	UFUNCTION()
-	void OnChangeTime(int32 Min, int32 Sec);
+private:
+	UPROPERTY(EditAnywhere)
+	FText TimeTextFormat;
+
+	TWeakObjectPtr<AOccupationGameState> OccupationGameState;
 };
