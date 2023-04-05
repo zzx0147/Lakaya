@@ -17,6 +17,7 @@ class LAKAYA_API UZoomAbility : public UWeaponAbility
 public:
 	virtual void AbilityStart() override;
 	virtual void AbilityStop() override;
+	virtual void OnCharacterDead() override;
 
 protected:
 	virtual void SetupData(const FName& RowName) override;
@@ -27,4 +28,6 @@ private:
 
 	UPROPERTY(Replicated)
 	TWeakObjectPtr<class UCameraComponent> Camera;
+
+	bool bIsZoomed = false;
 };

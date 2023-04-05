@@ -30,7 +30,17 @@ class LAKAYA_API UWeaponBase : public URemoteCallableSubObject
 public:
 	virtual bool IsNameStableForNetworking() const override { return false; }
 
+	/**
+	 * @brief 무기 기능 구현에 필요한 리소스를 셋업합니다. 이 함수는 서버에서만 호출됩니다.
+	 * @param RowName 데이터테이블 사용 시 사용 가능한 RowName입니다.
+	 */
 	virtual void SetupData(const FName& RowName) { return; }
+
+	// 캐릭터 사망 시 호출됩니다. 이 함수는 모든 인스턴스에서 호출됩니다.
+	virtual void OnCharacterDead() { return; }
+
+	// 캐릭터 부활 시 호출됩니다. 이 함수는 모든 인스턴스에서 호출됩니다.
+	virtual void OnCharacterRespawn() { return; }
 
 protected:
 	inline float GetServerTime() { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
