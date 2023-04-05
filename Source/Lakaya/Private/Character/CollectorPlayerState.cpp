@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Character/CollectorPlayerState.h"
+
+#include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
@@ -83,6 +85,31 @@ const uint8& ACollectorPlayerState::GetMoney() const
 	return Money;
 }
 
+void ACollectorPlayerState::SetPlayerTeamState(EPlayerTeamState TeamState)
+{
+	AOccupationGameMode* GameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState_GameMode is null."));
+		return;
+	}
+	
+	if (GameMode->GetMatchState() == MatchState::WaitingToStart)
+	{
+		if (PlayerTeamState == EPlayerTeamState::None)
+		{
+			PlayerTeamState = TeamState;
+			OnRep_BroadCastMyTeam();
+			return;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("이미 팀이 배정 되었습니다."));
+			return;
+		}
+	}
+}
+
 void ACollectorPlayerState::OnRep_Point()
 {
 }
@@ -95,6 +122,10 @@ void ACollectorPlayerState::OnRep_Energy()
 {
 }
 
+void ACollectorPlayerState::OnRep_BroadCastMyTeam()
+{
+}
+
 void ACollectorPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -102,4 +133,6 @@ void ACollectorPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME(ACollectorPlayerState, Point);
 	DOREPLIFETIME(ACollectorPlayerState, Money);
 	DOREPLIFETIME(ACollectorPlayerState, Energy);
+	
+	DOREPLIFETIME(ACollectorPlayerState, PlayerTeamState);
 }

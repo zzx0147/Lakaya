@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "GameMode/IndividualGameState.h"
+#include "GameMode/OccupationGameState.h"
 #include "GameTimeWidget.generated.h"
 
 /**
@@ -25,7 +26,7 @@ private:
 
 public:
 	UFUNCTION()
-	void SetGameTimeWidget(EGameState ChangeGameState);
+	void SetGameTimeWidget(EOccupationGameState ChangeGameState);
 
 public:
 	UFUNCTION()

@@ -11,9 +11,6 @@
 void AIndividualGameState::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// FTimerHandle GameTimerHandle;
-	// GetWorldTimerManager().SetTimer(GameTimerHandle, this, &AIndividualGameState::SetMinSec, 1.0f, true);
 }
 	
 void AIndividualGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -30,7 +27,7 @@ void AIndividualGameState::OnRep_NumPlayers()
 {
 	// 새로운 값으로 다른 클라이언트들에게 알림
 	UE_LOG(LogTemp, Warning, TEXT("NumPlayers : %d"), NumPlayers);
-	OnChangeJoinedPlayers.Broadcast(NumPlayers, GetMaxPlayers());
+	OnIndividualChangeJoinedPlayers.Broadcast(NumPlayers, GetMaxPlayers());
 }
 
 void AIndividualGameState::SetNumPlayers(int32 NewNumPlayers)
@@ -41,26 +38,26 @@ void AIndividualGameState::SetNumPlayers(int32 NewNumPlayers)
 
 void AIndividualGameState::OnRep_GameState()
 {
-	OnChangeGameState.Broadcast(CurrentGameState);
+	OnIndividualChangeGameState.Broadcast(CurrentGameState);
 }
 
 void AIndividualGameState::OnRep_Min()
 {
-	OnChangeTime.Broadcast(Min, Sec);
+	OnIndividualChangeTime.Broadcast(Min, Sec);
 }
 
 void AIndividualGameState::OnRep_Sec()
 {
-	OnChangeTime.Broadcast(Min, Sec);
+	OnIndividualChangeTime.Broadcast(Min, Sec);
 }
 
-void AIndividualGameState::SetGameState(EGameState NewGameState)
+void AIndividualGameState::SetGameState(EIndividualGameState NewGameState)
 {
 	if (CurrentGameState != NewGameState)
 	{
 		CurrentGameState = NewGameState;
 		OnRep_GameState();
-		if (CurrentGameState == EGameState::Progress)
+		if (CurrentGameState == EIndividualGameState::Progress)
 		{
 			FTimerHandle GameTimerHandle;
 			GetWorldTimerManager().SetTimer(GameTimerHandle, this, &AIndividualGameState::SetMinSec, 1.0f, true);
@@ -70,7 +67,7 @@ void AIndividualGameState::SetGameState(EGameState NewGameState)
 
 void AIndividualGameState::SetMinSec()
 {
-	if (CurrentGameState == EGameState::Progress)
+	if (CurrentGameState == EIndividualGameState::Progress)
 	{
 		const float DeltaTime = GetWorld()->GetDeltaSeconds();
 		const float TimeScale = 1.0f;
@@ -95,16 +92,3 @@ void AIndividualGameState::SetMinSec()
 		OnRep_Sec();
 	}
 }
-
-// void AIndividualGameState::DecreaseGameTime()
-// {
-// 	if (Sec <= 0)
-// 	{
-// 		Min =- 1;
-// 		Sec = 60;
-// 		return;
-// 	}
-// 		
-// 	Sec -= 1.0f;
-// 	UE_LOG(LogTemp, Warning, TEXT("DecreaseGameTime Function."));
-// }

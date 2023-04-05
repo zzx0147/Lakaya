@@ -5,7 +5,6 @@
 #include "Character/InteractableCharacter.h"
 #include "GameFramework/PlayerStart.h"
 #include "Individual/IndividualDropEnergy.h"
-#include "Individual/DropEnergyPool.h"
 #include "EngineUtils.h"
 #include "Blueprint/WidgetTree.h"
 #include "Character/BattlePlayerController.h"
@@ -22,17 +21,17 @@ AIndividualGameMode::AIndividualGameMode()
 		return;
 	}
 
-	//UClass* PlayerPawnClass = PlayerPawnObject.Object->StaticClass();
-	//if (!PlayerPawnClass)
-	//{
-	//	UE_LOG(LogTemp, Error, TEXT("Failed to get generated class from player pawn blueprint."));
-	//	return;
-	//}
-
+	static ConstructorHelpers::FClassFinder<AIndividualGameState> GameStateFinder(TEXT("/Game/Blueprints/GameModes/MyIndividualGameState.MyIndividualGameState_C"));
+	if (!GameStateFinder.Succeeded())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to find gamestate blueprint."));
+		return;
+	}
+	
 	DefaultPawnClass = PlayerPawnObject.Class;
 	PlayerControllerClass = ABattlePlayerController::StaticClass();
 	PlayerStateClass = ACollectorPlayerState::StaticClass();
-	GameStateClass = AIndividualGameState::StaticClass();
+	GameStateClass = GameStateFinder.Class;
 }
 
 void AIndividualGameMode::BeginPlay()
@@ -54,7 +53,7 @@ void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 	// OnPlayerJoined(NewPlayer);
 	
 	UE_LOG(LogTemp, Warning, TEXT("The Player has entered the game."));
-	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
+	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), GetNumPlayers());
 
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("플레이어가 입장했습니다."));
 	
@@ -84,7 +83,7 @@ void AIndividualGameMode::HandleMatchIsWaitingToStart()
 		return;
 	}
 	
-	IndividualGameState->SetGameState(EGameState::StandByToPregressLoading);
+	IndividualGameState->SetGameState(EIndividualGameState::StandByToPregressLoading);
 	
 	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchIsWaitingToStart"));
@@ -109,7 +108,7 @@ bool AIndividualGameMode::ReadyToStartMatch_Implementation()
 		return false;
 	}
 	
-	IndividualGameState->SetGameState(EGameState::Progress);
+	IndividualGameState->SetGameState(EIndividualGameState::Progress);
 	
 	return true;
 }
@@ -178,7 +177,6 @@ void AIndividualGameMode::Logout(AController* Exiting)
 
 void AIndividualGameMode::OnKillNotifyBinding()
 {
-	
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableCharacter::StaticClass(), FoundActors);
 	
