@@ -42,6 +42,32 @@ void AOccupationObject::Tick(float DeltaTime)
 
 void AOccupationObject::OnServerInteractionBegin(const float& Time, APawn* Caller)
 {
+	ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
+	if (CollectorPlayerState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OccupationObject_CollectorPlayerstate is null."));
+		return;
+	}
+	
+	// 소유자 팀에서 상호작용 할경우 막아두기.
+	FString PlayerStateString = UEnum::GetValueAsString(CollectorPlayerState->GetPlayerTeamState());
+	if (PlayerStateString.Equals("EPlayerTeamState::A", ESearchCase::IgnoreCase))
+	{
+		if (ObjectOwner == EObjectOwner::A)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
+			return;
+		}
+	}
+	else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
+	{
+		if (ObjectOwner == EObjectOwner::B)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
+			return;
+		}
+	}
+	
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
 		CastedCaller->InitiateInteractionStart(Time, this, 3.f);
 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionBegin::Caller was not AInteractableCharacter!"));
@@ -58,7 +84,7 @@ void AOccupationObject::OnInteractionStart(APawn* Caller)
 	}
 	
 	InteractingPawn = Caller;
-
+	
 	InteractingStartTime = UGameplayStatics::GetRealTimeSeconds(this);
 
 	// 시작 한 후 4초가 지나면 자동으로 성공.

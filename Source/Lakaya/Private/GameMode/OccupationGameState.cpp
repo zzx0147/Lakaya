@@ -97,7 +97,7 @@ void AOccupationGameState::SetBTeamScore()
 {
 	if (CurrentGameState == EOccupationGameState::Progress)
 	{
-		if (CurrentOccupationObjectState == EOccupationObjectState::B)
+		if (CurrentOccupationObjectState != EOccupationObjectState::None)
 		{
 			BTeamScore += (Standard) * GetBTeamObjectNum();
 			OnRep_BTeamScore();
