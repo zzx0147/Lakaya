@@ -97,7 +97,7 @@ void AMovableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 bool AMovableCharacter::IsOwnedByLocalPlayer() const
 {
-	const auto PlayerController = Cast<APlayerController>(GetOwner());
+	const auto PlayerController = Cast<APlayerController>(GetController());
 	return PlayerController && PlayerController->IsLocalController();
 }
 
