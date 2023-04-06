@@ -9,6 +9,7 @@
 #include "Net/UnrealNetwork.h"
 #include "GameMode/IndividualGameMode.h"
 #include "UI/GamePlayHealthWidget.h"
+#include "Character/CollectorPlayerState.h"
 
 ADamageableCharacter::ADamageableCharacter()
 {
@@ -60,7 +61,32 @@ void ADamageableCharacter::BeginPlay()
 float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
                                        AController* EventInstigator, AActor* DamageCauser)
 {
+	auto MyPlayerState = GetPlayerState();
+	if (MyPlayerState == nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("No Player State"));
+		return 0.0f;
+	}
+	auto CollectorPlayerState = Cast<ACollectorPlayerState>(MyPlayerState);
+	if (CollectorPlayerState == nullptr) 
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("No CollectorPlayer State"));
+		return 0.0f;
+	}
+
+	auto enemyPlayerState = EventInstigator->GetPlayerState<ACollectorPlayerState>();
+	if (enemyPlayerState == nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("No EnemyPlayer State"));
+		return 0.0f;
+	}
+	if (enemyPlayerState->GetPlayerTeamState() == CollectorPlayerState->GetPlayerTeamState())
+	{
+		return 0.0f;
+	}
+
 	auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
 	Health -= Damage;
 	if (Health > MaximumHealth)
 	{
