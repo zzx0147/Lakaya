@@ -4,19 +4,16 @@
 #include "LakayaDefalutPlayGameMode.h"
 #include "IndividualGameMode.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnGameModeInitialized);
+// DECLARE_MULTICAST_DELEGATE(FOnGameModeInitialized);
 
 UCLASS()
 class LAKAYA_API AIndividualGameMode : public ALakayaDefalutPlayGameMode
 {
 	GENERATED_BODY()
 
-private:
+protected:
 	AIndividualGameMode();
 
-	UPROPERTY(EditDefaultsOnly, Category = "GameMode")
-	FString GameModeIdentifier = "Individual";
-	
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
 
@@ -34,7 +31,7 @@ private:
 	virtual void HandleMatchIsWaitingToStart() override;
 	virtual bool ReadyToStartMatch_Implementation() override;
 	// virtual void StartMatch() override;
-	void DelayedStartMatch();
+	virtual void DelayedStartMatch() override;
 	
 	// InProgress (진행중)
 	// 여기에 들어갈 때 HandleMatchHasStarted()함수 호출
@@ -55,31 +52,29 @@ private:
 	// 플레이어가 로그아웃 할 경우 호출
 	virtual void Logout(AController* Exiting) override;
 
-private:
-	UFUNCTION()
-	void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser);
-	
-	void OnKillNotifyBinding();
+protected:
+	virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser) override;
 
-	void RespawnPlayer(AController* Controller);
+	virtual void OnKillNotifyBinding() override;
+
+	virtual void RespawnPlayer(AController* Controller) override;
 
 	void SpawnDropEnergy(AController* DeadPlayer);
 
 public:
-	uint8 PlayerRespawnTime = 3;
-	bool bWaitToStart = false;
+	// uint8 PlayerRespawnTime = 3;
+	// bool bWaitToStart = false;
 	
 public:
-	UPROPERTY()
-	TSet<APlayerController*> RegisteredPlayers;
+	// UPROPERTY()
+	// TSet<APlayerController*> RegisteredPlayers;
 
 private:
-	UPROPERTY()
-	TMap<AController*, FTimerHandle> RespawnTimers;
+	// UPROPERTY()
+	// TMap<AController*, FTimerHandle> RespawnTimers;
 
 private:
 	FTimerHandle TimerHandle_SpawnStaticEnergy;
-	FTimerHandle TimerHandle_CheckStartMatch;
 	FTimerHandle TimerHandle_DelayedStart;
 	
 public:
