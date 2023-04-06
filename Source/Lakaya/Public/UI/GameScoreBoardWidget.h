@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "GameMode/IndividualGameState.h"
+#include "GameMode/OccupationGameState.h"
 #include "GameScoreBoardWidget.generated.h"
 
 class UScoreBoardElement;
@@ -19,7 +20,7 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UFUNCTION()
-	void SetGameScoreBoardWidget(EGameState ChangeGameState);
+	void SetGameScoreBoardWidget(EOccupationGameState ChangeGameState);
 	
 public:
 	TArray<UScoreBoardElement*> ScoreBoardElementArray;//스코어보드 Element를 저장하는 배열

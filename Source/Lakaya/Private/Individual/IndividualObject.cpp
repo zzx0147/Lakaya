@@ -43,7 +43,7 @@ void AIndividualObject::Tick(float DeltaTime)
 void AIndividualObject::OnServerInteractionBegin(const float& Time, APawn* Caller)
 {
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
-		CastedCaller->InitiateInteractionStart(Time, this, 5.f);
+		CastedCaller->InitiateInteractionStart(Time, this, 3.f);
 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionBegin::Caller was not AInteractableCharacter!"));
 }
 

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "GameMode/OccupationGameState.h"
 #include "GamePlayCrossHairWidget.generated.h"
 
 class UImage;
@@ -17,7 +18,7 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UFUNCTION()
-	void SetGamePlayCrosshairWidget(EGameState ChangeGameState);
+	void SetGamePlayCrosshairWidget(EOccupationGameState ChangeGameState);
 private:
 	UImage* CrosshairImage;//크로스헤어를 표기하는 위젯
 };

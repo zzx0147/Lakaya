@@ -7,12 +7,12 @@
 #include "GameFramework/GameState.h"
 #include "IndividualGameState.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnChangeJoinedPlayers, int32, int32)
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeGameState, EGameState)
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnChangeTime, int32, int32)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnIndividualChangeJoinedPlayers, int32, int32)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnIndividualChangeGameState, EIndividualGameState)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnIndividualChangeTime, int32, int32)
 
 UENUM()
-enum class EGameState : uint8
+enum class EIndividualGameState : uint8
 {
 	Menu UMETA(DisplayerName = "Menu"), // 메뉴 선택, 설정 ... 상태
 	StandBy UMETA(DisplayName = "StandBy"), // 다른 플레이어 입장 대기 상태
@@ -40,7 +40,7 @@ public:
 	void SetNumPlayers(int32 NewNumPlayers);
 
 	UFUNCTION()
-	void SetGameState(EGameState NewGameState);
+	void SetGameState(EIndividualGameState NewGameState);
 
 	UFUNCTION()
 	void SetMinSec();
@@ -49,7 +49,7 @@ public:
 	int32 NumPlayers;
 
 	UPROPERTY(ReplicatedUsing = OnRep_GameState)
-	EGameState CurrentGameState = EGameState::Menu;
+	EIndividualGameState CurrentGameState = EIndividualGameState::Menu;
 
 	UFUNCTION()
 	int32 GetMin() {return Min; }
@@ -74,15 +74,12 @@ private:
 	
 	UFUNCTION()
 	void OnRep_Sec();
-	
+
+	UPROPERTY(EditAnywhere)
 	uint8 MaxPlayers = 2;
 
-private:
-	// UFUNCTION()
-	// void DecreaseGameTime();
-	
 public:
-	FOnChangeJoinedPlayers OnChangeJoinedPlayers;
-	FOnChangeGameState OnChangeGameState;
-	FOnChangeTime OnChangeTime;
+	FOnIndividualChangeJoinedPlayers OnIndividualChangeJoinedPlayers;
+	FOnIndividualChangeGameState OnIndividualChangeGameState;
+	FOnIndividualChangeTime OnIndividualChangeTime;
 };
