@@ -15,7 +15,6 @@ class LAKAYA_API AMovableCharacter : public AThirdPersonCharacter
 public:
 	AMovableCharacter();
 
-	virtual void PossessedBy(AController* NewController) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 protected:

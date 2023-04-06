@@ -50,32 +50,10 @@ AMovableCharacter::AMovableCharacter()
 	if (StopFinder.Succeeded()) StopRunningAction = StopFinder.Object;
 }
 
-void AMovableCharacter::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-
-	if (!InputSystem.IsValid())
-		if (auto PlayerController = Cast<APlayerController>(GetController()))
-			if (auto LocalPlayer = PlayerController->GetLocalPlayer())
-			{
-				InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-				if (InputSystem.IsValid()) AddInputContext();
-			}
-}
-
 void AMovableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
 	if (!HasAuthority()) GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
-
-	if (!InputSystem.IsValid())
-		if (auto PlayerController = Cast<APlayerController>(GetController()))
-			if (auto LocalPlayer = PlayerController->GetLocalPlayer())
-			{
-				InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-				if (InputSystem.IsValid()) AddInputContext();
-			}
 }
 
 void AMovableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -93,6 +71,13 @@ void AMovableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		CastedComponent->BindAction(StopRunningAction, ETriggerEvent::Triggered, this,
 		                            &AMovableCharacter::StopRunning);
 	}
+
+	if (auto PlayerController = Cast<APlayerController>(GetController()))
+		if (auto LocalPlayer = PlayerController->GetLocalPlayer())
+		{
+			InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+			if (InputSystem.IsValid()) AddInputContext();
+		}
 }
 
 bool AMovableCharacter::IsOwnedByLocalPlayer() const
