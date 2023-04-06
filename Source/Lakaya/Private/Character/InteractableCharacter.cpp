@@ -48,8 +48,6 @@ void AInteractableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	TraceQueryParams.AddIgnoredActor(this);
-
-	if (InputSystem.IsValid()) InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
 
 void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -86,6 +84,12 @@ void AInteractableCharacter::KillCharacter(AController* EventInstigator, AActor*
 {
 	Super::KillCharacter(EventInstigator, DamageCauser);
 	if (InteractingActor.IsValid()) Cast<IInteractable>(InteractingActor)->OnCharacterDead(this);
+}
+
+void AInteractableCharacter::AddInputContext()
+{
+	Super::AddInputContext();
+	InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
 
 void AInteractableCharacter::InitiateInteractionStart(const float& Time, AActor* Actor, const float& Duration)

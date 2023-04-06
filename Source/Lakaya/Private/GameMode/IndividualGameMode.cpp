@@ -122,18 +122,6 @@ void AIndividualGameMode::HandleMatchHasStarted()
 {
 	// 게임 시작 후, 서버 측 클라에게 UI바인딩.
 	Super::HandleMatchHasStarted();
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	APawn* PlayerPawn = PlayerController->GetPawn();
-	AArmedCharacter* Armed = Cast<AArmedCharacter>(PlayerPawn);
-	if (Armed)
-	{
-		Armed->CallBeginPlay();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to cast pawn to AArmedCharacter"));
-	}
-
 	OnKillNotifyBinding();
 	
 	// TODO

@@ -6,7 +6,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "Character/CharAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AMovableCharacter::AMovableCharacter()
@@ -51,18 +50,32 @@ AMovableCharacter::AMovableCharacter()
 	if (StopFinder.Succeeded()) StopRunningAction = StopFinder.Object;
 }
 
+void AMovableCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (!InputSystem.IsValid())
+		if (auto PlayerController = Cast<APlayerController>(GetController()))
+			if (auto LocalPlayer = PlayerController->GetLocalPlayer())
+			{
+				InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+				if (InputSystem.IsValid()) AddInputContext();
+			}
+}
+
 void AMovableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
 	if (!HasAuthority()) GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
 
-	if (auto PlayerController = Cast<APlayerController>(Controller))
-		if (auto LocalPlayer = PlayerController->GetLocalPlayer())
-		{
-			InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-			if (InputSystem.IsValid()) InputSystem->AddMappingContext(MovementContext, MovementContextPriority);
-		}
+	if (!InputSystem.IsValid())
+		if (auto PlayerController = Cast<APlayerController>(GetController()))
+			if (auto LocalPlayer = PlayerController->GetLocalPlayer())
+			{
+				InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+				if (InputSystem.IsValid()) AddInputContext();
+			}
 }
 
 void AMovableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -88,17 +101,22 @@ bool AMovableCharacter::IsOwnedByLocalPlayer() const
 	return PlayerController && PlayerController->IsLocalController();
 }
 
+void AMovableCharacter::AddInputContext()
+{
+	InputSystem->AddMappingContext(MovementContext, MovementContextPriority);
+}
+
 void AMovableCharacter::RequestRun_Implementation()
 {
 	if (bIsRunning) return;
-		GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
+	GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
 	bIsRunning = true;
 }
 
 void AMovableCharacter::RequestStopRun_Implementation()
 {
 	if (!bIsRunning) return;
-		GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
+	GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
 	bIsRunning = false;
 }
 

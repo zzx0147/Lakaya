@@ -30,6 +30,7 @@ protected:
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 	virtual void KillCharacter(AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void AddInputContext() override;
 
 public:
 	/**

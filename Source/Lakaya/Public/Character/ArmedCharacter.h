@@ -27,10 +27,8 @@ protected:
 	virtual void KillCharacter(AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void RespawnNotify_Implementation() override;
+	virtual void AddInputContext() override;
 
-public:
-	void CallBeginPlay();
-	
 public:
 	/**
 	 * @brief 캐릭터의 첫번째 무기를 설정합니다.
@@ -45,16 +43,6 @@ private:
 	void AbilityStop(const FInputActionValue& Value);
 	void ReloadStart(const FInputActionValue& Value);
 	void ReloadStop(const FInputActionValue& Value);
-
-	inline void AddInputContext()
-	{
-		if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
-	}
-
-	inline void RemoveInputContext()
-	{
-		if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(WeaponControlContext);
-	}
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Context")
 	UInputMappingContext* WeaponControlContext;

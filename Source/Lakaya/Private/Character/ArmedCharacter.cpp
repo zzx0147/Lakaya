@@ -6,11 +6,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "Weapon/WeaponAbility.h"
 #include "Weapon/WeaponClassData.h"
 #include "Weapon/WeaponComponent.h"
 #include "Weapon/WeaponFire.h"
-#include "Weapon/WeaponReload.h"
 #include "Engine/DataTable.h"
 #include "Net/UnrealNetwork.h"
 
@@ -100,7 +98,6 @@ void AArmedCharacter::BeginPlay()
 
 	if (!GetIsReplicated()) UE_LOG(LogTemp, Fatal, TEXT("ArmedCharacter is NOT replicated"));
 	if (HasAuthority()) SetupPrimaryWeapon(TEXT("Test"));
-	AddInputContext();
 }
 
 void AArmedCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
@@ -115,19 +112,20 @@ void AArmedCharacter::KillCharacterNotify_Implementation(AController* EventInsti
 {
 	Super::KillCharacterNotify_Implementation(EventInstigator, DamageCauser);
 	PrimaryWeapon->OnCharacterDead();
-	RemoveInputContext();
+	if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(WeaponControlContext);
 }
 
 void AArmedCharacter::RespawnNotify_Implementation()
 {
 	Super::RespawnNotify_Implementation();
 	PrimaryWeapon->OnCharacterRespawn();
-	AddInputContext();
+	if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
 }
 
-void AArmedCharacter::CallBeginPlay()
+void AArmedCharacter::AddInputContext()
 {
-	BeginPlay();
+	Super::AddInputContext();
+	InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
 }
 
 void AArmedCharacter::FireStart(const FInputActionValue& Value)

@@ -129,18 +129,6 @@ void AOccupationGameMode::HandleMatchHasStarted()
 	// 게임 시작 후, 서버 측 클라에게 UI 바인딩.
 	Super::HandleMatchHasStarted();
 	GetGameState<AOccupationGameState>()->OnMatchStarted(180.f);
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	APawn* PlayerPawn = PlayerController->GetPawn();
-	AArmedCharacter* Armed = Cast<AArmedCharacter>(PlayerPawn);
-	if (Armed)
-	{
-		Armed->CallBeginPlay();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to cast pawn to AArmedCharacter"));
-	}
-
 	OnKillNotifyBinding();
 	
 	// TODO
