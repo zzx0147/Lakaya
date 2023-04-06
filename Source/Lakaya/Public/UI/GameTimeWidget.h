@@ -17,6 +17,9 @@ class LAKAYA_API UGameTimeWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+public:
+	UGameTimeWidget(const FObjectInitializer& ObjectInitializer);
+
 private:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;

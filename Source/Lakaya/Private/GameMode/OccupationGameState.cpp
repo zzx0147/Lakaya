@@ -20,8 +20,8 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(AOccupationGameState, ATeamScore);
 	DOREPLIFETIME(AOccupationGameState, BTeamScore);
 
-	DOREPLIFETIME_CONDITION(AOccupationGameState, StartTime, COND_InitialOnly);
-	DOREPLIFETIME_CONDITION(AOccupationGameState, MatchEndingTime, COND_InitialOnly);
+	DOREPLIFETIME(AOccupationGameState, StartTime);
+	DOREPLIFETIME(AOccupationGameState, MatchEndingTime);
 }
 
 void AOccupationGameState::SetNumPlayers(int32 NewNumPlayers)
@@ -52,19 +52,21 @@ void AOccupationGameState::SetOccupationObject(EOccupationObjectState NewObjectS
 			// TODO : 점수 올려 줘야 함
 			if (GetWorldTimerManager().IsTimerActive(TimerHandle_BteamScoreIncrease))
 			{
-				GetWorldTimerManager().ClearTimer(TimerHandle_BteamScoreIncrease);	
+				GetWorldTimerManager().ClearTimer(TimerHandle_BteamScoreIncrease);
 			}
-			
-			GetWorldTimerManager().SetTimer(TimerHandle_AteamScoreIncrease, this, &AOccupationGameState::SetATeamScore, 1.0f, true);
+
+			GetWorldTimerManager().SetTimer(TimerHandle_AteamScoreIncrease, this, &AOccupationGameState::SetATeamScore,
+			                                1.0f, true);
 		}
 		else if (CurrentOccupationObjectState == EOccupationObjectState::B)
 		{
 			if (GetWorldTimerManager().IsTimerActive(TimerHandle_AteamScoreIncrease))
 			{
-				GetWorldTimerManager().ClearTimer(TimerHandle_AteamScoreIncrease);	
+				GetWorldTimerManager().ClearTimer(TimerHandle_AteamScoreIncrease);
 			}
-			
-			GetWorldTimerManager().SetTimer(TimerHandle_BteamScoreIncrease, this, &AOccupationGameState::SetBTeamScore, 1.0f, true);
+
+			GetWorldTimerManager().SetTimer(TimerHandle_BteamScoreIncrease, this, &AOccupationGameState::SetBTeamScore,
+			                                1.0f, true);
 		}
 
 		OnRep_OccupationObjectState();
