@@ -36,8 +36,8 @@ public:
 	void ReMoveTeamScoreWidget(EOccupationGameState ChangeGameState);
 	
 	UFUNCTION()
-	void OnChangeATeamScore(uint8 NewScore);
+	void OnChangeATeamScore(float NewScore);
 	
 	UFUNCTION()
-	void OnChangeBTeamScore(uint8 NewScore);
+	void OnChangeBTeamScore(float NewScore);
 };

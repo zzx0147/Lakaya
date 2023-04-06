@@ -136,13 +136,25 @@ void AOccupationObject::OnInteractionStop(APawn* Caller)
 		else if (PlayerStateString.Equals("EPlayerTeamState::A", ESearchCase::IgnoreCase))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
+			
 			OccupationGameState->SetOccupationObject(EOccupationObjectState::A);
+			if (ObjectOwner == EObjectOwner::B)
+				OccupationGameState->SubBTeamObjectNum();
+			
+			ObjectOwner = EObjectOwner::A;
+			OccupationGameState->AddATeamObjectNum();
 			return;
 		}
 		else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
+
 			OccupationGameState->SetOccupationObject(EOccupationObjectState::B);
+			if (ObjectOwner == EObjectOwner::A)
+				OccupationGameState->SubATeamObjectNum();
+			
+			ObjectOwner = EObjectOwner::B;
+			OccupationGameState->AddBTeamObjectNum();
 			return;
 		}
 		else

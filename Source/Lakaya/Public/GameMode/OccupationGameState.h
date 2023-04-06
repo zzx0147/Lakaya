@@ -11,8 +11,10 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeJoinedPlayers, int32, in
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeGameState, EOccupationGameState)
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeTime, int32, int32)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeObjectcState, EOccupationObjectState)
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamScore, uint8);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamScore, uint8);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamScore, float);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamScore, float);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamObjectNum, uint8);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamObjectNum, uint8);
 
 UENUM()
 enum class EOccupationGameState : uint8
@@ -67,6 +69,18 @@ public:
 
 	UFUNCTION()
 	void SetBTeamScore();
+
+	UFUNCTION()
+	void AddATeamObjectNum();
+
+	UFUNCTION()
+	void AddBTeamObjectNum();
+
+	UFUNCTION()
+	void SubATeamObjectNum();
+
+	UFUNCTION()
+	void SubBTeamObjectNum();
 	
 	UPROPERTY(ReplicatedUsing = OnRep_NumPlayers)
 	int32 NumPlayers;
@@ -84,10 +98,17 @@ public:
 	int32 GetSec() { return Sec; }
 
 	UFUNCTION()
-	uint8 GetATeamScore() { return ATeamScore; }
+	float GetATeamScore() { return ATeamScore; }
 
 	UFUNCTION()
-	uint8 GetBTeamScore() { return BTeamScore; }
+	float GetBTeamScore() { return BTeamScore; }
+
+	UFUNCTION()
+	float GetATeamObjectNum() { return ATeamObjectNum; }
+
+	UFUNCTION()
+	float GetBTeamObjectNum() { return BTeamObjectNum; }
+	
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_Min)
 	int32 Min = 3;
@@ -96,12 +117,19 @@ private:
 	int32 Sec = 0;
 
 	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore)
-	uint8 ATeamScore = 0;
+	float ATeamScore = 0;
 
 	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore)
-	uint8 BTeamScore = 0;
-	
+	float BTeamScore = 0;
 
+	float Standard = 0.2f;
+
+	UPROPERTY(ReplicatedUsing = OnRep_ATeamObjectNum)
+	uint8 ATeamObjectNum = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_BTeamObjectNum)
+	uint8 BTeamObjectNum = 0;
+	
 private:
 	UFUNCTION()
 	void OnRep_NumPlayers();
@@ -123,6 +151,12 @@ private:
 
 	UFUNCTION()
 	void OnRep_BTeamScore();
+
+	UFUNCTION()
+	void OnRep_ATeamObjectNum();
+
+	UFUNCTION()
+	void OnRep_BTeamObjectNum();
 	
 	UPROPERTY(EditAnywhere)
 	uint8 MaxPlayers = 2;
@@ -134,7 +168,9 @@ public:
 	FOnOccupationChangeObjectcState OnOccupationChangeObjectcState;
 	FOnOccupationChangeATeamScore OnOccupationChangeATeamScore;
 	FOnOccupationChangeBTeamScore OnOccupationChangeBTeamScore;
-
+	FOnOccupationChangeATeamObjectNum OnOccupationChangeATeamObjectNum;
+	FOnOccupationChangeBTeamObjectNum OnOccupationChangeBTeamObjectNum;
+	
 private:
 	FTimerHandle TimerHandle_AteamScoreIncrease;
 	FTimerHandle TimerHandle_BteamScoreIncrease;

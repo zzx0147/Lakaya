@@ -135,7 +135,6 @@ void ALakayaDefalutPlayGameMode::OnKilledCharacter(AController* VictimController
 
 void ALakayaDefalutPlayGameMode::OnKillNotifyBinding()
 {
-	
 }
 
 void ALakayaDefalutPlayGameMode::RespawnPlayer(AController* KilledController)
@@ -168,13 +167,6 @@ void ALakayaDefalutPlayGameMode::RespawnPlayer(AController* KilledController)
 		return;
 	}
 
-	// ACollectorPlayerState* KilledPlayerState = Cast<ACollectorPlayerState>(KilledController->GetCharacter()->GetController()->PlayerState);
-	// if (KilledController == nullptr)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("KilledPlayerState is null."));
-	// 	return;
-	// }
-
 	ADamageableCharacter* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
 	if (KilledDamageableCharacter == nullptr)
 	{
@@ -182,7 +174,6 @@ void ALakayaDefalutPlayGameMode::RespawnPlayer(AController* KilledController)
 		return;
 	}
 	
-	// KilledPlayerState->ResetEnergy();
 	KilledDamageableCharacter->FullHealth();
 	KilledDamageableCharacter->Respawn();
 }
