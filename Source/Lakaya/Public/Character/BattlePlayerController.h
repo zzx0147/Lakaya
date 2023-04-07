@@ -20,7 +20,6 @@ public:
 	virtual void OnPossessedPawnChangedCallback(APawn* OldPawn, APawn* NewPawn) override;
 
 	virtual void OnCharacterBeginPlay(ACharacter* ArgCharacter);
-
 private:
 	void FireStart(const FInputActionValue& Value);
 	void FireStop(const FInputActionValue& Value);

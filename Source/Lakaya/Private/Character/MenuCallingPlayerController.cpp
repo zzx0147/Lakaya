@@ -68,7 +68,7 @@ void AMenuCallingPlayerController::BeginPlay()
 				UE_LOG(LogTemp, Warning, TEXT("GetGameState is null."));
 				return;
 			}
-
+			
 			CreateLoadingWidget();
 			CreateGameTimeWidget();
 			// CreateScoreBoardWidget();
