@@ -4,6 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "NavigationSystem.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISenseConfig_Sight.h"
+#include "Character/InteractableCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BlackboardData.h"
 #include "AiCharacterController.generated.h"
 
 /**
@@ -17,4 +24,7 @@ class LAKAYA_API AAiCharacterController : public AAIController
 public:
 	AAiCharacterController();
 
+	UFUNCTION(BlueprintCallable)
+	void AiMove(FVector TargetLocation);
+	
 };
