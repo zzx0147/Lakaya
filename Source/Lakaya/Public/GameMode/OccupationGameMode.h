@@ -39,6 +39,9 @@ private:
 	virtual void RespawnPlayer(AController* KilledController) override;
 
 private:
+	float GamePlayTime = 10.0f;
+	
+private:
 	FTimerHandle TimerHandle_CheckStartMatch;
 	FTimerHandle TimerHandle_DelayedStart;
 

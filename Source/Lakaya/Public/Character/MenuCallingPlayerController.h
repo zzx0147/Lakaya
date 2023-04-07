@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerController.h"
 #include "UI/GamePlayCrosshairWidget.h"
 #include "UI/GamePlayHealthWidget.h"
+#include "UI/GameResultWidget.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
@@ -60,8 +61,8 @@ public:
 	void CreateGameTimeWidget();
 	void CreateScoreBoardWidget();
 	void CreateGamePlayCrosshairWidget();
-
 	void CreateTeamScoreWidget();
+	void CreateGameResultWidget();
 	
 private:
 	UPROPERTY(EditAnywhere, Category=Input)
@@ -87,4 +88,5 @@ public:
 	UGameScoreBoardWidget* GameScoreBoardWidget;
 	UGamePlayCrosshairWidget* GamePlayCrosshairWidget;
 	UTeamScoreWidget* TeamScoreWidget;
+	UGameResultWidget* GameResultWidget;
 };

@@ -119,7 +119,7 @@ void AOccupationGameMode::DelayedStartMatch()
 void AOccupationGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-	GetGameState<AOccupationGameState>()->OnMatchStarted(180.f);
+	GetGameState<AOccupationGameState>()->OnMatchStarted(GamePlayTime);
 	OnKillNotifyBinding();
 
 	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
@@ -252,6 +252,26 @@ void AOccupationGameMode::HandleMatchHasStarted()
 void AOccupationGameMode::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
+
+	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	if (OccupationGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_OccupationGameState is null."));
+		return;
+	}
+
+	OccupationGameState->SetGameState(EOccupationGameState::Finish);
+	
+	if (OccupationGameState->GetATeamScore() > OccupationGameState->GetBTeamScore())
+	{
+		OccupationGameState->SetOccupationWinner(EOccupationWinner::A);
+	}
+	else
+	{
+		OccupationGameState->SetOccupationWinner(EOccupationWinner::B);
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("게임이 종료되었습니다."));
 }
 
 void AOccupationGameMode::HandleLeavingMap()

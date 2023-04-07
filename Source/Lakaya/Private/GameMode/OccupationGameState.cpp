@@ -6,6 +6,15 @@
 void AOccupationGameState::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this, &AOccupationGameState::EndTimeCheck, 1.0f, true);
+}
+
+void AOccupationGameState::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	
 }
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -24,6 +33,8 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 	DOREPLIFETIME(AOccupationGameState, StartTime);
 	DOREPLIFETIME(AOccupationGameState, MatchEndingTime);
+
+	DOREPLIFETIME(AOccupationGameState, CurrentOccupationWinner);
 }
 
 void AOccupationGameState::SetNumPlayers(int32 NewNumPlayers)
@@ -84,11 +95,20 @@ void AOccupationGameState::SetOccupationObject(EOccupationObjectState NewObjectS
 	OnRep_OccupationObjectState();
 }
 
+void AOccupationGameState::SetOccupationWinner(EOccupationWinner NewWinner)
+{
+	if (CurrentGameState == EOccupationGameState::Finish)
+	{
+		CurrentOccupationWinner = NewWinner;
+		OnRep_OccupationWinner();
+	}
+}
+
 void AOccupationGameState::SetATeamScore()
 {
 	if (CurrentGameState == EOccupationGameState::Progress)
 	{
-		if (CurrentOccupationObjectState != EOccupationObjectState::None)
+		if (CurrentOccupationObjectState != EOccupationObjectState::None && GetATeamScore() <= MaxScore)
 		{
 			ATeamScore += (Standard) * GetATeamObjectNum();
 			OnRep_ATeamScore();
@@ -100,7 +120,7 @@ void AOccupationGameState::SetBTeamScore()
 {
 	if (CurrentGameState == EOccupationGameState::Progress)
 	{
-		if (CurrentOccupationObjectState != EOccupationObjectState::None)
+		if (CurrentOccupationObjectState != EOccupationObjectState::None && GetBTeamScore() <= MaxScore)
 		{
 			BTeamScore += (Standard) * GetBTeamObjectNum();
 			OnRep_BTeamScore();
@@ -150,6 +170,24 @@ float AOccupationGameState::GetRemainMatchTime()
 	return MatchEndingTime < Current ? 0 : MatchEndingTime - Current;
 }
 
+void AOccupationGameState::EndTimeCheck()
+{
+	if ((GetRemainMatchTime() <= 0 || (GetATeamScore() >= MaxScore || GetBTeamScore() >= MaxScore)) && CurrentGameState == EOccupationGameState::Progress)
+	{
+		GetWorldTimerManager().ClearTimer(TimerHandle_GameTimeCheck);
+
+		// UE_LOG(LogTemp, Warning, TEXT("게임이 종료 되었습니다."));
+		auto GameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
+		if (GameMode == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
+			return;
+		}
+		
+		GameMode->EndMatch();
+	}
+}
+
 void AOccupationGameState::OnRep_NumPlayers()
 {
 	OnOccupationChangeJoinedPlayers.Broadcast(NumPlayers, GetMaxPlayers());
@@ -183,4 +221,9 @@ void AOccupationGameState::OnRep_ATeamObjectNum()
 void AOccupationGameState::OnRep_BTeamObjectNum()
 {
 	OnOccupationChangeBTeamObjectNum.Broadcast(BTeamObjectNum);
+}
+
+void AOccupationGameState::OnRep_OccupationWinner()
+{
+	OnOccupationChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
 }
