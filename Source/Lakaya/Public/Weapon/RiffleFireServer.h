@@ -18,6 +18,7 @@ protected:
 	virtual void SetupData(const FName& RowName) override;
 	virtual void OnFireStart() override;
 	virtual void OnFireStop() override;
+	virtual void OnCharacterDead() override;
 
 private:
 	UFUNCTION(Client, Reliable)

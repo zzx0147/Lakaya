@@ -107,7 +107,7 @@ void UGunComponent::UpgradeWeapon()
 void UGunComponent::UpgradeInitialize()
 {
 	Super::UpgradeInitialize();
-	MagazineCapacity = OriginMagazineCapacity;
+	RemainBullets = MagazineCapacity = OriginMagazineCapacity;
 	if (BulletWidget != nullptr)
 		BulletWidget->OnChangeMagazineCapacity(MagazineCapacity);
 

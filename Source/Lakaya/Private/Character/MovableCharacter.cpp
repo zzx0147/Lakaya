@@ -3,139 +3,67 @@
 
 #include "Character/MovableCharacter.h"
 
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
-#include "InputMappingContext.h"
-#include "Character/CharAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/GameStateBase.h"
+#include "Net/UnrealNetwork.h"
 
 AMovableCharacter::AMovableCharacter()
 {
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
-	RunMultiplier = 1.3;
-
-	// In a dedicated server, the following logic is not necessary.
-	if (IsRunningDedicatedServer()) return;
-
-	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
-		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_CharacterControl'"));
-
-	static const ConstructorHelpers::FObjectFinder<UInputAction> MoveFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Move'"));
-
-	static const ConstructorHelpers::FObjectFinder<UInputAction> LookFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Look'"));
-
-	static const ConstructorHelpers::FObjectFinder<UInputAction> JumpFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Jump'"));
-
-	static const ConstructorHelpers::FObjectFinder<UInputAction> CrouchFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Crouch'"));
-
-	static const ConstructorHelpers::FObjectFinder<UInputAction> UnCrouchFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_UnCrouch'"));
-
-	static const ConstructorHelpers::FObjectFinder<UInputAction> RunFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Run'"));
-
-	static const ConstructorHelpers::FObjectFinder<UInputAction> StopFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_StopRunning'"));
-
-	if (ContextFinder.Succeeded()) MovementContext = ContextFinder.Object;
-	if (MoveFinder.Succeeded()) MoveAction = MoveFinder.Object;
-	if (LookFinder.Succeeded()) LookAction = LookFinder.Object;
-	if (JumpFinder.Succeeded()) JumpAction = JumpFinder.Object;
-	if (CrouchFinder.Succeeded()) CrouchAction = CrouchFinder.Object;
-	if (UnCrouchFinder.Succeeded()) UnCrouchAction = UnCrouchFinder.Object;
-	if (RunFinder.Succeeded()) RunAction = RunFinder.Object;
-	if (StopFinder.Succeeded()) StopRunningAction = StopFinder.Object;
+	RunMultiplier = 1.3f;
 }
 
-void AMovableCharacter::BeginPlay()
+void AMovableCharacter::Crouch(bool bClientSimulation)
 {
-	Super::BeginPlay();
-
-	if (!HasAuthority()) GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
-
-	if (auto PlayerController = Cast<APlayerController>(Controller))
-		if (auto LocalPlayer = PlayerController->GetLocalPlayer())
-		{
-			InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-			if (InputSystem.IsValid()) InputSystem->AddMappingContext(MovementContext, MovementContextPriority);
-		}
+	//TODO: 달리고 있던 경우 앉기가 아닌 슬라이딩이 이뤄지도록 구현합니다.
+	Super::Crouch(bClientSimulation);
 }
 
-void AMovableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AMovableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	if (const auto CastedComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
-	{
-		CastedComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMovableCharacter::Move);
-		CastedComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMovableCharacter::Look);
-		CastedComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-		CastedComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AMovableCharacter::Crouching);
-		CastedComponent->BindAction(UnCrouchAction, ETriggerEvent::Triggered, this, &AMovableCharacter::UnCrouching);
-		CastedComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AMovableCharacter::Run);
-		CastedComponent->BindAction(StopRunningAction, ETriggerEvent::Triggered, this,
-		                            &AMovableCharacter::StopRunning);
-	}
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(AMovableCharacter, bIsRunning, COND_SkipOwner);
 }
 
 bool AMovableCharacter::IsOwnedByLocalPlayer() const
 {
-	const auto PlayerController = Cast<APlayerController>(GetOwner());
+	const auto PlayerController = Cast<APlayerController>(GetController());
 	return PlayerController && PlayerController->IsLocalController();
 }
 
-void AMovableCharacter::RequestRun_Implementation()
+void AMovableCharacter::Run()
 {
-	if (bIsRunning) return;
-		GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
 	bIsRunning = true;
+	GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
+	RequestSetRunState(bIsRunning, GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
 }
 
-void AMovableCharacter::RequestStopRun_Implementation()
+void AMovableCharacter::StopRun()
 {
-	if (!bIsRunning) return;
-		GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
 	bIsRunning = false;
+	GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
+	RequestSetRunState(bIsRunning, GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
 }
 
-void AMovableCharacter::Move(const FInputActionValue& Value)
+bool AMovableCharacter::RequestSetRunState_Validate(bool IsRunning, const float& Time)
 {
-	const auto Vector = Value.Get<FVector2D>();
-	const FRotator YawRotator(0, Controller->GetControlRotation().Yaw, 0);
-	const FRotationMatrix Matrix(YawRotator);
-
-	AddMovementInput(Matrix.GetUnitAxis(EAxis::X), Vector.Y);
-	AddMovementInput(Matrix.GetUnitAxis(EAxis::Y), Vector.X);
+	// Time값이 조작되었는지 여부를 검사합니다. 0.05f는 서버시간의 허용오차를 의미합니다.
+	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds() + 0.05f >= Time;
 }
 
-void AMovableCharacter::Look(const FInputActionValue& Value)
+void AMovableCharacter::RequestSetRunState_Implementation(bool IsRunning, const float& Time)
 {
-	const auto Vector = Value.Get<FVector2D>();
-	AddControllerYawInput(Vector.X);
-	AddControllerPitchInput(Vector.Y);
+	// 순서가 꼬인 패킷이거나 변경되는 것이 없는 경우 스킵합니다.
+	if (RecentRunEventTime > Time || bIsRunning == IsRunning) return;
+
+	RecentRunEventTime = Time;
+	bIsRunning = IsRunning;
+	if (bIsRunning) GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
+	else GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
 }
 
-void AMovableCharacter::Crouching(const FInputActionValue& Value)
+void AMovableCharacter::OnRep_IsRunning()
 {
-	Crouch();
-}
-
-void AMovableCharacter::UnCrouching(const FInputActionValue& Value)
-{
-	UnCrouch();
-}
-
-void AMovableCharacter::Run(const FInputActionValue& Value)
-{
-	RequestRun();
-}
-
-void AMovableCharacter::StopRunning(const FInputActionValue& Value)
-{
-	//TODO: RPC 함수가 조금 운나쁘게 호출되는 경우 쉬프트를 떼더라도 달리기가 멈추지 않는 문제가 발생합니다.
-	RequestStopRun();
+	if (bIsRunning) GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
+	else GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
 }

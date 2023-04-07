@@ -14,14 +14,19 @@ void UKillLogElement::SetKillLog(ADamageableCharacter* Attacker, ACharacter* Vic
 	AttackerTextBlock->SetText(FText::FromString(Attacker->GetPlayerState()->GetPlayerName()));
 	VictimTextBlock->SetText(FText::FromString(Victim->GetPlayerState()->GetPlayerName()));
 	SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	GetWorld()->GetTimerManager().SetTimer(ShowTimer, this, &UKillLogElement::ShowTimerCallback, ShowingTime);
+	GetWorld()->GetTimerManager().SetTimer(ShowTimer, this, &UKillLogElement::ExpireKillLog, ShowingTime);
 }
 
-void UKillLogElement::ShowTimerCallback()
+void UKillLogElement::ExpireInstant()
+{
+	GetWorld()->GetTimerManager().ClearTimer(ShowTimer);
+	ExpireKillLog();
+}
+
+void UKillLogElement::ExpireKillLog()
 {
 	SetVisibility(ESlateVisibility::Collapsed);
-	RemoveFromParent();
-	Return();
+	Return(this);
 }
 
 void UKillLogElement::NativeConstruct()

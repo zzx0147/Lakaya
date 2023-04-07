@@ -10,17 +10,21 @@
 
 void UGamePlayKillLogWidget::UpdateKillLogWidget(ADamageableCharacter* Character)
 {
+	static uint8 UpdateCount = 0;
+	UE_LOG(LogTemp, Warning, TEXT("Update Kiil Log! : %d"), UpdateCount++);
 	if (Character) Character->OnKillCharacterNotify.AddUObject(this, &UGamePlayKillLogWidget::OnKillCharacterNotify);
 	else UE_LOG(LogInit, Error, TEXT("SetupKillLogWidget::Character was nullptr!"));
 }
 
 UGamePlayKillLogWidget::UGamePlayKillLogWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	MaxElementCount = 3;
+
 	static const ConstructorHelpers::FClassFinder<UKillLogElement> ElementFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_KillLogElement"));
 
-	ElementClass = ElementFinder.Class;
-	if (!ElementClass) UE_LOG(LogInit, Error, TEXT("Fail to find ElementClass!"));
+	KillLogClass = ElementFinder.Class;
+	if (!KillLogClass) UE_LOG(LogInit, Error, TEXT("Fail to find ElementClass!"));
 }
 
 void UGamePlayKillLogWidget::NativeConstruct()
@@ -28,16 +32,18 @@ void UGamePlayKillLogWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	KillLogBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("KillLog_Pan")));
-	if (!KillLogBox) UE_LOG(LogInit, Error, TEXT("Fail to find KillLog_Pan!"));
-}
+	if (!KillLogBox) UE_LOG(LogInit, Fatal, TEXT("Fail to find KillLog_Pan!"));
 
-void UGamePlayKillLogWidget::NativeOnInitialized()
-{
-	Super::NativeOnInitialized();
-	ElementPool.SetupObjectPool(3, [this]
+	InitialChildCount = KillLogBox->GetChildrenCount();
+
+	ElementPool.SetupObjectPool(MaxElementCount, [this]
 	{
-		auto Result = NewObject<UKillLogElement>(this, ElementClass);
-		Result->SetReturnFunction([this,Result] { ElementPool.ReturnObject(Result); });
+		auto Result = NewObject<UKillLogElement>(this, KillLogClass);
+		Result->SetReturnFunction([this](UKillLogElement* Element)
+		{
+			ElementPool.ReturnObject(Element);
+			KillLogBox->RemoveChild(Element);
+		});
 		return Result;
 	});
 }
@@ -45,6 +51,16 @@ void UGamePlayKillLogWidget::NativeOnInitialized()
 void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController, AActor* KilledActor,
                                                    AController* Instigator, AActor* Causer)
 {
+	if (KillLogBox->GetChildrenCount() >= InitialChildCount + MaxElementCount)
+	{
+		if (auto FirstKillLog = Cast<UKillLogElement>(KillLogBox->GetChildAt(InitialChildCount)))
+		{
+			FirstKillLog->SetKillLog(Cast<ADamageableCharacter>(Causer), Cast<ACharacter>(KilledActor));
+			KillLogBox->ShiftChild(InitialChildCount + MaxElementCount - 1, FirstKillLog);
+		}
+		else UE_LOG(LogTemp, Error, TEXT("Fail to get FirstKillLog on OnKillCharacterNotify!"));
+		return;
+	}
 	auto Element = ElementPool.GetObject();
 	KillLogBox->AddChild(Element);
 	Element->SetKillLog(Cast<ADamageableCharacter>(Causer), Cast<ACharacter>(KilledActor));

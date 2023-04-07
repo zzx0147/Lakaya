@@ -17,6 +17,7 @@ class LAKAYA_API URiffleFireOwner : public URiffleFireClient
 public:
 	virtual void FireStart() override;
 	virtual void FireStop() override;
+	virtual void OnCharacterDead() override;
 
 private:
 	FTimerHandle FireTimer;

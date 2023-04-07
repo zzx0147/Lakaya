@@ -15,6 +15,9 @@ class LAKAYA_API UGunComponent : public UWeaponComponent
 public:
 	UGunComponent();
 	
+	virtual void UpgradeWeapon() override;
+	virtual void UpgradeInitialize() override;
+	
 	inline const uint16& GetMagazineCapacity() const { return MagazineCapacity; }
 	inline const uint16& GetRemainBullets() const { return RemainBullets; }
 
@@ -35,9 +38,6 @@ public:
 	 * @return 차감이 처리되었는지 여부입니다.
 	 */
 	virtual bool CostBullets(const uint16& Bullets);
-
-	virtual void UpgradeWeapon() override;
-	virtual void UpgradeInitialize() override;
 
 protected:
 	virtual void SetupData() override;

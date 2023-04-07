@@ -21,7 +21,7 @@ void ADamageableCharacter::BeginPlay()
 	if (IsRunningDedicatedServer()) return;
 
 	OnTakeAnyDamage.AddDynamic(this, &ADamageableCharacter::OnTakeAnyDamageCallback);
-	if (auto BattleController = Cast<ABattlePlayerController>(GetWorld()->GetFirstPlayerController()))
+	if (auto BattleController = GetWorld()->GetFirstPlayerController<ABattlePlayerController>())
 		BattleController->OnCharacterBeginPlay(this);
 }
 
@@ -60,6 +60,7 @@ void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* D
 
 void ADamageableCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
 {
+	GetMesh()->SetVisibility(false, true);
 	OnKillCharacterNotify.Broadcast(GetController(), this, EventInstigator, DamageCauser);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
 }
@@ -85,5 +86,6 @@ void ADamageableCharacter::OnTakeAnyDamageCallback(AActor* DamagedActor, float D
 
 void ADamageableCharacter::RespawnNotify_Implementation()
 {
+	GetMesh()->SetVisibility(true, true);
 	OnRespawnCharacterNotify.Broadcast(this);
 }

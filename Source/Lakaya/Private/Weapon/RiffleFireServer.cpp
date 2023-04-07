@@ -48,6 +48,12 @@ void URiffleFireServer::OnFireStop()
 	FireStopCore(Selector, FireCount, EFocusContext::Server);
 }
 
+void URiffleFireServer::OnCharacterDead()
+{
+	Super::OnCharacterDead();
+	OnFireStop();
+}
+
 void URiffleFireServer::SetupData(const FName& RowName)
 {
 	Super::SetupData(RowName);
