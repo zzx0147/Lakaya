@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MenuCallingPlayerController.h"
+#include "MovablePlayerController.h"
 #include "BattlePlayerController.generated.h"
 
 UCLASS()
-class LAKAYA_API ABattlePlayerController : public AMenuCallingPlayerController
+class LAKAYA_API ABattlePlayerController : public AMovablePlayerController
 {
 	GENERATED_BODY()
 
