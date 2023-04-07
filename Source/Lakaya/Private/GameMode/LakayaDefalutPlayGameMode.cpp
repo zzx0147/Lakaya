@@ -3,6 +3,7 @@
 #include "GameMode/LakayaDefalutPlayGameMode.h"
 
 #include "Character/ArmedCharacter.h"
+#include "Character/CollectorPlayerState.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -30,8 +31,6 @@ void ALakayaDefalutPlayGameMode::PostLogin(APlayerController* NewPlayer)
 void ALakayaDefalutPlayGameMode::HandleMatchIsWaitingToStart()
 {
 	Super::HandleMatchIsWaitingToStart();
-
-	
 }
 
 bool ALakayaDefalutPlayGameMode::ReadyToStartMatch_Implementation()

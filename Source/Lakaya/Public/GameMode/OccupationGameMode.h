@@ -30,7 +30,7 @@ private:
 	virtual void HandleMatchHasEnded() override;
 	virtual void HandleLeavingMap() override;
 	virtual void Logout(AController* Exiting) override;
-
+	
 private:
 	virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser) override;
 	

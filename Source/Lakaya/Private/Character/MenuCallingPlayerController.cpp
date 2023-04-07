@@ -12,6 +12,7 @@
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/LoadingWidget.h"
 #include "Blueprint/UserWidget.h"
+#include "GameFramework/PlayerStart.h"
 
 void AMenuCallingPlayerController::SetupInputComponent()
 {
@@ -54,7 +55,7 @@ AMenuCallingPlayerController::AMenuCallingPlayerController()
 void AMenuCallingPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	if (auto LocalPlayer = GetLocalPlayer())
 	{
 		if (const auto Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
@@ -70,7 +71,7 @@ void AMenuCallingPlayerController::BeginPlay()
 
 			CreateLoadingWidget();
 			CreateGameTimeWidget();
-			CreateScoreBoardWidget();
+			// CreateScoreBoardWidget();
 			CreateGamePlayCrosshairWidget();
 			CreateGamePlayHealthWidget();
 			CreateTeamScoreWidget();
