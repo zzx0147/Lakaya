@@ -20,6 +20,9 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(AOccupationGameState, ATeamScore);
 	DOREPLIFETIME(AOccupationGameState, BTeamScore);
 
+	DOREPLIFETIME(AOccupationGameState, ATeamObjectNum);
+	DOREPLIFETIME(AOccupationGameState, BTeamObjectNum);
+
 	DOREPLIFETIME(AOccupationGameState, StartTime);
 	DOREPLIFETIME(AOccupationGameState, MatchEndingTime);
 }
