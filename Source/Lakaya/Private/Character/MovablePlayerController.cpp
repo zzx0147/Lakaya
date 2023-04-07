@@ -86,8 +86,7 @@ void AMovablePlayerController::Move(const FInputActionValue& Value)
 {
 	if (!MovableCharacter.IsValid()) return;
 	const auto Vector = Value.Get<FVector2D>();
-	const FRotator YawRotator(0, GetControlRotation().Yaw, 0);
-	const FRotationMatrix Matrix(YawRotator);
+	const FRotationMatrix Matrix((FRotator(0, GetControlRotation().Yaw, 0)));
 
 	MovableCharacter->AddMovementInput(Matrix.GetUnitAxis(EAxis::X), Vector.Y);
 	MovableCharacter->AddMovementInput(Matrix.GetUnitAxis(EAxis::Y), Vector.X);
