@@ -34,8 +34,8 @@ void URiffleFireOwner::FireStop()
 	FireStopCore(Selector, FireCount, EFocusContext::Owner, [this] { Super::FireStop(); });
 }
 
-void URiffleFireOwner::SwitchSelector()
+void URiffleFireOwner::OnCharacterDead()
 {
-	SwitchSelectorCore(DesiredSelector, Selector, SelectorTimer, EFocusContext::Owner,
-	                   [this] { Super::SwitchSelector(); });
+	Super::OnCharacterDead();
+	FireStopCore(Selector, FireCount, EFocusContext::Owner);
 }

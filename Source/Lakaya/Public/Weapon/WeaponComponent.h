@@ -33,18 +33,22 @@ protected:
 	virtual void SetupData();
 	virtual void SetupUI();
 
-
 	UFUNCTION()
 	virtual void OnRep_UpgradeLevel();
 
 public:
 	inline void FireStart() { if (FireSubObject) FireSubObject->FireStart(); }
 	inline void FireStop() { if (FireSubObject) FireSubObject->FireStop(); }
-	inline void SwitchSelector() { if (FireSubObject) FireSubObject->SwitchSelector(); }
 	inline void AbilityStart() { if (AbilitySubObject) AbilitySubObject->AbilityStart(); }
 	inline void AbilityStop() { if (AbilitySubObject) AbilitySubObject->AbilityStop(); }
 	inline void ReloadStart() { if (ReloadSubObject) ReloadSubObject->ReloadStart(); }
 	inline void ReloadStop() { if (ReloadSubObject) ReloadSubObject->ReloadStop(); }
+
+	// 캐릭터가 사망시 호출됩니다. 이 함수는 NetMulticast와 같이 모든 인스턴스에서 호출됩니다.
+	virtual void OnCharacterDead();
+
+	// 캐릭터가 부활하고 나서 호출됩니다. 이 함수는 모든 인스턴스에서 호출됩니다.
+	virtual void OnCharacterRespawn();
 
 private:
 	template <class T>

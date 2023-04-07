@@ -37,17 +37,17 @@ void URiffleFireClient::OnFireStopNotify()
 	FireStopCore(Selector, FireCount, EFocusContext::Simulated);
 }
 
-void URiffleFireClient::OnSwitchSelectorNotify()
-{
-	Super::OnSwitchSelectorNotify();
-	SwitchSelectorCore(DesiredSelector, Selector, SelectorTimer, EFocusContext::Simulated);
-}
-
 void URiffleFireClient::OnRep_Character()
 {
 	Super::OnRep_Character();
 	TraceQueryParams.ClearIgnoredActors();
 	if (Character.IsValid()) TraceQueryParams.AddIgnoredActor(Character.Get());
+}
+
+void URiffleFireClient::OnCharacterDead()
+{
+	Super::OnCharacterDead();
+	OnFireStopNotify();
 }
 
 void URiffleFireClient::TraceVisualize()

@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "DamageableCharacter.h"
-#include "EnhancedInputSubsystems.h"
 #include "ArmedCharacter.generated.h"
 
 /**
@@ -18,7 +17,6 @@ class LAKAYA_API AArmedCharacter : public ADamageableCharacter
 public:
 	AArmedCharacter();
 
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual ELifetimeCondition
 	AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const override;
 
@@ -29,61 +27,20 @@ protected:
 	virtual void RespawnNotify_Implementation() override;
 
 public:
-	void CallBeginPlay();
-	
-public:
 	/**
-	 * @brief 캐릭터의 첫번째 무기를 설정합니다.
+	 * @brief 캐릭터의 첫번째 무기를 설정합니다. 반드시 서버에서 호출해야 합니다.
 	 * @param WeaponClassRowName WeaponAssetDataTable에서의 RowName
 	 */
 	void SetupPrimaryWeapon(const FName& WeaponClassRowName);
 
+	void FireStart();
+	void FireStop();
+	void AbilityStart();
+	void AbilityStop();
+	void ReloadStart();
+	void ReloadStop();
+
 private:
-	void FireStart(const FInputActionValue& Value);
-	void FireStop(const FInputActionValue& Value);
-	void SwitchSelector(const FInputActionValue& Value);
-	void AbilityStart(const FInputActionValue& Value);
-	void AbilityStop(const FInputActionValue& Value);
-	void ReloadStart(const FInputActionValue& Value);
-	void ReloadStop(const FInputActionValue& Value);
-
-	inline void AddInputContext()
-	{
-		if (InputSystem.IsValid()) InputSystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
-	}
-
-	inline void RemoveInputContext()
-	{
-		if (InputSystem.IsValid()) InputSystem->RemoveMappingContext(WeaponControlContext);
-	}
-
-	UPROPERTY(EditAnywhere, Category="Input|Weapon|Context")
-	UInputMappingContext* WeaponControlContext;
-
-	UPROPERTY(EditAnywhere, Category="Input|Weapon|Context")
-	int8 WeaponContextPriority;
-
-	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
-	UInputAction* FireStartAction;
-
-	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
-	UInputAction* FireStopAction;
-
-	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
-	UInputAction* SwitchSelectorAction;
-
-	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
-	UInputAction* AbilityStartAction;
-
-	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
-	UInputAction* AbilityStopAction;
-
-	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
-	UInputAction* ReloadStartAction;
-
-	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
-	UInputAction* ReloadStopAction;
-
 	UPROPERTY(EditAnywhere)
 	class UDataTable* WeaponClassDataTable;
 

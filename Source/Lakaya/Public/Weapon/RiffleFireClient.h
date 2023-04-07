@@ -18,16 +18,14 @@ class LAKAYA_API URiffleFireClient : public URiffleFireServer
 protected:
 	virtual void OnFireStartNotify() override;
 	virtual void OnFireStopNotify() override;
-	virtual void OnSwitchSelectorNotify() override;
 	virtual void OnRep_Character() override;
+	virtual void OnCharacterDead() override;
 
 private:
 	void TraceVisualize();
 
 	FCollisionQueryParams TraceQueryParams;
 	FTimerHandle FireTimer;
-	FTimerHandle SelectorTimer;
 	EGunSelector Selector;
-	EGunSelector DesiredSelector;
 	uint16 FireCount;
 };

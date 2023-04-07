@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "GameMode/IndividualGameState.h"
+#include "GameMode/OccupationGameState.h"
 #include "GameScoreBoardWidget.generated.h"
 
 class UScoreBoardElement;
@@ -13,13 +15,13 @@ class LAKAYA_API UGameScoreBoardWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-public:
-	UGameScoreBoardWidget(const FObjectInitializer& ObjectInitializer);
-
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
+	UFUNCTION()
+	void SetGameScoreBoardWidget(EOccupationGameState ChangeGameState);
+	
 public:
 	TArray<UScoreBoardElement*> ScoreBoardElementArray;//스코어보드 Element를 저장하는 배열
 	UCanvasPanel* ScoreBoardPanel;//Element가 그려지는 패널

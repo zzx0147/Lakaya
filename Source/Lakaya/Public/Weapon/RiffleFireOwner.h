@@ -17,12 +17,11 @@ class LAKAYA_API URiffleFireOwner : public URiffleFireClient
 public:
 	virtual void FireStart() override;
 	virtual void FireStop() override;
-	virtual void SwitchSelector() override;
+	virtual void OnCharacterDead() override;
 
 private:
 	FTimerHandle FireTimer;
 	FTimerHandle SelectorTimer;
 	EGunSelector Selector;
-	EGunSelector DesiredSelector;
 	uint16 FireCount;
 };

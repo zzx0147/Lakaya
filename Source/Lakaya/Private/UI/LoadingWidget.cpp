@@ -9,14 +9,14 @@ void ULoadingWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
-    if (IndividualGameState == nullptr)
+    AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+    if (OccupationGameState == nullptr)
     {
-        UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
+        UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_GameMode is null."));
         return;
     }
 
-    OnChangeJoinedPlayers(IndividualGameState->NumPlayers, IndividualGameState->GetMaxPlayers());
+    OnChangeJoinedPlayers(OccupationGameState->NumPlayers, OccupationGameState->GetMaxPlayers());
 
     // 바인딩
     LoadingWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("LoadingWidgetText")));
@@ -26,18 +26,13 @@ void ULoadingWidget::NativeConstruct()
         return;
     }
 
-    IndividualGameState->OnChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
-    IndividualGameState->OnChangeGameState.AddUObject(this, &ULoadingWidget::ReMoveLoadingWidget);
+    OccupationGameState->OnOccupationChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
+    OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &ULoadingWidget::ReMoveLoadingWidget);
 }
 
 void ULoadingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
     Super::NativeTick(MyGeometry, InDeltaTime);
-}
-
-void ULoadingWidget::NativeOnInitialized()
-{
-    Super::NativeOnInitialized();
 }
 
 void ULoadingWidget::OnChangeJoinedPlayers(int32 JoinedPlayers, int32 MaxPlayer)
@@ -51,11 +46,10 @@ void ULoadingWidget::OnChangeJoinedPlayers(int32 JoinedPlayers, int32 MaxPlayer)
     LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), JoinedPlayers, MaxPlayer)));
 }
 
-void ULoadingWidget::ReMoveLoadingWidget(EGameState ChangeGamState)
+void ULoadingWidget::ReMoveLoadingWidget(EOccupationGameState ChangeGamState)
 {
-    if (ChangeGamState == EGameState::Progress)
+    if (ChangeGamState == EOccupationGameState::Progress)
     {
         this->RemoveFromParent();
     }
 }
-

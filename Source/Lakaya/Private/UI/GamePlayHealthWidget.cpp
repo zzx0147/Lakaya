@@ -4,6 +4,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Character/DamageableCharacter.h"
+#include "GameMode/IndividualGameState.h"
 
 
 UGamePlayHealthWidget::UGamePlayHealthWidget(const FObjectInitializer& ObjectInitializer) :Super(ObjectInitializer)
@@ -28,6 +29,13 @@ void UGamePlayHealthWidget::NativeConstruct()
 
 #pragma endregion
 
+	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	if (OccupationGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GamePlayHealthWidget_OccupationGameState is null."));
+		return;
+	}
+	
 	//체력 바를 최대치로 기본 설정
 	HealthProgressBar->SetPercent(1.0f);
 
@@ -39,11 +47,14 @@ void UGamePlayHealthWidget::NativeConstruct()
 		DamageableCharacter->OnHealthReplicated.AddUObject(this, &UGamePlayHealthWidget::OnChangeHealth);
 		DamageableCharacter->OnMaximumHealthReplicated.AddUObject(this, &UGamePlayHealthWidget::OnChangeMaximumHealth);
 	}
+
+	OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &UGamePlayHealthWidget::SetGamePlayHealthWidget);
+	
+	SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UGamePlayHealthWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
-	
 }
 
 void UGamePlayHealthWidget::OnChangeHealth(AActor* Character, const float& NewHealth)
@@ -70,3 +81,11 @@ void UGamePlayHealthWidget::UpdateHealthProgressBar()
 	HealthProgressBar->SetPercent(Health / MaximumHealth);
 }
 
+void UGamePlayHealthWidget::SetGamePlayHealthWidget(EOccupationGameState ChangeGameState)
+{
+	if (ChangeGameState == EOccupationGameState::Progress)
+	{
+		SetVisibility(ESlateVisibility::Visible);
+		return;
+	}
+}

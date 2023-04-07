@@ -9,13 +9,16 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/CanvasPanelSlot.h"
 
-UGameScoreBoardWidget::UGameScoreBoardWidget(const FObjectInitializer& ObjectInitializer) :Super(ObjectInitializer)
-{
-}
-
 void UGameScoreBoardWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	if (OccupationGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameScoreBoardWidget_OccupationGameState is null."));
+		return;
+	}
+	
 	ScoreBoardPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("ScoreBoard_Pan")));
 	if (ScoreBoardPanel == nullptr)
 	{
@@ -24,11 +27,24 @@ void UGameScoreBoardWidget::NativeConstruct()
 	}
 
 	InitScoreBoardElements(6);
+
+	OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &UGameScoreBoardWidget::SetGameScoreBoardWidget);
+	
+	SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UGameScoreBoardWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
+}
+
+void UGameScoreBoardWidget::SetGameScoreBoardWidget(EOccupationGameState ChangeGameState)
+{
+	if (ChangeGameState == EOccupationGameState::Progress)
+	{
+		SetVisibility(ESlateVisibility::Visible);
+		return;
+	}
 }
 
 void UGameScoreBoardWidget::InitScoreBoardElements(int8 ElementsNum)

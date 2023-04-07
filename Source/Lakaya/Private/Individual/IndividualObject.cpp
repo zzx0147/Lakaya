@@ -1,4 +1,7 @@
 #include "Individual/IndividualObject.h"
+
+#include <SPIRV-Reflect/SPIRV-Reflect/include/spirv/unified1/spirv.h>
+
 #include "Character/CollectorPlayerState.h"
 #include "Character/DamageableCharacter.h"
 #include "Character/InteractableCharacter.h"
@@ -37,31 +40,36 @@ void AIndividualObject::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AIndividualObject::OnLocalInteractionBegin(APawn* Caller)
-{
-}
-
 void AIndividualObject::OnServerInteractionBegin(const float& Time, APawn* Caller)
 {
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
-		CastedCaller->InitiateInteractionStart(Time, this, 5.f);
+		CastedCaller->InitiateInteractionStart(Time, this, 3.f);
 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionBegin::Caller was not AInteractableCharacter!"));
 }
 
+// TODO : 애니메이션 적용
 void AIndividualObject::OnInteractionStart(APawn* Caller)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Interaction Start!"));
 
+	if (InteractingPawn != nullptr)
+	{
+		UE_LOG(LogActor, Error, TEXT("Object is Using."));
+		return;
+	}
+		
 	if (!bIsAvailable)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Not Available."));
 		return;
 	}
+	
+	InteractingPawn = Caller;
 
 	InteractingStartTime = UGameplayStatics::GetRealTimeSeconds(this);
 
-	// TODO : 상호작용 시작하는 애니메이션 실행
-	// Animation
+	// TODO : 애니메이션 적용
+	// 긴 상호작용 애니메이션 시작하는 지점.
 	
 	// 시작 한 후 4초가 지나면 자동으로 성공.
 	GetWorldTimerManager().SetTimer(InteractionTimerHandle, this, &AIndividualObject::AutomaticInteractionStop, MaxInteractionDuration, false);
@@ -78,13 +86,29 @@ void AIndividualObject::OnServerInteractionStopBegin(const float& Time, APawn* C
 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionStopBegin::Caller was not AInteractableCharacter!"));
 }
 
+// TODO : 애니메이션 적용
 void AIndividualObject::OnInteractionStop(APawn* Caller)
 {
+
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Interaction Stop!"));
 
 	if (!bIsAvailable)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Not Available."));
+		return;
+	}
+
+	if (InteractingPawn == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InteractionStop_InteractingPawn is null."));
+		return;
+	}
+
+	InteractingPawn = nullptr;
+	
+	if (!Caller && !Caller->GetController())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Caller is null."));
 		return;
 	}
 	
@@ -95,42 +119,46 @@ void AIndividualObject::OnInteractionStop(APawn* Caller)
 	}
 	
 	InteractingStopTime = UGameplayStatics::GetRealTimeSeconds(this);
+	
 	float InteractionDuration = InteractingStopTime - InteractingStartTime;
 	
+	UE_LOG(LogTemp, Warning, TEXT("InteractingStopTime : %f seconds"), InteractingStopTime);
+	UE_LOG(LogTemp, Warning, TEXT("InteractingStartTime : %f seconds"), InteractingStartTime);
 	UE_LOG(LogTemp, Warning, TEXT("Interaction Duration : %f seconds"), InteractionDuration);
+
 	
-	if (InteractionDuration > 4.0f)
+	if (InteractionDuration > MaxInteractionDuration)
 	{
-		if (Caller && Caller->GetController())
+		ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
+		if (CollectorPlayerState)
 		{
-			ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
-			if (CollectorPlayerState)
-			{
-				uint8 CurrentEnergy = CollectorPlayerState->GetEnergy();
-				CollectorPlayerState->GainPoint(CurrentEnergy);
-				CollectorPlayerState->ResetEnergy();
-				UE_LOG(LogTemp, Warning, TEXT("Player Total Point : %d"), CollectorPlayerState->GetPoint());
-				UE_LOG(LogTemp, Warning, TEXT("Player Current Energy Num : %d"), CollectorPlayerState->GetEnergy());
-				bIsAvailable = false;
-				GetWorldTimerManager().SetTimer(AvailableTimerHandle, this, &AIndividualObject::MakeAvailable, 30.0f, false);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is Null."));
-			}
+			uint8 CurrentEnergy = CollectorPlayerState->GetEnergy();
+			CollectorPlayerState->GainPoint(CurrentEnergy);
+			CollectorPlayerState->ResetEnergy();
+
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction success."));
+			UE_LOG(LogTemp, Warning, TEXT("Player Total Point : %d"), CollectorPlayerState->GetPoint());
+			UE_LOG(LogTemp, Warning, TEXT("Player Current Energy Num : %d"), CollectorPlayerState->GetEnergy());
+			bIsAvailable = false;
+			GetWorldTimerManager().SetTimer(AvailableTimerHandle, this, &AIndividualObject::MakeAvailable, 30.0f, false);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Invalid Caller or Controller."));
+			UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState is Null."));
+			return;
 		}
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Interaction Failed."));
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction Failed."));
+		return;
 	}
 
-	// TODO : 상호작용 끝나는 애니메이션 실행
-	// Animation
+	// InteractingStartTime = 0.0f;
+	
+	// TODO : 애니메이션 적용
+	// 긴 상호작용 애니메이션 끝나는 지점.
 }
 
 void AIndividualObject::AutomaticInteractionStop()
@@ -138,7 +166,14 @@ void AIndividualObject::AutomaticInteractionStop()
 	UE_LOG(LogTemp, Warning, TEXT("Cylinder AutomaticInteractionStop !"));
 
 	// InteractionStop(MaxInteractionDuration, nullptr);
+	if(InteractingPawn == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AutomaticInteractionStop_InteractingPawn is null."));
+		return;
+	}
 	
+	OnInteractionStop(InteractingPawn);
+	InteractingPawn = nullptr;
 }
 
 void AIndividualObject::MakeAvailable()

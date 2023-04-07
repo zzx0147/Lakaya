@@ -48,10 +48,10 @@ void URiffleFireServer::OnFireStop()
 	FireStopCore(Selector, FireCount, EFocusContext::Server);
 }
 
-void URiffleFireServer::OnSwitchSelector()
+void URiffleFireServer::OnCharacterDead()
 {
-	Super::OnSwitchSelector();
-	SwitchSelectorCore(DesiredSelector, Selector, SelectorTimer, EFocusContext::Server);
+	Super::OnCharacterDead();
+	OnFireStop();
 }
 
 void URiffleFireServer::SetupData(const FName& RowName)
@@ -81,7 +81,6 @@ void URiffleFireServer::SetupData(const FName& RowName)
 	FireDelay = 60 / Data->FireRate;
 	FireRange = Data->FireRange;
 	SqrFireRange = FMath::Square(FireRange);
-	SwitchingDelay = Data->SelectorSwitchingDelay;
 }
 
 void URiffleFireServer::EmptyMagazine_Implementation()

@@ -21,7 +21,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	virtual void OnLocalInteractionBegin(APawn* Caller) override;
+	// virtual void OnLocalInteractionBegin(APawn* Caller) override;
 	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
 	virtual void OnInteractionStart(APawn* Caller) override;
 	virtual void OnLocalInteractionStopBegin(APawn* Caller) override;
@@ -40,7 +40,7 @@ private:
 	UStaticMeshComponent* Cylinder;
 
 private:
-	const float MaxInteractionDuration = 4;
+	const float MaxInteractionDuration = 3;
 	float InteractingStartTime;
 	float InteractingStopTime;
 
@@ -48,4 +48,6 @@ private:
 	
 	FTimerHandle InteractionTimerHandle;
 	FTimerHandle AvailableTimerHandle;
+
+	APawn* InteractingPawn;
 };

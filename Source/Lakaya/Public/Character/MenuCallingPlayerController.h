@@ -5,7 +5,12 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
+#include "UI/GamePlayCrosshairWidget.h"
+#include "UI/GamePlayHealthWidget.h"
+#include "UI/GameScoreBoardWidget.h"
+#include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
+#include "UI/TeamScoreWidget.h"
 #include "MenuCallingPlayerController.generated.h"
 
 /**
@@ -14,6 +19,7 @@
 UCLASS()
 class LAKAYA_API AMenuCallingPlayerController : public APlayerController
 {
+	//TODO: 로드아웃 및 ESC 메뉴를 제외한 다른 기능은 다른 플레이어 컨트롤러에서 하도록 변경해야 합니다.
 	GENERATED_BODY()
 
 public:
@@ -22,17 +28,41 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
-
+	
 private:
 	void MenuHandler(const FInputActionValue& Value);
 	void LoadoutHandler(const FInputActionValue& Value);
 	void ScoreHandler(const FInputActionValue& Value);
 
 public:
-	void CreateLoadingWidget();
-	void CreateScoreBoardWidget();
+	template <typename T>
+	T* CreateWidgetHelper(const FString& Path)
+	{
+		UClass* WidgetClass = LoadClass<T>(nullptr, *Path);
+		if (WidgetClass == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s is null"), *Path);
+			return nullptr;
+		}
 
-	// void ReMoveLoadingWidget();
+		T* Widget = CreateWidget<T>(GetWorld(), WidgetClass);
+		if (Widget == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s Widget is null."), *Path);
+			return nullptr;
+		}
+		
+		Widget->AddToViewport();
+		return Widget;
+	}
+	
+	void CreateLoadingWidget();
+	void CreateGameTimeWidget();
+	void CreateScoreBoardWidget();
+	void CreateGamePlayCrosshairWidget();
+
+	void CreateTeamScoreWidget();
+	
 private:
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
@@ -46,11 +76,15 @@ private:
 	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* LoadoutAction;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* ScoreAction;
 
 	FTimerHandle TimerHandle;
 
 public:
 	ULoadingWidget* LoadingWidget;
+	UGameTimeWidget* GameTimeWidget;
+	UGameScoreBoardWidget* GameScoreBoardWidget;
+	UGamePlayCrosshairWidget* GamePlayCrosshairWidget;
+	UTeamScoreWidget* TeamScoreWidget;
 };

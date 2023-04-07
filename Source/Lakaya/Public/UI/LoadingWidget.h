@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "GameMode/IndividualGameMode.h"
 #include "GameMode/IndividualGameState.h"
+#include "GameMode/OccupationGameState.h"
 #include "LoadingWidget.generated.h"
 
 UCLASS()
@@ -16,18 +17,15 @@ class LAKAYA_API ULoadingWidget : public UUserWidget
 private:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	virtual void NativeOnInitialized() override;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* LoadingWidgetText;
 
 public:
 	UFUNCTION()
-	void ReMoveLoadingWidget(EGameState ChangeGamState);
+	void ReMoveLoadingWidget(EOccupationGameState ChangeGamState);
 	
 public:
 	UFUNCTION()
 	void OnChangeJoinedPlayers(int32 Number, int32 MaxPlayers);
-
-	FTimerHandle TimerHandle;
 };

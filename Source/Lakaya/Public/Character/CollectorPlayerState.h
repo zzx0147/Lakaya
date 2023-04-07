@@ -6,6 +6,14 @@
 #include "GameFramework/PlayerState.h"
 #include "CollectorPlayerState.generated.h"
 
+UENUM()
+enum class EPlayerTeamState : uint8
+{
+	None UMETA(DisplayerName = "None"), // 현재 팀 배정을 받지 못한 상태
+	A UMETA(DisplayerName = "A"), // A팀인 상태
+	B UMETA(DisplayerName = "B"), // B팀인 상태
+};
+
 /**
  * 
  */
@@ -32,7 +40,12 @@ public:
 	void ResetMoney();
 	const uint8& GetMoney() const;
 
+	EPlayerTeamState GetPlayerTeamState() { return PlayerTeamState; }
+	void SetPlayerTeamState(EPlayerTeamState TeamState);
 private:
+	UPROPERTY(ReplicatedUsing = OnRep_BroadCastMyTeam, Transient)
+	EPlayerTeamState PlayerTeamState = EPlayerTeamState::None;
+	
 	UPROPERTY(ReplicatedUsing = OnRep_Point, Transient)
 	uint8 Point;
 
@@ -51,4 +64,8 @@ private:
 	
 	UFUNCTION()
 	void OnRep_Energy();
+
+public:
+	UFUNCTION()
+	void OnRep_BroadCastMyTeam();
 };

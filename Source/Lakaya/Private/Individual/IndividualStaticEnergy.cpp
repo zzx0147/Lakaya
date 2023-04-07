@@ -17,7 +17,7 @@ AIndividualStaticEnergy::AIndividualStaticEnergy()
 
 	Trigger->SetCapsuleSize(50.0f, 50.0f, true);
 	Trigger->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Antenna(TEXT("/Game/Dev/KDJ/antenna_high.antenna_high"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Antenna(TEXT("/Game/Dev/KDJ/SM_Antenna.SM_Antenna"));
 	if (SM_Antenna.Succeeded())
 		Cylinder->SetStaticMesh(SM_Antenna.Object);
 	
@@ -65,6 +65,7 @@ void AIndividualStaticEnergy::OnServerInteractionBegin(const float& Time, APawn*
 	}
 }
 
+// TODO : 애니메이션 적용
 void AIndividualStaticEnergy::OnInteractionStart(APawn* Caller)
 {
 	// 비활성중이면 상호작용x
@@ -74,9 +75,6 @@ void AIndividualStaticEnergy::OnInteractionStart(APawn* Caller)
 		return;
 	}
 
-	// TODO : 상호작용 시작하는 애니메이션 실행
-	// Animation
-	
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("StaticEnergy Get !"));
 	
 	if (Caller && Caller->GetController())
@@ -90,6 +88,10 @@ void AIndividualStaticEnergy::OnInteractionStart(APawn* Caller)
 				UE_LOG(LogTemp, Warning, TEXT("OnInteractionStart_Character is null."));
 				return;
 			}
+
+			// TODO : 애니메이션 적용
+			// 상호작용 애니메이션 시작하는 지점.
+			
 			
 			CollectorPlayerState->GainEnergy(1);
 			UE_LOG(LogTemp, Warning, TEXT("Player Total Energy: %d"), CollectorPlayerState->GetEnergy());

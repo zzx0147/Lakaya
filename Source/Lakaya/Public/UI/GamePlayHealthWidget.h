@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "GameMode/OccupationGameState.h"
 #include "GamePlayHealthWidget.generated.h"
 
 class UTextBlock;
@@ -18,7 +19,7 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
+	
 protected:
 	//DamageableCharacter의 체력 델리게이트에 등록되는 함수, 체력이 변경될 때 호출
 	void OnChangeHealth(AActor* Character, const float& NewHealth);
@@ -27,6 +28,9 @@ protected:
 	//체력 프로그래스 바를 업데이트하는 함수
 	void UpdateHealthProgressBar();
 
+	UFUNCTION()
+	void SetGamePlayHealthWidget(EOccupationGameState ChangeGameState);
+	
 private:
 	UProgressBar* HealthProgressBar;//체력을 표기하는 프로그래스 바
 	UTextBlock* HealthText;//체력을 표기하는 텍스트

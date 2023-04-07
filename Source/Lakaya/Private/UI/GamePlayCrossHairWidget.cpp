@@ -4,10 +4,7 @@
 
 #include "UI/GamePlayCrosshairWidget.h"
 #include "Components/Image.h"
-
-UGamePlayCrosshairWidget::UGamePlayCrosshairWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
-{
-}
+#include "GameMode/IndividualGameState.h"
 
 void UGamePlayCrosshairWidget::NativeConstruct()
 {
@@ -21,9 +18,28 @@ void UGamePlayCrosshairWidget::NativeConstruct()
 
 #pragma endregion
 
+	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	if (OccupationGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GamePlayCrossHairWidget_GameMode is null."));
+		return;
+	}
+
+	OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &UGamePlayCrosshairWidget::SetGamePlayCrosshairWidget);
+
+	SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UGamePlayCrosshairWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
+}
+
+void UGamePlayCrosshairWidget::SetGamePlayCrosshairWidget(EOccupationGameState ChangeGameState)
+{
+	if (ChangeGameState == EOccupationGameState::Progress)
+	{
+		SetVisibility(ESlateVisibility::Visible);
+		return;
+	}
 }

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InputActionValue.h"
 #include "ThirdPersonCharacter.h"
 #include "MovableCharacter.generated.h"
 
@@ -15,62 +14,25 @@ class LAKAYA_API AMovableCharacter : public AThirdPersonCharacter
 public:
 	AMovableCharacter();
 
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	virtual void Crouch(bool bClientSimulation = false) override;
 
-protected:
-	virtual void BeginPlay() override;
-
-public:
 	bool IsOwnedByLocalPlayer() const;
+	void Run();
+	void StopRun();
 
 private:
-	UFUNCTION(Server, Reliable)
-	void RequestRun();
+	UFUNCTION(Server, Reliable, WithValidation)
+	void RequestSetRunState(bool IsRunning, const float& Time);
 
-	UFUNCTION(Server, Reliable)
-	void RequestStopRun();
-
-	// Input event functions
-	void Move(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
-	void Crouching(const FInputActionValue& Value);
-	void UnCrouching(const FInputActionValue& Value);
-	void Run(const FInputActionValue& Value);
-	void StopRunning(const FInputActionValue& Value);
-
-protected:
-	TWeakObjectPtr<class UEnhancedInputLocalPlayerSubsystem> InputSystem;
+	UFUNCTION()
+	void OnRep_IsRunning();
 
 private:
-	UPROPERTY(EditAnywhere, Category = "Input|Movement|Context")
-	class UInputMappingContext* MovementContext;
-
-	UPROPERTY(EditAnywhere, Category = "Input|Movement|Context")
-	int8 MovementContextPriority;
-
-	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
-	class UInputAction* MoveAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
-	UInputAction* LookAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
-	UInputAction* JumpAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
-	UInputAction* CrouchAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
-	UInputAction* UnCrouchAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
-	UInputAction* RunAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
-	UInputAction* StopRunningAction;
-
 	UPROPERTY(EditAnywhere, Category = Movement)
 	float RunMultiplier;
 
+	UPROPERTY(ReplicatedUsing=OnRep_IsRunning)
 	bool bIsRunning;
+
+	float RecentRunEventTime;
 };
