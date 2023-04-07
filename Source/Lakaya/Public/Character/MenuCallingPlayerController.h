@@ -60,7 +60,7 @@ public:
 	void CreateGameTimeWidget();
 	void CreateScoreBoardWidget();
 	void CreateGamePlayCrosshairWidget();
-	void CreateGamePlayHealthWidget();
+
 	void CreateTeamScoreWidget();
 	
 private:
@@ -86,6 +86,5 @@ public:
 	UGameTimeWidget* GameTimeWidget;
 	UGameScoreBoardWidget* GameScoreBoardWidget;
 	UGamePlayCrosshairWidget* GamePlayCrosshairWidget;
-	UGamePlayHealthWidget* GamePlayHealthWidget;
 	UTeamScoreWidget* TeamScoreWidget;
 };

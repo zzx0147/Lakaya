@@ -86,4 +86,6 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_Health)
 	float Health;
+
+	class UGamePlayHealthWidget* GamePlayHealthWidget;
 };

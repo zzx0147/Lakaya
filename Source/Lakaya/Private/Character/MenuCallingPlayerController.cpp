@@ -73,7 +73,6 @@ void AMenuCallingPlayerController::BeginPlay()
 			CreateGameTimeWidget();
 			// CreateScoreBoardWidget();
 			CreateGamePlayCrosshairWidget();
-			CreateGamePlayHealthWidget();
 			CreateTeamScoreWidget();
 
 			#pragma endregion 
@@ -148,20 +147,6 @@ void AMenuCallingPlayerController::CreateGamePlayCrosshairWidget()
 		if (GamePlayCrosshairWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("GamePlayCrosshairWidget is null."));
-			return;
-		}
-	}
-}
-
-void AMenuCallingPlayerController::CreateGamePlayHealthWidget()
-{
-	if (IsLocalController())
-	{
-		// 체력바 위젯
-		GamePlayHealthWidget = CreateWidgetHelper<UGamePlayHealthWidget>(TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget.WBP_GamePlayHealthWidget_C"));
-		if (GamePlayHealthWidget == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("GamePlayHealthWidget is null."));
 			return;
 		}
 	}
