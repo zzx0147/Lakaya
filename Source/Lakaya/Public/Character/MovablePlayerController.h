@@ -19,7 +19,10 @@ protected:
 	virtual void SetupInputComponent() override;
 	virtual void BeginPlay() override;
 
+	virtual void SetupEnhancedInputComponent(class UEnhancedInputComponent* const& EnhancedInputComponent);
 	virtual void SetupMappingContext(class UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem);
+
+	UFUNCTION()
 	virtual void OnPossessedPawnChangedCallback(APawn* OldPawn, APawn* NewPawn);
 
 private:

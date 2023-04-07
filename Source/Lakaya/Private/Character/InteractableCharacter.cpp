@@ -8,7 +8,6 @@
 #include "Camera/CameraComponent.h"
 #include "InputMappingContext.h"
 #include "Interactable/Interactable.h"
-#include "GameFramework/GameStateBase.h"
 
 AInteractableCharacter::AInteractableCharacter()
 {
@@ -55,14 +54,13 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	Super::NotifyActorBeginOverlap(OtherActor);
 
 	// Add interaction context when overlapped by trigger
-	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
+	if (!InputSubSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
-	// TODO : 주석제거
-	// if (!InputSystem->HasMappingContext(InteractionContext))
-	// {
-	// 	InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
-	// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context added"));
-	// }
+	if (!InputSubSystem->HasMappingContext(InteractionContext))
+	{
+		InputSubSystem->AddMappingContext(InteractionContext, InteractionPriority);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context added"));
+	}
 }
 
 void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
@@ -70,26 +68,19 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	Super::NotifyActorEndOverlap(OtherActor);
 
 	// Remove interaction context when far away from triggers
-	if (!InputSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
+	if (!InputSubSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	--InteractableCount;
-	// TODO : 주석제거
-	// if (InteractableCount == 0)
-	// {
-	// 	InputSystem->RemoveMappingContext(InteractionContext);
-	// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context removed"));
-	// }
+	if (InteractableCount == 0)
+	{
+		InputSubSystem->RemoveMappingContext(InteractionContext);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context removed"));
+	}
 }
 
 void AInteractableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::KillCharacter(EventInstigator, DamageCauser);
 	if (InteractingActor.IsValid()) Cast<IInteractable>(InteractingActor)->OnCharacterDead(this);
-}
-
-void AInteractableCharacter::AddInputContext()
-{
-	Super::AddInputContext();
-	InputSystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
 
 void AInteractableCharacter::InitiateInteractionStart(const float& Time, AActor* Actor, const float& Duration)
@@ -227,7 +218,7 @@ void AInteractableCharacter::RequestInteractionStop_Implementation(const float& 
 
 void AInteractableCharacter::InitiateLockstepEvent(const float& Time, std::function<void()> Callback)
 {
-	auto TimerDelay = Time + LockstepDelay - GetServerTime();
+	const auto TimerDelay = Time + LockstepDelay - GetServerTime();
 	if (TimerDelay > 0)
 	{
 		TSharedPtr<FTimerHandle> Timer = MakeShared<FTimerHandle>();
@@ -245,7 +236,7 @@ void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
 
 	DrawDebugLine(GetWorld(), Location, End, FColor::Yellow, false, 2);
 	if (GetWorld()->LineTraceSingleByChannel(HitResult, Location, End, CollisionChannel, TraceQueryParams))
-		if (auto Actor = HitResult.GetActor())
+		if (const auto Actor = HitResult.GetActor())
 			if (Actor->Implements<UInteractable>()
 				&& SetFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
 			{

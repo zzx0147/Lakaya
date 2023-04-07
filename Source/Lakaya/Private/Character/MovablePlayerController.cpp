@@ -51,14 +51,7 @@ void AMovablePlayerController::SetupInputComponent()
 
 	const auto CastedComponent = Cast<UEnhancedInputComponent>(InputComponent);
 	if (!CastedComponent) UE_LOG(LogInit, Fatal, TEXT("InputComponent was not UEnhancedInputComponent!"));
-
-	CastedComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Move);
-	CastedComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Look);
-	CastedComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Jump);
-	CastedComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Crouch);
-	CastedComponent->BindAction(UnCrouchAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::UnCrouch);
-	CastedComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Run);
-	CastedComponent->BindAction(StopRunAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::StopRun);
+	SetupEnhancedInputComponent(CastedComponent);
 
 	const auto InputSubsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	if (!InputSubsystem) UE_LOG(LogInit, Fatal, TEXT("UEnhancedInputLocalPlayerSubsystem was not exist!"));
@@ -68,7 +61,20 @@ void AMovablePlayerController::SetupInputComponent()
 void AMovablePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	OnPossessedPawnChanged.AddDynamic(this, &AMovablePlayerController::OnPossessedPawnChangedCallback);
+	OnPossessedPawnChanged.AddUniqueDynamic(this, &AMovablePlayerController::OnPossessedPawnChangedCallback);
+}
+
+void AMovablePlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
+{
+	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Move);
+	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Look);
+	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Jump);
+	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Crouch);
+	EnhancedInputComponent->BindAction(UnCrouchAction, ETriggerEvent::Triggered, this,
+	                                   &AMovablePlayerController::UnCrouch);
+	EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Run);
+	EnhancedInputComponent->BindAction(StopRunAction, ETriggerEvent::Triggered, this,
+	                                   &AMovablePlayerController::StopRun);
 }
 
 void AMovablePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)

@@ -47,8 +47,8 @@ void AMovableCharacter::StopRun()
 
 bool AMovableCharacter::RequestSetRunState_Validate(bool IsRunning, const float& Time)
 {
-	// Time값이 조작되었는지 여부를 검사합니다.
-	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds() >= Time;
+	// Time값이 조작되었는지 여부를 검사합니다. 0.05f는 서버시간의 허용오차를 의미합니다.
+	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds() + 0.05f >= Time;
 }
 
 void AMovableCharacter::RequestSetRunState_Implementation(bool IsRunning, const float& Time)
