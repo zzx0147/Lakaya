@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "FocusableCharacter.h"
+#include "NiagaraFunctionLibrary.h"
+#include "DrawDebugHelpers.h"
 #include "DamageableCharacter.generated.h"
 
 DECLARE_EVENT_FourParams(ADamageableCharacter, FKillCharacterSignature, AController*, AActor*, AController*, AActor*);
@@ -70,6 +72,9 @@ private:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void RespawnNotify();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void OnHitEffectPlay(AActor* DamagedActor);
 
 public:
 	/**
