@@ -21,7 +21,7 @@ AOccupationObject::AOccupationObject()
 	Cylinder->SetupAttachment(RootComponent);
 
 	Trigger->SetCapsuleSize(50.0f, 100.0f, true);
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Cylinder (TEXT("/Game/Dev/KDJ/Antena/SM_Antenna.SM_Antenna"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Cylinder (TEXT("/Game/Dev/KDJ/SM_Antenna.SM_Antenna"));
 	if (SM_Cylinder.Succeeded())
 		Cylinder->SetStaticMesh(SM_Cylinder.Object);
 	
