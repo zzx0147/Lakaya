@@ -38,4 +38,5 @@ private:
 	class UVerticalBox* KillLogBox;
 	SimpleObjectPool<UKillLogElement> ElementPool;
 	uint8 InitialChildCount;
+	uint8 ShownElementCount;
 };
