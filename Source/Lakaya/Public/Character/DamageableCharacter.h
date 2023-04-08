@@ -71,6 +71,10 @@ private:
 	UFUNCTION(NetMulticast, Reliable)
 	void RespawnNotify();
 
+	UFUNCTION(Client, Reliable)
+	void IndicateRPC(FName CauserName, FVector DamageCursorPosition, float time);
+	void IndicateRPC_Implementation(FName CauserName, FVector DamageCursorPosition, float time);
+
 public:
 	/**
 	 * @brief 캐릭터가 사망했을 때 호출됩니다. 앞의 컨트롤러와 액터는 사망한 캐릭터, 뒤의 컨트롤러와 액터는 죽인 캐릭터를 의미합니다.

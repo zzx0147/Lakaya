@@ -11,7 +11,10 @@
 #include "GameMode/IndividualGameState.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/LoadingWidget.h"
+#include "UI/DirectionalDamageIndicator.h"
 #include "Blueprint/UserWidget.h"
+#include "Character/ThirdPersonCharacter.h"
+#include "Net/UnrealNetwork.h"
 
 void AMenuCallingPlayerController::SetupInputComponent()
 {
@@ -25,6 +28,7 @@ void AMenuCallingPlayerController::SetupInputComponent()
 		Component->BindAction(ScoreAction, ETriggerEvent::Triggered, this,
 		                      &AMenuCallingPlayerController::ScoreHandler);
 	}
+	
 }
 
 AMenuCallingPlayerController::AMenuCallingPlayerController()
@@ -55,11 +59,24 @@ void AMenuCallingPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	
+	if (HasAuthority() && IsLocalPlayerController())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Magenta, *(FString::Printf(TEXT("Controller is Replicated %d"), GetIsReplicated())));
+	}
+	else if(IsLocalPlayerController())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Blue, *(FString::Printf(TEXT("Controller is Replicated %d"), GetIsReplicated())));
+	}
+
+
 	if (auto LocalPlayer = GetLocalPlayer())
 	{
 		if (const auto Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
 		{
 			Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
+
+
 
 			#pragma region Update UI
 			if (GetWorld()->GetGameState() == nullptr)
@@ -73,6 +90,7 @@ void AMenuCallingPlayerController::BeginPlay()
 			CreateScoreBoardWidget();
 			CreateGamePlayCrosshairWidget();
 			CreateTeamScoreWidget();
+			CreateDirectionalDamageIndicator();
 
 			#pragma endregion 
 		}
@@ -163,4 +181,28 @@ void AMenuCallingPlayerController::CreateTeamScoreWidget()
 			return;
 		}
 	}
+}
+
+void AMenuCallingPlayerController::CreateDirectionalDamageIndicator()
+{
+	if (IsLocalController())
+	{
+		// 팀 스코어 위젯
+		DirectionalDamageIndicator = CreateWidgetHelper<UDirectionalDamageIndicator>(TEXT("/Game/Blueprints/UMG/WBP_DirectionalDamageIndicator.WBP_DirectionalDamageIndicator_C"));
+		if (DirectionalDamageIndicator == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("DirectionalDamageIndicator is null."));
+			return;
+		}
+	}
+}
+
+void AMenuCallingPlayerController::IndicateStart(FName CauserName, FVector DamageCursorPosition, float time)
+{
+	auto MyCharacter = GetCharacter();
+	if (MyCharacter == nullptr) return;
+	auto MyThirdPersonCharacter = Cast<AThirdPersonCharacter>(MyCharacter);
+	if (MyThirdPersonCharacter == nullptr) return;
+
+	DirectionalDamageIndicator->IndicateStart(CauserName, MyThirdPersonCharacter->GetCamera(), DamageCursorPosition, time);
 }

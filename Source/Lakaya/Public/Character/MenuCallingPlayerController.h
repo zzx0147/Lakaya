@@ -11,6 +11,7 @@
 #include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
 #include "UI/TeamScoreWidget.h"
+#include "Net/UnrealNetwork.h"
 #include "MenuCallingPlayerController.generated.h"
 
 /**
@@ -62,6 +63,9 @@ public:
 	void CreateGamePlayCrosshairWidget();
 
 	void CreateTeamScoreWidget();
+	void CreateDirectionalDamageIndicator();
+
+	void IndicateStart(FName CauserName, FVector DamageCursorPosition, float time);
 	
 private:
 	UPROPERTY(EditAnywhere, Category=Input)
@@ -87,4 +91,5 @@ public:
 	UGameScoreBoardWidget* GameScoreBoardWidget;
 	UGamePlayCrosshairWidget* GamePlayCrosshairWidget;
 	UTeamScoreWidget* TeamScoreWidget;
+	class UDirectionalDamageIndicator* DirectionalDamageIndicator;
 };

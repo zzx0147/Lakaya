@@ -28,11 +28,6 @@ void ADamageableCharacter::BeginPlay()
 
 	if (GetController() == nullptr) return;
 
-	if (GetController()->IsLocalController() && HasAuthority())
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Server DCharacter Begin Play"));
-	}
-
 	if (GetController()->IsLocalController())
 	{
 		// 스코어보드 위젯
@@ -74,6 +69,8 @@ float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 		return 0.0f;
 	}
 
+	if (EventInstigator == nullptr) return 0.0f;
+
 	auto enemyPlayerState = EventInstigator->GetPlayerState<ACollectorPlayerState>();
 	if (enemyPlayerState == nullptr)
 	{
@@ -86,7 +83,7 @@ float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 	}
 
 	auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	
+
 	Health -= Damage;
 	if (Health > MaximumHealth)
 	{
@@ -144,6 +141,20 @@ void ADamageableCharacter::OnTakeAnyDamageCallback(AActor* DamagedActor, float D
                                                    AController* InstigatedBy, AActor* DamageCauser)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Damaged : %f"), Damage));
+	
+	IndicateRPC(DamageCauser->GetFName(), DamageCauser->GetActorLocation(), 3.0f);
+}
+
+void ADamageableCharacter::IndicateRPC_Implementation(FName CauserName, FVector DamageCursorPosition, float time)
+{
+	if (GetController()->IsLocalPlayerController())
+	{
+		AMenuCallingPlayerController* MenuCallingPlayercontroller = Cast<AMenuCallingPlayerController>(GetController());
+		if (MenuCallingPlayercontroller != nullptr)
+		{
+			MenuCallingPlayercontroller->IndicateStart(CauserName, DamageCursorPosition, 3.0f);
+		}
+	}
 }
 
 void ADamageableCharacter::RespawnNotify_Implementation()
