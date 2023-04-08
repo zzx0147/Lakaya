@@ -229,6 +229,5 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 		return;
 	}
 	
-	KilledDamageableCharacter->FullHealth();
 	KilledDamageableCharacter->Respawn();
 }

@@ -23,39 +23,8 @@ void ADamageableCharacter::BeginPlay()
 	if (IsRunningDedicatedServer()) return;
 
 	OnTakeAnyDamage.AddDynamic(this, &ADamageableCharacter::OnTakeAnyDamageCallback);
-	if (auto BattleController = GetWorld()->GetFirstPlayerController<ABattlePlayerController>())
+	if (const auto BattleController = GetWorld()->GetFirstPlayerController<ABattlePlayerController>())
 		BattleController->OnCharacterBeginPlay(this);
-
-	if (GetController() == nullptr) return;
-
-	if (GetController()->IsLocalController() && HasAuthority())
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Server DCharacter Begin Play"));
-	}
-
-	if (GetController()->IsLocalController())
-	{
-		// 스코어보드 위젯
-		UClass* GamePlayHealthWidgetClass = LoadClass<UGamePlayHealthWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget.WBP_GamePlayHealthWidget_C"));
-		if (GamePlayHealthWidgetClass == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("GamePlayHealthWidgetClass is null."));
-			return;
-		}
-
-		APlayerController* MyPlayerController = Cast<APlayerController>(GetController());
-
-		if (MyPlayerController == nullptr) return;
-
-		GamePlayHealthWidget = CreateWidget<UGamePlayHealthWidget>(MyPlayerController, GamePlayHealthWidgetClass);
-		if (GamePlayHealthWidget == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("GamePlayHealthWidget is null."));
-			return;
-		}
-		GamePlayHealthWidget->AddToViewport();
-		GamePlayHealthWidget->SetVisibility(ESlateVisibility::Visible);
-	}
 }
 
 float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -85,14 +54,12 @@ float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 		return 0.0f;
 	}
 
-	auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	const auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	
 	Health -= Damage;
-	if (Health > MaximumHealth)
-	{
-		Health = MaximumHealth;
-	}
-	OnRep_Health();
+	if (Health > MaximumHealth) Health = MaximumHealth;
+	OnHealthChanged.Broadcast(this, Health);
+	
 	if (Health <= 0.f) KillCharacter(EventInstigator, DamageCauser);
 	return Damage;
 }
@@ -107,6 +74,7 @@ void ADamageableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 void ADamageableCharacter::Respawn()
 {
+	Health = MaximumHealth;
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	SetActorEnableCollision(true);
 	RespawnNotify();
@@ -129,14 +97,14 @@ void ADamageableCharacter::KillCharacterNotify_Implementation(AController* Event
 
 void ADamageableCharacter::OnRep_MaximumHealth()
 {
-	OnMaximumHealthReplicated.Broadcast(this, MaximumHealth);
+	OnMaximumHealthChanged.Broadcast(this, MaximumHealth);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red,
 	                                 FString::Printf(TEXT("MaximumHealth Changed : %f"), MaximumHealth));
 }
 
 void ADamageableCharacter::OnRep_Health()
 {
-	OnHealthReplicated.Broadcast(this, Health);
+	OnHealthChanged.Broadcast(this, Health);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Health Changed : %f"), Health));
 }
 

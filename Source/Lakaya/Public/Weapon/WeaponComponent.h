@@ -7,9 +7,9 @@
 #include "WeaponFire.h"
 #include "WeaponReload.h"
 #include "Components/ActorComponent.h"
-#include "GameFramework/GameStateBase.h"
 #include "WeaponComponent.generated.h"
 
+DECLARE_EVENT_OneParam(UWeaponComponent, FUpgradeLevelSignature, const uint8&)
 
 UCLASS(ClassGroup=(Weapon), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UWeaponComponent : public UActorComponent
@@ -21,17 +21,18 @@ public:
 
 	virtual void ReadyForReplication() override;
 
+protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+public:
 	virtual void RequestSetupData(const FName& RowName);
 	virtual void UpgradeWeapon();
 	virtual void UpgradeInitialize();
-
-protected:
-	virtual void BeginPlay() override;
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	inline const uint8& GetMaximumUpgradeLevel() const { return MaximumUpgradeLevel; }
+	inline const uint8& GetUpgradeLevel() const { return UpgradeLevel; }
 
 protected:
 	virtual void SetupData();
-	virtual void SetupUI();
 
 	UFUNCTION()
 	virtual void OnRep_UpgradeLevel();
@@ -64,6 +65,9 @@ public:
 	UPROPERTY(Replicated, VisibleAnywhere)
 	UWeaponReload* ReloadSubObject;
 
+	// 무기 업그레이드 단계가 변경되면 호출되는 이벤트입니다.
+	FUpgradeLevelSignature OnUpgradeLevelChanged;
+
 protected:
 	FName RequestedRowName;
 
@@ -73,11 +77,11 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UDataTable* WeaponUpgradeDataTable;
 
-	UPROPERTY(ReplicatedUsing = OnRep_UpgradeLevel)
-	int8 UpgradeLevel;
+	UPROPERTY(EditAnywhere)
+	uint8 MaximumUpgradeLevel;
 
-	class UGamePlayConsecutiveKillsWidget* ConsecutiveKillsWidget;
-	class UGamePlayBulletWidget* BulletWidget;
+	UPROPERTY(ReplicatedUsing = OnRep_UpgradeLevel)
+	uint8 UpgradeLevel;
 
 private:
 	bool bIsDataSetupRequested;

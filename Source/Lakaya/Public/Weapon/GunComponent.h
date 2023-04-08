@@ -6,6 +6,7 @@
 #include "WeaponComponent.h"
 #include "GunComponent.generated.h"
 
+DECLARE_EVENT_OneParam(UGunComponent, FBulletChangedSignature, const uint16&);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UGunComponent : public UWeaponComponent
@@ -14,10 +15,10 @@ class LAKAYA_API UGunComponent : public UWeaponComponent
 
 public:
 	UGunComponent();
-	
+
 	virtual void UpgradeWeapon() override;
 	virtual void UpgradeInitialize() override;
-	
+
 	inline const uint16& GetMagazineCapacity() const { return MagazineCapacity; }
 	inline const uint16& GetRemainBullets() const { return RemainBullets; }
 
@@ -41,7 +42,6 @@ public:
 
 protected:
 	virtual void SetupData() override;
-	virtual void SetupUI() override;
 
 	UFUNCTION()
 	virtual void OnRep_MagazineCapacity();
@@ -49,8 +49,11 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_RemainBullets();
 
-private:
+public:
+	FBulletChangedSignature OnCurrentBulletChanged;
+	FBulletChangedSignature OnMaximumBulletChanged;
 
+private:
 	uint16 OriginMagazineCapacity;
 
 	UPROPERTY(ReplicatedUsing = OnRep_MagazineCapacity)

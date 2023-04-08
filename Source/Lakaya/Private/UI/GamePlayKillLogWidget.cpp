@@ -6,7 +6,7 @@
 #include "Components/VerticalBox.h"
 #include "UI/KillLogElement.h"
 
-void UGamePlayKillLogWidget::UpdateKillLogWidget(ADamageableCharacter* Character)
+void UGamePlayKillLogWidget::OnCharacterBeginPlay(ADamageableCharacter* Character)
 {
 	if (Character) Character->OnKillCharacterNotify.AddUObject(this, &UGamePlayKillLogWidget::OnKillCharacterNotify);
 	else UE_LOG(LogInit, Error, TEXT("SetupKillLogWidget::Character was nullptr!"));
@@ -34,7 +34,7 @@ void UGamePlayKillLogWidget::NativeConstruct()
 
 	ElementPool.SetupObjectPool(MaxElementCount, [this]
 	{
-		auto Result = NewObject<UKillLogElement>(this, KillLogClass);
+		const auto Result = NewObject<UKillLogElement>(this, KillLogClass);
 		Result->SetReturnFunction([this](UKillLogElement* Element)
 		{
 			ElementPool.ReturnObject(Element);

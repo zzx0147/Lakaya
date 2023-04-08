@@ -33,6 +33,8 @@ public:
 	 */
 	void SetupPrimaryWeapon(const FName& WeaponClassRowName);
 
+	inline class UWeaponComponent* GetPrimaryWeapon() { return PrimaryWeapon; }
+
 	void FireStart();
 	void FireStop();
 	void AbilityStart();
