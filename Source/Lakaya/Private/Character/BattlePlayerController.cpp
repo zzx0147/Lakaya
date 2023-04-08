@@ -7,7 +7,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "Character/ArmedCharacter.h"
 #include "InputMappingContext.h"
+#include "Character/CollectorPlayerState.h"
 #include "Character/DamageableCharacter.h"
+#include "GameFramework/PlayerStart.h"
 #include "UI/GamePlayKillLogWidget.h"
 
 
@@ -77,6 +79,8 @@ void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, 
 	Super::OnPossessedPawnChangedCallback(ArgOldPawn, NewPawn);
 	ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
 	if (!ArmedCharacter.IsValid()) UE_LOG(LogInit, Error, TEXT("NewPawn was not AAramedCharacter!"));
+
+	
 }
 
 void ABattlePlayerController::OnCharacterBeginPlay(ACharacter* ArgCharacter)
@@ -92,6 +96,8 @@ void ABattlePlayerController::OnCharacterBeginPlay(ACharacter* ArgCharacter)
 			}
 
 			KillLogWidget->UpdateKillLogWidget(Cast<ADamageableCharacter>(Damageable));
+
+			
 		}
 	}
 }

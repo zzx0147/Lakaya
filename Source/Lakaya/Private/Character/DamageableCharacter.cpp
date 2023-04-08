@@ -86,6 +86,9 @@ float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 	}
 
 	auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	// TODO : NetMultiCast 된 함수이며 피격받는 캐릭터를 받아 피격 이펙트를 재생합니다.
+	OnHitEffectPlay(CollectorPlayerState->GetPlayerController()->GetCharacter());
 	
 	Health -= Damage;
 	if (Health > MaximumHealth)
@@ -95,6 +98,20 @@ float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 	OnRep_Health();
 	if (Health <= 0.f) KillCharacter(EventInstigator, DamageCauser);
 	return Damage;
+}
+
+void ADamageableCharacter::OnHitEffectPlay_Implementation(AActor* DamagedActor)
+{
+	static bool bPlayedNiagaraEffect = false;
+	// TODO : 나이아가라 이펙트 경로 지정
+	UNiagaraSystem* NiagaraEffect =
+	Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
+		TEXT("/Game/Effects/VFX_Character/VFX/Materials/Impacts/GunImpact/VFX/VFX_Hit_Impact_3")));
+
+	FVector HitLoaction = DamagedActor->GetActorLocation() + FVector(0,0,60);
+
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect, HitLoaction);
+	bPlayedNiagaraEffect = true;
 }
 
 void ADamageableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
