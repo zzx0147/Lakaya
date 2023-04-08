@@ -13,8 +13,6 @@ void AOccupationGameState::BeginPlay()
 void AOccupationGameState::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	
 }
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

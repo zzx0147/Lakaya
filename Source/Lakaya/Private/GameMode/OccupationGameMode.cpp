@@ -272,11 +272,22 @@ void AOccupationGameMode::HandleMatchHasEnded()
 	}
 	
 	UE_LOG(LogTemp, Warning, TEXT("게임이 종료되었습니다."));
+
+	GetWorldTimerManager().SetTimer(TimerHandle_DelayedEnded, this, &AOccupationGameMode::DelayedEndedGame, 2.0f, false);
+
+}
+
+void AOccupationGameMode::DelayedEndedGame()
+{
+	UE_LOG(LogTemp, Warning, TEXT("게임을 떠났습니다."));
+
+	UGameplayStatics::OpenLevel(GetWorld(), "MainLobbyLevel");
 }
 
 void AOccupationGameMode::HandleLeavingMap()
 {
 	Super::HandleLeavingMap();
+
 }
 
 void AOccupationGameMode::Logout(AController* Exiting)
@@ -375,3 +386,4 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 	KilledDamageableCharacter->FullHealth();
 	KilledDamageableCharacter->Respawn();
 }
+
