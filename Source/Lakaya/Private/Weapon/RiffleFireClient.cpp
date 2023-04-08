@@ -60,7 +60,7 @@ void URiffleFireClient::TraceVisualize()
 	// TODO : 나이아가라 이펙트 경로 지정
 	UNiagaraSystem* NiagaraEffect =
 	Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
-		TEXT("/Game/Effects/VFX_Character/VFX/Materials/Impacts/GunImpact/VFX/VFX_GunImpact_2")));
+		TEXT("/Game/Effects/VFX_Character/VFX/Materials/Impacts/GunImpact/VFX/VFX_GunImpact_01")));
 
 	//BP_PlayerDummy 블루프린트 클래스에 [스켈레탈 메시 -> 스태틱 메시 -> 화살표 컴포넌트(Muzzle)] 의 위치를 받아 MuzzleLocation에 저장
 	if (USkeletalMeshComponent* SkeletalMeshComp = Character->GetMesh())
@@ -72,7 +72,7 @@ void URiffleFireClient::TraceVisualize()
 				// TODO : 나이아가라 컴포넌트 가져와서 총구 위치에 이펙트 부착
 				UNiagaraComponent* NiagaraComponent =
 					UNiagaraFunctionLibrary::SpawnSystemAttached(NiagaraEffect, ArrowComp,
-						TEXT("VFX_GunImpact_2"), StartPoint, StartPoint.Rotation(),
+						TEXT("VFX_GunImpact_01"), StartPoint, Character->GetActorRotation(),
 						EAttachLocation::KeepWorldPosition, true);
 			}
 
@@ -92,7 +92,7 @@ void URiffleFireClient::TraceVisualize()
 	// TODO : 총구위치에서 나이아가라 이펙트 스폰 시킨후 bPlayedNiagaraEffect = true 로 설정
 	if (!bPlayedNiagaraEffect)
 	{
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect, StartPoint); // Play the Niagara effect at the StartPoint location
-		bPlayedNiagaraEffect = true; // Set the boolean variable to true, so that the Niagara effect is not played again
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect, StartPoint, Character->GetActorRotation());
+		bPlayedNiagaraEffect = true;
 	}
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "RiffleFireServer.h"
+#include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "DrawDebugHelpers.h"
 #include "Character/CharAnimInstance.h"
