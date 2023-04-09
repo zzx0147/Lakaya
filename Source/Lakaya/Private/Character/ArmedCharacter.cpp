@@ -35,6 +35,7 @@ void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponClassRowName)
 	PrimaryWeapon->RequestSetupData(Data->AssetRowName);
 	PrimaryWeapon->SetIsReplicated(true);
 	if (!PrimaryWeapon->GetIsReplicated()) UE_LOG(LogTemp, Fatal, TEXT("PrimaryWeapon is NOT replicated"));
+	OnPrimaryWeaponChanged.Broadcast(PrimaryWeapon);
 }
 
 ELifetimeCondition AArmedCharacter::AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const
@@ -98,4 +99,9 @@ void AArmedCharacter::ReloadStart()
 void AArmedCharacter::ReloadStop()
 {
 	PrimaryWeapon->ReloadStop();
+}
+
+void AArmedCharacter::OnRep_PrimaryWeapon()
+{
+	OnPrimaryWeaponChanged.Broadcast(PrimaryWeapon);
 }

@@ -11,6 +11,8 @@ void UGamePlayConsecutiveKillsWidget::OnPossessedPawnChanged(APawn* OldPawn, APa
 {
 	if (const auto OldCharacter = Cast<AArmedCharacter>(OldPawn))
 	{
+		OldCharacter->OnPrimaryWeaponChanged.RemoveAll(this);
+
 		if (const auto WeaponComponent = OldCharacter->GetPrimaryWeapon())
 		{
 			WeaponComponent->OnUpgradeLevelChanged.RemoveAll(this);
@@ -28,8 +30,10 @@ void UGamePlayConsecutiveKillsWidget::OnPossessedPawnChanged(APawn* OldPawn, APa
 			MaximumConsecutiveKills = WeaponComponent->GetMaximumUpgradeLevel();
 			ConsecutiveKills = WeaponComponent->GetUpgradeLevel();
 		}
+
+		NewCharacter->OnPrimaryWeaponChanged.AddUObject(this, &UGamePlayConsecutiveKillsWidget::OnPrimaryWeaponChanged);
 	}
-	
+
 	ConsecutiveKillsProgressBar->SetPercent((float)ConsecutiveKills / MaximumConsecutiveKills);
 }
 
@@ -54,5 +58,19 @@ void UGamePlayConsecutiveKillsWidget::OnChangeConsecutiveKills(const uint8& NewC
 {
 	//새로운 연속처치 값을 저장후 프로그래스바 업데이트
 	ConsecutiveKills = NewConsecutiveKills;
+	ConsecutiveKillsProgressBar->SetPercent((float)ConsecutiveKills / MaximumConsecutiveKills);
+}
+
+void UGamePlayConsecutiveKillsWidget::OnPrimaryWeaponChanged(UWeaponComponent* const& WeaponComponent)
+{
+	if (WeaponComponent)
+	{
+		WeaponComponent->OnUpgradeLevelChanged.AddUObject(
+			this, &UGamePlayConsecutiveKillsWidget::OnChangeConsecutiveKills);
+
+		MaximumConsecutiveKills = WeaponComponent->GetMaximumUpgradeLevel();
+		ConsecutiveKills = WeaponComponent->GetUpgradeLevel();
+	}
+	else MaximumConsecutiveKills = ConsecutiveKills = 0;
 	ConsecutiveKillsProgressBar->SetPercent((float)ConsecutiveKills / MaximumConsecutiveKills);
 }

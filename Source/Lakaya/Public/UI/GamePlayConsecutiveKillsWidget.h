@@ -23,6 +23,8 @@ protected:
 	void OnChangeConsecutiveKills(const uint8& NewConsecutiveKills);
 
 private:
+	void OnPrimaryWeaponChanged(class UWeaponComponent* const& WeaponComponent);
+	
 	UProgressBar* ConsecutiveKillsProgressBar; //연속처치를 표기하는 프로그래스 바
 	int16 ConsecutiveKills; //연속처치 횟수
 	int16 MaximumConsecutiveKills; //연속처치 최대 횟수 

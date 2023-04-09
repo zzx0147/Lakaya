@@ -35,6 +35,8 @@ void UGamePlayBulletWidget::OnPossessedPawnChanged(APawn* OldPawn, APawn* NewPaw
 
 	if (const auto OldCharacter = Cast<AArmedCharacter>(OldPawn))
 	{
+		OldCharacter->OnPrimaryWeaponChanged.RemoveAll(this);
+
 		if (const auto GunComponent = Cast<UGunComponent>(OldCharacter->GetPrimaryWeapon()))
 		{
 			GunComponent->OnCurrentBulletChanged.RemoveAll(this);
@@ -52,6 +54,8 @@ void UGamePlayBulletWidget::OnPossessedPawnChanged(APawn* OldPawn, APawn* NewPaw
 			RemainBullets = GunComponent->GetRemainBullets();
 			MagazineCapacity = GunComponent->GetMagazineCapacity();
 		}
+
+		NewCharacter->OnPrimaryWeaponChanged.AddUObject(this, &UGamePlayBulletWidget::OnPrimaryWeaponChanged);
 	}
 
 	OnChangeRemainBullets(RemainBullets);
@@ -68,4 +72,16 @@ void UGamePlayBulletWidget::OnChangeMagazineCapacity(const uint16& NewMagazineCa
 {
 	//업데이트된 최대 총알 갯수를 저장하고 텍스트로 표기(앞에 /를 붙여서 표기)
 	MagazineCapacityText->SetText(FText::FromString(FString::Printf(TEXT("/%d"), NewMagazineCapacity)));
+}
+
+void UGamePlayBulletWidget::OnPrimaryWeaponChanged(UWeaponComponent* const& WeaponComponent)
+{
+	if (const auto GunComponent = Cast<UGunComponent>(WeaponComponent))
+	{
+		GunComponent->OnCurrentBulletChanged.AddUObject(this, &UGamePlayBulletWidget::OnChangeRemainBullets);
+		GunComponent->OnMaximumBulletChanged.AddUObject(this, &UGamePlayBulletWidget::OnChangeMagazineCapacity);
+
+		OnChangeRemainBullets(GunComponent->GetRemainBullets());
+		OnChangeMagazineCapacity(GunComponent->GetMagazineCapacity());
+	}
 }

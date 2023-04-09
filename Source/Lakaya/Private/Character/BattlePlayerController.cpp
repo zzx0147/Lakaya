@@ -83,8 +83,7 @@ void ABattlePlayerController::BeginPlay()
 				if (KillLogWidget) KillLogWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 				if (HealthWidget) HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 				if (ConsecutiveKillsWidget)
-					ConsecutiveKillsWidget->SetVisibility(
-						ESlateVisibility::SelfHitTestInvisible);
+					ConsecutiveKillsWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 				if (BulletWidget) BulletWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 			}
 		});
@@ -126,17 +125,15 @@ void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, 
 	if (!IsLocalController()) return;
 	ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
 	if (!ArmedCharacter.IsValid()) UE_LOG(LogInit, Warning, TEXT("NewPawn was not AAramedCharacter!"))
-	else
-	{
-		if (!HealthWidget) HealthWidget = CreateViewportWidget<UGamePlayHealthWidget>(HealthWidgetClass);
-		if (!ConsecutiveKillsWidget)
-			ConsecutiveKillsWidget = CreateViewportWidget<UGamePlayConsecutiveKillsWidget>(ConsecutiveKillsWidgetClass);
-		if (!BulletWidget) BulletWidget = CreateViewportWidget<UGamePlayBulletWidget>(BulletWidgetClass);
+	
+	if (!HealthWidget) HealthWidget = CreateViewportWidget<UGamePlayHealthWidget>(HealthWidgetClass);
+	if (!ConsecutiveKillsWidget)
+		ConsecutiveKillsWidget = CreateViewportWidget<UGamePlayConsecutiveKillsWidget>(ConsecutiveKillsWidgetClass);
+	if (!BulletWidget) BulletWidget = CreateViewportWidget<UGamePlayBulletWidget>(BulletWidgetClass);
 
-		HealthWidget->OnPossessedPawnChanged(ArgOldPawn, NewPawn);
-		BulletWidget->OnPossessedPawnChanged(ArgOldPawn, NewPawn);
-		ConsecutiveKillsWidget->OnPossessedPawnChanged(ArgOldPawn, NewPawn);
-	}
+	HealthWidget->OnPossessedPawnChanged(ArgOldPawn, NewPawn);
+	BulletWidget->OnPossessedPawnChanged(ArgOldPawn, NewPawn);
+	ConsecutiveKillsWidget->OnPossessedPawnChanged(ArgOldPawn, NewPawn);
 }
 
 void ABattlePlayerController::OnCharacterBeginPlay(ACharacter* ArgCharacter)

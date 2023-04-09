@@ -22,6 +22,7 @@ public:
 private:
 	void OnChangeRemainBullets(const uint16& NewRemainBullets);
 	void OnChangeMagazineCapacity(const uint16& NewMagazineCapacity);
+	void OnPrimaryWeaponChanged(class UWeaponComponent* const& WeaponComponent);
 
 private:
 	UTextBlock* RemainBulletsText; //남은 총알을 표기하는 텍스트
