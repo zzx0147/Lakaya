@@ -28,8 +28,8 @@ public:
 	virtual void RequestSetupData(const FName& RowName);
 	virtual void UpgradeWeapon();
 	virtual void UpgradeInitialize();
-	inline const uint8& GetMaximumUpgradeLevel() const { return MaximumUpgradeLevel; }
-	inline const uint8& GetUpgradeLevel() const { return UpgradeLevel; }
+	const uint8& GetMaximumUpgradeLevel() const { return MaximumUpgradeLevel; }
+	const uint8& GetUpgradeLevel() const { return UpgradeLevel; }
 
 protected:
 	virtual void SetupData();
@@ -38,12 +38,12 @@ protected:
 	virtual void OnRep_UpgradeLevel();
 
 public:
-	inline void FireStart() { if (FireSubObject) FireSubObject->FireStart(); }
-	inline void FireStop() { if (FireSubObject) FireSubObject->FireStop(); }
-	inline void AbilityStart() { if (AbilitySubObject) AbilitySubObject->AbilityStart(); }
-	inline void AbilityStop() { if (AbilitySubObject) AbilitySubObject->AbilityStop(); }
-	inline void ReloadStart() { if (ReloadSubObject) ReloadSubObject->ReloadStart(); }
-	inline void ReloadStop() { if (ReloadSubObject) ReloadSubObject->ReloadStop(); }
+	void FireStart();
+	void FireStop();
+	void AbilityStart();
+	void AbilityStop();
+	void ReloadStart();
+	void ReloadStop();
 
 	// 캐릭터가 사망시 호출됩니다. 이 함수는 NetMulticast와 같이 모든 인스턴스에서 호출됩니다.
 	virtual void OnCharacterDead();
@@ -75,7 +75,7 @@ protected:
 	class UDataTable* WeaponAssetDataTable;
 
 	UPROPERTY(EditAnywhere)
-	class UDataTable* WeaponUpgradeDataTable;
+	UDataTable* WeaponUpgradeDataTable;
 
 	UPROPERTY(EditAnywhere)
 	uint8 MaximumUpgradeLevel;
@@ -85,6 +85,7 @@ protected:
 
 private:
 	bool bIsDataSetupRequested;
+	bool bIsDead;
 };
 
 template <class T>

@@ -77,8 +77,39 @@ void UWeaponComponent::OnRep_UpgradeLevel()
 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Cyan, FString::Printf(TEXT("OnRepUpgradeLevel")));
 }
 
+void UWeaponComponent::FireStart()
+{
+	if (FireSubObject && !bIsDead) FireSubObject->FireStart();
+}
+
+void UWeaponComponent::FireStop()
+{
+	if (FireSubObject && !bIsDead) FireSubObject->FireStop();
+}
+
+void UWeaponComponent::AbilityStart()
+{
+	if (AbilitySubObject && !bIsDead) AbilitySubObject->AbilityStart();
+}
+
+void UWeaponComponent::AbilityStop()
+{
+	if (AbilitySubObject && !bIsDead) AbilitySubObject->AbilityStop();
+}
+
+void UWeaponComponent::ReloadStart()
+{
+	if (ReloadSubObject && !bIsDead) ReloadSubObject->ReloadStart();
+}
+
+void UWeaponComponent::ReloadStop()
+{
+	if (ReloadSubObject && !bIsDead) ReloadSubObject->ReloadStop();
+}
+
 void UWeaponComponent::OnCharacterDead()
 {
+	bIsDead = true;
 	FireSubObject->OnCharacterDead();
 	AbilitySubObject->OnCharacterDead();
 	ReloadSubObject->OnCharacterDead();
@@ -86,6 +117,7 @@ void UWeaponComponent::OnCharacterDead()
 
 void UWeaponComponent::OnCharacterRespawn()
 {
+	bIsDead = false;
 	FireSubObject->OnCharacterRespawn();
 	AbilitySubObject->OnCharacterRespawn();
 	ReloadSubObject->OnCharacterRespawn();
