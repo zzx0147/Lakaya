@@ -21,6 +21,7 @@ public:
 	virtual void OnPossessedPawnChangedCallback(APawn* OldPawn, APawn* NewPawn) override;
 
 	virtual void OnCharacterBeginPlay(ACharacter* ArgCharacter);
+	virtual void OnWeaponChanged(class UWeaponComponent* const& WeaponComponent);
 
 protected:
 	template <class T>

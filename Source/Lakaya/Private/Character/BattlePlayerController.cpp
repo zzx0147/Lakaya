@@ -11,6 +11,7 @@
 #include "UI/GamePlayBulletWidget.h"
 #include "UI/GamePlayConsecutiveKillsWidget.h"
 #include "UI/GamePlayKillLogWidget.h"
+#include "Weapon/GunComponent.h"
 
 
 ABattlePlayerController::ABattlePlayerController()
@@ -123,17 +124,28 @@ void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, 
 {
 	Super::OnPossessedPawnChangedCallback(ArgOldPawn, NewPawn);
 	if (!IsLocalController()) return;
-	ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
-	if (!ArmedCharacter.IsValid()) UE_LOG(LogInit, Warning, TEXT("NewPawn was not AAramedCharacter!"))
-	
-	if (!HealthWidget) HealthWidget = CreateViewportWidget<UGamePlayHealthWidget>(HealthWidgetClass);
-	if (!ConsecutiveKillsWidget)
-		ConsecutiveKillsWidget = CreateViewportWidget<UGamePlayConsecutiveKillsWidget>(ConsecutiveKillsWidgetClass);
-	if (!BulletWidget) BulletWidget = CreateViewportWidget<UGamePlayBulletWidget>(BulletWidgetClass);
 
+	if (!HealthWidget) HealthWidget = CreateViewportWidget<UGamePlayHealthWidget>(HealthWidgetClass);
 	HealthWidget->OnPossessedPawnChanged(ArgOldPawn, NewPawn);
-	BulletWidget->OnPossessedPawnChanged(ArgOldPawn, NewPawn);
-	ConsecutiveKillsWidget->OnPossessedPawnChanged(ArgOldPawn, NewPawn);
+
+	if (const auto OldCharacter = Cast<AArmedCharacter>(ArgOldPawn))
+	{
+		OldCharacter->OnPrimaryWeaponChanged.RemoveAll(this);
+
+		if (const auto WeaponComponent = OldCharacter->GetPrimaryWeapon())
+		{
+			ConsecutiveKillsWidget->UnBindWeapon(WeaponComponent);
+			BulletWidget->UnBindWeapon(Cast<UGunComponent>(WeaponComponent));
+		}
+	}
+
+	ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
+	if (ArmedCharacter.IsValid())
+	{
+		if (const auto WeaponComponent = ArmedCharacter->GetPrimaryWeapon()) OnWeaponChanged(WeaponComponent);
+		ArmedCharacter->OnPrimaryWeaponChanged.AddUObject(this, &ABattlePlayerController::OnWeaponChanged);
+	}
+	else UE_LOG(LogInit, Warning, TEXT("NewPawn was not AAramedCharacter!"))
 }
 
 void ABattlePlayerController::OnCharacterBeginPlay(ACharacter* ArgCharacter)
@@ -143,6 +155,17 @@ void ABattlePlayerController::OnCharacterBeginPlay(ACharacter* ArgCharacter)
 		if (!KillLogWidget) KillLogWidget = CreateViewportWidget<UGamePlayKillLogWidget>(KillLogClass);
 		KillLogWidget->OnCharacterBeginPlay(Damageable);
 	}
+}
+
+void ABattlePlayerController::OnWeaponChanged(UWeaponComponent* const& WeaponComponent)
+{
+	if (!WeaponComponent) return;
+	if (!ConsecutiveKillsWidget)
+		ConsecutiveKillsWidget = CreateViewportWidget<UGamePlayConsecutiveKillsWidget>(ConsecutiveKillsWidgetClass);
+	if (!BulletWidget) BulletWidget = CreateViewportWidget<UGamePlayBulletWidget>(BulletWidgetClass);
+
+	ConsecutiveKillsWidget->BindWeapon(WeaponComponent);
+	BulletWidget->BindWeapon(Cast<UGunComponent>(WeaponComponent));
 }
 
 void ABattlePlayerController::FireStart(const FInputActionValue& Value)

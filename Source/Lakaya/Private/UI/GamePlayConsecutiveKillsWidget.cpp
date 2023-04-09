@@ -2,39 +2,32 @@
 
 #include "UI/GamePlayConsecutiveKillsWidget.h"
 
-#include "Character/ArmedCharacter.h"
 #include "Components/ProgressBar.h"
 #include "Weapon/WeaponComponent.h"
 
 
-void UGamePlayConsecutiveKillsWidget::OnPossessedPawnChanged(APawn* OldPawn, APawn* NewPawn)
+void UGamePlayConsecutiveKillsWidget::BindWeapon(UWeaponComponent* const& WeaponComponent)
 {
-	if (const auto OldCharacter = Cast<AArmedCharacter>(OldPawn))
+	if (WeaponComponent)
 	{
-		OldCharacter->OnPrimaryWeaponChanged.RemoveAll(this);
+		WeaponComponent->OnUpgradeLevelChanged.AddUObject(
+			this, &UGamePlayConsecutiveKillsWidget::OnChangeConsecutiveKills);
 
-		if (const auto WeaponComponent = OldCharacter->GetPrimaryWeapon())
-		{
-			WeaponComponent->OnUpgradeLevelChanged.RemoveAll(this);
-			MaximumConsecutiveKills = ConsecutiveKills = 0;
-		}
+		MaximumConsecutiveKills = WeaponComponent->GetMaximumUpgradeLevel();
+		ConsecutiveKills = WeaponComponent->GetUpgradeLevel();
+		ConsecutiveKillsProgressBar->SetPercent((float)ConsecutiveKills / MaximumConsecutiveKills);
 	}
+}
 
-	if (const auto NewCharacter = Cast<AArmedCharacter>(NewPawn))
+void UGamePlayConsecutiveKillsWidget::UnBindWeapon(UWeaponComponent* const& WeaponComponent)
+{
+	if (WeaponComponent)
 	{
-		if (const auto WeaponComponent = NewCharacter->GetPrimaryWeapon())
-		{
-			WeaponComponent->OnUpgradeLevelChanged.AddUObject(
-				this, &UGamePlayConsecutiveKillsWidget::OnChangeConsecutiveKills);
+		WeaponComponent->OnUpgradeLevelChanged.RemoveAll(this);
 
-			MaximumConsecutiveKills = WeaponComponent->GetMaximumUpgradeLevel();
-			ConsecutiveKills = WeaponComponent->GetUpgradeLevel();
-		}
-
-		NewCharacter->OnPrimaryWeaponChanged.AddUObject(this, &UGamePlayConsecutiveKillsWidget::OnPrimaryWeaponChanged);
+		ConsecutiveKills = MaximumConsecutiveKills = 0;
+		ConsecutiveKillsProgressBar->SetPercent((float)ConsecutiveKills / MaximumConsecutiveKills);
 	}
-
-	ConsecutiveKillsProgressBar->SetPercent((float)ConsecutiveKills / MaximumConsecutiveKills);
 }
 
 void UGamePlayConsecutiveKillsWidget::NativeConstruct()
@@ -49,28 +42,9 @@ void UGamePlayConsecutiveKillsWidget::NativeConstruct()
 #pragma endregion
 }
 
-void UGamePlayConsecutiveKillsWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-}
-
 void UGamePlayConsecutiveKillsWidget::OnChangeConsecutiveKills(const uint8& NewConsecutiveKills)
 {
 	//새로운 연속처치 값을 저장후 프로그래스바 업데이트
 	ConsecutiveKills = NewConsecutiveKills;
-	ConsecutiveKillsProgressBar->SetPercent((float)ConsecutiveKills / MaximumConsecutiveKills);
-}
-
-void UGamePlayConsecutiveKillsWidget::OnPrimaryWeaponChanged(UWeaponComponent* const& WeaponComponent)
-{
-	if (WeaponComponent)
-	{
-		WeaponComponent->OnUpgradeLevelChanged.AddUObject(
-			this, &UGamePlayConsecutiveKillsWidget::OnChangeConsecutiveKills);
-
-		MaximumConsecutiveKills = WeaponComponent->GetMaximumUpgradeLevel();
-		ConsecutiveKills = WeaponComponent->GetUpgradeLevel();
-	}
-	else MaximumConsecutiveKills = ConsecutiveKills = 0;
 	ConsecutiveKillsProgressBar->SetPercent((float)ConsecutiveKills / MaximumConsecutiveKills);
 }
