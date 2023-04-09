@@ -28,7 +28,17 @@ void UDirectionalIndicatorElement::NativeTick(const FGeometry& MyGeometry, float
 	Super::NativeTick(MyGeometry, InDeltaTime);
 	if (bIsIndicating)
 	{
-		//Cast<USceneComponent>(MyPosition);
+		FVector ForwardVector = MyPosition->GetForwardVector();//카메라의 포워드 벡터
+		ForwardVector = FVector(ForwardVector.X, ForwardVector.Y, 0.0f);//높이는 버린다
+
+		FVector ToTargetVector = TargetPosition - MyPosition->GetComponentLocation();//카메라로부터 적 위치를 가르키는 벡터
+		ToTargetVector = FVector(ToTargetVector.X, ToTargetVector.Y, 0.0f);//높이는 버린다
+
+		double Degrees = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(ForwardVector.GetSafeNormal(),ToTargetVector.GetSafeNormal())));
+		
+		FVector CrossProduct = FVector::CrossProduct(ForwardVector, ToTargetVector);
+		
+		DirectionalIndicatorImage->SetRenderTransformAngle(CrossProduct.Z < 0 ? -Degrees : Degrees);
 	}
 }
 

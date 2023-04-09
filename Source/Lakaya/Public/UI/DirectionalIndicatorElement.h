@@ -25,7 +25,7 @@ public:
 private:
 	class UImage* DirectionalIndicatorImage;
 	FTimerHandle TimerHandleIndicate;
-	UActorComponent* MyPosition;
+	USceneComponent* MyPosition;
 	FVector TargetPosition;
 	bool bIsIndicating;
 };
