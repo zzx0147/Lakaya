@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
 #include "Interactable/Interactable.h"
 #include "OccupationObject.generated.h"
@@ -40,6 +41,11 @@ private:
 private:
 	void AutomaticInteractionStop();
 
+	// UFUNCTION()
+	// void OnPlayerEnterTrigger(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	// 						  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+	// 						  bool bFromSweep, const FHitResult& SweepResult);
+	
 private:
 	const float MaxInteractionDuration = 3;
 	float InteractingStartTime;
@@ -52,6 +58,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* Cylinder;
 
+	UPROPERTY(VisibleAnywhere, Category = "Trigger")
+	USphereComponent* TriggerSphere;
+	
 private:
 	EObjectOwner ObjectOwner = EObjectOwner::None;
 	

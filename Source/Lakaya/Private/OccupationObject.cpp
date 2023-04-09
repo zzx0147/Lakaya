@@ -20,6 +20,14 @@ AOccupationObject::AOccupationObject()
 	RootComponent = Trigger;
 	Cylinder->SetupAttachment(RootComponent);
 
+	TriggerSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Trigger Sphere"));
+	TriggerSphere->InitSphereRadius(200.0f);
+	TriggerSphere->SetCollisionProfileName("Custom"); // Set to custom collision profile
+	TriggerSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	TriggerSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // Enable overlap for Pawn channel
+	// TriggerSphere->SetCollisionResponseToChannel(ECC_Object, ECR_Ignore); // Disable collision for Object channel
+	TriggerSphere->SetupAttachment(RootComponent);
+	
 	Trigger->SetCapsuleSize(50.0f, 100.0f, true);
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Cylinder (TEXT("/Game/Dev/KDJ/SM_Antenna.SM_Antenna"));
 	if (SM_Cylinder.Succeeded())
@@ -33,6 +41,8 @@ AOccupationObject::AOccupationObject()
 void AOccupationObject::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// TriggerSphere->OnComponentBeginOverlap.AddDynamic(this, &AOccupationObject::OnPlayerEnterTrigger);
 }
 
 void AOccupationObject::Tick(float DeltaTime)
@@ -210,3 +220,14 @@ void AOccupationObject::AutomaticInteractionStop()
 	OnInteractionStop(InteractingPawn);
 	InteractingPawn = nullptr;
 }
+
+// void AOccupationObject::OnPlayerEnterTrigger(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+// 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+// {
+// 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+// 	if (OtherActor == PlayerPawn)
+// 	{
+// 		// Execute your desired logic when the player enters the trigger
+// 		// ...
+// 	}
+// }

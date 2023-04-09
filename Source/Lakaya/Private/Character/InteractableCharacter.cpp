@@ -47,7 +47,6 @@ void AInteractableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		if (const auto Local = PlayerControl->GetLocalPlayer())
 		{
 			InputSubSystem = Local->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-			InputSubSystem->AddMappingContext(InteractionContext, InteractionPriority);
 		}
 	}
 }
@@ -65,11 +64,11 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	// Add interaction context when overlapped by trigger
 	if (!InputSubSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
-	// if (!InputSubSystem->HasMappingContext(InteractionContext))
-	// {
-	// 	InputSubSystem->AddMappingContext(InteractionContext, InteractionPriority);
-	// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context added"));
-	// }
+	if (!InputSubSystem->HasMappingContext(InteractionContext))
+	{
+		InputSubSystem->AddMappingContext(InteractionContext, InteractionPriority);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context added"));
+	}
 }
 
 void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)

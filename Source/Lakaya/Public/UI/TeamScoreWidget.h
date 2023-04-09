@@ -40,4 +40,7 @@ public:
 	
 	UFUNCTION()
 	void OnChangeBTeamScore(float NewScore);
+
+private:
+	AOccupationGameState* OccupationGameState;
 };

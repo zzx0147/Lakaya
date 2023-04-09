@@ -89,6 +89,7 @@ void AMenuCallingPlayerController::BeginPlay()
 			CreateGamePlayCrosshairWidget();
 			CreateTeamScoreWidget();
 			CreateDirectionalDamageIndicator();
+			CreateGameResultWidget();
 
 			#pragma endregion 
 		}
@@ -179,6 +180,21 @@ void AMenuCallingPlayerController::CreateTeamScoreWidget()
 			return;
 		}
 	}
+}
+
+void AMenuCallingPlayerController::CreateGameResultWidget()
+{
+	if (IsLocalController())
+	{
+		// 게임결과창 위젯
+		GameResultWidget = CreateWidgetHelper<UGameResultWidget>(TEXT("/Game/Blueprints/UMG/WBP_GameResultWidget.WBP_GameResultWidget_C"));
+		if (GameResultWidget == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GameResultWidget is null."));
+			return;
+		}
+	}
+}
 }
 
 void AMenuCallingPlayerController::CreateDirectionalDamageIndicator()

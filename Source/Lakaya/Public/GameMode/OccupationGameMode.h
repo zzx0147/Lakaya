@@ -38,10 +38,16 @@ private:
 
 	virtual void RespawnPlayer(AController* KilledController) override;
 
+	void DelayedEndedGame();
+
+private:
+	float GamePlayTime = 180.0f;
+	
 private:
 	FTimerHandle TimerHandle_CheckStartMatch;
 	FTimerHandle TimerHandle_DelayedStart;
-
+	FTimerHandle TimerHandle_DelayedEnded;
+	
 public:
 	FOnGameModeInitialized OnGameModeInitialized;
 };
