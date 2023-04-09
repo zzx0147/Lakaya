@@ -88,12 +88,20 @@ void AMovablePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn,
 	if (!MovableCharacter.IsValid()) UE_LOG(LogInit, Warning, TEXT("Possessed pawn was not AMovableCharacter"));
 }
 
+bool AMovablePlayerController::SetMovable(bool NewBoolean)
+{
+	// UE_LOG(LogTemp, Warning, TEXT("%s"), bMovable);
+	bMovable = NewBoolean;
+	return bMovable;
+}
+
 void AMovablePlayerController::Move(const FInputActionValue& Value)
 {
 	if (!MovableCharacter.IsValid()) return;
 	const auto Vector = Value.Get<FVector2D>();
 	const FRotationMatrix Matrix((FRotator(0, GetControlRotation().Yaw, 0)));
 
+	if (!bMovable) return;
 	MovableCharacter->AddMovementInput(Matrix.GetUnitAxis(EAxis::X), Vector.Y);
 	MovableCharacter->AddMovementInput(Matrix.GetUnitAxis(EAxis::Y), Vector.X);
 }

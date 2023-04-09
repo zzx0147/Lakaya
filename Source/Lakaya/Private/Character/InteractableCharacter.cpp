@@ -8,6 +8,7 @@
 #include "Camera/CameraComponent.h"
 #include "InputMappingContext.h"
 #include "Interactable/Interactable.h"
+#include "PlayerController/MovablePlayerController.h"
 
 AInteractableCharacter::AInteractableCharacter()
 {
@@ -136,6 +137,19 @@ void AInteractableCharacter::InteractionStopNotify_Implementation(const float& T
 		{
 			GetWorldTimerManager().ClearTimer(InteractionTimer);
 			OnInteractionStoppedNotify.Broadcast(Time);
+			// auto PlayerController = Cast<APlayerController>(GetController());
+			// if (PlayerController == nullptr)
+			// {
+			// 	UE_LOG(LogTemp, Warning, TEXT("OccupationObject_PlayerController is null."));
+			// 	return;
+			// }
+			// auto MoveController = Cast<AMovablePlayerController>(PlayerController);
+			// if (MoveController)
+			// {
+			// 	UE_LOG(LogTemp, Warning, TEXT("OccupationObject_MoveController is null."));
+			// 	return;
+			// }
+			// MoveController->SetMovable(true);
 		}
 		else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStopNotify!"));
 	});
@@ -167,12 +181,12 @@ void AInteractableCharacter::InteractionStartNotify_Implementation(const float& 
 					{
 						InteractingActor = nullptr;
 						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,
-						                                 TEXT("Interaction Completed in Owner!"));
+														 TEXT("Interaction Completed in Owner!"));
 					}
 					else
 						UE_LOG(LogActor, Error,
-					       TEXT("Fail to release focus on InteractionStartNotify owner context! FocusState was %d"),
-					       GetFocusState(EFocusContext::Owner,EFocusSpace::MainHand));
+						   TEXT("Fail to release focus on InteractionStartNotify owner context! FocusState was %d"),
+						   GetFocusState(EFocusContext::Owner,EFocusSpace::MainHand));
 				}, Duration - LockstepDelay, false);
 			}
 
@@ -183,21 +197,35 @@ void AInteractableCharacter::InteractionStartNotify_Implementation(const float& 
 				{
 					if (ReleaseFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
 						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,
-						                                 TEXT("Interaction Completed in Server!"));
+														 TEXT("Interaction Completed in Server!"));
 					else
 						UE_LOG(LogActor, Error,
-					       TEXT("Fail to release focus on InteractionStartNotify with authority! FocusState was %d"),
-					       GetFocusState(EFocusContext::Server,EFocusSpace::MainHand));
+						   TEXT("Fail to release focus on InteractionStartNotify with authority! FocusState was %d"),
+						   GetFocusState(EFocusContext::Server,EFocusSpace::MainHand));
 				}
 
 				if (ReleaseFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
 					GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Green,
-					                                 TEXT("Interaction Completed in Simulated!"));
+													 TEXT("Interaction Completed in Simulated!"));
 				else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStartNotify! FocusState was %d"),
-				            GetFocusState(EFocusContext::Simulated,EFocusSpace::MainHand));
+							GetFocusState(EFocusContext::Simulated,EFocusSpace::MainHand));
 			}, Duration, false);
 
 			OnInteractionStarted.Broadcast(Time, Actor, Duration);
+
+			// auto PlayerController = Cast<APlayerController>(GetController());
+			// if (PlayerController == nullptr)
+			// {
+			// 	UE_LOG(LogTemp, Warning, TEXT("OccupationObject_PlayerController is null."));
+			// 	return;
+			// }
+			// auto MoveController = Cast<AMovablePlayerController>(PlayerController);
+			// if (MoveController)
+			// {
+			// 	UE_LOG(LogTemp, Warning, TEXT("OccupationObject_MoveController is null."));
+			// 	return;
+			// }
+			// MoveController->SetMovable(false);
 		}
 		else UE_LOG(LogActor, Error, TEXT("Fail to set focus on InteractionStartNotify! FocusState was %d"),
 		            GetFocusState(EFocusContext::Simulated,EFocusSpace::MainHand));
