@@ -9,8 +9,10 @@
 #include "InputMappingContext.h"
 #include "Character/CollectorPlayerState.h"
 #include "Character/DamageableCharacter.h"
-#include "GameFramework/PlayerStart.h"
+#include "UI/GamePlayBulletWidget.h"
+#include "UI/GamePlayConsecutiveKillsWidget.h"
 #include "UI/GamePlayKillLogWidget.h"
+#include "Weapon/GunComponent.h"
 
 
 ABattlePlayerController::ABattlePlayerController()
@@ -47,8 +49,53 @@ ABattlePlayerController::ABattlePlayerController()
 	static const ConstructorHelpers::FClassFinder<UGamePlayKillLogWidget> KillLogFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayKillLogWidget"));
 
+	static const ConstructorHelpers::FClassFinder<UGamePlayHealthWidget> HealthFinder(
+		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
+
+	static const ConstructorHelpers::FClassFinder<UGamePlayBulletWidget> BulletFinder(
+		TEXT("/Game/Blueprints/UMG/WBP_GamePlayBulletWidget"));
+
+	static const ConstructorHelpers::FClassFinder<UGamePlayConsecutiveKillsWidget> ConsecutiveFinder(
+		TEXT("/Game/Blueprints/UMG/WBP_GamePlayConsecutiveKillsWidget"));
+
 	KillLogClass = KillLogFinder.Class;
 	if (!KillLogClass) UE_LOG(LogController, Fatal, TEXT("Fail to find KillLogClass!"));
+
+	HealthWidgetClass = HealthFinder.Class;
+	if (!HealthWidgetClass) UE_LOG(LogController, Fatal, TEXT("Fail to find HealthWidgetClass!"));
+
+	BulletWidgetClass = BulletFinder.Class;
+	if (!BulletWidgetClass) UE_LOG(LogController, Fatal, TEXT("Fail to find BulletWidgetClass!"));
+
+	ConsecutiveKillsWidgetClass = ConsecutiveFinder.Class;
+	if (!ConsecutiveKillsWidgetClass) UE_LOG(LogController, Fatal, TEXT("Fail to find ConsecutiveKillsWidgetClass!"));
+}
+
+void ABattlePlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	if (!IsLocalController()) return;
+
+	if (const auto GameState = GetWorld()->GetGameState<AOccupationGameState>())
+	{
+		GameState->OnOccupationChangeGameState.AddLambda([this](EOccupationGameState State)
+		{
+			if (State == EOccupationGameState::Progress)
+			{
+				if (KillLogWidget) KillLogWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				if (HealthWidget) HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				if (ConsecutiveKillsWidget)
+					ConsecutiveKillsWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				if (BulletWidget) BulletWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			}
+		});
+	}
+
+	if (!KillLogWidget) KillLogWidget = CreateViewportWidget<UGamePlayKillLogWidget>(KillLogClass);
+	if (!HealthWidget) HealthWidget = CreateViewportWidget<UGamePlayHealthWidget>(HealthWidgetClass);
+	if (!ConsecutiveKillsWidget)
+		ConsecutiveKillsWidget = CreateViewportWidget<UGamePlayConsecutiveKillsWidget>(ConsecutiveKillsWidgetClass);
+	if (!BulletWidget) BulletWidget = CreateViewportWidget<UGamePlayBulletWidget>(BulletWidgetClass);
 }
 
 void ABattlePlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
@@ -77,29 +124,49 @@ void ABattlePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsy
 void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, APawn* NewPawn)
 {
 	Super::OnPossessedPawnChangedCallback(ArgOldPawn, NewPawn);
-	ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
-	if (!ArmedCharacter.IsValid()) UE_LOG(LogInit, Error, TEXT("NewPawn was not AAramedCharacter!"));
+	if (!IsLocalController()) return;
 
-	
+	if (!HealthWidget) HealthWidget = CreateViewportWidget<UGamePlayHealthWidget>(HealthWidgetClass);
+	HealthWidget->OnPossessedPawnChanged(ArgOldPawn, NewPawn);
+
+	if (const auto OldCharacter = Cast<AArmedCharacter>(ArgOldPawn))
+	{
+		OldCharacter->OnPrimaryWeaponChanged.RemoveAll(this);
+
+		if (const auto WeaponComponent = OldCharacter->GetPrimaryWeapon())
+		{
+			ConsecutiveKillsWidget->UnBindWeapon(WeaponComponent);
+			BulletWidget->UnBindWeapon(Cast<UGunComponent>(WeaponComponent));
+		}
+	}
+
+	ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
+	if (ArmedCharacter.IsValid())
+	{
+		if (const auto WeaponComponent = ArmedCharacter->GetPrimaryWeapon()) OnWeaponChanged(WeaponComponent);
+		ArmedCharacter->OnPrimaryWeaponChanged.AddUObject(this, &ABattlePlayerController::OnWeaponChanged);
+	}
+	else UE_LOG(LogInit, Warning, TEXT("NewPawn was not AAramedCharacter!"))
 }
 
 void ABattlePlayerController::OnCharacterBeginPlay(ACharacter* ArgCharacter)
 {
 	if (const auto Damageable = Cast<ADamageableCharacter>(ArgCharacter))
 	{
-		if (IsLocalController())
-		{
-			if (!KillLogWidget)
-			{
-				KillLogWidget = CreateWidget<UGamePlayKillLogWidget>(this, KillLogClass);
-				KillLogWidget->AddToViewport();
-			}
-
-			KillLogWidget->UpdateKillLogWidget(Cast<ADamageableCharacter>(Damageable));
-
-			
-		}
+		if (!KillLogWidget) KillLogWidget = CreateViewportWidget<UGamePlayKillLogWidget>(KillLogClass);
+		KillLogWidget->OnCharacterBeginPlay(Damageable);
 	}
+}
+
+void ABattlePlayerController::OnWeaponChanged(UWeaponComponent* const& WeaponComponent)
+{
+	if (!WeaponComponent) return;
+	if (!ConsecutiveKillsWidget)
+		ConsecutiveKillsWidget = CreateViewportWidget<UGamePlayConsecutiveKillsWidget>(ConsecutiveKillsWidgetClass);
+	if (!BulletWidget) BulletWidget = CreateViewportWidget<UGamePlayBulletWidget>(BulletWidgetClass);
+
+	ConsecutiveKillsWidget->BindWeapon(WeaponComponent);
+	BulletWidget->BindWeapon(Cast<UGunComponent>(WeaponComponent));
 }
 
 void ABattlePlayerController::FireStart(const FInputActionValue& Value)

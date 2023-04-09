@@ -6,6 +6,8 @@
 #include "DamageableCharacter.h"
 #include "ArmedCharacter.generated.h"
 
+DECLARE_EVENT_OneParam(AArmedCharacter, FWeaponChangeSignature, class UWeaponComponent* const&);
+
 /**
  * 
  */
@@ -33,6 +35,8 @@ public:
 	 */
 	void SetupPrimaryWeapon(const FName& WeaponClassRowName);
 
+	inline class UWeaponComponent* GetPrimaryWeapon() { return PrimaryWeapon; }
+
 	void FireStart();
 	void FireStop();
 	void AbilityStart();
@@ -40,10 +44,16 @@ public:
 	void ReloadStart();
 	void ReloadStop();
 
+	// 첫번째 무기가 변경되면 호출됩니다. 물론 초기에 셋업되는 경우에도 호출됩니다.
+	FWeaponChangeSignature OnPrimaryWeaponChanged;
+
 private:
+	UFUNCTION()
+	void OnRep_PrimaryWeapon();
+	
 	UPROPERTY(EditAnywhere)
 	class UDataTable* WeaponClassDataTable;
 
-	UPROPERTY(Replicated, VisibleAnywhere)
+	UPROPERTY(ReplicatedUsing=OnRep_PrimaryWeapon, VisibleAnywhere)
 	class UWeaponComponent* PrimaryWeapon;
 };

@@ -162,6 +162,5 @@ void ALakayaDefalutPlayGameMode::RespawnPlayer(AController* KilledController)
 		return;
 	}
 	
-	KilledDamageableCharacter->FullHealth();
 	KilledDamageableCharacter->Respawn();
 }

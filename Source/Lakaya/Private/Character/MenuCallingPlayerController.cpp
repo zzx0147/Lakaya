@@ -29,6 +29,9 @@ void AMenuCallingPlayerController::SetupInputComponent()
 		Component->BindAction(ScoreAction, ETriggerEvent::Triggered, this,
 		                      &AMenuCallingPlayerController::ScoreHandler);
 	}
+
+	if (const auto Subsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+		Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 }
 
 AMenuCallingPlayerController::AMenuCallingPlayerController()
@@ -59,40 +62,19 @@ void AMenuCallingPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
-	if (HasAuthority() && IsLocalPlayerController())
+	if (IsLocalController())
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Magenta, *(FString::Printf(TEXT("Controller is Replicated %d"), GetIsReplicated())));
-	}
-	else if(IsLocalPlayerController())
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Blue, *(FString::Printf(TEXT("Controller is Replicated %d"), GetIsReplicated())));
-	}
+#pragma region Update UI
 
+		CreateLoadingWidget();
+		CreateGameTimeWidget();
+		// CreateScoreBoardWidget();
+		CreateGamePlayCrosshairWidget();
+		CreateTeamScoreWidget();
+		CreateDirectionalDamageIndicator();
+		CreateGameResultWidget();
 
-	if (auto LocalPlayer = GetLocalPlayer())
-	{
-		if (const auto Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
-		{
-			Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
-
-			#pragma region Update UI
-			if (GetWorld()->GetGameState() == nullptr)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("GetGameState is null."));
-				return;
-			}
-			
-			CreateLoadingWidget();
-			CreateGameTimeWidget();
-			// CreateScoreBoardWidget();
-			CreateGamePlayCrosshairWidget();
-			CreateTeamScoreWidget();
-			CreateDirectionalDamageIndicator();
-			CreateGameResultWidget();
-
-			#pragma endregion 
-		}
+#pragma endregion
 	}
 }
 
@@ -110,14 +92,17 @@ void AMenuCallingPlayerController::LoadoutHandler(const FInputActionValue& Value
 
 void AMenuCallingPlayerController::ScoreHandler(const FInputActionValue& Value)
 {
+	//TODO: UI를 띄웁니다.
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Score"));
 }
 
 void AMenuCallingPlayerController::CreateLoadingWidget()
 {
-	if (IsLocalPlayerController())
+	if (IsLocalController())
 	{
 		// 로딩 위젯
-		LoadingWidget = CreateWidgetHelper<ULoadingWidget>(TEXT("/Game/Blueprints/UMG/WBP_LoadingWidget.WBP_LoadingWidget_C"));
+		LoadingWidget = CreateWidgetHelper<ULoadingWidget>(
+			TEXT("/Game/Blueprints/UMG/WBP_LoadingWidget.WBP_LoadingWidget_C"));
 		if (LoadingWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("LoadingWidget is null."));
@@ -128,10 +113,11 @@ void AMenuCallingPlayerController::CreateLoadingWidget()
 
 void AMenuCallingPlayerController::CreateGameTimeWidget()
 {
-	if (IsLocalPlayerController())
+	if (IsLocalController())
 	{
 		// 게임 시간 위젯
-		GameTimeWidget = CreateWidgetHelper<UGameTimeWidget>(TEXT("/Game/Blueprints/UMG/WBP_GameTimeWidget.WBP_GameTimeWidget_C"));
+		GameTimeWidget = CreateWidgetHelper<UGameTimeWidget>(
+			TEXT("/Game/Blueprints/UMG/WBP_GameTimeWidget.WBP_GameTimeWidget_C"));
 		if (GameTimeWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("GameTimeWidget is null."));
@@ -145,7 +131,8 @@ void AMenuCallingPlayerController::CreateScoreBoardWidget()
 	if (IsLocalController())
 	{
 		// 스코어보드 위젯
-		GameScoreBoardWidget = CreateWidgetHelper<UGameScoreBoardWidget>(TEXT("/Game/Blueprints/UMG/WBP_GameScoreBoardWidget.WBP_GameScoreBoardWidget_C"));
+		GameScoreBoardWidget = CreateWidgetHelper<UGameScoreBoardWidget>(
+			TEXT("/Game/Blueprints/UMG/WBP_GameScoreBoardWidget.WBP_GameScoreBoardWidget_C"));
 		if (GameScoreBoardWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("GameScoreBoardWidget is null."));
@@ -159,7 +146,8 @@ void AMenuCallingPlayerController::CreateGamePlayCrosshairWidget()
 	if (IsLocalController())
 	{
 		// 크로스헤어 위젯
-		GamePlayCrosshairWidget = CreateWidgetHelper<UGamePlayCrosshairWidget>(TEXT("/Game/Blueprints/UMG/WBP_GamePlayCrosshairWidget.WBP_GamePlayCrosshairWidget_C"));
+		GamePlayCrosshairWidget = CreateWidgetHelper<UGamePlayCrosshairWidget>(
+			TEXT("/Game/Blueprints/UMG/WBP_GamePlayCrosshairWidget.WBP_GamePlayCrosshairWidget_C"));
 		if (GamePlayCrosshairWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("GamePlayCrosshairWidget is null."));
@@ -173,7 +161,8 @@ void AMenuCallingPlayerController::CreateTeamScoreWidget()
 	if (IsLocalController())
 	{
 		// 팀 스코어 위젯
-		TeamScoreWidget = CreateWidgetHelper<UTeamScoreWidget>(TEXT("/Game/Blueprints/UMG/WBP_TeamScoreWidget.WBP_TeamScoreWidget_C"));
+		TeamScoreWidget = CreateWidgetHelper<UTeamScoreWidget>(
+			TEXT("/Game/Blueprints/UMG/WBP_TeamScoreWidget.WBP_TeamScoreWidget_C"));
 		if (TeamScoreWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidget is null."));
@@ -194,7 +183,6 @@ void AMenuCallingPlayerController::CreateGameResultWidget()
 			return;
 		}
 	}
-}
 }
 
 void AMenuCallingPlayerController::CreateDirectionalDamageIndicator()
