@@ -11,8 +11,10 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeJoinedPlayers, int32, in
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeGameState, EOccupationGameState)
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeTime, int32, int32)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeObjectcState, EOccupationObjectState)
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamScore, uint8);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamScore, uint8);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamScore, float);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamScore, float);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamObjectNum, uint8);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamObjectNum, uint8);
 
 UENUM()
 enum class EOccupationGameState : uint8
@@ -55,10 +57,7 @@ public:
 
 	UFUNCTION()
 	void SetGameState(EOccupationGameState NewGameState);
-
-	UFUNCTION()
-	void SetMinSec();
-
+	
 	UFUNCTION()
 	void SetOccupationObject(EOccupationObjectState NewObjectState);
 
@@ -67,6 +66,18 @@ public:
 
 	UFUNCTION()
 	void SetBTeamScore();
+
+	UFUNCTION()
+	void AddATeamObjectNum();
+
+	UFUNCTION()
+	void AddBTeamObjectNum();
+
+	UFUNCTION()
+	void SubATeamObjectNum();
+
+	UFUNCTION()
+	void SubBTeamObjectNum();
 	
 	UPROPERTY(ReplicatedUsing = OnRep_NumPlayers)
 	int32 NumPlayers;
@@ -76,44 +87,55 @@ public:
 
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationObjectState)
 	EOccupationObjectState CurrentOccupationObjectState = EOccupationObjectState::None;
+	
+	UFUNCTION()
+	float GetATeamScore() { return ATeamScore; }
 
 	UFUNCTION()
-	int32 GetMin() { return Min; }
+	float GetBTeamScore() { return BTeamScore; }
 
 	UFUNCTION()
-	int32 GetSec() { return Sec; }
+	float GetATeamObjectNum() { return ATeamObjectNum; }
 
 	UFUNCTION()
-	uint8 GetATeamScore() { return ATeamScore; }
+	float GetBTeamObjectNum() { return BTeamObjectNum; }
 
-	UFUNCTION()
-	uint8 GetBTeamScore() { return BTeamScore; }
+	/**
+	 * @brief 매치가 시작되었을 때 호출됩니다. 
+	 * @param MatchTime 매치가 몇초동안 진행되는지 나타냅니다.
+	 */
+	void OnMatchStarted(const float& MatchTime);
+
+	// 남은 매칭 시간을 가져옵니다. 아직 매칭시간 정보가 설정되지 않았거나, 시간이 지나간 경우 0을 반환합니다.
+	float GetRemainMatchTime();
+	
 private:
-	UPROPERTY(ReplicatedUsing = OnRep_Min)
-	int32 Min = 3;
-
-	UPROPERTY(ReplicatedUsing = OnRep_Sec)
-	int32 Sec = 0;
-
 	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore)
-	uint8 ATeamScore = 0;
+	float ATeamScore = 0;
 
 	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore)
-	uint8 BTeamScore = 0;
-	
+	float BTeamScore = 0;
 
+	UPROPERTY(Replicated)
+	float StartTime;
+
+	UPROPERTY(Replicated)
+	float MatchEndingTime;
+
+	float Standard = 0.2f;
+
+	UPROPERTY(ReplicatedUsing = OnRep_ATeamObjectNum)
+	uint8 ATeamObjectNum = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_BTeamObjectNum)
+	uint8 BTeamObjectNum = 0;
+	
 private:
 	UFUNCTION()
 	void OnRep_NumPlayers();
 
 	UFUNCTION()
 	void OnRep_GameState();
-
-	UFUNCTION()
-	void OnRep_Min();
-	
-	UFUNCTION()
-	void OnRep_Sec();
 
 	UFUNCTION()
 	void OnRep_OccupationObjectState();
@@ -123,6 +145,12 @@ private:
 
 	UFUNCTION()
 	void OnRep_BTeamScore();
+
+	UFUNCTION()
+	void OnRep_ATeamObjectNum();
+
+	UFUNCTION()
+	void OnRep_BTeamObjectNum();
 	
 	UPROPERTY(EditAnywhere)
 	uint8 MaxPlayers = 4;
@@ -134,7 +162,9 @@ public:
 	FOnOccupationChangeObjectcState OnOccupationChangeObjectcState;
 	FOnOccupationChangeATeamScore OnOccupationChangeATeamScore;
 	FOnOccupationChangeBTeamScore OnOccupationChangeBTeamScore;
-
+	FOnOccupationChangeATeamObjectNum OnOccupationChangeATeamObjectNum;
+	FOnOccupationChangeBTeamObjectNum OnOccupationChangeBTeamObjectNum;
+	
 private:
 	FTimerHandle TimerHandle_AteamScoreIncrease;
 	FTimerHandle TimerHandle_BteamScoreIncrease;

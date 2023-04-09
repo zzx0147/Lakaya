@@ -34,7 +34,7 @@ private:
 	void MenuHandler(const FInputActionValue& Value);
 	void LoadoutHandler(const FInputActionValue& Value);
 	void ScoreHandler(const FInputActionValue& Value);
-
+	
 public:
 	template <typename T>
 	T* CreateWidgetHelper(const FString& Path)

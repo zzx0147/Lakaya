@@ -10,6 +10,8 @@
 
 void UGamePlayKillLogWidget::UpdateKillLogWidget(ADamageableCharacter* Character)
 {
+	static uint8 UpdateCount = 0;
+	UE_LOG(LogTemp, Warning, TEXT("Update Kiil Log! : %d"), UpdateCount++);
 	if (Character) Character->OnKillCharacterNotify.AddUObject(this, &UGamePlayKillLogWidget::OnKillCharacterNotify);
 	else UE_LOG(LogInit, Error, TEXT("SetupKillLogWidget::Character was nullptr!"));
 }
@@ -52,12 +54,12 @@ void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController
 	if (KillLogBox->GetChildrenCount() >= InitialChildCount + MaxElementCount)
 	{
 		if (auto FirstKillLog = Cast<UKillLogElement>(KillLogBox->GetChildAt(InitialChildCount)))
-			FirstKillLog->ExpireInstant();
-		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("Fail to get FirstKillLog on OnKillCharacterNotify!"));
-			return;
+			FirstKillLog->SetKillLog(Cast<ADamageableCharacter>(Causer), Cast<ACharacter>(KilledActor));
+			KillLogBox->ShiftChild(InitialChildCount + MaxElementCount - 1, FirstKillLog);
 		}
+		else UE_LOG(LogTemp, Error, TEXT("Fail to get FirstKillLog on OnKillCharacterNotify!"));
+		return;
 	}
 	auto Element = ElementPool.GetObject();
 	KillLogBox->AddChild(Element);

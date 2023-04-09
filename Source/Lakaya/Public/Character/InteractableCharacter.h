@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "ArmedCharacter.h"
 #include "GameFramework/GameStateBase.h"
-#include "UObject/WeakInterfacePtr.h"
+#include "InputActionValue.h"
 #include "InteractableCharacter.generated.h"
 
 DECLARE_EVENT_ThreeParams(AInteractableCharacter, FInteractionStartSignature, const float&, AActor*, const float&);
@@ -61,7 +61,7 @@ protected:
 	void RequestInteractionStop(const float& Time, AActor* Actor);
 
 	// 현재시점의 서버 시간을 가져옵니다.
-	inline float GetServerTime() { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
+	inline float GetServerTime() const { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
 
 private:
 	/**
@@ -97,13 +97,13 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Input|Interaction|Context")
-	UInputMappingContext* InteractionContext;
+	class UInputMappingContext* InteractionContext;
 
 	UPROPERTY(EditAnywhere, Category = "Input|Interaction|Context")
 	int8 InteractionPriority;
 
 	UPROPERTY(EditAnywhere, Category = "Input|Interaction|Actions")
-	UInputAction* InteractionStartAction;
+	class UInputAction* InteractionStartAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input|Interaction|Actions")
 	UInputAction* InteractionStopAction;
@@ -122,4 +122,5 @@ private:
 	FCollisionQueryParams TraceQueryParams;
 	FTimerHandle InteractionTimer;
 	FTimerHandle OwnerInteractionTimer;
+	TWeakObjectPtr<class UEnhancedInputLocalPlayerSubsystem> InputSubSystem;
 };

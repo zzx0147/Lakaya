@@ -58,12 +58,12 @@ void UTeamScoreWidget::ReMoveTeamScoreWidget(EOccupationGameState ChangeGameStat
 	// TODO
 }
 
-void UTeamScoreWidget::OnChangeATeamScore(uint8 NewScore)
+void UTeamScoreWidget::OnChangeATeamScore(float NewScore)
 {
-	ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %d"), NewScore)));
+	ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), NewScore)));
 }
 
-void UTeamScoreWidget::OnChangeBTeamScore(uint8 NewScore)
+void UTeamScoreWidget::OnChangeBTeamScore(float NewScore)
 {
-	BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("B팀 %d"), NewScore)));
+	BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("B팀 %.1f%%"), NewScore)));
 }

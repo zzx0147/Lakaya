@@ -15,6 +15,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Character/ThirdPersonCharacter.h"
 #include "Net/UnrealNetwork.h"
+#include "GameFramework/PlayerStart.h"
 
 void AMenuCallingPlayerController::SetupInputComponent()
 {
@@ -28,7 +29,6 @@ void AMenuCallingPlayerController::SetupInputComponent()
 		Component->BindAction(ScoreAction, ETriggerEvent::Triggered, this,
 		                      &AMenuCallingPlayerController::ScoreHandler);
 	}
-	
 }
 
 AMenuCallingPlayerController::AMenuCallingPlayerController()
@@ -76,18 +76,16 @@ void AMenuCallingPlayerController::BeginPlay()
 		{
 			Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 
-
-
 			#pragma region Update UI
 			if (GetWorld()->GetGameState() == nullptr)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("GetGameState is null."));
 				return;
 			}
-
+			
 			CreateLoadingWidget();
 			CreateGameTimeWidget();
-			CreateScoreBoardWidget();
+			// CreateScoreBoardWidget();
 			CreateGamePlayCrosshairWidget();
 			CreateTeamScoreWidget();
 			CreateDirectionalDamageIndicator();

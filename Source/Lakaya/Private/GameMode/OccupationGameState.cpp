@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "GameMode/OccupationGameState.h"
 #include "Net/UnrealNetwork.h"
 
@@ -15,12 +14,16 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 	DOREPLIFETIME(AOccupationGameState, NumPlayers);
 	DOREPLIFETIME(AOccupationGameState, CurrentGameState);
-	DOREPLIFETIME(AOccupationGameState, Min);
-	DOREPLIFETIME(AOccupationGameState, Sec);
-	
+
 	DOREPLIFETIME(AOccupationGameState, CurrentOccupationObjectState);
 	DOREPLIFETIME(AOccupationGameState, ATeamScore);
 	DOREPLIFETIME(AOccupationGameState, BTeamScore);
+
+	DOREPLIFETIME(AOccupationGameState, ATeamObjectNum);
+	DOREPLIFETIME(AOccupationGameState, BTeamObjectNum);
+
+	DOREPLIFETIME(AOccupationGameState, StartTime);
+	DOREPLIFETIME(AOccupationGameState, MatchEndingTime);
 }
 
 void AOccupationGameState::SetNumPlayers(int32 NewNumPlayers)
@@ -36,38 +39,8 @@ void AOccupationGameState::SetGameState(EOccupationGameState NewGameState)
 		CurrentGameState = NewGameState;
 		if (CurrentGameState == EOccupationGameState::Progress)
 		{
-			FTimerHandle GameTimerHandle;
-			GetWorldTimerManager().SetTimer(GameTimerHandle, this, &AOccupationGameState::SetMinSec, 1.0f, true);
 			OnRep_GameState();
 		}
-	}
-}
-
-void AOccupationGameState::SetMinSec()
-{
-	if (CurrentGameState == EOccupationGameState::Progress)
-	{
-		// const float DeltaTime = GetWorld()->GetDeltaSeconds();
-		// const float TimeScale = 1.0f;
-		
-		if (Sec <= 0)
-		{
-			if (Min <= 0)
-			{
-				// TODO : 게임종료
-				UE_LOG(LogTemp, Warning, TEXT("게임종료"));
-				return;
-			}
-
-			Min -= 1;
-			Sec = 60;
-			OnRep_Min();
-			OnRep_Sec();
-		}
-
-		// Sec -= TimeScale * DeltaTime;
-		Sec -= 1;
-		OnRep_Sec();
 	}
 }
 
@@ -76,41 +49,48 @@ void AOccupationGameState::SetOccupationObject(EOccupationObjectState NewObjectS
 	if (CurrentOccupationObjectState != NewObjectState)
 	{
 		CurrentOccupationObjectState = NewObjectState;
+// <<<<<<< HEAD
+		GetWorldTimerManager().SetTimer(TimerHandle_AteamScoreIncrease, this, &AOccupationGameState::SetATeamScore, 1.0f, true);
+		GetWorldTimerManager().SetTimer(TimerHandle_BteamScoreIncrease, this, &AOccupationGameState::SetBTeamScore, 1.0f, true);
+		
+		if (CurrentOccupationObjectState == EOccupationObjectState::A || CurrentOccupationObjectState == EOccupationObjectState::B)
+		return;
+// =======
 		if (CurrentOccupationObjectState == EOccupationObjectState::A)
 		{
 			// TODO : 점수 올려 줘야 함
 			if (GetWorldTimerManager().IsTimerActive(TimerHandle_BteamScoreIncrease))
 			{
-				GetWorldTimerManager().ClearTimer(TimerHandle_BteamScoreIncrease);	
+				GetWorldTimerManager().ClearTimer(TimerHandle_BteamScoreIncrease);
 			}
-			
-			GetWorldTimerManager().SetTimer(TimerHandle_AteamScoreIncrease, this, &AOccupationGameState::SetATeamScore, 1.0f, true);
+
+			GetWorldTimerManager().SetTimer(TimerHandle_AteamScoreIncrease, this, &AOccupationGameState::SetATeamScore,
+			                                1.0f, true);
 		}
 		else if (CurrentOccupationObjectState == EOccupationObjectState::B)
 		{
 			if (GetWorldTimerManager().IsTimerActive(TimerHandle_AteamScoreIncrease))
 			{
-				GetWorldTimerManager().ClearTimer(TimerHandle_AteamScoreIncrease);	
+				GetWorldTimerManager().ClearTimer(TimerHandle_AteamScoreIncrease);
 			}
-			
-			GetWorldTimerManager().SetTimer(TimerHandle_BteamScoreIncrease, this, &AOccupationGameState::SetBTeamScore, 1.0f, true);
+
+			GetWorldTimerManager().SetTimer(TimerHandle_BteamScoreIncrease, this, &AOccupationGameState::SetBTeamScore,
+			                                1.0f, true);
 		}
 
 		OnRep_OccupationObjectState();
 	}
+
+	OnRep_OccupationObjectState();
 }
 
 void AOccupationGameState::SetATeamScore()
 {
 	if (CurrentGameState == EOccupationGameState::Progress)
 	{
-		if (CurrentOccupationObjectState == EOccupationObjectState::A)
+		if (CurrentOccupationObjectState != EOccupationObjectState::None)
 		{
-			// const float DeltaTime = GetWorld()->GetDeltaSeconds();
-			// const float TimeScale = 1.0f;
-
-			// ATeamScore += TimeScale * DeltaTime;
-			ATeamScore += 1;
+			ATeamScore += (Standard) * GetATeamObjectNum();
 			OnRep_ATeamScore();
 		}
 	}
@@ -120,16 +100,54 @@ void AOccupationGameState::SetBTeamScore()
 {
 	if (CurrentGameState == EOccupationGameState::Progress)
 	{
-		if (CurrentOccupationObjectState == EOccupationObjectState::B)
+		if (CurrentOccupationObjectState != EOccupationObjectState::None)
 		{
-			// const float DeltaTime = GetWorld()->GetDeltaSeconds();
-			// const float TimeScale = 1.0f;
-
-			// BTeamScore += TimeScale * DeltaTime;;
-			BTeamScore += 1;
+			BTeamScore += (Standard) * GetBTeamObjectNum();
 			OnRep_BTeamScore();
 		}
 	}
+}
+
+void AOccupationGameState::AddATeamObjectNum()
+{
+	ATeamObjectNum += 1;
+	OnRep_ATeamObjectNum();
+}
+
+void AOccupationGameState::AddBTeamObjectNum()
+{
+	BTeamObjectNum += 1;
+	OnRep_BTeamObjectNum();
+}
+
+void AOccupationGameState::SubATeamObjectNum()
+{
+	if (ATeamObjectNum > 0)
+		ATeamObjectNum -= 1;
+	else return;
+	
+	OnRep_ATeamObjectNum();
+}
+
+void AOccupationGameState::SubBTeamObjectNum()
+{
+	if (BTeamObjectNum > 0)
+		BTeamObjectNum -= 1;
+	else return;
+	
+	OnRep_BTeamObjectNum();
+}
+
+void AOccupationGameState::OnMatchStarted(const float& MatchTime)
+{
+	StartTime = GetServerWorldTimeSeconds();
+	MatchEndingTime = StartTime + MatchTime;
+}
+
+float AOccupationGameState::GetRemainMatchTime()
+{
+	auto Current = GetServerWorldTimeSeconds();
+	return MatchEndingTime < Current ? 0 : MatchEndingTime - Current;
 }
 
 void AOccupationGameState::OnRep_NumPlayers()
@@ -140,16 +158,6 @@ void AOccupationGameState::OnRep_NumPlayers()
 void AOccupationGameState::OnRep_GameState()
 {
 	OnOccupationChangeGameState.Broadcast(CurrentGameState);
-}
-
-void AOccupationGameState::OnRep_Min()
-{
-	OnOccupationChangeTime.Broadcast(Min, Sec);
-}
-
-void AOccupationGameState::OnRep_Sec()
-{
-	OnOccupationChangeTime.Broadcast(Min, Sec);
 }
 
 void AOccupationGameState::OnRep_OccupationObjectState()
@@ -165,4 +173,14 @@ void AOccupationGameState::OnRep_ATeamScore()
 void AOccupationGameState::OnRep_BTeamScore()
 {
 	OnOccupationChangeBTeamScore.Broadcast(BTeamScore);
+}
+
+void AOccupationGameState::OnRep_ATeamObjectNum()
+{
+	OnOccupationChangeATeamObjectNum.Broadcast(ATeamObjectNum);
+}
+
+void AOccupationGameState::OnRep_BTeamObjectNum()
+{
+	OnOccupationChangeBTeamObjectNum.Broadcast(BTeamObjectNum);
 }

@@ -8,6 +8,14 @@
 #include "Interactable/Interactable.h"
 #include "OccupationObject.generated.h"
 
+UENUM()
+enum class EObjectOwner : uint8
+{
+	None UMETA(DisplayName = "None"), // 아무도 소유하고 있지 않은 상태
+	A UMETA(DisplayName = "A"), // A팀이 소유하고 있는 상태
+	B UMETA(DisplayName = "B"), // B팀이 소유하고 있는 상태
+};
+
 UCLASS()
 class LAKAYA_API AOccupationObject : public AActor, public IInteractable
 {
@@ -29,6 +37,7 @@ private:
 	virtual void OnServerInteractionStopBegin(const float& Time, APawn* Caller) override;
 	virtual void OnInteractionStop(APawn* Caller) override;
 
+private:
 	void AutomaticInteractionStop();
 
 private:
@@ -36,13 +45,19 @@ private:
 	float InteractingStartTime;
 	float InteractingStopTime;
 
+private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UCapsuleComponent* Trigger;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* Cylinder;
+
+private:
+	EObjectOwner ObjectOwner = EObjectOwner::None;
 	
+private:
 	FTimerHandle InteractionTimerHandle;
-	
+
+private:
 	APawn* InteractingPawn;
 };
