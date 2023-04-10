@@ -97,6 +97,8 @@ void ADamageableCharacter::Respawn()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	SetActorEnableCollision(true);
 	RespawnNotify();
+
+
 }
 
 void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
@@ -105,11 +107,17 @@ void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* D
 	//TODO: 트레이스 충돌은 꺼지지만, 여전히 다른 캐릭터의 움직임을 제한하고 있습니다..
 	SetActorEnableCollision(false);
 	KillCharacterNotify(EventInstigator, DamageCauser);
+	
 }
 
 void ADamageableCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
 {
 	//GetMesh()->SetVisibility(false, true);
+
+	GetMesh()->SetCollisionProfileName(TEXT("PhysicsActor"));
+	GetMesh()->SetSimulatePhysics(true);
+	bFixMeshTransform = false;
+
 	OnKillCharacterNotify.Broadcast(GetController(), this, EventInstigator, DamageCauser);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
 }
@@ -150,5 +158,10 @@ void ADamageableCharacter::IndicateRPC_Implementation(FName CauserName, FVector 
 void ADamageableCharacter::RespawnNotify_Implementation()
 {
 	//GetMesh()->SetVisibility(true, true);
+
+	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
+	GetMesh()->SetSimulatePhysics(false);
+	bFixMeshTransform = true;
+
 	OnRespawnCharacterNotify.Broadcast(this);
 }
