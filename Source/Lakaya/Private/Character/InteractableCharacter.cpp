@@ -137,19 +137,6 @@ void AInteractableCharacter::InteractionStopNotify_Implementation(const float& T
 		{
 			GetWorldTimerManager().ClearTimer(InteractionTimer);
 			OnInteractionStoppedNotify.Broadcast(Time);
-			// auto PlayerController = Cast<APlayerController>(GetController());
-			// if (PlayerController == nullptr)
-			// {
-			// 	UE_LOG(LogTemp, Warning, TEXT("OccupationObject_PlayerController is null."));
-			// 	return;
-			// }
-			// auto MoveController = Cast<AMovablePlayerController>(PlayerController);
-			// if (MoveController)
-			// {
-			// 	UE_LOG(LogTemp, Warning, TEXT("OccupationObject_MoveController is null."));
-			// 	return;
-			// }
-			// MoveController->SetMovable(true);
 		}
 		else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStopNotify!"));
 	});
@@ -212,20 +199,6 @@ void AInteractableCharacter::InteractionStartNotify_Implementation(const float& 
 			}, Duration, false);
 
 			OnInteractionStarted.Broadcast(Time, Actor, Duration);
-
-			// auto PlayerController = Cast<APlayerController>(GetController());
-			// if (PlayerController == nullptr)
-			// {
-			// 	UE_LOG(LogTemp, Warning, TEXT("OccupationObject_PlayerController is null."));
-			// 	return;
-			// }
-			// auto MoveController = Cast<AMovablePlayerController>(PlayerController);
-			// if (MoveController)
-			// {
-			// 	UE_LOG(LogTemp, Warning, TEXT("OccupationObject_MoveController is null."));
-			// 	return;
-			// }
-			// MoveController->SetMovable(false);
 		}
 		else UE_LOG(LogActor, Error, TEXT("Fail to set focus on InteractionStartNotify! FocusState was %d"),
 		            GetFocusState(EFocusContext::Simulated,EFocusSpace::MainHand));

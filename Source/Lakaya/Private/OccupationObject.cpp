@@ -81,19 +81,7 @@ void AOccupationObject::OnServerInteractionBegin(const float& Time, APawn* Calle
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
 	{
 		CastedCaller->InitiateInteractionStart(Time, this, 3.f);
-		auto PlayerController = Cast<APlayerController>(Caller->GetController());
-		if (PlayerController == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_PlayerController is null."));
-			return;
-		}
-		auto MoveController = Cast<AMovablePlayerController>(PlayerController);
-		if (MoveController == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_MoveController is null."));
-			return;
-		}
-		MoveController->SetMovable(false);
+		CastedCaller->GetCharacterMovement()->DisableMovement();
 	}
 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionBegin::Caller was not AInteractableCharacter!"));
 }
@@ -125,20 +113,7 @@ void AOccupationObject::OnServerInteractionStopBegin(const float& Time, APawn* C
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
 	{
 		CastedCaller->InteractionStopNotify(Time, this);
-		
-		auto PlayerController = Cast<APlayerController>(Caller->GetController());
-		if (PlayerController == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_PlayerController is null."));
-			return;
-		}
-		auto MoveController = Cast<AMovablePlayerController>(PlayerController);
-		if (MoveController == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_MoveController is null."));
-			return;
-		}
-		MoveController->SetMovable(true);
+		CastedCaller->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	}
 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionStopBegin::Caller was not AInteractableCharacter!"));
 }

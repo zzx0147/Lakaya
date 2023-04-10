@@ -36,6 +36,7 @@ void AMovableCharacter::Run()
 	bIsRunning = true;
 	GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
 	RequestSetRunState(bIsRunning, GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
+	// GetCharacterMovement()->DisableMovement();
 }
 
 void AMovableCharacter::StopRun()

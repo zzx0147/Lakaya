@@ -25,10 +25,6 @@ protected:
 	UFUNCTION()
 	virtual void OnPossessedPawnChangedCallback(APawn* OldPawn, APawn* NewPawn);
 
-public:
-	bool GetMovable() { return bMovable; }
-	bool SetMovable(bool NewBoolean);
-	
 private:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
@@ -38,7 +34,6 @@ private:
 	void StopRun(const FInputActionValue& Value);
 	void Jump(const FInputActionValue& Value);
 
-	
 public:
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Context")
 	class UInputMappingContext* MovementContext;
@@ -68,7 +63,5 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
 	UInputAction* StopRunAction;
 
-	bool bMovable = true;
-	
 	TWeakObjectPtr<class AMovableCharacter> MovableCharacter;
 };

@@ -6,6 +6,7 @@
 
 AAiCharacterController::AAiCharacterController() // 생성자
 {
+	bWantsPlayerState = true;
 }
 
 void AAiCharacterController::AiMove(FVector TargetLocation)
