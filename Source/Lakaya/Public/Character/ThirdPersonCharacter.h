@@ -25,6 +25,9 @@ public:
 	inline const bool& GetYawClutch() const { return YawClutch; }
 	inline void SetYawClutch(const bool& Enable) { YawClutch = Enable; }
 
+protected:
+	bool bFixMeshTransform;
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class USpringArmComponent* SpringArm;
@@ -34,4 +37,5 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	bool YawClutch;
+
 };
