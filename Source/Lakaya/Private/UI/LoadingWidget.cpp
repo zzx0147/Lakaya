@@ -38,7 +38,7 @@ void ULoadingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 void ULoadingWidget::OnChangeJoinedPlayers(uint8 JoinedPlayers, uint8 MaxPlayer)
 {
-    if (JoinedPlayers >= MaxPlayer)
+    if (JoinedPlayers == MaxPlayer)
     {
         LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("곧 게임을 시작합니다."))));
         return;
@@ -57,11 +57,11 @@ void ULoadingWidget::ReMoveLoadingWidget(EOccupationGameState ChangeGamState)
 
 void ULoadingWidget::OnChangeMaxPlayers(uint8 Number, uint8 MaxPlayers)
 {
-    if (Number >= MaxPlayers)
-    {
-        LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("곧 게임을 시작합니다."))));
-        return;
-    }
+    // if (Number == MaxPlayers)
+    // {
+    //     LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("곧 게임을 시작합니다."))));
+    //     return;
+    // }
     
     LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), Number, MaxPlayers)));
 }
