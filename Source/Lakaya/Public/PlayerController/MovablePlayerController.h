@@ -21,7 +21,7 @@ protected:
 
 	virtual void SetupEnhancedInputComponent(class UEnhancedInputComponent* const& EnhancedInputComponent);
 	virtual void SetupMappingContext(class UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem);
-
+	
 	UFUNCTION()
 	virtual void OnPossessedPawnChangedCallback(APawn* OldPawn, APawn* NewPawn);
 
@@ -34,9 +34,11 @@ private:
 	void StopRun(const FInputActionValue& Value);
 	void Jump(const FInputActionValue& Value);
 
+public:
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Context")
 	class UInputMappingContext* MovementContext;
 
+private:
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Context")
 	int8 MovementContextPriority;
 

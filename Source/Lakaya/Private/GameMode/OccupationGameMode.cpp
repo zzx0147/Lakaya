@@ -128,6 +128,8 @@ void AOccupationGameMode::HandleMatchHasStarted()
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_OccupationGameState is null."));
 		return;
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("NumBots : %d"), GetNumBots());
 	
 	for (int i = 0; i < OccupationGameState->PlayerArray.Num(); i++)
 	{
@@ -149,8 +151,8 @@ void AOccupationGameMode::HandleMatchHasStarted()
 					return;
 				}
 				
-				APlayerController* PlayerController = Cast<APlayerController>(ArgCollectorPlayerState->GetOwner());
-				if (PlayerController == nullptr)
+				AController* OccuController = Cast<AController>(ArgCollectorPlayerState->GetOwner());
+				if (OccuController == nullptr)
 				{
 					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_PlayerController is null."));
 					return;
@@ -173,8 +175,8 @@ void AOccupationGameMode::HandleMatchHasStarted()
 				}
 				
 				APlayerStart* PlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
-				APawn* ArgCharacterPawn = Cast<APawn>(PlayerController->GetPawn());
-				ACharacter* ArgCharacterActor = Cast<ACharacter>(PlayerController->GetCharacter());
+				APawn* ArgCharacterPawn = Cast<APawn>(OccuController->GetPawn());
+				ACharacter* ArgCharacterActor = Cast<ACharacter>(OccuController->GetCharacter());
 				
 				if (ArgCharacterPawn != nullptr)
 				{

@@ -7,7 +7,7 @@
 #include "GameFramework/GameState.h"
 #include "OccupationGameState.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeJoinedPlayers, int32, int32)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeJoinedPlayers, uint8, uint8)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeGameState, EOccupationGameState)
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeTime, int32, int32)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeObjectcState, EOccupationObjectState)
@@ -16,6 +16,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamScore, float);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamObjectNum, uint8);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamObjectNum, uint8);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeOccupationWinner, EOccupationWinner)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeMaxPlayers, uint8, uint8);
 
 UENUM()
 enum class EOccupationGameState : uint8
@@ -60,9 +61,6 @@ private:
 
 public:
 	UFUNCTION()
-	uint8 GetMaxPlayers() const { return MaxPlayers; }
-
-	UFUNCTION()
 	void SetNumPlayers(int32 NewNumPlayers);
 
 	UFUNCTION()
@@ -73,6 +71,9 @@ public:
 
 	UFUNCTION()
 	void SetOccupationWinner(EOccupationWinner NewWinner);
+
+	UFUNCTION()
+	void AddMaxPlayer();
 	
 	UFUNCTION()
 	void SetATeamScore();
@@ -91,18 +92,12 @@ public:
 
 	UFUNCTION()
 	void SubBTeamObjectNum();
-	
-	UPROPERTY(ReplicatedUsing = OnRep_NumPlayers)
-	int32 NumPlayers;
 
-	UPROPERTY(ReplicatedUsing = OnRep_GameState)
-	EOccupationGameState CurrentGameState = EOccupationGameState::Menu;
+	UFUNCTION()
+	uint8 GetMaxPlayers() const { return MaxPlayers; }
 
-	UPROPERTY(ReplicatedUsing = OnRep_OccupationObjectState)
-	EOccupationObjectState CurrentOccupationObjectState = EOccupationObjectState::None;
-
-	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
-	EOccupationWinner CurrentOccupationWinner = EOccupationWinner::UnCertain;
+	UFUNCTION()
+	uint8 GetNumPlayers() const { return NumPlayers; }
 	
 	UFUNCTION()
 	float GetATeamScore() { return ATeamScore; }
@@ -133,6 +128,18 @@ public:
 
 	void EndTimeCheck();
 private:
+	UPROPERTY(ReplicatedUsing = OnRep_NumPlayers)
+	int32 NumPlayers;
+
+	UPROPERTY(ReplicatedUsing = OnRep_GameState)
+	EOccupationGameState CurrentGameState = EOccupationGameState::Menu;
+
+	UPROPERTY(ReplicatedUsing = OnRep_OccupationObjectState)
+	EOccupationObjectState CurrentOccupationObjectState = EOccupationObjectState::None;
+
+	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
+	EOccupationWinner CurrentOccupationWinner = EOccupationWinner::UnCertain;
+
 	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore)
 	float ATeamScore = 0;
 
@@ -142,19 +149,22 @@ private:
 	UPROPERTY(Replicated)
 	float StartTime;
 
+	UPROPERTY(ReplicatedUsing = OnRep_ATeamObjectNum)
+	uint8 ATeamObjectNum = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_BTeamObjectNum)
+	uint8 BTeamObjectNum = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_MaxPlayers)
+	uint8 MaxPlayers = 2;
+
 	UPROPERTY(Replicated)
 	float MatchEndingTime;
 
 	float Standard = 0.2f;
 
 	float MaxScore = 100.0f;
-	
-	UPROPERTY(ReplicatedUsing = OnRep_ATeamObjectNum)
-	uint8 ATeamObjectNum = 0;
 
-	UPROPERTY(ReplicatedUsing = OnRep_BTeamObjectNum)
-	uint8 BTeamObjectNum = 0;
-	
 private:
 	UFUNCTION()
 	void OnRep_NumPlayers();
@@ -179,10 +189,10 @@ private:
 
 	UFUNCTION()
 	void OnRep_OccupationWinner();
-	
-	UPROPERTY(EditAnywhere)
-	uint8 MaxPlayers = 6;
-	
+
+	UFUNCTION()
+	void OnRep_MaxPlayers();
+
 public:
 	FOnOccupationChangeJoinedPlayers OnOccupationChangeJoinedPlayers;
 	FOnOccupationChangeGameState OnOccupationChangeGameState;
@@ -193,6 +203,7 @@ public:
 	FOnOccupationChangeATeamObjectNum OnOccupationChangeATeamObjectNum;
 	FOnOccupationChangeBTeamObjectNum OnOccupationChangeBTeamObjectNum;
 	FOnOccupationChangeOccupationWinner OnOccupationChangeOccupationWinner;
+	FOnOccupationChangeMaxPlayers OnOccupationChangeMaxPlayers;
 	
 private:
 	FTimerHandle TimerHandle_AteamScoreIncrease;

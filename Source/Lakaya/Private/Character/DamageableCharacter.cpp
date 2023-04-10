@@ -59,7 +59,7 @@ float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 	auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	// TODO : NetMultiCast 된 함수이며 피격받는 캐릭터를 받아 피격 이펙트를 재생합니다.
-	OnHitEffectPlay(CollectorPlayerState->GetPlayerController()->GetCharacter());
+	OnHitEffectPlay(CollectorPlayerState->GetOwningController()->GetCharacter());
 	
 	Health -= Damage;
 	if (Health > MaximumHealth) Health = MaximumHealth;
@@ -94,6 +94,7 @@ void ADamageableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 void ADamageableCharacter::Respawn()
 {
 	Health = MaximumHealth;
+	OnHealthChanged.Broadcast(this, Health);
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	SetActorEnableCollision(true);
 	RespawnNotify();
