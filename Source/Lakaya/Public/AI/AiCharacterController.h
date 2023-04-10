@@ -9,6 +9,7 @@
 #include "Perception/AISenseConfig_Sight.h"
 #include "Character/ArmedCharacter.h"
 #include "Character/InteractableCharacter.h"
+#include "Character/OccupationCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardData.h"
@@ -27,9 +28,6 @@ public:
 
 private:
 	virtual void BeginPlay() override;
-	
-	UFUNCTION(BlueprintCallable)
-	void AiMove(FVector TargetLocation);
 
 	UFUNCTION(BlueprintCallable)
 	void AiFireStart(AOccupationCharacter* OccuCharacter);
@@ -39,5 +37,5 @@ private:
 
 private:
 	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
-	
+   
 };

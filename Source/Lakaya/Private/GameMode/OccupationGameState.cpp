@@ -20,6 +20,7 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AOccupationGameState, NumPlayers);
+	DOREPLIFETIME(AOccupationGameState, MaxPlayers);
 	DOREPLIFETIME(AOccupationGameState, CurrentGameState);
 
 	DOREPLIFETIME(AOccupationGameState, CurrentOccupationObjectState);
@@ -39,6 +40,7 @@ void AOccupationGameState::SetNumPlayers(int32 NewNumPlayers)
 {
 	NumPlayers = NewNumPlayers;
 	OnRep_NumPlayers();
+	// OnRep_MaxPlayers();
 }
 
 void AOccupationGameState::SetGameState(EOccupationGameState NewGameState)
@@ -106,6 +108,7 @@ void AOccupationGameState::AddMaxPlayer()
 {
 	MaxPlayers++;
 	OnRep_MaxPlayers();
+	// OnRep_NumPlayers();
 }
 
 void AOccupationGameState::SetATeamScore()
@@ -194,7 +197,7 @@ void AOccupationGameState::EndTimeCheck()
 
 void AOccupationGameState::OnRep_NumPlayers()
 {
-	OnOccupationChangeJoinedPlayers.Broadcast(NumPlayers, GetMaxPlayers());
+	OnOccupationChangeJoinedPlayers.Broadcast(GetNumPlayers(), GetMaxPlayers());
 }
 
 void AOccupationGameState::OnRep_GameState()
@@ -234,5 +237,5 @@ void AOccupationGameState::OnRep_OccupationWinner()
 
 void AOccupationGameState::OnRep_MaxPlayers()
 {
-	OnOccupationChangeMaxPlayers.Broadcast(MaxPlayers);
+	OnOccupationChangeMaxPlayers.Broadcast(GetNumPlayers(), GetMaxPlayers());
 }
