@@ -14,7 +14,8 @@ class LAKAYA_API UGamePlayHealthWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void OnPossessedPawnChanged(APawn* OldPawn, APawn* NewPawn);
+	void BindCharacter(class ADamageableCharacter* Character);
+	void UnBindCharacter(ADamageableCharacter* Character);
 
 protected:
 	virtual void NativeConstruct() override;

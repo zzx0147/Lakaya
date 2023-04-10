@@ -5,25 +5,28 @@
 #include "Components/TextBlock.h"
 #include "Character/DamageableCharacter.h"
 
-void UGamePlayHealthWidget::OnPossessedPawnChanged(APawn* OldPawn, APawn* NewPawn)
+void UGamePlayHealthWidget::BindCharacter(ADamageableCharacter* Character)
 {
-	if (const auto OldCharacter = Cast<ADamageableCharacter>(OldPawn))
-	{
-		OldCharacter->OnHealthChanged.RemoveAll(this);
-		OldCharacter->OnMaximumHealthChanged.RemoveAll(this);
+	if (!Character) return;
+	Character->OnHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeHealth);
+	Character->OnMaximumHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeMaximumHealth);
 
-		MaximumHealth = Health = 0;
-	}
+	Health = Character->GetHealth();
+	MaximumHealth = Character->GetMaximumHealth();
 
-	if (const auto NewCharacter = Cast<ADamageableCharacter>(NewPawn))
-	{
-		NewCharacter->OnHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeHealth);
-		NewCharacter->OnMaximumHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeMaximumHealth);
+	HealthText->SetText(FText::AsNumber(floor(Health)));
+	MaximumHealthText->SetText(FText::FromString(FString::Printf(TEXT("/%f"), MaximumHealth)));
+	UpdateHealthProgressBar();
+}
 
-		Health = NewCharacter->GetHealth();
-		MaximumHealth = NewCharacter->GetMaximumHealth();
-	}
-
+void UGamePlayHealthWidget::UnBindCharacter(ADamageableCharacter* Character)
+{
+	if (!Character) return;
+	
+	Character->OnHealthChanged.RemoveAll(this);
+	Character->OnMaximumHealthChanged.RemoveAll(this);
+	MaximumHealth = Health = 0;
+		
 	HealthText->SetText(FText::AsNumber(floor(Health)));
 	MaximumHealthText->SetText(FText::FromString(FString::Printf(TEXT("/%f"), MaximumHealth)));
 	UpdateHealthProgressBar();
