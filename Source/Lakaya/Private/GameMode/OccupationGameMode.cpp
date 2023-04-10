@@ -129,7 +129,7 @@ void AOccupationGameMode::HandleMatchHasStarted()
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("NumBots : %d"), GetNumBots());
+	UE_LOG(LogTemp, Warning, TEXT("PlayerArray.Num() : %d"), OccupationGameState->PlayerArray.Num());
 	
 	for (int i = 0; i < OccupationGameState->PlayerArray.Num(); i++)
 	{
@@ -181,15 +181,16 @@ void AOccupationGameMode::HandleMatchHasStarted()
 				if (ArgCharacterPawn != nullptr)
 				{
 					ArgCharacterPawn->SetActorLocation(PlayerStart->GetActorLocation());
+					UE_LOG(LogTemp, Warning, TEXT("짝수"));
 				}
 				else if (ArgCharacterActor != nullptr)
 				{
 					ArgCharacterActor->SetActorLocation(PlayerStart->GetActorLocation());
+					UE_LOG(LogTemp, Warning, TEXT("짝수"))
 				}
 				else
 				{
 					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_KilledCharacter is not a pawn or an actor."));
-					return;
 				}
 			}
 			else if (i % 2 != 0)
@@ -231,17 +232,16 @@ void AOccupationGameMode::HandleMatchHasStarted()
 				if (ArgCharacterPawn != nullptr)
 				{
 					ArgCharacterPawn->SetActorLocation(PlayerStart->GetActorLocation());
-					return;
+					UE_LOG(LogTemp, Warning, TEXT("홀수"))
 				}
 				else if (ArgCharacterActor != nullptr)
 				{
 					ArgCharacterActor->SetActorLocation(PlayerStart->GetActorLocation());
-					return;
+					UE_LOG(LogTemp, Warning, TEXT("홀수"))
 				}
 				else
 				{
 					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_KilledCharacter is not a pawn or an actor."));
-					return;
 				}
 			}
 		}

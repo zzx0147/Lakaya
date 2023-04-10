@@ -122,6 +122,9 @@ void AOccupationObject::OnInteractionStop(APawn* Caller)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Interaction Stop!"));
 
+	auto CastedCaller = Cast<AInteractableCharacter>(Caller);
+	CastedCaller->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	
 	if (InteractingPawn == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("InteractionStop_InteractingPawn is null."));
