@@ -286,11 +286,6 @@ void AOccupationGameMode::DelayedEndedGame()
 	UGameplayStatics::OpenLevel(GetWorld(), "MainLobbyLevel");
 }
 
-int32 AOccupationGameMode::GetNumBots()
-{
-	return Super::GetNumBots();
-}
-
 void AOccupationGameMode::HandleLeavingMap()
 {
 	Super::HandleLeavingMap();

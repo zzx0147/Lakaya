@@ -40,7 +40,6 @@ private:
 
 	void DelayedEndedGame();
 
-	virtual int32 GetNumBots() override;
 private:
 	float GamePlayTime = 180.0f;
 	

@@ -102,6 +102,12 @@ void AOccupationGameState::SetOccupationWinner(EOccupationWinner NewWinner)
 	}
 }
 
+void AOccupationGameState::AddMaxPlayer()
+{
+	MaxPlayers++;
+	OnRep_MaxPlayers();
+}
+
 void AOccupationGameState::SetATeamScore()
 {
 	if (CurrentGameState == EOccupationGameState::Progress)
@@ -224,4 +230,9 @@ void AOccupationGameState::OnRep_BTeamObjectNum()
 void AOccupationGameState::OnRep_OccupationWinner()
 {
 	OnOccupationChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
+}
+
+void AOccupationGameState::OnRep_MaxPlayers()
+{
+	OnOccupationChangeMaxPlayers.Broadcast(MaxPlayers);
 }
