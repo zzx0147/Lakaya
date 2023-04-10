@@ -33,6 +33,7 @@ bool AMovableCharacter::IsOwnedByLocalPlayer() const
 
 void AMovableCharacter::Run()
 {
+	if (bIsRunning) return;
 	bIsRunning = true;
 	GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
 	RequestSetRunState(bIsRunning, GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
@@ -40,6 +41,7 @@ void AMovableCharacter::Run()
 
 void AMovableCharacter::StopRun()
 {
+	if (!bIsRunning) return;
 	bIsRunning = false;
 	GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
 	RequestSetRunState(bIsRunning, GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
@@ -53,7 +55,7 @@ bool AMovableCharacter::RequestSetRunState_Validate(bool IsRunning, const float&
 
 void AMovableCharacter::RequestSetRunState_Implementation(bool IsRunning, const float& Time)
 {
-	// 순서가 꼬인 패킷이거나 변경되는 것이 없는 경우 스킵합니다.
+	// 순서가 꼬인 패킷이거나 변경되는 것이 없는 경우 스킵합니다. 이 과정에서 서버도 걸러집니다.
 	if (RecentRunEventTime > Time || bIsRunning == IsRunning) return;
 
 	RecentRunEventTime = Time;
