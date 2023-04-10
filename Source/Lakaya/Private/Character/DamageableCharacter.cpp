@@ -97,8 +97,6 @@ void ADamageableCharacter::Respawn()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	SetActorEnableCollision(true);
 	RespawnNotify();
-
-
 }
 
 void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
@@ -112,11 +110,12 @@ void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* D
 
 void ADamageableCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
 {
-	//GetMesh()->SetVisibility(false, true);
+	GetMesh()->SetVisibility(false, true);
 
-	GetMesh()->SetCollisionProfileName(TEXT("PhysicsActor"));
-	GetMesh()->SetSimulatePhysics(true);
-	bFixMeshTransform = false;
+	//GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
+	//GetMesh()->SetCollisionProfileName(TEXT("PhysicsActor"));
+	//GetMesh()->SetSimulatePhysics(true);
+	//bFixMeshTransform = false;
 
 	OnKillCharacterNotify.Broadcast(GetController(), this, EventInstigator, DamageCauser);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
@@ -157,11 +156,15 @@ void ADamageableCharacter::IndicateRPC_Implementation(FName CauserName, FVector 
 
 void ADamageableCharacter::RespawnNotify_Implementation()
 {
-	//GetMesh()->SetVisibility(true, true);
+	GetMesh()->SetVisibility(true, true);
 
-	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
-	GetMesh()->SetSimulatePhysics(false);
-	bFixMeshTransform = true;
+
+
+	//GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+	//GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
+	//GetMesh()->SetSimulatePhysics(false);
+	//bFixMeshTransform = true;
+	//GetMesh()->SetupAttachment(GetCapsuleComponent());
 
 	OnRespawnCharacterNotify.Broadcast(this);
 }
