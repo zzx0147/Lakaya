@@ -14,6 +14,8 @@ enum class EPlayerTeamState : uint8
 	B UMETA(DisplayerName = "B"), // B팀인 상태
 };
 
+DECLARE_EVENT_OneParam(ACollectorPlayerState, FTeamChangeSignature, const EPlayerTeamState&);
+
 /**
  * 
  */
@@ -24,7 +26,8 @@ class LAKAYA_API ACollectorPlayerState : public APlayerState
 
 public:
 	ACollectorPlayerState();
-	
+
+	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
@@ -40,32 +43,37 @@ public:
 	void ResetMoney();
 	const uint8& GetMoney() const;
 
-	EPlayerTeamState GetPlayerTeamState() { return PlayerTeamState; }
+	EPlayerTeamState GetPlayerTeamState() const { return PlayerTeamState; }
 	void SetPlayerTeamState(EPlayerTeamState TeamState);
+
+	FTeamChangeSignature OnTeamChanged;
+
 private:
+	UFUNCTION()
+	void OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn);
+	
 	UPROPERTY(ReplicatedUsing = OnRep_BroadCastMyTeam, Transient)
 	EPlayerTeamState PlayerTeamState = EPlayerTeamState::None;
-	
+
 	UPROPERTY(ReplicatedUsing = OnRep_Point, Transient)
 	uint8 Point;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Money, Transient)
 	uint8 Money;
-	
+
 	UPROPERTY(ReplicatedUsing = OnRep_Energy, Transient)
 	uint8 Energy;
 
 private:
 	UFUNCTION()
 	void OnRep_Point();
-	
+
 	UFUNCTION()
 	void OnRep_Money();
-	
+
 	UFUNCTION()
 	void OnRep_Energy();
 
-public:
 	UFUNCTION()
 	void OnRep_BroadCastMyTeam();
 };

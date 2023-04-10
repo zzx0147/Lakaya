@@ -2,8 +2,8 @@
 
 #include "Character/CollectorPlayerState.h"
 
+#include "OccupationCharacter.h"
 #include "GameMode/OccupationGameState.h"
-#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 ACollectorPlayerState::ACollectorPlayerState()
@@ -11,6 +11,12 @@ ACollectorPlayerState::ACollectorPlayerState()
 	Point = 0;
 	Energy = 0;
 	Money = 0;
+}
+
+void ACollectorPlayerState::BeginPlay()
+{
+	Super::BeginPlay();
+	OnPawnSet.AddDynamic(this, &ACollectorPlayerState::OnPawnSetCallback);
 }
 
 void ACollectorPlayerState::GainPoint(const uint8& GainedPoint)
@@ -68,7 +74,7 @@ void ACollectorPlayerState::GainMoney(const uint8& GainedMoney)
 		UE_LOG(LogSecurity, Warning, TEXT("Client trying to gain a Money, there is an logic error or client cheated"));
 		return;
 	}
-	
+
 	Money += GainedMoney;
 
 	// 획득 재화 갯수가 변경 됐을 경우, 다른 클라이언트들에게 동기화
@@ -87,27 +93,31 @@ const uint8& ACollectorPlayerState::GetMoney() const
 
 void ACollectorPlayerState::SetPlayerTeamState(EPlayerTeamState TeamState)
 {
-	AOccupationGameMode* GameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
+	const AOccupationGameMode* GameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("CollectorPlayerState_GameMode is null."));
 		return;
 	}
-	
+
 	if (GameMode->GetMatchState() == MatchState::WaitingToStart)
 	{
 		if (PlayerTeamState == EPlayerTeamState::None)
 		{
 			PlayerTeamState = TeamState;
-			OnRep_BroadCastMyTeam();
-			return;
+			OnTeamChanged.Broadcast(PlayerTeamState);
 		}
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("이미 팀이 배정 되었습니다."));
-			return;
 		}
 	}
+}
+
+void ACollectorPlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
+{
+	if (const auto CastedPawn = Cast<AOccupationCharacter>(NewPawn))
+		CastedPawn->OnPlayerStateChanged(this);
 }
 
 void ACollectorPlayerState::OnRep_Point()
@@ -124,6 +134,7 @@ void ACollectorPlayerState::OnRep_Energy()
 
 void ACollectorPlayerState::OnRep_BroadCastMyTeam()
 {
+	OnTeamChanged.Broadcast(PlayerTeamState);
 }
 
 void ACollectorPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -133,6 +144,6 @@ void ACollectorPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME(ACollectorPlayerState, Point);
 	DOREPLIFETIME(ACollectorPlayerState, Money);
 	DOREPLIFETIME(ACollectorPlayerState, Energy);
-	
+
 	DOREPLIFETIME(ACollectorPlayerState, PlayerTeamState);
 }
