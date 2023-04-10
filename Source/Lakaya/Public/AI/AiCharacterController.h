@@ -7,6 +7,7 @@
 #include "NavigationSystem.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Character/ArmedCharacter.h"
 #include "Character/InteractableCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
@@ -26,5 +27,14 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AiMove(FVector TargetLocation);
+
+	UFUNCTION(BlueprintCallable)
+	void AiFireStart(AOccupationCharacter* OccuCharacter);
+
+	UFUNCTION(BlueprintCallable)
+	void AiFireStop();
+
+private:
+	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
 	
 };

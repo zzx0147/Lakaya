@@ -3,6 +3,7 @@
 
 #include "AI/AiCharacterController.h"
 #include "AI/AiCharacter.h"
+#include "Character/OccupationCharacter.h"
 
 AAiCharacterController::AAiCharacterController() // 생성자
 {
@@ -27,6 +28,22 @@ void AAiCharacterController::AiMove(FVector TargetLocation)
 		MovableCharacter->AddMovementInput(Matrix.GetUnitAxis(EAxis::X), 600);
 		MovableCharacter->AddMovementInput(Matrix.GetUnitAxis(EAxis::Y), 600);
 	}
+}
+
+void AAiCharacterController::AiFireStart(AOccupationCharacter* OccuCharacter)
+{
+	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
+	
+	if (OccuCharacter) OccuCharacter->FireStart();
+	else
+	{
+		UE_LOG(LogInit, Warning, TEXT("Ai nonenone Fire"))
+	}
+}
+
+void AAiCharacterController::AiFireStop()
+{
+	if (ArmedCharacter.IsValid()) ArmedCharacter->FireStop();
 }
 
 
