@@ -31,27 +31,32 @@ void AAiCharacterController::BeginPlay()
 
 	OccupationGameState->AddMaxPlayer();
 	OccupationGameMode->NumPlayers++;
+	int32 CurrentPlayerNum = OccupationGameState->PlayerArray.Num();
+	OccupationGameState->SetNumPlayers(CurrentPlayerNum);
+	UE_LOG(LogTemp, Warning, TEXT("AiController BeginPlay."));
 }
 
-void AAiCharacterController::AiMove(FVector TargetLocation)
+void AAiCharacterController::AiFireStart(AOccupationCharacter* OccuCharacter)
 {
-	APawn* ControlledPawn = GetPawn();
-
-	AMovableCharacter* MovableCharacter =
-		Cast<AMovableCharacter>(ControlledPawn);
-
-	if (MovableCharacter && MovableCharacter->GetCharacterMovement())
+	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
+   
+	if (OccuCharacter) OccuCharacter->FireStart();
+	else
 	{
-		MovableCharacter->GetCharacterMovement()->MaxWalkSpeed = 650.0f;
-		MovableCharacter->GetCharacterMovement()->Velocity = FVector(600,600,0);
-		MovableCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-		
-		const FRotator YawRotator(0, MovableCharacter->GetControlRotation().Yaw, 0);
-		const FRotationMatrix Matrix(YawRotator);
-		
-		MovableCharacter->AddMovementInput(Matrix.GetUnitAxis(EAxis::X), 600);
-		MovableCharacter->AddMovementInput(Matrix.GetUnitAxis(EAxis::Y), 600);
+		UE_LOG(LogInit, Warning, TEXT("Error Ai Start Fire"))
 	}
 }
+
+void AAiCharacterController::AiFireStop(AOccupationCharacter* OccuCharacter)
+{
+	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
+   
+	if (OccuCharacter) OccuCharacter->FireStop();
+	else
+	{
+		UE_LOG(LogInit, Warning, TEXT("Error Ai Stop Fire"))
+	}
+}
+
 
 
