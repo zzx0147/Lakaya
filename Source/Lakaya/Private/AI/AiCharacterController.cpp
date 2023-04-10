@@ -3,11 +3,34 @@
 
 #include "AI/AiCharacterController.h"
 #include "AI/AiCharacter.h"
-#include "Character/OccupationCharacter.h"
+#include "GameMode/OccupationGameMode.h"
+#include "GameMode/OccupationGameState.h"
 
 AAiCharacterController::AAiCharacterController() // 생성자
 {
-    bWantsPlayerState = true;
+	bWantsPlayerState = true;
+}
+
+void AAiCharacterController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	AOccupationGameMode* OccupationGameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
+	if (OccupationGameMode == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AiCharacterController_GameMode is null."));
+		return;
+	}
+	
+	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	if (OccupationGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_GameState is null."));
+		return;
+	}
+
+	OccupationGameState->AddMaxPlayer();
+	OccupationGameMode->NumPlayers++;
 }
 
 void AAiCharacterController::AiMove(FVector TargetLocation)
@@ -28,28 +51,6 @@ void AAiCharacterController::AiMove(FVector TargetLocation)
 		
 		MovableCharacter->AddMovementInput(Matrix.GetUnitAxis(EAxis::X), 600);
 		MovableCharacter->AddMovementInput(Matrix.GetUnitAxis(EAxis::Y), 600);
-	}
-}
-
-void AAiCharacterController::AiFireStart(AOccupationCharacter* OccuCharacter)
-{
-	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
-	
-	if (OccuCharacter) OccuCharacter->FireStart();
-	else
-	{
-		UE_LOG(LogInit, Warning, TEXT("Error Ai Start Fire"))
-	}
-}
-
-void AAiCharacterController::AiFireStop(AOccupationCharacter* OccuCharacter)
-{
-	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
-	
-	if (OccuCharacter) OccuCharacter->FireStop();
-	else
-	{
-		UE_LOG(LogInit, Warning, TEXT("Error Ai Stop Fire"))
 	}
 }
 

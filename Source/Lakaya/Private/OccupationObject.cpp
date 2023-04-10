@@ -3,11 +3,13 @@
 
 #include "OccupationObject.h"
 
+#include "EnhancedInputSubsystems.h"
 #include "Character/CollectorPlayerState.h"
 #include "Character/InteractableCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include "PlayerController/MovablePlayerController.h"
 
 AOccupationObject::AOccupationObject()
 {
@@ -41,8 +43,6 @@ AOccupationObject::AOccupationObject()
 void AOccupationObject::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// TriggerSphere->OnComponentBeginOverlap.AddDynamic(this, &AOccupationObject::OnPlayerEnterTrigger);
 }
 
 void AOccupationObject::Tick(float DeltaTime)
@@ -79,7 +79,10 @@ void AOccupationObject::OnServerInteractionBegin(const float& Time, APawn* Calle
 	}
 	
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	{
 		CastedCaller->InitiateInteractionStart(Time, this, 3.f);
+		CastedCaller->GetCharacterMovement()->DisableMovement();
+	}
 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionBegin::Caller was not AInteractableCharacter!"));
 }
 
@@ -108,7 +111,10 @@ void AOccupationObject::OnLocalInteractionStopBegin(APawn* Caller)
 void AOccupationObject::OnServerInteractionStopBegin(const float& Time, APawn* Caller)
 {
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	{
 		CastedCaller->InteractionStopNotify(Time, this);
+		CastedCaller->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	}
 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionStopBegin::Caller was not AInteractableCharacter!"));
 }
 
@@ -220,14 +226,3 @@ void AOccupationObject::AutomaticInteractionStop()
 	OnInteractionStop(InteractingPawn);
 	InteractingPawn = nullptr;
 }
-
-// void AOccupationObject::OnPlayerEnterTrigger(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-// 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-// {
-// 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-// 	if (OtherActor == PlayerPawn)
-// 	{
-// 		// Execute your desired logic when the player enters the trigger
-// 		// ...
-// 	}
-// }

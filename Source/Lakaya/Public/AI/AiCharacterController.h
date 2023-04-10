@@ -25,6 +25,9 @@ class LAKAYA_API AAiCharacterController : public AAIController
 public:
 	AAiCharacterController();
 
+private:
+	virtual void BeginPlay() override;
+	
 	UFUNCTION(BlueprintCallable)
 	void AiMove(FVector TargetLocation);
 

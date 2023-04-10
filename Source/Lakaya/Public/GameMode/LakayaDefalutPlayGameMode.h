@@ -63,6 +63,9 @@ protected:
 	virtual void RespawnPlayer(AController* KilledController);
 
 public:
+	virtual int32 GetNumBots();
+	
+public:
 	uint8 PlayerRespawnTime = 3;
 	bool bWaitToStart = false;
 

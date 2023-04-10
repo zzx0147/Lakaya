@@ -7,7 +7,6 @@
 #include "EnhancedInputSubsystems.h"
 #include "Character/ArmedCharacter.h"
 #include "InputMappingContext.h"
-#include "Character/CollectorPlayerState.h"
 #include "Character/DamageableCharacter.h"
 #include "UI/GamePlayBulletWidget.h"
 #include "UI/GamePlayConsecutiveKillsWidget.h"
@@ -126,8 +125,16 @@ void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, 
 	Super::OnPossessedPawnChangedCallback(ArgOldPawn, NewPawn);
 	if (!IsLocalController()) return;
 
-	if (!HealthWidget) HealthWidget = CreateViewportWidget<UGamePlayHealthWidget>(HealthWidgetClass);
-	HealthWidget->OnPossessedPawnChanged(ArgOldPawn, NewPawn);
+	if (const auto OldCharacter = Cast<ADamageableCharacter>(ArgOldPawn))
+	{
+		if (HealthWidget) HealthWidget->UnBindCharacter(OldCharacter);
+	}
+
+	if (const auto NewCharacter = Cast<ADamageableCharacter>(NewPawn))
+	{
+		if (!HealthWidget) HealthWidget = CreateViewportWidget<UGamePlayHealthWidget>(HealthWidgetClass);
+		HealthWidget->BindCharacter(NewCharacter);
+	}
 
 	if (const auto OldCharacter = Cast<AArmedCharacter>(ArgOldPawn))
 	{
@@ -135,8 +142,8 @@ void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, 
 
 		if (const auto WeaponComponent = OldCharacter->GetPrimaryWeapon())
 		{
-			ConsecutiveKillsWidget->UnBindWeapon(WeaponComponent);
-			BulletWidget->UnBindWeapon(Cast<UGunComponent>(WeaponComponent));
+			if (ConsecutiveKillsWidget) ConsecutiveKillsWidget->UnBindWeapon(WeaponComponent);
+			if (BulletWidget) BulletWidget->UnBindWeapon(Cast<UGunComponent>(WeaponComponent));
 		}
 	}
 

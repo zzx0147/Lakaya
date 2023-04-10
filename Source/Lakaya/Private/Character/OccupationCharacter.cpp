@@ -5,16 +5,7 @@
 
 #include "Character/CollectorPlayerState.h"
 
-void AOccupationCharacter::OnPlayerStateChanged(APlayerState* NewState)
-{
-	if (const auto CollectorState = Cast<ACollectorPlayerState>(NewState))
-	{
-		OnTeamChanged(CollectorState->GetPlayerTeamState());
-		CollectorState->OnTeamChanged.AddUObject(this, &AOccupationCharacter::OnTeamChanged);
-	}
-}
-
-void AOccupationCharacter::OnTeamChanged(const EPlayerTeamState& Team)
+void AOccupationCharacter::SetTeam(const EPlayerTeamState& Team)
 {
 	USkeletalMeshComponent* LocalMesh = GetMesh();
 	if (Team == EPlayerTeamState::A) LocalMesh->SetMaterial(0, LocalMesh->GetMaterial(1));

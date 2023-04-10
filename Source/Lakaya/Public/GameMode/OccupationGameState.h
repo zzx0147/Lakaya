@@ -16,6 +16,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamScore, float);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamObjectNum, uint8);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamObjectNum, uint8);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeOccupationWinner, EOccupationWinner)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeMaxPlayers, uint8);
 
 UENUM()
 enum class EOccupationGameState : uint8
@@ -73,6 +74,9 @@ public:
 
 	UFUNCTION()
 	void SetOccupationWinner(EOccupationWinner NewWinner);
+
+	UFUNCTION()
+	void AddMaxPlayer();
 	
 	UFUNCTION()
 	void SetATeamScore();
@@ -154,7 +158,9 @@ private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_BTeamObjectNum)
 	uint8 BTeamObjectNum = 0;
-	
+
+	UPROPERTY(ReplicatedUsing = OnRep_MaxPlayers)
+	uint8 MaxPlayers = 2;
 private:
 	UFUNCTION()
 	void OnRep_NumPlayers();
@@ -179,10 +185,10 @@ private:
 
 	UFUNCTION()
 	void OnRep_OccupationWinner();
-	
-	UPROPERTY(EditAnywhere)
-	uint8 MaxPlayers = 4;
-	
+
+	UFUNCTION()
+	void OnRep_MaxPlayers();
+
 public:
 	FOnOccupationChangeJoinedPlayers OnOccupationChangeJoinedPlayers;
 	FOnOccupationChangeGameState OnOccupationChangeGameState;
@@ -193,6 +199,7 @@ public:
 	FOnOccupationChangeATeamObjectNum OnOccupationChangeATeamObjectNum;
 	FOnOccupationChangeBTeamObjectNum OnOccupationChangeBTeamObjectNum;
 	FOnOccupationChangeOccupationWinner OnOccupationChangeOccupationWinner;
+	FOnOccupationChangeMaxPlayers OnOccupationChangeMaxPlayers;
 	
 private:
 	FTimerHandle TimerHandle_AteamScoreIncrease;
