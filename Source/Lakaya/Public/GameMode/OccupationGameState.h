@@ -156,7 +156,7 @@ private:
 	uint8 BTeamObjectNum = 0;
 
 	UPROPERTY(ReplicatedUsing = OnRep_MaxPlayers)
-	uint8 MaxPlayers = 5;
+	uint8 MaxPlayers = 2;
 
 	UPROPERTY(Replicated)
 	float MatchEndingTime;

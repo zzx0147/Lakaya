@@ -29,11 +29,12 @@ void AAiCharacterController::BeginPlay()
 		return;
 	}
 
-	OccupationGameState->AddMaxPlayer();
-	OccupationGameMode->NumPlayers++;
-	int32 CurrentPlayerNum = OccupationGameState->PlayerArray.Num();
-	OccupationGameState->SetNumPlayers(CurrentPlayerNum);
-	UE_LOG(LogTemp, Warning, TEXT("AiController BeginPlay."));
+	// OccupationGameState->AddMaxPlayer();
+	// OccupationGameState->AddPlayerState(GetCharacter()->GetController()->PlayerState);
+	// OccupationGameMode->NumPlayers++;
+	// int32 CurrentPlayerNum = OccupationGameState->PlayerArray.Num();
+	// OccupationGameState->SetNumPlayers(CurrentPlayerNum);
+	// UE_LOG(LogTemp, Warning, TEXT("AiController BeginPlay."));
 }
 
 void AAiCharacterController::AiFireStart(AOccupationCharacter* OccuCharacter)
