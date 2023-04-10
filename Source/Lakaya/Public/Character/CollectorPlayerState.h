@@ -14,8 +14,6 @@ enum class EPlayerTeamState : uint8
 	B UMETA(DisplayerName = "B"), // B팀인 상태
 };
 
-DECLARE_EVENT_OneParam(ACollectorPlayerState, FTeamChangeSignature, const EPlayerTeamState&);
-
 /**
  * 
  */
@@ -45,8 +43,6 @@ public:
 
 	EPlayerTeamState GetPlayerTeamState() const { return PlayerTeamState; }
 	void SetPlayerTeamState(EPlayerTeamState TeamState);
-
-	FTeamChangeSignature OnTeamChanged;
 
 private:
 	UFUNCTION()

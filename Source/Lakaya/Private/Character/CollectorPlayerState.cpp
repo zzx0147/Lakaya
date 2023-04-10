@@ -105,7 +105,8 @@ void ACollectorPlayerState::SetPlayerTeamState(EPlayerTeamState TeamState)
 		if (PlayerTeamState == EPlayerTeamState::None)
 		{
 			PlayerTeamState = TeamState;
-			OnTeamChanged.Broadcast(PlayerTeamState);
+			if (const auto CastedPawn = Cast<AOccupationCharacter>(GetPawn()))
+				CastedPawn->SetTeam(PlayerTeamState);
 		}
 		else
 		{
@@ -117,7 +118,7 @@ void ACollectorPlayerState::SetPlayerTeamState(EPlayerTeamState TeamState)
 void ACollectorPlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
 {
 	if (const auto CastedPawn = Cast<AOccupationCharacter>(NewPawn))
-		CastedPawn->OnPlayerStateChanged(this);
+		CastedPawn->SetTeam(PlayerTeamState);
 }
 
 void ACollectorPlayerState::OnRep_Point()
@@ -134,7 +135,8 @@ void ACollectorPlayerState::OnRep_Energy()
 
 void ACollectorPlayerState::OnRep_BroadCastMyTeam()
 {
-	OnTeamChanged.Broadcast(PlayerTeamState);
+	if (const auto CastedPawn = Cast<AOccupationCharacter>(GetPawn()))
+		CastedPawn->SetTeam(PlayerTeamState);
 }
 
 void ACollectorPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

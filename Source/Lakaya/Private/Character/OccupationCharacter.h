@@ -13,8 +13,5 @@ class LAKAYA_API AOccupationCharacter : public AInteractableCharacter
 	GENERATED_BODY()
 
 public:
-	void OnPlayerStateChanged(APlayerState* NewState);
-
-private:
-	void OnTeamChanged(const EPlayerTeamState& Team);
+	void SetTeam(const EPlayerTeamState& Team);
 };
