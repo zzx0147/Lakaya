@@ -7,6 +7,7 @@
 
 AAiCharacterController::AAiCharacterController() // 생성자
 {
+    bWantsPlayerState = true;
 }
 
 void AAiCharacterController::AiMove(FVector TargetLocation)
@@ -37,13 +38,19 @@ void AAiCharacterController::AiFireStart(AOccupationCharacter* OccuCharacter)
 	if (OccuCharacter) OccuCharacter->FireStart();
 	else
 	{
-		UE_LOG(LogInit, Warning, TEXT("Ai nonenone Fire"))
+		UE_LOG(LogInit, Warning, TEXT("Error Ai Start Fire"))
 	}
 }
 
-void AAiCharacterController::AiFireStop()
+void AAiCharacterController::AiFireStop(AOccupationCharacter* OccuCharacter)
 {
-	if (ArmedCharacter.IsValid()) ArmedCharacter->FireStop();
+	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
+	
+	if (OccuCharacter) OccuCharacter->FireStop();
+	else
+	{
+		UE_LOG(LogInit, Warning, TEXT("Error Ai Stop Fire"))
+	}
 }
 
 

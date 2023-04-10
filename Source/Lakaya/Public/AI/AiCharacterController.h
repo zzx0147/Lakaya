@@ -32,7 +32,7 @@ public:
 	void AiFireStart(AOccupationCharacter* OccuCharacter);
 
 	UFUNCTION(BlueprintCallable)
-	void AiFireStop();
+	void AiFireStop(AOccupationCharacter* OccuCharacter);
 
 private:
 	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
