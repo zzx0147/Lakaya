@@ -3,9 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FocusableCharacter.h"
-#include "NiagaraFunctionLibrary.h"
 #include "DrawDebugHelpers.h"
+#include "MovableCharacter.h"
 #include "DamageableCharacter.generated.h"
 
 DECLARE_EVENT_FourParams(ADamageableCharacter, FKillCharacterSignature, AController*, AActor*, AController*, AActor*);
@@ -17,7 +16,7 @@ DECLARE_EVENT_TwoParams(ADamageableCharacter, FMaximumHealthSignature, AActor*, 
 DECLARE_EVENT_TwoParams(ADamageableCharacter, FHealthSignature, AActor*, const float&);
 
 UCLASS()
-class LAKAYA_API ADamageableCharacter : public AFocusableCharacter
+class LAKAYA_API ADamageableCharacter : public AMovableCharacter
 {
 	GENERATED_BODY()
 
@@ -62,7 +61,7 @@ protected:
 	virtual void OnRep_Health();
 
 	UFUNCTION()
-	virtual void OnTakeAnyDamageCallback(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
+	virtual void OnTakeAnyDamageCallback(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 	                                     AController* InstigatedBy, AActor* DamageCauser);
 
 private:
