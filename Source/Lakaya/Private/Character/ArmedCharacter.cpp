@@ -3,105 +3,106 @@
 
 #include "Character/ArmedCharacter.h"
 
-#include "Weapon/WeaponClassData.h"
-#include "Weapon/WeaponComponent.h"
+#include "Character/CharacterSetupData.h"
+#include "Character/ResourceComponent.h"
+#include "Character/Ability/CharacterAbility.h"
 #include "Engine/DataTable.h"
 #include "Net/UnrealNetwork.h"
-
-AArmedCharacter::AArmedCharacter()
-{
-	bReplicateUsingRegisteredSubObjectList = true;
-
-	static const ConstructorHelpers::FObjectFinder<UDataTable> DataFinder(
-		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/DT_WeaponClassDataTable'"));
-
-	if (DataFinder.Succeeded()) WeaponClassDataTable = DataFinder.Object;
-}
 
 void AArmedCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AArmedCharacter, PrimaryWeapon);
+	DOREPLIFETIME(AArmedCharacter, Abilities);
+	DOREPLIFETIME(AArmedCharacter, ResourceComponent);
 }
 
-void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponClassRowName)
+AArmedCharacter::AArmedCharacter()
 {
-	const auto Data = WeaponClassDataTable->FindRow<FWeaponClassData>(WeaponClassRowName,TEXT("SetupPrimaryWeapon"));
-
-	PrimaryWeapon = Cast<UWeaponComponent>(
-		AddComponentByClass(Data->WeaponClass.LoadSynchronous(), false, FTransform::Identity, false));
-
-	if (!PrimaryWeapon) UE_LOG(LogActor, Fatal, TEXT("PrimaryWeapon was setted as nullptr"));
-	PrimaryWeapon->RequestSetupData(Data->AssetRowName);
-	PrimaryWeapon->SetIsReplicated(true);
-	if (!PrimaryWeapon->GetIsReplicated()) UE_LOG(LogTemp, Fatal, TEXT("PrimaryWeapon is NOT replicated"));
-	OnPrimaryWeaponChanged.Broadcast(PrimaryWeapon);
+	static const ConstructorHelpers::FObjectFinder<UDataTable> TableFinder(TEXT("DataTable''"));
+	if (TableFinder.Succeeded()) CharacterSetupTable = TableFinder.Object;
 }
 
 ELifetimeCondition AArmedCharacter::AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const
 {
-	if (ComponentToReplicate->IsA(UWeaponComponent::StaticClass())) return COND_None;
+	if (ComponentToReplicate->IsA(UCharacterAbility::StaticClass()) ||
+		ComponentToReplicate->IsA(UResourceComponent::StaticClass()))
+		return COND_None;
+
 	return Super::AllowActorComponentToReplicate(ComponentToReplicate);
 }
 
 void AArmedCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//TODO: 무기 셋업은 게임모드에서 수행되어야 합니다.
-	if (HasAuthority()) SetupPrimaryWeapon(TEXT("Test"));
 }
 
 void AArmedCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::KillCharacter(EventInstigator, DamageCauser);
-	PrimaryWeapon->UpgradeInitialize();
-	if (const auto Causer = Cast<AArmedCharacter>(DamageCauser)) Causer->PrimaryWeapon->UpgradeWeapon();
 }
 
 void AArmedCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::KillCharacterNotify_Implementation(EventInstigator, DamageCauser);
-	PrimaryWeapon->OnCharacterDead();
 }
 
 void AArmedCharacter::RespawnNotify_Implementation()
 {
 	Super::RespawnNotify_Implementation();
-	PrimaryWeapon->OnCharacterRespawn();
 }
 
-void AArmedCharacter::FireStart()
+void AArmedCharacter::SetupCharacter(const FName& RowName)
 {
-	PrimaryWeapon->FireStart();
+	const auto Data = CharacterSetupTable->FindRow<FCharacterSetupData>(RowName,TEXT("SetupCharacter"));
+	if (!Data) UE_LOG(LogInit, Fatal, TEXT("Fail to load character setup data!"));
+
+	CharacterName = RowName;
+	OnCharacterNameChanged.Broadcast(CharacterName);
+
+	Abilities.Reserve(5);
+	Abilities.EmplaceAt(Primary, CreateReplicatedComponent(Data->PrimaryClass));
+	Abilities.EmplaceAt(Secondary, CreateReplicatedComponent(Data->SecondClass));
+	Abilities.EmplaceAt(WeaponFire, CreateReplicatedComponent(Data->FireClass));
+	Abilities.EmplaceAt(WeaponAbility, CreateReplicatedComponent(Data->AbilityClass));
+	Abilities.EmplaceAt(WeaponReload, CreateReplicatedComponent(Data->ReloadClass));
+	OnAbilitiesChanged.Broadcast(Abilities);
+
+	ResourceComponent = CreateReplicatedComponent(Data->ResourceClass);
+	OnResourceChanged.Broadcast(ResourceComponent);
+
+	SetupMeshActor(Data->MeshActorClass);
 }
 
-void AArmedCharacter::FireStop()
+void AArmedCharacter::StartAbility(const EAbilityKind& Kind)
 {
-	PrimaryWeapon->FireStop();
+	if (Abilities.Contains(Kind)) Abilities[Kind]->AbilityStart();
 }
 
-void AArmedCharacter::AbilityStart()
+void AArmedCharacter::StopAbility(const EAbilityKind& Kind)
 {
-	PrimaryWeapon->AbilityStart();
+	if (Abilities.Contains(Kind)) Abilities[Kind]->AbilityStop();
 }
 
-void AArmedCharacter::AbilityStop()
+void AArmedCharacter::OnRep_Abilities()
 {
-	PrimaryWeapon->AbilityStop();
+	OnAbilitiesChanged.Broadcast(Abilities);
 }
 
-void AArmedCharacter::ReloadStart()
+void AArmedCharacter::OnRep_ResourceComponent()
 {
-	PrimaryWeapon->ReloadStart();
+	OnResourceChanged.Broadcast(ResourceComponent);
 }
 
-void AArmedCharacter::ReloadStop()
+void AArmedCharacter::OnRep_CharacterName()
 {
-	PrimaryWeapon->ReloadStop();
+	const auto Data = CharacterSetupTable->FindRow<FCharacterSetupData>(CharacterName,TEXT("SetupCharacter"));
+	if (!Data) UE_LOG(LogInit, Fatal, TEXT("Fail to load character setup data!"));
+
+	SetupMeshActor(Data->MeshActorClass);
+	OnCharacterNameChanged.Broadcast(CharacterName);
 }
 
-void AArmedCharacter::OnRep_PrimaryWeapon()
+void AArmedCharacter::SetupMeshActor(const TSubclassOf<AActor>& ActorClass)
 {
-	OnPrimaryWeaponChanged.Broadcast(PrimaryWeapon);
+	//TODO: 메시 액터 클래스를 가져와서 생성하고, 자식으로 추가합니다.
 }
