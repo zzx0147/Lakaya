@@ -4,7 +4,7 @@
 #include "GameMode/OccupationGameMode.h"
 #include "GameFramework/PlayerStart.h"
 #include "Character/ArmedCharacter.h"
-#include "Character/BattlePlayerController.h"
+#include "PlayerController/BattlePlayerController.h"
 #include "Character/CollectorPlayerState.h"
 #include "GameMode/OccupationGameState.h"
 
@@ -383,7 +383,6 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 		return;
 	}
 	
-	KilledDamageableCharacter->FullHealth();
 	KilledDamageableCharacter->Respawn();
 }
 

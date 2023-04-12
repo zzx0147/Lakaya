@@ -181,7 +181,7 @@ private:
 	void OnRep_OccupationWinner();
 	
 	UPROPERTY(EditAnywhere)
-	uint8 MaxPlayers = 2;
+	uint8 MaxPlayers = 4;
 	
 public:
 	FOnOccupationChangeJoinedPlayers OnOccupationChangeJoinedPlayers;

@@ -7,9 +7,9 @@
 #include "WeaponFire.h"
 #include "WeaponReload.h"
 #include "Components/ActorComponent.h"
-#include "GameFramework/GameStateBase.h"
 #include "WeaponComponent.generated.h"
 
+DECLARE_EVENT_OneParam(UWeaponComponent, FUpgradeLevelSignature, const uint8&)
 
 UCLASS(ClassGroup=(Weapon), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UWeaponComponent : public UActorComponent
@@ -21,28 +21,29 @@ public:
 
 	virtual void ReadyForReplication() override;
 
+protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+public:
 	virtual void RequestSetupData(const FName& RowName);
 	virtual void UpgradeWeapon();
 	virtual void UpgradeInitialize();
-
-protected:
-	virtual void BeginPlay() override;
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	const uint8& GetMaximumUpgradeLevel() const { return MaximumUpgradeLevel; }
+	const uint8& GetUpgradeLevel() const { return UpgradeLevel; }
 
 protected:
 	virtual void SetupData();
-	virtual void SetupUI();
 
 	UFUNCTION()
 	virtual void OnRep_UpgradeLevel();
 
 public:
-	inline void FireStart() { if (FireSubObject) FireSubObject->FireStart(); }
-	inline void FireStop() { if (FireSubObject) FireSubObject->FireStop(); }
-	inline void AbilityStart() { if (AbilitySubObject) AbilitySubObject->AbilityStart(); }
-	inline void AbilityStop() { if (AbilitySubObject) AbilitySubObject->AbilityStop(); }
-	inline void ReloadStart() { if (ReloadSubObject) ReloadSubObject->ReloadStart(); }
-	inline void ReloadStop() { if (ReloadSubObject) ReloadSubObject->ReloadStop(); }
+	void FireStart();
+	void FireStop();
+	void AbilityStart();
+	void AbilityStop();
+	void ReloadStart();
+	void ReloadStop();
 
 	// 캐릭터가 사망시 호출됩니다. 이 함수는 NetMulticast와 같이 모든 인스턴스에서 호출됩니다.
 	virtual void OnCharacterDead();
@@ -64,6 +65,9 @@ public:
 	UPROPERTY(Replicated, VisibleAnywhere)
 	UWeaponReload* ReloadSubObject;
 
+	// 무기 업그레이드 단계가 변경되면 호출되는 이벤트입니다.
+	FUpgradeLevelSignature OnUpgradeLevelChanged;
+
 protected:
 	FName RequestedRowName;
 
@@ -71,16 +75,17 @@ protected:
 	class UDataTable* WeaponAssetDataTable;
 
 	UPROPERTY(EditAnywhere)
-	class UDataTable* WeaponUpgradeDataTable;
+	UDataTable* WeaponUpgradeDataTable;
+
+	UPROPERTY(EditAnywhere)
+	uint8 MaximumUpgradeLevel;
 
 	UPROPERTY(ReplicatedUsing = OnRep_UpgradeLevel)
-	int8 UpgradeLevel;
-
-	class UGamePlayConsecutiveKillsWidget* ConsecutiveKillsWidget;
-	class UGamePlayBulletWidget* BulletWidget;
+	uint8 UpgradeLevel;
 
 private:
 	bool bIsDataSetupRequested;
+	bool bIsDead;
 };
 
 template <class T>

@@ -11,21 +11,21 @@ UCLASS()
 class LAKAYA_API UGamePlayBulletWidget : public UUserWidget
 {
 	GENERATED_BODY()
-public:
-	UGamePlayBulletWidget(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 public:
-	void OnChangeRemainBullets(int16 NewRemainBullets);
-	void OnChangeMagazineCapacity(int16 NewMagazineCapacity);
+	// 위젯이 표시하는 정보가, 해당 컴포넌트의 값이 변경됨에 따라 변경되도록 합니다.
+	void BindWeapon(class UGunComponent* const& GunComponent);
+
+	// 해당 무기와의 바인딩을 해제합니다.
+	void UnBindWeapon(UGunComponent* const& GunComponent);
 
 private:
-	UTextBlock* RemainBulletsText;//남은 총알을 표기하는 텍스트
-	UTextBlock* MagazineCapacityText;//최대 총알을 표기하는 텍스트
+	void OnChangeRemainBullets(const uint16& NewRemainBullets);
+	void OnChangeMagazineCapacity(const uint16& NewMagazineCapacity);
 
-	int16 RemainBullets;//남은 총알
-	int16 MagazineCapacity;//최대 총알
+	UTextBlock* RemainBulletsText; //남은 총알을 표기하는 텍스트
+	UTextBlock* MagazineCapacityText; //최대 총알을 표기하는 텍스트
 };

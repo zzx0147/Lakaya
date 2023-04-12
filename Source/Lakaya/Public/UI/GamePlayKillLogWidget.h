@@ -20,7 +20,7 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
-	virtual void UpdateKillLogWidget(class ADamageableCharacter* Character);
+	virtual void OnCharacterBeginPlay(class ADamageableCharacter* Character);
 
 private:
 	// ADamageableCharacter::OnKillCharacterNotify 이벤트에 등록된 콜백함수
@@ -38,4 +38,5 @@ private:
 	class UVerticalBox* KillLogBox;
 	SimpleObjectPool<UKillLogElement> ElementPool;
 	uint8 InitialChildCount;
+	uint8 ShownElementCount;
 };
