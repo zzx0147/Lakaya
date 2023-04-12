@@ -8,7 +8,7 @@ void UTeamScoreWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
 	if (OccupationGameState == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("GameTimeWidget_GameState is null."));
@@ -61,9 +61,17 @@ void UTeamScoreWidget::ReMoveTeamScoreWidget(EOccupationGameState ChangeGameStat
 void UTeamScoreWidget::OnChangeATeamScore(float NewScore)
 {
 	ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), NewScore)));
+	if (NewScore >= OccupationGameState->GetMaxScore())
+	{
+		ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), 1.0f)));
+	}
 }
 
 void UTeamScoreWidget::OnChangeBTeamScore(float NewScore)
 {
 	BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("B팀 %.1f%%"), NewScore)));
+	if (NewScore >= OccupationGameState->GetMaxScore())
+	{
+		BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("B팀 %.1f%%"), 1.0f)));
+	}
 }

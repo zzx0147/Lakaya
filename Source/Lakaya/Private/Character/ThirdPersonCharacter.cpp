@@ -25,18 +25,23 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 	bUseControllerRotationYaw = bUseControllerRotationPitch = true;
 	bUseControllerRotationRoll = false;
 	YawClutch = false;
+
+	bFixMeshTransform = true;
 }
 
 void AThirdPersonCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	auto Rotation = FRotator::ZeroRotator;
-	auto Location = RootComponent->GetComponentLocation();
-	
-	if (!YawClutch)
-		Rotation.Yaw = RootComponent->GetComponentRotation().Yaw - 90;
-	Location.Z = RootComponent->GetComponentLocation().Z - 34;
-	
-	GetMesh()->SetWorldRotation(Rotation);
-	GetMesh()->SetWorldLocation(Location);
+	if (bFixMeshTransform)
+	{
+		auto Rotation = FRotator::ZeroRotator;
+		auto Location = RootComponent->GetComponentLocation();
+
+		if (!YawClutch)
+			Rotation.Yaw = RootComponent->GetComponentRotation().Yaw - 90;
+		Location.Z = RootComponent->GetComponentLocation().Z - 34;
+
+		GetMesh()->SetWorldRotation(Rotation);
+		GetMesh()->SetWorldLocation(Location);
+	}
 }

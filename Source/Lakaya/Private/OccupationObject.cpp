@@ -3,11 +3,13 @@
 
 #include "OccupationObject.h"
 
+#include "EnhancedInputSubsystems.h"
 #include "Character/CollectorPlayerState.h"
 #include "Character/InteractableCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include "PlayerController/MovablePlayerController.h"
 
 AOccupationObject::AOccupationObject()
 {
@@ -20,6 +22,14 @@ AOccupationObject::AOccupationObject()
 	RootComponent = Trigger;
 	Cylinder->SetupAttachment(RootComponent);
 
+	TriggerSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Trigger Sphere"));
+	TriggerSphere->InitSphereRadius(200.0f);
+	TriggerSphere->SetCollisionProfileName("Custom"); // Set to custom collision profile
+	TriggerSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	TriggerSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // Enable overlap for Pawn channel
+	// TriggerSphere->SetCollisionResponseToChannel(ECC_Object, ECR_Ignore); // Disable collision for Object channel
+	TriggerSphere->SetupAttachment(RootComponent);
+	
 	Trigger->SetCapsuleSize(50.0f, 100.0f, true);
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Cylinder (TEXT("/Game/Dev/KDJ/SM_Antenna.SM_Antenna"));
 	if (SM_Cylinder.Succeeded())
@@ -69,7 +79,10 @@ void AOccupationObject::OnServerInteractionBegin(const float& Time, APawn* Calle
 	}
 	
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	{
 		CastedCaller->InitiateInteractionStart(Time, this, 3.f);
+		CastedCaller->GetCharacterMovement()->DisableMovement();
+	}
 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionBegin::Caller was not AInteractableCharacter!"));
 }
 
@@ -98,7 +111,10 @@ void AOccupationObject::OnLocalInteractionStopBegin(APawn* Caller)
 void AOccupationObject::OnServerInteractionStopBegin(const float& Time, APawn* Caller)
 {
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	{
 		CastedCaller->InteractionStopNotify(Time, this);
+		CastedCaller->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	}
 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionStopBegin::Caller was not AInteractableCharacter!"));
 }
 
@@ -106,6 +122,9 @@ void AOccupationObject::OnInteractionStop(APawn* Caller)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Interaction Stop!"));
 
+	auto CastedCaller = Cast<AInteractableCharacter>(Caller);
+	CastedCaller->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	
 	if (InteractingPawn == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("InteractionStop_InteractingPawn is null."));

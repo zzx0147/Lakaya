@@ -4,7 +4,7 @@
 #include "GameMode/OccupationGameMode.h"
 #include "GameFramework/PlayerStart.h"
 #include "Character/ArmedCharacter.h"
-#include "Character/BattlePlayerController.h"
+#include "PlayerController/BattlePlayerController.h"
 #include "Character/CollectorPlayerState.h"
 #include "GameMode/OccupationGameState.h"
 
@@ -119,7 +119,7 @@ void AOccupationGameMode::DelayedStartMatch()
 void AOccupationGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-	GetGameState<AOccupationGameState>()->OnMatchStarted(180.f);
+	GetGameState<AOccupationGameState>()->OnMatchStarted(GamePlayTime);
 	OnKillNotifyBinding();
 
 	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
@@ -128,6 +128,8 @@ void AOccupationGameMode::HandleMatchHasStarted()
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_OccupationGameState is null."));
 		return;
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("PlayerArray.Num() : %d"), OccupationGameState->PlayerArray.Num());
 	
 	for (int i = 0; i < OccupationGameState->PlayerArray.Num(); i++)
 	{
@@ -149,8 +151,8 @@ void AOccupationGameMode::HandleMatchHasStarted()
 					return;
 				}
 				
-				APlayerController* PlayerController = Cast<APlayerController>(ArgCollectorPlayerState->GetOwner());
-				if (PlayerController == nullptr)
+				AController* OccuController = Cast<AController>(ArgCollectorPlayerState->GetOwner());
+				if (OccuController == nullptr)
 				{
 					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_PlayerController is null."));
 					return;
@@ -173,21 +175,22 @@ void AOccupationGameMode::HandleMatchHasStarted()
 				}
 				
 				APlayerStart* PlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
-				APawn* ArgCharacterPawn = Cast<APawn>(PlayerController->GetPawn());
-				ACharacter* ArgCharacterActor = Cast<ACharacter>(PlayerController->GetCharacter());
+				APawn* ArgCharacterPawn = Cast<APawn>(OccuController->GetPawn());
+				ACharacter* ArgCharacterActor = Cast<ACharacter>(OccuController->GetCharacter());
 				
 				if (ArgCharacterPawn != nullptr)
 				{
 					ArgCharacterPawn->SetActorLocation(PlayerStart->GetActorLocation());
+					UE_LOG(LogTemp, Warning, TEXT("짝수"));
 				}
 				else if (ArgCharacterActor != nullptr)
 				{
 					ArgCharacterActor->SetActorLocation(PlayerStart->GetActorLocation());
+					UE_LOG(LogTemp, Warning, TEXT("짝수"))
 				}
 				else
 				{
 					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_KilledCharacter is not a pawn or an actor."));
-					return;
 				}
 			}
 			else if (i % 2 != 0)
@@ -229,17 +232,16 @@ void AOccupationGameMode::HandleMatchHasStarted()
 				if (ArgCharacterPawn != nullptr)
 				{
 					ArgCharacterPawn->SetActorLocation(PlayerStart->GetActorLocation());
-					return;
+					UE_LOG(LogTemp, Warning, TEXT("홀수"))
 				}
 				else if (ArgCharacterActor != nullptr)
 				{
 					ArgCharacterActor->SetActorLocation(PlayerStart->GetActorLocation());
-					return;
+					UE_LOG(LogTemp, Warning, TEXT("홀수"))
 				}
 				else
 				{
 					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_KilledCharacter is not a pawn or an actor."));
-					return;
 				}
 			}
 		}
@@ -252,11 +254,42 @@ void AOccupationGameMode::HandleMatchHasStarted()
 void AOccupationGameMode::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
+
+	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	if (OccupationGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_OccupationGameState is null."));
+		return;
+	}
+
+	OccupationGameState->SetGameState(EOccupationGameState::Finish);
+	
+	if (OccupationGameState->GetATeamScore() > OccupationGameState->GetBTeamScore())
+	{
+		OccupationGameState->SetOccupationWinner(EOccupationWinner::A);
+	}
+	else
+	{
+		OccupationGameState->SetOccupationWinner(EOccupationWinner::B);
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("게임이 종료되었습니다."));
+
+	GetWorldTimerManager().SetTimer(TimerHandle_DelayedEnded, this, &AOccupationGameMode::DelayedEndedGame, 2.0f, false);
+
+}
+
+void AOccupationGameMode::DelayedEndedGame()
+{
+	UE_LOG(LogTemp, Warning, TEXT("게임을 떠났습니다."));
+
+	UGameplayStatics::OpenLevel(GetWorld(), "MainLobbyLevel");
 }
 
 void AOccupationGameMode::HandleLeavingMap()
 {
 	Super::HandleLeavingMap();
+
 }
 
 void AOccupationGameMode::Logout(AController* Exiting)
@@ -352,6 +385,6 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 		return;
 	}
 	
-	KilledDamageableCharacter->FullHealth();
 	KilledDamageableCharacter->Respawn();
 }
+

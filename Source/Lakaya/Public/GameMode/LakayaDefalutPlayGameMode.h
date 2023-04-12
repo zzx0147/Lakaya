@@ -43,7 +43,7 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	
 	// WaitingPostMath (경기 후 대기)
-	// 여기에 들어설 때 HandleLeavingMap()함수 호출
+	// 여기에 들어설 때 HandleMatchHasEnded ()함수 호출
 	// 액터 틱은 여전히 일어나지만, 새로운 플레이어는 참가할 수 없음. 맵 이동이 시작되면 다음 상태로 전환
 	virtual void HandleMatchHasEnded() override;
 
@@ -62,6 +62,9 @@ protected:
 
 	virtual void RespawnPlayer(AController* KilledController);
 
+public:
+	virtual int32 GetNumBots();
+	
 public:
 	uint8 PlayerRespawnTime = 3;
 	bool bWaitToStart = false;

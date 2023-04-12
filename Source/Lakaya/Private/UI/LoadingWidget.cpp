@@ -1,6 +1,6 @@
 #include "UI/LoadingWidget.h"
 
-#include "Character/MenuCallingPlayerController.h"
+#include "PlayerController/MenuCallingPlayerController.h"
 #include "GameMode/IndividualGameMode.h"
 #include "GameMode/IndividualGameState.h"
 #include "Net/UnrealNetwork.h"
@@ -16,7 +16,7 @@ void ULoadingWidget::NativeConstruct()
         return;
     }
 
-    OnChangeJoinedPlayers(OccupationGameState->NumPlayers, OccupationGameState->GetMaxPlayers());
+    OnChangeJoinedPlayers(OccupationGameState->GetNumPlayers(), OccupationGameState->GetMaxPlayers());
 
     // 바인딩
     LoadingWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("LoadingWidgetText")));
@@ -27,6 +27,7 @@ void ULoadingWidget::NativeConstruct()
     }
 
     OccupationGameState->OnOccupationChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
+    OccupationGameState->OnOccupationChangeMaxPlayers.AddUObject(this, &ULoadingWidget::OnChangeMaxPlayers);
     OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &ULoadingWidget::ReMoveLoadingWidget);
 }
 
@@ -35,7 +36,7 @@ void ULoadingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
     Super::NativeTick(MyGeometry, InDeltaTime);
 }
 
-void ULoadingWidget::OnChangeJoinedPlayers(int32 JoinedPlayers, int32 MaxPlayer)
+void ULoadingWidget::OnChangeJoinedPlayers(uint8 JoinedPlayers, uint8 MaxPlayer)
 {
     if (JoinedPlayers == MaxPlayer)
     {
@@ -52,4 +53,15 @@ void ULoadingWidget::ReMoveLoadingWidget(EOccupationGameState ChangeGamState)
     {
         this->RemoveFromParent();
     }
+}
+
+void ULoadingWidget::OnChangeMaxPlayers(uint8 Number, uint8 MaxPlayers)
+{
+    // if (Number == MaxPlayers)
+    // {
+    //     LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("곧 게임을 시작합니다."))));
+    //     return;
+    // }
+    
+    LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), Number, MaxPlayers)));
 }

@@ -162,6 +162,10 @@ void ALakayaDefalutPlayGameMode::RespawnPlayer(AController* KilledController)
 		return;
 	}
 	
-	KilledDamageableCharacter->FullHealth();
 	KilledDamageableCharacter->Respawn();
+}
+
+int32 ALakayaDefalutPlayGameMode::GetNumBots()
+{
+	return NumBots;
 }

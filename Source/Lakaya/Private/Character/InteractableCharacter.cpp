@@ -8,6 +8,7 @@
 #include "Camera/CameraComponent.h"
 #include "InputMappingContext.h"
 #include "Interactable/Interactable.h"
+#include "PlayerController/MovablePlayerController.h"
 
 AInteractableCharacter::AInteractableCharacter()
 {
@@ -47,7 +48,6 @@ void AInteractableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		if (const auto Local = PlayerControl->GetLocalPlayer())
 		{
 			InputSubSystem = Local->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-			InputSubSystem->AddMappingContext(InteractionContext, InteractionPriority);
 		}
 	}
 }
@@ -65,11 +65,11 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	// Add interaction context when overlapped by trigger
 	if (!InputSubSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
 	++InteractableCount;
-	// if (!InputSubSystem->HasMappingContext(InteractionContext))
-	// {
-	// 	InputSubSystem->AddMappingContext(InteractionContext, InteractionPriority);
-	// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context added"));
-	// }
+	if (!InputSubSystem->HasMappingContext(InteractionContext))
+	{
+		InputSubSystem->AddMappingContext(InteractionContext, InteractionPriority);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context added"));
+	}
 }
 
 void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
@@ -168,12 +168,12 @@ void AInteractableCharacter::InteractionStartNotify_Implementation(const float& 
 					{
 						InteractingActor = nullptr;
 						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,
-						                                 TEXT("Interaction Completed in Owner!"));
+														 TEXT("Interaction Completed in Owner!"));
 					}
 					else
 						UE_LOG(LogActor, Error,
-					       TEXT("Fail to release focus on InteractionStartNotify owner context! FocusState was %d"),
-					       GetFocusState(EFocusContext::Owner,EFocusSpace::MainHand));
+						   TEXT("Fail to release focus on InteractionStartNotify owner context! FocusState was %d"),
+						   GetFocusState(EFocusContext::Owner,EFocusSpace::MainHand));
 				}, Duration - LockstepDelay, false);
 			}
 
@@ -184,18 +184,18 @@ void AInteractableCharacter::InteractionStartNotify_Implementation(const float& 
 				{
 					if (ReleaseFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
 						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,
-						                                 TEXT("Interaction Completed in Server!"));
+														 TEXT("Interaction Completed in Server!"));
 					else
 						UE_LOG(LogActor, Error,
-					       TEXT("Fail to release focus on InteractionStartNotify with authority! FocusState was %d"),
-					       GetFocusState(EFocusContext::Server,EFocusSpace::MainHand));
+						   TEXT("Fail to release focus on InteractionStartNotify with authority! FocusState was %d"),
+						   GetFocusState(EFocusContext::Server,EFocusSpace::MainHand));
 				}
 
 				if (ReleaseFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
 					GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Green,
-					                                 TEXT("Interaction Completed in Simulated!"));
+													 TEXT("Interaction Completed in Simulated!"));
 				else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStartNotify! FocusState was %d"),
-				            GetFocusState(EFocusContext::Simulated,EFocusSpace::MainHand));
+							GetFocusState(EFocusContext::Simulated,EFocusSpace::MainHand));
 			}, Duration, false);
 
 			OnInteractionStarted.Broadcast(Time, Actor, Duration);

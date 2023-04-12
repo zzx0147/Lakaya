@@ -27,5 +27,8 @@ public:
 	
 public:
 	UFUNCTION()
-	void OnChangeJoinedPlayers(int32 Number, int32 MaxPlayers);
+	void OnChangeJoinedPlayers(uint8 Number, uint8 MaxPlayers);
+
+	UFUNCTION()
+	void OnChangeMaxPlayers(uint8 Number, uint8 MaxPlayers);
 };

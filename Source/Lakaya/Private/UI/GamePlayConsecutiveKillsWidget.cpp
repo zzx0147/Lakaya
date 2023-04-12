@@ -1,12 +1,33 @@
 #define DO_CHECK 1
 
 #include "UI/GamePlayConsecutiveKillsWidget.h"
-#include "Components/ProgressBar.h"
 
-UGamePlayConsecutiveKillsWidget::UGamePlayConsecutiveKillsWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+#include "Components/ProgressBar.h"
+#include "Weapon/WeaponComponent.h"
+
+
+void UGamePlayConsecutiveKillsWidget::BindWeapon(UWeaponComponent* const& WeaponComponent)
 {
-	ConsecutiveKills = 0;
-	MaximumConsecutiveKills = 5;
+	if (WeaponComponent)
+	{
+		WeaponComponent->OnUpgradeLevelChanged.AddUObject(
+			this, &UGamePlayConsecutiveKillsWidget::OnChangeConsecutiveKills);
+
+		MaximumConsecutiveKills = WeaponComponent->GetMaximumUpgradeLevel();
+		ConsecutiveKills = WeaponComponent->GetUpgradeLevel();
+		ConsecutiveKillsProgressBar->SetPercent((float)ConsecutiveKills / MaximumConsecutiveKills);
+	}
+}
+
+void UGamePlayConsecutiveKillsWidget::UnBindWeapon(UWeaponComponent* const& WeaponComponent)
+{
+	if (WeaponComponent)
+	{
+		WeaponComponent->OnUpgradeLevelChanged.RemoveAll(this);
+
+		ConsecutiveKills = MaximumConsecutiveKills = 0;
+		ConsecutiveKillsProgressBar->SetPercent((float)ConsecutiveKills / MaximumConsecutiveKills);
+	}
 }
 
 void UGamePlayConsecutiveKillsWidget::NativeConstruct()
@@ -21,17 +42,7 @@ void UGamePlayConsecutiveKillsWidget::NativeConstruct()
 #pragma endregion
 }
 
-void UGamePlayConsecutiveKillsWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-}
-
-void UGamePlayConsecutiveKillsWidget::SetConsecutiveKills(int8 NewConsecutiveKills)
-{
-	OnChangeConsecutiveKills(NewConsecutiveKills);
-}
-
-void UGamePlayConsecutiveKillsWidget::OnChangeConsecutiveKills(int8 NewConsecutiveKills)
+void UGamePlayConsecutiveKillsWidget::OnChangeConsecutiveKills(const uint8& NewConsecutiveKills)
 {
 	//새로운 연속처치 값을 저장후 프로그래스바 업데이트
 	ConsecutiveKills = NewConsecutiveKills;

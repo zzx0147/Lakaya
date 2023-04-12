@@ -1,7 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "Character/MenuCallingPlayerController.h"
+#include "PlayerController/MenuCallingPlayerController.h"
 
 #include "Character/CollectorPlayerState.h"
 #include "EnhancedInputComponent.h"
@@ -11,7 +8,10 @@
 #include "GameMode/IndividualGameState.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/LoadingWidget.h"
+#include "UI/DirectionalDamageIndicator.h"
 #include "Blueprint/UserWidget.h"
+#include "Character/ThirdPersonCharacter.h"
+#include "Net/UnrealNetwork.h"
 #include "GameFramework/PlayerStart.h"
 
 void AMenuCallingPlayerController::SetupInputComponent()
@@ -26,6 +26,9 @@ void AMenuCallingPlayerController::SetupInputComponent()
 		Component->BindAction(ScoreAction, ETriggerEvent::Triggered, this,
 		                      &AMenuCallingPlayerController::ScoreHandler);
 	}
+
+	if (const auto Subsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+		Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 }
 
 AMenuCallingPlayerController::AMenuCallingPlayerController()
@@ -55,28 +58,20 @@ AMenuCallingPlayerController::AMenuCallingPlayerController()
 void AMenuCallingPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	if (auto LocalPlayer = GetLocalPlayer())
+
+	if (IsLocalController())
 	{
-		if (const auto Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
-		{
-			Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
+#pragma region Update UI
 
-			#pragma region Update UI
-			if (GetWorld()->GetGameState() == nullptr)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("GetGameState is null."));
-				return;
-			}
-			
-			CreateLoadingWidget();
-			CreateGameTimeWidget();
-			// CreateScoreBoardWidget();
-			CreateGamePlayCrosshairWidget();
-			CreateTeamScoreWidget();
+		CreateLoadingWidget();
+		CreateGameTimeWidget();
+		// CreateScoreBoardWidget();
+		CreateGamePlayCrosshairWidget();
+		CreateTeamScoreWidget();
+		CreateDirectionalDamageIndicator();
+		CreateGameResultWidget();
 
-			#pragma endregion 
-		}
+#pragma endregion
 	}
 }
 
@@ -94,14 +89,17 @@ void AMenuCallingPlayerController::LoadoutHandler(const FInputActionValue& Value
 
 void AMenuCallingPlayerController::ScoreHandler(const FInputActionValue& Value)
 {
+	//TODO: UI를 띄웁니다.
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Score"));
 }
 
 void AMenuCallingPlayerController::CreateLoadingWidget()
 {
-	if (IsLocalPlayerController())
+	if (IsLocalController())
 	{
 		// 로딩 위젯
-		LoadingWidget = CreateWidgetHelper<ULoadingWidget>(TEXT("/Game/Blueprints/UMG/WBP_LoadingWidget.WBP_LoadingWidget_C"));
+		LoadingWidget = CreateWidgetHelper<ULoadingWidget>(
+			TEXT("/Game/Blueprints/UMG/WBP_LoadingWidget.WBP_LoadingWidget_C"));
 		if (LoadingWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("LoadingWidget is null."));
@@ -112,10 +110,11 @@ void AMenuCallingPlayerController::CreateLoadingWidget()
 
 void AMenuCallingPlayerController::CreateGameTimeWidget()
 {
-	if (IsLocalPlayerController())
+	if (IsLocalController())
 	{
 		// 게임 시간 위젯
-		GameTimeWidget = CreateWidgetHelper<UGameTimeWidget>(TEXT("/Game/Blueprints/UMG/WBP_GameTimeWidget.WBP_GameTimeWidget_C"));
+		GameTimeWidget = CreateWidgetHelper<UGameTimeWidget>(
+			TEXT("/Game/Blueprints/UMG/WBP_GameTimeWidget.WBP_GameTimeWidget_C"));
 		if (GameTimeWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("GameTimeWidget is null."));
@@ -129,7 +128,8 @@ void AMenuCallingPlayerController::CreateScoreBoardWidget()
 	if (IsLocalController())
 	{
 		// 스코어보드 위젯
-		GameScoreBoardWidget = CreateWidgetHelper<UGameScoreBoardWidget>(TEXT("/Game/Blueprints/UMG/WBP_GameScoreBoardWidget.WBP_GameScoreBoardWidget_C"));
+		GameScoreBoardWidget = CreateWidgetHelper<UGameScoreBoardWidget>(
+			TEXT("/Game/Blueprints/UMG/WBP_GameScoreBoardWidget.WBP_GameScoreBoardWidget_C"));
 		if (GameScoreBoardWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("GameScoreBoardWidget is null."));
@@ -143,7 +143,8 @@ void AMenuCallingPlayerController::CreateGamePlayCrosshairWidget()
 	if (IsLocalController())
 	{
 		// 크로스헤어 위젯
-		GamePlayCrosshairWidget = CreateWidgetHelper<UGamePlayCrosshairWidget>(TEXT("/Game/Blueprints/UMG/WBP_GamePlayCrosshairWidget.WBP_GamePlayCrosshairWidget_C"));
+		GamePlayCrosshairWidget = CreateWidgetHelper<UGamePlayCrosshairWidget>(
+			TEXT("/Game/Blueprints/UMG/WBP_GamePlayCrosshairWidget.WBP_GamePlayCrosshairWidget_C"));
 		if (GamePlayCrosshairWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("GamePlayCrosshairWidget is null."));
@@ -157,11 +158,50 @@ void AMenuCallingPlayerController::CreateTeamScoreWidget()
 	if (IsLocalController())
 	{
 		// 팀 스코어 위젯
-		TeamScoreWidget = CreateWidgetHelper<UTeamScoreWidget>(TEXT("/Game/Blueprints/UMG/WBP_TeamScoreWidget.WBP_TeamScoreWidget_C"));
+		TeamScoreWidget = CreateWidgetHelper<UTeamScoreWidget>(
+			TEXT("/Game/Blueprints/UMG/WBP_TeamScoreWidget.WBP_TeamScoreWidget_C"));
 		if (TeamScoreWidget == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidget is null."));
 			return;
 		}
 	}
+}
+
+void AMenuCallingPlayerController::CreateGameResultWidget()
+{
+	if (IsLocalController())
+	{
+		// 게임결과창 위젯
+		GameResultWidget = CreateWidgetHelper<UGameResultWidget>(TEXT("/Game/Blueprints/UMG/WBP_GameResultWidget.WBP_GameResultWidget_C"));
+		if (GameResultWidget == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GameResultWidget is null."));
+			return;
+		}
+	}
+}
+
+void AMenuCallingPlayerController::CreateDirectionalDamageIndicator()
+{
+	if (IsLocalController())
+	{
+		// 팀 스코어 위젯
+		DirectionalDamageIndicator = CreateWidgetHelper<UDirectionalDamageIndicator>(TEXT("/Game/Blueprints/UMG/WBP_DirectionalDamageIndicator.WBP_DirectionalDamageIndicator_C"));
+		if (DirectionalDamageIndicator == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("DirectionalDamageIndicator is null."));
+			return;
+		}
+	}
+}
+
+void AMenuCallingPlayerController::IndicateStart(FName CauserName, FVector DamageCursorPosition, float time)
+{
+	auto MyCharacter = GetCharacter();
+	if (MyCharacter == nullptr) return;
+	auto MyThirdPersonCharacter = Cast<AThirdPersonCharacter>(MyCharacter);
+	if (MyThirdPersonCharacter == nullptr) return;
+
+	DirectionalDamageIndicator->IndicateStart(CauserName, MyThirdPersonCharacter->GetCamera(), DamageCursorPosition, time);
 }

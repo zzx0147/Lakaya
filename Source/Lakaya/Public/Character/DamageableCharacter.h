@@ -33,7 +33,6 @@ protected:
 public:
 	inline virtual const float& GetMaximumHealth() const { return MaximumHealth; }
 	inline virtual const float& GetHealth() const { return Health; }
-	inline virtual float& FullHealth() { return Health = MaximumHealth; }
 	
 	/**
 	 * @brief 캐릭터가 리스폰 시 수행되어야 하는 기능을 실행합니다. 이 함수는 서버측에서만 실행됩니다.
@@ -76,14 +75,22 @@ private:
 	UFUNCTION(NetMulticast, Reliable)
 	void OnHitEffectPlay(AActor* DamagedActor);
 
+	UFUNCTION(Client, Reliable)
+	void IndicateRPC(FName CauserName, FVector DamageCursorPosition, float time);
+	void IndicateRPC_Implementation(FName CauserName, FVector DamageCursorPosition, float time);
+
 public:
-	/**
-	 * @brief 캐릭터가 사망했을 때 호출됩니다. 앞의 컨트롤러와 액터는 사망한 캐릭터, 뒤의 컨트롤러와 액터는 죽인 캐릭터를 의미합니다.
-	 */
+	// 캐릭터가 사망했을 때 호출됩니다. 앞의 컨트롤러와 액터는 사망한 캐릭터, 뒤의 컨트롤러와 액터는 죽인 캐릭터를 의미합니다.
 	FKillCharacterSignature OnKillCharacterNotify;
+
+	// 캐릭터가 부활할 때 호출되는 이벤트입니다.
 	FRespawnSignature OnRespawnCharacterNotify;
-	FMaximumHealthSignature OnMaximumHealthReplicated;
-	FHealthSignature OnHealthReplicated;
+
+	// 최대체력이 변경되면 호출되는 이벤트입니다.
+	FMaximumHealthSignature OnMaximumHealthChanged;
+
+	// 현재체력이 변경되면 호출되는 이벤트입니다.
+	FHealthSignature OnHealthChanged;
 
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_MaximumHealth)
@@ -91,6 +98,4 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_Health)
 	float Health;
-
-	class UGamePlayHealthWidget* GamePlayHealthWidget;
 };

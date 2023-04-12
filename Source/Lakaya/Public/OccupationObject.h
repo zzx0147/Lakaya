@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
 #include "Interactable/Interactable.h"
 #include "OccupationObject.generated.h"
@@ -52,6 +53,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* Cylinder;
 
+	UPROPERTY(VisibleAnywhere, Category = "Trigger")
+	USphereComponent* TriggerSphere;
+	
 private:
 	EObjectOwner ObjectOwner = EObjectOwner::None;
 	

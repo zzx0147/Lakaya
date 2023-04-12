@@ -4,14 +4,10 @@
 
 #include "Character/DamageableCharacter.h"
 #include "Components/VerticalBox.h"
-#include "GameFramework/GameStateBase.h"
-#include "GameFramework/PlayerState.h"
 #include "UI/KillLogElement.h"
 
-void UGamePlayKillLogWidget::UpdateKillLogWidget(ADamageableCharacter* Character)
+void UGamePlayKillLogWidget::OnCharacterBeginPlay(ADamageableCharacter* Character)
 {
-	static uint8 UpdateCount = 0;
-	UE_LOG(LogTemp, Warning, TEXT("Update Kiil Log! : %d"), UpdateCount++);
 	if (Character) Character->OnKillCharacterNotify.AddUObject(this, &UGamePlayKillLogWidget::OnKillCharacterNotify);
 	else UE_LOG(LogInit, Error, TEXT("SetupKillLogWidget::Character was nullptr!"));
 }
@@ -38,12 +34,14 @@ void UGamePlayKillLogWidget::NativeConstruct()
 
 	ElementPool.SetupObjectPool(MaxElementCount, [this]
 	{
-		auto Result = NewObject<UKillLogElement>(this, KillLogClass);
+		const auto Result = NewObject<UKillLogElement>(this, KillLogClass);
 		Result->SetReturnFunction([this](UKillLogElement* Element)
 		{
 			ElementPool.ReturnObject(Element);
-			KillLogBox->RemoveChild(Element);
+			--ShownElementCount;
 		});
+		KillLogBox->AddChildToVerticalBox(Result);
+		Result->SetVisibility(ESlateVisibility::Collapsed);
 		return Result;
 	});
 }
@@ -51,17 +49,14 @@ void UGamePlayKillLogWidget::NativeConstruct()
 void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController, AActor* KilledActor,
                                                    AController* Instigator, AActor* Causer)
 {
-	if (KillLogBox->GetChildrenCount() >= InitialChildCount + MaxElementCount)
+	UKillLogElement* Element;
+	if (ShownElementCount < MaxElementCount)
 	{
-		if (auto FirstKillLog = Cast<UKillLogElement>(KillLogBox->GetChildAt(InitialChildCount)))
-		{
-			FirstKillLog->SetKillLog(Cast<ADamageableCharacter>(Causer), Cast<ACharacter>(KilledActor));
-			KillLogBox->ShiftChild(InitialChildCount + MaxElementCount - 1, FirstKillLog);
-		}
-		else UE_LOG(LogTemp, Error, TEXT("Fail to get FirstKillLog on OnKillCharacterNotify!"));
-		return;
+		Element = ElementPool.GetObject();
+		++ShownElementCount;
 	}
-	auto Element = ElementPool.GetObject();
-	KillLogBox->AddChild(Element);
+	else Element = Cast<UKillLogElement>(KillLogBox->GetChildAt(InitialChildCount));
+
+	KillLogBox->ShiftChild(KillLogBox->GetChildrenCount(), Element);
 	Element->SetKillLog(Cast<ADamageableCharacter>(Causer), Cast<ACharacter>(KilledActor));
 }
