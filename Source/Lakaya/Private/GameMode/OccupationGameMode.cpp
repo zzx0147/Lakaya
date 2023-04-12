@@ -159,7 +159,7 @@ void AOccupationGameMode::HandleMatchHasStarted()
 				}
 				
 				FName SpawnTag;
-				SpawnTag = FName("ATeamSpawnZone");
+				SpawnTag = FName(TEXT("ATeamSpawnZone"));
 				
 				UE_LOG(LogTemp, Warning, TEXT("SpawnTag: %s"), *SpawnTag.ToString());
 				
@@ -209,7 +209,7 @@ void AOccupationGameMode::HandleMatchHasStarted()
 				}
 				
 				FName SpawnTag;
-				SpawnTag = FName("BTeamSpawnZone");
+				SpawnTag = FName(TEXT("BTeamSpawnZone"));
 				
 				UE_LOG(LogTemp, Warning, TEXT("SpawnTag: %s"), *SpawnTag.ToString());
 				
@@ -231,12 +231,10 @@ void AOccupationGameMode::HandleMatchHasStarted()
 				if (ArgCharacterPawn != nullptr)
 				{
 					ArgCharacterPawn->SetActorLocation(PlayerStart->GetActorLocation());
-					return;
 				}
 				else if (ArgCharacterActor != nullptr)
 				{
 					ArgCharacterActor->SetActorLocation(PlayerStart->GetActorLocation());
-					return;
 				}
 				else
 				{

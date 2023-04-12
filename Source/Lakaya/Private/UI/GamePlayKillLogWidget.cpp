@@ -57,6 +57,6 @@ void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController
 	}
 	else Element = Cast<UKillLogElement>(KillLogBox->GetChildAt(InitialChildCount));
 
-	KillLogBox->ShiftChild(KillLogBox->GetChildrenCount(), Element);
+	//KillLogBox->ShiftChild(KillLogBox->GetChildrenCount(), Element);
 	Element->SetKillLog(Cast<ADamageableCharacter>(Causer), Cast<ACharacter>(KilledActor));
 }

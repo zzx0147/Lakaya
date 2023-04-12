@@ -65,7 +65,7 @@ void AOccupationGameState::SetOccupationObject(EOccupationObjectState NewObjectS
 		GetWorldTimerManager().SetTimer(TimerHandle_BteamScoreIncrease, this, &AOccupationGameState::SetBTeamScore, 1.0f, true);
 		
 		if (CurrentOccupationObjectState == EOccupationObjectState::A || CurrentOccupationObjectState == EOccupationObjectState::B)
-		return;
+			return;
 // =======
 		if (CurrentOccupationObjectState == EOccupationObjectState::A)
 		{

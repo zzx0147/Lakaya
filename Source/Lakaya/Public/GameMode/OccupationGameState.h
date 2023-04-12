@@ -11,12 +11,12 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeJoinedPlayers, uint8, ui
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeGameState, EOccupationGameState)
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeTime, int32, int32)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeObjectcState, EOccupationObjectState)
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamScore, float);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamScore, float);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamObjectNum, uint8);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamObjectNum, uint8);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamScore, float)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamScore, float)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamObjectNum, uint8)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamObjectNum, uint8)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeOccupationWinner, EOccupationWinner)
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeMaxPlayers, uint8, uint8);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeMaxPlayers, uint8, uint8)
 
 UENUM()
 enum class EOccupationGameState : uint8
@@ -156,7 +156,7 @@ private:
 	uint8 BTeamObjectNum = 0;
 
 	UPROPERTY(ReplicatedUsing = OnRep_MaxPlayers)
-	uint8 MaxPlayers = 2;
+	uint8 MaxPlayers = 6;
 
 	UPROPERTY(Replicated)
 	float MatchEndingTime;
