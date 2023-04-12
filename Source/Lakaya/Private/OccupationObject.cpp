@@ -182,7 +182,6 @@ void AOccupationObject::OnInteractionStop(APawn* Caller)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
 			
-			OccupationGameState->SetOccupationObject(EOccupationObjectState::A);
 			if (ObjectOwner == EObjectOwner::B)
 				OccupationGameState->SubBTeamObjectNum();
 			
@@ -194,7 +193,6 @@ void AOccupationObject::OnInteractionStop(APawn* Caller)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
 
-			OccupationGameState->SetOccupationObject(EOccupationObjectState::B);
 			if (ObjectOwner == EObjectOwner::A)
 				OccupationGameState->SubATeamObjectNum();
 			
