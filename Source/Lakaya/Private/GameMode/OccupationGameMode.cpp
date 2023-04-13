@@ -16,19 +16,11 @@ AOccupationGameMode::AOccupationGameMode()
 		UE_LOG(LogTemp, Error, TEXT("OccupationGameMode_Failed to find player pawn blueprint."));
 		return;
 	}
-
-	static ConstructorHelpers::FClassFinder<AOccupationGameState> OccupationGameState(TEXT("/Game/Blueprints/GameModes/BP_OccupationGameState.BP_OccupationGameState_C"));
-	if (!OccupationGameState.Succeeded())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GameState is null."));
-		return;
-	}
 	
 	DefaultPawnClass = PlayerPawnObject.Class;
 	PlayerControllerClass = ABattlePlayerController::StaticClass();
 	PlayerStateClass = ACollectorPlayerState::StaticClass();
-	// GameStateClass = AOccupationGameState::StaticClass();
-	GameStateClass = OccupationGameState.Class;
+	GameStateClass = AOccupationGameState::StaticClass();
 }
 
 void AOccupationGameMode::BeginPlay()
@@ -39,15 +31,13 @@ void AOccupationGameMode::BeginPlay()
 void AOccupationGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
-	OnGameModeInitialized.Broadcast();
 }
 
 void AOccupationGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 
-	AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
+	OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
 	if (OccupationGameState == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_OccupationGameState is null."));
@@ -66,12 +56,6 @@ void AOccupationGameMode::PostLogin(APlayerController* NewPlayer)
 void AOccupationGameMode::HandleMatchIsWaitingToStart()
 {
 	Super::HandleMatchIsWaitingToStart();
-	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-	if (OccupationGameState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GameMode_OccupationGameState is null."));
-		return;
-	}
 	
 	OccupationGameState->SetGameState(EOccupationGameState::StandByToPregressLoading);
 	UE_LOG(LogTemp, Log, TEXT("HandleMatchIsWaitingToStart"));
@@ -81,15 +65,8 @@ bool AOccupationGameMode::ReadyToStartMatch_Implementation()
 {
 	if (GetMatchState() != MatchState::WaitingToStart) return false;
 	
-	if (!bWaitToStart) return false;
+	if (!GetbWaitToStart()) return false;
 	
-	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-	if (OccupationGameState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_OccupationGameState is null."));
-		return false;
-	}
-
 	for (int i = 0; i < OccupationGameState->GetMaxPlayers(); i++)
 	{
 		if (OccupationGameState->PlayerArray.IsValidIndex(i))
@@ -127,148 +104,18 @@ void AOccupationGameMode::DelayedStartMatch()
 void AOccupationGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-	GetGameState<AOccupationGameState>()->OnMatchStarted(GamePlayTime);
+	OccupationGameState->OnMatchStarted(GamePlayTime);
 	OnKillNotifyBinding();
 
-	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-	if (OccupationGameState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_OccupationGameState is null."));
-		return;
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("PlayerArray.Num() : %d"), OccupationGameState->PlayerArray.Num());
+	// 플레이어 인원만큼 위치를 조정해줍니다. (각각의 팀 위치에서)
+	PlayerInitializeSetLocation(OccupationGameState->PlayerArray.Num());
 	
-	for (int i = 0; i < OccupationGameState->PlayerArray.Num(); i++)
-	{
-		if (OccupationGameState->PlayerArray.IsValidIndex(i))
-		{
-			ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(OccupationGameState->PlayerArray[i]);
-			if (CollectorPlayerState == nullptr)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
-				return;
-			}
-
-			if (i % 2 == 0)
-			{
-				ACollectorPlayerState* ArgCollectorPlayerState = Cast<ACollectorPlayerState>(OccupationGameState->PlayerArray[i]);
-				if (ArgCollectorPlayerState == nullptr)
-				{
-					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
-					return;
-				}
-				
-				AController* OccuController = Cast<AController>(ArgCollectorPlayerState->GetOwner());
-				if (OccuController == nullptr)
-				{
-					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_PlayerController is null."));
-					return;
-				}
-				
-				FName SpawnTag;
-				SpawnTag = FName("ATeamSpawnZone");
-				
-				UE_LOG(LogTemp, Warning, TEXT("SpawnTag: %s"), *SpawnTag.ToString());
-				
-				TArray<AActor*> PlayerStartActors;
-				UGameplayStatics::GetAllActorsWithTag(GetWorld(), SpawnTag, PlayerStartActors);
-				
-				UE_LOG(LogTemp, Warning, TEXT("PlayerStartActors.Num(): %d"), PlayerStartActors.Num());
-				
-				if (PlayerStartActors.Num() == 0)
-				{
-					UE_LOG(LogTemp, Warning, TEXT("No Player Start Actors found."));
-					return;
-				}
-				
-				APlayerStart* PlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
-				APawn* ArgCharacterPawn = Cast<APawn>(OccuController->GetPawn());
-				ACharacter* ArgCharacterActor = Cast<ACharacter>(OccuController->GetCharacter());
-				
-				if (ArgCharacterPawn != nullptr)
-				{
-					ArgCharacterPawn->SetActorLocation(PlayerStart->GetActorLocation());
-					UE_LOG(LogTemp, Warning, TEXT("짝수"));
-				}
-				else if (ArgCharacterActor != nullptr)
-				{
-					ArgCharacterActor->SetActorLocation(PlayerStart->GetActorLocation());
-					UE_LOG(LogTemp, Warning, TEXT("짝수"))
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_KilledCharacter is not a pawn or an actor."));
-				}
-			}
-			else if (i % 2 != 0)
-			{
-				ACollectorPlayerState* ArgCollectorPlayerState = Cast<ACollectorPlayerState>(OccupationGameState->PlayerArray[i]);
-				if (ArgCollectorPlayerState == nullptr)
-				{
-					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
-					return;
-				}
-				
-				APlayerController* PlayerController = Cast<APlayerController>(ArgCollectorPlayerState->GetOwner());
-				if (PlayerController == nullptr)
-				{
-					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_PlayerController is null."));
-					return;
-				}
-				
-				FName SpawnTag;
-				SpawnTag = FName("BTeamSpawnZone");
-				
-				UE_LOG(LogTemp, Warning, TEXT("SpawnTag: %s"), *SpawnTag.ToString());
-				
-				TArray<AActor*> PlayerStartActors;
-				UGameplayStatics::GetAllActorsWithTag(GetWorld(), SpawnTag, PlayerStartActors);
-				
-				UE_LOG(LogTemp, Warning, TEXT("PlayerStartActors.Num(): %d"), PlayerStartActors.Num());
-				
-				if (PlayerStartActors.Num() == 0)
-				{
-					UE_LOG(LogTemp, Warning, TEXT("No Player Start Actors found."));
-					return;
-				}
-				
-				APlayerStart* PlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
-				APawn* ArgCharacterPawn = Cast<APawn>(PlayerController->GetPawn());
-				ACharacter* ArgCharacterActor = Cast<ACharacter>(PlayerController->GetCharacter());
-				
-				if (ArgCharacterPawn != nullptr)
-				{
-					ArgCharacterPawn->SetActorLocation(PlayerStart->GetActorLocation());
-					UE_LOG(LogTemp, Warning, TEXT("홀수"))
-				}
-				else if (ArgCharacterActor != nullptr)
-				{
-					ArgCharacterActor->SetActorLocation(PlayerStart->GetActorLocation());
-					UE_LOG(LogTemp, Warning, TEXT("홀수"))
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_KilledCharacter is not a pawn or an actor."));
-				}
-			}
-		}
-	}
-	
-	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasStarted"));
 }
 
 void AOccupationGameMode::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
-
-	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-	if (OccupationGameState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_OccupationGameState is null."));
-		return;
-	}
 
 	OccupationGameState->SetGameState(EOccupationGameState::Finish);
 	
@@ -281,23 +128,18 @@ void AOccupationGameMode::HandleMatchHasEnded()
 		OccupationGameState->SetOccupationWinner(EOccupationWinner::B);
 	}
 	
-	UE_LOG(LogTemp, Warning, TEXT("게임이 종료되었습니다."));
-
 	GetWorldTimerManager().SetTimer(TimerHandle_DelayedEnded, this, &AOccupationGameMode::DelayedEndedGame, 2.0f, false);
 
 }
 
 void AOccupationGameMode::DelayedEndedGame()
 {
-	UE_LOG(LogTemp, Warning, TEXT("게임을 떠났습니다."));
-
 	UGameplayStatics::OpenLevel(GetWorld(), "MainLobbyLevel");
 }
 
 void AOccupationGameMode::HandleLeavingMap()
 {
 	Super::HandleLeavingMap();
-
 }
 
 void AOccupationGameMode::Logout(AController* Exiting)
@@ -316,7 +158,7 @@ void AOccupationGameMode::OnKillNotifyBinding()
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableCharacter::StaticClass(), FoundActors);
 	
-	for (auto Actor : FoundActors)
+	for (auto& Actor : FoundActors)
 	{
 		ADamageableCharacter* MyActor = Cast<ADamageableCharacter>(Actor);
 		if (MyActor)
@@ -396,3 +238,76 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 	KilledDamageableCharacter->Respawn();
 }
 
+void AOccupationGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
+{
+	for (int i = 0; PlayersNum; i++)
+	{
+		if (OccupationGameState->PlayerArray.IsValidIndex(i))
+		{
+			ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(OccupationGameState->PlayerArray[i]);
+			if (CollectorPlayerState == nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
+				return;
+			}
+
+			AController* OccuController = Cast<AController>(CollectorPlayerState->GetOwner());
+			if (OccuController == nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_PlayerController is null."));
+				return;
+			}
+
+			FName SpawnTag;
+			switch (CollectorPlayerState->GetPlayerTeamState())
+			{
+			case EPlayerTeamState::A:
+				SpawnTag = FName("ATeamSpawnZone");
+				break;
+			case EPlayerTeamState::B:
+				SpawnTag = FName("BTeamSpawnZone");
+				break;
+			default:
+				UE_LOG(LogTemp, Warning, TEXT("Invalid player steam state."))	
+				break;
+			}
+			
+			UE_LOG(LogTemp, Warning, TEXT("SpawnTag: %s"), *SpawnTag.ToString());
+
+			TArray<AActor*> PlayerStartActors;
+			UGameplayStatics::GetAllActorsWithTag(GetWorld(), SpawnTag, PlayerStartActors);
+				
+			UE_LOG(LogTemp, Warning, TEXT("PlayerStartActors.Num(): %d"), PlayerStartActors.Num());
+				
+			if (PlayerStartActors.Num() == 0)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("No Player Start Actors found."));
+				return;
+			}
+
+			APlayerStart* PlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
+			APawn* ArgCharacterPawn = Cast<APawn>(OccuController->GetPawn());
+			ACharacter* ArgCharacterActor = Cast<ACharacter>(OccuController->GetCharacter());
+
+			if (ArgCharacterPawn != nullptr)
+			{
+				ArgCharacterPawn->SetActorLocation(PlayerStart->GetActorLocation());
+			}
+			else if (ArgCharacterActor != nullptr)
+			{
+				ArgCharacterActor->SetActorLocation(PlayerStart->GetActorLocation());
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_KilledCharacter is not a pawn or an actor."));
+			}
+
+			UE_LOG(LogTemp, Warning, TEXT("Player SetLocation Completed."));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PlayerArray is Not Valid."));
+			return;
+		}
+	}
+}

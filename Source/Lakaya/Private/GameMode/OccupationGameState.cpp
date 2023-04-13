@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "GameMode/OccupationGameState.h"
+
+#include "GameMode/OccupationGameMode.h"
 #include "Net/UnrealNetwork.h"
 
 void AOccupationGameState::BeginPlay()

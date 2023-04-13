@@ -164,8 +164,3 @@ void ALakayaDefalutPlayGameMode::RespawnPlayer(AController* KilledController)
 	
 	KilledDamageableCharacter->Respawn();
 }
-
-int32 ALakayaDefalutPlayGameMode::GetNumBots()
-{
-	return NumBots;
-}

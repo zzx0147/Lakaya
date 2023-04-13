@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "OccupationGameMode.h"
 #include "GameFramework/GameState.h"
 #include "OccupationGameState.generated.h"
 
@@ -134,7 +133,6 @@ private:
 
 	uint8 BTeamObjectNum = 0;
 
-	// Merge.
 	UPROPERTY(EditAnywhere)
 	uint8 MaxPlayers = 2;
 

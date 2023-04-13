@@ -3,10 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "OccupationGameState.h"
 #include "GameMode/LakayaDefalutPlayGameMode.h"
 #include "OccupationGameMode.generated.h"
-
-DECLARE_MULTICAST_DELEGATE(FOnGameModeInitialized);
 
 UCLASS()
 class LAKAYA_API AOccupationGameMode : public ALakayaDefalutPlayGameMode
@@ -35,16 +34,16 @@ private:
 
 	virtual void RespawnPlayer(AController* KilledController) override;
 
+	void PlayerInitializeSetLocation(uint8 PlayersNum);
+
 	void DelayedEndedGame();
 
 private:
 	float GamePlayTime = 180.0f;
+	AOccupationGameState* OccupationGameState;
 	
 private:
 	FTimerHandle TimerHandle_CheckStartMatch;
 	FTimerHandle TimerHandle_DelayedStart;
 	FTimerHandle TimerHandle_DelayedEnded;
-	
-public:
-	FOnGameModeInitialized OnGameModeInitialized;
 };

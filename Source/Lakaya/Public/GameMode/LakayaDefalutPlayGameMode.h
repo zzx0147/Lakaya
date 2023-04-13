@@ -1,16 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
 #include "LakayaDefalutPlayGameMode.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnGameModeInitialized);
-
-/**
- * 
- */
 UCLASS()
 class LAKAYA_API ALakayaDefalutPlayGameMode : public AGameMode
 {
@@ -63,9 +56,10 @@ protected:
 	virtual void RespawnPlayer(AController* KilledController);
 
 public:
-	virtual int32 GetNumBots();
+	uint8 GetPlayerRespawnTime() { return PlayerRespawnTime; }
+	bool GetbWaitToStart() { return bWaitToStart; }
 	
-public:
+private:
 	uint8 PlayerRespawnTime = 3;
 	bool bWaitToStart = false;
 
