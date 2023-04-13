@@ -66,4 +66,6 @@ private:
 private:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;
+
+	FTimerHandle TimerHandle_Respawn;
 };
