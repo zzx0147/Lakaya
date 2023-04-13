@@ -134,6 +134,7 @@ private:
 
 	uint8 BTeamObjectNum = 0;
 
+	// Merge.
 	uint8 MaxPlayers = 2;
 
 	float Standard = 0.2f;
