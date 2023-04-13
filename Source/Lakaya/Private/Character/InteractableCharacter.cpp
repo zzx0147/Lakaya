@@ -42,16 +42,22 @@ void AInteractableCharacter::StartInteraction()
 {
 	if (!InteractableActor.IsValid()) return;
 	RequestInteractionStart(GetServerTime(), InteractableActor.Get());
-	InteractingActor = InteractableActor;
-	OnInteractingActorChanged.Broadcast(InteractingActor.Get());
+	if (!HasAuthority())
+	{
+		InteractingActor = InteractableActor;
+		OnInteractingActorChanged.Broadcast(InteractingActor.Get());
+	}
 }
 
 void AInteractableCharacter::StopInteraction()
 {
 	if (!InteractingActor.IsValid()) return;
 	RequestInteractionStop(GetServerTime(), InteractingActor.Get());
-	InteractingActor = nullptr;
-	OnInteractingActorChanged.Broadcast(InteractingActor.Get());
+	if (!HasAuthority())
+	{
+		InteractingActor = nullptr;
+		OnInteractingActorChanged.Broadcast(InteractingActor.Get());
+	}
 }
 
 void AInteractableCharacter::OnRep_InteractingActor()
