@@ -93,7 +93,7 @@ public:
 protected:
 	// 캐릭터 셋업을 진행할 데이터 테이블입니다.
 	UPROPERTY(EditAnywhere)
-	class UDataTable* CharacterSetupTable;
+	UDataTable* CharacterSetupTable;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
