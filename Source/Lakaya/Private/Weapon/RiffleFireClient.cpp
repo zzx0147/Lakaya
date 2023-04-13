@@ -83,11 +83,11 @@ void URiffleFireClient::TraceVisualize()
 	auto Destination = CameraLocation + Character->GetCamera()->GetForwardVector() * (FireRange + Distance);
 
 	// Trace from camera
-	DrawDebugLine(GetWorld(), CameraLocation, Destination, FColor::Green, false, 1);
+	// DrawDebugLine(GetWorld(), CameraLocation, Destination, FColor::Green, false, 1);
 	if (GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, Destination, ECC_Camera, TraceQueryParams))
 		Destination = HitResult.ImpactPoint;
 
-	DrawDebugLine(GetWorld(), StartPoint, Destination, FColor::Cyan, false, 1.f);
+	// DrawDebugLine(GetWorld(), StartPoint, Destination, FColor::Cyan, false, 1.f);
 
 	// TODO : 총구위치에서 나이아가라 이펙트 스폰 시킨후 bPlayedNiagaraEffect = true 로 설정
 	if (!bPlayedNiagaraEffect)
