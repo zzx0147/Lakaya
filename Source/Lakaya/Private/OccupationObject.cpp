@@ -45,6 +45,13 @@ void AOccupationObject::BeginPlay()
 	Super::BeginPlay();
 }
 
+void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AOccupationObject, ObjectOwner);
+}
+
 void AOccupationObject::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -187,6 +194,7 @@ void AOccupationObject::OnInteractionStop(APawn* Caller)
 			
 			ObjectOwner = EObjectOwner::A;
 			OccupationGameState->AddATeamObjectNum();
+			SetTeamObject(ObjectOwner);
 			return;
 		}
 		else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
@@ -198,6 +206,7 @@ void AOccupationObject::OnInteractionStop(APawn* Caller)
 			
 			ObjectOwner = EObjectOwner::B;
 			OccupationGameState->AddBTeamObjectNum();
+			SetTeamObject(ObjectOwner);
 			return;
 		}
 		else
@@ -226,4 +235,24 @@ void AOccupationObject::AutomaticInteractionStop()
 	
 	OnInteractionStop(InteractingPawn);
 	InteractingPawn = nullptr;
+}
+
+void AOccupationObject::OnRep_BroadCastTeamObject()
+{
+	SetTeamObject(ObjectOwner);
+}
+
+void AOccupationObject::SetTeamObject(EObjectOwner Team)
+{
+	switch (Team)
+	{
+	case EObjectOwner::A:
+		Cylinder->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/RedTeam.RedTeam")));
+		break;
+	case EObjectOwner::B:
+		Cylinder->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/BlueTeam.BlueTeam")));
+		break;
+	case EObjectOwner::None:
+		break;
+	}
 }
