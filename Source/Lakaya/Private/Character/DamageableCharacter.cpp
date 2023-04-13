@@ -3,169 +3,117 @@
 
 #include "Character/DamageableCharacter.h"
 
-#include "PlayerController/BattlePlayerController.h"
-#include "Components/CapsuleComponent.h"
+#include "Character/StatComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
-#include "GameMode/IndividualGameMode.h"
-#include "UI/GamePlayHealthWidget.h"
-#include "Character/CollectorPlayerState.h"
 
-ADamageableCharacter::ADamageableCharacter()
-{
-	MaximumHealth = 100.f;
-}
-
-void ADamageableCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	Health = MaximumHealth;
-	if (IsRunningDedicatedServer()) return;
-
-	OnTakeAnyDamage.AddDynamic(this, &ADamageableCharacter::OnTakeAnyDamageCallback);
-	if (const auto BattleController = GetWorld()->GetFirstPlayerController<ABattlePlayerController>())
-		BattleController->OnCharacterBeginPlay(this);
-}
+//TODO: 아래 주석의 구현 부분은 추후 OccupationCharacter로 옮겨져야 합니다.
+// bool ADamageableCharacter::ShouldTakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
+//                                             AActor* DamageCauser) const
+// {
+// 	 auto MyPlayerState = GetPlayerState();
+// 	 if (MyPlayerState == nullptr)
+// 	 {
+// 	 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("No Player State"));
+// 	 	return false;
+// 	 }
+// 	 auto CollectorPlayerState = Cast<ACollectorPlayerState>(MyPlayerState);
+// 	 if (CollectorPlayerState == nullptr)
+// 	 {
+// 	 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("No CollectorPlayer State"));
+// 	 	return false;
+// 	 }
+// 	
+// 	 if (EventInstigator == nullptr) return 0.0f;
+// 	
+// 	 auto enemyPlayerState = EventInstigator->GetPlayerState<ACollectorPlayerState>();
+// 	 if (enemyPlayerState == nullptr)
+// 	 {
+// 	 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("No EnemyPlayer State"));
+// 	 	return false;
+// 	 }
+// 	 if (enemyPlayerState->GetPlayerTeamState() == CollectorPlayerState->GetPlayerTeamState())
+// 	 {
+// 	 	return false;
+// 	 }
+// 	return Super::ShouldTakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+// }
 
 float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
                                        AController* EventInstigator, AActor* DamageCauser)
 {
-	auto MyPlayerState = GetPlayerState();
-	if (MyPlayerState == nullptr)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("No Player State"));
-		return 0.0f;
-	}
-	auto CollectorPlayerState = Cast<ACollectorPlayerState>(MyPlayerState);
-	if (CollectorPlayerState == nullptr) 
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("No CollectorPlayer State"));
-		return 0.0f;
-	}
-
-	if (EventInstigator == nullptr) return 0.0f;
-
-	auto enemyPlayerState = EventInstigator->GetPlayerState<ACollectorPlayerState>();
-	if (enemyPlayerState == nullptr)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("No EnemyPlayer State"));
-		return 0.0f;
-	}
-	if (enemyPlayerState->GetPlayerTeamState() == CollectorPlayerState->GetPlayerTeamState())
-	{
-		return 0.0f;
-	}
-
-	auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-	// TODO : NetMultiCast 된 함수이며 피격받는 캐릭터를 받아 피격 이펙트를 재생합니다.
-	OnHitEffectPlay(CollectorPlayerState->GetOwningController()->GetCharacter());
-	
+	const auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	Health -= Damage;
-	if (Health > MaximumHealth) Health = MaximumHealth;
-	OnHealthChanged.Broadcast(this, Health);
-	
+
+	// 힐이 최대체력 이상으로 이뤄지는 경우 최대체력으로 맞춰줍니다.
+	if (Damage < 0.f)
+		if (auto& Stat = GetStatComponent())
+			if (Health > Stat->GetMaximumHealth())
+				Health = Stat->GetMaximumHealth();
+
+	OnHealthChanged.Broadcast(Health);
+	NotifyDamageReceive(DamageCauser->GetActorLocation(), Damage);
+
 	if (Health <= 0.f) KillCharacter(EventInstigator, DamageCauser);
 	return Damage;
 }
 
-void ADamageableCharacter::OnHitEffectPlay_Implementation(AActor* DamagedActor)
+void ADamageableCharacter::SetupCharacterServer(const FCharacterSetupData* Data)
 {
-	static bool bPlayedNiagaraEffect = false;
-	// TODO : 나이아가라 이펙트 경로 지정
-	UNiagaraSystem* NiagaraEffect =
-	Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
-		TEXT("/Game/Effects/VFX_Character/VFX/Materials/Impacts/GunImpact/VFX/VFX_Hit_Impact_3")));
+	Super::SetupCharacterServer(Data);
 
-	FVector HitLoaction = DamagedActor->GetActorLocation() + FVector(0,0,60);
+	bIsAlive = true;
+	OnAliveChanged.Broadcast(bIsAlive);
 
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect, HitLoaction);
-	bPlayedNiagaraEffect = true;
+	if (auto& Stat = GetStatComponent())
+	{
+		Health = Stat->GetMaximumHealth();
+		OnHealthChanged.Broadcast(Health);
+	}
 }
 
 void ADamageableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ADamageableCharacter, MaximumHealth);
 	DOREPLIFETIME(ADamageableCharacter, Health);
+	DOREPLIFETIME(ADamageableCharacter, bIsAlive);
 }
 
 void ADamageableCharacter::Respawn()
 {
-	Health = MaximumHealth;
-	OnHealthChanged.Broadcast(this, Health);
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-	SetActorEnableCollision(true);
-	RespawnNotify();
+	bIsAlive = true;
+	OnAliveChanged.Broadcast(bIsAlive);
+
+	if (auto& Stat = GetStatComponent())
+	{
+		Health = Stat->GetMaximumHealth();
+		OnHealthChanged.Broadcast(Health);
+	}
+
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
 
 void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
 {
+	bIsAlive = false;
+	OnAliveChanged.Broadcast(bIsAlive);
 	GetCharacterMovement()->DisableMovement();
-	//TODO: 트레이스 충돌은 꺼지지만, 여전히 다른 캐릭터의 움직임을 제한하고 있습니다..
-	SetActorEnableCollision(false);
-	KillCharacterNotify(EventInstigator, DamageCauser);
-	
-}
-
-void ADamageableCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
-{
-	GetMesh()->SetVisibility(false, true);
-
-	//GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
-	//GetMesh()->SetCollisionProfileName(TEXT("PhysicsActor"));
-	//GetMesh()->SetSimulatePhysics(true);
-	//bFixMeshTransform = false;
-
-	OnKillCharacterNotify.Broadcast(GetController(), this, EventInstigator, DamageCauser);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
-}
-
-void ADamageableCharacter::OnRep_MaximumHealth()
-{
-	OnMaximumHealthChanged.Broadcast(this, MaximumHealth);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red,
-	                                 FString::Printf(TEXT("MaximumHealth Changed : %f"), MaximumHealth));
+	//TODO: 게임모드 또는 게임스테이트를 가져와서 함수를 호출하여 이 캐릭터가 다른 캐릭터에 의해 살해당했음을 알려줍니다.
 }
 
 void ADamageableCharacter::OnRep_Health()
 {
-	OnHealthChanged.Broadcast(this, Health);
+	OnHealthChanged.Broadcast(Health);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Health Changed : %f"), Health));
 }
 
-void ADamageableCharacter::OnTakeAnyDamageCallback(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
-                                                   AController* InstigatedBy, AActor* DamageCauser)
+void ADamageableCharacter::OnRep_IsAlive()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Damaged : %f"), Damage));
-	
-	IndicateRPC(DamageCauser->GetFName(), DamageCauser->GetActorLocation(), 3.0f);
+	OnAliveChanged.Broadcast(bIsAlive);
 }
 
-void ADamageableCharacter::IndicateRPC_Implementation(FName CauserName, FVector DamageCursorPosition, float time)
+void ADamageableCharacter::NotifyDamageReceive_Implementation(const FVector& AttackLocation, const float& Damage)
 {
-	if (GetController()->IsLocalPlayerController())
-	{
-		AMenuCallingPlayerController* MenuCallingPlayercontroller = Cast<AMenuCallingPlayerController>(GetController());
-		if (MenuCallingPlayercontroller != nullptr)
-		{
-			MenuCallingPlayercontroller->IndicateStart(CauserName, DamageCursorPosition, 3.0f);
-		}
-	}
-}
-
-void ADamageableCharacter::RespawnNotify_Implementation()
-{
-	GetMesh()->SetVisibility(true, true);
-
-
-
-	//GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
-	//GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
-	//GetMesh()->SetSimulatePhysics(false);
-	//bFixMeshTransform = true;
-	//GetMesh()->SetupAttachment(GetCapsuleComponent());
-
-	OnRespawnCharacterNotify.Broadcast(this);
+	OnDamageReceived.Broadcast(AttackLocation, Damage);
 }

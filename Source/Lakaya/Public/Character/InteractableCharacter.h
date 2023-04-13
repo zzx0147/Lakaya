@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "ArmedCharacter.h"
-#include "GameFramework/GameStateBase.h"
 #include "InteractableCharacter.generated.h"
 
 DECLARE_EVENT_OneParam(AInteractableCharacter, FInteractionSignature, AActor*);
