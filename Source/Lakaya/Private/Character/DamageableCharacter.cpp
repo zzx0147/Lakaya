@@ -7,37 +7,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
-//TODO: 아래 주석의 구현 부분은 추후 OccupationCharacter로 옮겨져야 합니다.
-// bool ADamageableCharacter::ShouldTakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
-//                                             AActor* DamageCauser) const
-// {
-// 	 auto MyPlayerState = GetPlayerState();
-// 	 if (MyPlayerState == nullptr)
-// 	 {
-// 	 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("No Player State"));
-// 	 	return false;
-// 	 }
-// 	 auto CollectorPlayerState = Cast<ACollectorPlayerState>(MyPlayerState);
-// 	 if (CollectorPlayerState == nullptr)
-// 	 {
-// 	 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("No CollectorPlayer State"));
-// 	 	return false;
-// 	 }
-// 	
-// 	 if (EventInstigator == nullptr) return 0.0f;
-// 	
-// 	 auto enemyPlayerState = EventInstigator->GetPlayerState<ACollectorPlayerState>();
-// 	 if (enemyPlayerState == nullptr)
-// 	 {
-// 	 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("No EnemyPlayer State"));
-// 	 	return false;
-// 	 }
-// 	 if (enemyPlayerState->GetPlayerTeamState() == CollectorPlayerState->GetPlayerTeamState())
-// 	 {
-// 	 	return false;
-// 	 }
-// 	return Super::ShouldTakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-// }
 
 float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
                                        AController* EventInstigator, AActor* DamageCauser)
