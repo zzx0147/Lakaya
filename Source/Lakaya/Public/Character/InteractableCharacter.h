@@ -39,9 +39,6 @@ protected:
 	UFUNCTION()
 	void OnRep_InteractingActor();
 
-	// 현재시점의 서버 시간을 가져옵니다.
-	float GetServerTime() const { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
-
 public:
 	// 인터렉션이 가능한 액터가 변경되는 경우 호출됩니다. 매개변수로 넘겨진 액터가 nullptr이면 인터렉션이 불가능해졌음을 의미하며,
 	// 그렇지 않은 경우 해당 액터와 인터렉션이 가능해졌음을 의미합니다.

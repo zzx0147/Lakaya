@@ -3,6 +3,7 @@
 
 #include "Character/MovableCharacter.h"
 
+#include "Character/StatComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
@@ -10,7 +11,6 @@
 AMovableCharacter::AMovableCharacter()
 {
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
-	RunMultiplier = 1.3f;
 }
 
 void AMovableCharacter::Crouch(bool bClientSimulation)
@@ -25,27 +25,14 @@ void AMovableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME_CONDITION(AMovableCharacter, bIsRunning, COND_SkipOwner);
 }
 
-bool AMovableCharacter::IsOwnedByLocalPlayer() const
-{
-	const auto PlayerController = Cast<APlayerController>(GetController());
-	return PlayerController && PlayerController->IsLocalController();
-}
-
 void AMovableCharacter::Run()
 {
-	if (bIsRunning) return;
-	bIsRunning = true;
-	GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
-	RequestSetRunState(bIsRunning, GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
-	// GetCharacterMovement()->DisableMovement();
+	SetRunState(true);
 }
 
 void AMovableCharacter::StopRun()
 {
-	if (!bIsRunning) return;
-	bIsRunning = false;
-	GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
-	RequestSetRunState(bIsRunning, GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
+	SetRunState(false);
 }
 
 bool AMovableCharacter::RequestSetRunState_Validate(bool IsRunning, const float& Time)
@@ -58,15 +45,27 @@ void AMovableCharacter::RequestSetRunState_Implementation(bool IsRunning, const 
 {
 	// 순서가 꼬인 패킷이거나 변경되는 것이 없는 경우 스킵합니다. 이 과정에서 서버도 걸러집니다.
 	if (RecentRunEventTime > Time || bIsRunning == IsRunning) return;
-
 	RecentRunEventTime = Time;
 	bIsRunning = IsRunning;
-	if (bIsRunning) GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
-	else GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
+	ApplySpeedFromStat();
+}
+
+void AMovableCharacter::SetRunState(const bool& IsRunning)
+{
+	if (bIsRunning == IsRunning) return;
+	bIsRunning = IsRunning;
+	ApplySpeedFromStat();
+	if (!HasAuthority()) RequestSetRunState(bIsRunning, GetServerTime());
+}
+
+void AMovableCharacter::ApplySpeedFromStat()
+{
+	if (auto& StatComponent = GetStatComponent())
+		GetCharacterMovement()->MaxWalkSpeed =
+			bIsRunning ? StatComponent->GetRunSpeed() : StatComponent->GetWalkSpeed();
 }
 
 void AMovableCharacter::OnRep_IsRunning()
 {
-	if (bIsRunning) GetCharacterMovement()->MaxWalkSpeed *= RunMultiplier;
-	else GetCharacterMovement()->MaxWalkSpeed /= RunMultiplier;
+	ApplySpeedFromStat();
 }

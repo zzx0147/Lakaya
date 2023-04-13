@@ -4,7 +4,6 @@
 #include "Character/LakayaBaseCharacter.h"
 
 #include "Camera/CameraComponent.h"
-#include "Character/CharacterSetupData.h"
 #include "Character/ResourceComponent.h"
 #include "Character/StatComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -84,6 +83,7 @@ void ALakayaBaseCharacter::SetupCharacterServer(const FCharacterSetupData* Data)
 	OnResourceChanged.Broadcast(ResourceComponent);
 
 	StatComponent = CreateReplicatedComponent(Data->StatClass);
+	StatComponent->SetupStat(CharacterName);
 	OnStatChanged.Broadcast(StatComponent);
 
 	SetupMeshActor(Data->MeshActorClass);

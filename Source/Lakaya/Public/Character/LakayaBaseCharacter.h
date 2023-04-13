@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Character/CharacterSetupData.h"
 #include "LakayaBaseCharacter.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBaseCharacter, FCharacterNameSignature, const FName&)

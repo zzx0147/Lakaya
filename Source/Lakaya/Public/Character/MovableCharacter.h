@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ThirdPersonCharacter.h"
+#include "LakayaBaseCharacter.h"
+#include "GameFramework/GameStateBase.h"
 #include "MovableCharacter.generated.h"
 
 UCLASS()
-class LAKAYA_API AMovableCharacter : public AThirdPersonCharacter
+class LAKAYA_API AMovableCharacter : public ALakayaBaseCharacter
 {
 	GENERATED_BODY()
 
@@ -16,9 +17,18 @@ public:
 
 	virtual void Crouch(bool bClientSimulation = false) override;
 
-	bool IsOwnedByLocalPlayer() const;
+protected:
+	virtual void SetupCharacterServer(const FCharacterSetupData* Data) override;
+
+	virtual void OnRep_StatComponent() override;
+
+public:
 	void Run();
 	void StopRun();
+
+protected:
+	// 현재시점의 서버 시간을 가져옵니다.
+	float GetServerTime() const { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
 
 private:
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -26,10 +36,11 @@ private:
 
 	UFUNCTION()
 	void OnRep_IsRunning();
+	
+	void SetRunState(const bool& IsRunning);
 
-private:
-	UPROPERTY(EditAnywhere, Category = Movement)
-	float RunMultiplier;
+	void ApplySpeedFromStat();
+
 
 	UPROPERTY(ReplicatedUsing=OnRep_IsRunning)
 	bool bIsRunning;
