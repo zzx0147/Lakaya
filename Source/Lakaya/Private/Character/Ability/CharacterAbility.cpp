@@ -13,6 +13,10 @@ void UCharacterAbility::AbilityStop()
 {
 }
 
+void UCharacterAbility::OnCharacterDead()
+{
+}
+
 void UCharacterAbility::RequestStop_Implementation(const float& RequestTime)
 {
 }
