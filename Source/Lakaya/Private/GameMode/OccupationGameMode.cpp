@@ -17,10 +17,18 @@ AOccupationGameMode::AOccupationGameMode()
 		return;
 	}
 
+	static ConstructorHelpers::FClassFinder<AOccupationGameState> OccupationGameState(TEXT("/Game/Blueprints/GameModes/BP_OccupationGameState.BP_OccupationGameState_C"));
+	if (!OccupationGameState.Succeeded())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameState is null."));
+		return;
+	}
+	
 	DefaultPawnClass = PlayerPawnObject.Class;
 	PlayerControllerClass = ABattlePlayerController::StaticClass();
 	PlayerStateClass = ACollectorPlayerState::StaticClass();
-	GameStateClass = AOccupationGameState::StaticClass();
+	// GameStateClass = AOccupationGameState::StaticClass();
+	GameStateClass = OccupationGameState.Class;
 }
 
 void AOccupationGameMode::BeginPlay()
