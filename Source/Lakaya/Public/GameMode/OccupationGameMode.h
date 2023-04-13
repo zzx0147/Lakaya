@@ -8,9 +8,6 @@
 
 DECLARE_MULTICAST_DELEGATE(FOnGameModeInitialized);
 
-/**
- * 
- */
 UCLASS()
 class LAKAYA_API AOccupationGameMode : public ALakayaDefalutPlayGameMode
 {
