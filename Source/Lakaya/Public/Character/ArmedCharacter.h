@@ -7,7 +7,7 @@
 #include "ArmedCharacter.generated.h"
 
 UENUM()
-enum EAbilityKind : uint8
+enum class EAbilityKind : uint8
 {
 	// 캐릭터의 첫번째 능력입니다.
 	Primary,

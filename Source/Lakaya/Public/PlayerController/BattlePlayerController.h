@@ -83,7 +83,7 @@ private:
 	class UDataTable* CharacterWidgetComponentTable;
 
 	// 캐릭터 전용 위젯들을 관리하는 컴포넌트입니다.
-	UPROPERTY(VisibleAnywherem, Transient)
+	UPROPERTY(VisibleAnywhere, Transient)
 	class UCharacterWidgetComponent* CharacterWidgetComponent;
 
 	UPROPERTY(VisibleAnywhere, Transient)

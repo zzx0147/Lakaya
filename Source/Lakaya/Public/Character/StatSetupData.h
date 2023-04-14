@@ -2,12 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "typeinfo"
 #include "StatSetupData.generated.h"
 
 
 USTRUCT()
-struct FStatSetupData : FTableRowBase
+struct FStatSetupData : public FTableRowBase
 {
 	GENERATED_BODY()
 
