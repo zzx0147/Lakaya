@@ -103,7 +103,7 @@ void URiffleFireClient::TraceVisualize()
 				NiagaraBeam->SetVariableVec3(TEXT("BeamEnd"), BeamDestination);
 				NiagaraBeam->SetVariableFloat(TEXT("Width"), BeamWidth);
 				NiagaraBeam->SetVariableLinearColor(TEXT("Color"), BeamColor);
-				NiagaraBeam->ActivateSystem();
+				NiagaraBeam->ActivateSystem(); 
 			}
 
 	// TODO : 총구위치에서 나이아가라 이펙트 스폰 시킨후 bPlayedNiagaraEffect = true 로 설정
