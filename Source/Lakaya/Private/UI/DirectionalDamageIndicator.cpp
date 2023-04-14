@@ -15,6 +15,17 @@ UDirectionalDamageIndicator::UDirectionalDamageIndicator(const FObjectInitialize
 	IndicatorElementClass = DirectionalIndicatorClassFinder.Class;
 }
 
+void UDirectionalDamageIndicator::BindCharacter(AArmedCharacter* const& Character)
+{
+	Super::BindCharacter(Character);
+	//TODO: 캐릭터에 바인딩합니다.
+}
+
+void UDirectionalDamageIndicator::UnbindCharacter(AArmedCharacter* const& Character)
+{
+	Super::UnbindCharacter(Character);
+}
+
 void UDirectionalDamageIndicator::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -36,7 +47,7 @@ void UDirectionalDamageIndicator::NativeTick(const FGeometry& MyGeometry, float 
 void UDirectionalDamageIndicator::IndicateStart(const FName& CauserName, USceneComponent* MyPosition, FVector DamageCursorPosition, float time)
 {
 	UDirectionalIndicatorElement* result = nullptr;
-	UDirectionalIndicatorElement** resultPtr = (IndicatorMap.Find(CauserName));
+	UDirectionalIndicatorElement** resultPtr = IndicatorMap.Find(CauserName);
 	if (resultPtr != nullptr) result = *resultPtr;
 
 

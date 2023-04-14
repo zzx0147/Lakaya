@@ -10,7 +10,7 @@ DECLARE_EVENT_OneParam(ADamageableCharacter, FAliveSignature, bool);
 
 DECLARE_EVENT_OneParam(ADamageableCharacter, FHealthSignature, const float&);
 
-DECLARE_EVENT_TwoParams(ADamageableCharacter, FDamageSignature, const FVector&, const float&);
+DECLARE_EVENT_ThreeParams(ADamageableCharacter, FDamageSignature, const FString&, const FVector&, const float&);
 
 UCLASS()
 class LAKAYA_API ADamageableCharacter : public AMovableCharacter
@@ -48,11 +48,12 @@ protected:
 private:
 	/**
 	 * @brief 이 캐릭터를 소유한 인스턴스에게 이 캐릭터가 다른 캐릭터에 의해 피해를 받았음을 알립니다.
+	 * @param CauserName 이 캐릭터를 공격한 액터의 이름입니다.
 	 * @param AttackLocation 공격한 캐릭터가 이 캐릭터에 대한 공격을 시작한 위치입니다.
 	 * @param Damage 이 캐릭터가 받은 피해량입니다.
 	 */
 	UFUNCTION(Client, Reliable)
-	void NotifyDamageReceive(const FVector& AttackLocation, const float& Damage);
+	void NotifyDamageReceive(const FString& CauserName, const FVector& AttackLocation, const float& Damage);
 
 public:
 	// 캐릭터가 사망 또는 부활할 때 호출됩니다. 매개변수가 true이면 부활, 그렇지 않으면 사망을 의미합니다.

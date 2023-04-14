@@ -15,19 +15,15 @@ class LAKAYA_API ABattlePlayerController : public AMovablePlayerController
 public:
 	ABattlePlayerController();
 
-	virtual void BeginPlay() override;
 	virtual void SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent) override;
 	virtual void SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem) override;
-	virtual void OnPossessedPawnChangedCallback(APawn* OldPawn, APawn* NewPawn) override;
-
-	virtual void OnCharacterBeginPlay(ACharacter* ArgCharacter);
-	virtual void OnWeaponChanged(class UWeaponComponent* const& WeaponComponent);
-
-protected:
-	template <class T>
-	T* CreateViewportWidget(const TSubclassOf<UUserWidget>& UserWidgetClass);
+	virtual void OnPossessedPawnChangedCallback(APawn* ArgOldPawn, APawn* NewPawn) override;
 
 private:
+	void PrimaryStart(const FInputActionValue& Value);
+	void PrimaryStop(const FInputActionValue& Value);
+	void SecondStart(const FInputActionValue& Value);
+	void SecondStop(const FInputActionValue& Value);
 	void FireStart(const FInputActionValue& Value);
 	void FireStop(const FInputActionValue& Value);
 	void AbilityStart(const FInputActionValue& Value);
@@ -35,11 +31,34 @@ private:
 	void ReloadStart(const FInputActionValue& Value);
 	void ReloadStop(const FInputActionValue& Value);
 
+protected:
+	UPROPERTY(EditAnywhere, Category=Widget)
+	TSubclassOf<class UGamePlayHealthWidget> HealthWidgetClass;
+
+	UPROPERTY(EditAnywhere, Category=Widget)
+	TSubclassOf<class UGamePlayConsecutiveKillsWidget> ConsecutiveKillsWidgetClass;
+
+	UPROPERTY(EditAnywhere, Category=Widget)
+	TSubclassOf<class UDirectionalDamageIndicator> DamageIndicatorClass;
+
+private:
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Context")
 	UInputMappingContext* WeaponControlContext;
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Context")
 	int8 WeaponContextPriority;
+
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
+	UInputAction* PrimaryStartAction;
+
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
+	UInputAction* PrimaryStopAction;
+
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
+	UInputAction* SecondStartAction;
+
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
+	UInputAction* SecondStopAction;
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* FireStartAction;
@@ -59,38 +78,22 @@ private:
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* ReloadStopAction;
 
-	UPROPERTY(EditAnywhere, Category=Widget)
-	TSubclassOf<class UGamePlayKillLogWidget> KillLogClass;
+	// 캐릭터 전용 위젯 컴포넌트의 클래스 정보를 불러올 데이터 테이블입니다.
+	UPROPERTY(EditAnywhere)
+	class UDataTable* CharacterWidgetComponentTable;
 
-	UPROPERTY(EditAnywhere, Category=Widget)
-	TSubclassOf<class UGamePlayHealthWidget> HealthWidgetClass;
+	// 캐릭터 전용 위젯들을 관리하는 컴포넌트입니다.
+	UPROPERTY(VisibleAnywherem, Transient)
+	class UCharacterWidgetComponent* CharacterWidgetComponent;
 
-	UPROPERTY(EditAnywhere, Category=Widget)
-	TSubclassOf<class UGamePlayBulletWidget> BulletWidgetClass;
-
-	UPROPERTY(EditAnywhere, Category=Widget)
-	TSubclassOf<class UGamePlayConsecutiveKillsWidget> ConsecutiveKillsWidgetClass;
-
-	UPROPERTY(VisibleAnywhere)
-	UGamePlayKillLogWidget* KillLogWidget;
-
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Transient)
 	UGamePlayHealthWidget* HealthWidget;
 
-	UPROPERTY(VisibleAnywhere)
-	UGamePlayBulletWidget* BulletWidget;
-
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Transient)
 	UGamePlayConsecutiveKillsWidget* ConsecutiveKillsWidget;
+
+	UPROPERTY(VisibleAnywhere, Transient)
+	UDirectionalDamageIndicator* DamageIndicatorWidget;
 
 	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
 };
-
-template <class T>
-T* ABattlePlayerController::CreateViewportWidget(const TSubclassOf<UUserWidget>& UserWidgetClass)
-{
-	auto Widget = CreateWidget<T>(this, UserWidgetClass);
-	Widget->AddToViewport();
-	Widget->SetVisibility(ESlateVisibility::Collapsed);
-	return Widget;
-}

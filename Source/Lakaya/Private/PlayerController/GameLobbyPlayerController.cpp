@@ -3,7 +3,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "UI/GamePlayKillLogWidget.h"
 #include "UI/LoadingWidget.h"
+
 
 void AGameLobbyPlayerController::SetupInputComponent()
 {
@@ -64,15 +66,22 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 	static const ConstructorHelpers::FClassFinder<ULoadingWidget> LoadingFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_LoadingWidget"));
 
+	static const ConstructorHelpers::FClassFinder<UGamePlayKillLogWidget> KillLogFinder(
+		TEXT("/Game/Blueprints/UMG/WBP_GamePlayKillLogWidget"));
+
 	LoadingClass = LoadingFinder.Class;
 	if (!LoadingClass) UE_LOG(LogInit, Error, TEXT("Fail to find LoadingClass!"));
+
+	KillLogClass = KillLogFinder.Class;
+	if (!KillLogClass) UE_LOG(LogController, Fatal, TEXT("Fail to find KillLogClass!"));
 }
 
 void AGameLobbyPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 	OnPossessedPawnChanged.AddUniqueDynamic(this, &AGameLobbyPlayerController::OnPossessedPawnChangedCallback);
-	LoadingWidget = CreateViewportWidget<ULoadingWidget>(LoadingClass, ESlateVisibility::SelfHitTestInvisible);
+	LoadingWidget = CreateViewportWidget<ULoadingWidget>(LoadingClass);
+	KillLogWidget = CreateViewportWidget<UGamePlayKillLogWidget>(KillLogClass);
 }
 
 void AGameLobbyPlayerController::MenuHandler(const FInputActionValue& Value)

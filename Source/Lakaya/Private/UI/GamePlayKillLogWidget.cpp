@@ -6,11 +6,6 @@
 #include "Components/VerticalBox.h"
 #include "UI/KillLogElement.h"
 
-void UGamePlayKillLogWidget::OnCharacterBeginPlay(ADamageableCharacter* Character)
-{
-	if (Character) Character->OnKillCharacterNotify.AddUObject(this, &UGamePlayKillLogWidget::OnKillCharacterNotify);
-	else UE_LOG(LogInit, Error, TEXT("SetupKillLogWidget::Character was nullptr!"));
-}
 
 UGamePlayKillLogWidget::UGamePlayKillLogWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -44,6 +39,8 @@ void UGamePlayKillLogWidget::NativeConstruct()
 		Result->SetVisibility(ESlateVisibility::Collapsed);
 		return Result;
 	});
+
+	//TODO: 게임 스테이트에 캐릭터 사망 이벤트를 선언하고, 해당 이벤트에 바인딩하여 동작하도록 구현해야 합니다.
 }
 
 void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController, AActor* KilledActor,

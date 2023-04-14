@@ -1,18 +1,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "CharacterBindableWidget.h"
 #include "UI/DirectionalIndicatorElement.h"
 #include "DirectionalDamageIndicator.generated.h"
 
 
 UCLASS()
-class LAKAYA_API UDirectionalDamageIndicator : public UUserWidget
+class LAKAYA_API UDirectionalDamageIndicator : public UCharacterBindableWidget
 {
 	GENERATED_BODY()
 
 public:
 	UDirectionalDamageIndicator(const FObjectInitializer& ObjectInitializer);
+
+	virtual void BindCharacter(AArmedCharacter* const& Character) override;
+	virtual void UnbindCharacter(AArmedCharacter* const& Character) override;
 
 protected:
 	virtual void NativeConstruct() override;

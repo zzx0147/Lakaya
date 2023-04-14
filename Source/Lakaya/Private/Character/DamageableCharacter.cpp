@@ -21,7 +21,7 @@ float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 				Health = Stat->GetMaximumHealth();
 
 	OnHealthChanged.Broadcast(Health);
-	NotifyDamageReceive(DamageCauser->GetActorLocation(), Damage);
+	NotifyDamageReceive(DamageCauser->GetActorNameOrLabel(), DamageCauser->GetActorLocation(), Damage);
 
 	if (Health <= 0.f) KillCharacter(EventInstigator, DamageCauser);
 	return Damage;
@@ -68,7 +68,7 @@ void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* D
 	bIsAlive = false;
 	OnAliveChanged.Broadcast(bIsAlive);
 	GetCharacterMovement()->DisableMovement();
-	//TODO: 게임모드 또는 게임스테이트를 가져와서 함수를 호출하여 이 캐릭터가 다른 캐릭터에 의해 살해당했음을 알려줍니다.
+	//TODO: 게임스테이트를 가져와서 함수를 호출하여 이 캐릭터가 다른 캐릭터에 의해 살해당했음을 알려줍니다.
 }
 
 void ADamageableCharacter::OnRep_Health()
@@ -82,7 +82,8 @@ void ADamageableCharacter::OnRep_IsAlive()
 	OnAliveChanged.Broadcast(bIsAlive);
 }
 
-void ADamageableCharacter::NotifyDamageReceive_Implementation(const FVector& AttackLocation, const float& Damage)
+void ADamageableCharacter::NotifyDamageReceive_Implementation(const FString& CauserName, const FVector& AttackLocation,
+                                                              const float& Damage)
 {
-	OnDamageReceived.Broadcast(AttackLocation, Damage);
+	OnDamageReceived.Broadcast(CauserName, AttackLocation, Damage);
 }

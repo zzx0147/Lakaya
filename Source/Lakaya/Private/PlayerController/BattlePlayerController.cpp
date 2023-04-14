@@ -7,11 +7,11 @@
 #include "EnhancedInputSubsystems.h"
 #include "Character/ArmedCharacter.h"
 #include "InputMappingContext.h"
-#include "Character/DamageableCharacter.h"
-#include "UI/GamePlayBulletWidget.h"
+#include "PlayerController/CharacterWidgetComponent.h"
+#include "PlayerController/CharacterWidgetComponentClassData.h"
+#include "UI/DirectionalDamageIndicator.h"
 #include "UI/GamePlayConsecutiveKillsWidget.h"
-#include "UI/GamePlayKillLogWidget.h"
-#include "Weapon/GunComponent.h"
+#include "UI/GamePlayHealthWidget.h"
 
 
 ABattlePlayerController::ABattlePlayerController()
@@ -45,61 +45,36 @@ ABattlePlayerController::ABattlePlayerController()
 	if (ReloadStartFinder.Succeeded()) ReloadStartAction = ReloadStartFinder.Object;
 	if (ReloadStopFinder.Succeeded()) ReloadStopAction = ReloadStopFinder.Object;
 
-	static const ConstructorHelpers::FClassFinder<UGamePlayKillLogWidget> KillLogFinder(
-		TEXT("/Game/Blueprints/UMG/WBP_GamePlayKillLogWidget"));
-
 	static const ConstructorHelpers::FClassFinder<UGamePlayHealthWidget> HealthFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
-
-	static const ConstructorHelpers::FClassFinder<UGamePlayBulletWidget> BulletFinder(
-		TEXT("/Game/Blueprints/UMG/WBP_GamePlayBulletWidget"));
 
 	static const ConstructorHelpers::FClassFinder<UGamePlayConsecutiveKillsWidget> ConsecutiveFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayConsecutiveKillsWidget"));
 
-	KillLogClass = KillLogFinder.Class;
-	if (!KillLogClass) UE_LOG(LogController, Fatal, TEXT("Fail to find KillLogClass!"));
+	static const ConstructorHelpers::FClassFinder<UDirectionalDamageIndicator> DamageIndicatorFinder(
+		TEXT("/Game/Blueprints/UMG/WBP_DirectionalDamageIndicator"));
 
 	HealthWidgetClass = HealthFinder.Class;
 	if (!HealthWidgetClass) UE_LOG(LogController, Fatal, TEXT("Fail to find HealthWidgetClass!"));
 
-	BulletWidgetClass = BulletFinder.Class;
-	if (!BulletWidgetClass) UE_LOG(LogController, Fatal, TEXT("Fail to find BulletWidgetClass!"));
-
 	ConsecutiveKillsWidgetClass = ConsecutiveFinder.Class;
 	if (!ConsecutiveKillsWidgetClass) UE_LOG(LogController, Fatal, TEXT("Fail to find ConsecutiveKillsWidgetClass!"));
-}
 
-void ABattlePlayerController::BeginPlay()
-{
-	Super::BeginPlay();
-	if (!IsLocalController()) return;
-
-	if (const auto GameState = GetWorld()->GetGameState<AOccupationGameState>())
-	{
-		GameState->OnOccupationChangeGameState.AddLambda([this](EOccupationGameState State)
-		{
-			if (State == EOccupationGameState::Progress)
-			{
-				if (KillLogWidget) KillLogWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				if (HealthWidget) HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				if (ConsecutiveKillsWidget)
-					ConsecutiveKillsWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				if (BulletWidget) BulletWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			}
-		});
-	}
-
-	if (!KillLogWidget) KillLogWidget = CreateViewportWidget<UGamePlayKillLogWidget>(KillLogClass);
-	if (!HealthWidget) HealthWidget = CreateViewportWidget<UGamePlayHealthWidget>(HealthWidgetClass);
-	if (!ConsecutiveKillsWidget)
-		ConsecutiveKillsWidget = CreateViewportWidget<UGamePlayConsecutiveKillsWidget>(ConsecutiveKillsWidgetClass);
-	if (!BulletWidget) BulletWidget = CreateViewportWidget<UGamePlayBulletWidget>(BulletWidgetClass);
+	DamageIndicatorClass = DamageIndicatorFinder.Class;
+	if (!DamageIndicatorClass) UE_LOG(LogController, Fatal, TEXT("Fail to find DamageIndicatorClass!"));
 }
 
 void ABattlePlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
 	Super::SetupEnhancedInputComponent(EnhancedInputComponent);
+	EnhancedInputComponent->BindAction(PrimaryStartAction, ETriggerEvent::Triggered, this,
+	                                   &ABattlePlayerController::PrimaryStart);
+	EnhancedInputComponent->BindAction(PrimaryStopAction, ETriggerEvent::Triggered, this,
+	                                   &ABattlePlayerController::PrimaryStop);
+	EnhancedInputComponent->BindAction(SecondStartAction, ETriggerEvent::Triggered, this,
+	                                   &ABattlePlayerController::SecondStart);
+	EnhancedInputComponent->BindAction(SecondStopAction, ETriggerEvent::Triggered, this,
+	                                   &ABattlePlayerController::SecondStop);
 	EnhancedInputComponent->BindAction(FireStartAction, ETriggerEvent::Triggered, this,
 	                                   &ABattlePlayerController::FireStart);
 	EnhancedInputComponent->BindAction(FireStopAction, ETriggerEvent::Triggered, this,
@@ -125,83 +100,88 @@ void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, 
 	Super::OnPossessedPawnChangedCallback(ArgOldPawn, NewPawn);
 	if (!IsLocalController()) return;
 
-	if (const auto OldCharacter = Cast<ADamageableCharacter>(ArgOldPawn))
+	// 이전의 캐릭터에서 UI의 바인딩을 해제합니다.
+	if (const auto CastedCharacter = Cast<AArmedCharacter>(ArgOldPawn))
 	{
-		if (HealthWidget) HealthWidget->UnBindCharacter(OldCharacter);
-	}
-
-	if (const auto NewCharacter = Cast<ADamageableCharacter>(NewPawn))
-	{
-		if (!HealthWidget) HealthWidget = CreateViewportWidget<UGamePlayHealthWidget>(HealthWidgetClass);
-		HealthWidget->BindCharacter(NewCharacter);
-	}
-
-	if (const auto OldCharacter = Cast<AArmedCharacter>(ArgOldPawn))
-	{
-		OldCharacter->OnPrimaryWeaponChanged.RemoveAll(this);
-
-		if (const auto WeaponComponent = OldCharacter->GetPrimaryWeapon())
-		{
-			if (ConsecutiveKillsWidget) ConsecutiveKillsWidget->UnBindWeapon(WeaponComponent);
-			if (BulletWidget) BulletWidget->UnBindWeapon(Cast<UGunComponent>(WeaponComponent));
-		}
+		if (HealthWidget) HealthWidget->UnbindCharacter(CastedCharacter);
+		if (ConsecutiveKillsWidget) ConsecutiveKillsWidget->UnbindCharacter(CastedCharacter);
+		if (DamageIndicatorWidget) DamageIndicatorWidget->UnbindCharacter(CastedCharacter);
+		if (CharacterWidgetComponent) CharacterWidgetComponent->UnbindCharacter(CastedCharacter);
 	}
 
 	ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
 	if (ArmedCharacter.IsValid())
 	{
-		if (const auto WeaponComponent = ArmedCharacter->GetPrimaryWeapon()) OnWeaponChanged(WeaponComponent);
-		ArmedCharacter->OnPrimaryWeaponChanged.AddUObject(this, &ABattlePlayerController::OnWeaponChanged);
+		// 위젯이 아직 생성되지 않았다면 생성
+		if (!HealthWidget) HealthWidget = CreateViewportWidget<UGamePlayHealthWidget>(HealthWidgetClass);
+		if (!ConsecutiveKillsWidget)
+			ConsecutiveKillsWidget = CreateViewportWidget<UGamePlayConsecutiveKillsWidget>(ConsecutiveKillsWidgetClass);
+		if (!DamageIndicatorWidget)
+			DamageIndicatorWidget = CreateViewportWidget<UDirectionalDamageIndicator>(DamageIndicatorClass);
+
+		// 위젯이 잘 생성되었다면 바인딩
+		if (HealthWidget) HealthWidget->BindCharacter(ArmedCharacter.Get());
+		if (ConsecutiveKillsWidget) ConsecutiveKillsWidget->BindCharacter(ArmedCharacter.Get());
+		if (DamageIndicatorWidget) DamageIndicatorWidget->BindCharacter(ArmedCharacter.Get());
+
+		// 캐릭터 전용 위젯 컴포넌트를 생성하고 셋업합니다.
+		if (const auto Data = CharacterWidgetComponentTable->FindRow<FCharacterWidgetComponentClassData>(
+			ArmedCharacter->GetCharacterName(),TEXT("SetupCharacterWidgetComponent")))
+		{
+			CharacterWidgetComponent = Cast<UCharacterWidgetComponent>(
+				AddComponentByClass(Data->WidgetComponentClass, false, FTransform::Identity, false));
+			if (CharacterWidgetComponent) CharacterWidgetComponent->SetupWidgetComponent(ArmedCharacter.Get());
+			else UE_LOG(LogInit, Error, TEXT("Fail to create CharacterWidgetComponent!"));
+		}
 	}
-	else UE_LOG(LogInit, Warning, TEXT("NewPawn was not AAramedCharacter!"))
 }
 
-void ABattlePlayerController::OnCharacterBeginPlay(ACharacter* ArgCharacter)
+void ABattlePlayerController::PrimaryStart(const FInputActionValue& Value)
 {
-	if (const auto Damageable = Cast<ADamageableCharacter>(ArgCharacter))
-	{
-		if (!KillLogWidget) KillLogWidget = CreateViewportWidget<UGamePlayKillLogWidget>(KillLogClass);
-		KillLogWidget->OnCharacterBeginPlay(Damageable);
-	}
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(Primary);
 }
 
-void ABattlePlayerController::OnWeaponChanged(UWeaponComponent* const& WeaponComponent)
+void ABattlePlayerController::PrimaryStop(const FInputActionValue& Value)
 {
-	if (!WeaponComponent) return;
-	if (!ConsecutiveKillsWidget)
-		ConsecutiveKillsWidget = CreateViewportWidget<UGamePlayConsecutiveKillsWidget>(ConsecutiveKillsWidgetClass);
-	if (!BulletWidget) BulletWidget = CreateViewportWidget<UGamePlayBulletWidget>(BulletWidgetClass);
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(Primary);
+}
 
-	ConsecutiveKillsWidget->BindWeapon(WeaponComponent);
-	BulletWidget->BindWeapon(Cast<UGunComponent>(WeaponComponent));
+void ABattlePlayerController::SecondStart(const FInputActionValue& Value)
+{
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(Secondary);
+}
+
+void ABattlePlayerController::SecondStop(const FInputActionValue& Value)
+{
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(Secondary);
 }
 
 void ABattlePlayerController::FireStart(const FInputActionValue& Value)
 {
-	if (ArmedCharacter.IsValid()) ArmedCharacter->FireStart();
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(WeaponFire);
 }
 
 void ABattlePlayerController::FireStop(const FInputActionValue& Value)
 {
-	if (ArmedCharacter.IsValid()) ArmedCharacter->FireStop();
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(WeaponFire);
 }
 
 void ABattlePlayerController::AbilityStart(const FInputActionValue& Value)
 {
-	if (ArmedCharacter.IsValid()) ArmedCharacter->AbilityStart();
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(WeaponAbility);
 }
 
 void ABattlePlayerController::AbilityStop(const FInputActionValue& Value)
 {
-	if (ArmedCharacter.IsValid()) ArmedCharacter->AbilityStop();
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(WeaponAbility);
 }
 
 void ABattlePlayerController::ReloadStart(const FInputActionValue& Value)
 {
-	if (ArmedCharacter.IsValid()) ArmedCharacter->ReloadStart();
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(WeaponReload);
 }
 
 void ABattlePlayerController::ReloadStop(const FInputActionValue& Value)
 {
-	if (ArmedCharacter.IsValid()) ArmedCharacter->ReloadStop();
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(WeaponReload);
 }

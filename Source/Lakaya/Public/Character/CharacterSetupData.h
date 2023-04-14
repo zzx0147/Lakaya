@@ -15,7 +15,7 @@ public:
 	TSubclassOf<AActor> MeshActorClass;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UCharacterAbility> PrimaryClass;
+	TSubclassOf<class UCharacterAbility> PrimaryClass;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UCharacterAbility> SecondClass;
@@ -30,8 +30,8 @@ public:
 	TSubclassOf<UCharacterAbility> ReloadClass;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UResourceComponent> ResourceClass;
+	TSubclassOf<class UResourceComponent> ResourceClass;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UStatComponent> StatClass;
+	TSubclassOf<class UStatComponent> StatClass;
 };

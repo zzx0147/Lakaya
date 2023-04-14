@@ -1,23 +1,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "CharacterBindableWidget.h"
 #include "GamePlayConsecutiveKillsWidget.generated.h"
 
 class UProgressBar;
 
 //연속처치 표기 클래스
 UCLASS()
-class LAKAYA_API UGamePlayConsecutiveKillsWidget : public UUserWidget
+class LAKAYA_API UGamePlayConsecutiveKillsWidget : public UCharacterBindableWidget
 {
 	GENERATED_BODY()
 
 public:
-	// 해당 무기에 바인딩합니다.
-	void BindWeapon(class UWeaponComponent* const& WeaponComponent);
-
-	// 해당 무기와 바인딩을 해제합니다.
-	void UnBindWeapon(UWeaponComponent* const& WeaponComponent);
+	virtual void BindCharacter(AArmedCharacter* const& Character) override;
+	virtual void UnbindCharacter(AArmedCharacter* const& Character) override;
 
 protected:
 	virtual void NativeConstruct() override;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "CharacterBindableWidget.h"
 #include "GamePlayHealthWidget.generated.h"
 
 class UTextBlock;
@@ -9,22 +9,24 @@ class UProgressBar;
 
 //체력을 표기하는 클래스
 UCLASS()
-class LAKAYA_API UGamePlayHealthWidget : public UUserWidget
+class LAKAYA_API UGamePlayHealthWidget : public UCharacterBindableWidget
 {
 	GENERATED_BODY()
 
 public:
-	void BindCharacter(class ADamageableCharacter* Character);
-	void UnBindCharacter(ADamageableCharacter* Character);
+	virtual void BindCharacter(AArmedCharacter* const& Character) override;
+	virtual void UnbindCharacter(AArmedCharacter* const& Character) override;
 
 protected:
 	virtual void NativeConstruct() override;
 
 protected:
 	//DamageableCharacter의 체력 델리게이트에 등록되는 함수, 체력이 변경될 때 호출
-	void OnChangeHealth(AActor* Character, const float& NewHealth);
+	void OnChangeHealth(const float& NewHealth);
+
 	//DamageableCharacter의 최대 체력 델리게이트에 등록되는 함수, 최대 체력이 변경될 때 호출
 	void OnChangeMaximumHealth(AActor* Character, const float& NewMaximumHealth);
+
 	//체력 프로그래스 바를 업데이트하는 함수
 	void UpdateHealthProgressBar();
 
