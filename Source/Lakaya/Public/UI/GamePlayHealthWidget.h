@@ -14,8 +14,8 @@ class LAKAYA_API UGamePlayHealthWidget : public UCharacterBindableWidget
 	GENERATED_BODY()
 
 public:
-	virtual void BindCharacter(AArmedCharacter* const& Character) override;
-	virtual void UnbindCharacter(AArmedCharacter* const& Character) override;
+	virtual void BindCharacter(ACharacter* const& Character) override;
+	virtual void UnbindCharacter(ACharacter* const& Character) override;
 
 protected:
 	virtual void NativeConstruct() override;

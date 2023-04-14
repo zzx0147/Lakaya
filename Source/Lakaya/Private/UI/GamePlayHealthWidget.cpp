@@ -8,7 +8,7 @@
 #include "Character/DamageableCharacter.h"
 
 
-void UGamePlayHealthWidget::BindCharacter(AArmedCharacter* const& Character)
+void UGamePlayHealthWidget::BindCharacter(ACharacter* const& Character)
 {
 	Super::BindCharacter(Character);
 	//TODO: 최대체력은 스탯 컴포넌트로 옮겨졌으므로, 스탯 컴포넌트에 바인딩하도록 해야 합니다.
@@ -24,7 +24,7 @@ void UGamePlayHealthWidget::BindCharacter(AArmedCharacter* const& Character)
 	UpdateHealthProgressBar();
 }
 
-void UGamePlayHealthWidget::UnbindCharacter(AArmedCharacter* const& Character)
+void UGamePlayHealthWidget::UnbindCharacter(ACharacter* const& Character)
 {
 	Super::UnbindCharacter(Character);
 	if (!Character) return;

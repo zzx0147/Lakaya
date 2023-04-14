@@ -15,13 +15,13 @@ UDirectionalDamageIndicator::UDirectionalDamageIndicator(const FObjectInitialize
 	IndicatorElementClass = DirectionalIndicatorClassFinder.Class;
 }
 
-void UDirectionalDamageIndicator::BindCharacter(AArmedCharacter* const& Character)
+void UDirectionalDamageIndicator::BindCharacter(ACharacter* const& Character)
 {
 	Super::BindCharacter(Character);
 	//TODO: 캐릭터에 바인딩합니다.
 }
 
-void UDirectionalDamageIndicator::UnbindCharacter(AArmedCharacter* const& Character)
+void UDirectionalDamageIndicator::UnbindCharacter(ACharacter* const& Character)
 {
 	Super::UnbindCharacter(Character);
 }
