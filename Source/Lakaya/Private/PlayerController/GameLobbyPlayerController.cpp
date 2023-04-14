@@ -20,7 +20,7 @@ void AGameLobbyPlayerController::SetupInputComponent()
 	SetupMappingContext(InputSubsystem);
 }
 
-void AGameLobbyPlayerController::OnPossessedPawnChangedCallback(APawn* OldPawn, APawn* NewPawn)
+void AGameLobbyPlayerController::OnPossessedPawnChangedCallback(APawn* OldedPawn, APawn* NewPawn)
 {
 	if (NewPawn) LoadingWidget->SetVisibility(ESlateVisibility::Collapsed);
 }

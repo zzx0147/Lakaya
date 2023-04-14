@@ -3,7 +3,7 @@
 #include "GameMode/LakayaDefalutPlayGameMode.h"
 
 #include "Character/ArmedCharacter.h"
-#include "Character/CollectorPlayerState.h"
+// #include "Character/CollectorPlayerState.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -76,7 +76,7 @@ void ALakayaDefalutPlayGameMode::Logout(AController* Exiting)
 	ADamageableCharacter* DamageableCharacter = Cast<ADamageableCharacter>(Exiting->GetPawn());
 	if (DamageableCharacter)
 	{
-		DamageableCharacter->OnKillCharacterNotify.RemoveAll(this);	
+		// DamageableCharacter->OnKillCharacterNotify.RemoveAll(this);	
 	}
 	else
 	{
@@ -88,20 +88,20 @@ void ALakayaDefalutPlayGameMode::Logout(AController* Exiting)
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
 }
 
-void ALakayaDefalutPlayGameMode::OnKilledCharacter(AController* VictimController, AActor* Victim,
-	AController* InstigatorController, AActor* DamageCauser)
-{
-	FTimerHandle* ExistingTimer = RespawnTimers.Find(VictimController);
-	if (ExistingTimer != nullptr)
-	{
-		GetWorldTimerManager().ClearTimer(*ExistingTimer);
-		RespawnTimers.Remove(VictimController);
-	}
-
-	RespawnTimers.Add(VictimController, FTimerHandle());
-	FTimerHandle& NewTimer = RespawnTimers[VictimController];
-	GetWorldTimerManager().SetTimer(NewTimer, [this, VictimController]() { RespawnPlayer(VictimController); }, PlayerRespawnTime, false);
-}
+// void ALakayaDefalutPlayGameMode::OnKilledCharacter(AController* VictimController, AActor* Victim,
+// 	AController* InstigatorController, AActor* DamageCauser)
+// {
+// 	FTimerHandle* ExistingTimer = RespawnTimers.Find(VictimController);
+// 	if (ExistingTimer != nullptr)
+// 	{
+// 		GetWorldTimerManager().ClearTimer(*ExistingTimer);
+// 		RespawnTimers.Remove(VictimController);
+// 	}
+//
+// 	RespawnTimers.Add(VictimController, FTimerHandle());
+// 	FTimerHandle& NewTimer = RespawnTimers[VictimController];
+// 	GetWorldTimerManager().SetTimer(NewTimer, [this, VictimController]() { RespawnPlayer(VictimController); }, PlayerRespawnTime, false);
+// }
 
 void ALakayaDefalutPlayGameMode::OnKillNotifyBinding()
 {

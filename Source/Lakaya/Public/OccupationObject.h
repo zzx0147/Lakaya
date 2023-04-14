@@ -1,7 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
-
 #include "CoreMinimal.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
@@ -33,11 +30,14 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
-	virtual void OnInteractionStart(APawn* Caller) override;
-	virtual void OnLocalInteractionStopBegin(APawn* Caller) override;
-	virtual void OnServerInteractionStopBegin(const float& Time, APawn* Caller) override;
-	virtual void OnInteractionStop(APawn* Caller) override;
+	virtual void OnInteractionStart(const float& Time, APawn* Caller) override;
+	virtual void OnInteractionStop(const float& Time, APawn* Caller) override;
+	virtual void OnCharacterDead(APawn* Caller) override;
+	// virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
+	// virtual void OnInteractionStart(APawn* Caller) override;
+	// virtual void OnLocalInteractionStopBegin(APawn* Caller) override;
+	// virtual void OnServerInteractionStopBegin(const float& Time, APawn* Caller) override;
+	// virtual void OnInteractionStop(APawn* Caller) override;
 
 private:
 	void AutomaticInteractionStop();

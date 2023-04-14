@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
+#include "GameMode/OccupationGameState.h"
 #include "LoadingWidget.generated.h"
 
 UCLASS()
@@ -16,9 +17,6 @@ protected:
 private:
 	UFUNCTION()
 	void OnChangeJoinedPlayers(uint8 Number);
-
-	UFUNCTION()
-	void OnChangeMaxPlayers(uint8 Number, uint8 MaxPlayers);
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* LoadingWidgetText;

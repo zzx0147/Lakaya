@@ -14,9 +14,11 @@ class LAKAYA_API ADebugInstantInteractable : public AActor, public IInteractable
 
 public:
 	ADebugInstantInteractable();
-	virtual void OnLocalInteractionBegin(APawn* Caller) override;
-	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
-	virtual void OnInteractionStart(APawn* Caller) override;
+
+private:
+	virtual void OnInteractionStart(const float& Time, APawn* Caller) override;
+	virtual void OnInteractionStop(const float& Time, APawn* Caller) override;;
+	virtual void OnCharacterDead(APawn* Caller) override;
 
 private:
 	UPROPERTY(EditAnywhere)

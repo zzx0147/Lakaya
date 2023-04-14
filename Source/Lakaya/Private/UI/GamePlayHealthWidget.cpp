@@ -13,11 +13,11 @@ void UGamePlayHealthWidget::BindCharacter(ACharacter* const& Character)
 	Super::BindCharacter(Character);
 	//TODO: 최대체력은 스탯 컴포넌트로 옮겨졌으므로, 스탯 컴포넌트에 바인딩하도록 해야 합니다.
 	if (!Character) return;
-	Character->OnHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeHealth);
-	Character->OnMaximumHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeMaximumHealth);
-
-	Health = Character->GetHealth();
-	MaximumHealth = Character->GetMaximumHealth();
+	// Character->OnHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeHealth);
+	// Character->OnMaximumHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeMaximumHealth);
+	//
+	// Health = Character->GetHealth();
+	// MaximumHealth = Character->GetMaximumHealth();
 
 	HealthText->SetText(FText::AsNumber(floor(Health)));
 	MaximumHealthText->SetText(FText::FromString(FString::Printf(TEXT("/%f"), MaximumHealth)));
@@ -27,15 +27,16 @@ void UGamePlayHealthWidget::BindCharacter(ACharacter* const& Character)
 bool UGamePlayHealthWidget::UnbindCharacter(ACharacter* const& Character)
 {
 	Super::UnbindCharacter(Character);
-	if (!Character) return;
+	if (!Character) false;
 
-	Character->OnHealthChanged.RemoveAll(this);
-	Character->OnMaximumHealthChanged.RemoveAll(this);
+	// Character->OnHealthChanged.RemoveAll(this);
+	// Character->OnMaximumHealthChanged.RemoveAll(this);
 	MaximumHealth = Health = 0;
 
 	HealthText->SetText(FText::AsNumber(floor(Health)));
 	MaximumHealthText->SetText(FText::FromString(FString::Printf(TEXT("/%f"), MaximumHealth)));
 	UpdateHealthProgressBar();
+	return true;
 }
 
 void UGamePlayHealthWidget::NativeConstruct()

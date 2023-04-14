@@ -49,7 +49,7 @@ protected:
 	virtual void Logout(AController* Exiting) override;
 
 protected:
-	virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser);
+	// virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser);
 	
 	virtual void OnKillNotifyBinding();
 

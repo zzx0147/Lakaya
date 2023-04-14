@@ -28,7 +28,7 @@ private:
 	virtual void Logout(AController* Exiting) override;
 	
 private:
-	virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser) override;
+	// virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser) override;
 	
 	virtual void OnKillNotifyBinding() override;
 

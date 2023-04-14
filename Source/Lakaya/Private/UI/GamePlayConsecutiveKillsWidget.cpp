@@ -14,6 +14,7 @@ void UGamePlayConsecutiveKillsWidget::BindCharacter(ACharacter* const& Character
 bool UGamePlayConsecutiveKillsWidget::UnbindCharacter(ACharacter* const& Character)
 {
 	Super::UnbindCharacter(Character);
+	return true;
 }
 
 void UGamePlayConsecutiveKillsWidget::NativeConstruct()

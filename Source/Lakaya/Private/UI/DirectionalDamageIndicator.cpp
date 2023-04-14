@@ -24,6 +24,7 @@ void UDirectionalDamageIndicator::BindCharacter(ACharacter* const& Character)
 bool UDirectionalDamageIndicator::UnbindCharacter(ACharacter* const& Character)
 {
 	Super::UnbindCharacter(Character);
+	return true;
 }
 
 void UDirectionalDamageIndicator::NativeConstruct()

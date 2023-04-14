@@ -13,10 +13,13 @@ class LAKAYA_API ADebugLongInteractable : public ADebugInstantInteractable
 	GENERATED_BODY()
 
 public:
-	virtual void OnLocalInteractionBegin(APawn* Caller) override { return; }
-	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
-	virtual void OnInteractionStart(APawn* Caller) override;
-	virtual void OnLocalInteractionStopBegin(APawn* Caller) override;
-	virtual void OnServerInteractionStopBegin(const float& Time, APawn* Caller) override;
-	virtual void OnInteractionStop(APawn* Caller) override;
+	virtual void OnInteractionStart(const float& Time, APawn* Caller) override;
+	virtual void OnInteractionStop(const float& Time, APawn* Caller) override;
+	virtual void OnCharacterDead(APawn* Caller) override;
+	// virtual void OnLocalInteractionBegin(APawn* Caller) override { return; }
+	// virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
+	// virtual void OnInteractionStart(APawn* Caller) override;
+	// virtual void OnLocalInteractionStopBegin(APawn* Caller) override;
+	// virtual void OnServerInteractionStopBegin(const float& Time, APawn* Caller) override;
+	// virtual void OnInteractionStop(APawn* Caller) override;
 };

@@ -27,13 +27,7 @@ void ULoadingWidget::NativeConstruct()
     }
 
     OccupationGameState->OnOccupationChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
-    // OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &ULoadingWidget::ReMoveLoadingWidget);
 }
-
-// void ULoadingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-// {
-//     Super::NativeTick(MyGeometry, InDeltaTime);
-// }
 
 void ULoadingWidget::OnChangeJoinedPlayers(uint8 JoinedPlayers)
 {
@@ -45,11 +39,3 @@ void ULoadingWidget::OnChangeJoinedPlayers(uint8 JoinedPlayers)
     
     LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), JoinedPlayers, OccupationGameState->GetMaxPlayers())));
 }
-
-// void ULoadingWidget::ReMoveLoadingWidget(EOccupationGameState ChangeGamState)
-// {
-//     if (ChangeGamState == EOccupationGameState::Progress)
-//     {
-//         this->RemoveFromParent();
-//     }
-// }

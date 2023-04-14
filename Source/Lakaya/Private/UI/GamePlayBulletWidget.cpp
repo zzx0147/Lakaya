@@ -3,8 +3,7 @@
 #include "UI/GamePlayBulletWidget.h"
 
 #include "Components/TextBlock.h"
-#include "Weapon/GunComponent.h"
-
+// #include "Weapon/GunComponent.h"
 
 void UGamePlayBulletWidget::NativeConstruct()
 {
@@ -24,22 +23,22 @@ void UGamePlayBulletWidget::NativeConstruct()
 
 void UGamePlayBulletWidget::BindWeapon(UGunComponent* const& GunComponent)
 {
-	if (GunComponent)
-	{
-		GunComponent->OnCurrentBulletChanged.AddUObject(this, &UGamePlayBulletWidget::OnChangeRemainBullets);
-		GunComponent->OnMaximumBulletChanged.AddUObject(this, &UGamePlayBulletWidget::OnChangeMagazineCapacity);
-
-		OnChangeRemainBullets(GunComponent->GetRemainBullets());
-		OnChangeMagazineCapacity(GunComponent->GetMagazineCapacity());
-	}
+	// if (GunComponent)
+	// {
+	// 	GunComponent->OnCurrentBulletChanged.AddUObject(this, &UGamePlayBulletWidget::OnChangeRemainBullets);
+	// 	GunComponent->OnMaximumBulletChanged.AddUObject(this, &UGamePlayBulletWidget::OnChangeMagazineCapacity);
+	//
+	// 	OnChangeRemainBullets(GunComponent->GetRemainBullets());
+	// 	OnChangeMagazineCapacity(GunComponent->GetMagazineCapacity());
+	// }
 }
 
 void UGamePlayBulletWidget::UnBindWeapon(UGunComponent* const& GunComponent)
 {
 	if (GunComponent)
 	{
-		GunComponent->OnCurrentBulletChanged.RemoveAll(this);
-		GunComponent->OnMaximumBulletChanged.RemoveAll(this);
+		// GunComponent->OnCurrentBulletChanged.RemoveAll(this);
+		// GunComponent->OnMaximumBulletChanged.RemoveAll(this);
 
 		OnChangeRemainBullets(0);
 		OnChangeMagazineCapacity(0);

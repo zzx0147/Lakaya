@@ -1,12 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "GameMode/OccupationGameMode.h"
 #include "GameFramework/PlayerStart.h"
 #include "Character/ArmedCharacter.h"
 #include "PlayerController/BattlePlayerController.h"
-#include "Character/CollectorPlayerState.h"
+// #include "Character/CollectorPlayerState.h"
+#include "Character/OccupationPlayerState.h"
 #include "GameMode/OccupationGameState.h"
+#include "Kismet/GameplayStatics.h"
 
 AOccupationGameMode::AOccupationGameMode()
 {
@@ -19,7 +18,7 @@ AOccupationGameMode::AOccupationGameMode()
 	
 	DefaultPawnClass = PlayerPawnObject.Class;
 	PlayerControllerClass = ABattlePlayerController::StaticClass();
-	PlayerStateClass = ACollectorPlayerState::StaticClass();
+	PlayerStateClass = AOccupationPlayerState::StaticClass();
 	GameStateClass = AOccupationGameState::StaticClass();
 }
 
@@ -71,21 +70,21 @@ bool AOccupationGameMode::ReadyToStartMatch_Implementation()
 	{
 		if (OccupationGameState->PlayerArray.IsValidIndex(i))
 		{
-			ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(OccupationGameState->PlayerArray[i]);
-			if (CollectorPlayerState == nullptr)
+			AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(OccupationGameState->PlayerArray[i]);
+			if (OccupationPlayerState == nullptr)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
+				UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_PlayerState is null."));
 				return false;
 			}
-	
+			
 			if (i % 2 == 0)
 			{
-				CollectorPlayerState->SetPlayerTeamState(EPlayerTeamState::A);
+				OccupationPlayerState->SetPlayerTeamState(EPlayerTeamState::A);
 				UE_LOG(LogTemp, Warning, TEXT("A팀에 배정 되었습니다."));
 			}
 			else
 			{
-				CollectorPlayerState->SetPlayerTeamState(EPlayerTeamState::B);
+				OccupationPlayerState->SetPlayerTeamState(EPlayerTeamState::B);
 				UE_LOG(LogTemp, Warning, TEXT("B팀에 배정 되었습니다."));
 			}
 		}
@@ -147,11 +146,11 @@ void AOccupationGameMode::Logout(AController* Exiting)
 	Super::Logout(Exiting);
 }
 
-void AOccupationGameMode::OnKilledCharacter(AController* VictimController, AActor* Victim,
-	AController* InstigatorController, AActor* DamageCauser)
-{
-	Super::OnKilledCharacter(VictimController, Victim, InstigatorController, DamageCauser);
-}
+// void AOccupationGameMode::OnKilledCharacter(AController* VictimController, AActor* Victim,
+// 	AController* InstigatorController, AActor* DamageCauser)
+// {
+// 	Super::OnKilledCharacter(VictimController, Victim, InstigatorController, DamageCauser);
+// }
 
 void AOccupationGameMode::OnKillNotifyBinding()
 {
@@ -163,7 +162,8 @@ void AOccupationGameMode::OnKillNotifyBinding()
 		ADamageableCharacter* MyActor = Cast<ADamageableCharacter>(Actor);
 		if (MyActor)
 		{
-			MyActor->OnKillCharacterNotify.AddUObject(this, &AOccupationGameMode::OnKilledCharacter);
+			// MyActor->OnKillCharacterNotify.AddUObject(this, &AOccupationGameMode::OnKilledCharacter);
+			// MyActor->OnAliveChanged.AddUObject(this, &AOccupationGameMode::OnKilledCharacter);
 			UE_LOG(LogTemp, Warning, TEXT("PlayerController OnKillCharacterNotify Binding."));
 		}
 		else
@@ -176,15 +176,22 @@ void AOccupationGameMode::OnKillNotifyBinding()
 
 void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 {
-	ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(KilledController->PlayerState);
-	if (CollectorPlayerState == nullptr)
+	// ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(KilledController->PlayerState);
+	// if (CollectorPlayerState == nullptr)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("LakayaDefaultPlayGameMode_CollectorPlayerState is null."));
+	// 	return;
+	// }
+
+	AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(KilledController->PlayerState);
+	if (OccupationPlayerState == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("LakayaDefaultPlayGameMode_CollectorPlayerState is null."));
+		UE_LOG(LogTemp, Warning, TEXT("LakayaDefaultPlayGameMode_OccupationPlayerState is null."));
 		return;
 	}
 
 	FName SpawnTag;
-	switch (CollectorPlayerState->GetPlayerTeamState())
+	switch (OccupationPlayerState->GetPlayerTeamState())
 	{
 	case EPlayerTeamState::A:
 		SpawnTag = FName("ATeamSpawnZone");
@@ -244,14 +251,21 @@ void AOccupationGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
 	{
 		if (OccupationGameState->PlayerArray.IsValidIndex(i))
 		{
-			ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(OccupationGameState->PlayerArray[i]);
-			if (CollectorPlayerState == nullptr)
+			// ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(OccupationGameState->PlayerArray[i]);
+			// if (CollectorPlayerState == nullptr)
+			// {
+			// 	UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
+			// 	return;
+			// }
+			
+			AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(OccupationGameState->PlayerArray[i]);
+			if (OccupationPlayerState == nullptr)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
+				UE_LOG(LogTemp, Warning, TEXT("LakayaDefaultPlayGameMode_OccupationPlayerState is null."));
 				return;
 			}
-
-			AController* OccuController = Cast<AController>(CollectorPlayerState->GetOwner());
+			
+			AController* OccuController = Cast<AController>(OccupationPlayerState->GetOwner());
 			if (OccuController == nullptr)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_PlayerController is null."));
@@ -259,7 +273,7 @@ void AOccupationGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
 			}
 
 			FName SpawnTag;
-			switch (CollectorPlayerState->GetPlayerTeamState())
+			switch (OccupationPlayerState->GetPlayerTeamState())
 			{
 			case EPlayerTeamState::A:
 				SpawnTag = FName("ATeamSpawnZone");
