@@ -176,17 +176,10 @@ void AOccupationGameMode::OnKillNotifyBinding()
 
 void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 {
-	// ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(KilledController->PlayerState);
-	// if (CollectorPlayerState == nullptr)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("LakayaDefaultPlayGameMode_CollectorPlayerState is null."));
-	// 	return;
-	// }
-
 	AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(KilledController->PlayerState);
 	if (OccupationPlayerState == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("LakayaDefaultPlayGameMode_OccupationPlayerState is null."));
+		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_OccupationPlayerState is null."));
 		return;
 	}
 
@@ -251,13 +244,6 @@ void AOccupationGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
 	{
 		if (OccupationGameState->PlayerArray.IsValidIndex(i))
 		{
-			// ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(OccupationGameState->PlayerArray[i]);
-			// if (CollectorPlayerState == nullptr)
-			// {
-			// 	UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
-			// 	return;
-			// }
-			
 			AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(OccupationGameState->PlayerArray[i]);
 			if (OccupationPlayerState == nullptr)
 			{

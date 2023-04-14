@@ -1,4 +1,4 @@
-#include "OccupationObject.h"
+#include "Occupation/OccupationObject.h"
 #include "EnhancedInputSubsystems.h"
 #include "Character/InteractableCharacter.h"
 #include "Components/CapsuleComponent.h"
@@ -27,7 +27,7 @@ AOccupationObject::AOccupationObject()
 	TriggerSphere->SetupAttachment(RootComponent);
 	
 	Trigger->SetCapsuleSize(50.0f, 100.0f, true);
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Cylinder (TEXT("/Game/Dev/KDJ/SM_Antenna.SM_Antenna"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Cylinder (TEXT("/Game/Dev/KML/antena/White/Antenna.Antenna"));
 	if (SM_Cylinder.Succeeded())
 		Cylinder->SetStaticMesh(SM_Cylinder.Object);
 	

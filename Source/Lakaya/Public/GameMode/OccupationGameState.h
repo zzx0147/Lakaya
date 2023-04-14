@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -31,9 +29,6 @@ enum class EOccupationWinner : uint8
 	B UMETA(DisplayerName = "B") // B팀이 승리한 상태.
 };
 
-/**
- * 
- */
 UCLASS()
 class LAKAYA_API AOccupationGameState : public AGameState
 {
@@ -41,7 +36,6 @@ class LAKAYA_API AOccupationGameState : public AGameState
 
 private:
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaSeconds) override;
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

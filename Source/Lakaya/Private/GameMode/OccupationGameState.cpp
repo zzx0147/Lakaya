@@ -12,11 +12,6 @@ void AOccupationGameState::BeginPlay()
 	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this, &AOccupationGameState::EndTimeCheck, 1.0f, true);
 }
 
-void AOccupationGameState::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-}
-
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
