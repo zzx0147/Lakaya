@@ -15,11 +15,13 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnChangeJoinedPlayers(uint8 Number, uint8 MaxPlayers);
+	void OnChangeJoinedPlayers(uint8 Number);
 
 	UFUNCTION()
 	void OnChangeMaxPlayers(uint8 Number, uint8 MaxPlayers);
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* LoadingWidgetText;
+
+	AOccupationGameState* OccupationGameState;
 };
