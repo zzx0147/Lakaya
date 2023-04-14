@@ -3,12 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InputActionValue.h"
-#include "MenuCallingPlayerController.h"
+#include "GameLobbyPlayerController.h"
 #include "MovablePlayerController.generated.h"
 
 UCLASS()
-class LAKAYA_API AMovablePlayerController : public AMenuCallingPlayerController
+class LAKAYA_API AMovablePlayerController : public AGameLobbyPlayerController
 {
 	GENERATED_BODY()
 
@@ -16,14 +15,9 @@ public:
 	AMovablePlayerController();
 
 protected:
-	virtual void SetupInputComponent() override;
-	virtual void BeginPlay() override;
-
-	virtual void SetupEnhancedInputComponent(class UEnhancedInputComponent* const& EnhancedInputComponent);
-	virtual void SetupMappingContext(class UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem);
-	
-	UFUNCTION()
-	virtual void OnPossessedPawnChangedCallback(APawn* OldPawn, APawn* NewPawn);
+	virtual void SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent) override;
+	virtual void SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem) override;
+	virtual void OnPossessedPawnChangedCallback(APawn* OldPawn, APawn* NewPawn) override;
 
 private:
 	void Move(const FInputActionValue& Value);
@@ -34,16 +28,14 @@ private:
 	void StopRun(const FInputActionValue& Value);
 	void Jump(const FInputActionValue& Value);
 
-public:
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Context")
-	class UInputMappingContext* MovementContext;
+	UInputMappingContext* MovementContext;
 
-private:
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Context")
 	int8 MovementContextPriority;
 
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
-	class UInputAction* MoveAction;
+	UInputAction* MoveAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
 	UInputAction* LookAction;

@@ -45,27 +45,9 @@ AMovablePlayerController::AMovablePlayerController()
 	if (StopFinder.Succeeded()) StopRunAction = StopFinder.Object;
 }
 
-void AMovablePlayerController::SetupInputComponent()
-{
-	Super::SetupInputComponent();
-
-	const auto CastedComponent = Cast<UEnhancedInputComponent>(InputComponent);
-	if (!CastedComponent) UE_LOG(LogInit, Fatal, TEXT("InputComponent was not UEnhancedInputComponent!"));
-	SetupEnhancedInputComponent(CastedComponent);
-
-	const auto InputSubsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	if (!InputSubsystem) UE_LOG(LogInit, Fatal, TEXT("UEnhancedInputLocalPlayerSubsystem was not exist!"));
-	SetupMappingContext(InputSubsystem);
-}
-
-void AMovablePlayerController::BeginPlay()
-{
-	Super::BeginPlay();
-	OnPossessedPawnChanged.AddUniqueDynamic(this, &AMovablePlayerController::OnPossessedPawnChangedCallback);
-}
-
 void AMovablePlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
+	Super::SetupEnhancedInputComponent(EnhancedInputComponent);
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Look);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Jump);
@@ -79,6 +61,7 @@ void AMovablePlayerController::SetupEnhancedInputComponent(UEnhancedInputCompone
 
 void AMovablePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
 {
+	Super::SetupMappingContext(InputSubsystem);
 	InputSubsystem->AddMappingContext(MovementContext, MovementContextPriority);
 }
 
