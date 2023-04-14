@@ -6,6 +6,7 @@
 #include "Character/OccupationPlayerState.h"
 #include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include "PlayerController/OccupationPlayerController.h"
 
 AOccupationGameMode::AOccupationGameMode()
 {
@@ -16,10 +17,10 @@ AOccupationGameMode::AOccupationGameMode()
 		return;
 	}
 	
-	DefaultPawnClass = PlayerPawnObject.Class;
-	PlayerControllerClass = ABattlePlayerController::StaticClass();
-	PlayerStateClass = AOccupationPlayerState::StaticClass();
 	GameStateClass = AOccupationGameState::StaticClass();
+	DefaultPawnClass = PlayerPawnObject.Class;
+	PlayerControllerClass = AOccupationPlayerController::StaticClass();
+	PlayerStateClass = AOccupationPlayerState::StaticClass();
 }
 
 void AOccupationGameMode::BeginPlay()

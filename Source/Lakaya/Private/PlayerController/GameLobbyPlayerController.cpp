@@ -80,7 +80,7 @@ void AGameLobbyPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 	OnPossessedPawnChanged.AddUniqueDynamic(this, &AGameLobbyPlayerController::OnPossessedPawnChangedCallback);
-	LoadingWidget = CreateViewportWidget<ULoadingWidget>(LoadingClass);
+	// LoadingWidget = CreateViewportWidget<ULoadingWidget>(LoadingClass);
 	KillLogWidget = CreateViewportWidget<UGamePlayKillLogWidget>(KillLogClass);
 }
 

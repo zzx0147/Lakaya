@@ -1,6 +1,7 @@
 #include "GameMode/LakayaDefalutPlayGameMode.h"
 
-#include "Character/ArmedCharacter.h"
+#include "Character/DamageableCharacter.h"
+#include "GameFramework/Character.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 
