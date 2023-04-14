@@ -5,13 +5,11 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Character/ArmedCharacter.h"
 #include "InputMappingContext.h"
+#include "Character/ArmedCharacter.h"
 #include "PlayerController/CharacterWidgetComponent.h"
 #include "PlayerController/CharacterWidgetComponentClassData.h"
-#include "UI/DirectionalDamageIndicator.h"
-#include "UI/GamePlayConsecutiveKillsWidget.h"
-#include "UI/GamePlayHealthWidget.h"
+#include "UI/CharacterBindableWidget.h"
 
 
 ABattlePlayerController::ABattlePlayerController()
@@ -45,13 +43,13 @@ ABattlePlayerController::ABattlePlayerController()
 	if (ReloadStartFinder.Succeeded()) ReloadStartAction = ReloadStartFinder.Object;
 	if (ReloadStopFinder.Succeeded()) ReloadStopAction = ReloadStopFinder.Object;
 
-	static const ConstructorHelpers::FClassFinder<UGamePlayHealthWidget> HealthFinder(
+	static const ConstructorHelpers::FClassFinder<UCharacterBindableWidget> HealthFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
 
-	static const ConstructorHelpers::FClassFinder<UGamePlayConsecutiveKillsWidget> ConsecutiveFinder(
+	static const ConstructorHelpers::FClassFinder<UCharacterBindableWidget> ConsecutiveFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayConsecutiveKillsWidget"));
 
-	static const ConstructorHelpers::FClassFinder<UDirectionalDamageIndicator> DamageIndicatorFinder(
+	static const ConstructorHelpers::FClassFinder<UCharacterBindableWidget> DamageIndicatorFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_DirectionalDamageIndicator"));
 
 	HealthWidgetClass = HealthFinder.Class;
@@ -113,11 +111,11 @@ void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, 
 	if (ArmedCharacter.IsValid())
 	{
 		// 위젯이 아직 생성되지 않았다면 생성
-		if (!HealthWidget) HealthWidget = CreateViewportWidget<UGamePlayHealthWidget>(HealthWidgetClass);
+		if (!HealthWidget) HealthWidget = CreateViewportWidget<UCharacterBindableWidget>(HealthWidgetClass);
 		if (!ConsecutiveKillsWidget)
-			ConsecutiveKillsWidget = CreateViewportWidget<UGamePlayConsecutiveKillsWidget>(ConsecutiveKillsWidgetClass);
+			ConsecutiveKillsWidget = CreateViewportWidget<UCharacterBindableWidget>(ConsecutiveKillsWidgetClass);
 		if (!DamageIndicatorWidget)
-			DamageIndicatorWidget = CreateViewportWidget<UDirectionalDamageIndicator>(DamageIndicatorClass);
+			DamageIndicatorWidget = CreateViewportWidget<UCharacterBindableWidget>(DamageIndicatorClass);
 
 		// 위젯이 잘 생성되었다면 바인딩
 		if (HealthWidget) HealthWidget->BindCharacter(ArmedCharacter.Get());

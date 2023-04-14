@@ -24,7 +24,7 @@ public:
 	void SetupStat(const FName& RowName);
 
 	const float& GetWalkSpeed() const { return WalkSpeed; }
-	const float& GetRunSpeed() const { return WalkSpeed + AdditiveRunSpeed; }
+	float GetRunSpeed() const { return WalkSpeed + AdditiveRunSpeed; }
 	const float& GetAdditiveRunSpeed() const { return AdditiveRunSpeed; }
 	const float& GetMaximumHealth() const { return MaximumHealth; }
 

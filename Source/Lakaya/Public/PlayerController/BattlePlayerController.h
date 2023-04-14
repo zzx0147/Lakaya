@@ -33,13 +33,13 @@ private:
 
 protected:
 	UPROPERTY(EditAnywhere, Category=Widget)
-	TSubclassOf<class UGamePlayHealthWidget> HealthWidgetClass;
+	TSubclassOf<class UCharacterBindableWidget> HealthWidgetClass;
 
 	UPROPERTY(EditAnywhere, Category=Widget)
-	TSubclassOf<class UGamePlayConsecutiveKillsWidget> ConsecutiveKillsWidgetClass;
+	TSubclassOf<UCharacterBindableWidget> ConsecutiveKillsWidgetClass;
 
 	UPROPERTY(EditAnywhere, Category=Widget)
-	TSubclassOf<class UDirectionalDamageIndicator> DamageIndicatorClass;
+	TSubclassOf<UCharacterBindableWidget> DamageIndicatorClass;
 
 private:
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Context")
@@ -87,13 +87,13 @@ private:
 	class UCharacterWidgetComponent* CharacterWidgetComponent;
 
 	UPROPERTY(VisibleAnywhere, Transient)
-	UGamePlayHealthWidget* HealthWidget;
+	UCharacterBindableWidget* HealthWidget;
 
 	UPROPERTY(VisibleAnywhere, Transient)
-	UGamePlayConsecutiveKillsWidget* ConsecutiveKillsWidget;
+	UCharacterBindableWidget* ConsecutiveKillsWidget;
 
 	UPROPERTY(VisibleAnywhere, Transient)
-	UDirectionalDamageIndicator* DamageIndicatorWidget;
+	UCharacterBindableWidget* DamageIndicatorWidget;
 
 	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
 };
