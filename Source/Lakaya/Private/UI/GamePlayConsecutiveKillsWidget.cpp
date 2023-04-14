@@ -11,7 +11,7 @@ void UGamePlayConsecutiveKillsWidget::BindCharacter(ACharacter* const& Character
 	//TODO: 캐릭터에 연속처치 시스템을 추가하고, 위젯을 바인딩합니다.
 }
 
-void UGamePlayConsecutiveKillsWidget::UnbindCharacter(ACharacter* const& Character)
+bool UGamePlayConsecutiveKillsWidget::UnbindCharacter(ACharacter* const& Character)
 {
 	Super::UnbindCharacter(Character);
 }

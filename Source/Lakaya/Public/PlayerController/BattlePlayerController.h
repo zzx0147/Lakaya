@@ -15,6 +15,8 @@ class LAKAYA_API ABattlePlayerController : public AMovablePlayerController
 public:
 	ABattlePlayerController();
 
+protected:
+	virtual void BeginPlay() override;
 	virtual void SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent) override;
 	virtual void SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem) override;
 	virtual void OnPossessedPawnChangedCallback(APawn* ArgOldPawn, APawn* NewPawn) override;
@@ -82,18 +84,6 @@ private:
 	UPROPERTY(EditAnywhere)
 	class UDataTable* CharacterWidgetComponentTable;
 
-	// 캐릭터 전용 위젯들을 관리하는 컴포넌트입니다.
-	UPROPERTY(VisibleAnywhere, Transient)
-	class UCharacterWidgetComponent* CharacterWidgetComponent;
-
-	UPROPERTY(VisibleAnywhere, Transient)
-	UCharacterBindableWidget* HealthWidget;
-
-	UPROPERTY(VisibleAnywhere, Transient)
-	UCharacterBindableWidget* ConsecutiveKillsWidget;
-
-	UPROPERTY(VisibleAnywhere, Transient)
-	UCharacterBindableWidget* DamageIndicatorWidget;
-
+	TArray<UCharacterBindableWidget*> CharacterBindableWidgets;
 	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
 };

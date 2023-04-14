@@ -21,7 +21,7 @@ void UDirectionalDamageIndicator::BindCharacter(ACharacter* const& Character)
 	//TODO: 캐릭터에 바인딩합니다.
 }
 
-void UDirectionalDamageIndicator::UnbindCharacter(ACharacter* const& Character)
+bool UDirectionalDamageIndicator::UnbindCharacter(ACharacter* const& Character)
 {
 	Super::UnbindCharacter(Character);
 }

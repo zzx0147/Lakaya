@@ -7,8 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "Character/ArmedCharacter.h"
-#include "PlayerController/CharacterWidgetComponent.h"
-#include "PlayerController/CharacterWidgetComponentClassData.h"
+#include "PlayerController/CharacterBindWidgetData.h"
 #include "UI/CharacterBindableWidget.h"
 
 
@@ -62,6 +61,18 @@ ABattlePlayerController::ABattlePlayerController()
 	if (!DamageIndicatorClass) UE_LOG(LogController, Fatal, TEXT("Fail to find DamageIndicatorClass!"));
 }
 
+void ABattlePlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	CharacterBindableWidgets.Reserve(3);
+	CharacterBindableWidgets.Emplace(
+		CreateViewportWidget<UCharacterBindableWidget>(HealthWidgetClass, ESlateVisibility::Hidden));
+	CharacterBindableWidgets.Emplace(
+		CreateViewportWidget<UCharacterBindableWidget>(ConsecutiveKillsWidgetClass, ESlateVisibility::Hidden));
+	CharacterBindableWidgets.Emplace(
+		CreateViewportWidget<UCharacterBindableWidget>(DamageIndicatorClass, ESlateVisibility::Hidden));
+}
+
 void ABattlePlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
 	Super::SetupEnhancedInputComponent(EnhancedInputComponent);
@@ -99,37 +110,38 @@ void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, 
 	if (!IsLocalController()) return;
 
 	// 이전의 캐릭터에서 UI의 바인딩을 해제합니다.
-	if (const auto CastedCharacter = Cast<AArmedCharacter>(ArgOldPawn))
+	if (const auto CastedCharacter = Cast<ACharacter>(ArgOldPawn))
 	{
-		if (HealthWidget) HealthWidget->UnbindCharacter(CastedCharacter);
-		if (ConsecutiveKillsWidget) ConsecutiveKillsWidget->UnbindCharacter(CastedCharacter);
-		if (DamageIndicatorWidget) DamageIndicatorWidget->UnbindCharacter(CastedCharacter);
-		if (CharacterWidgetComponent) CharacterWidgetComponent->UnbindCharacter(CastedCharacter);
+		TArray<UCharacterBindableWidget*> WidgetsToRemove;
+		WidgetsToRemove.Reserve(CharacterBindableWidgets.Num());
+
+		// 제거 대상 위젯을 조사합니다.
+		for (const auto& Widget : CharacterBindableWidgets)
+			if (!Widget->UnbindCharacter(CastedCharacter))
+				WidgetsToRemove.Emplace(Widget);
+
+		// 제거되기를 희망하는 위젯들은 제거합니다.
+		for (const auto& Widget : WidgetsToRemove)
+		{
+			Widget->RemoveFromParent();
+			CharacterBindableWidgets.RemoveSwap(Widget, false);
+		}
 	}
 
 	ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
 	if (ArmedCharacter.IsValid())
 	{
-		// 위젯이 아직 생성되지 않았다면 생성
-		if (!HealthWidget) HealthWidget = CreateViewportWidget<UCharacterBindableWidget>(HealthWidgetClass);
-		if (!ConsecutiveKillsWidget)
-			ConsecutiveKillsWidget = CreateViewportWidget<UCharacterBindableWidget>(ConsecutiveKillsWidgetClass);
-		if (!DamageIndicatorWidget)
-			DamageIndicatorWidget = CreateViewportWidget<UCharacterBindableWidget>(DamageIndicatorClass);
-
-		// 위젯이 잘 생성되었다면 바인딩
-		if (HealthWidget) HealthWidget->BindCharacter(ArmedCharacter.Get());
-		if (ConsecutiveKillsWidget) ConsecutiveKillsWidget->BindCharacter(ArmedCharacter.Get());
-		if (DamageIndicatorWidget) DamageIndicatorWidget->BindCharacter(ArmedCharacter.Get());
-
-		// 캐릭터 전용 위젯 컴포넌트를 생성하고 셋업합니다.
-		if (const auto Data = CharacterWidgetComponentTable->FindRow<FCharacterWidgetComponentClassData>(
+		// 빙의 대상 캐릭터에 맞는 위젯을 생성하고 바인딩합니다.
+		if (const auto Data = CharacterWidgetComponentTable->FindRow<FCharacterBindWidgetData>(
 			ArmedCharacter->GetCharacterName(),TEXT("SetupCharacterWidgetComponent")))
 		{
-			CharacterWidgetComponent = Cast<UCharacterWidgetComponent>(
-				AddComponentByClass(Data->WidgetComponentClass, false, FTransform::Identity, false));
-			if (CharacterWidgetComponent) CharacterWidgetComponent->SetupWidgetComponent(ArmedCharacter.Get());
-			else UE_LOG(LogInit, Error, TEXT("Fail to create CharacterWidgetComponent!"));
+			CharacterBindableWidgets.Reserve(CharacterBindableWidgets.Num() + Data->WidgetList.Num());
+			for (const auto& WidgetClass : Data->WidgetList)
+			{
+				auto Widget = CreateViewportWidget<UCharacterBindableWidget>(WidgetClass);
+				Widget->BindCharacter(ArmedCharacter.Get());
+				CharacterBindableWidgets.Emplace(Widget);
+			}
 		}
 	}
 }

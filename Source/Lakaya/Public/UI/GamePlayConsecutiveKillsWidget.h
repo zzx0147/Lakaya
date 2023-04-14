@@ -14,7 +14,7 @@ class LAKAYA_API UGamePlayConsecutiveKillsWidget : public UCharacterBindableWidg
 
 public:
 	virtual void BindCharacter(ACharacter* const& Character) override;
-	virtual void UnbindCharacter(ACharacter* const& Character) override;
+	virtual bool UnbindCharacter(ACharacter* const& Character) override;
 
 protected:
 	virtual void NativeConstruct() override;

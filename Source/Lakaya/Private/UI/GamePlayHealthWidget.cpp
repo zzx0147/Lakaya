@@ -24,7 +24,7 @@ void UGamePlayHealthWidget::BindCharacter(ACharacter* const& Character)
 	UpdateHealthProgressBar();
 }
 
-void UGamePlayHealthWidget::UnbindCharacter(ACharacter* const& Character)
+bool UGamePlayHealthWidget::UnbindCharacter(ACharacter* const& Character)
 {
 	Super::UnbindCharacter(Character);
 	if (!Character) return;
