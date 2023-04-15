@@ -44,6 +44,8 @@ bool UGamePlayHealthWidget::UnbindCharacter(ACharacter* const& Character)
 	// Character->OnHealthChanged.RemoveAll(this);
 	// Character->OnMaximumHealthChanged.RemoveAll(this);
 	MaximumHealth = Health = 0;
+	SetVisibility(ESlateVisibility::Hidden);
+
 
 	HealthText->SetText(FText::AsNumber(floor(Health)));
 	MaximumHealthText->SetText(FText::FromString(FString::Printf(TEXT("/%f"), MaximumHealth)));

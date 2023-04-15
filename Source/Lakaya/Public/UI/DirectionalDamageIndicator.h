@@ -22,14 +22,17 @@ protected:
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
-public:
-	virtual void IndicateStart(const FName& CauserName, USceneComponent* MyPosition, FVector DamageCursorPosition, float time);
-
+	virtual void IndicateStart(const FString& CauserName, const FVector& DamageCursorPosition,const float& Damage);
 
 private:
-	TMap<FName, UDirectionalIndicatorElement*> IndicatorMap;
+	TMap<FString, UDirectionalIndicatorElement*> IndicatorMap;
 
 	TSubclassOf<UDirectionalIndicatorElement> IndicatorElementClass;
 
-	class UCanvasPanel* IndicatorPanel;
+	TObjectPtr<class UCanvasPanel> IndicatorPanel;
+
+	TObjectPtr<ACharacter> CharacterRef;
+
+	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = "true"))
+	float IndicateTime;
 };
