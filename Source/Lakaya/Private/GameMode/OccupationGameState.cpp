@@ -2,113 +2,50 @@
 
 #include "GameMode/OccupationGameState.h"
 
-#include "GameMode/OccupationGameMode.h"
 #include "Net/UnrealNetwork.h"
 
-void AOccupationGameState::BeginPlay()
-{
-	Super::BeginPlay();
 
-	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this, &AOccupationGameState::EndTimeCheck, 1.0f, true);
-}
-
-void AOccupationGameState::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-}
+const float AOccupationGameState::MaxScore = 100.f;
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AOccupationGameState, NumPlayers);
-	DOREPLIFETIME(AOccupationGameState, CurrentGameState);
-
 	DOREPLIFETIME(AOccupationGameState, ATeamScore);
 	DOREPLIFETIME(AOccupationGameState, BTeamScore);
-
 	DOREPLIFETIME(AOccupationGameState, StartTime);
 	DOREPLIFETIME(AOccupationGameState, MatchEndingTime);
-
 	DOREPLIFETIME(AOccupationGameState, CurrentOccupationWinner);
 }
 
-void AOccupationGameState::SetNumPlayers(uint8 NewNumPlayers)
+void AOccupationGameState::SetNumPlayers(const uint8& NewNumPlayers)
 {
 	NumPlayers = NewNumPlayers;
 	OnRep_NumPlayers();
 }
 
-void AOccupationGameState::SetGameState(EOccupationGameState NewGameState)
+void AOccupationGameState::SetOccupationWinner(const EPlayerTeamState& Winner)
 {
-	if (CurrentGameState != NewGameState)
-	{
-		CurrentGameState = NewGameState;
-		if (CurrentGameState == EOccupationGameState::Progress)
-		{
-			GetWorldTimerManager().SetTimer(TimerHandle_AteamScoreIncrease, this, &AOccupationGameState::SetATeamScore, 1.0f, true);
-			GetWorldTimerManager().SetTimer(TimerHandle_BteamScoreIncrease, this, &AOccupationGameState::SetBTeamScore, 1.0f, true);
-			OnRep_GameState();
-		}
-	}
+	CurrentOccupationWinner = Winner;
+	OnRep_OccupationWinner();
 }
 
-void AOccupationGameState::SetOccupationWinner(EOccupationWinner NewWinner)
+void AOccupationGameState::AddTeamScore(const EPlayerTeamState& Team, const float& AdditiveScore)
 {
-	if (CurrentGameState == EOccupationGameState::Finish)
-	{
-		CurrentOccupationWinner = NewWinner;
-		OnRep_OccupationWinner();
-	}
+	if (Team == EPlayerTeamState::A) ATeamScore += AdditiveScore;
+	else if (Team == EPlayerTeamState::B) BTeamScore += AdditiveScore;
 }
 
-void AOccupationGameState::SetATeamScore()
+const float& AOccupationGameState::GetTeamScore(const EPlayerTeamState& Team) const
 {
-	if (CurrentGameState == EOccupationGameState::Progress)
-	{
-		if (GetATeamScore() <= MaxScore)
-		{
-			ATeamScore += (Standard) * GetATeamObjectNum();
-			OnRep_ATeamScore();
-		}
-	}
+	if (Team == EPlayerTeamState::A) return ATeamScore;
+	else if (Team == EPlayerTeamState::B) return BTeamScore;
+	UE_LOG(LogScript, Warning, TEXT("Trying to GetTeamScore with not valid value! it was %d"), Team);
+	return 0.f;
 }
 
-void AOccupationGameState::SetBTeamScore()
-{
-	if (CurrentGameState == EOccupationGameState::Progress)
-	{
-		if (GetBTeamScore() <= MaxScore)
-		{
-			BTeamScore += (Standard) * GetBTeamObjectNum();
-			OnRep_BTeamScore();
-		}
-	}
-}
-
-void AOccupationGameState::AddATeamObjectNum()
-{
-	ATeamObjectNum += 1;
-}
-
-void AOccupationGameState::AddBTeamObjectNum()
-{
-	BTeamObjectNum += 1;
-}
-
-void AOccupationGameState::SubATeamObjectNum()
-{
-	if (ATeamObjectNum > 0)
-		ATeamObjectNum -= 1;
-}
-
-void AOccupationGameState::SubBTeamObjectNum()
-{
-	if (BTeamObjectNum > 0)
-		BTeamObjectNum -= 1;
-}
-
-void AOccupationGameState::OnMatchStarted(const float& MatchTime)
+void AOccupationGameState::SetMatchTime(const float& MatchTime)
 {
 	StartTime = GetServerWorldTimeSeconds();
 	MatchEndingTime = StartTime + MatchTime;
@@ -120,41 +57,19 @@ float AOccupationGameState::GetRemainMatchTime()
 	return MatchEndingTime < Current ? 0 : MatchEndingTime - Current;
 }
 
-void AOccupationGameState::EndTimeCheck()
-{
-	if ((GetRemainMatchTime() <= 0 || (GetATeamScore() >= MaxScore || GetBTeamScore() >= MaxScore)) && CurrentGameState == EOccupationGameState::Progress)
-	{
-		GetWorldTimerManager().ClearTimer(TimerHandle_GameTimeCheck);
-
-		auto GameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
-		if (GameMode == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
-			return;
-		}
-		
-		GameMode->EndMatch();
-	}
-}
-
 void AOccupationGameState::OnRep_NumPlayers()
 {
 	OnOccupationChangeJoinedPlayers.Broadcast(GetNumPlayers());
 }
 
-void AOccupationGameState::OnRep_GameState()
-{
-	OnOccupationChangeGameState.Broadcast(CurrentGameState);
-}
-
 void AOccupationGameState::OnRep_ATeamScore()
 {
-	OnOccupationChangeATeamScore.Broadcast(ATeamScore);
+	OnTeamScoreChanged.Broadcast(EPlayerTeamState::A, ATeamScore);
 }
 
 void AOccupationGameState::OnRep_BTeamScore()
 {
-	OnOccupationChangeBTeamScore.Broadcast(BTeamScore);
+	OnTeamScoreChanged.Broadcast(EPlayerTeamState::B, ATeamScore);
 }
 
 void AOccupationGameState::OnRep_OccupationWinner()
