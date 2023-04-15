@@ -5,6 +5,7 @@
 
 #include "Engine/DataTable.h"
 #include "PlayerController/MatchWidgetData.h"
+#include "UI/MatchStateWidget.h"
 
 
 AOccupationPlayerController::AOccupationPlayerController()
@@ -12,18 +13,49 @@ AOccupationPlayerController::AOccupationPlayerController()
 	//TODO: 데이터 테이블 가져오기
 }
 
-void AOccupationPlayerController::SetupMatchWidget()
+void AOccupationPlayerController::BeginPlay()
 {
+	Super::BeginPlay();
 	const auto Data = MatchWidgetDataTable->FindRow<FMatchWidgetData>(TEXT("Occupation"),TEXT("OccupationWidgetSetup"));
 	if (!Data) return;
 
 	MatchWidgets.Reserve(Data->WidgetList.Num());
 	for (auto& WidgetClass : Data->WidgetList)
-		MatchWidgets.Emplace(CreateViewportWidget<UUserWidget>(WidgetClass));
+	{
+		auto* MatchStateWidget = CreateViewportWidget<UMatchStateWidget>(WidgetClass, ESlateVisibility::Hidden);
+		MatchStateWidget->PreMatchStart();
+		MatchWidgets.Emplace(MatchStateWidget);
+	}
 }
 
-void AOccupationPlayerController::RemoveMatchWidget()
+void AOccupationPlayerController::OnMatchStart()
 {
-	for (const auto& Widget : MatchWidgets) Widget->RemoveFromParent();
-	MatchWidgets.Empty();
+	RemoveWidgets.Reserve(MatchWidgets.Num());
+
+	for (auto& Widget : MatchWidgets)
+		if (!Widget->PostMatchStart()) RemoveWidgets.Emplace(Widget);
+
+	for (auto& Widget : RemoveWidgets)
+	{
+		Widget->RemoveFromParent();
+		MatchWidgets.RemoveSwap(Widget, false);
+	}
+	MatchWidgets.Shrink();
+	RemoveWidgets.Empty(MatchWidgets.Num());
+}
+
+void AOccupationPlayerController::OnMatchEnding()
+{
+	RemoveWidgets.Reserve(MatchWidgets.Num());
+
+	for (auto& Widget : MatchWidgets)
+		if (!Widget->MatchEnding()) RemoveWidgets.Emplace(Widget);
+
+	for (auto& Widget : RemoveWidgets)
+	{
+		Widget->RemoveFromParent();
+		MatchWidgets.RemoveSwap(Widget, false);
+	}
+	MatchWidgets.Shrink();
+	RemoveWidgets.Empty();
 }

@@ -29,7 +29,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 	if (const auto Controller = GetWorld()->GetFirstPlayerController<AOccupationPlayerController>())
-		Controller->SetupMatchWidget();
+		Controller->OnMatchStart();
 	else UE_LOG(LogInit, Error, TEXT("FirstPlayerController was not AOccupationPlayerController!"));
 }
 
@@ -37,7 +37,7 @@ void AOccupationGameState::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
 	if (const auto Controller = GetWorld()->GetFirstPlayerController<AOccupationPlayerController>())
-		Controller->RemoveMatchWidget();
+		Controller->OnMatchEnding();
 	else UE_LOG(LogInit, Error, TEXT("FirstPlayerController was not AOccupationPlayerController!"));
 }
 

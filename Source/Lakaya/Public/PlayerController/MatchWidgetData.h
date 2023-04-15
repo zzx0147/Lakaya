@@ -16,5 +16,5 @@ struct LAKAYA_API FMatchWidgetData : public FTableRowBase
 
 public:
 	UPROPERTY(EditAnywhere)
-	TArray<TSubclassOf<UUserWidget>> WidgetList;
+	TArray<TSubclassOf<class UMatchStateWidget>> WidgetList;
 };

@@ -14,15 +14,20 @@ class LAKAYA_API AOccupationPlayerController : public ABattlePlayerController
 public:
 	AOccupationPlayerController();
 
-	// 매치에 적절한 위젯을 생성합니다.
-	virtual void SetupMatchWidget();
+protected:
+	virtual void BeginPlay() override;
 
-	// 매치를 위해 생성된 위젯들을 제거합니다.
-	virtual void RemoveMatchWidget();
+public:
+	// 매치가 시작되고 호출됩니다.
+	virtual void OnMatchStart();
+
+	// 매치가 종료되고 호출됩니다.
+	virtual void OnMatchEnding();
 
 private:
 	UPROPERTY(EditAnywhere)
 	UDataTable* MatchWidgetDataTable;
 
-	TArray<UUserWidget*> MatchWidgets;
+	TArray<class UMatchStateWidget*> MatchWidgets;
+	TArray<UMatchStateWidget*> RemoveWidgets;
 };
