@@ -12,7 +12,7 @@ class LAKAYA_API AThirdPersonCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	AThirdPersonCharacter();
+	AThirdPersonCharacter(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void Tick(float DeltaSeconds) override;

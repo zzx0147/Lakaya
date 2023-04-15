@@ -60,6 +60,9 @@ class LAKAYA_API AFocusableCharacter : public AMovableCharacter
 	GENERATED_BODY()
 
 public:
+	AFocusableCharacter(const FObjectInitializer& ObjectInitializer);
+	
+public:
 	/**
 	 * @brief FocusSpace에 점유를 시도합니다.
 	 * @param Context 점유를 시도할 컨텍스트입니다.

@@ -10,7 +10,7 @@
 #include "Interactable/Interactable.h"
 #include "PlayerController/MovablePlayerController.h"
 
-AInteractableCharacter::AInteractableCharacter()
+AInteractableCharacter::AInteractableCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	if (IsRunningDedicatedServer()) return;
 

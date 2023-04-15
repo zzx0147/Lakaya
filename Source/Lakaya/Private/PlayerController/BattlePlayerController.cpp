@@ -12,6 +12,7 @@
 #include "UI/GamePlayConsecutiveKillsWidget.h"
 #include "UI/GamePlayKillLogWidget.h"
 #include "Weapon/GunComponent.h"
+#include "Movement/LakayaCameraManager.h"
 
 
 ABattlePlayerController::ABattlePlayerController()
@@ -68,6 +69,9 @@ ABattlePlayerController::ABattlePlayerController()
 
 	ConsecutiveKillsWidgetClass = ConsecutiveFinder.Class;
 	if (!ConsecutiveKillsWidgetClass) UE_LOG(LogController, Fatal, TEXT("Fail to find ConsecutiveKillsWidgetClass!"));
+
+	PlayerCameraManagerClass = ALakayaCameraManager::StaticClass();
+
 }
 
 void ABattlePlayerController::BeginPlay()

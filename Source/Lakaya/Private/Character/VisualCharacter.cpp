@@ -5,7 +5,7 @@
 
 #include "Components/CapsuleComponent.h"
 
-AVisualCharacter::AVisualCharacter()
+AVisualCharacter::AVisualCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	// SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
 	// SkeletalMeshComponent->SetupAttachment(GetCapsuleComponent());

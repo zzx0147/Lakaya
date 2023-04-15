@@ -3,6 +3,10 @@
 
 #include "Character/FocusableCharacter.h"
 
+AFocusableCharacter::AFocusableCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+}
+
 bool AFocusableCharacter::SetFocus(const EFocusContext& Context, const EFocusSpace& Space, const EFocusState& State)
 {
 	if (IsFocussed(Context, Space)) return false;

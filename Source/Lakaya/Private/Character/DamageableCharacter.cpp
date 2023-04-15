@@ -11,7 +11,7 @@
 #include "UI/GamePlayHealthWidget.h"
 #include "Character/CollectorPlayerState.h"
 
-ADamageableCharacter::ADamageableCharacter()
+ADamageableCharacter::ADamageableCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	MaximumHealth = 100.f;
 }

@@ -13,5 +13,8 @@ class LAKAYA_API AOccupationCharacter : public AInteractableCharacter
 	GENERATED_BODY()
 
 public:
+	AOccupationCharacter(const FObjectInitializer& ObjectInitializer);
+	
+public:
 	void SetTeam(const EPlayerTeamState& Team);
 };

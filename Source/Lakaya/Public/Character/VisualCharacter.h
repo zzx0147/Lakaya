@@ -16,7 +16,7 @@ class LAKAYA_API AVisualCharacter : public AInteractableCharacter
 	GENERATED_BODY()
 
 public:
-	AVisualCharacter();
+	AVisualCharacter(const FObjectInitializer& ObjectInitializer);
 
 	// // 스켈레탈 메시 컴포넌트 추가
 	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))

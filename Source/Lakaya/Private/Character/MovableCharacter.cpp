@@ -7,7 +7,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 
-AMovableCharacter::AMovableCharacter()
+AMovableCharacter::AMovableCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 	RunMultiplier = 1.3f;

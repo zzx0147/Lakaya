@@ -21,7 +21,7 @@ class LAKAYA_API AInteractableCharacter : public AArmedCharacter
 	GENERATED_BODY()
 
 public:
-	AInteractableCharacter();
+	AInteractableCharacter(const FObjectInitializer& ObjectInitializer);
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 

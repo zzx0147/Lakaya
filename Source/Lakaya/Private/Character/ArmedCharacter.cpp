@@ -8,7 +8,7 @@
 #include "Engine/DataTable.h"
 #include "Net/UnrealNetwork.h"
 
-AArmedCharacter::AArmedCharacter()
+AArmedCharacter::AArmedCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	bReplicateUsingRegisteredSubObjectList = true;
 

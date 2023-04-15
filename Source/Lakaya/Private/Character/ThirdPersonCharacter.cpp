@@ -8,7 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
-AThirdPersonCharacter::AThirdPersonCharacter()
+AThirdPersonCharacter::AThirdPersonCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(RootComponent);

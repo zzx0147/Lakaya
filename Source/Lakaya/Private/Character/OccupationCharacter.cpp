@@ -5,6 +5,10 @@
 
 #include "Character/CollectorPlayerState.h"
 
+AOccupationCharacter::AOccupationCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+}
+
 void AOccupationCharacter::SetTeam(const EPlayerTeamState& Team)
 {
 	USkeletalMeshComponent* LocalMesh = GetMesh();

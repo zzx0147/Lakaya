@@ -12,7 +12,7 @@ class LAKAYA_API AMovableCharacter : public AThirdPersonCharacter
 	GENERATED_BODY()
 
 public:
-	AMovableCharacter();
+	AMovableCharacter(const FObjectInitializer& ObjectInitializer);
 
 	virtual void Crouch(bool bClientSimulation = false) override;
 
