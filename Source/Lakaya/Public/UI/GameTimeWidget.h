@@ -3,22 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "MatchStateWidget.h"
 #include "Components/TextBlock.h"
-#include "GameMode/IndividualGameState.h"
-#include "GameMode/OccupationGameState.h"
 #include "GameTimeWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API UGameTimeWidget : public UUserWidget
+class LAKAYA_API UGameTimeWidget : public UMatchStateWidget
 {
 	GENERATED_BODY()
 
 public:
-	UGameTimeWidget(const FObjectInitializer& ObjectInitializer);
+	explicit UGameTimeWidget(const FObjectInitializer& ObjectInitializer);
+
+	virtual bool OnMatchStart() override;
 
 private:
 	virtual void NativeConstruct() override;
@@ -27,13 +27,8 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* GameTimeWidgetText;
 
-public:
-	UFUNCTION()
-	void SetGameTimeWidget(EOccupationGameState ChangeGameState);
-
-private:
 	UPROPERTY(EditAnywhere)
 	FText TimeTextFormat;
 
-	TWeakObjectPtr<AOccupationGameState> OccupationGameState;
+	TWeakObjectPtr<class AOccupationGameState> OccupationGameState;
 };
