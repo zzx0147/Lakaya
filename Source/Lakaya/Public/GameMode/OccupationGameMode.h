@@ -39,7 +39,7 @@ private:
 	void DelayedEndedGame();
 
 private:
-	float GamePlayTime = 180.0f;
+	float GamePlayTime = 15.0f;
 	AOccupationGameState* OccupationGameState;
 	
 private:
