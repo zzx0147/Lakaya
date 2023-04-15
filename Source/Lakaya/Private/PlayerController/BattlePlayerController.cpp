@@ -34,6 +34,7 @@ ABattlePlayerController::ABattlePlayerController()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ReloadStopFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ReloadStop'"));
 
+	//TODO: 새 인풋 액션을 불러와야 합니다.
 	if (ContextFinder.Succeeded()) WeaponControlContext = ContextFinder.Object;
 	if (FireStartFinder.Succeeded()) FireStartAction = FireStartFinder.Object;
 	if (FireStopFinder.Succeeded()) FireStopAction = FireStopFinder.Object;

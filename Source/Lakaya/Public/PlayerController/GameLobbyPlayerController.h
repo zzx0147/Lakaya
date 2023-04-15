@@ -34,7 +34,7 @@ protected:
 	 * @param NewPawn 새로 빙의한 폰 객체입니다.
 	 */
 	UFUNCTION()
-	virtual void OnPossessedPawnChangedCallback(APawn* OldPawn, APawn* NewPawn);
+	virtual void OnPossessedPawnChangedCallback(APawn* OldPawn, APawn* NewPawn) { return; }
 
 	/**
 	 * @brief 향상된 입력을 사용하는 우리 게임을 위해 선언된 함수입니다. SetupInputComponent에서 호출됩니다.
@@ -52,13 +52,6 @@ protected:
 	virtual void LoadoutHandler(const FInputActionValue& Value);
 	virtual void ScoreHandler(const FInputActionValue& Value);
 
-	// 로딩 위젯 클래스를 나타냅니다. 하위 클래스의 생성자에서 이 값을 변경하면 해당 클래스로 위젯이 생성됩니다.
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ULoadingWidget> LoadingClass;
-
-	UPROPERTY(EditAnywhere, Category=Widget)
-	TSubclassOf<class UGamePlayKillLogWidget> KillLogClass;
-
 private:
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
@@ -74,12 +67,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* ScoreAction;
-
-	UPROPERTY(VisibleAnywhere, Transient)
-	ULoadingWidget* LoadingWidget;
-
-	UPROPERTY(VisibleAnywhere, Transient)
-	UGamePlayKillLogWidget* KillLogWidget;
 };
 
 template <class T>
