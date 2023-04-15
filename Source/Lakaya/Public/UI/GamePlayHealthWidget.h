@@ -25,7 +25,7 @@ protected:
 	void OnChangeHealth(const float& NewHealth);
 
 	//DamageableCharacter의 최대 체력 델리게이트에 등록되는 함수, 최대 체력이 변경될 때 호출
-	void OnChangeMaximumHealth(AActor* Character, const float& NewMaximumHealth);
+	void OnChangeMaximumHealth(const float& NewMaximumHealth);
 
 	//체력 프로그래스 바를 업데이트하는 함수
 	void UpdateHealthProgressBar();
