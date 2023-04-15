@@ -40,5 +40,4 @@ void UCharAnimInstance::NativeBeginPlay()
 
 	Cast<AFocusableCharacter>(TryGetPawnOwner())->GetFocusChangedEvent
 	(EFocusContext::Simulated,EFocusSpace::MainHand).AddUObject(this,&UCharAnimInstance::SetState);
-	
 }

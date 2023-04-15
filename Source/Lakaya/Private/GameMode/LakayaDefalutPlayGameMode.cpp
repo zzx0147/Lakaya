@@ -25,7 +25,6 @@ void ALakayaDefalutPlayGameMode::PostLogin(APlayerController* NewPlayer)
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), GetNumPlayers());
 
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("플레이어가 입장했습니다."));
-
 }
 
 void ALakayaDefalutPlayGameMode::HandleMatchIsWaitingToStart()
@@ -98,27 +97,10 @@ void ALakayaDefalutPlayGameMode::OnKilledCharacter(AController* VictimController
 		GetWorldTimerManager().ClearTimer(*ExistingTimer);
 		RespawnTimers.Remove(VictimController);
 	}
-	
-	TArray<AController*> DeadPlayers;
-	DeadPlayers.Add(VictimController);
-	
-	for (auto& Pair : RespawnTimers)
-	{
-		FTimerHandle& Timer = Pair.Value;
-		AController* Player = Pair.Key;
-	
-		if (GetWorldTimerManager().IsTimerActive(Timer))
-		{
-			DeadPlayers.Add(Player);
-		}
-	}
-	
-	for (AController* DeadPlayer : DeadPlayers)
-	{
-		FTimerHandle NewTimer;
-		GetWorldTimerManager().SetTimer(NewTimer, [this, DeadPlayer](){ RespawnPlayer(DeadPlayer); }, PlayerRespawnTime, false);
-		RespawnTimers.Add(DeadPlayer, NewTimer);
-	}
+
+	RespawnTimers.Add(VictimController, FTimerHandle());
+	FTimerHandle& NewTimer = RespawnTimers[VictimController];
+	GetWorldTimerManager().SetTimer(NewTimer, [this, VictimController]() { RespawnPlayer(VictimController); }, PlayerRespawnTime, false);
 }
 
 void ALakayaDefalutPlayGameMode::OnKillNotifyBinding()
@@ -154,7 +136,7 @@ void ALakayaDefalutPlayGameMode::RespawnPlayer(AController* KilledController)
 		UE_LOG(LogTemp, Warning, TEXT("KilledCharacter is not a pawn or an actor."));
 		return;
 	}
-
+	
 	ADamageableCharacter* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
 	if (KilledDamageableCharacter == nullptr)
 	{
@@ -163,9 +145,4 @@ void ALakayaDefalutPlayGameMode::RespawnPlayer(AController* KilledController)
 	}
 	
 	KilledDamageableCharacter->Respawn();
-}
-
-int32 ALakayaDefalutPlayGameMode::GetNumBots()
-{
-	return NumBots;
 }
