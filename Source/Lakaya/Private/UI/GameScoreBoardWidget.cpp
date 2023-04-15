@@ -3,11 +3,17 @@
 
 #include "UI/GameScoreBoardWidget.h"
 #include "Blueprint/UserWidget.h"
-#include "Blueprint/WidgetTree.h"
-#include "UI/ScoreBoardElement.h"
-#include "Components/CanvasPanel.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
+#include "Blueprint/WidgetTree.h"
+#include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
+#include "UI/ScoreBoardElement.h"
+
+bool UGameScoreBoardWidget::OnMatchStart()
+{
+	SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	return true;
+}
 
 void UGameScoreBoardWidget::NativeConstruct()
 {
@@ -18,7 +24,7 @@ void UGameScoreBoardWidget::NativeConstruct()
 		UE_LOG(LogTemp, Warning, TEXT("GameScoreBoardWidget_OccupationGameState is null."));
 		return;
 	}
-	
+
 	ScoreBoardPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("ScoreBoard_Pan")));
 	if (ScoreBoardPanel == nullptr)
 	{
@@ -27,24 +33,6 @@ void UGameScoreBoardWidget::NativeConstruct()
 	}
 
 	InitScoreBoardElements(6);
-
-	OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &UGameScoreBoardWidget::SetGameScoreBoardWidget);
-	
-	SetVisibility(ESlateVisibility::Hidden);
-}
-
-void UGameScoreBoardWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-}
-
-void UGameScoreBoardWidget::SetGameScoreBoardWidget(EOccupationGameState ChangeGameState)
-{
-	if (ChangeGameState == EOccupationGameState::Progress)
-	{
-		SetVisibility(ESlateVisibility::Visible);
-		return;
-	}
 }
 
 void UGameScoreBoardWidget::InitScoreBoardElements(int8 ElementsNum)
@@ -55,13 +43,14 @@ void UGameScoreBoardWidget::InitScoreBoardElements(int8 ElementsNum)
 	}
 
 	//ScoreBoardElement의 블루프린트 위젯 클래스를 로드
-	UClass* ScoreBoardElementClass  = LoadClass<UUserWidget>(nullptr, TEXT("/Game/Blueprints/UMG/WBP_ScoreBoardElement.WBP_ScoreBoardElement_C"));
+	UClass* ScoreBoardElementClass = LoadClass<UUserWidget>(
+		nullptr, TEXT("/Game/Blueprints/UMG/WBP_ScoreBoardElement.WBP_ScoreBoardElement_C"));
 
-	if (ScoreBoardElementClass  != nullptr)
+	if (ScoreBoardElementClass != nullptr)
 	{
 		for (int8 i = 0; i < ElementsNum; i++)
 		{
-			UUserWidget* newWidget = CreateWidget<UUserWidget>(this, ScoreBoardElementClass );
+			UUserWidget* newWidget = CreateWidget<UUserWidget>(this, ScoreBoardElementClass);
 			if (newWidget != nullptr)
 			{
 				ScoreBoardPanel->AddChild(newWidget);
