@@ -23,9 +23,14 @@ class LAKAYA_API AOccupationGameState : public AGameState
 public:
 	AOccupationGameState();
 
+protected:
+	virtual void HandleMatchHasStarted() override;
+	virtual void HandleMatchHasEnded() override;
+
+public:
 	UFUNCTION()
 	void SetNumPlayers(const uint8& NewNumPlayers);
-	
+
 	// 현재 두 팀의 점수를 기준으로 승자를 정합니다.
 	void SetOccupationWinner();
 

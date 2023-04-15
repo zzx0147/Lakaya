@@ -3,6 +3,7 @@
 #include "GameMode/OccupationGameState.h"
 
 #include "Net/UnrealNetwork.h"
+#include "PlayerController/OccupationPlayerController.h"
 
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -22,6 +23,22 @@ AOccupationGameState::AOccupationGameState()
 	MaxPlayers = 2;
 	MaxScore = 100.f;
 	MatchDuration = 180.f;
+}
+
+void AOccupationGameState::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+	if (const auto Controller = GetWorld()->GetFirstPlayerController<AOccupationPlayerController>())
+		Controller->SetupMatchWidget();
+	else UE_LOG(LogInit, Error, TEXT("FirstPlayerController was not AOccupationPlayerController!"));
+}
+
+void AOccupationGameState::HandleMatchHasEnded()
+{
+	Super::HandleMatchHasEnded();
+	if (const auto Controller = GetWorld()->GetFirstPlayerController<AOccupationPlayerController>())
+		Controller->RemoveMatchWidget();
+	else UE_LOG(LogInit, Error, TEXT("FirstPlayerController was not AOccupationPlayerController!"));
 }
 
 void AOccupationGameState::SetNumPlayers(const uint8& NewNumPlayers)
