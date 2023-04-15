@@ -51,8 +51,6 @@ protected:
 protected:
 	virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser);
 	
-	virtual void OnKillNotifyBinding();
-
 	virtual void RespawnPlayer(AController* KilledController);
 
 public:

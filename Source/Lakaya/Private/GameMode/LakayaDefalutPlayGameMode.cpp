@@ -46,8 +46,6 @@ void ALakayaDefalutPlayGameMode::HandleMatchHasStarted()
 {
 	// 게임 시작 후, 서버 측 클라에게 UI바인딩.
 	Super::HandleMatchHasStarted();
-
-	OnKillNotifyBinding();
 	
 	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasStarted"));
@@ -101,10 +99,6 @@ void ALakayaDefalutPlayGameMode::OnKilledCharacter(AController* VictimController
 	RespawnTimers.Add(VictimController, FTimerHandle());
 	FTimerHandle& NewTimer = RespawnTimers[VictimController];
 	GetWorldTimerManager().SetTimer(NewTimer, [this, VictimController]() { RespawnPlayer(VictimController); }, PlayerRespawnTime, false);
-}
-
-void ALakayaDefalutPlayGameMode::OnKillNotifyBinding()
-{
 }
 
 void ALakayaDefalutPlayGameMode::RespawnPlayer(AController* KilledController)

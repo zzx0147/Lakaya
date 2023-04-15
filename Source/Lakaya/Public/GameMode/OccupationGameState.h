@@ -20,17 +20,14 @@ class LAKAYA_API AOccupationGameState : public AGameState
 {
 	GENERATED_BODY()
 
-	const static float MaxScore;
-
 public:
-	// 하드코딩으로 설정된 최대 점수를 가져옵니다.
-	static const float& GetMaxScore() { return MaxScore; }
+	AOccupationGameState();
 
 	UFUNCTION()
 	void SetNumPlayers(const uint8& NewNumPlayers);
-
-	UFUNCTION()
-	void SetOccupationWinner(const EPlayerTeamState& Winner);
+	
+	// 현재 두 팀의 점수를 기준으로 승자를 정합니다.
+	void SetOccupationWinner();
 
 	/**
 	 * @brief 팀에 점수를 부여합니다.
@@ -42,6 +39,8 @@ public:
 	// 해당 팀의 점수를 받아옵니다.
 	const float& GetTeamScore(const EPlayerTeamState& Team) const;
 
+	const float& GetMaxScore() const { return MaxScore; }
+
 	UFUNCTION()
 	const uint8& GetMaxPlayers() const { return MaxPlayers; }
 
@@ -51,14 +50,13 @@ public:
 	UFUNCTION()
 	const EPlayerTeamState& GetOccupationWinner() const { return CurrentOccupationWinner; }
 
-	/**
-	 * @brief 현재 시간을 기준으로 매칭 시간을 설정합니다. 반드시 서버에서 호출해야 합니다.
-	 * @param MatchTime 매치가 몇초동안 진행되는지 나타냅니다.
-	 */
-	void SetMatchTime(const float& MatchTime);
+	// 현재 시간을 기준으로 매칭 시간을 설정합니다. 반드시 서버에서 호출해야 합니다.
+	void SetMatchTime();
 
 	// 남은 매칭 시간을 가져옵니다. 아직 매칭시간 정보가 설정되지 않았거나, 시간이 지나간 경우 0을 반환합니다.
 	float GetRemainMatchTime();
+
+	bool IsSomeoneReachedMaxScore() const;
 
 private:
 	UFUNCTION()
@@ -73,29 +71,36 @@ private:
 	UFUNCTION()
 	void OnRep_OccupationWinner();
 
+public:
+	FOnOccupationChangeJoinedPlayers OnOccupationChangeJoinedPlayers;
+	FOnTeamScoreChanged OnTeamScoreChanged;
+	FOnOccupationChangeOccupationWinner OnOccupationChangeOccupationWinner;
+
+private:
 	UPROPERTY(ReplicatedUsing = OnRep_NumPlayers)
 	uint8 NumPlayers;
 
-	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
+	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
 	EPlayerTeamState CurrentOccupationWinner;
 
-	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore)
-	float ATeamScore = 0;
+	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore, Transient)
+	float ATeamScore;
 
-	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore)
-	float BTeamScore = 0;
+	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore, Transient)
+	float BTeamScore;
 
 	UPROPERTY(Replicated)
-	float StartTime;
+	float MatchStartTime;
 
 	UPROPERTY(Replicated)
 	float MatchEndingTime;
 
 	UPROPERTY(EditAnywhere)
-	uint8 MaxPlayers = 2;
+	uint8 MaxPlayers;
 
-public:
-	FOnOccupationChangeJoinedPlayers OnOccupationChangeJoinedPlayers;
-	FOnTeamScoreChanged OnTeamScoreChanged;
-	FOnOccupationChangeOccupationWinner OnOccupationChangeOccupationWinner;
+	UPROPERTY(EditAnywhere)
+	float MaxScore;
+
+	UPROPERTY(EditAnywhere)
+	float MatchDuration;
 };

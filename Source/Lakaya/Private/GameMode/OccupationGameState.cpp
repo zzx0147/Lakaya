@@ -5,8 +5,6 @@
 #include "Net/UnrealNetwork.h"
 
 
-const float AOccupationGameState::MaxScore = 100.f;
-
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -14,9 +12,16 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(AOccupationGameState, NumPlayers);
 	DOREPLIFETIME(AOccupationGameState, ATeamScore);
 	DOREPLIFETIME(AOccupationGameState, BTeamScore);
-	DOREPLIFETIME(AOccupationGameState, StartTime);
+	DOREPLIFETIME(AOccupationGameState, MatchStartTime);
 	DOREPLIFETIME(AOccupationGameState, MatchEndingTime);
 	DOREPLIFETIME(AOccupationGameState, CurrentOccupationWinner);
+}
+
+AOccupationGameState::AOccupationGameState()
+{
+	MaxPlayers = 2;
+	MaxScore = 100.f;
+	MatchDuration = 180.f;
 }
 
 void AOccupationGameState::SetNumPlayers(const uint8& NewNumPlayers)
@@ -25,10 +30,10 @@ void AOccupationGameState::SetNumPlayers(const uint8& NewNumPlayers)
 	OnRep_NumPlayers();
 }
 
-void AOccupationGameState::SetOccupationWinner(const EPlayerTeamState& Winner)
+void AOccupationGameState::SetOccupationWinner()
 {
-	CurrentOccupationWinner = Winner;
-	OnRep_OccupationWinner();
+	CurrentOccupationWinner = ATeamScore > BTeamScore ? EPlayerTeamState::A : EPlayerTeamState::B;
+	OnOccupationChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
 }
 
 void AOccupationGameState::AddTeamScore(const EPlayerTeamState& Team, const float& AdditiveScore)
@@ -40,21 +45,26 @@ void AOccupationGameState::AddTeamScore(const EPlayerTeamState& Team, const floa
 const float& AOccupationGameState::GetTeamScore(const EPlayerTeamState& Team) const
 {
 	if (Team == EPlayerTeamState::A) return ATeamScore;
-	else if (Team == EPlayerTeamState::B) return BTeamScore;
+	if (Team == EPlayerTeamState::B) return BTeamScore;
 	UE_LOG(LogScript, Warning, TEXT("Trying to GetTeamScore with not valid value! it was %d"), Team);
 	return 0.f;
 }
 
-void AOccupationGameState::SetMatchTime(const float& MatchTime)
+void AOccupationGameState::SetMatchTime()
 {
-	StartTime = GetServerWorldTimeSeconds();
-	MatchEndingTime = StartTime + MatchTime;
+	MatchStartTime = GetServerWorldTimeSeconds();
+	MatchEndingTime = MatchStartTime + MatchDuration;
 }
 
 float AOccupationGameState::GetRemainMatchTime()
 {
-	auto Current = GetServerWorldTimeSeconds();
+	const auto Current = GetServerWorldTimeSeconds();
 	return MatchEndingTime < Current ? 0 : MatchEndingTime - Current;
+}
+
+bool AOccupationGameState::IsSomeoneReachedMaxScore() const
+{
+	return ATeamScore >= MaxScore || BTeamScore >= MaxScore;
 }
 
 void AOccupationGameState::OnRep_NumPlayers()
