@@ -33,7 +33,7 @@ public:
 	void SetNumPlayers(const uint8& NewNumPlayers);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void NotifyKillCharacter(AController* KilledController, AActor* KilledActor, AController* Instigator,
+	void NotifyKillCharacter(AController* KilledController, AActor* KilledActor, AController* EventInstigator,
 	                         AActor* Causer);
 
 	// 현재 두 팀의 점수를 기준으로 승자를 정합니다.
@@ -47,7 +47,7 @@ public:
 	void AddTeamScore(const EPlayerTeamState& Team, const float& AdditiveScore);
 
 	// 해당 팀의 점수를 받아옵니다.
-	const float& GetTeamScore(const EPlayerTeamState& Team) const;
+	float GetTeamScore(const EPlayerTeamState& Team) const;
 
 	const float& GetMaxScore() const { return MaxScore; }
 

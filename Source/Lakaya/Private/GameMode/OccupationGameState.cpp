@@ -48,9 +48,9 @@ void AOccupationGameState::SetNumPlayers(const uint8& NewNumPlayers)
 }
 
 void AOccupationGameState::NotifyKillCharacter_Implementation(AController* KilledController, AActor* KilledActor,
-                                                              AController* Instigator, AActor* Causer)
+                                                              AController* EventInstigator, AActor* Causer)
 {
-	OnKillCharacterNotify.Broadcast(KilledController, KilledActor, Instigator, Causer);
+	OnKillCharacterNotify.Broadcast(KilledController, KilledActor, EventInstigator, Causer);
 }
 
 void AOccupationGameState::SetOccupationWinner()
@@ -65,7 +65,7 @@ void AOccupationGameState::AddTeamScore(const EPlayerTeamState& Team, const floa
 	else if (Team == EPlayerTeamState::B) BTeamScore += AdditiveScore;
 }
 
-const float& AOccupationGameState::GetTeamScore(const EPlayerTeamState& Team) const
+float AOccupationGameState::GetTeamScore(const EPlayerTeamState& Team) const
 {
 	if (Team == EPlayerTeamState::A) return ATeamScore;
 	if (Team == EPlayerTeamState::B) return BTeamScore;
