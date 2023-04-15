@@ -135,13 +135,14 @@ void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, 
 		if (const auto Data = CharacterWidgetComponentTable->FindRow<FCharacterBindWidgetData>(
 			ArmedCharacter->GetCharacterName(),TEXT("SetupCharacterWidgetComponent")))
 		{
+			// 이 캐릭터에 필요한 위젯 추가 생성
 			CharacterBindableWidgets.Reserve(CharacterBindableWidgets.Num() + Data->WidgetList.Num());
 			for (const auto& WidgetClass : Data->WidgetList)
-			{
-				auto Widget = CreateViewportWidget<UCharacterBindableWidget>(WidgetClass);
+				CharacterBindableWidgets.Emplace(CreateViewportWidget<UCharacterBindableWidget>(WidgetClass));
+
+			// 위젯 바인딩
+			for (const auto& Widget : CharacterBindableWidgets)
 				Widget->BindCharacter(ArmedCharacter.Get());
-				CharacterBindableWidgets.Emplace(Widget);
-			}
 		}
 	}
 }
