@@ -1,55 +1,40 @@
 #include "UI/LoadingWidget.h"
 
-#include "PlayerController/MenuCallingPlayerController.h"
-#include "GameMode/IndividualGameMode.h"
-#include "GameMode/IndividualGameState.h"
-#include "Net/UnrealNetwork.h"
+#include "GameMode/OccupationGameState.h"
+
 
 void ULoadingWidget::NativeConstruct()
 {
-    Super::NativeConstruct();
+	Super::NativeConstruct();
 
-    OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-    if (OccupationGameState == nullptr)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_GameMode is null."));
-        return;
-    }
+	LoadingWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("LoadingWidgetText")));
+	if (LoadingWidgetText == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_JoinedPlayerText is null."));
+		return;
+	}
 
-    OnChangeJoinedPlayers(OccupationGameState->GetNumPlayers());
-    
-    // 바인딩
-    LoadingWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("LoadingWidgetText")));
-    if (LoadingWidgetText == nullptr)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_JoinedPlayerText is null."));
-        return;
-    }
+	const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
+	if (OccupationGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_GameMode is null."));
+		return;
+	}
 
-    OccupationGameState->OnOccupationChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
-    OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &ULoadingWidget::ReMoveLoadingWidget);
+	MaxPlayerCount = OccupationGameState->GetMaxPlayers();
+	OnChangeJoinedPlayers(OccupationGameState->GetNumPlayers());
+
+	OccupationGameState->OnOccupationChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
 }
 
-void ULoadingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void ULoadingWidget::OnChangeJoinedPlayers(const uint8& PlayerCount) const
 {
-    Super::NativeTick(MyGeometry, InDeltaTime);
-}
+	if (PlayerCount == MaxPlayerCount)
+	{
+		LoadingWidgetText->SetText(FText::FromString(TEXT("곧 게임을 시작합니다.")));
+		return;
+	}
 
-void ULoadingWidget::OnChangeJoinedPlayers(uint8 JoinedPlayers)
-{
-    if (JoinedPlayers == OccupationGameState->GetMaxPlayers())
-    {
-        LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("곧 게임을 시작합니다."))));
-        return;
-    }
-    
-    LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), JoinedPlayers, OccupationGameState->GetMaxPlayers())));
-}
-
-void ULoadingWidget::ReMoveLoadingWidget(EOccupationGameState ChangeGamState)
-{
-    if (ChangeGamState == EOccupationGameState::Progress)
-    {
-        this->RemoveFromParent();
-    }
+	LoadingWidgetText->SetText(
+		FText::FromString(FString::Printf(TEXT("(%d / %d)"), PlayerCount, MaxPlayerCount)));
 }

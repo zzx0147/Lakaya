@@ -23,7 +23,6 @@ void AOccupationPlayerController::BeginPlay()
 	for (auto& WidgetClass : Data->WidgetList)
 	{
 		auto* MatchStateWidget = CreateViewportWidget<UMatchStateWidget>(WidgetClass, ESlateVisibility::Hidden);
-		MatchStateWidget->PreMatchStart();
 		MatchWidgets.Emplace(MatchStateWidget);
 	}
 }
@@ -33,7 +32,7 @@ void AOccupationPlayerController::OnMatchStart()
 	RemoveWidgets.Reserve(MatchWidgets.Num());
 
 	for (auto& Widget : MatchWidgets)
-		if (!Widget->PostMatchStart()) RemoveWidgets.Emplace(Widget);
+		if (!Widget->OnMatchStart()) RemoveWidgets.Emplace(Widget);
 
 	for (auto& Widget : RemoveWidgets)
 	{
@@ -49,7 +48,7 @@ void AOccupationPlayerController::OnMatchEnding()
 	RemoveWidgets.Reserve(MatchWidgets.Num());
 
 	for (auto& Widget : MatchWidgets)
-		if (!Widget->MatchEnding()) RemoveWidgets.Emplace(Widget);
+		if (!Widget->OnMatchEnding()) RemoveWidgets.Emplace(Widget);
 
 	for (auto& Widget : RemoveWidgets)
 	{

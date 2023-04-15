@@ -1,33 +1,24 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "MatchStateWidget.h"
 #include "Components/TextBlock.h"
-#include "GameFramework/HUD.h"
-#include "GameMode/IndividualGameMode.h"
-#include "GameMode/IndividualGameState.h"
-#include "GameMode/OccupationGameState.h"
 #include "LoadingWidget.generated.h"
 
 UCLASS()
-class LAKAYA_API ULoadingWidget : public UUserWidget
+class LAKAYA_API ULoadingWidget : public UMatchStateWidget
 {
 	GENERATED_BODY()
 
-private:
+protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+private:
+	UFUNCTION()
+	void OnChangeJoinedPlayers(const uint8& PlayerCount) const;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* LoadingWidgetText;
 
-public:
-	UFUNCTION()
-	void ReMoveLoadingWidget(EOccupationGameState ChangeGamState);
-	
-public:
-	UFUNCTION()
-	void OnChangeJoinedPlayers(uint8 Number);
-
-	AOccupationGameState* OccupationGameState;
+	uint8 MaxPlayerCount;
 };
