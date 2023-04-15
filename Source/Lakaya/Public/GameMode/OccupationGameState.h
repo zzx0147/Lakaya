@@ -9,7 +9,8 @@
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeJoinedPlayers, const uint8&)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeOccupationWinner, const EPlayerTeamState&)
-DECLARE_EVENT_TwoParams(AOccupationGameState, FOnTeamScoreChanged, const EPlayerTeamState&, const float&)
+DECLARE_EVENT_TwoParams(AOccupationGameState, FTeamScoreSignature, const EPlayerTeamState&, const float&)
+DECLARE_EVENT_FourParams(AOccupationGameState, FKillCharacterSignature, AController*, AActor*, AController*, AActor*)
 
 
 /**
@@ -30,6 +31,10 @@ protected:
 public:
 	UFUNCTION()
 	void SetNumPlayers(const uint8& NewNumPlayers);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NotifyKillCharacter(AController* KilledController, AActor* KilledActor, AController* Instigator,
+	                         AActor* Causer);
 
 	// 현재 두 팀의 점수를 기준으로 승자를 정합니다.
 	void SetOccupationWinner();
@@ -59,8 +64,9 @@ public:
 	void SetMatchTime();
 
 	// 남은 매칭 시간을 가져옵니다. 아직 매칭시간 정보가 설정되지 않았거나, 시간이 지나간 경우 0을 반환합니다.
-	float GetRemainMatchTime();
+	float GetRemainMatchTime() const;
 
+	// 어떤 팀이든 최대 점수에 도달한 팀이 있는지 여부를 조사합니다.
 	bool IsSomeoneReachedMaxScore() const;
 
 private:
@@ -78,8 +84,9 @@ private:
 
 public:
 	FOnOccupationChangeJoinedPlayers OnOccupationChangeJoinedPlayers;
-	FOnTeamScoreChanged OnTeamScoreChanged;
 	FOnOccupationChangeOccupationWinner OnOccupationChangeOccupationWinner;
+	FTeamScoreSignature OnTeamScoreChanged;
+	FKillCharacterSignature OnKillCharacterNotify;
 
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_NumPlayers)

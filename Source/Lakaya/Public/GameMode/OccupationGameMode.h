@@ -15,6 +15,8 @@ class LAKAYA_API AOccupationGameMode : public ALakayaDefalutPlayGameMode
 public:
 	AOccupationGameMode();
 
+	virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser) override;
+
 protected:
 	// 함수에 대한 설명은 부모클래스에 설명되어 있음.
 	virtual void PostLogin(APlayerController* NewPlayer) override;

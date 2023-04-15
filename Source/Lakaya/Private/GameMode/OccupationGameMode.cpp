@@ -28,6 +28,13 @@ AOccupationGameMode::AOccupationGameMode()
 	GameStateClass = AOccupationGameState::StaticClass();
 }
 
+void AOccupationGameMode::OnKilledCharacter(AController* VictimController, AActor* Victim,
+                                            AController* InstigatorController, AActor* DamageCauser)
+{
+	Super::OnKilledCharacter(VictimController, Victim, InstigatorController, DamageCauser);
+	OccupationGameState->NotifyKillCharacter(VictimController, Victim, InstigatorController, DamageCauser);
+}
+
 void AOccupationGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
@@ -45,7 +52,7 @@ void AOccupationGameMode::PostLogin(APlayerController* NewPlayer)
 	if (GetNumPlayers() >= OccupationGameState->GetMaxPlayers())
 	{
 		GetWorldTimerManager().SetTimer(TimerHandle_DelayedStart, this, &AOccupationGameMode::DelayedStartMatch,
-		                                MatchStartDelay,false);
+		                                MatchStartDelay, false);
 	}
 }
 

@@ -47,6 +47,12 @@ void AOccupationGameState::SetNumPlayers(const uint8& NewNumPlayers)
 	OnRep_NumPlayers();
 }
 
+void AOccupationGameState::NotifyKillCharacter_Implementation(AController* KilledController, AActor* KilledActor,
+                                                              AController* Instigator, AActor* Causer)
+{
+	OnKillCharacterNotify.Broadcast(KilledController, KilledActor, Instigator, Causer);
+}
+
 void AOccupationGameState::SetOccupationWinner()
 {
 	CurrentOccupationWinner = ATeamScore > BTeamScore ? EPlayerTeamState::A : EPlayerTeamState::B;
@@ -73,7 +79,7 @@ void AOccupationGameState::SetMatchTime()
 	MatchEndingTime = MatchStartTime + MatchDuration;
 }
 
-float AOccupationGameState::GetRemainMatchTime()
+float AOccupationGameState::GetRemainMatchTime() const
 {
 	const auto Current = GetServerWorldTimeSeconds();
 	return MatchEndingTime < Current ? 0 : MatchEndingTime - Current;

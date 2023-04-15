@@ -3,7 +3,6 @@
 #include "GameMode/LakayaDefalutPlayGameMode.h"
 
 #include "Character/ArmedCharacter.h"
-#include "Character/CollectorPlayerState.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -70,18 +69,6 @@ void ALakayaDefalutPlayGameMode::HandleLeavingMap()
 void ALakayaDefalutPlayGameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
-	
-	ADamageableCharacter* DamageableCharacter = Cast<ADamageableCharacter>(Exiting->GetPawn());
-	if (DamageableCharacter)
-	{
-		DamageableCharacter->OnKillCharacterNotify.RemoveAll(this);	
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GameMode_DamageableCharacter is null."));
-		return;
-	}
-	
 	UE_LOG(LogTemp, Warning, TEXT("The Player has left the game."));
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
 }
