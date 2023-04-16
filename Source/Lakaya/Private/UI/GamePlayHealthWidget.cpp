@@ -6,6 +6,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Character/DamageableCharacter.h"
+#include "Character/StatComponent.h"
 
 
 void UGamePlayHealthWidget::BindCharacter(ACharacter* const& Character)
@@ -13,29 +14,43 @@ void UGamePlayHealthWidget::BindCharacter(ACharacter* const& Character)
 	Super::BindCharacter(Character);
 	//TODO: 최대체력은 스탯 컴포넌트로 옮겨졌으므로, 스탯 컴포넌트에 바인딩하도록 해야 합니다.
 	if (!Character) return;
-	Character->OnHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeHealth);
-	Character->OnMaximumHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeMaximumHealth);
+	// Character->OnHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeHealth);
+	// Character->OnMaximumHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeMaximumHealth);
+	//
+	// Health = Character->GetHealth();
+	// MaximumHealth = Character->GetMaximumHealth();
 
-	Health = Character->GetHealth();
-	MaximumHealth = Character->GetMaximumHealth();
+
+	auto MyCharacter = Cast<ADamageableCharacter>(Character);
+
+	UStatComponent* const& StatComponent = MyCharacter->GetStatComponent();
+
+	StatComponent->OnMaximumHealthChanged.AddUObject(this,&UGamePlayHealthWidget::OnChangeMaximumHealth);
+	MyCharacter->OnHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeHealth);
+
+	SetVisibility(ESlateVisibility::Visible);
 
 	HealthText->SetText(FText::AsNumber(floor(Health)));
 	MaximumHealthText->SetText(FText::FromString(FString::Printf(TEXT("/%f"), MaximumHealth)));
 	UpdateHealthProgressBar();
+	
 }
 
 bool UGamePlayHealthWidget::UnbindCharacter(ACharacter* const& Character)
 {
 	Super::UnbindCharacter(Character);
-	if (!Character) return;
+	if (!Character) false;
 
-	Character->OnHealthChanged.RemoveAll(this);
-	Character->OnMaximumHealthChanged.RemoveAll(this);
+	// Character->OnHealthChanged.RemoveAll(this);
+	// Character->OnMaximumHealthChanged.RemoveAll(this);
 	MaximumHealth = Health = 0;
+	SetVisibility(ESlateVisibility::Hidden);
+
 
 	HealthText->SetText(FText::AsNumber(floor(Health)));
 	MaximumHealthText->SetText(FText::FromString(FString::Printf(TEXT("/%f"), MaximumHealth)));
 	UpdateHealthProgressBar();
+	return true;
 }
 
 void UGamePlayHealthWidget::NativeConstruct()
@@ -64,7 +79,7 @@ void UGamePlayHealthWidget::OnChangeHealth(const float& NewHealth)
 	UpdateHealthProgressBar();
 }
 
-void UGamePlayHealthWidget::OnChangeMaximumHealth(AActor* Character, const float& NewMaximumHealth)
+void UGamePlayHealthWidget::OnChangeMaximumHealth(const float& NewMaximumHealth)
 {
 	//업데이트된 최대 체력을 저장하고 소수점을 버린뒤 텍스트로 표기(맨 앞에 /를 붙여서 표기)
 	MaximumHealth = NewMaximumHealth;

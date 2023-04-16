@@ -41,23 +41,20 @@ void AAiCharacterController::AiFireStart(AOccupationCharacter* OccuCharacter)
 {
 	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
    
-	if (OccuCharacter) OccuCharacter->FireStart();
-	else
-	{
-		UE_LOG(LogInit, Warning, TEXT("Error Ai Start Fire"))
-	}
+	// if (OccuCharacter) OccuCharacter->FireStart();
+	// else
+	// {
+	// 	UE_LOG(LogInit, Warning, TEXT("Error Ai Start Fire"))
+	// }
 }
 
 void AAiCharacterController::AiFireStop(AOccupationCharacter* OccuCharacter)
 {
 	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
    
-	if (OccuCharacter) OccuCharacter->FireStop();
-	else
-	{
-		UE_LOG(LogInit, Warning, TEXT("Error Ai Stop Fire"))
-	}
+	// if (OccuCharacter) OccuCharacter->FireStop();
+	// else
+	// {
+	// 	UE_LOG(LogInit, Warning, TEXT("Error Ai Stop Fire"))
+	// }
 }
-
-
-

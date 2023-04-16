@@ -7,7 +7,7 @@
 #include "CharacterBindableWidget.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class LAKAYA_API UCharacterBindableWidget : public UUserWidget
