@@ -12,7 +12,6 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeOccupationWinner, const E
 DECLARE_EVENT_TwoParams(AOccupationGameState, FTeamScoreSignature, const EPlayerTeamState&, const float&)
 DECLARE_EVENT_FourParams(AOccupationGameState, FKillCharacterSignature, AController*, AActor*, AController*, AActor*)
 
-
 /**
  * 
  */

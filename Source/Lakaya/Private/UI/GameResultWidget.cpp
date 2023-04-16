@@ -3,6 +3,8 @@
 
 #include "UI/GameResultWidget.h"
 
+#include "Character/OccupationPlayerState.h"
+#include "GameFramework/Character.h"
 #include "GameMode/OccupationGameState.h"
 
 bool UGameResultWidget::OnMatchEnding()
@@ -36,6 +38,13 @@ void UGameResultWidget::OnChangeWinner(const EPlayerTeamState& NewWinner)
 {
 	SetVisibility(ESlateVisibility::Visible);
 
+	AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(GetOwningPlayer()->GetCharacter()->GetController());
+	if (OccupationPlayerState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OccupationPlayerState is null."));
+		return;
+	}
+	
 	FString WinnerString;
 	switch (OccupationGameState->GetOccupationWinner())
 	{
@@ -44,14 +53,16 @@ void UGameResultWidget::OnChangeWinner(const EPlayerTeamState& NewWinner)
 		break;
 	case EPlayerTeamState::A:
 		WinnerString = FString(TEXT("A"));
+		if (OccupationPlayerState->GetPlayerTeamState() == EPlayerTeamState::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
+		else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
 		break;
 	case EPlayerTeamState::B:
 		WinnerString = FString(TEXT("B"));
+		if (OccupationPlayerState->GetPlayerTeamState() == EPlayerTeamState::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
+		else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
 		break;
 	default:
 		WinnerString = FString(TEXT("Unknown"));
 		break;
 	}
-
-	GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("%s팀이 승리하였습니다 !"), *WinnerString)));
 }
