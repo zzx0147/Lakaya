@@ -3,10 +3,20 @@
 
 #include "Character/BulletComponent.h"
 
+#include "Net/UnrealNetwork.h"
+
 UBulletComponent::UBulletComponent()
 {
 	MaxBullets = 30;
 }
+
+void UBulletComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UBulletComponent, Bullets);
+	DOREPLIFETIME(UBulletComponent, MaxBullets);
+}
+
 
 bool UBulletComponent::CostBullet(const uint16& Value)
 {

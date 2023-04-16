@@ -44,7 +44,7 @@ void UAutoFireAbility::BeginPlay()
 	if (const auto Character = GetOwner())
 	{
 		if (!Character->HasAuthority()) return;
-		CameraComponent = Character->FindComponentByClass(UCameraComponent::StaticClass());
+		CameraComponent = Cast<UCameraComponent>(Character->FindComponentByClass(UCameraComponent::StaticClass()));
 		if (!CameraComponent.IsValid())
 			UE_LOG(LogInit, Error, TEXT("Fail to find CameraComponent in UAutoFireComponent!"));
 

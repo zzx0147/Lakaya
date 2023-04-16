@@ -46,8 +46,8 @@ void UGamePlayPortraitWidget::BindCharacter(ACharacter* const& Character)
 
 bool UGamePlayPortraitWidget::UnbindCharacter(ACharacter* const& Character)
 {
-	FSlateBrush NoBrush;
-	NoBrush.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0));
-	CharacterPortraitImage->SetBrush(NoBrush);
+	// FSlateBrush NoBrush;
+	// NoBrush.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0));
+	// CharacterPortraitImage->SetBrush(NoBrush);
 	return true;
 }
