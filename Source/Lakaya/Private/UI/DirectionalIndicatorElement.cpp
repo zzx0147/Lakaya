@@ -42,7 +42,7 @@ void UDirectionalIndicatorElement::NativeTick(const FGeometry& MyGeometry, float
 	}
 }
 
-void UDirectionalIndicatorElement::IndicateStart(USceneComponent* NewMyPosition, FVector NewTargetPosition, float Time)
+void UDirectionalIndicatorElement::IndicateStart(USceneComponent* NewMyPosition, const FVector& NewTargetPosition,const float& Time)
 {
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandleIndicate);
 

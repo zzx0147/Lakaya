@@ -33,8 +33,16 @@ public:
 	 */
 	template <class UserClass>
 	void CostBullet(const uint16& Value, UserClass* const& Caller = nullptr,
-	                TMemberFunction<UserClass>& OnSuccess = nullptr, TMemberFunction<UserClass>& OnFailed = nullptr);
+	                TMemberFunction<UserClass> OnSuccess = nullptr, TMemberFunction<UserClass> OnFailed = nullptr);
 
+	/**
+	 * @brief 총알 차감을 시도하고, 결과를 반환합니다.
+	 * @param Value 총알을 차감할 양입니다.
+	 * @return true이면 차감에 성공했음을 나타내며, 그렇지 않으면 실패했음을 나타냅니다.
+	 */
+	bool CostBullet(const uint16& Value);
+
+	// 탄창을 다시 최대 탄약까지 채워넣습니다.
 	void Reload();
 
 protected:
@@ -60,8 +68,8 @@ private:
 };
 
 template <class UserClass>
-void UBulletComponent::CostBullet(const uint16& Value, UserClass* const& Caller, TMemberFunction<UserClass>& OnSuccess,
-                                  TMemberFunction<UserClass>& OnFailed)
+void UBulletComponent::CostBullet(const uint16& Value, UserClass* const& Caller, void (UserClass::*OnSuccess)(),
+                                  void (UserClass::*OnFailed)())
 {
 	if (Bullets >= Value)
 	{

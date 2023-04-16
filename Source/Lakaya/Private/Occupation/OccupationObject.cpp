@@ -25,12 +25,13 @@ AOccupationObject::AOccupationObject()
 	TriggerSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // Enable overlap for Pawn channel
 	// TriggerSphere->SetCollisionResponseToChannel(ECC_Object, ECR_Ignore); // Disable collision for Object channel
 	TriggerSphere->SetupAttachment(RootComponent);
-	
+
 	Trigger->SetCapsuleSize(50.0f, 100.0f, true);
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Cylinder (TEXT("/Game/Dev/KML/antena/White/Antenna.Antenna"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Cylinder(
+		TEXT("/Game/Dev/KML/antena/White/Antenna.Antenna"));
 	if (SM_Cylinder.Succeeded())
 		Cylinder->SetStaticMesh(SM_Cylinder.Object);
-	
+
 	Trigger->SetRelativeLocation(FVector::ZeroVector);
 
 	bReplicates = true;
@@ -252,17 +253,21 @@ void AOccupationObject::OnRep_BroadCastTeamObject()
 	SetTeamObject(ObjectOwner);
 }
 
-void AOccupationObject::SetTeamObject(EObjectOwner Team)
+void AOccupationObject::SetTeamObject(const EPlayerTeamState& Team)
 {
 	switch (Team)
 	{
-	case EObjectOwner::A:
-		Cylinder->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/RedTeam.RedTeam")));
+	case EPlayerTeamState::A:
+		Cylinder->SetMaterial(
+			0, LoadObject<UMaterialInterface>(
+				nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/RedTeam.RedTeam")));
 		break;
-	case EObjectOwner::B:
-		Cylinder->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/BlueTeam.BlueTeam")));
+	case EPlayerTeamState::B:
+		Cylinder->SetMaterial(
+			0, LoadObject<UMaterialInterface>(
+				nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/BlueTeam.BlueTeam")));
 		break;
-	case EObjectOwner::None:
+	case EPlayerTeamState::None:
 		break;
 	}
 }

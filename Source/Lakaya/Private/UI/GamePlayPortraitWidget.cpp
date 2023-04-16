@@ -1,10 +1,20 @@
 #define DO_CHECK 1
 
 #include "UI/GamePlayPortraitWidget.h"
+#include "Character/LakayaBaseCharacter.h"
 #include "Components/Image.h"
 
 UGamePlayPortraitWidget::UGamePlayPortraitWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	static const ConstructorHelpers::FObjectFinder<UTexture2D> CitizenPortraitFinder(TEXT("/Game/UI/CharacterPortrait/T_Citizen"));
+	static const ConstructorHelpers::FObjectFinder<UTexture2D> GovernmentManPortraitFinder(TEXT("/Game/UI/CharacterPortrait/T_GovernmentMan"));
+	static const ConstructorHelpers::FObjectFinder<UTexture2D> GangsterPortraitFinder(TEXT("/Game/UI/CharacterPortrait/T_Gangster"));
+
+	CharacterPortraitTextureMap.Reserve(3);
+
+	if (CitizenPortraitFinder.Succeeded()) CharacterPortraitTextureMap.Emplace(FName(TEXT("Citizen")), CitizenPortraitFinder.Object);
+	if (GovernmentManPortraitFinder.Succeeded())CharacterPortraitTextureMap.Emplace(FName(TEXT("GovernmentMan")), GovernmentManPortraitFinder.Object);
+	if (GangsterPortraitFinder.Succeeded())CharacterPortraitTextureMap.Emplace(FName(TEXT("Gangster")), GangsterPortraitFinder.Object);
 }
 
 void UGamePlayPortraitWidget::NativeConstruct()
@@ -16,20 +26,9 @@ void UGamePlayPortraitWidget::NativeConstruct()
 
 	CharacterPortraitImage = Cast<UImage>(GetWidgetFromName(TEXT("CharacterPortrait_Img")));
 
-	CharacterPortraitTextureArray =
-	{
-		LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/CharacterPortrait/T_Citizen")),
-		LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/CharacterPortrait/T_GovernmentMan")),
-		LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/CharacterPortrait/T_Gangster")),
-	};
-
 	check(CharacterPortraitImage != nullptr);
-	for (auto temp : CharacterPortraitTextureArray) { check(temp != nullptr) }
 
 #pragma endregion
-
-	//기본 초상화를 0번(시민)으로 설정
-	SetCharacterPortrait(0);
 }
 
 void UGamePlayPortraitWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -37,11 +36,18 @@ void UGamePlayPortraitWidget::NativeTick(const FGeometry& MyGeometry, float InDe
 	Super::NativeConstruct();
 }
 
-void UGamePlayPortraitWidget::SetCharacterPortrait(int32 CharacterNum)
+void UGamePlayPortraitWidget::BindCharacter(ACharacter* const& Character)
 {
-	//캐릭터 넘버를 벗어나는 경우 종료
-	if (CharacterNum < 0 || CharacterPortraitTextureArray.Num() <= CharacterNum) return;
+	const FName& CharacterName = Cast<ALakayaBaseCharacter>(Character)->GetCharacterName();
 
-	//캐릭터 넘버를 기준으로 배열에서 텍스처를 가져와 이미지를 변경
-	CharacterPortraitImage->SetBrushFromTexture(CharacterPortraitTextureArray[CharacterNum]);
+	CharacterPortraitImage->SetBrushFromTexture(CharacterPortraitTextureMap[CharacterName]);
+}
+
+
+bool UGamePlayPortraitWidget::UnbindCharacter(ACharacter* const& Character)
+{
+	// FSlateBrush NoBrush;
+	// NoBrush.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0));
+	// CharacterPortraitImage->SetBrush(NoBrush);
+	return true;
 }

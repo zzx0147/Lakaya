@@ -13,8 +13,16 @@ UBulletComponent::UBulletComponent()
 void UBulletComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
 	DOREPLIFETIME(UBulletComponent, Bullets);
+	DOREPLIFETIME(UBulletComponent, MaxBullets);
+}
+
+
+bool UBulletComponent::CostBullet(const uint16& Value)
+{
+	if (Bullets < Value) return false;
+	Bullets -= Value;
+	return true;
 }
 
 void UBulletComponent::Reload()
