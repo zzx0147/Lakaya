@@ -28,6 +28,9 @@ public:
 	// 캐릭터의 현재 체력을 가져옵니다.
 	const float& GetHealth() const { return Health; }
 
+	// 캐릭터가 현재 살아있는지 여부를 조사합니다.
+	const bool& GetIsAlive() const { return bIsAlive; }
+
 	// 캐릭터가 리스폰 시 수행되어야 하는 기능을 실행합니다. 이 함수는 반드시 서버에서만 실행되어야 합니다.
 	virtual void Respawn();
 
