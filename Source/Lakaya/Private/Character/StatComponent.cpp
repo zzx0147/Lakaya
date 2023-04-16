@@ -9,7 +9,8 @@
 
 UStatComponent::UStatComponent()
 {
-	static const ConstructorHelpers::FObjectFinder<UDataTable> TableFinder(TEXT("DataTable''"));
+	static const ConstructorHelpers::FObjectFinder<UDataTable> TableFinder(
+		TEXT("/Script/Engine.DataTable'/Game/Dev/Yongwoo/DataTables/DT_StatSetupDataTable.DT_StatSetupDataTable'"));
 
 	if (TableFinder.Succeeded()) StatSetupDataTable = TableFinder.Object;
 }

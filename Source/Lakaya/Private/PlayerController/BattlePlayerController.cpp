@@ -43,28 +43,29 @@ ABattlePlayerController::ABattlePlayerController()
 	if (ReloadStartFinder.Succeeded()) ReloadStartAction = ReloadStartFinder.Object;
 	if (ReloadStopFinder.Succeeded()) ReloadStopAction = ReloadStopFinder.Object;
 
-	static const ConstructorHelpers::FClassFinder<UCharacterBindableWidget> HealthFinder(
+	static ConstructorHelpers::FClassFinder<UCharacterBindableWidget> HealthFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
 
-	static const ConstructorHelpers::FClassFinder<UCharacterBindableWidget> ConsecutiveFinder(
+	static ConstructorHelpers::FClassFinder<UCharacterBindableWidget> ConsecutiveFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayConsecutiveKillsWidget"));
 
-	static const ConstructorHelpers::FClassFinder<UCharacterBindableWidget> DamageIndicatorFinder(
+	static ConstructorHelpers::FClassFinder<UCharacterBindableWidget> DamageIndicatorFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_DirectionalDamageIndicator"));
 
-	HealthWidgetClass = HealthFinder.Class;
-	if (!HealthWidgetClass) UE_LOG(LogController, Fatal, TEXT("Fail to find HealthWidgetClass!"));
+	if (HealthFinder.Succeeded()) HealthWidgetClass = HealthFinder.Class;
+	if (ConsecutiveFinder.Succeeded()) ConsecutiveKillsWidgetClass = ConsecutiveFinder.Class;
+	if (DamageIndicatorFinder.Succeeded()) DamageIndicatorClass = DamageIndicatorFinder.Class;
 
-	ConsecutiveKillsWidgetClass = ConsecutiveFinder.Class;
-	if (!ConsecutiveKillsWidgetClass) UE_LOG(LogController, Fatal, TEXT("Fail to find ConsecutiveKillsWidgetClass!"));
+	static const ConstructorHelpers::FObjectFinder<UDataTable> WidgetTableFinder(TEXT(
+		"/Script/Engine.DataTable'/Game/Dev/Yongwoo/DataTables/DT_CharacterBindableWidgetData.DT_CharacterBindableWidgetData'"));
 
-	DamageIndicatorClass = DamageIndicatorFinder.Class;
-	if (!DamageIndicatorClass) UE_LOG(LogController, Fatal, TEXT("Fail to find DamageIndicatorClass!"));
+	if (WidgetTableFinder.Succeeded()) CharacterBindableWidgetTable = WidgetTableFinder.Object;
 }
 
 void ABattlePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+	if (!IsLocalController()) return;
 	CharacterBindableWidgets.Reserve(3);
 	CharacterBindableWidgets.Emplace(
 		CreateViewportWidget<UCharacterBindableWidget>(HealthWidgetClass, ESlateVisibility::Hidden));
@@ -133,7 +134,7 @@ void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, 
 	if (ArmedCharacter.IsValid())
 	{
 		// 빙의 대상 캐릭터에 맞는 위젯을 생성하고 바인딩합니다.
-		if (const auto Data = CharacterWidgetComponentTable->FindRow<FCharacterBindWidgetData>(
+		if (const auto Data = CharacterBindableWidgetTable->FindRow<FCharacterBindWidgetData>(
 			ArmedCharacter->GetCharacterName(),TEXT("SetupCharacterWidgetComponent")))
 		{
 			// 이 캐릭터에 필요한 위젯 추가 생성

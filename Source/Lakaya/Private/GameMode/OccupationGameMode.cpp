@@ -4,11 +4,12 @@
 #include "GameMode/OccupationGameMode.h"
 
 #include "Character/ArmedCharacter.h"
+#include "Character/OccupationCharacter.h"
 #include "Character/OccupationPlayerState.h"
 #include "GameFramework/PlayerStart.h"
 #include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
-#include "PlayerController/BattlePlayerController.h"
+#include "PlayerController/OccupationPlayerController.h"
 
 AOccupationGameMode::AOccupationGameMode()
 {
@@ -22,8 +23,8 @@ AOccupationGameMode::AOccupationGameMode()
 	if (!PlayerPawnObject.Succeeded())
 		UE_LOG(LogTemp, Error, TEXT("OccupationGameMode_Failed to find player pawn blueprint."));
 
-	DefaultPawnClass = PlayerPawnObject.Class;
-	PlayerControllerClass = ABattlePlayerController::StaticClass();
+	DefaultPawnClass = AOccupationCharacter::StaticClass();
+	PlayerControllerClass = AOccupationPlayerController::StaticClass();
 	PlayerStateClass = AOccupationPlayerState::StaticClass();
 	GameStateClass = AOccupationGameState::StaticClass();
 }
@@ -38,6 +39,9 @@ void AOccupationGameMode::OnKilledCharacter(AController* VictimController, AActo
 void AOccupationGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
+
+	if (const auto Character = NewPlayer->GetPawn<ALakayaBaseCharacter>())
+		Character->SetupCharacter(TEXT("Test"));
 
 	OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
 	if (OccupationGameState == nullptr)
