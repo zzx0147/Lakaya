@@ -18,7 +18,6 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	virtual void BindCharacter(ACharacter* const& Character) override;
 	virtual bool UnbindCharacter(ACharacter* const& Character) override;

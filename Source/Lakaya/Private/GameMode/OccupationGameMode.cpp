@@ -40,9 +40,6 @@ void AOccupationGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 
-	if (const auto Character = NewPlayer->GetPawn<ALakayaBaseCharacter>())
-		Character->SetupCharacter(TEXT("Test"));
-
 	OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
 	if (OccupationGameState == nullptr)
 	{
@@ -196,6 +193,13 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 	}
 
 	KilledDamageableCharacter->Respawn();
+}
+
+void AOccupationGameMode::FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation)
+{
+	if (const auto Character = NewPlayer->GetPawn<ALakayaBaseCharacter>())
+		Character->SetupCharacter(TEXT("Test"));
+	Super::FinishRestartPlayer(NewPlayer, StartRotation);
 }
 
 void AOccupationGameMode::AddOccupyObject(const EPlayerTeamState& Team)

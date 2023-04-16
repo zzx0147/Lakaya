@@ -6,15 +6,21 @@
 
 UGamePlayPortraitWidget::UGamePlayPortraitWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	static const ConstructorHelpers::FObjectFinder<UTexture2D> CitizenPortraitFinder(TEXT("/Game/UI/CharacterPortrait/T_Citizen"));
-	static const ConstructorHelpers::FObjectFinder<UTexture2D> GovernmentManPortraitFinder(TEXT("/Game/UI/CharacterPortrait/T_GovernmentMan"));
-	static const ConstructorHelpers::FObjectFinder<UTexture2D> GangsterPortraitFinder(TEXT("/Game/UI/CharacterPortrait/T_Gangster"));
+	static const ConstructorHelpers::FObjectFinder<UTexture2D> CitizenPortraitFinder(
+		TEXT("/Game/UI/CharacterPortrait/T_Citizen"));
+	static const ConstructorHelpers::FObjectFinder<UTexture2D> GovernmentManPortraitFinder(
+		TEXT("/Game/UI/CharacterPortrait/T_GovernmentMan"));
+	static const ConstructorHelpers::FObjectFinder<UTexture2D> GangsterPortraitFinder(
+		TEXT("/Game/UI/CharacterPortrait/T_Gangster"));
 
 	CharacterPortraitTextureMap.Reserve(3);
 
-	if (CitizenPortraitFinder.Succeeded()) CharacterPortraitTextureMap.Emplace(FName(TEXT("Citizen")), CitizenPortraitFinder.Object);
-	if (GovernmentManPortraitFinder.Succeeded())CharacterPortraitTextureMap.Emplace(FName(TEXT("GovernmentMan")), GovernmentManPortraitFinder.Object);
-	if (GangsterPortraitFinder.Succeeded())CharacterPortraitTextureMap.Emplace(FName(TEXT("Gangster")), GangsterPortraitFinder.Object);
+	if (CitizenPortraitFinder.Succeeded()) CharacterPortraitTextureMap.Emplace(
+		FName(TEXT("Citizen")), CitizenPortraitFinder.Object);
+	if (GovernmentManPortraitFinder.Succeeded())CharacterPortraitTextureMap.Emplace(
+		FName(TEXT("GovernmentMan")), GovernmentManPortraitFinder.Object);
+	if (GangsterPortraitFinder.Succeeded())CharacterPortraitTextureMap.Emplace(
+		FName(TEXT("Gangster")), GangsterPortraitFinder.Object);
 }
 
 void UGamePlayPortraitWidget::NativeConstruct()
@@ -31,16 +37,13 @@ void UGamePlayPortraitWidget::NativeConstruct()
 #pragma endregion
 }
 
-void UGamePlayPortraitWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeConstruct();
-}
 
 void UGamePlayPortraitWidget::BindCharacter(ACharacter* const& Character)
 {
 	const FName& CharacterName = Cast<ALakayaBaseCharacter>(Character)->GetCharacterName();
 
-	CharacterPortraitImage->SetBrushFromTexture(CharacterPortraitTextureMap[CharacterName]);
+	if (CharacterPortraitTextureMap.Contains(CharacterName))
+		CharacterPortraitImage->SetBrushFromTexture(CharacterPortraitTextureMap[CharacterName]);
 }
 
 

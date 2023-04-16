@@ -26,8 +26,8 @@ ALakayaBaseCharacter::ALakayaBaseCharacter()
 	bUseControllerRotationRoll = false;
 
 	static const ConstructorHelpers::FObjectFinder<UDataTable> TableFinder(
-		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/DT_CharacterSetupDataTable'"));
-	
+		TEXT("/Script/Engine.DataTable'/Game/Dev/Yongwoo/DataTables/DT_CharacterSetupTable.DT_CharacterSetupTable'"));
+
 	if (TableFinder.Succeeded()) CharacterSetupTable = TableFinder.Object;
 }
 

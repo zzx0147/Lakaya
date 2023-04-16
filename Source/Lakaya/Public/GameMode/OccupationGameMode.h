@@ -25,6 +25,7 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 	virtual void RespawnPlayer(AController* KilledController) override;
+	virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation) override;
 
 public:
 	/**
