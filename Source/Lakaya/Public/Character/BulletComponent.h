@@ -19,6 +19,8 @@ class LAKAYA_API UBulletComponent : public UResourceComponent
 public:
 	UBulletComponent();
 
+	
+	
 	const uint16& GetBullets() const { return Bullets; }
 	const uint16& GetMaxBullets() const { return MaxBullets; }
 
