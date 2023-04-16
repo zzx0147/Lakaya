@@ -1,8 +1,12 @@
 #include "Occupation/OccupationObject.h"
-#include "EnhancedInputSubsystems.h"
+// #include "EnhancedInputSubsystems.h"
+// #include "BaseGizmos/GizmoElementShared.h"
 #include "Character/InteractableCharacter.h"
+#include "Character/OccupationPlayerState.h"
 #include "Components/CapsuleComponent.h"
-#include "GameMode/OccupationGameState.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameMode/OccupationGameMode.h"
+// #include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "PlayerController/MovablePlayerController.h"
@@ -56,11 +60,178 @@ void AOccupationObject::Tick(float DeltaTime)
 
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 {
+	AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(Caller->GetController()->PlayerState);
+	if (OccupationPlayerState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
+		return;
+	}
+
+	// 아무도 상호작용을 하지 않고 있는 경우
+	if (InteractingPawn == nullptr)
+	{
+		InteractingPawn = Caller;
+		FirstCallerTime = Time;
+	}
+	else // 누군가가 상호작용을 이미 하고 있다고 판단될 때 (서버시간을 체크)
+	{
+		APawn* SecondCaller = Caller;
+		float SecondCallTime = Time;
+
+		// 더 빠르게 상호작용을 시작한 캐릭터를 결정합니다.
+		if (SecondCallTime < FirstCallerTime)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s is faster!"), *SecondCaller->GetName());
+			if (InteractingPawn != nullptr && InteractingPawn->GetController() == Caller->Controller) return;
+			InteractingPawn = SecondCaller;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s is faster!"), *InteractingPawn->GetName());
+			if (SecondCaller != nullptr && SecondCaller->GetController() == Caller->Controller)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("이미 누군가가 상호작용을 하고 있습니다."));
+				return;
+			}
+		}
+	}
+	
+	// 소우자 팀에서 상호작용 할 경우 막아두기
+	FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetPlayerTeamState());
+	if (PlayerStateString.Equals("EPlayerTeamState::A", ESearchCase::IgnoreCase))
+	{
+		if (ObjectOwner == EPlayerTeamState::A)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("이미 본인 소유의 점령 오브젝트입니다."));
+			return;
+		}
+	}
+	else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
+	{
+		if (ObjectOwner == EPlayerTeamState::B)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
+			return;
+		}
+	}
+
+	// TODO : 점프 도중 상호작용 시, 물리를 무시하고 공중에서 상호작용합니다.
+	// 상호작용중에는 움직임을 막아줍니다.
+	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Start!"));
+		CastedCaller->GetCharacterMovement()->DisableMovement();
+		InteractingPawn = Caller;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OninteractionStart_CastedCaller is null."));
+		return;
+	}
+	
+	// 시작 시간을 가져옵니다.
+	InteractingStartTime = UGameplayStatics::GetRealTimeSeconds(this);
+
+	// 시작 한 후 4초가 지나게 되면 성공.
+	GetWorldTimerManager().SetTimer(InteractionTimerHandle, this, &AOccupationObject::AutomaticInteractionStop, MaxInteractionDuration, false);
 }
 
 void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller)
 {
-	IInteractable::OnInteractionStop(Time, Caller);
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Stop!"));
+
+	InteractingPawn = nullptr;
+	FirstCallerTime = 0;
+	
+	// 상호작용이 끝나게 되면 다시 움직일 수 있도록 해줍니다.
+	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	{
+		CastedCaller->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CastedCaller is null."));
+		return;
+	}
+
+	// InteractionStop 기능에서 타이머가 이미 만료되었는지를 확인해줍니다.
+	// 그렇지 않으 경우 타이머를 취소.
+	if (GetWorldTimerManager().IsTimerActive(InteractionTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(InteractionTimerHandle);
+	}
+
+	// 끝났을 때 시점의 시간을 가져옵니다.
+	InteractingStopTime = UGameplayStatics::GetRealTimeSeconds(this);
+
+	// 상호작용한 시간을 가져옵니다.
+	float InteractionDuration = InteractingStopTime - InteractingStartTime;
+	
+	UE_LOG(LogTemp, Warning, TEXT("InteractingStopTime : %f seconds"), InteractingStopTime);
+	UE_LOG(LogTemp, Warning, TEXT("InteractingStartTime : %f seconds"), InteractingStartTime);
+	UE_LOG(LogTemp, Warning, TEXT("Interaction Duration : %f seconds"), InteractionDuration);
+
+	if (InteractionDuration > MaxInteractionDuration)
+	{
+		// 상호작용에 성공했을 경우.
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction Success"));
+
+		AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(Caller->GetController()->PlayerState);
+		if (OccupationPlayerState == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
+			return;
+		}
+
+		AOccupationGameMode* OccupationGameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
+		if (OccupationGameMode == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationGameMode is null."));
+			return;
+		}
+
+		FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetPlayerTeamState());
+		if (PlayerStateString.Equals("EPlayerTeamState::None", ESearchCase::IgnoreCase))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Suspected player captured successfully."));
+			return;
+		}
+		else if (PlayerStateString.Equals("EPlayerTeamState::A", ESearchCase::IgnoreCase))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
+
+			if (ObjectOwner == EPlayerTeamState::B)
+				OccupationGameMode->SubOccupyObject(EPlayerTeamState::B);
+
+			ObjectOwner = EPlayerTeamState::A;
+			OccupationGameMode->AddOccupyObject(EPlayerTeamState::A);
+			SetTeamObject(ObjectOwner);
+			return;
+		}
+		else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
+
+			if (ObjectOwner == EPlayerTeamState::A)
+				OccupationGameMode->SubOccupyObject(EPlayerTeamState::A);
+			
+			ObjectOwner = EPlayerTeamState::B;
+			OccupationGameMode->SubOccupyObject(EPlayerTeamState::B);
+			SetTeamObject(ObjectOwner);
+			return;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Error ! Error ! Error !"));
+			return;
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Interaction Failed."));
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction Failed."));
+		return;
+	}
 }
 
 void AOccupationObject::OnCharacterDead(APawn* Caller)
@@ -68,185 +239,19 @@ void AOccupationObject::OnCharacterDead(APawn* Caller)
 	IInteractable::OnCharacterDead(Caller);
 }
 
-// void AOccupationObject::OnServerInteractionBegin(const float& Time, APawn* Caller)
-// {
-// 	ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
-// 	if (CollectorPlayerState == nullptr)
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("OccupationObject_CollectorPlayerstate is null."));
-// 		return;
-// 	}
-// 	
-// 	// 소유자 팀에서 상호작용 할경우 막아두기.
-// 	FString PlayerStateString = UEnum::GetValueAsString(CollectorPlayerState->GetPlayerTeamState());
-// 	if (PlayerStateString.Equals("EPlayerTeamState::A", ESearchCase::IgnoreCase))
-// 	{
-// 		if (ObjectOwner == EObjectOwner::A)
-// 		{
-// 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
-// 			return;
-// 		}
-// 	}
-// 	else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
-// 	{
-// 		if (ObjectOwner == EObjectOwner::B)
-// 		{
-// 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
-// 			return;
-// 		}
-// 	}
-// 	
-// 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
-// 	{
-// 		CastedCaller->InitiateInteractionStart(Time, this, 3.f);
-// 		CastedCaller->GetCharacterMovement()->DisableMovement();
-// 	}
-// 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionBegin::Caller was not AInteractableCharacter!"));
-// }
-//
-// void AOccupationObject::OnInteractionStart(APawn* Caller)
-// {
-// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Interaction Start!"));
-//
-// 	if (InteractingPawn != nullptr)
-// 	{
-// 		UE_LOG(LogActor, Error, TEXT("Object is Using."));
-// 		return;
-// 	}
-// 	
-// 	InteractingPawn = Caller;
-// 	
-// 	InteractingStartTime = UGameplayStatics::GetRealTimeSeconds(this);
-//
-// 	// 시작 한 후 4초가 지나면 자동으로 성공.
-// 	GetWorldTimerManager().SetTimer(InteractionTimerHandle, this, &AOccupationObject::AutomaticInteractionStop, MaxInteractionDuration, false);
-// }
-//
-// void AOccupationObject::OnLocalInteractionStopBegin(APawn* Caller)
-// {
-// }
-//
-// void AOccupationObject::OnServerInteractionStopBegin(const float& Time, APawn* Caller)
-// {
-// 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
-// 	{
-// 		CastedCaller->InteractionStopNotify(Time, this);
-// 		CastedCaller->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-// 	}
-// 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionStopBegin::Caller was not AInteractableCharacter!"));
-// }
-//
-// void AOccupationObject::OnInteractionStop(APawn* Caller)
-// {
-// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Interaction Stop!"));
-//
-// 	auto CastedCaller = Cast<AInteractableCharacter>(Caller);
-// 	CastedCaller->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-// 	
-// 	if (InteractingPawn == nullptr)
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("InteractionStop_InteractingPawn is null."));
-// 		return;
-// 	}
-//
-// 	InteractingPawn = nullptr;
-// 	
-// 	if (!Caller && !Caller->GetController())
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("Caller is null."));
-// 		return;
-// 	}
-// 	
-// 	//InteractionStop 기능에서 타이머가 이미 만료되었는지 확인. 그렇지 않은 경우 타이머를 취소.
-// 	if (GetWorldTimerManager().IsTimerActive(InteractionTimerHandle))
-// 	{
-// 		GetWorldTimerManager().ClearTimer(InteractionTimerHandle);
-// 	}
-// 	
-// 	InteractingStopTime = UGameplayStatics::GetRealTimeSeconds(this);
-// 	
-// 	float InteractionDuration = InteractingStopTime - InteractingStartTime;
-// 	
-// 	UE_LOG(LogTemp, Warning, TEXT("InteractingStopTime : %f seconds"), InteractingStopTime);
-// 	UE_LOG(LogTemp, Warning, TEXT("InteractingStartTime : %f seconds"), InteractingStartTime);
-// 	UE_LOG(LogTemp, Warning, TEXT("Interaction Duration : %f seconds"), InteractionDuration);
-//
-// 	
-// 	if (InteractionDuration > MaxInteractionDuration)
-// 	{
-// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction success."));
-// 		
-// 		ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
-// 		if (CollectorPlayerState == nullptr)
-// 		{
-// 			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_CollectorPlayerstate is null."));
-// 			return;
-// 		}
-//
-// 		AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-// 		if (OccupationGameState == nullptr)
-// 		{
-// 			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationGameState is null."));
-// 			return;
-// 		}
-// 		
-// 		FString PlayerStateString = UEnum::GetValueAsString(CollectorPlayerState->GetPlayerTeamState());
-// 		if (PlayerStateString.Equals("EPlayerTeamState::None", ESearchCase::IgnoreCase))
-// 		{
-// 			UE_LOG(LogTemp, Warning, TEXT("Suspected player captured successfully."));
-// 			return;
-// 		}
-// 		else if (PlayerStateString.Equals("EPlayerTeamState::A", ESearchCase::IgnoreCase))
-// 		{
-// 			UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
-// 			
-// 			if (ObjectOwner == EObjectOwner::B)
-// 				OccupationGameState->SubBTeamObjectNum();
-// 			
-// 			ObjectOwner = EObjectOwner::A;
-// 			OccupationGameState->AddATeamObjectNum();
-// 			SetTeamObject(ObjectOwner);
-// 			return;
-// 		}
-// 		else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
-// 		{
-// 			UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
-//
-// 			if (ObjectOwner == EObjectOwner::A)
-// 				OccupationGameState->SubATeamObjectNum();
-// 			
-// 			ObjectOwner = EObjectOwner::B;
-// 			OccupationGameState->AddBTeamObjectNum();
-// 			SetTeamObject(ObjectOwner);
-// 			return;
-// 		}
-// 		else
-// 		{
-// 			UE_LOG(LogTemp, Warning, TEXT("Error ! Error ! Error !"));
-// 			return;
-// 		}
-// 	}
-// 	else
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("Interaction Failed."));
-// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction Failed."));
-// 		return;
-// 	}
-// }
+void AOccupationObject::AutomaticInteractionStop()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Cylinder AutomaticInteractionStop !"));
 
-// void AOccupationObject::AutomaticInteractionStop()
-// {
-// 	UE_LOG(LogTemp, Warning, TEXT("Cylinder AutomaticInteractionStop !"));
-//
-// 	if(InteractingPawn == nullptr)
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("AutomaticInteractionStop_InteractingPawn is null."));
-// 		return;
-// 	}
-// 	
-// 	OnInteractionStop(InteractingPawn);
-// 	InteractingPawn = nullptr;
-// }
+	if(InteractingPawn == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AutomaticInteractionStop_InteractingPawn is null."));
+		return;
+	}
+	
+	OnInteractionStop(UGameplayStatics::GetRealTimeSeconds(this), InteractingPawn);
+	InteractingPawn = nullptr;
+}
 
 void AOccupationObject::OnRep_BroadCastTeamObject()
 {

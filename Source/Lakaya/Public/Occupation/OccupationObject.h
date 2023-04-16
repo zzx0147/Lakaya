@@ -69,6 +69,7 @@ private:
 private:
 	TWeakObjectPtr<class AInteractableCharacter> InteractingCharacter;
 	APawn* InteractingPawn;
-
+	float FirstCallerTime = 0;
+	
 	float RecentInteractionTime = FLT_MAX;
 };
