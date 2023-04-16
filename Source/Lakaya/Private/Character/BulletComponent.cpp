@@ -8,6 +8,13 @@ UBulletComponent::UBulletComponent()
 	MaxBullets = 30;
 }
 
+bool UBulletComponent::CostBullet(const uint16& Value)
+{
+	if (Bullets < Value) return false;
+	Bullets -= Value;
+	return true;
+}
+
 void UBulletComponent::Reload()
 {
 	Bullets = MaxBullets;
