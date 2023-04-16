@@ -4,20 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
+#include "Occupation/PlayerTeamState.h"
 #include "OccupationPlayerState.generated.h"
-
-UENUM()
-enum class EPlayerTeamState : uint8
-{
-	// 팀 배정을 받지 못한 상태
-	None UMETA(DisplayerName = "None"),
-
-	// A팀인 상태
-	A UMETA(DisplayerName = "A"),
-
-	// B팀인 상태
-	B UMETA(DisplayerName = "B"),
-};
 
 /**
  * 

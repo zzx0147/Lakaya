@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameStateBase.h"
 #include "Interactable.generated.h"
 
 // This class does not need to be modified.

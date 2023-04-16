@@ -3,6 +3,9 @@
 
 #include "Character/OccupationCharacter.h"
 
+#include "Character/OccupationPlayerState.h"
+#include "GameMode/LakayaDefalutPlayGameMode.h"
+
 
 float AOccupationCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
                                        AController* EventInstigator, AActor* DamageCauser)
@@ -10,6 +13,13 @@ float AOccupationCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 	// 같은 팀인 경우 무시합니다.
 	if (IsSameTeam(DamageCauser)) return 0.f;
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
+void AOccupationCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::KillCharacter(EventInstigator, DamageCauser);
+	if (const auto GameMode = GetWorld()->GetAuthGameMode<ALakayaDefalutPlayGameMode>())
+		GameMode->OnKilledCharacter(GetController(), this, EventInstigator, DamageCauser);
 }
 
 bool AOccupationCharacter::IsSameTeam(AActor* const& Other) const

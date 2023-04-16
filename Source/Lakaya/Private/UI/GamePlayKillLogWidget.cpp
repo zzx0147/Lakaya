@@ -4,6 +4,7 @@
 
 #include "Character/DamageableCharacter.h"
 #include "Components/VerticalBox.h"
+#include "GameMode/OccupationGameState.h"
 #include "UI/KillLogElement.h"
 
 
@@ -40,7 +41,8 @@ void UGamePlayKillLogWidget::NativeConstruct()
 		return Result;
 	});
 
-	//TODO: 게임 스테이트에 캐릭터 사망 이벤트를 선언하고, 해당 이벤트에 바인딩하여 동작하도록 구현해야 합니다.
+	if (const auto GameState = GetWorld()->GetGameState<AOccupationGameState>())
+		GameState->OnKillCharacterNotify.AddUObject(this, &UGamePlayKillLogWidget::OnKillCharacterNotify);
 }
 
 void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController, AActor* KilledActor,

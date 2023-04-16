@@ -1,7 +1,8 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #include "GameMode/LakayaDefalutPlayGameMode.h"
 
-#include "Character/DamageableCharacter.h"
-#include "GameFramework/Character.h"
+#include "Character/ArmedCharacter.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -44,8 +45,6 @@ void ALakayaDefalutPlayGameMode::HandleMatchHasStarted()
 {
 	// 게임 시작 후, 서버 측 클라에게 UI바인딩.
 	Super::HandleMatchHasStarted();
-
-	OnKillNotifyBinding();
 	
 	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasStarted"));
@@ -70,40 +69,23 @@ void ALakayaDefalutPlayGameMode::HandleLeavingMap()
 void ALakayaDefalutPlayGameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
-
-	// TODO : 
-	// ADamageableCharacter* DamageableCharacter = Cast<ADamageableCharacter>(Exiting->GetPawn());
-	// if (DamageableCharacter)
-	// {
-	// 	DamageableCharacter->OnKillCharacterNotify.RemoveAll(this);	
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("GameMode_DamageableCharacter is null."));
-	// 	return;
-	// }
-	
 	UE_LOG(LogTemp, Warning, TEXT("The Player has left the game."));
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
 }
 
-// void ALakayaDefalutPlayGameMode::OnKilledCharacter(AController* VictimController, AActor* Victim,
-// 	AController* InstigatorController, AActor* DamageCauser)
-// {
-// 	FTimerHandle* ExistingTimer = RespawnTimers.Find(VictimController);
-// 	if (ExistingTimer != nullptr)
-// 	{
-// 		GetWorldTimerManager().ClearTimer(*ExistingTimer);
-// 		RespawnTimers.Remove(VictimController);
-// 	}
-//
-// 	RespawnTimers.Add(VictimController, FTimerHandle());
-// 	FTimerHandle& NewTimer = RespawnTimers[VictimController];
-// 	GetWorldTimerManager().SetTimer(NewTimer, [this, VictimController]() { RespawnPlayer(VictimController); }, PlayerRespawnTime, false);
-// }
-
-void ALakayaDefalutPlayGameMode::OnKillNotifyBinding()
+void ALakayaDefalutPlayGameMode::OnKilledCharacter(AController* VictimController, AActor* Victim,
+	AController* InstigatorController, AActor* DamageCauser)
 {
+	FTimerHandle* ExistingTimer = RespawnTimers.Find(VictimController);
+	if (ExistingTimer != nullptr)
+	{
+		GetWorldTimerManager().ClearTimer(*ExistingTimer);
+		RespawnTimers.Remove(VictimController);
+	}
+
+	RespawnTimers.Add(VictimController, FTimerHandle());
+	FTimerHandle& NewTimer = RespawnTimers[VictimController];
+	GetWorldTimerManager().SetTimer(NewTimer, [this, VictimController]() { RespawnPlayer(VictimController); }, PlayerRespawnTime, false);
 }
 
 void ALakayaDefalutPlayGameMode::RespawnPlayer(AController* KilledController)

@@ -34,6 +34,7 @@ ABattlePlayerController::ABattlePlayerController()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ReloadStopFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ReloadStop'"));
 
+	//TODO: 새 인풋 액션을 불러와야 합니다.
 	if (ContextFinder.Succeeded()) WeaponControlContext = ContextFinder.Object;
 	if (FireStartFinder.Succeeded()) FireStartAction = FireStartFinder.Object;
 	if (FireStopFinder.Succeeded()) FireStopAction = FireStopFinder.Object;
@@ -131,18 +132,19 @@ void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, 
 	ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
 	if (ArmedCharacter.IsValid())
 	{
-		// // 빙의 대상 캐릭터에 맞는 위젯을 생성하고 바인딩합니다.
-		// if (const auto Data = CharacterWidgetComponentTable->FindRow<FCharacterBindWidgetData>(
-		// 	ArmedCharacter->GetCharacterName(),TEXT("SetupCharacterWidgetComponent")))
-		// {
-		// 	CharacterBindableWidgets.Reserve(CharacterBindableWidgets.Num() + Data->WidgetList.Num());
-		// 	for (const auto& WidgetClass : Data->WidgetList)
-		// 	{
-		// 		auto Widget = CreateViewportWidget<UCharacterBindableWidget>(WidgetClass);
-		// 		Widget->BindCharacter(ArmedCharacter.Get());
-		// 		CharacterBindableWidgets.Emplace(Widget);
-		// 	}
-		// }
+		// 빙의 대상 캐릭터에 맞는 위젯을 생성하고 바인딩합니다.
+		if (const auto Data = CharacterWidgetComponentTable->FindRow<FCharacterBindWidgetData>(
+			ArmedCharacter->GetCharacterName(),TEXT("SetupCharacterWidgetComponent")))
+		{
+			// 이 캐릭터에 필요한 위젯 추가 생성
+			CharacterBindableWidgets.Reserve(CharacterBindableWidgets.Num() + Data->WidgetList.Num());
+			for (const auto& WidgetClass : Data->WidgetList)
+				CharacterBindableWidgets.Emplace(CreateViewportWidget<UCharacterBindableWidget>(WidgetClass));
+
+			// 위젯 바인딩
+			for (const auto& Widget : CharacterBindableWidgets)
+				Widget->BindCharacter(ArmedCharacter.Get());
+		}
 	}
 }
 

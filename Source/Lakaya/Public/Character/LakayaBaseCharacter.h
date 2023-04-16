@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
 #include "Character/CharacterSetupData.h"
+#include "GameFramework/Character.h"
 #include "LakayaBaseCharacter.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBaseCharacter, FCharacterNameSignature, const FName&)
@@ -36,6 +36,10 @@ public:
 
 	// 캐릭터의 자원 컴포넌트를 가져옵니다. 
 	UResourceComponent* const& GetResourceComponent() const { return ResourceComponent; }
+
+	// 캐릭터의 자원 컴포넌트를 캐스팅하여 가져옵니다.
+	template <class T>
+	T* GetResourceComponent() const { return Cast<T>(ResourceComponent); }
 
 	// 캐릭터의 스탯 컴포넌트를 가져옵니다.
 	UStatComponent* const& GetStatComponent() const { return StatComponent; }

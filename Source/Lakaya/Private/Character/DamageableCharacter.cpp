@@ -68,7 +68,6 @@ void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* D
 	bIsAlive = false;
 	OnAliveChanged.Broadcast(bIsAlive);
 	GetCharacterMovement()->DisableMovement();
-	//TODO: 게임스테이트를 가져와서 함수를 호출하여 이 캐릭터가 다른 캐릭터에 의해 살해당했음을 알려줍니다.
 }
 
 void ADamageableCharacter::OnRep_Health()

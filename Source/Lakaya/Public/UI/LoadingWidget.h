@@ -1,13 +1,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "MatchStateWidget.h"
 #include "Components/TextBlock.h"
-#include "GameMode/OccupationGameState.h"
 #include "LoadingWidget.generated.h"
 
 UCLASS()
-class LAKAYA_API ULoadingWidget : public UUserWidget
+class LAKAYA_API ULoadingWidget : public UMatchStateWidget
 {
 	GENERATED_BODY()
 
@@ -16,10 +15,10 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnChangeJoinedPlayers(uint8 Number);
+	void OnChangeJoinedPlayers(const uint8& PlayerCount) const;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* LoadingWidgetText;
 
-	AOccupationGameState* OccupationGameState;
+	uint8 MaxPlayerCount;
 };

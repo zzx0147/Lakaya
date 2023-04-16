@@ -1,41 +1,40 @@
 #include "UI/LoadingWidget.h"
 
-// #include "PlayerController/MenuCallingPlayerController.h"
-#include "GameMode/OccupationGameMode.h"
 #include "GameMode/OccupationGameState.h"
-#include "Net/UnrealNetwork.h"
+
 
 void ULoadingWidget::NativeConstruct()
 {
-    Super::NativeConstruct();
+	Super::NativeConstruct();
 
-    OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-    if (OccupationGameState == nullptr)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_GameMode is null."));
-        return;
-    }
+	LoadingWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("LoadingWidgetText")));
+	if (LoadingWidgetText == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_JoinedPlayerText is null."));
+		return;
+	}
 
-    OnChangeJoinedPlayers(OccupationGameState->GetNumPlayers());
-    
-    // 바인딩
-    LoadingWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("LoadingWidgetText")));
-    if (LoadingWidgetText == nullptr)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_JoinedPlayerText is null."));
-        return;
-    }
+	const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
+	if (OccupationGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_GameMode is null."));
+		return;
+	}
 
-    OccupationGameState->OnOccupationChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
+	MaxPlayerCount = OccupationGameState->GetMaxPlayers();
+	OnChangeJoinedPlayers(OccupationGameState->GetNumPlayers());
+
+	OccupationGameState->OnOccupationChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
 }
 
-void ULoadingWidget::OnChangeJoinedPlayers(uint8 JoinedPlayers)
+void ULoadingWidget::OnChangeJoinedPlayers(const uint8& PlayerCount) const
 {
-    if (JoinedPlayers == OccupationGameState->GetMaxPlayers())
-    {
-        LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("곧 게임을 시작합니다."))));
-        return;
-    }
-    
-    LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), JoinedPlayers, OccupationGameState->GetMaxPlayers())));
+	if (PlayerCount == MaxPlayerCount)
+	{
+		LoadingWidgetText->SetText(FText::FromString(TEXT("곧 게임을 시작합니다.")));
+		return;
+	}
+
+	LoadingWidgetText->SetText(
+		FText::FromString(FString::Printf(TEXT("(%d / %d)"), PlayerCount, MaxPlayerCount)));
 }

@@ -10,6 +10,12 @@ UGameTimeWidget::UGameTimeWidget(const FObjectInitializer& ObjectInitializer) : 
 	TimeTextFormat = FText::FromString(TEXT("{0}:{1}"));
 }
 
+bool UGameTimeWidget::OnMatchStart()
+{
+	SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	return true;
+}
+
 void UGameTimeWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -17,12 +23,9 @@ void UGameTimeWidget::NativeConstruct()
 	// 바인딩
 	OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
 	if (OccupationGameState.IsStale()) UE_LOG(LogTemp, Error, TEXT("GameTimeWidget_GameState is null."));
-	OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &UGameTimeWidget::SetGameTimeWidget);
 
 	GameTimeWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("GameTimeWidgetText")));
 	if (GameTimeWidgetText == nullptr) UE_LOG(LogTemp, Warning, TEXT("GameTimeWidgetText is null."));
-
-	SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UGameTimeWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -31,13 +34,8 @@ void UGameTimeWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	if (OccupationGameState.IsValid())
 	{
-		auto RemainSeconds = FMath::RoundToInt(OccupationGameState->GetRemainMatchTime());
+		const auto RemainSeconds = FMath::RoundToInt(OccupationGameState->GetRemainMatchTime());
 		GameTimeWidgetText->SetText(FText::Format(TimeTextFormat, RemainSeconds / 60, RemainSeconds % 60));
 	}
 	else UE_LOG(LogTemp, Warning, TEXT("GameState was nullptr"));
-}
-
-void UGameTimeWidget::SetGameTimeWidget(EOccupationGameState ChangeGameState)
-{
-	if (ChangeGameState == EOccupationGameState::Progress) SetVisibility(ESlateVisibility::Visible);
 }
