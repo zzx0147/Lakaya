@@ -42,18 +42,11 @@ void AIndividualGameMode::BeginPlay()
 void AIndividualGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
-	OnGameModeInitialized.Broadcast();
 }
 
 void AIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-	
-	// UE_LOG(LogTemp, Warning, TEXT("The Player has entered the game."));
-	// UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), GetNumPlayers());
-
-	// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("플레이어가 입장했습니다."));
 	
 	AIndividualGameState* IndividualGameState = GetWorld()->GetGameState<AIndividualGameState>();
 	if (IndividualGameState == nullptr)
@@ -97,7 +90,7 @@ bool AIndividualGameMode::ReadyToStartMatch_Implementation()
 		return false;
 	}
 
-	if (!bWaitToStart) return false;
+	if (!GetbWaitToStart()) return false;
 
 	AIndividualGameState* IndividualGameState = Cast<AIndividualGameState>(GetWorld()->GetGameState());
 	if (IndividualGameState == nullptr)

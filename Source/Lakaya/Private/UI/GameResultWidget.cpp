@@ -1,7 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
+#include "Character/CollectorPlayerState.h"
 #include "UI/GameResultWidget.h"
+#include "GameFramework/Character.h"
 
 void UGameResultWidget::NativeConstruct()
 {
@@ -40,6 +39,13 @@ void UGameResultWidget::OnChangeWinner(EOccupationWinner NewWinner)
 {
 	SetVisibility(ESlateVisibility::Visible);
 
+	ACollectorPlayerState* PlayerState = Cast<ACollectorPlayerState>(GetOwningPlayer()->GetCharacter()->GetPlayerState());
+	if (PlayerState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameResultWidget_PlayerState is null."));
+		return;
+	}
+	
 	FString WinnerString;
 	switch (OccupationGameState->GetOccupationWinner())
 	{
@@ -47,15 +53,19 @@ void UGameResultWidget::OnChangeWinner(EOccupationWinner NewWinner)
 		WinnerString = FString(TEXT("Undecided"));
 		break;
 	case EOccupationWinner::A:
-		WinnerString = FString(TEXT("A"));
+		// WinnerString = FString(TEXT("A"));
+		if (PlayerState->GetPlayerTeamState() == EPlayerTeamState::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
+		else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
 		break;
 	case EOccupationWinner::B:
-		WinnerString = FString(TEXT("B"));
+		// WinnerString = FString(TEXT("B"));
+		if (PlayerState->GetPlayerTeamState() == EPlayerTeamState::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
+		else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
 		break;
 	default:
 		WinnerString = FString(TEXT("Unknown"));
 		break;
 	}
 	
-	GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("%s팀이 승리하였습니다 !"), *WinnerString)));
+	// GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("%s팀이 승리하였습니다 !"), *WinnerString)));
 }
