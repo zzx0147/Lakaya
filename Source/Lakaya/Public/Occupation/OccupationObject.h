@@ -1,32 +1,27 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "PlayerTeamState.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
 #include "Interactable/Interactable.h"
 #include "OccupationObject.generated.h"
 
-UENUM()
-enum class EObjectOwner : uint8
-{
-	None UMETA(DisplayName = "None"), // 아무도 소유하고 있지 않은 상태
-	A UMETA(DisplayName = "A"), // A팀이 소유하고 있는 상태
-	B UMETA(DisplayName = "B"), // B팀이 소유하고 있는 상태
-};
 
 UCLASS()
 class LAKAYA_API AOccupationObject : public AActor, public IInteractable
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AOccupationObject();
 
 protected:
 	virtual void BeginPlay() override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-public:	
+
+public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
@@ -56,21 +51,24 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Trigger")
 	USphereComponent* TriggerSphere;
-	
+
 private:
-	UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject)
-	EObjectOwner ObjectOwner = EObjectOwner::None;
+	UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject, Transient)
+	EPlayerTeamState ObjectOwner;
 
 private:
 	UFUNCTION()
 	void OnRep_BroadCastTeamObject();
 
 private:
-	void SetTeamObject(EObjectOwner Team);
-	
+	void SetTeamObject(const EPlayerTeamState& Team);
+
 private:
 	FTimerHandle InteractionTimerHandle;
 
 private:
+	TWeakObjectPtr<class AInteractableCharacter> InteractingCharacter;
 	APawn* InteractingPawn;
+
+	float RecentInteractionTime = FLT_MAX;
 };
