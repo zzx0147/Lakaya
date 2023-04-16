@@ -39,7 +39,9 @@ private:
 	void DelayedEndedGame();
 
 private:
-	float GamePlayTime = 15.0f;
+	UPROPERTY(EditAnywhere)
+	float GamePlayTime = 180.0f;
+	
 	AOccupationGameState* OccupationGameState;
 	
 private:
