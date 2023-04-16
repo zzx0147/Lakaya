@@ -41,7 +41,6 @@ void AArmedCharacter::SetupCharacterServer(const FCharacterSetupData* Data)
 
 void AArmedCharacter::StartAbility(const EAbilityKind& Kind)
 {
-	//TODO: 입력이 순서대로 실행되게 하려면, Reliable RPC가 어빌리티 내에서 호출되는 것이 아니라 여기에서 호출되어야 합니다.
 	if (Abilities.Num() > Kind) Abilities[Kind]->AbilityStart();
 }
 

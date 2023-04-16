@@ -43,11 +43,12 @@ void UReloadAbility::AbilityStart()
 void UReloadAbility::BeginPlay()
 {
 	Super::BeginPlay();
-	if (const auto LocalOwner = GetOwner())
-		if (LocalOwner->HasAuthority())
-			if (const auto Character = Cast<ALakayaBaseCharacter>(LocalOwner))
-				BulletComponent = Character->GetResourceComponent<UBulletComponent>();
-			else UE_LOG(LogInit, Error, TEXT("Fail to find BulletComponent!"));
+	if (const auto Character = GetOwner<ALakayaBaseCharacter>())
+		if (Character->HasAuthority())
+		{
+			BulletComponent = Character->GetResourceComponent<UBulletComponent>();
+			if (!BulletComponent.IsValid()) UE_LOG(LogInit, Error, TEXT("Fail to find BulletComponent!"));
+		}
 }
 
 void UReloadAbility::RequestStart_Implementation(const float& RequestTime)
