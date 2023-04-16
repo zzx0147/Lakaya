@@ -31,7 +31,7 @@ public:
 	 */
 	template <class UserClass>
 	void CostBullet(const uint16& Value, UserClass* const& Caller = nullptr,
-	                TMemberFunction<UserClass>& OnSuccess = nullptr, TMemberFunction<UserClass>& OnFailed = nullptr);
+	                TMemberFunction<UserClass> OnSuccess = nullptr, TMemberFunction<UserClass> OnFailed = nullptr);
 
 	void Reload();
 
@@ -58,8 +58,8 @@ private:
 };
 
 template <class UserClass>
-void UBulletComponent::CostBullet(const uint16& Value, UserClass* const& Caller, TMemberFunction<UserClass>& OnSuccess,
-                                  TMemberFunction<UserClass>& OnFailed)
+void UBulletComponent::CostBullet(const uint16& Value, UserClass* const& Caller, void (UserClass::*OnSuccess)(),
+                                  void (UserClass::*OnFailed)())
 {
 	if (Bullets >= Value)
 	{
