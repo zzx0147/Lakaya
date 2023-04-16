@@ -3,11 +3,13 @@
 
 #include "OccupationObject.h"
 
+#include "EnhancedInputSubsystems.h"
 #include "Character/CollectorPlayerState.h"
 #include "Character/InteractableCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include "PlayerController/MovablePlayerController.h"
 
 AOccupationObject::AOccupationObject()
 {
@@ -41,8 +43,13 @@ AOccupationObject::AOccupationObject()
 void AOccupationObject::BeginPlay()
 {
 	Super::BeginPlay();
+}
 
-	// TriggerSphere->OnComponentBeginOverlap.AddDynamic(this, &AOccupationObject::OnPlayerEnterTrigger);
+void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AOccupationObject, ObjectOwner);
 }
 
 void AOccupationObject::Tick(float DeltaTime)
@@ -79,7 +86,10 @@ void AOccupationObject::OnServerInteractionBegin(const float& Time, APawn* Calle
 	}
 	
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	{
 		CastedCaller->InitiateInteractionStart(Time, this, 3.f);
+		CastedCaller->GetCharacterMovement()->DisableMovement();
+	}
 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionBegin::Caller was not AInteractableCharacter!"));
 }
 
@@ -108,7 +118,10 @@ void AOccupationObject::OnLocalInteractionStopBegin(APawn* Caller)
 void AOccupationObject::OnServerInteractionStopBegin(const float& Time, APawn* Caller)
 {
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	{
 		CastedCaller->InteractionStopNotify(Time, this);
+		CastedCaller->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	}
 	else UE_LOG(LogActor, Error, TEXT("OnServerInteractionStopBegin::Caller was not AInteractableCharacter!"));
 }
 
@@ -116,6 +129,9 @@ void AOccupationObject::OnInteractionStop(APawn* Caller)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object Interaction Stop!"));
 
+	auto CastedCaller = Cast<AInteractableCharacter>(Caller);
+	CastedCaller->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	
 	if (InteractingPawn == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("InteractionStop_InteractingPawn is null."));
@@ -173,24 +189,24 @@ void AOccupationObject::OnInteractionStop(APawn* Caller)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
 			
-			OccupationGameState->SetOccupationObject(EOccupationObjectState::A);
 			if (ObjectOwner == EObjectOwner::B)
 				OccupationGameState->SubBTeamObjectNum();
 			
 			ObjectOwner = EObjectOwner::A;
 			OccupationGameState->AddATeamObjectNum();
+			SetTeamObject(ObjectOwner);
 			return;
 		}
 		else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
 
-			OccupationGameState->SetOccupationObject(EOccupationObjectState::B);
 			if (ObjectOwner == EObjectOwner::A)
 				OccupationGameState->SubATeamObjectNum();
 			
 			ObjectOwner = EObjectOwner::B;
 			OccupationGameState->AddBTeamObjectNum();
+			SetTeamObject(ObjectOwner);
 			return;
 		}
 		else
@@ -221,13 +237,22 @@ void AOccupationObject::AutomaticInteractionStop()
 	InteractingPawn = nullptr;
 }
 
-// void AOccupationObject::OnPlayerEnterTrigger(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-// 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-// {
-// 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-// 	if (OtherActor == PlayerPawn)
-// 	{
-// 		// Execute your desired logic when the player enters the trigger
-// 		// ...
-// 	}
-// }
+void AOccupationObject::OnRep_BroadCastTeamObject()
+{
+	SetTeamObject(ObjectOwner);
+}
+
+void AOccupationObject::SetTeamObject(EObjectOwner Team)
+{
+	switch (Team)
+	{
+	case EObjectOwner::A:
+		Cylinder->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/RedTeam.RedTeam")));
+		break;
+	case EObjectOwner::B:
+		Cylinder->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/BlueTeam.BlueTeam")));
+		break;
+	case EObjectOwner::None:
+		break;
+	}
+}

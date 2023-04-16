@@ -28,6 +28,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 public:	
 	virtual void Tick(float DeltaTime) override;
 
@@ -41,11 +42,6 @@ private:
 private:
 	void AutomaticInteractionStop();
 
-	// UFUNCTION()
-	// void OnPlayerEnterTrigger(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	// 						  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-	// 						  bool bFromSweep, const FHitResult& SweepResult);
-	
 private:
 	const float MaxInteractionDuration = 3;
 	float InteractingStartTime;
@@ -62,7 +58,15 @@ private:
 	USphereComponent* TriggerSphere;
 	
 private:
+	UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject)
 	EObjectOwner ObjectOwner = EObjectOwner::None;
+
+private:
+	UFUNCTION()
+	void OnRep_BroadCastTeamObject();
+
+private:
+	void SetTeamObject(EObjectOwner Team);
 	
 private:
 	FTimerHandle InteractionTimerHandle;

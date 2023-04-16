@@ -9,15 +9,15 @@ void ULoadingWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+    OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
     if (OccupationGameState == nullptr)
     {
         UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_GameMode is null."));
         return;
     }
 
-    OnChangeJoinedPlayers(OccupationGameState->NumPlayers, OccupationGameState->GetMaxPlayers());
-
+    OnChangeJoinedPlayers(OccupationGameState->GetNumPlayers());
+    
     // 바인딩
     LoadingWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("LoadingWidgetText")));
     if (LoadingWidgetText == nullptr)
@@ -35,15 +35,15 @@ void ULoadingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
     Super::NativeTick(MyGeometry, InDeltaTime);
 }
 
-void ULoadingWidget::OnChangeJoinedPlayers(int32 JoinedPlayers, int32 MaxPlayer)
+void ULoadingWidget::OnChangeJoinedPlayers(uint8 JoinedPlayers)
 {
-    if (JoinedPlayers == MaxPlayer)
+    if (JoinedPlayers == OccupationGameState->GetMaxPlayers())
     {
         LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("곧 게임을 시작합니다."))));
         return;
     }
     
-    LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), JoinedPlayers, MaxPlayer)));
+    LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), JoinedPlayers, OccupationGameState->GetMaxPlayers())));
 }
 
 void ULoadingWidget::ReMoveLoadingWidget(EOccupationGameState ChangeGamState)

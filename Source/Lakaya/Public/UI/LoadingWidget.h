@@ -27,5 +27,7 @@ public:
 	
 public:
 	UFUNCTION()
-	void OnChangeJoinedPlayers(int32 Number, int32 MaxPlayers);
+	void OnChangeJoinedPlayers(uint8 Number);
+
+	AOccupationGameState* OccupationGameState;
 };

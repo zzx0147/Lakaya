@@ -59,7 +59,7 @@ float ADamageableCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 	auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	// TODO : NetMultiCast 된 함수이며 피격받는 캐릭터를 받아 피격 이펙트를 재생합니다.
-	OnHitEffectPlay(CollectorPlayerState->GetPlayerController()->GetCharacter());
+	OnHitEffectPlay(CollectorPlayerState->GetOwningController()->GetCharacter());
 	
 	Health -= Damage;
 	if (Health > MaximumHealth) Health = MaximumHealth;
@@ -94,6 +94,7 @@ void ADamageableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 void ADamageableCharacter::Respawn()
 {
 	Health = MaximumHealth;
+	OnHealthChanged.Broadcast(this, Health);
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	SetActorEnableCollision(true);
 	RespawnNotify();
@@ -105,11 +106,18 @@ void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* D
 	//TODO: 트레이스 충돌은 꺼지지만, 여전히 다른 캐릭터의 움직임을 제한하고 있습니다..
 	SetActorEnableCollision(false);
 	KillCharacterNotify(EventInstigator, DamageCauser);
+	
 }
 
 void ADamageableCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
 {
-	//GetMesh()->SetVisibility(false, true);
+	GetMesh()->SetVisibility(false, true);
+
+	//GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
+	//GetMesh()->SetCollisionProfileName(TEXT("PhysicsActor"));
+	//GetMesh()->SetSimulatePhysics(true);
+	//bFixMeshTransform = false;
+
 	OnKillCharacterNotify.Broadcast(GetController(), this, EventInstigator, DamageCauser);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
 }
@@ -149,6 +157,15 @@ void ADamageableCharacter::IndicateRPC_Implementation(FName CauserName, FVector 
 
 void ADamageableCharacter::RespawnNotify_Implementation()
 {
-	//GetMesh()->SetVisibility(true, true);
+	GetMesh()->SetVisibility(true, true);
+
+
+
+	//GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+	//GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
+	//GetMesh()->SetSimulatePhysics(false);
+	//bFixMeshTransform = true;
+	//GetMesh()->SetupAttachment(GetCapsuleComponent());
+
 	OnRespawnCharacterNotify.Broadcast(this);
 }

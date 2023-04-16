@@ -61,22 +61,7 @@ protected:
 
 	void SpawnDropEnergy(AController* DeadPlayer);
 
-public:
-	// uint8 PlayerRespawnTime = 3;
-	// bool bWaitToStart = false;
-	
-public:
-	// UPROPERTY()
-	// TSet<APlayerController*> RegisteredPlayers;
-
-private:
-	// UPROPERTY()
-	// TMap<AController*, FTimerHandle> RespawnTimers;
-
 private:
 	FTimerHandle TimerHandle_SpawnStaticEnergy;
 	FTimerHandle TimerHandle_DelayedStart;
-	
-public:
-	FOnGameModeInitialized OnGameModeInitialized;
 };

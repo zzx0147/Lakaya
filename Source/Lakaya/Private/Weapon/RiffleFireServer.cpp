@@ -98,7 +98,7 @@ void URiffleFireServer::TraceFire()
 	auto Destination = CameraLocation + Character->GetCamera()->GetForwardVector() * (FireRange + Distance);
 
 	// Trace from camera
-	DrawDebugLine(GetWorld(), CameraLocation, Destination, FColor::Red, false, 1);
+	// DrawDebugLine(GetWorld(), CameraLocation, Destination, FColor::Red, false, 1);
 	if (!GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, Destination, ECC_Camera, TraceQueryParams))
 		return;
 

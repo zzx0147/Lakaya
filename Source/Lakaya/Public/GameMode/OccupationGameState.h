@@ -3,18 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "OccupationGameMode.h"
 #include "GameFramework/GameState.h"
 #include "OccupationGameState.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeJoinedPlayers, int32, int32)
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeGameState, EOccupationGameState)
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnOccupationChangeTime, int32, int32)
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeObjectcState, EOccupationObjectState)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeJoinedPlayers, uint8);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeGameState, EOccupationGameState);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamScore, float);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamScore, float);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamObjectNum, uint8);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamObjectNum, uint8);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeOccupationWinner, EOccupationWinner)
 
 UENUM()
@@ -26,14 +21,6 @@ enum class EOccupationGameState : uint8
 	StandByToPregressLoading UMETA(DisplayName = "StandByToPregressLoading"),
 	Progress UMETA(DisplayName = "Progress"), // 게임진행 상태
 	Finish UMETA(DisplayName = "Finish") // 게임종료 상태
-};
-
-UENUM()
-enum class EOccupationObjectState : uint8
-{
-	None UMETA(DisplayerName = "None"), // 어느 팀에서도 활성화 되어 있지 않은 상태.
-	A UMETA(DisplayerName = "A"), // A팀에서의 활성화 상태
-	B UMETA(DisplayerName = "B") // B팀에서의 활성화 상태
 };
 
 UENUM()
@@ -60,20 +47,14 @@ private:
 
 public:
 	UFUNCTION()
-	uint8 GetMaxPlayers() const { return MaxPlayers; }
-
-	UFUNCTION()
-	void SetNumPlayers(int32 NewNumPlayers);
+	void SetNumPlayers(uint8 NewNumPlayers);
 
 	UFUNCTION()
 	void SetGameState(EOccupationGameState NewGameState);
 	
 	UFUNCTION()
-	void SetOccupationObject(EOccupationObjectState NewObjectState);
-
-	UFUNCTION()
 	void SetOccupationWinner(EOccupationWinner NewWinner);
-	
+
 	UFUNCTION()
 	void SetATeamScore();
 
@@ -91,18 +72,12 @@ public:
 
 	UFUNCTION()
 	void SubBTeamObjectNum();
-	
-	UPROPERTY(ReplicatedUsing = OnRep_NumPlayers)
-	int32 NumPlayers;
 
-	UPROPERTY(ReplicatedUsing = OnRep_GameState)
-	EOccupationGameState CurrentGameState = EOccupationGameState::Menu;
+	UFUNCTION()
+	uint8 GetMaxPlayers() const { return MaxPlayers; }
 
-	UPROPERTY(ReplicatedUsing = OnRep_OccupationObjectState)
-	EOccupationObjectState CurrentOccupationObjectState = EOccupationObjectState::None;
-
-	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
-	EOccupationWinner CurrentOccupationWinner = EOccupationWinner::UnCertain;
+	UFUNCTION()
+	uint8 GetNumPlayers() const { return NumPlayers; }
 	
 	UFUNCTION()
 	float GetATeamScore() { return ATeamScore; }
@@ -133,6 +108,15 @@ public:
 
 	void EndTimeCheck();
 private:
+	UPROPERTY(ReplicatedUsing = OnRep_NumPlayers)
+	uint8 NumPlayers;
+
+	UPROPERTY(ReplicatedUsing = OnRep_GameState)
+	EOccupationGameState CurrentGameState = EOccupationGameState::Menu;
+
+	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
+	EOccupationWinner CurrentOccupationWinner = EOccupationWinner::UnCertain;
+
 	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore)
 	float ATeamScore = 0;
 
@@ -144,17 +128,17 @@ private:
 
 	UPROPERTY(Replicated)
 	float MatchEndingTime;
+		
+	uint8 ATeamObjectNum = 0;
+
+	uint8 BTeamObjectNum = 0;
+
+	UPROPERTY(EditAnywhere)
+	uint8 MaxPlayers = 2;
 
 	float Standard = 0.2f;
 
 	float MaxScore = 100.0f;
-	
-	UPROPERTY(ReplicatedUsing = OnRep_ATeamObjectNum)
-	uint8 ATeamObjectNum = 0;
-
-	UPROPERTY(ReplicatedUsing = OnRep_BTeamObjectNum)
-	uint8 BTeamObjectNum = 0;
-	
 private:
 	UFUNCTION()
 	void OnRep_NumPlayers();
@@ -163,35 +147,19 @@ private:
 	void OnRep_GameState();
 
 	UFUNCTION()
-	void OnRep_OccupationObjectState();
-
-	UFUNCTION()
 	void OnRep_ATeamScore();
-
+	
 	UFUNCTION()
 	void OnRep_BTeamScore();
 
 	UFUNCTION()
-	void OnRep_ATeamObjectNum();
-
-	UFUNCTION()
-	void OnRep_BTeamObjectNum();
-
-	UFUNCTION()
 	void OnRep_OccupationWinner();
-	
-	UPROPERTY(EditAnywhere)
-	uint8 MaxPlayers = 4;
-	
+
 public:
 	FOnOccupationChangeJoinedPlayers OnOccupationChangeJoinedPlayers;
 	FOnOccupationChangeGameState OnOccupationChangeGameState;
-	FOnOccupationChangeTime OnOccupationChangeTime;
-	FOnOccupationChangeObjectcState OnOccupationChangeObjectcState;
 	FOnOccupationChangeATeamScore OnOccupationChangeATeamScore;
 	FOnOccupationChangeBTeamScore OnOccupationChangeBTeamScore;
-	FOnOccupationChangeATeamObjectNum OnOccupationChangeATeamObjectNum;
-	FOnOccupationChangeBTeamObjectNum OnOccupationChangeBTeamObjectNum;
 	FOnOccupationChangeOccupationWinner OnOccupationChangeOccupationWinner;
 	
 private:
