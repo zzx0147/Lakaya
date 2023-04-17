@@ -25,15 +25,20 @@ void UGamePlayHealthWidget::BindCharacter(ACharacter* const& Character)
 
 	UStatComponent* const& StatComponent = MyCharacter->GetStatComponent();
 
-	StatComponent->OnMaximumHealthChanged.AddUObject(this,&UGamePlayHealthWidget::OnChangeMaximumHealth);
+	if (StatComponent != nullptr)
+	{
+		StatComponent->OnMaximumHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeMaximumHealth);
+		MaximumHealth = StatComponent->GetMaximumHealth();
+	}
+
 	MyCharacter->OnHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeHealth);
+	Health = MyCharacter->GetHealth();
 
 	SetVisibility(ESlateVisibility::Visible);
 
 	HealthText->SetText(FText::AsNumber(floor(Health)));
-	MaximumHealthText->SetText(FText::FromString(FString::Printf(TEXT("/%f"), MaximumHealth)));
+	MaximumHealthText->SetText(FText::FromString(FString::Printf(TEXT("/%.0f"), MaximumHealth)));
 	UpdateHealthProgressBar();
-	
 }
 
 bool UGamePlayHealthWidget::UnbindCharacter(ACharacter* const& Character)
