@@ -74,6 +74,9 @@ public:
 	void SubBTeamObjectNum();
 
 	UFUNCTION()
+	int32 GetPlayerIndex(APlayerState* PlayerState) const;
+	
+	UFUNCTION()
 	uint8 GetMaxPlayers() const { return MaxPlayers; }
 
 	UFUNCTION()

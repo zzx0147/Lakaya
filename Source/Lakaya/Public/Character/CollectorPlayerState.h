@@ -6,12 +6,37 @@
 #include "GameFramework/PlayerState.h"
 #include "CollectorPlayerState.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_FourParams(FOnPlayerStateChange, int32, int32, int32, int32);
+
 UENUM()
 enum class EPlayerTeamState : uint8
 {
 	None UMETA(DisplayerName = "None"), // 현재 팀 배정을 받지 못한 상태
 	A UMETA(DisplayerName = "A"), // A팀인 상태
 	B UMETA(DisplayerName = "B"), // B팀인 상태
+};
+
+// 점수판 정보 구조체
+USTRUCT(BlueprintType)
+struct FPlayerInfo
+{
+	GENERATED_BODY();
+	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString PlayerName;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 TotalScore = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 Kills = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 OccupationSuccess = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 OwnObjectNum = 0;
 };
 
 /**
@@ -29,21 +54,38 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
-	void GainPoint(const uint8& GainedPoint);
-	void ResetPoint();
-	const uint8& GetPoint() const;
-
-	void GainEnergy(const uint8& GainedEnergy);
-	void ResetEnergy();
-	const uint8& GetEnergy() const;
-
-	void GainMoney(const uint8& GainedMoney);
-	void ResetMoney();
-	const uint8& GetMoney() const;
-
 	EPlayerTeamState GetPlayerTeamState() const { return PlayerTeamState; }
 	void SetPlayerTeamState(EPlayerTeamState TeamState);
 
+	UFUNCTION(BlueprintCallable)
+	const FPlayerInfo& GetPlayerInfo() const { return PlayerInfo; }
+
+	UFUNCTION(BlueprintCallable, Category = "Player Info")
+	void AddTotalScore();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Info")
+	void AddKills();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Info")
+	void AddOccupationSuccess();
+
+	UFUNCTION(BlueprintCallable)
+	FString GetPlayername() { return PlayerInfo.PlayerName; }
+	
+	UFUNCTION(BlueprintCallable)
+	int32 GetTotalScore() { return PlayerInfo.TotalScore; }
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetKills() { return PlayerInfo.Kills; }
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetOccupationSuccess() { return PlayerInfo.OccupationSuccess; }
+	
+	UFUNCTION(BlueprintCallable)
+	int32 GetOwnObjectNum() { return PlayerInfo.OwnObjectNum; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetOwnObjectNum(int32 Num);
 private:
 	UFUNCTION()
 	void OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn);
@@ -51,25 +93,19 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_BroadCastMyTeam, Transient)
 	EPlayerTeamState PlayerTeamState = EPlayerTeamState::None;
 
-	UPROPERTY(ReplicatedUsing = OnRep_Point, Transient)
-	uint8 Point;
-
-	UPROPERTY(ReplicatedUsing = OnRep_Money, Transient)
-	uint8 Money;
-
-	UPROPERTY(ReplicatedUsing = OnRep_Energy, Transient)
-	uint8 Energy;
+	UPROPERTY(ReplicatedUsing = OnRep_ScoreUpdate)
+	FPlayerInfo PlayerInfo;
 
 private:
 	UFUNCTION()
-	void OnRep_Point();
-
-	UFUNCTION()
-	void OnRep_Money();
-
-	UFUNCTION()
-	void OnRep_Energy();
-
-	UFUNCTION()
 	void OnRep_BroadCastMyTeam();
+
+	UFUNCTION()
+	void OnRep_ScoreUpdate();
+
+	UFUNCTION()
+	void OnRep_OwnObjectNum();
+
+public:
+	FOnPlayerStateChange OnPlayerStateChange;
 };

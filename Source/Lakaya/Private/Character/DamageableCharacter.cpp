@@ -7,7 +7,6 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
-#include "GameMode/IndividualGameMode.h"
 #include "UI/GamePlayHealthWidget.h"
 #include "Character/CollectorPlayerState.h"
 

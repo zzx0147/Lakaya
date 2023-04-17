@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "OccupationObject.h"
-
+#include "Occupation/OccupationObject.h"
 #include "EnhancedInputSubsystems.h"
 #include "Character/CollectorPlayerState.h"
 #include "Character/InteractableCharacter.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "PlayerController/MovablePlayerController.h"
@@ -31,7 +31,7 @@ AOccupationObject::AOccupationObject()
 	TriggerSphere->SetupAttachment(RootComponent);
 	
 	Trigger->SetCapsuleSize(50.0f, 100.0f, true);
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Cylinder (TEXT("/Game/Dev/KDJ/SM_Antenna.SM_Antenna"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Cylinder (TEXT("/Game/Dev/KML/antena/White/Antenna.Antenna"));
 	if (SM_Cylinder.Succeeded())
 		Cylinder->SetStaticMesh(SM_Cylinder.Object);
 	
@@ -195,6 +195,17 @@ void AOccupationObject::OnInteractionStop(APawn* Caller)
 			ObjectOwner = EObjectOwner::A;
 			OccupationGameState->AddATeamObjectNum();
 			SetTeamObject(ObjectOwner);
+			CollectorPlayerState->AddOccupationSuccess();
+
+			if (Owner != nullptr)
+			{
+				ACollectorPlayerState* PreCollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
+				PreCollectorPlayerState->SetOwnObjectNum(-1);
+			}
+
+			Owner = Caller;
+			
+			CollectorPlayerState->SetOwnObjectNum(1);
 			return;
 		}
 		else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
@@ -207,6 +218,16 @@ void AOccupationObject::OnInteractionStop(APawn* Caller)
 			ObjectOwner = EObjectOwner::B;
 			OccupationGameState->AddBTeamObjectNum();
 			SetTeamObject(ObjectOwner);
+			CollectorPlayerState->AddOccupationSuccess();
+
+			if (Owner != nullptr)
+			{
+				ACollectorPlayerState* PreCollectorPlayerState = Cast<ACollectorPlayerState>(Caller->GetController()->PlayerState);
+				PreCollectorPlayerState->SetOwnObjectNum(-1);
+			}
+
+			Owner = Caller;
+			CollectorPlayerState->SetOwnObjectNum(1);			
 			return;
 		}
 		else

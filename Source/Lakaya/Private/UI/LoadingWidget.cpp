@@ -1,8 +1,6 @@
 #include "UI/LoadingWidget.h"
 
 #include "PlayerController/MenuCallingPlayerController.h"
-#include "GameMode/IndividualGameMode.h"
-#include "GameMode/IndividualGameState.h"
 #include "Net/UnrealNetwork.h"
 
 void ULoadingWidget::NativeConstruct()
@@ -28,11 +26,6 @@ void ULoadingWidget::NativeConstruct()
 
     OccupationGameState->OnOccupationChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
     OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &ULoadingWidget::ReMoveLoadingWidget);
-}
-
-void ULoadingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-    Super::NativeTick(MyGeometry, InDeltaTime);
 }
 
 void ULoadingWidget::OnChangeJoinedPlayers(uint8 JoinedPlayers)

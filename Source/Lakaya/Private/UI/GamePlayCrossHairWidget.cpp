@@ -4,7 +4,6 @@
 
 #include "UI/GamePlayCrosshairWidget.h"
 #include "Components/Image.h"
-#include "GameMode/IndividualGameState.h"
 
 void UGamePlayCrosshairWidget::NativeConstruct()
 {
