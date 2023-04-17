@@ -72,20 +72,21 @@ void ALakayaDefalutPlayGameMode::HandleLeavingMap()
 void ALakayaDefalutPlayGameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
-	
-	ADamageableCharacter* DamageableCharacter = Cast<ADamageableCharacter>(Exiting->GetPawn());
-	if (DamageableCharacter)
-	{
-		DamageableCharacter->OnKillCharacterNotify.RemoveAll(this);	
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GameMode_DamageableCharacter is null."));
-		return;
-	}
-	
-	UE_LOG(LogTemp, Warning, TEXT("The Player has left the game."));
-	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
+
+	// TODO : 추후에 주석 삭제 후 작업.
+	// ADamageableCharacter* DamageableCharacter = Cast<ADamageableCharacter>(Exiting->GetPawn());
+	// if (DamageableCharacter)
+	// {
+	// 	DamageableCharacter->OnKillCharacterNotify.RemoveAll(this);	
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("GameMode_DamageableCharacter is null."));
+	// 	return;
+	// }
+	//
+	// UE_LOG(LogTemp, Warning, TEXT("The Player has left the game."));
+	// UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
 }
 
 void ALakayaDefalutPlayGameMode::OnKilledCharacter(AController* VictimController, AActor* Victim,

@@ -202,26 +202,26 @@ void UInGameScoreBoardWidget::NativeConstruct()
 	}
 #pragma endregion
 
-	SetVisibility(ESlateVisibility::Hidden);
+	// SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UInGameScoreBoardWidget::BindPlayerScore(ACollectorPlayerState* ArgCollectorPlayerState)
 {
-	if (ArgCollectorPlayerState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ArgCollectorPlayerState is null."));
-		return;
-	}
-
-	APlayerState* MyPlayerState = ArgCollectorPlayerState;
-	if (MyPlayerState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InGameScoreBoardWidget_MyPlayerState is null."));
-		return;
-	}
+	// if (ArgCollectorPlayerState == nullptr)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("ArgCollectorPlayerState is null."));
+	// 	return;
+	// }
+	//
+	// APlayerState* MyPlayerState = ArgCollectorPlayerState;
+	// if (MyPlayerState == nullptr)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("InGameScoreBoardWidget_MyPlayerState is null."));
+	// 	return;
+	// }
 
 	// MyIndex = static_cast<int32>(OccupationGameState->GetPlayerIndex(MyPlayerState));
-	ArgCollectorPlayerState->OnPlayerStateChange.AddUObject(this, &UInGameScoreBoardWidget::OnChangePlayerScore);
+	// ArgCollectorPlayerState->OnPlayerStateChange.AddUObject(this, &UInGameScoreBoardWidget::OnChangePlayerScore);
 	// CollectorPlayerState = ArgCollectorPlayerState;
 }
 

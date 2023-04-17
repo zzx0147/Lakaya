@@ -54,21 +54,21 @@ void AMenuCallingPlayerController::SetupInputComponent()
 	if (const auto Subsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
 		Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 
-	if (APlayerState* CollPlayerState = GetPlayerState<APlayerState>())
-	{
-		if (ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(CollPlayerState))
-		{
-			InGameScoreBoardWidget->BindPlayerScore(CollectorPlayerState);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to cast PlayerState to ACollectorPlayerState"));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to get PlayerState from pawn or spectator"));
-	}
+	// if (APlayerState* CollPlayerState = GetPlayerState<APlayerState>())
+	// {
+	// 	if (ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(CollPlayerState))
+	// 	{
+	// 		InGameScoreBoardWidget->BindPlayerScore(CollectorPlayerState);
+	// 	}
+	// 	else
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("Failed to cast PlayerState to ACollectorPlayerState"));
+	// 	}
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("Failed to get PlayerState from pawn or spectator"));
+	// }
 }
 
 void AMenuCallingPlayerController::BeginPlay()
@@ -86,7 +86,7 @@ void AMenuCallingPlayerController::BeginPlay()
 		CreateTeamScoreWidget();
 		CreateDirectionalDamageIndicator();
 		CreateGameResultWidget();
-		CreateInGameScoreBoardWidget();
+		// CreateInGameScoreBoardWidget();
 
 #pragma endregion
 	}

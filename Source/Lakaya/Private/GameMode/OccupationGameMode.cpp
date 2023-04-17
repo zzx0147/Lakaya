@@ -246,7 +246,7 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 
 void AOccupationGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
 {
-	for (int i = 0; PlayersNum; i++)
+	for (int i = 0;  i < PlayersNum; i++)
 	{
 		if (OccupationGameState->PlayerArray.IsValidIndex(i))
 		{
