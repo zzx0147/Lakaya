@@ -22,6 +22,7 @@ bool UBulletComponent::CostBullet(const uint16& Value)
 {
 	if (Bullets < Value) return false;
 	Bullets -= Value;
+	OnBulletsChanged.Broadcast(Bullets);
 	return true;
 }
 
