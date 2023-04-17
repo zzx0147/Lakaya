@@ -7,6 +7,8 @@
 #include "PlayerController/BattlePlayerController.h"
 #include "Character/CollectorPlayerState.h"
 #include "GameMode/OccupationGameState.h"
+#include "Kismet/GameplayStatics.h"
+#include "Misc/TypeContainer.h"
 
 AOccupationGameMode::AOccupationGameMode()
 {
@@ -157,19 +159,23 @@ void AOccupationGameMode::OnKillNotifyBinding()
 {
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableCharacter::StaticClass(), FoundActors);
-	
+
+	// 이미 이벤트 바인딩이 수행된 캐릭터 객체를 저장하는 변수
 	for (auto& Actor : FoundActors)
 	{
 		ADamageableCharacter* MyActor = Cast<ADamageableCharacter>(Actor);
 		if (MyActor)
 		{
-			MyActor->OnKillCharacterNotify.AddUObject(this, &AOccupationGameMode::OnKilledCharacter);
-			UE_LOG(LogTemp, Warning, TEXT("PlayerController OnKillCharacterNotify Binding."));
+			if (!BoundActors.Contains(MyActor))
+			{
+				MyActor->OnKillCharacterNotify.AddUObject(this, &AOccupationGameMode::OnKilledCharacter);
+				BoundActors.Add(MyActor);
+				UE_LOG(LogTemp, Warning, TEXT("PlayerController OnKillCharacterNotify Binding."));
+			}
 		}
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("MyActor is null."));
-			return;
 		}
 	}
 }
@@ -240,7 +246,7 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 
 void AOccupationGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
 {
-	for (int i = 0; PlayersNum; i++)
+	for (int i = 0;  i < PlayersNum; i++)
 	{
 		if (OccupationGameState->PlayerArray.IsValidIndex(i))
 		{
@@ -306,7 +312,7 @@ void AOccupationGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("PlayerArray is Not Valid."));
+			UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_PlayerArray is Not Valid."));
 			return;
 		}
 	}

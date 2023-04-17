@@ -12,6 +12,8 @@ class LAKAYA_API AOccupationCharacter : public AInteractableCharacter
 {
 	GENERATED_BODY()
 
+	virtual void BeginPlay() override;
+	
 public:
 	void SetTeam(const EPlayerTeamState& Team);
 };
