@@ -60,10 +60,10 @@ void URiffleFireClient::TraceVisualize()
 	// TODO : 나이아가라 이펙트 경로 지정
 	UNiagaraSystem* NiagaraEffect =
 	Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
-		TEXT("/Game/Effects/VFX_Character/VFX/Materials/Impacts/GunImpact/VFX/VFX_GunImpact_01")));
+		TEXT("/Game/Effects/M_VFX/VFX_GunImpact_01")));
 	UNiagaraSystem* NiagaraBeamEffect =
 	Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
-		TEXT("/Game/Effects/VFX_Character/VFX/Materials/Impacts/GunImpact/VFX/VFX_GunTrail_Smoke")));
+		TEXT("/Game/Effects/M_VFX/VFX_GunTrail_Smoke")));
 
 	//BP_PlayerDummy 블루프린트 클래스에 [스켈레탈 메시 -> 스태틱 메시 -> 화살표 컴포넌트(Muzzle)] 의 위치를 받아 MuzzleLocation에 저장
 	if (USkeletalMeshComponent* SkeletalMeshComp = Character->GetMesh())
