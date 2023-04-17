@@ -23,7 +23,7 @@ void AArmedCharacter::KillCharacter(AController* EventInstigator, AActor* Damage
 {
 	Super::KillCharacter(EventInstigator, DamageCauser);
 	for (const auto& Ability : Abilities)
-		Ability->OnCharacterDead();
+		if (Ability) Ability->OnCharacterDead();
 }
 
 void AArmedCharacter::SetupCharacterServer(const FCharacterSetupData* Data)

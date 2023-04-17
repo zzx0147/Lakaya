@@ -19,11 +19,16 @@ UAutoFireAbility::UAutoFireAbility()
 	InitDelay = FireDelay = 0.2f;
 	FireRange = 5000.f;
 	FireDamage = 20.f;
-	BulletCost = 1;
 }
 
 void UAutoFireAbility::AbilityStart()
 {
+	if (GetOwner()->HasAuthority())
+	{
+		Super::AbilityStart();
+		return;
+	}
+
 	if (bIsFiring) return;
 	bIsFiring = true;
 	Super::AbilityStart();
@@ -32,6 +37,12 @@ void UAutoFireAbility::AbilityStart()
 
 void UAutoFireAbility::AbilityStop()
 {
+	if (GetOwner()->HasAuthority())
+	{
+		Super::AbilityStop();
+		return;
+	}
+
 	if (!bIsFiring) return;
 	bIsFiring = false;
 	Super::AbilityStop();
@@ -61,7 +72,10 @@ void UAutoFireAbility::RequestStart_Implementation(const float& RequestTime)
 	if (bIsFiring) return;
 	bIsFiring = true;
 	if (auto& TimerManager = GetWorld()->GetTimerManager(); !TimerManager.TimerExists(FireTimer))
+	{
 		TimerManager.SetTimer(FireTimer, this, &UAutoFireAbility::FireTick, FireDelay, true, InitDelay);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
+	}
 	OnFiringStateChanged.Broadcast(bIsFiring);
 }
 
@@ -94,7 +108,7 @@ void UAutoFireAbility::SingleFire()
 	// (카메라의 전방 벡터에 카메라->캐릭터 벡터를 투영한 길이 + 사정거리) * 카메라 전방 벡터 + 카메라의 위치.
 	const auto Destination = Location +
 		(Forward.Dot(Location - RootComponent->GetComponentLocation()) + FireRange) * Forward;
-	DrawDebugLine(GetWorld(), Location, Destination, FColor::Red);
+	DrawDebugLine(GetWorld(), Location, Destination, FColor::Red, false, 1.f);
 
 	if (FHitResult Result;
 		GetWorld()->LineTraceSingleByChannel(Result, Location, Destination, ECC_Camera, CollisionQueryParams))
@@ -114,7 +128,11 @@ void UAutoFireAbility::FailToFire()
 
 void UAutoFireAbility::FireTick()
 {
-	if (!bIsFiring) GetWorld()->GetTimerManager().ClearTimer(FireTimer);
+	if (!bIsFiring)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FireTimer);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
+	}
 	else if (ShouldFire()) SingleFire();
 	else FailToFire();
 }

@@ -60,10 +60,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float FireDamage;
 
-	// 사격 시 소모할 총알 개수입니다.
-	UPROPERTY(EditAnywhere)
-	uint8 BulletCost;
-
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_IsFiring, Transient)
 	bool bIsFiring;
