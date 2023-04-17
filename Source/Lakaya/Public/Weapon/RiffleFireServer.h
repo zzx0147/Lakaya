@@ -33,4 +33,6 @@ private:
 	FTimerHandle FireTimer;
 	EGunSelector Selector;
 	uint16 FireCount;
+
+	TSubclassOf<AActor> DecalActorClass;
 };

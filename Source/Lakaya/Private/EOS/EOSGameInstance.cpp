@@ -130,7 +130,7 @@ void UEOSGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 		{
 			SessionPtr->ClearOnCreateSessionCompleteDelegates(this);
 			UE_LOG(LogTemp,Warning,TEXT("Start Game Level Open"));
-			UGameplayStatics::OpenLevel(this, FName("TestGamePlayLevel"), true, FString("?listen"));
+			UGameplayStatics::OpenLevel(this, FName("LV_Lakaya_LastVer"), true, FString("?listen"));
 
 			/*FString ConnectionInfo = FString();
 			SessionPtr->GetResolvedConnectString(SessionName, ConnectionInfo);
