@@ -9,9 +9,9 @@
 
 DECLARE_EVENT_OneParam(ALakayaBaseCharacter, FCharacterNameSignature, const FName&)
 
-DECLARE_EVENT_OneParam(ALakayaBaseCharacter, FResourceSignature, const class UResourceComponent* const&)
+DECLARE_EVENT_OneParam(ALakayaBaseCharacter, FResourceSignature, class UResourceComponent* const&)
 
-DECLARE_EVENT_OneParam(ALakayaBaseCharacter, FStatSignature, const class UStatComponent* const&)
+DECLARE_EVENT_OneParam(ALakayaBaseCharacter, FStatSignature, class UStatComponent* const&)
 
 
 UCLASS()

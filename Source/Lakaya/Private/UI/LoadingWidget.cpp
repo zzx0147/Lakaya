@@ -3,6 +3,12 @@
 #include "GameMode/OccupationGameState.h"
 
 
+void ULoadingWidget::OnBeginPlay()
+{
+	Super::OnBeginPlay();
+	SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+}
+
 void ULoadingWidget::NativeConstruct()
 {
 	Super::NativeConstruct();

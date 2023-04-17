@@ -10,12 +10,16 @@
 
 AOccupationPlayerController::AOccupationPlayerController()
 {
-	//TODO: 데이터 테이블 가져오기
+	static const ConstructorHelpers::FObjectFinder<UDataTable> WidgetTableFinder(
+		TEXT("/Script/Engine.DataTable'/Game/Dev/Yongwoo/DataTables/DT_MatchWidgetData.DT_MatchWidgetData'"));
+
+	if (WidgetTableFinder.Succeeded()) MatchWidgetDataTable = WidgetTableFinder.Object;
 }
 
 void AOccupationPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+	if (!IsLocalController()) return;
 	const auto Data = MatchWidgetDataTable->FindRow<FMatchWidgetData>(TEXT("Occupation"),TEXT("OccupationWidgetSetup"));
 	if (!Data) return;
 
@@ -23,6 +27,7 @@ void AOccupationPlayerController::BeginPlay()
 	for (auto& WidgetClass : Data->WidgetList)
 	{
 		auto* MatchStateWidget = CreateViewportWidget<UMatchStateWidget>(WidgetClass, ESlateVisibility::Hidden);
+		MatchStateWidget->OnBeginPlay();
 		MatchWidgets.Emplace(MatchStateWidget);
 	}
 }

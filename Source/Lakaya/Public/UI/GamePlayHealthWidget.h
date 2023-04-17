@@ -28,9 +28,11 @@ protected:
 	void OnChangeMaximumHealth(const float& NewMaximumHealth);
 
 	//체력 프로그래스 바를 업데이트하는 함수
-	void UpdateHealthProgressBar();
+	void UpdateHealthProgressBar() const;
 
 private:
+	void BindStatComponent(class UStatComponent* const& StatComponent);
+
 	TObjectPtr<UProgressBar> HealthProgressBar; //체력을 표기하는 프로그래스 바
 	TObjectPtr<UTextBlock> HealthText; //체력을 표기하는 텍스트
 	TObjectPtr<UTextBlock> MaximumHealthText; //최대 체력을 표기하는 텍스트

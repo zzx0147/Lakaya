@@ -25,8 +25,9 @@ ALakayaBaseCharacter::ALakayaBaseCharacter()
 	bUseControllerRotationYaw = bUseControllerRotationPitch = true;
 	bUseControllerRotationRoll = false;
 
-	//TODO: Path 지정
-	static const ConstructorHelpers::FObjectFinder<UDataTable> TableFinder(TEXT("DataTable''"));
+	static const ConstructorHelpers::FObjectFinder<UDataTable> TableFinder(
+		TEXT("/Script/Engine.DataTable'/Game/Dev/Yongwoo/DataTables/DT_CharacterSetupTable.DT_CharacterSetupTable'"));
+
 	if (TableFinder.Succeeded()) CharacterSetupTable = TableFinder.Object;
 }
 
@@ -42,7 +43,7 @@ ELifetimeCondition ALakayaBaseCharacter::AllowActorComponentToReplicate(
 void ALakayaBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
+
 	DOREPLIFETIME(ALakayaBaseCharacter, CharacterName);
 	DOREPLIFETIME(ALakayaBaseCharacter, ResourceComponent);
 	DOREPLIFETIME(ALakayaBaseCharacter, StatComponent);

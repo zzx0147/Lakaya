@@ -82,7 +82,7 @@ private:
 
 	// 캐릭터 전용 위젯 컴포넌트의 클래스 정보를 불러올 데이터 테이블입니다.
 	UPROPERTY(EditAnywhere)
-	class UDataTable* CharacterWidgetComponentTable;
+	class UDataTable* CharacterBindableWidgetTable;
 
 	TArray<UCharacterBindableWidget*> CharacterBindableWidgets;
 	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;

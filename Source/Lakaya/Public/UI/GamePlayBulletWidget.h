@@ -20,6 +20,7 @@ protected:
 	virtual void NativeConstruct() override;
 
 private:
+	void BindBulletComponent(class UResourceComponent* const& ResourceComponent);
 	void OnChangeRemainBullets(const uint16& NewRemainBullets) const;
 	void OnChangeMagazineCapacity(const uint16& NewMagazineCapacity) const;
 

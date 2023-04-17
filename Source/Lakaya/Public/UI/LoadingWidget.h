@@ -10,6 +10,9 @@ class LAKAYA_API ULoadingWidget : public UMatchStateWidget
 {
 	GENERATED_BODY()
 
+public:
+	virtual void OnBeginPlay() override;
+	
 protected:
 	virtual void NativeConstruct() override;
 

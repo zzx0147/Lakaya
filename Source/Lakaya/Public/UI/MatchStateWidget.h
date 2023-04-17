@@ -15,6 +15,9 @@ class LAKAYA_API UMatchStateWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	// 위젯이 생성되고 난 후에 호출됩니다.
+	virtual void OnBeginPlay() { return; }
+	
 	/**
 	 * @brief 매치가 시작되고 호출됩니다.
 	 * @return 이 위젯이 계속 남아있을지 여부입니다. true면 남고, false이면 제거됩니다.
