@@ -7,7 +7,7 @@
 
 UBulletComponent::UBulletComponent()
 {
-	MaxBullets = 30;
+	Bullets = MaxBullets = 30;
 }
 
 void UBulletComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
