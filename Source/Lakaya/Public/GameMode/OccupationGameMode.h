@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "OccupationGameState.h"
 #include "GameMode/LakayaDefalutPlayGameMode.h"
+#include "Character/DamageableCharacter.h"
 #include "OccupationGameMode.generated.h"
 
 UCLASS()
@@ -39,8 +40,10 @@ private:
 	void DelayedEndedGame();
 
 private:
-	float GamePlayTime = 15.0f;
+	UPROPERTY(EditAnywhere)
+	float GamePlayTime = 180.0f;
 	AOccupationGameState* OccupationGameState;
+	TArray<ADamageableCharacter*> BoundActors;
 	
 private:
 	FTimerHandle TimerHandle_CheckStartMatch;

@@ -1,5 +1,5 @@
-#include "Character/CollectorPlayerState.h"
 #include "UI/GameResultWidget.h"
+#include "Character/CollectorPlayerState.h"
 #include "GameFramework/Character.h"
 
 void UGameResultWidget::NativeConstruct()

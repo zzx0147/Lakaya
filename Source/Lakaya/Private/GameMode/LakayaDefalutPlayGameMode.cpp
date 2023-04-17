@@ -91,6 +91,15 @@ void ALakayaDefalutPlayGameMode::Logout(AController* Exiting)
 void ALakayaDefalutPlayGameMode::OnKilledCharacter(AController* VictimController, AActor* Victim,
 	AController* InstigatorController, AActor* DamageCauser)
 {
+	ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(InstigatorController->GetCharacter()->GetPlayerState());
+	if (CollectorPlayerState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LakayaDefaultPlayGameMode_CollectorPlayerState is null."))
+		return;
+	}
+	
+	CollectorPlayerState->AddKills();
+	
 	FTimerHandle* ExistingTimer = RespawnTimers.Find(VictimController);
 	if (ExistingTimer != nullptr)
 	{

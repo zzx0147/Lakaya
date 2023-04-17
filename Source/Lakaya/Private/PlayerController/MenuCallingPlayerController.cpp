@@ -5,31 +5,14 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "GameFramework/PlayerState.h"
-#include "GameMode/IndividualGameState.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/LoadingWidget.h"
 #include "UI/DirectionalDamageIndicator.h"
 #include "Blueprint/UserWidget.h"
+#include "Camera/CameraComponent.h"
 #include "Character/ThirdPersonCharacter.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/PlayerStart.h"
-
-void AMenuCallingPlayerController::SetupInputComponent()
-{
-	Super::SetupInputComponent();
-
-	if (const auto Component = Cast<UEnhancedInputComponent>(InputComponent))
-	{
-		Component->BindAction(MenuAction, ETriggerEvent::Triggered, this, &AMenuCallingPlayerController::MenuHandler);
-		Component->BindAction(LoadoutAction, ETriggerEvent::Triggered, this,
-		                      &AMenuCallingPlayerController::LoadoutHandler);
-		Component->BindAction(ScoreAction, ETriggerEvent::Triggered, this,
-		                      &AMenuCallingPlayerController::ScoreHandler);
-	}
-
-	if (const auto Subsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
-		Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
-}
 
 AMenuCallingPlayerController::AMenuCallingPlayerController()
 {
@@ -55,6 +38,39 @@ AMenuCallingPlayerController::AMenuCallingPlayerController()
 	if (ScoreFinder.Succeeded()) ScoreAction = ScoreFinder.Object;
 }
 
+void AMenuCallingPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	if (const auto Component = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		Component->BindAction(MenuAction, ETriggerEvent::Triggered, this, &AMenuCallingPlayerController::MenuHandler);
+		Component->BindAction(LoadoutAction, ETriggerEvent::Triggered, this,
+							  &AMenuCallingPlayerController::LoadoutHandler);
+		Component->BindAction(ScoreAction, ETriggerEvent::Triggered, this,
+							  &AMenuCallingPlayerController::ScoreHandler);
+	}
+
+	if (const auto Subsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+		Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
+
+	if (APlayerState* CollPlayerState = GetPlayerState<APlayerState>())
+	{
+		if (ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(CollPlayerState))
+		{
+			InGameScoreBoardWidget->BindPlayerScore(CollectorPlayerState);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to cast PlayerState to ACollectorPlayerState"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to get PlayerState from pawn or spectator"));
+	}
+}
+
 void AMenuCallingPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -70,6 +86,7 @@ void AMenuCallingPlayerController::BeginPlay()
 		CreateTeamScoreWidget();
 		CreateDirectionalDamageIndicator();
 		CreateGameResultWidget();
+		CreateInGameScoreBoardWidget();
 
 #pragma endregion
 	}
@@ -90,7 +107,9 @@ void AMenuCallingPlayerController::LoadoutHandler(const FInputActionValue& Value
 void AMenuCallingPlayerController::ScoreHandler(const FInputActionValue& Value)
 {
 	//TODO: UI를 띄웁니다.
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Score"));
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ScoreBoard"));
+	// DirectionalIndicatorImage->SetVisibility(ESlateVisibility::Visible);
+	InGameScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
 }
 
 void AMenuCallingPlayerController::CreateLoadingWidget()
@@ -182,6 +201,20 @@ void AMenuCallingPlayerController::CreateGameResultWidget()
 	}
 }
 
+void AMenuCallingPlayerController::CreateInGameScoreBoardWidget()
+{
+	if (IsLocalController())
+	{
+		// 인게임스코어보드 위젯
+		InGameScoreBoardWidget = CreateWidgetHelper<UInGameScoreBoardWidget>(TEXT("/Game/Blueprints/UMG/WBP_InGameScoreBoardWidget.WBP_InGameScoreBoardWidget_C"));
+		if (InGameScoreBoardWidget == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("InGameScoreBoardWidget is null."));
+			return;
+		}
+	}
+}
+
 void AMenuCallingPlayerController::CreateDirectionalDamageIndicator()
 {
 	if (IsLocalController())
@@ -195,6 +228,8 @@ void AMenuCallingPlayerController::CreateDirectionalDamageIndicator()
 		}
 	}
 }
+
+
 
 void AMenuCallingPlayerController::IndicateStart(FName CauserName, FVector DamageCursorPosition, float time)
 {

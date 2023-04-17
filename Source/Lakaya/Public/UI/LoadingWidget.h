@@ -4,8 +4,6 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "GameFramework/HUD.h"
-#include "GameMode/IndividualGameMode.h"
-#include "GameMode/IndividualGameState.h"
 #include "GameMode/OccupationGameState.h"
 #include "LoadingWidget.generated.h"
 
@@ -16,7 +14,6 @@ class LAKAYA_API ULoadingWidget : public UUserWidget
 
 private:
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* LoadingWidgetText;

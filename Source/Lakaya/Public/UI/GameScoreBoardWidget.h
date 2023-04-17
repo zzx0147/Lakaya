@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "GameMode/IndividualGameState.h"
 #include "GameMode/OccupationGameState.h"
 #include "GameScoreBoardWidget.generated.h"
 

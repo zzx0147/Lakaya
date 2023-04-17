@@ -3,6 +3,7 @@
 #include "GameMode/OccupationGameState.h"
 
 #include "GameMode/OccupationGameMode.h"
+#include "Interfaces/OnlineFriendsInterface.h"
 #include "Net/UnrealNetwork.h"
 
 void AOccupationGameState::BeginPlay()
@@ -106,6 +107,25 @@ void AOccupationGameState::SubBTeamObjectNum()
 {
 	if (BTeamObjectNum > 0)
 		BTeamObjectNum -= 1;
+}
+
+int32 AOccupationGameState::GetPlayerIndex(APlayerState* PlayerState) const
+{
+	// 플레이어의 인덱스를 찾을 수 없으면 -1를 반환합니다.
+	int32 Index = -1;
+
+	// PlayerArray에서 플레이어의 APlayerState 객체를 찾습니다.
+	int32 IntNumPlayers = PlayerArray.Num();
+	for (int32 i = 0; i < IntNumPlayers; i++)
+	{
+		if (PlayerArray[i] == PlayerState)
+		{
+			Index = i;
+			break;
+		}
+	}
+
+	return Index;
 }
 
 void AOccupationGameState::OnMatchStarted(const float& MatchTime)

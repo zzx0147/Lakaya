@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Character/ArmedCharacter.h"
 #include "InputMappingContext.h"
+#include "Character/CollectorPlayerState.h"
 #include "Character/DamageableCharacter.h"
 #include "UI/GamePlayBulletWidget.h"
 #include "UI/GamePlayConsecutiveKillsWidget.h"
@@ -74,7 +75,7 @@ void ABattlePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 	if (!IsLocalController()) return;
-
+	
 	if (const auto GameState = GetWorld()->GetGameState<AOccupationGameState>())
 	{
 		GameState->OnOccupationChangeGameState.AddLambda([this](EOccupationGameState State)
