@@ -31,12 +31,12 @@ void UReloadAbility::AbilityStart()
 	}
 
 	bIsReloading = true;
+	Super::AbilityStart();
 	GetWorld()->GetTimerManager().SetTimer(OwnerTimer, [this]
 	{
 		bIsReloading = false;
 		OnReloadStateChanged.Broadcast(bIsReloading);
 	}, ReloadDelay, false);
-	Super::AbilityStart();
 	OnReloadStateChanged.Broadcast(bIsReloading);
 }
 
@@ -56,14 +56,18 @@ void UReloadAbility::RequestStart_Implementation(const float& RequestTime)
 	Super::RequestStart_Implementation(RequestTime);
 	if (bIsReloading) return;
 	bIsReloading = true;
+	
 	GetWorld()->GetTimerManager().SetTimer(OwnerTimer, [this]
 	{
 		bIsReloading = false;
 		OnReloadStateChanged.Broadcast(bIsReloading);
 		if (BulletComponent.IsValid()) BulletComponent->Reload();
 		else UE_LOG(LogActorComponent, Error, TEXT("BulletComponent is invalid!"));
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Reloaded!"));
 	}, ReloadDelay, false);
+	
 	OnReloadStateChanged.Broadcast(bIsReloading);
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ReloadTimerSetted!"));
 }
 
 void UReloadAbility::OnRep_IsReloading()
