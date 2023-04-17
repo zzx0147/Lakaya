@@ -4,12 +4,12 @@
 #include "Character/InteractableCharacter.h"
 
 #include "Interactable/Interactable.h"
-#include "PlayerController/MovablePlayerController.h"
+#include "Net/UnrealNetwork.h"
 
 void AInteractableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION(AInteractableCharacter, InteractingActor, COND_SkipOwner);
+	DOREPLIFETIME(AInteractableCharacter, InteractingActor);
 }
 
 void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -40,24 +40,18 @@ void AInteractableCharacter::KillCharacter(AController* EventInstigator, AActor*
 
 void AInteractableCharacter::StartInteraction()
 {
-	if (!InteractableActor.IsValid()) return;
-	RequestInteractionStart(GetServerTime(), InteractableActor.Get());
-	if (!HasAuthority())
-	{
-		InteractingActor = InteractableActor;
-		OnInteractingActorChanged.Broadcast(InteractingActor.Get());
-	}
+	if (InteractableActor.IsValid()) RequestInteractionStart(GetServerTime(), InteractableActor.Get());
 }
 
 void AInteractableCharacter::StopInteraction()
 {
-	if (!InteractingActor.IsValid()) return;
-	RequestInteractionStop(GetServerTime(), InteractingActor.Get());
-	if (!HasAuthority())
-	{
-		InteractingActor = nullptr;
-		OnInteractingActorChanged.Broadcast(InteractingActor.Get());
-	}
+	if (InteractingActor.IsValid()) RequestInteractionStop(GetServerTime(), InteractingActor.Get());
+}
+
+void AInteractableCharacter::InitializeInteraction()
+{
+	InteractingActor = nullptr;
+	OnInteractingActorChanged.Broadcast(InteractingActor.Get());
 }
 
 void AInteractableCharacter::OnRep_InteractingActor()
