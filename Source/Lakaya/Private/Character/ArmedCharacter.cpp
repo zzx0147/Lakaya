@@ -41,12 +41,16 @@ void AArmedCharacter::SetupCharacterServer(const FCharacterSetupData* Data)
 
 void AArmedCharacter::StartAbility(const EAbilityKind& Kind)
 {
-	if (Abilities.Num() > Kind && GetIsAlive()) Abilities[Kind]->AbilityStart();
+	if (Abilities.Num() > Kind && GetIsAlive())
+		if (const auto Ability = Abilities[Kind])
+			Ability->AbilityStart();
 }
 
 void AArmedCharacter::StopAbility(const EAbilityKind& Kind)
 {
-	if (Abilities.Num() > Kind && GetIsAlive()) Abilities[Kind]->AbilityStop();
+	if (Abilities.Num() > Kind && GetIsAlive())
+		if (const auto Ability = Abilities[Kind])
+			Ability->AbilityStop();
 }
 
 void AArmedCharacter::OnRep_Abilities()
