@@ -31,4 +31,12 @@ private:
 	FTimerHandle FireTimer;
 	EGunSelector Selector;
 	uint16 FireCount;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara Parameters")
+	float BeamWidth;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara Parameters")
+	FLinearColor BeamColor;
+	
 };

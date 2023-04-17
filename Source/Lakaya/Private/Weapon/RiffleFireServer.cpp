@@ -17,7 +17,11 @@ URiffleFireServer::URiffleFireServer()
 	static const ConstructorHelpers::FObjectFinder<UDataTable> TableFinder(
 		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/DT_WeaponFireDataTable'"));
 
+	static const ConstructorHelpers::FClassFinder<AActor> DecalActorFinder(
+		TEXT("/Game/Blueprints/ETC/BP_GunDecal.BP_GunDecal_C"));
+
 	if (TableFinder.Succeeded()) WeaponFireDataTable = TableFinder.Object;
+	DecalActorClass = DecalActorFinder.Class;
 }
 
 void URiffleFireServer::OnFireStart()
@@ -107,4 +111,9 @@ void URiffleFireServer::TraceFire()
 
 	UGameplayStatics::ApplyDamage(HitResult.GetActor(), BaseDamage, Character->GetController(),
 	                              Character.Get(), nullptr);
+	if (Cast<APawn>(HitResult.GetActor()) == nullptr)
+	{
+		//FActorSpawnParameters SpawnParam;		
+		GetWorld()->SpawnActor<AActor>(DecalActorClass, HitResult.Location, HitResult.Normal.Rotation());
+	}
 }
