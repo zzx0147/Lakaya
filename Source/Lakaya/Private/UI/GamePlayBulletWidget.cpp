@@ -11,25 +11,19 @@ void UGamePlayBulletWidget::BindCharacter(ACharacter* const& Character)
 {
 	Super::BindCharacter(Character);
 	if (const auto CastedCharacter = Cast<ALakayaBaseCharacter>(Character))
-		if (const auto BulletComponent = CastedCharacter->GetResourceComponent<UBulletComponent>())
-		{
-			OnChangeRemainBullets(BulletComponent->GetBullets());
-			OnChangeMagazineCapacity(BulletComponent->GetMaxBullets());
-
-			BulletComponent->OnBulletsChanged.AddUObject(this, &UGamePlayBulletWidget::OnChangeRemainBullets);
-			BulletComponent->OnMaxBulletsChanged.AddUObject(this, &UGamePlayBulletWidget::OnChangeMagazineCapacity);
-		}
+	{
+		BindBulletComponent(CastedCharacter->GetResourceComponent());
+		CastedCharacter->OnResourceChanged.AddUObject(this, &UGamePlayBulletWidget::BindBulletComponent);
+	}
 }
 
 bool UGamePlayBulletWidget::UnbindCharacter(ACharacter* const& Character)
 {
+	OnChangeRemainBullets(0);
+	OnChangeMagazineCapacity(0);
 	if (const auto CastedCharacter = Cast<ALakayaBaseCharacter>(Character))
-		if (const auto BulletComponent = CastedCharacter->GetResourceComponent<UBulletComponent>())
-		{
-			BulletComponent->OnBulletsChanged.RemoveAll(this);
-			BulletComponent->OnMaxBulletsChanged.RemoveAll(this);
-		}
-	return Super::UnbindCharacter(Character);
+		CastedCharacter->OnResourceChanged.RemoveAll(this);
+	return false;
 }
 
 void UGamePlayBulletWidget::NativeConstruct()
@@ -46,6 +40,18 @@ void UGamePlayBulletWidget::NativeConstruct()
 	check(MagazineCapacityText != nullptr);
 
 #pragma endregion
+}
+
+void UGamePlayBulletWidget::BindBulletComponent(UResourceComponent* const& ResourceComponent)
+{
+	if (const auto BulletComponent = Cast<UBulletComponent>(ResourceComponent))
+	{
+		OnChangeRemainBullets(BulletComponent->GetBullets());
+		OnChangeMagazineCapacity(BulletComponent->GetMaxBullets());
+
+		BulletComponent->OnBulletsChanged.AddUObject(this, &UGamePlayBulletWidget::OnChangeRemainBullets);
+		BulletComponent->OnMaxBulletsChanged.AddUObject(this, &UGamePlayBulletWidget::OnChangeMagazineCapacity);
+	}
 }
 
 void UGamePlayBulletWidget::OnChangeRemainBullets(const uint16& NewRemainBullets) const

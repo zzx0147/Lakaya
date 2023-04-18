@@ -22,8 +22,14 @@ protected:
 	virtual void KillCharacter(AController* EventInstigator, AActor* DamageCauser) override;
 
 public:
+	// 주변에 인터렉션 가능한 액터가 존재하는 경우 인터렉션을 시작합니다.
 	void StartInteraction();
+	
+	// 현재 인터렉션 중인 액터가 있는 경우 인터렉션을 중단합니다.
 	void StopInteraction();
+
+	// 인터렉션을 초기화합니다. 인터렉션이 끝나는 경우 호출됩니다.
+	void InitializeInteraction();
 
 	AActor* GetInteractableActor() const { return InteractableActor.Get(); }
 	AActor* GetInteractingActor() const { return InteractingActor.Get(); }

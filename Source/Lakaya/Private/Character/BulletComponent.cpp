@@ -7,7 +7,7 @@
 
 UBulletComponent::UBulletComponent()
 {
-	MaxBullets = 30;
+	Bullets = MaxBullets = 30;
 }
 
 void UBulletComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -22,6 +22,7 @@ bool UBulletComponent::CostBullet(const uint16& Value)
 {
 	if (Bullets < Value) return false;
 	Bullets -= Value;
+	OnBulletsChanged.Broadcast(Bullets);
 	return true;
 }
 
