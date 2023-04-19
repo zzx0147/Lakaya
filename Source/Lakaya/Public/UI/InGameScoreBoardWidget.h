@@ -16,11 +16,9 @@ private:
 
 public:
 	void BindPlayerScore(class ACollectorPlayerState* CollectorPlayerState);
-	void OnChangePlayerScore(int32 NewScore, int32 NewKills, int32 NewOcuSuc, int32 NewOwnObjectNum);
+	void OnChangePlayerScore(FPlayerInfo NewPlayer, int32 NewScore, int32 NewKills, int32 NewOcuSuc, int32 NewOwnObjectNum);
 
 	// TArray<ACollectorPlayerState*> PlayerStatesArray;
-
-	int32 MyIndex;
 
 #pragma region Text
 	UPROPERTY(meta = (BindWidget))

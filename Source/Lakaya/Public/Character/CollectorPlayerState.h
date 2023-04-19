@@ -6,7 +6,7 @@
 #include "GameFramework/PlayerState.h"
 #include "CollectorPlayerState.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_FourParams(FOnPlayerStateChange, int32, int32, int32, int32);
+DECLARE_MULTICAST_DELEGATE_FiveParams(FOnPlayerStateChange, FPlayerInfo, int32, int32, int32, int32);
 
 UENUM()
 enum class EPlayerTeamState : uint8
@@ -106,6 +106,9 @@ private:
 	UFUNCTION()
 	void OnRep_OwnObjectNum();
 
+private:
+	TArray<TArray<FPlayerInfo>> PlayerInfoArray;
+	
 public:
 	FOnPlayerStateChange OnPlayerStateChange;
 };

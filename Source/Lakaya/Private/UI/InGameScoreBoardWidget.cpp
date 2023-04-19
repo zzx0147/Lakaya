@@ -6,12 +6,14 @@ void UInGameScoreBoardWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	OccupationGameState = GetWorld() ? Cast<AOccupationGameState>(GetWorld()->GetGameState()) : nullptr;
-	if (OccupationGameState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InGameScoreBoardWidget_GameState is null."));
-		return;
-	}
+	SetVisibility(ESlateVisibility::Hidden);
+
+	// OccupationGameState = GetWorld() ? Cast<AOccupationGameState>(GetWorld()->GetGameState()) : nullptr;
+	// if (OccupationGameState == nullptr)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("InGameScoreBoardWidget_GameState is null."));
+	// 	return;
+	// }
 
 	// for (int i = 0; i < OccupationGameState->GetNumPlayers(); i++)
 	// {
@@ -221,44 +223,35 @@ void UInGameScoreBoardWidget::BindPlayerScore(ACollectorPlayerState* ArgCollecto
 	// }
 
 	// MyIndex = static_cast<int32>(OccupationGameState->GetPlayerIndex(MyPlayerState));
-	// ArgCollectorPlayerState->OnPlayerStateChange.AddUObject(this, &UInGameScoreBoardWidget::OnChangePlayerScore);
+	ArgCollectorPlayerState->OnPlayerStateChange.AddUObject(this, &UInGameScoreBoardWidget::OnChangePlayerScore);
 	// CollectorPlayerState = ArgCollectorPlayerState;
+	UE_LOG(LogTemp, Warning, TEXT("Binding Success."));
 }
 
-void UInGameScoreBoardWidget::OnChangePlayerScore(int32 NewScore, int32 NewKills, int32 NewOcuSuc,
+void UInGameScoreBoardWidget::OnChangePlayerScore(FPlayerInfo NewPlayer, int32 NewScore, int32 NewKills, int32 NewOcuSuc,
 	int32 NewOwnObjectNum)
 {
-	// switch (MyIndex)
-	// {
-	// case 0:
-	// 	A_Player_01_TotalScore->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().TotalScore)));
-	// 	A_Player_01_Kill->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().Kills)));
-	// 	A_Player_01_OcuSuc->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().OccupationSuccess)));
-	// 	break;
-	// case 1:
-	// 	B_Player_01_TotalScore->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().TotalScore)));
-	// 	B_Player_01_Kill->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().Kills)));
-	// 	B_Player_01_OcuSuc->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().OccupationSuccess)));
-	// 	break;
-	// case 2:
-	// 	A_Player_02_TotalScore->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().TotalScore)));
-	// 	A_Player_02_Kill->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().Kills)));
-	// 	A_Player_02_OcuSuc->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().OccupationSuccess)));
-	// 	break;
-	// case 3:
-	// 	B_Player_02_TotalScore->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().TotalScore)));
-	// 	B_Player_02_Kill->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().Kills)));
-	// 	B_Player_02_OcuSuc->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().OccupationSuccess)));
-	// 	break;
-	// case 4:
-	// 	A_Player_03_TotalScore->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().TotalScore)));
-	// 	A_Player_03_Kill->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().Kills)));
-	// 	A_Player_03_OcuSuc->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().OccupationSuccess)));
-	// 	break;
-	// case 5:
-	// 	B_Player_03_TotalScore->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().TotalScore)));
-	// 	B_Player_03_Kill->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().Kills)));
-	// 	B_Player_03_OcuSuc->SetText(FText::FromString(FString::Printf(TEXT("%d"), CollectorPlayerState->GetPlayerInfo().OccupationSuccess)));
-	// 	break;
-	// }
+	// A_Player_01_TotalScore->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.TotalScore)));
+	// A_Player_01_Kill->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.Kills)));
+	// A_Player_01_OcuSuc->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.OccupationSuccess)));
+	//
+	// B_Player_01_TotalScore->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.TotalScore)));
+	// B_Player_01_Kill->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.Kills)));
+	// B_Player_01_OcuSuc->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.OccupationSuccess)));
+	//
+	// A_Player_02_TotalScore->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.TotalScore)));
+	// A_Player_02_Kill->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.Kills)));
+	// A_Player_02_OcuSuc->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.OccupationSuccess)));
+	//
+	// B_Player_02_TotalScore->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.TotalScore)));
+	// B_Player_02_Kill->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.Kills)));
+	// B_Player_02_OcuSuc->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.OccupationSuccess)));
+	//
+	// A_Player_03_TotalScore->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.TotalScore)));
+	// A_Player_03_Kill->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.Kills)));
+	// A_Player_03_OcuSuc->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.OccupationSuccess)));
+	//
+	// B_Player_03_TotalScore->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.TotalScore)));
+	// B_Player_03_Kill->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.Kills)));
+	// B_Player_03_OcuSuc->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayer.OccupationSuccess)));
 }
