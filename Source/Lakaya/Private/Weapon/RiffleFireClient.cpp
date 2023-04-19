@@ -55,8 +55,6 @@ void URiffleFireClient::TraceVisualize()
 	FHitResult HitResult;
 	auto StartPoint = Character->GetActorLocation();
 	
-	static bool bPlayedNiagaraEffect = false;
-
 	// TODO : 나이아가라 이펙트 경로 지정
 	UNiagaraSystem* NiagaraEffect =
 	Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
@@ -105,11 +103,4 @@ void URiffleFireClient::TraceVisualize()
 				NiagaraBeam->SetVariableLinearColor(TEXT("Color"), BeamColor);
 				NiagaraBeam->ActivateSystem(); 
 			}
-
-	// TODO : 총구위치에서 나이아가라 이펙트 스폰 시킨후 bPlayedNiagaraEffect = true 로 설정
-	if (!bPlayedNiagaraEffect)
-	{
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect, StartPoint, Character->GetActorRotation());
-		bPlayedNiagaraEffect = true;
-	}
 }
