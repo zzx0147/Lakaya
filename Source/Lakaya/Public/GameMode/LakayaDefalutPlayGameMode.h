@@ -57,7 +57,7 @@ protected:
 
 public:
 	uint8 GetPlayerRespawnTime() { return PlayerRespawnTime; }
-	bool GetbWaitToStart() { return bWaitToStart; }
+	FORCEINLINE bool GetbWaitToStart() const { return bWaitToStart; }
 	
 private:
 	uint8 PlayerRespawnTime = 3;

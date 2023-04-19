@@ -74,10 +74,7 @@ public:
 	void SubBTeamObjectNum();
 
 	UFUNCTION()
-	int32 GetPlayerIndex(APlayerState* PlayerState) const;
-	
-	UFUNCTION()
-	uint8 GetMaxPlayers() const { return MaxPlayers; }
+	FORCEINLINE uint8 GetMaxPlayers() const { return MaxPlayers; }
 
 	UFUNCTION()
 	uint8 GetNumPlayers() const { return NumPlayers; }
@@ -95,7 +92,7 @@ public:
 	float GetBTeamObjectNum() { return BTeamObjectNum; }
 
 	UFUNCTION()
-	float GetMaxScore() { return MaxScore; }
+	FORCEINLINE float GetMaxScore() const { return MaxScore; }
 
 	UFUNCTION()
 	EOccupationWinner GetOccupationWinner() { return CurrentOccupationWinner; }
