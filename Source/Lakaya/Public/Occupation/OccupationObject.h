@@ -73,4 +73,5 @@ private:
 
 private:
 	APawn* InteractingPawn;
+	APawn* Owner;
 };

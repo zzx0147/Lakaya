@@ -13,6 +13,7 @@
 #include "UI/LoadingWidget.h"
 #include "UI/TeamScoreWidget.h"
 #include "Net/UnrealNetwork.h"
+#include "UI/InGameScoreBoardWidget.h"
 #include "MenuCallingPlayerController.generated.h"
 
 /**
@@ -64,6 +65,7 @@ public:
 	void CreateGamePlayCrosshairWidget();
 	void CreateTeamScoreWidget();
 	void CreateGameResultWidget();
+	void CreateInGameScoreBoardWidget();
 	
 	void CreateDirectionalDamageIndicator();
 
@@ -94,5 +96,6 @@ public:
 	UGamePlayCrosshairWidget* GamePlayCrosshairWidget;
 	UTeamScoreWidget* TeamScoreWidget;
 	UGameResultWidget* GameResultWidget;
+	UInGameScoreBoardWidget* InGameScoreBoardWidget;
 	class UDirectionalDamageIndicator* DirectionalDamageIndicator;
 };

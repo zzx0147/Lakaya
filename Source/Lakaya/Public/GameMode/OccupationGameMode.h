@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "OccupationGameState.h"
+#include "GameMode/OccupationGameState.h"
 #include "GameMode/LakayaDefalutPlayGameMode.h"
+#include "Character/DamageableCharacter.h"
 #include "OccupationGameMode.generated.h"
 
 UCLASS()
@@ -43,7 +44,8 @@ private:
 	float GamePlayTime = 180.0f;
 	
 	AOccupationGameState* OccupationGameState;
-	
+	TArray<ADamageableCharacter*> BoundActors;
+
 private:
 	FTimerHandle TimerHandle_CheckStartMatch;
 	FTimerHandle TimerHandle_DelayedStart;
