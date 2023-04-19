@@ -79,13 +79,12 @@ void AMenuCallingPlayerController::BeginPlay()
 
 		CreateLoadingWidget();
 		CreateGameTimeWidget();
-		CreateScoreBoardWidget();
+		// CreateScoreBoardWidget();
 		CreateGamePlayCrosshairWidget();
 		CreateTeamScoreWidget();
 		CreateDirectionalDamageIndicator();
 		CreateGameResultWidget();
 		CreateInGameScoreBoardWidget();
-
 #pragma endregion
 	}
 }
@@ -107,26 +106,6 @@ void AMenuCallingPlayerController::ScoreHandler(const FInputActionValue& Value)
 	//TODO: UI를 띄웁니다.
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ScoreBoard"));
 	InGameScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
-
-	APawn* MyPawn = GetPawn();
-	if (MyPawn)
-	{
-		auto MyPlayerState = Cast<ACollectorPlayerState>(MyPawn->GetPlayerState());
-		if (MyPlayerState)
-		{
-			InGameScoreBoardWidget->BindPlayerScore(MyPlayerState);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("MyPlayerState is null."));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("MyPlayerState is null."));
-	}
-
-	// for (int i = 0; i < )
 }
 
 void AMenuCallingPlayerController::ScoreCanceledHandler(const FInputActionValue& Value)
