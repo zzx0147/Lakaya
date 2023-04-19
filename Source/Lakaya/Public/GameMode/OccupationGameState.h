@@ -137,7 +137,7 @@ private:
 	uint8 BTeamObjectNum = 0;
 
 	UPROPERTY(EditAnywhere)
-	uint8 MaxPlayers = 6;
+	uint8 MaxPlayers = 4;
 
 	float Standard = 0.2f;
 
