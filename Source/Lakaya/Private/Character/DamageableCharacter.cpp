@@ -74,7 +74,7 @@ void ADamageableCharacter::OnHitEffectPlay_Implementation(AActor* DamagedActor)
 	// TODO : 나이아가라 이펙트 경로 지정
 	UNiagaraSystem* NiagaraEffect =
 	Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
-		TEXT("/Game/Effects/M_VFX/VFX_Hit_Impact_3.VFX_Hit_Impact_3'")));
+		TEXT("/Game/Effects/M_VFX/VFX_Hit_Impact_3")));
 
 	FVector HitLoaction = DamagedActor->GetActorLocation() + FVector(0,0,60);
 
