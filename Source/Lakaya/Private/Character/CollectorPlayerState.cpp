@@ -3,7 +3,7 @@
 #include "Character/CollectorPlayerState.h"
 
 // #include "InterchangeResult.h"
-#include "OccupationCharacter.h"
+#include "Character/OccupationCharacter.h"
 #include "GameMode/OccupationGameMode.h"
 #include "GameMode/OccupationGameState.h"
 #include "Net/UnrealNetwork.h"
