@@ -4578,6 +4578,18 @@
 			"Type": "RequiredResource"
 		},
 		{
+			"Path": "$(EngineDir)/Plugins/FX/CascadeToNiagaraConverter/Binaries/Win64/UnrealEditor-CascadeToNiagaraConverter.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/FX/CascadeToNiagaraConverter/Binaries/Win64/UnrealEditor-CascadeToNiagaraConverter.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/FX/CascadeToNiagaraConverter/Binaries/Win64/UnrealEditor.modules",
+			"Type": "RequiredResource"
+		},
+		{
 			"Path": "$(EngineDir)/Plugins/FX/Niagara/Binaries/Win64/UnrealEditor-Niagara.dll",
 			"Type": "DynamicLibrary"
 		},
@@ -26877,6 +26889,10 @@
 		},
 		{
 			"Path": "$(EngineDir)/Plugins/Experimental/UVEditor/UVEditor.uplugin",
+			"Type": "UFS"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/FX/CascadeToNiagaraConverter/CascadeToNiagaraConverter.uplugin",
 			"Type": "UFS"
 		},
 		{

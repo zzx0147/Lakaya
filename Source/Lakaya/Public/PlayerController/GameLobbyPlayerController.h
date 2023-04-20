@@ -34,7 +34,7 @@ protected:
 	 * @param NewPawn 새로 빙의한 폰 객체입니다.
 	 */
 	UFUNCTION()
-	virtual void OnPossessedPawnChangedCallback(APawn* PreOldPawn, APawn* NewPawn) { return; }
+	virtual void OnPossessedPawnChangedCallback(APawn* PrevPawn, APawn* NewPawn) { return; }
 
 	/**
 	 * @brief 향상된 입력을 사용하는 우리 게임을 위해 선언된 함수입니다. SetupInputComponent에서 호출됩니다.
