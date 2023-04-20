@@ -25,7 +25,8 @@ public:
 	inline const bool& GetYawClutch() const { return YawClutch; }
 	inline void SetYawClutch(const bool& Enable) { YawClutch = Enable; }
 
-protected:
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	bool bFixMeshTransform;
 
 private:
