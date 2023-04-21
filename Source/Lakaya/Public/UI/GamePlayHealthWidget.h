@@ -32,7 +32,7 @@ private:
 	UProgressBar* HealthProgressBar; //체력을 표기하는 프로그래스 바
 	UTextBlock* HealthText; //체력을 표기하는 텍스트
 	UTextBlock* MaximumHealthText; //최대 체력을 표기하는 텍스트
-
+	
 	float MaximumHealth; //최대 체력 값
 	float Health; //체력 값
 };

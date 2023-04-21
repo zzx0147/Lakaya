@@ -32,7 +32,7 @@ void UGameResultWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 
 void UGameResultWidget::ReMoveLoadingWidget(EOccupationGameState ChangeGameState)
 {
-	// TODO
+	// TODO :
 }
 
 void UGameResultWidget::OnChangeWinner(EOccupationWinner NewWinner)
@@ -53,12 +53,10 @@ void UGameResultWidget::OnChangeWinner(EOccupationWinner NewWinner)
 		WinnerString = FString(TEXT("Undecided"));
 		break;
 	case EOccupationWinner::A:
-		// WinnerString = FString(TEXT("A"));
 		if (PlayerState->GetPlayerTeamState() == EPlayerTeamState::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
 		else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
 		break;
 	case EOccupationWinner::B:
-		// WinnerString = FString(TEXT("B"));
 		if (PlayerState->GetPlayerTeamState() == EPlayerTeamState::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
 		else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
 		break;
@@ -66,6 +64,4 @@ void UGameResultWidget::OnChangeWinner(EOccupationWinner NewWinner)
 		WinnerString = FString(TEXT("Unknown"));
 		break;
 	}
-	
-	// GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("%s팀이 승리하였습니다 !"), *WinnerString)));
 }

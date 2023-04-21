@@ -3,7 +3,7 @@
 #include "Character/CollectorPlayerState.h"
 
 // #include "InterchangeResult.h"
-#include "OccupationCharacter.h"
+#include "Character/OccupationCharacter.h"
 #include "GameMode/OccupationGameMode.h"
 #include "GameMode/OccupationGameState.h"
 #include "Net/UnrealNetwork.h"
@@ -29,7 +29,6 @@ void ACollectorPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 void ACollectorPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-
 	
 	OnPawnSet.AddDynamic(this, &ACollectorPlayerState::OnPawnSetCallback);
 }
@@ -97,7 +96,7 @@ void ACollectorPlayerState::OnRep_BroadCastMyTeam()
 void ACollectorPlayerState::OnRep_ScoreUpdate()
 {
 	UE_LOG(LogTemp, Warning, TEXT("플레이어 이름 : %s 점수 : %d 킬 : %d 점령 성공 : %d"), *PlayerInfo.PlayerName, PlayerInfo.TotalScore, PlayerInfo.Kills, PlayerInfo.OccupationSuccess);
-	OnPlayerStateChange.Broadcast(PlayerInfo.TotalScore, PlayerInfo.Kills, PlayerInfo.OccupationSuccess, PlayerInfo.OwnObjectNum);
+	OnPlayerStateChange.Broadcast(PlayerInfo, PlayerInfo.TotalScore, PlayerInfo.Kills, PlayerInfo.OccupationSuccess, PlayerInfo.OwnObjectNum);
 	UE_LOG(LogTemp, Warning, TEXT("OnRep_ScoreUpdate Function."));
 }
 

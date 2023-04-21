@@ -3,6 +3,7 @@
 
 #include "Character/DamageableCharacter.h"
 
+#include "NiagaraComponent.h"
 #include "PlayerController/BattlePlayerController.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -105,7 +106,6 @@ void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* D
 	//TODO: 트레이스 충돌은 꺼지지만, 여전히 다른 캐릭터의 움직임을 제한하고 있습니다..
 	SetActorEnableCollision(false);
 	KillCharacterNotify(EventInstigator, DamageCauser);
-	
 }
 
 void ADamageableCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
@@ -150,6 +150,31 @@ void ADamageableCharacter::IndicateRPC_Implementation(FName CauserName, FVector 
 		if (MenuCallingPlayercontroller != nullptr)
 		{
 			MenuCallingPlayercontroller->IndicateStart(CauserName, DamageCursorPosition, 3.0f);
+
+			FSoftObjectPath NiagaraPath;
+			// if (Health <= 50)
+			// {
+				// NiagaraPath = (TEXT("/Game/Effects/M_VFX/VFX_Screeneffect_2.VFX_Screeneffect_2"));
+			// }
+			// else
+			// {
+				NiagaraPath = (TEXT("/Game/Effects/M_VFX/VFX_Screeneffect.VFX_Screeneffect"));
+			// }
+	
+			// ScreenEffect : 피격 당할 시 화면에 표기 되는 이펙트
+			UNiagaraSystem* NiagaraEffect = Cast<UNiagaraSystem>(NiagaraPath.TryLoad());
+		
+			if (NiagaraEffect)
+			{
+				NiagaraComponent =
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect,
+				FVector(0.0f, 0.0f, 0.0f));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Failed to load Niagara system!"));
+			}
+
 		}
 	}
 }
@@ -158,13 +183,10 @@ void ADamageableCharacter::RespawnNotify_Implementation()
 {
 	GetMesh()->SetVisibility(true, true);
 
-
-
 	//GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
 	//GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
 	//GetMesh()->SetSimulatePhysics(false);
 	//bFixMeshTransform = true;
 	//GetMesh()->SetupAttachment(GetCapsuleComponent());
-
 	OnRespawnCharacterNotify.Broadcast(this);
 }

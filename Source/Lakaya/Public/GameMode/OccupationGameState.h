@@ -47,13 +47,13 @@ private:
 
 public:
 	UFUNCTION()
-	void SetNumPlayers(uint8 NewNumPlayers);
+	void SetNumPlayers(const uint8 NewNumPlayers);
 
 	UFUNCTION()
-	void SetGameState(EOccupationGameState NewGameState);
+	void SetGameState(const EOccupationGameState NewGameState);
 	
 	UFUNCTION()
-	void SetOccupationWinner(EOccupationWinner NewWinner);
+	void SetOccupationWinner(const EOccupationWinner NewWinner);
 
 	UFUNCTION()
 	void SetATeamScore();
@@ -74,31 +74,28 @@ public:
 	void SubBTeamObjectNum();
 
 	UFUNCTION()
-	int32 GetPlayerIndex(APlayerState* PlayerState) const;
+	FORCEINLINE uint8 GetMaxPlayers() const { return MaxPlayers; }
+
+	UFUNCTION()
+	FORCEINLINE uint8 GetNumPlayers() const { return NumPlayers; }
 	
 	UFUNCTION()
-	uint8 GetMaxPlayers() const { return MaxPlayers; }
+	FORCEINLINE float GetATeamScore() const { return ATeamScore; }
 
 	UFUNCTION()
-	uint8 GetNumPlayers() const { return NumPlayers; }
-	
-	UFUNCTION()
-	float GetATeamScore() { return ATeamScore; }
+	FORCEINLINE float GetBTeamScore() const { return BTeamScore; }
 
 	UFUNCTION()
-	float GetBTeamScore() { return BTeamScore; }
+	FORCEINLINE float GetATeamObjectNum() const { return ATeamObjectNum; }
 
 	UFUNCTION()
-	float GetATeamObjectNum() { return ATeamObjectNum; }
+	FORCEINLINE float GetBTeamObjectNum() const { return BTeamObjectNum; }
 
 	UFUNCTION()
-	float GetBTeamObjectNum() { return BTeamObjectNum; }
+	FORCEINLINE float GetMaxScore() const { return MaxScore; }
 
 	UFUNCTION()
-	float GetMaxScore() { return MaxScore; }
-
-	UFUNCTION()
-	EOccupationWinner GetOccupationWinner() { return CurrentOccupationWinner; }
+	FORCEINLINE EOccupationWinner GetOccupationWinner() const { return CurrentOccupationWinner; }
 	
 	/**
 	 * @brief 매치가 시작되었을 때 호출됩니다. 
@@ -139,9 +136,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	uint8 MaxPlayers = 4;
 
-	float Standard = 0.2f;
+	const float Standard = 0.2f;
 
-	float MaxScore = 100.0f;
+	const float MaxScore = 100.0f;
 private:
 	UFUNCTION()
 	void OnRep_NumPlayers();
