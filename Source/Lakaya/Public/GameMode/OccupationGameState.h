@@ -47,13 +47,13 @@ private:
 
 public:
 	UFUNCTION()
-	void SetNumPlayers(uint8 NewNumPlayers);
+	void SetNumPlayers(const uint8 NewNumPlayers);
 
 	UFUNCTION()
-	void SetGameState(EOccupationGameState NewGameState);
+	void SetGameState(const EOccupationGameState NewGameState);
 	
 	UFUNCTION()
-	void SetOccupationWinner(EOccupationWinner NewWinner);
+	void SetOccupationWinner(const EOccupationWinner NewWinner);
 
 	UFUNCTION()
 	void SetATeamScore();

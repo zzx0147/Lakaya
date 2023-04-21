@@ -35,7 +35,7 @@ private:
 
 	virtual void RespawnPlayer(AController* KilledController) override;
 
-	void PlayerInitializeSetLocation(uint8 PlayersNum);
+	void PlayerInitializeSetLocation(const uint8 PlayersNum);
 
 	void DelayedEndedGame();
 
