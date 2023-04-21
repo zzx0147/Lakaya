@@ -151,17 +151,9 @@ void ADamageableCharacter::IndicateRPC_Implementation(FName CauserName, FVector 
 		{
 			MenuCallingPlayercontroller->IndicateStart(CauserName, DamageCursorPosition, 3.0f);
 
-			FSoftObjectPath NiagaraPath;
-			// if (Health <= 50)
-			// {
-				// NiagaraPath = (TEXT("/Game/Effects/M_VFX/VFX_Screeneffect_2.VFX_Screeneffect_2"));
-			// }
-			// else
-			// {
-				NiagaraPath = (TEXT("/Game/Effects/M_VFX/VFX_Screeneffect.VFX_Screeneffect"));
-			// }
-	
 			// ScreenEffect : 피격 당할 시 화면에 표기 되는 이펙트
+			FSoftObjectPath NiagaraPath;
+			NiagaraPath = (TEXT("/Game/Effects/M_VFX/VFX_Screeneffect.VFX_Screeneffect"));
 			UNiagaraSystem* NiagaraEffect = Cast<UNiagaraSystem>(NiagaraPath.TryLoad());
 		
 			if (NiagaraEffect)

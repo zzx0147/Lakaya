@@ -63,6 +63,10 @@ void URiffleFireClient::TraceVisualize_Implementation()
 	Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
 		TEXT("/Game/Effects/M_VFX/VFX_GunTrail_Smoke")));
 
+	UNiagaraSystem* NiagaraDecalEffect =
+		Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
+			TEXT("/Game/Effects/M_VFX/VFX_Decalimpact")));
+	
 	//BP_PlayerDummy 블루프린트 클래스에 [스켈레탈 메시 -> 스태틱 메시 -> 화살표 컴포넌트(Muzzle)] 의 위치를 받아 MuzzleLocation에 저장
 	if (USkeletalMeshComponent* SkeletalMeshComp = Character->GetMesh())
 	{
@@ -74,39 +78,42 @@ void URiffleFireClient::TraceVisualize_Implementation()
 
 				// TODO : 나이아가라 컴포넌트 가져와서 총구 위치에 이펙트 부착
 				UNiagaraComponent* NiagaraComponent =
-					UNiagaraFunctionLibrary::SpawnSystemAttached(NiagaraEffect, ArrowComp,
-						TEXT("VFX_GunImpact_01"), StartPoint, Character->GetActorRotation(),
-						EAttachLocation::KeepWorldPosition, true);
+					UNiagaraFunctionLibrary::SpawnSystemAttached(
+						NiagaraEffect,
+						ArrowComp,
+						TEXT("VFX_GunImpact_01"),
+						StartPoint,
+						Character->GetActorRotation(),
+						EAttachLocation::KeepWorldPosition,
+						true);
 
-				// auto Distance = Character->GetSpringArm()->TargetArmLength;
-				
 				auto BeamDestination = FVector((FireRange/* + Distance*/),0.0f,0.0f)/*ArrowComp->GetForwardVector() * */;
 				UNiagaraComponent* NiagaraBeam = UNiagaraFunctionLibrary::
-					SpawnSystemAtLocation(GetWorld(), NiagaraBeamEffect, ArrowComp->GetComponentLocation(), Character->GetActorRotation());
+					SpawnSystemAtLocation(
+						GetWorld(),
+						NiagaraBeamEffect,
+						ArrowComp->GetComponentLocation(),
+						Character->GetActorRotation());
 				NiagaraBeam->SetVariableVec3(TEXT("BeamEnd"), BeamDestination);
-				NiagaraBeam->SetVariableFloat(TEXT("Width"), BeamWidth);
-				NiagaraBeam->SetVariableLinearColor(TEXT("Color"), BeamColor);
-				NiagaraBeam->ActivateSystem(); 
+				NiagaraBeam->ActivateSystem();
+
+				auto CameraLocation = Character->GetCamera()->GetComponentLocation();
+				auto Distance = Character->GetSpringArm()->TargetArmLength;
+				auto Destination = CameraLocation + Character->GetCamera()->GetForwardVector() * (FireRange + Distance);
+				if (SqrFireRange < (HitResult.ImpactPoint - Character->GetActorLocation()).SquaredLength()) return;
+				if (!GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, Destination, ECC_Camera, TraceQueryParams))
+					return;
+
+				if (Cast<APawn>(HitResult.GetActor()) == nullptr)
+				{
+					UNiagaraComponent* NiagaraDecalImpact =
+					UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+					GetWorld(),
+					NiagaraDecalEffect,
+					HitResult.Location,
+					HitResult.Normal.Rotation());
+				}
 			}
 		}
 	}
 }
-#pragma region 주석
-// auto CameraLocation = Character->GetCamera()->GetComponentLocation();
-// auto Distance = Character->GetSpringArm()->TargetArmLength;
-
-// FireRange는 캐릭터를 기준으로 정의된 값이므로 캐릭터와 카메라의 거리를 더해줍니다.
-// auto Destination = CameraLocation + Character->GetCamera()->GetForwardVector() * (FireRange + Distance);
-
-// TODO : 총구 위치에서 사격했을때 궤적 그려주는 나이아가라 빔 이펙트 적용부분입니다
-// if (USkeletalMeshComponent* SkeletalMeshComp = Character->GetMesh())
-// {
-// 	if (UStaticMeshComponent* StaticMeshComp = Cast<UStaticMeshComponent>(SkeletalMeshComp->GetChildComponent(0)))
-// 	{
-// 		if(UArrowComponent* ArrowComp = Cast<UArrowComponent>(StaticMeshComp->GetChildComponent(0)))
-// 		{
-// 			
-// 		}
-// 	}
-// }
-#pragma endregion 

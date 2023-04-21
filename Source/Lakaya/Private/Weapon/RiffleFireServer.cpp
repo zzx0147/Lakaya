@@ -21,7 +21,7 @@ URiffleFireServer::URiffleFireServer()
 
 	static const ConstructorHelpers::FClassFinder<AActor> DecalActorFinder(
 		TEXT("/Game/Blueprints/ETC/BP_GunDecal.BP_GunDecal_C"));
-
+	
 	if (TableFinder.Succeeded()) WeaponFireDataTable = TableFinder.Object;
 	DecalActorClass = DecalActorFinder.Class;
 }
@@ -60,7 +60,7 @@ void URiffleFireServer::OnCharacterDead()
 	OnFireStop();
 }
 
-void URiffleFireServer::TraceFire_Implementation()
+void URiffleFireServer::TraceFire()
 {
 	FHitResult HitResult;
 	auto CameraLocation = Character->GetCamera()->GetComponentLocation();
@@ -69,8 +69,6 @@ void URiffleFireServer::TraceFire_Implementation()
 	// FireRange는 캐릭터를 기준으로 정의된 값이므로 캐릭터와 카메라의 거리를 더해줍니다.
 	auto Destination = CameraLocation + Character->GetCamera()->GetForwardVector() * (FireRange + Distance);
 
-	// Trace from camera
-	// DrawDebugLine(GetWorld(), CameraLocation, Destination, FColor::Red, false, 1);
 	if (!GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, Destination, ECC_Camera, TraceQueryParams))
 		return;
 
@@ -79,20 +77,10 @@ void URiffleFireServer::TraceFire_Implementation()
 
 	UGameplayStatics::ApplyDamage(HitResult.GetActor(), BaseDamage, Character->GetController(),
 								  Character.Get(), nullptr);
+	
 	if (Cast<APawn>(HitResult.GetActor()) == nullptr)
 	{
-		//FActorSpawnParameters SpawnParam;		
 		GetWorld()->SpawnActor<AActor>(DecalActorClass, HitResult.Location, HitResult.Normal.Rotation());
-		
-		FSoftObjectPath DecalEffectPath;
-		DecalEffectPath = TEXT("/Game/Effects/M_VFX/VFX_Decalimpact");
-		UNiagaraSystem* DecalEffectNiagara = Cast<UNiagaraSystem>(DecalEffectPath.TryLoad());
-		UNiagaraComponent* NiagaraComponent;
-		if (DecalEffectNiagara)
-		{
-			NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DecalEffectNiagara,
-				HitResult.Location, HitResult.Normal.Rotation());
-		}
 	}
 }
 

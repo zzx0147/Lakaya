@@ -24,7 +24,6 @@ private:
 	UFUNCTION(Client, Reliable)
 	void EmptyMagazine();
 
-	UFUNCTION(NetMulticast, Unreliable)
 	void TraceFire();
 
 	UPROPERTY(EditAnywhere, Category=DataTable)
@@ -36,4 +35,5 @@ private:
 	uint16 FireCount;
 
 	TSubclassOf<AActor> DecalActorClass;
+	TSubclassOf<AActor> DecalImpactActorClass;
 };
