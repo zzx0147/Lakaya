@@ -25,6 +25,7 @@ protected:
 	virtual void OnCharacterDead() override;
 
 private:
+	UFUNCTION(NetMulticast, Unreliable)
 	void TraceVisualize();
 
 	FCollisionQueryParams TraceQueryParams;

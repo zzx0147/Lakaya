@@ -3,6 +3,8 @@
 
 #include "Weapon/RiffleFireServer.h"
 
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
 #include "Weapon/GunComponent.h"
 #include "Weapon/WeaponFireData.h"
 #include "Camera/CameraComponent.h"
@@ -58,6 +60,42 @@ void URiffleFireServer::OnCharacterDead()
 	OnFireStop();
 }
 
+void URiffleFireServer::TraceFire_Implementation()
+{
+	FHitResult HitResult;
+	auto CameraLocation = Character->GetCamera()->GetComponentLocation();
+	auto Distance = Character->GetSpringArm()->TargetArmLength;
+
+	// FireRange는 캐릭터를 기준으로 정의된 값이므로 캐릭터와 카메라의 거리를 더해줍니다.
+	auto Destination = CameraLocation + Character->GetCamera()->GetForwardVector() * (FireRange + Distance);
+
+	// Trace from camera
+	// DrawDebugLine(GetWorld(), CameraLocation, Destination, FColor::Red, false, 1);
+	if (!GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, Destination, ECC_Camera, TraceQueryParams))
+		return;
+
+	// 캐릭터를 기준으로 FireRange보다 밖에 있는 경우 배제합니다.
+	if (SqrFireRange < (HitResult.ImpactPoint - Character->GetActorLocation()).SquaredLength()) return;
+
+	UGameplayStatics::ApplyDamage(HitResult.GetActor(), BaseDamage, Character->GetController(),
+								  Character.Get(), nullptr);
+	if (Cast<APawn>(HitResult.GetActor()) == nullptr)
+	{
+		//FActorSpawnParameters SpawnParam;		
+		GetWorld()->SpawnActor<AActor>(DecalActorClass, HitResult.Location, HitResult.Normal.Rotation());
+		
+		FSoftObjectPath DecalEffectPath;
+		DecalEffectPath = TEXT("/Game/Effects/M_VFX/VFX_Decalimpact");
+		UNiagaraSystem* DecalEffectNiagara = Cast<UNiagaraSystem>(DecalEffectPath.TryLoad());
+		UNiagaraComponent* NiagaraComponent;
+		if (DecalEffectNiagara)
+		{
+			NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DecalEffectNiagara,
+				HitResult.Location, HitResult.Normal.Rotation());
+		}
+	}
+}
+
 void URiffleFireServer::SetupData(const FName& RowName)
 {
 	Super::SetupData(RowName);
@@ -90,30 +128,4 @@ void URiffleFireServer::SetupData(const FName& RowName)
 void URiffleFireServer::EmptyMagazine_Implementation()
 {
 	GunComponent->ReloadStart();
-}
-
-void URiffleFireServer::TraceFire()
-{
-	FHitResult HitResult;
-	auto CameraLocation = Character->GetCamera()->GetComponentLocation();
-	auto Distance = Character->GetSpringArm()->TargetArmLength;
-
-	// FireRange는 캐릭터를 기준으로 정의된 값이므로 캐릭터와 카메라의 거리를 더해줍니다.
-	auto Destination = CameraLocation + Character->GetCamera()->GetForwardVector() * (FireRange + Distance);
-
-	// Trace from camera
-	// DrawDebugLine(GetWorld(), CameraLocation, Destination, FColor::Red, false, 1);
-	if (!GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, Destination, ECC_Camera, TraceQueryParams))
-		return;
-
-	// 캐릭터를 기준으로 FireRange보다 밖에 있는 경우 배제합니다.
-	if (SqrFireRange < (HitResult.ImpactPoint - Character->GetActorLocation()).SquaredLength()) return;
-
-	UGameplayStatics::ApplyDamage(HitResult.GetActor(), BaseDamage, Character->GetController(),
-	                              Character.Get(), nullptr);
-	if (Cast<APawn>(HitResult.GetActor()) == nullptr)
-	{
-		//FActorSpawnParameters SpawnParam;		
-		GetWorld()->SpawnActor<AActor>(DecalActorClass, HitResult.Location, HitResult.Normal.Rotation());
-	}
 }

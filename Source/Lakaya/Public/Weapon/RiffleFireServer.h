@@ -23,7 +23,8 @@ protected:
 private:
 	UFUNCTION(Client, Reliable)
 	void EmptyMagazine();
-	
+
+	UFUNCTION(NetMulticast, Unreliable)
 	void TraceFire();
 
 	UPROPERTY(EditAnywhere, Category=DataTable)
