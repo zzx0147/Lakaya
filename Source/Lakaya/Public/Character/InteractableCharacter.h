@@ -61,7 +61,7 @@ protected:
 	void RequestInteractionStop(const float& Time, AActor* Actor);
 
 	// 현재시점의 서버 시간을 가져옵니다.
-	inline float GetServerTime() const { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
+	FORCEINLINE float GetServerTime() const { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
 
 private:
 	/**

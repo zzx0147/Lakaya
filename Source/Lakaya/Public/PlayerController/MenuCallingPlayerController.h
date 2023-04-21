@@ -36,6 +36,7 @@ private:
 	void MenuHandler(const FInputActionValue& Value);
 	void LoadoutHandler(const FInputActionValue& Value);
 	void ScoreHandler(const FInputActionValue& Value);
+	void ScoreCanceledHandler(const FInputActionValue& Value);
 	
 public:
 	template <typename T>
@@ -87,6 +88,9 @@ private:
 	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* ScoreAction;
 
+	UPROPERTY(EditAnywhere, Category=Input)
+	UInputAction* ScoreCanceledAction;
+	
 	FTimerHandle TimerHandle;
 
 public:

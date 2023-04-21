@@ -1,6 +1,10 @@
 #define DO_CHECK 1
 
 #include "UI/DirectionalIndicatorElement.h"
+
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
+#include "Character/DamageableCharacter.h"
 #include "Components/Image.h"
 
 UDirectionalIndicatorElement::UDirectionalIndicatorElement(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -50,7 +54,7 @@ void UDirectionalIndicatorElement::IndicateStart(USceneComponent* NewMyPosition,
 	MyPosition = NewMyPosition;
 	TargetPosition = NewTargetPosition;
 	DirectionalIndicatorImage->SetVisibility(ESlateVisibility::Visible);
-
+	
 	GetWorld()->GetTimerManager().SetTimer(TimerHandleIndicate, this, &UDirectionalIndicatorElement::IndicateStop, Time, false);
 }
 

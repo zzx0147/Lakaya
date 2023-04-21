@@ -1,7 +1,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "NiagaraSystem.h"
 #include "Blueprint/UserWidget.h"
+#include "Character/DamageableCharacter.h"
 #include "DirectionalIndicatorElement.generated.h"
 
 UCLASS()

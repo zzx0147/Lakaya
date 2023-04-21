@@ -41,7 +41,7 @@ void UGamePlayHealthWidget::NativeConstruct()
 	HealthProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("HPBar_Prb")));
 	HealthText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Health_Text")));
 	MaximumHealthText = Cast<UTextBlock>(GetWidgetFromName(TEXT("MaximumHealth_Text")));
-
+	
 	check(HealthText != nullptr);
 	check(MaximumHealthText != nullptr);
 	check(HealthProgressBar != nullptr);
@@ -54,6 +54,7 @@ void UGamePlayHealthWidget::OnChangeHealth(AActor* Character, const float& NewHe
 	//업데이트된 체력을 저장하고 소수점을 버린 뒤 텍스트로 표기
 	Health = NewHealth;
 	HealthText->SetText(FText::AsNumber(floor(Health)));
+	
 	//체력 바 업데이트
 	UpdateHealthProgressBar();
 }

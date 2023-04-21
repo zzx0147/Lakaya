@@ -1,8 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "OccupationCharacter.h"
-
+#include "Character/OccupationCharacter.h"
 #include "Character/CollectorPlayerState.h"
 
 void AOccupationCharacter::BeginPlay()

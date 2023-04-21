@@ -32,10 +32,22 @@ AMenuCallingPlayerController::AMenuCallingPlayerController()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ScoreFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ScoreBoard'"));
 
+	static const ConstructorHelpers::FObjectFinder<UInputAction> ScoreCanceledFinder(
+		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ScoreBoardCanceled'"));
+
 	if (ContextFinder.Succeeded()) InterfaceInputContext = ContextFinder.Object;
 	if (MenuFinder.Succeeded()) MenuAction = MenuFinder.Object;
 	if (WeaponFinder.Succeeded()) LoadoutAction = WeaponFinder.Object;
 	if (ScoreFinder.Succeeded()) ScoreAction = ScoreFinder.Object;
+	
+	if (ScoreCanceledFinder.Succeeded())
+	{
+		ScoreCanceledAction = ScoreCanceledFinder.Object;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ScoreCanceledFinder is null."));
+	}
 }
 
 void AMenuCallingPlayerController::SetupInputComponent()
@@ -49,26 +61,12 @@ void AMenuCallingPlayerController::SetupInputComponent()
 							  &AMenuCallingPlayerController::LoadoutHandler);
 		Component->BindAction(ScoreAction, ETriggerEvent::Triggered, this,
 							  &AMenuCallingPlayerController::ScoreHandler);
+		Component->BindAction(ScoreCanceledAction, ETriggerEvent::Triggered, this,
+			&AMenuCallingPlayerController::ScoreCanceledHandler);
 	}
 
 	if (const auto Subsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
 		Subsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
-
-	// if (APlayerState* CollPlayerState = GetPlayerState<APlayerState>())
-	// {
-	// 	if (ACollectorPlayerState* CollectorPlayerState = Cast<ACollectorPlayerState>(CollPlayerState))
-	// 	{
-	// 		InGameScoreBoardWidget->BindPlayerScore(CollectorPlayerState);
-	// 	}
-	// 	else
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("Failed to cast PlayerState to ACollectorPlayerState"));
-	// 	}
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Failed to get PlayerState from pawn or spectator"));
-	// }
 }
 
 void AMenuCallingPlayerController::BeginPlay()
@@ -86,8 +84,7 @@ void AMenuCallingPlayerController::BeginPlay()
 		CreateTeamScoreWidget();
 		CreateDirectionalDamageIndicator();
 		CreateGameResultWidget();
-		// CreateInGameScoreBoardWidget();
-
+		CreateInGameScoreBoardWidget();
 #pragma endregion
 	}
 }
@@ -108,8 +105,13 @@ void AMenuCallingPlayerController::ScoreHandler(const FInputActionValue& Value)
 {
 	//TODO: UI를 띄웁니다.
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ScoreBoard"));
-	// DirectionalIndicatorImage->SetVisibility(ESlateVisibility::Visible);
 	InGameScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
+}
+
+void AMenuCallingPlayerController::ScoreCanceledHandler(const FInputActionValue& Value)
+{
+	InGameScoreBoardWidget->SetVisibility(ESlateVisibility::Hidden);
+	UE_LOG(LogTemp, Warning, TEXT("ScoreCanceledHandler."));
 }
 
 void AMenuCallingPlayerController::CreateLoadingWidget()
@@ -228,8 +230,6 @@ void AMenuCallingPlayerController::CreateDirectionalDamageIndicator()
 		}
 	}
 }
-
-
 
 void AMenuCallingPlayerController::IndicateStart(FName CauserName, FVector DamageCursorPosition, float time)
 {
