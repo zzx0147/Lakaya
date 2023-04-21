@@ -77,25 +77,25 @@ public:
 	FORCEINLINE uint8 GetMaxPlayers() const { return MaxPlayers; }
 
 	UFUNCTION()
-	uint8 GetNumPlayers() const { return NumPlayers; }
+	FORCEINLINE uint8 GetNumPlayers() const { return NumPlayers; }
 	
 	UFUNCTION()
-	float GetATeamScore() { return ATeamScore; }
+	FORCEINLINE float GetATeamScore() const { return ATeamScore; }
 
 	UFUNCTION()
-	float GetBTeamScore() { return BTeamScore; }
+	FORCEINLINE float GetBTeamScore() const { return BTeamScore; }
 
 	UFUNCTION()
-	float GetATeamObjectNum() { return ATeamObjectNum; }
+	FORCEINLINE float GetATeamObjectNum() const { return ATeamObjectNum; }
 
 	UFUNCTION()
-	float GetBTeamObjectNum() { return BTeamObjectNum; }
+	FORCEINLINE float GetBTeamObjectNum() const { return BTeamObjectNum; }
 
 	UFUNCTION()
 	FORCEINLINE float GetMaxScore() const { return MaxScore; }
 
 	UFUNCTION()
-	EOccupationWinner GetOccupationWinner() { return CurrentOccupationWinner; }
+	FORCEINLINE EOccupationWinner GetOccupationWinner() const { return CurrentOccupationWinner; }
 	
 	/**
 	 * @brief 매치가 시작되었을 때 호출됩니다. 
@@ -136,9 +136,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	uint8 MaxPlayers = 4;
 
-	float Standard = 0.2f;
+	const float Standard = 0.2f;
 
-	float MaxScore = 100.0f;
+	const float MaxScore = 100.0f;
 private:
 	UFUNCTION()
 	void OnRep_NumPlayers();
