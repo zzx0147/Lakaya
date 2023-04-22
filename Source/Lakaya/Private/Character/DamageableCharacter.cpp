@@ -98,7 +98,7 @@ void ADamageableCharacter::Respawn()
 	OnHealthChanged.Broadcast(this, Health);
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	//SetActorEnableCollision(true);
-	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
 	RespawnNotify();
 }
 
@@ -107,7 +107,7 @@ void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* D
 	GetCharacterMovement()->DisableMovement();
 	//TODO: 트레이스 충돌은 꺼지지만, 여전히 다른 캐릭터의 움직임을 제한하고 있습니다..
 	//SetActorEnableCollision(false);
-	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	KillCharacterNotify(EventInstigator, DamageCauser);
 }
 
@@ -122,7 +122,7 @@ void ADamageableCharacter::KillCharacterNotify_Implementation(AController* Event
 
 	OnKillCharacterNotify.Broadcast(GetController(), this, EventInstigator, DamageCauser);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
-
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	FOutputDeviceNull pAr;
 	this->CallFunctionByNameWithArguments(*FString::Printf(TEXT("KillOrRespawnEvent %d"),false), pAr, nullptr, true);
 }
@@ -195,7 +195,7 @@ void ADamageableCharacter::RespawnNotify_Implementation()
 	//bFixMeshTransform = true;
 	//GetMesh()->SetupAttachment(GetCapsuleComponent());
 	OnRespawnCharacterNotify.Broadcast(this);
-
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	FOutputDeviceNull pAr;
 	this->CallFunctionByNameWithArguments(*FString::Printf(TEXT("KillOrRespawnEvent %d"),true), pAr, nullptr, true);
 }
