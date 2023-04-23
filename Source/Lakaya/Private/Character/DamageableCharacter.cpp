@@ -98,6 +98,20 @@ void ADamageableCharacter::Respawn()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	SetActorEnableCollision(true);
 	RespawnNotify();
+
+	UNiagaraSystem* NiagaraResurrection =
+		Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
+			TEXT("/Game/Effects/M_VFX/VFX_Resurrection")));
+	UNiagaraComponent* NiagaraResurrectionComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		GetWorld(),
+		NiagaraResurrection,
+		GetController()->GetCharacter()->GetActorLocation(),
+		GetController()->GetCharacter()->GetActorRotation(),
+		FVector(1),
+		true,
+		true,
+		ENCPoolMethod::AutoRelease,
+		true);
 }
 
 void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)

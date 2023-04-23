@@ -87,51 +87,14 @@ void URiffleFireClient::TraceVisualize_Implementation()
 						EAttachLocation::KeepWorldPosition,
 						true);
 
-				// auto CameraLocation = Character->GetCamera()->GetComponentLocation();
-				// auto Distance = Character->GetSpringArm()->TargetArmLength;
-				// auto Destination = CameraLocation + Character->GetCamera()->GetForwardVector() * (FireRange + Distance);
-				// if (SqrFireRange < (HitResult.ImpactPoint - Character->GetActorLocation()).SquaredLength()) return;
-				// if (!GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, Destination, ECC_Camera, TraceQueryParams))
-				// 	return;
-				//
-				// auto BeamDestination = FVector((FireRange),0.0f,0.0f);
-				// UNiagaraComponent* NiagaraBeam = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-				// 	GetWorld(),
-				// 	NiagaraBeamEffect,
-				// 	ArrowComp->GetComponentLocation(),
-				// 	Character->GetActorRotation(),
-				// 	FVector(1),
-				// 	true,
-				// 	true,
-				// 	ENCPoolMethod::AutoRelease,
-				// 	true);
-				//
-				// NiagaraBeam->SetVariableVec3(TEXT("BeamEnd"), BeamDestination);
-				//
-				// if (Cast<APawn>(HitResult.GetActor()) == nullptr)
-				// {
-				// 	UNiagaraComponent* NiagaraDecalImpact =
-				// 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-				// 	GetWorld(),
-				// 	NiagaraDecalEffect,
-				// 	HitResult.Location,
-				// 	HitResult.Normal.Rotation());
-				// }
 				auto CameraLocation = Character->GetCamera()->GetComponentLocation();
 				auto Distance = Character->GetSpringArm()->TargetArmLength;
-				auto Direction = Character->GetCamera()->GetForwardVector();
-				auto Destination = CameraLocation + Direction * (FireRange + Distance);
-				FVector BeamEnd;
-
+				auto Destination = CameraLocation + Character->GetCamera()->GetForwardVector() * (FireRange + Distance);
+				if (SqrFireRange < (HitResult.ImpactPoint - Character->GetActorLocation()).SquaredLength()) return;
 				if (!GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, Destination, ECC_Camera, TraceQueryParams))
-				{
-					BeamEnd = Destination;
-				}
-				else
-				{
-					BeamEnd = HitResult.Location;
-				}
-
+					return;
+				
+				auto BeamDestination = FVector((FireRange),0.0f,0.0f);
 				UNiagaraComponent* NiagaraBeam = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 					GetWorld(),
 					NiagaraBeamEffect,
@@ -142,15 +105,17 @@ void URiffleFireClient::TraceVisualize_Implementation()
 					true,
 					ENCPoolMethod::AutoRelease,
 					true);
-				NiagaraBeam->SetVariableVec3(TEXT("BeamEnd"), BeamEnd);
-
+				
+				NiagaraBeam->SetVariableVec3(TEXT("BeamEnd"), BeamDestination);
+				
 				if (Cast<APawn>(HitResult.GetActor()) == nullptr)
 				{
-					UNiagaraComponent* NiagaraDecalImpact = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-						GetWorld(),
-						NiagaraDecalEffect,
-						HitResult.Location,
-						HitResult.Normal.Rotation());
+					UNiagaraComponent* NiagaraDecalImpact =
+					UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+					GetWorld(),
+					NiagaraDecalEffect,
+					HitResult.Location,
+					HitResult.Normal.Rotation());
 				}
 			}
 		}
