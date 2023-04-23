@@ -23,7 +23,7 @@ protected:
 private:
 	UFUNCTION(Client, Reliable)
 	void EmptyMagazine();
-	
+
 	void TraceFire();
 
 	UPROPERTY(EditAnywhere, Category=DataTable)
@@ -35,4 +35,5 @@ private:
 	uint16 FireCount;
 
 	TSubclassOf<AActor> DecalActorClass;
+	TSubclassOf<AActor> DecalImpactActorClass;
 };

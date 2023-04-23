@@ -56,11 +56,11 @@ protected:
 	virtual void RespawnPlayer(AController* KilledController);
 
 public:
-	uint8 GetPlayerRespawnTime() { return PlayerRespawnTime; }
+	FORCEINLINE uint8 GetPlayerRespawnTime() const { return PlayerRespawnTime; }
 	FORCEINLINE bool GetbWaitToStart() const { return bWaitToStart; }
 	
 private:
-	uint8 PlayerRespawnTime = 3;
+	const uint8 PlayerRespawnTime = 3;
 	bool bWaitToStart = false;
 
 private:

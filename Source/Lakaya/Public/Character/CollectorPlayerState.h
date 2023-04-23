@@ -70,19 +70,19 @@ public:
 	void AddOccupationSuccess();
 
 	UFUNCTION(BlueprintCallable)
-	FString GetPlayername() { return PlayerInfo.PlayerName; }
+	FORCEINLINE FString GetPlayername() const { return PlayerInfo.PlayerName; }
 	
 	UFUNCTION(BlueprintCallable)
-	int32 GetTotalScore() { return PlayerInfo.TotalScore; }
+	FORCEINLINE int32 GetTotalScore() const { return PlayerInfo.TotalScore; }
 
 	UFUNCTION(BlueprintCallable)
-	int32 GetKills() { return PlayerInfo.Kills; }
+	FORCEINLINE int32 GetKills() const { return PlayerInfo.Kills; }
 
 	UFUNCTION(BlueprintCallable)
-	int32 GetOccupationSuccess() { return PlayerInfo.OccupationSuccess; }
+	 FORCEINLINE int32 GetOccupationSuccess() const { return PlayerInfo.OccupationSuccess; }
 	
 	UFUNCTION(BlueprintCallable)
-	int32 GetOwnObjectNum() { return PlayerInfo.OwnObjectNum; }
+	FORCEINLINE int32 GetOwnObjectNum() const { return PlayerInfo.OwnObjectNum; }
 
 	UFUNCTION(BlueprintCallable)
 	void SetOwnObjectNum(int32 Num);
