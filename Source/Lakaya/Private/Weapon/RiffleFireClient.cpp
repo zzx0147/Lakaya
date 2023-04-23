@@ -59,6 +59,7 @@ void URiffleFireClient::TraceVisualize_Implementation()
 	UNiagaraSystem* NiagaraEffect =
 	Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
 		TEXT("/Game/Effects/M_VFX/VFX_GunImpact_01")));
+	
 	UNiagaraSystem* NiagaraBeamEffect =
 	Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
 		TEXT("/Game/Effects/M_VFX/VFX_GunTrail_Smoke")));
@@ -77,8 +78,7 @@ void URiffleFireClient::TraceVisualize_Implementation()
 				StartPoint = ArrowComp->GetComponentLocation();
 
 				// TODO : 나이아가라 컴포넌트 가져와서 총구 위치에 이펙트 부착
-				UNiagaraComponent* NiagaraComponent =
-					UNiagaraFunctionLibrary::SpawnSystemAttached(
+				UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
 						NiagaraEffect,
 						ArrowComp,
 						TEXT("VFX_GunImpact_01"),
@@ -87,31 +87,70 @@ void URiffleFireClient::TraceVisualize_Implementation()
 						EAttachLocation::KeepWorldPosition,
 						true);
 
-				auto BeamDestination = FVector((FireRange/* + Distance*/),0.0f,0.0f)/*ArrowComp->GetForwardVector() * */;
-				UNiagaraComponent* NiagaraBeam = UNiagaraFunctionLibrary::
-					SpawnSystemAtLocation(
-						GetWorld(),
-						NiagaraBeamEffect,
-						ArrowComp->GetComponentLocation(),
-						Character->GetActorRotation());
-				NiagaraBeam->SetVariableVec3(TEXT("BeamEnd"), BeamDestination);
-				NiagaraBeam->ActivateSystem();
-
+				// auto CameraLocation = Character->GetCamera()->GetComponentLocation();
+				// auto Distance = Character->GetSpringArm()->TargetArmLength;
+				// auto Destination = CameraLocation + Character->GetCamera()->GetForwardVector() * (FireRange + Distance);
+				// if (SqrFireRange < (HitResult.ImpactPoint - Character->GetActorLocation()).SquaredLength()) return;
+				// if (!GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, Destination, ECC_Camera, TraceQueryParams))
+				// 	return;
+				//
+				// auto BeamDestination = FVector((FireRange),0.0f,0.0f);
+				// UNiagaraComponent* NiagaraBeam = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+				// 	GetWorld(),
+				// 	NiagaraBeamEffect,
+				// 	ArrowComp->GetComponentLocation(),
+				// 	Character->GetActorRotation(),
+				// 	FVector(1),
+				// 	true,
+				// 	true,
+				// 	ENCPoolMethod::AutoRelease,
+				// 	true);
+				//
+				// NiagaraBeam->SetVariableVec3(TEXT("BeamEnd"), BeamDestination);
+				//
+				// if (Cast<APawn>(HitResult.GetActor()) == nullptr)
+				// {
+				// 	UNiagaraComponent* NiagaraDecalImpact =
+				// 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+				// 	GetWorld(),
+				// 	NiagaraDecalEffect,
+				// 	HitResult.Location,
+				// 	HitResult.Normal.Rotation());
+				// }
 				auto CameraLocation = Character->GetCamera()->GetComponentLocation();
 				auto Distance = Character->GetSpringArm()->TargetArmLength;
-				auto Destination = CameraLocation + Character->GetCamera()->GetForwardVector() * (FireRange + Distance);
-				if (SqrFireRange < (HitResult.ImpactPoint - Character->GetActorLocation()).SquaredLength()) return;
+				auto Direction = Character->GetCamera()->GetForwardVector();
+				auto Destination = CameraLocation + Direction * (FireRange + Distance);
+				FVector BeamEnd;
+
 				if (!GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, Destination, ECC_Camera, TraceQueryParams))
-					return;
+				{
+					BeamEnd = Destination;
+				}
+				else
+				{
+					BeamEnd = HitResult.Location;
+				}
+
+				UNiagaraComponent* NiagaraBeam = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+					GetWorld(),
+					NiagaraBeamEffect,
+					ArrowComp->GetComponentLocation(),
+					Character->GetActorRotation(),
+					FVector(1),
+					true,
+					true,
+					ENCPoolMethod::AutoRelease,
+					true);
+				NiagaraBeam->SetVariableVec3(TEXT("BeamEnd"), BeamEnd);
 
 				if (Cast<APawn>(HitResult.GetActor()) == nullptr)
 				{
-					UNiagaraComponent* NiagaraDecalImpact =
-					UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-					GetWorld(),
-					NiagaraDecalEffect,
-					HitResult.Location,
-					HitResult.Normal.Rotation());
+					UNiagaraComponent* NiagaraDecalImpact = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+						GetWorld(),
+						NiagaraDecalEffect,
+						HitResult.Location,
+						HitResult.Normal.Rotation());
 				}
 			}
 		}
