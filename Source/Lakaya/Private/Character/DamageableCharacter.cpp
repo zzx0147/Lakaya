@@ -10,6 +10,7 @@
 #include "Net/UnrealNetwork.h"
 #include "UI/GamePlayHealthWidget.h"
 #include "Character/CollectorPlayerState.h"
+#include "Misc/OutputDeviceNull.h"
 
 ADamageableCharacter::ADamageableCharacter()
 {
@@ -99,7 +100,8 @@ void ADamageableCharacter::Respawn()
 	Health = MaximumHealth;
 	OnHealthChanged.Broadcast(this, Health);
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-	SetActorEnableCollision(true);
+	//SetActorEnableCollision(true);
+
 	RespawnNotify();
 
 }
@@ -108,16 +110,20 @@ void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* D
 {
 	GetCharacterMovement()->DisableMovement();
 	//TODO: 트레이스 충돌은 꺼지지만, 여전히 다른 캐릭터의 움직임을 제한하고 있습니다..
-	SetActorEnableCollision(false);
+	//SetActorEnableCollision(false);
+
 	KillCharacterNotify(EventInstigator, DamageCauser);
 }
 
 void ADamageableCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
 {
-	GetMesh()->SetVisibility(false, true);
+	//GetMesh()->SetVisibility(false, true);
 
 	OnKillCharacterNotify.Broadcast(GetController(), this, EventInstigator, DamageCauser);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	FOutputDeviceNull pAr;
+	this->CallFunctionByNameWithArguments(*FString::Printf(TEXT("KillOrRespawnEvent %d"),false), pAr, nullptr, true);
 }
 
 void ADamageableCharacter::OnRep_MaximumHealth()
@@ -172,17 +178,8 @@ void ADamageableCharacter::IndicateRPC_Implementation(FName CauserName, FVector 
 
 void ADamageableCharacter::RespawnNotify_Implementation()
 {
-	GetMesh()->SetVisibility(true, true);
-	
 	OnRespawnCharacterNotify.Broadcast(this);
-	
-	// UNiagaraSystem* NiagaraResurrection = Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass()
-	// 	, nullptr, TEXT("/Game/Effects/M_VFX/VFX_Resurrection")));
-	// UNiagaraComponent* NiagaraResurrectionComponent =
-	// 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-	// 	GetWorld(),
-	// 	NiagaraResurrection,
-	// 	GetController()->GetCharacter()->GetActorLocation() + FVector(0.0f, 0.0f, -80.0f),
-	// 	FRotator::ZeroRotator);
-	
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	FOutputDeviceNull pAr;
+	this->CallFunctionByNameWithArguments(*FString::Printf(TEXT("KillOrRespawnEvent %d"),true), pAr, nullptr, true);
 }
