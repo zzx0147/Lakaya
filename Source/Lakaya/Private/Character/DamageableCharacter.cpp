@@ -100,10 +100,8 @@ void ADamageableCharacter::Respawn()
 	Health = MaximumHealth;
 	OnHealthChanged.Broadcast(this, Health);
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-	//SetActorEnableCollision(true);
 
 	RespawnNotify();
-
 }
 
 void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)

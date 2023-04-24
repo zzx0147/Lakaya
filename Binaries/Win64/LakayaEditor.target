@@ -30,6 +30,42 @@
 			"Type": "RequiredResource"
 		},
 		{
+			"Path": "$(EngineDir)/Binaries/Win64/Android/UnrealEditor-AndroidDeviceDetection.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Binaries/Win64/Android/UnrealEditor-AndroidDeviceDetection.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(EngineDir)/Binaries/Win64/Android/UnrealEditor-AndroidPlatformEditor.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Binaries/Win64/Android/UnrealEditor-AndroidPlatformEditor.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(EngineDir)/Binaries/Win64/Android/UnrealEditor-AndroidRuntimeSettings.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Binaries/Win64/Android/UnrealEditor-AndroidRuntimeSettings.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(EngineDir)/Binaries/Win64/Android/UnrealEditor-AndroidTargetPlatform.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Binaries/Win64/Android/UnrealEditor-AndroidTargetPlatform.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(EngineDir)/Binaries/Win64/Android/UnrealEditor.modules",
+			"Type": "RequiredResource"
+		},
+		{
 			"Path": "$(EngineDir)/Binaries/Win64/EOSSDK-Win64-Shipping.dll",
 			"Type": "RequiredResource"
 		},
@@ -2830,11 +2866,27 @@
 			"Type": "SymbolFile"
 		},
 		{
+			"Path": "$(EngineDir)/Binaries/Win64/UnrealEditor-TextureFormatASTC.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Binaries/Win64/UnrealEditor-TextureFormatASTC.pdb",
+			"Type": "SymbolFile"
+		},
+		{
 			"Path": "$(EngineDir)/Binaries/Win64/UnrealEditor-TextureFormatDXT.dll",
 			"Type": "DynamicLibrary"
 		},
 		{
 			"Path": "$(EngineDir)/Binaries/Win64/UnrealEditor-TextureFormatDXT.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(EngineDir)/Binaries/Win64/UnrealEditor-TextureFormatETC2.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Binaries/Win64/UnrealEditor-TextureFormatETC2.pdb",
 			"Type": "SymbolFile"
 		},
 		{
@@ -4742,6 +4794,58 @@
 			"Type": "RequiredResource"
 		},
 		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/Developer/RiderLink/Binaries/Win64/UnrealEditor-RD.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/Developer/RiderLink/Binaries/Win64/UnrealEditor-RD.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/Developer/RiderLink/Binaries/Win64/UnrealEditor-RiderBlueprint.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/Developer/RiderLink/Binaries/Win64/UnrealEditor-RiderBlueprint.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/Developer/RiderLink/Binaries/Win64/UnrealEditor-RiderGameControl.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/Developer/RiderLink/Binaries/Win64/UnrealEditor-RiderGameControl.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/Developer/RiderLink/Binaries/Win64/UnrealEditor-RiderLink.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/Developer/RiderLink/Binaries/Win64/UnrealEditor-RiderLink.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/Developer/RiderLink/Binaries/Win64/UnrealEditor-RiderLogging.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/Developer/RiderLink/Binaries/Win64/UnrealEditor-RiderLogging.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/Developer/RiderLink/Binaries/Win64/UnrealEditor-RiderShaderInfo.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/Developer/RiderLink/Binaries/Win64/UnrealEditor-RiderShaderInfo.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/Developer/RiderLink/Binaries/Win64/UnrealEditor.modules",
+			"Type": "RequiredResource"
+		},
+		{
 			"Path": "$(EngineDir)/Plugins/Marketplace/Substance/Binaries/Win64/UnrealEditor-SubstanceCore.dll",
 			"Type": "DynamicLibrary"
 		},
@@ -5979,6 +6083,14 @@
 		}
 	],
 	"RuntimeDependencies": [
+		{
+			"Path": "$(EngineDir)/Binaries/ThirdParty/ARM/Win64/astcenc-sse2.exe",
+			"Type": "NonUFS"
+		},
+		{
+			"Path": "$(EngineDir)/Binaries/ThirdParty/ARM/Win64/astcenc-sse4.1.exe",
+			"Type": "NonUFS"
+		},
 		{
 			"Path": "$(EngineDir)/Binaries/ThirdParty/DbgHelp/dbghelp.dll",
 			"Type": "NonUFS"
@@ -26821,6 +26933,10 @@
 		},
 		{
 			"Path": "$(EngineDir)/Plugins/Interchange/Runtime/Interchange.uplugin",
+			"Type": "UFS"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Marketplace/Developer/RiderLink/RiderLink.uplugin",
 			"Type": "UFS"
 		},
 		{
