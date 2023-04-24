@@ -13,6 +13,9 @@
 
 ADamageableCharacter::ADamageableCharacter()
 {
+	// static const ConstructorHelpers::FClassFinder<AActor> BP_ReResurrection(
+	// 	TEXT("/Game/Blueprints/ETC/BP_Resurrection.BP_Resurrection_C"));
+	
 	MaximumHealth = 100.f;
 }
 
@@ -99,19 +102,6 @@ void ADamageableCharacter::Respawn()
 	SetActorEnableCollision(true);
 	RespawnNotify();
 
-	UNiagaraSystem* NiagaraResurrection =
-		Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
-			TEXT("/Game/Effects/M_VFX/VFX_Resurrection")));
-	UNiagaraComponent* NiagaraResurrectionComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-		GetWorld(),
-		NiagaraResurrection,
-		GetController()->GetCharacter()->GetActorLocation(),
-		GetController()->GetCharacter()->GetActorRotation(),
-		FVector(1),
-		true,
-		true,
-		ENCPoolMethod::AutoRelease,
-		true);
 }
 
 void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
@@ -125,11 +115,6 @@ void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* D
 void ADamageableCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
 {
 	GetMesh()->SetVisibility(false, true);
-
-	//GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
-	//GetMesh()->SetCollisionProfileName(TEXT("PhysicsActor"));
-	//GetMesh()->SetSimulatePhysics(true);
-	//bFixMeshTransform = false;
 
 	OnKillCharacterNotify.Broadcast(GetController(), this, EventInstigator, DamageCauser);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
@@ -188,11 +173,16 @@ void ADamageableCharacter::IndicateRPC_Implementation(FName CauserName, FVector 
 void ADamageableCharacter::RespawnNotify_Implementation()
 {
 	GetMesh()->SetVisibility(true, true);
-
-	//GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
-	//GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
-	//GetMesh()->SetSimulatePhysics(false);
-	//bFixMeshTransform = true;
-	//GetMesh()->SetupAttachment(GetCapsuleComponent());
+	
 	OnRespawnCharacterNotify.Broadcast(this);
+	
+	// UNiagaraSystem* NiagaraResurrection = Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass()
+	// 	, nullptr, TEXT("/Game/Effects/M_VFX/VFX_Resurrection")));
+	// UNiagaraComponent* NiagaraResurrectionComponent =
+	// 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+	// 	GetWorld(),
+	// 	NiagaraResurrection,
+	// 	GetController()->GetCharacter()->GetActorLocation() + FVector(0.0f, 0.0f, -80.0f),
+	// 	FRotator::ZeroRotator);
+	
 }
