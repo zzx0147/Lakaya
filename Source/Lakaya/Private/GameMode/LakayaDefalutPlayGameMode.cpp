@@ -121,15 +121,15 @@ void ALakayaDefalutPlayGameMode::RespawnPlayer(AController* KilledController)
 {
 	TArray<AActor*> PlayerStartActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStartActors);
-
+	
 	if (PlayerStartActors.Num() == 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No player start actors found."));
 		return;
 	}
-
+	
 	APlayerStart* RandomPlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
-
+	
 	APawn* KilledPawn = Cast<APawn>(KilledController->GetPawn());
 	ACharacter* KilledCharacterActor = Cast<ACharacter>(KilledController->GetCharacter());
 	
@@ -155,4 +155,18 @@ void ALakayaDefalutPlayGameMode::RespawnPlayer(AController* KilledController)
 	}
 	
 	KilledDamageableCharacter->Respawn();
+	
+	UNiagaraSystem* NiagaraResurrection =
+	Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
+		TEXT("/Game/Effects/M_VFX/VFX_Resurrection")));
+	UNiagaraComponent* NiagaraResurrectionComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+	GetWorld(),
+	NiagaraResurrection,
+	KilledDamageableCharacter->GetActorLocation() + FVector(0.0f, 0.0f, -80.0f),
+	FRotator::ZeroRotator,
+	FVector(1),
+	true,
+	true,
+	ENCPoolMethod::AutoRelease,
+	true);
 }
