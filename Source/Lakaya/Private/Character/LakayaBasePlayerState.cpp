@@ -67,6 +67,12 @@ bool ALakayaBasePlayerState::IsAlive() const
 	return RespawnTime >= 0.f && RespawnTime < GetServerTime();
 }
 
+void ALakayaBasePlayerState::MakeAlive()
+{
+	RespawnTime = 0.f;
+	BroadcastWhenAliveStateChanged();
+}
+
 float ALakayaBasePlayerState::GetServerTime() const
 {
 	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();

@@ -36,16 +36,21 @@ public:
 	virtual void SetTeam(const EPlayerTeam& DesireTeam);
 
 	/**
-	 * @brief 플레이어에게 부활 정보를 알립니다.
-	 * @param ReservedRespawnTime 목표 부활 시간입니다. 이 시간에 플레이어가 부활합니다. 
-	 * @param Object Function을 실행할 오브젝트입니다.
+	 * @brief 플레이어가 예약된 시간에 부활하도록 합니다.
+	 * @param ReservedRespawnTime 목표 부활 시간입니다. 이 시간에 플레이어가 부활합니다.
+	 * 음수를 기입하여 기약없이 사망한 상태로, 0을 포함한 현재 시간보다 낮은 값을 기입하여 생존상태로 변경시킬 수도 있습니다.
+	 * 이러한 경우 Object의 Function은 호출되지 않습니다.
+	 * @param Object Function을 실행할 객체입니다.
 	 * @param Function 부활 시간이 도래했을 때 실행할 Object의 멤버함수입니다.
 	 */
-	template <class T = ALakayaBasePlayerState>
+	template <class T = nullptr_t>
 	void SetRespawnTimer(const float& ReservedRespawnTime, T* Object = nullptr, void (T::*Function)() = nullptr);
 
 	// 이 플레이어의 생존 여부를 가져옵니다.
 	bool IsAlive() const;
+
+	// 이 플레이어를 생존상태로 변경합니다.
+	void MakeAlive();
 
 protected:
 	// 현재 서버의 시간을 가져옵니다.
