@@ -156,17 +156,17 @@ void ALakayaDefalutPlayGameMode::RespawnPlayer(AController* KilledController)
 	
 	KilledDamageableCharacter->Respawn();
 	
-	UNiagaraSystem* NiagaraResurrection =
-	Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
-		TEXT("/Game/Effects/M_VFX/VFX_Resurrection")));
-	UNiagaraComponent* NiagaraResurrectionComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-	GetWorld(),
-	NiagaraResurrection,
-	KilledDamageableCharacter->GetActorLocation() + FVector(0.0f, 0.0f, -80.0f),
-	FRotator::ZeroRotator,
-	FVector(1),
-	true,
-	true,
-	ENCPoolMethod::AutoRelease,
-	true);
+	// UNiagaraSystem* NiagaraResurrection =
+	// Cast<UNiagaraSystem>(StaticLoadObject(UNiagaraSystem::StaticClass(), nullptr,
+	// 	TEXT("/Game/Effects/M_VFX/VFX_Resurrection")));
+	// UNiagaraComponent* NiagaraResurrectionComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+	// GetWorld(),
+	// NiagaraResurrection,
+	// KilledDamageableCharacter->GetActorLocation() + FVector(0.0f, 0.0f, -80.0f),
+	// FRotator::ZeroRotator,
+	// FVector(1),
+	// true,
+	// true,
+	// ENCPoolMethod::AutoRelease,
+	// true);
 }
