@@ -29,9 +29,15 @@ float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const&
 	if (!ShouldTakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser)) return 0.f;
 	const auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	if (Damage == 0.f) return 0.f;
-
 	Health -= Damage;
+
+	// 힐이고, 최대체력을 초과한 경우 최대체력으로 맞춰줍니다.
+	if (Damage < 0.f)
+		if (const auto MaxHealth = GetMaxHealth(); Health > MaxHealth)
+			Health = MaxHealth;
+
 	OnHealthChanged.Broadcast(Health);
+	NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
 	if (Health < 0.f) OnPlayerKilled.Broadcast(GetOwningController(), DamageCauser, EventInstigator);
 
 	return Damage;
@@ -131,4 +137,10 @@ void ALakayaBasePlayerState::BroadcastWhenAliveStateChanged()
 
 	OnAliveStateChanged.Broadcast(AliveState);
 	bRecentAliveState = AliveState;
+}
+
+void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserName, const FVector& CauserLocation,
+                                                            const float& Damage)
+{
+	//TODO: 피격 레이더를 업데이트 합니다.
 }

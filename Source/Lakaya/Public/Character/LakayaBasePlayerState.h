@@ -87,6 +87,15 @@ private:
 	// 생존 상태가 변경되었다면 이벤트를 호출하고, 그렇지 않다면 아무 것도 하지 않습니다.
 	void BroadcastWhenAliveStateChanged();
 
+	/**
+	 * @brief 플레이어가 피격됐음을 오너 클라이언트에게 알려줍니다.
+	 * @param CauserName 피해를 입힌 액터의 이름입니다.
+	 * @param CauserLocation 피해를 입힌 당시의 액터의 위치입니다.
+	 * @param Damage 최종적으로 플레이어가 입은 피해량입니다.
+	 */
+	UFUNCTION(Client, Reliable)
+	void NoticePlayerHit(const FName& CauserName, const FVector& CauserLocation, const float& Damage);
+
 public:
 	// 현재 체력이 변경되는 경우 호출됩니다. 매개변수로 현재 체력을 받습니다.
 	FHealthChangeSignature OnHealthChanged;
