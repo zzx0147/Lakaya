@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "MatchStateWidget.h"
 #include "Components/TextBlock.h"
-#include "Occupation/PlayerTeamState.h"
+#include "Occupation/PlayerTeam.h"
 #include "GameResultWidget.generated.h"
 
 /**
@@ -24,7 +24,7 @@ protected:
 	virtual void NativeConstruct() override;
 
 private:
-	void OnChangeWinner(const EPlayerTeamState& NewWinner);
+	void OnChangeWinner(const EPlayerTeam& NewWinner);
 
 	UPROPERTY(meta =(BindWidget))
 	UTextBlock* GameResultWidgetText;

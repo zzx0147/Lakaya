@@ -10,7 +10,8 @@
 DECLARE_EVENT_OneParam(UStatComponent, FFloatSignature, const float&)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class LAKAYA_API UStatComponent : public UActorComponent
+class UE_DEPRECATED(5.1, "스탯 컴포넌트는 더 이상 사용되지 않습니다. 대신 AStatPlayerState를 사용하세요") LAKAYA_API
+	UStatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

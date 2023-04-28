@@ -1,6 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "PlayerTeamState.h"
+#include "PlayerTeam.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
@@ -54,14 +54,14 @@ private:
 
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject, Transient)
-	EPlayerTeamState ObjectOwner;
+	EPlayerTeam ObjectOwner;
 
 private:
 	UFUNCTION()
 	void OnRep_BroadCastTeamObject();
 
 private:
-	void SetTeamObject(const EPlayerTeamState& Team);
+	void SetTeamObject(const EPlayerTeam& Team);
 
 private:
 	FTimerHandle InteractionTimerHandle;

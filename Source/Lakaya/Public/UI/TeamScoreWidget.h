@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "MatchStateWidget.h"
-#include "Occupation/PlayerTeamState.h"
+#include "Occupation/PlayerTeam.h"
 #include "TeamScoreWidget.generated.h"
 
 /**
@@ -28,7 +28,7 @@ private:
 	UFUNCTION()
 	void OnChangeBTeamScore(const float& NewScore) const;
 
-	void OnTeamScoreChanged(const EPlayerTeamState& Team, const float& Score) const;
+	void OnTeamScoreChanged(const EPlayerTeam& Team, const float& Score) const;
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* ATeamScoreText;

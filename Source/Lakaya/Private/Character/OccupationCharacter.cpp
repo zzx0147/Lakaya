@@ -29,9 +29,9 @@ bool AOccupationCharacter::IsSameTeam(AActor* const& Other) const
 	return false;
 }
 
-void AOccupationCharacter::SetTeam(const EPlayerTeamState& Team)
+void AOccupationCharacter::SetTeam(const EPlayerTeam& Team)
 {
 	USkeletalMeshComponent* LocalMesh = GetMesh();
-	if (Team == EPlayerTeamState::A) LocalMesh->SetMaterial(0, LocalMesh->GetMaterial(1));
-	else if (Team == EPlayerTeamState::B) LocalMesh->SetMaterial(0, LocalMesh->GetMaterial(2));
+	if (Team == EPlayerTeam::A) LocalMesh->SetMaterial(0, LocalMesh->GetMaterial(1));
+	else if (Team == EPlayerTeam::B) LocalMesh->SetMaterial(0, LocalMesh->GetMaterial(2));
 }
