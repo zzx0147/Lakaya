@@ -11,6 +11,8 @@ DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FHealthChangeSignature, const flo
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FTeamSignature, const EPlayerTeam&)
 
+DECLARE_EVENT_ThreeParams(ALakayaBasePlayerState, FPlayerKillSignature, AController*, AActor*, AController*)
+
 UCLASS()
 class LAKAYA_API ALakayaBasePlayerState : public APlayerState
 {
@@ -21,6 +23,10 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 
+protected:
+	virtual void CopyProperties(APlayerState* PlayerState) override;
+
+public:
 	// Other와 같은 팀인지 판별합니다.
 	virtual bool IsSameTeam(const ALakayaBasePlayerState* Other) const;
 
@@ -59,10 +65,13 @@ public:
 	// 현재 팀이 변경되는 경우 호출됩니다. 매개변수로 현재 팀을 받습니다.
 	FTeamSignature OnTeamChanged;
 
+	// 캐릭터가 사망하는 경우 호출됩니다. 매개변수로 살해당한 플레이어의 컨트롤러, 살해한 액터, 살해한 플레이어의 컨트롤러를 받습니다.
+	FPlayerKillSignature OnPlayerKilled;
+
 private:
-	UPROPERTY(ReplicatedUsing=OnRep_Health)
+	UPROPERTY(ReplicatedUsing=OnRep_Health, Transient)
 	float Health;
 
-	UPROPERTY(ReplicatedUsing=OnRep_Team)
+	UPROPERTY(ReplicatedUsing=OnRep_Team, Transient)
 	EPlayerTeam Team;
 };

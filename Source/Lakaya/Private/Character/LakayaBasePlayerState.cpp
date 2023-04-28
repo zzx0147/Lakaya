@@ -24,7 +24,23 @@ float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const&
                                          AController* EventInstigator, AActor* DamageCauser)
 {
 	if (!ShouldTakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser)) return 0.f;
-	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	const auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
+	Health -= Damage;
+	OnHealthChanged.Broadcast(Health);
+	if (Health < 0.f) OnPlayerKilled.Broadcast(GetOwningController(), DamageCauser, EventInstigator);
+
+	return Damage;
+}
+
+void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
+{
+	Super::CopyProperties(PlayerState);
+	if (const auto Other = Cast<ALakayaBasePlayerState>(PlayerState))
+	{
+		Other->Health = Health;
+		Other->Team = Team;
+	}
 }
 
 bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) const
@@ -56,6 +72,7 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 
 	if (HasAuthority())
 	{
+		// 캐릭터가 변경된 경우 그 캐릭터에 맞는 체력으로 재설정합니다.
 		Health = GetMaxHealth();
 		OnHealthChanged.Broadcast(Health);
 	}
