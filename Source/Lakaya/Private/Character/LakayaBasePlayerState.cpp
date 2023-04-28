@@ -4,6 +4,7 @@
 #include "Character/LakayaBasePlayerState.h"
 
 #include "Character/LakayaBaseCharacter.h"
+#include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 
 void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -12,12 +13,14 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 
 	DOREPLIFETIME(ALakayaBasePlayerState, Health);
 	DOREPLIFETIME(ALakayaBasePlayerState, Team);
+	DOREPLIFETIME(ALakayaBasePlayerState, RespawnTime);
 }
 
 void ALakayaBasePlayerState::PreInitializeComponents()
 {
 	Super::PreInitializeComponents();
 	OnPawnSet.AddUniqueDynamic(this, &ALakayaBasePlayerState::OnPawnSetCallback);
+	bRecentAliveState = true;
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -25,7 +28,8 @@ float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const&
 {
 	if (!ShouldTakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser)) return 0.f;
 	const auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	
+	if (Damage == 0.f) return 0.f;
+
 	Health -= Damage;
 	OnHealthChanged.Broadcast(Health);
 	if (Health < 0.f) OnPlayerKilled.Broadcast(GetOwningController(), DamageCauser, EventInstigator);
@@ -56,12 +60,24 @@ void ALakayaBasePlayerState::SetTeam(const EPlayerTeam& DesireTeam)
 	OnTeamChanged.Broadcast(Team);
 }
 
+bool ALakayaBasePlayerState::IsAlive() const
+{
+	// 부활시간이 설정되지 않았거나(0.f), 부활시간이 지난 경우 생존으로 간주합니다.
+	// 반대로 부활시간이 음수이거나, 아직 부활시간을 지나지 않은 경우 사망으로 간주합니다.
+	return RespawnTime >= 0.f && RespawnTime < GetServerTime();
+}
+
+float ALakayaBasePlayerState::GetServerTime() const
+{
+	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+}
+
 bool ALakayaBasePlayerState::ShouldTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
                                               AController* EventInstigator, AActor* DamageCauser)
 {
-	// 피해가 아닌 힐인 경우나 EventInstigator가 nullptr인 경우, 같은 팀이 아닌 경우 피해를 받도록 합니다.
-	return DamageAmount > 0.f || !EventInstigator
-		|| !IsSameTeam(EventInstigator->GetPlayerState<ALakayaBasePlayerState>());
+	// 플레이어가 생존해있고, 데미지가 공격이 아닌 회복인 경우나 EventInstigator가 nullptr인 경우, 같은 팀이 아닌 경우 피해를 받도록 합니다.
+	return IsAlive() && (DamageAmount > 0.f || !EventInstigator
+		|| !IsSameTeam(EventInstigator->GetPlayerState<ALakayaBasePlayerState>()));
 }
 
 void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
@@ -93,4 +109,20 @@ void ALakayaBasePlayerState::OnRep_Team()
 {
 	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->OnSetTeam(Team);
 	OnTeamChanged.Broadcast(Team);
+}
+
+void ALakayaBasePlayerState::OnRep_RespawnTime()
+{
+	BroadcastWhenAliveStateChanged();
+}
+
+void ALakayaBasePlayerState::BroadcastWhenAliveStateChanged()
+{
+	const auto AliveState = IsAlive();
+
+	// 생존 상태가 변경된 것이 없는 경우 아무 것도 하지 않습니다.
+	if (bRecentAliveState == AliveState) return;
+
+	OnAliveStateChanged.Broadcast(AliveState);
+	bRecentAliveState = AliveState;
 }

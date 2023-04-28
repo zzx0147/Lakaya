@@ -13,6 +13,8 @@ DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FTeamSignature, const EPlayerTeam
 
 DECLARE_EVENT_ThreeParams(ALakayaBasePlayerState, FPlayerKillSignature, AController*, AActor*, AController*)
 
+DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FAliveChangeSignature, bool)
+
 UCLASS()
 class LAKAYA_API ALakayaBasePlayerState : public APlayerState
 {
@@ -33,7 +35,22 @@ public:
 	// 플레이어의 팀을 설정합니다.
 	virtual void SetTeam(const EPlayerTeam& DesireTeam);
 
+	/**
+	 * @brief 플레이어에게 부활 정보를 알립니다.
+	 * @param ReservedRespawnTime 목표 부활 시간입니다. 이 시간에 플레이어가 부활합니다. 
+	 * @param Object Function을 실행할 오브젝트입니다.
+	 * @param Function 부활 시간이 도래했을 때 실행할 Object의 멤버함수입니다.
+	 */
+	template <class T = ALakayaBasePlayerState>
+	void SetRespawnTimer(const float& ReservedRespawnTime, T* Object = nullptr, void (T::*Function)() = nullptr);
+
+	// 이 플레이어의 생존 여부를 가져옵니다.
+	bool IsAlive() const;
+
 protected:
+	// 현재 서버의 시간을 가져옵니다.
+	float GetServerTime() const;
+
 	/**
 	 * @brief 폰의 ShouldTakeDamage를 모방한 함수입니다. 데미지를 받을지 여부를 판단합니다.
 	 * @return true이면 피해를 입고, 그렇지 않으면 피해를 입지 않습니다.
@@ -58,6 +75,13 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_Team();
 
+	UFUNCTION()
+	virtual void OnRep_RespawnTime();
+
+private:
+	// 생존 상태가 변경되었다면 이벤트를 호출하고, 그렇지 않다면 아무 것도 하지 않습니다.
+	void BroadcastWhenAliveStateChanged();
+
 public:
 	// 현재 체력이 변경되는 경우 호출됩니다. 매개변수로 현재 체력을 받습니다.
 	FHealthChangeSignature OnHealthChanged;
@@ -65,8 +89,11 @@ public:
 	// 현재 팀이 변경되는 경우 호출됩니다. 매개변수로 현재 팀을 받습니다.
 	FTeamSignature OnTeamChanged;
 
-	// 캐릭터가 사망하는 경우 호출됩니다. 매개변수로 살해당한 플레이어의 컨트롤러, 살해한 액터, 살해한 플레이어의 컨트롤러를 받습니다.
+	// 플레이어가 사망조건을 달성한 경우 호출됩니다. 매개변수로 살해당한 플레이어의 컨트롤러, 살해한 액터, 살해한 플레이어의 컨트롤러를 받습니다.
 	FPlayerKillSignature OnPlayerKilled;
+
+	// 플레이어가 살아나거나 죽는 경우 호출됩니다. 매개변수로 생존 상태를 받습니다. true이면 생존, false이면 사망을 의미합니다.
+	FAliveChangeSignature OnAliveStateChanged;
 
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Health, Transient)
@@ -74,4 +101,24 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_Team, Transient)
 	EPlayerTeam Team;
+
+	UPROPERTY(ReplicatedUsing=OnRep_RespawnTime, Transient)
+	float RespawnTime;
+
+	FTimerHandle RespawnTimer;
+	bool bRecentAliveState;
 };
+
+template <class T>
+void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, T* Object, void (T::*Function)())
+{
+	RespawnTime = ReservedRespawnTime;
+	BroadcastWhenAliveStateChanged();
+
+	// 만약 RespawnTime이 현재 시간보다 낮게 설정된 경우 이 타이머는 설정되지 않습니다.
+	GetWorldTimerManager().SetTimer(RespawnTimer, [this, Object, Function]
+	{
+		BroadcastWhenAliveStateChanged();
+		if (Object && Function) (Object.*Function)();
+	}, ReservedRespawnTime - GetServerTime(), false);
+}
