@@ -37,8 +37,8 @@ void UTeamScoreWidget::NativeConstruct()
 	}
 
 	MaxScore = OccupationGameState->GetMaxScore();
-	OnChangeATeamScore(OccupationGameState->GetTeamScore(EPlayerTeamState::A));
-	OnChangeBTeamScore(OccupationGameState->GetTeamScore(EPlayerTeamState::B));
+	OnChangeATeamScore(OccupationGameState->GetTeamScore(EPlayerTeam::A));
+	OnChangeBTeamScore(OccupationGameState->GetTeamScore(EPlayerTeam::B));
 
 	OccupationGameState->OnTeamScoreChanged.AddUObject(this, &UTeamScoreWidget::OnTeamScoreChanged);
 }
@@ -55,9 +55,9 @@ void UTeamScoreWidget::OnChangeBTeamScore(const float& NewScore) const
 	if (NewScore >= MaxScore) BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("B팀 %.1f%%"), 1.0f)));
 }
 
-void UTeamScoreWidget::OnTeamScoreChanged(const EPlayerTeamState& Team, const float& Score) const
+void UTeamScoreWidget::OnTeamScoreChanged(const EPlayerTeam& Team, const float& Score) const
 {
-	if (Team == EPlayerTeamState::A) OnChangeATeamScore(Score);
-	else if (Team == EPlayerTeamState::B) OnChangeBTeamScore(Score);
+	if (Team == EPlayerTeam::A) OnChangeATeamScore(Score);
+	else if (Team == EPlayerTeam::B) OnChangeBTeamScore(Score);
 	else UE_LOG(LogScript, Warning, TEXT("Event broadcasted with invalid value! it was %d"), Team);
 }

@@ -12,7 +12,7 @@ void AOccupationPlayerState::BeginPlay()
 	OnPawnSet.AddDynamic(this, &AOccupationPlayerState::OnPawnSetCallback);
 }
 
-void AOccupationPlayerState::SetPlayerTeamState(const EPlayerTeamState& TeamState)
+void AOccupationPlayerState::SetPlayerTeamState(const EPlayerTeam& TeamState)
 {
 	PlayerTeamState = TeamState;
 	if (const auto CastedPawn = GetPawn<AOccupationCharacter>())
@@ -42,7 +42,7 @@ bool AOccupationPlayerState::IsSameTeam(APlayerState* const& Other) const
 
 bool AOccupationPlayerState::IsSameTeam(AOccupationPlayerState* const& Other) const
 {
-	if (Other && Other->PlayerTeamState != EPlayerTeamState::None)
+	if (Other && Other->PlayerTeamState != EPlayerTeam::None)
 		return PlayerTeamState == Other->PlayerTeamState;
 	return false;
 }

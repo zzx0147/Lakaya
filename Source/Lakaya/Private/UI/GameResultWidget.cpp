@@ -34,7 +34,7 @@ void UGameResultWidget::NativeConstruct()
 	OccupationGameState->OnOccupationChangeOccupationWinner.AddUObject(this, &UGameResultWidget::OnChangeWinner);
 }
 
-void UGameResultWidget::OnChangeWinner(const EPlayerTeamState& NewWinner)
+void UGameResultWidget::OnChangeWinner(const EPlayerTeam& NewWinner)
 {
 	SetVisibility(ESlateVisibility::Visible);
 
@@ -48,15 +48,15 @@ void UGameResultWidget::OnChangeWinner(const EPlayerTeamState& NewWinner)
 	FString WinnerString;
 	switch (OccupationGameState->GetOccupationWinner())
 	{
-	case EPlayerTeamState::None:
+	case EPlayerTeam::None:
 		WinnerString = FString(TEXT("Undecided"));
 		break;
-	case EPlayerTeamState::A:
+	case EPlayerTeam::A:
 		WinnerString = FString(TEXT("A"));
 		if (OccupationPlayerState->GetPlayerTeamState() == EPlayerTeamState::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
 		else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
 		break;
-	case EPlayerTeamState::B:
+	case EPlayerTeam::B:
 		WinnerString = FString(TEXT("B"));
 		if (OccupationPlayerState->GetPlayerTeamState() == EPlayerTeamState::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
 		else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/InteractableCharacter.h"
-#include "Occupation/PlayerTeamState.h"
+#include "Occupation/PlayerTeam.h"
 #include "OccupationCharacter.generated.h"
 
 UCLASS()
@@ -27,5 +27,5 @@ public:
 	 * @brief 캐릭터의 팀을 설정합니다.
 	 * @param Team 어떤 팀으로 설정할지 나타냅니다.
 	 */
-	virtual void SetTeam(const EPlayerTeamState& Team);
+	virtual void SetTeam(const EPlayerTeam& Team);
 };

@@ -258,21 +258,21 @@ void AOccupationObject::OnRep_BroadCastTeamObject()
 	SetTeamObject(ObjectOwner);
 }
 
-void AOccupationObject::SetTeamObject(const EPlayerTeamState& Team)
+void AOccupationObject::SetTeamObject(const EPlayerTeam& Team)
 {
 	switch (Team)
 	{
-	case EPlayerTeamState::A:
+	case EPlayerTeam::A:
 		Cylinder->SetMaterial(
 			0, LoadObject<UMaterialInterface>(
 				nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/RedTeam.RedTeam")));
 		break;
-	case EPlayerTeamState::B:
+	case EPlayerTeam::B:
 		Cylinder->SetMaterial(
 			0, LoadObject<UMaterialInterface>(
 				nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/BlueTeam.BlueTeam")));
 		break;
-	case EPlayerTeamState::None:
+	case EPlayerTeam::None:
 		break;
 	}
 }

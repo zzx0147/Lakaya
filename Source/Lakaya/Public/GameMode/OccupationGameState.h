@@ -5,12 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
 #include "GameMode/LakayaBaseGameState.h"
-#include "Occupation/PlayerTeamState.h"
+#include "Occupation/PlayerTeam.h"
 #include "OccupationGameState.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeJoinedPlayers, const uint8&)
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeOccupationWinner, const EPlayerTeamState&)
-DECLARE_EVENT_TwoParams(AOccupationGameState, FTeamScoreSignature, const EPlayerTeamState&, const float&)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeOccupationWinner, const EPlayerTeam&)
+DECLARE_EVENT_TwoParams(AOccupationGameState, FTeamScoreSignature, const EPlayerTeam&, const float&)
 DECLARE_EVENT_FourParams(AOccupationGameState, FKillCharacterSignature, AController*, AActor*, AController*, AActor*)
 
 /**
@@ -44,10 +44,10 @@ public:
 	 * @param Team 점수를 부여할 팀입니다.
 	 * @param AdditiveScore 추가될 점수입니다.
 	 */
-	void AddTeamScore(const EPlayerTeamState& Team, const float& AdditiveScore);
+	void AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore);
 
 	// 해당 팀의 점수를 받아옵니다.
-	float GetTeamScore(const EPlayerTeamState& Team) const;
+	float GetTeamScore(const EPlayerTeam& Team) const;
 
 	const float& GetMaxScore() const { return MaxScore; }
 
@@ -60,7 +60,7 @@ public:
 	const uint8& GetNumPlayers() const { return GetPlayersNumber(); }
 
 	UFUNCTION()
-	const EPlayerTeamState& GetOccupationWinner() const { return CurrentOccupationWinner; }
+	const EPlayerTeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
 
 	// 현재 시간을 기준으로 매칭 시간을 설정합니다. 반드시 서버에서 호출해야 합니다.
 	void SetMatchTime();
@@ -98,7 +98,7 @@ private:
 	uint8 NumPlayers;
 
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
-	EPlayerTeamState CurrentOccupationWinner;
+	EPlayerTeam CurrentOccupationWinner;
 
 	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore, Transient)
 	float ATeamScore;

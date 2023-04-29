@@ -55,20 +55,20 @@ void AOccupationGameState::NotifyKillCharacter_Implementation(AController* Kille
 
 void AOccupationGameState::SetOccupationWinner()
 {
-	CurrentOccupationWinner = ATeamScore > BTeamScore ? EPlayerTeamState::A : EPlayerTeamState::B;
+	CurrentOccupationWinner = ATeamScore > BTeamScore ? EPlayerTeam::A : EPlayerTeam::B;
 	OnOccupationChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
 }
 
-void AOccupationGameState::AddTeamScore(const EPlayerTeamState& Team, const float& AdditiveScore)
+void AOccupationGameState::AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore)
 {
-	if (Team == EPlayerTeamState::A) ATeamScore += AdditiveScore;
-	else if (Team == EPlayerTeamState::B) BTeamScore += AdditiveScore;
+	if (Team == EPlayerTeam::A) ATeamScore += AdditiveScore;
+	else if (Team == EPlayerTeam::B) BTeamScore += AdditiveScore;
 }
 
-float AOccupationGameState::GetTeamScore(const EPlayerTeamState& Team) const
+float AOccupationGameState::GetTeamScore(const EPlayerTeam& Team) const
 {
-	if (Team == EPlayerTeamState::A) return ATeamScore;
-	if (Team == EPlayerTeamState::B) return BTeamScore;
+	if (Team == EPlayerTeam::A) return ATeamScore;
+	if (Team == EPlayerTeam::B) return BTeamScore;
 	UE_LOG(LogScript, Warning, TEXT("Trying to GetTeamScore with not valid value! it was %d"), Team);
 	return 0.f;
 }
@@ -97,12 +97,12 @@ void AOccupationGameState::OnRep_NumPlayers()
 
 void AOccupationGameState::OnRep_ATeamScore()
 {
-	OnTeamScoreChanged.Broadcast(EPlayerTeamState::A, ATeamScore);
+	OnTeamScoreChanged.Broadcast(EPlayerTeam::A, ATeamScore);
 }
 
 void AOccupationGameState::OnRep_BTeamScore()
 {
-	OnTeamScoreChanged.Broadcast(EPlayerTeamState::B, ATeamScore);
+	OnTeamScoreChanged.Broadcast(EPlayerTeam::B, ATeamScore);
 }
 
 void AOccupationGameState::OnRep_OccupationWinner()

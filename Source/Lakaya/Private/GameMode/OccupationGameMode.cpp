@@ -77,12 +77,12 @@ bool AOccupationGameMode::ReadyToStartMatch_Implementation()
 
 			if (i % 2 == 0)
 			{
-				CollectorPlayerState->SetPlayerTeamState(EPlayerTeamState::A);
+				CollectorPlayerState->SetPlayerTeamState(EPlayerTeam::A);
 				UE_LOG(LogTemp, Warning, TEXT("A팀에 배정 되었습니다."));
 			}
 			else
 			{
-				CollectorPlayerState->SetPlayerTeamState(EPlayerTeamState::B);
+				CollectorPlayerState->SetPlayerTeamState(EPlayerTeam::B);
 				UE_LOG(LogTemp, Warning, TEXT("B팀에 배정 되었습니다."));
 			}
 		}
@@ -126,8 +126,8 @@ void AOccupationGameMode::DelayedEndedGame()
 
 void AOccupationGameMode::UpdateTeamScoreTick()
 {
-	if (ATeamObjectCount > 0) OccupationGameState->AddTeamScore(EPlayerTeamState::A, ATeamObjectCount * AdditiveScore);
-	if (BTeamObjectCount > 0) OccupationGameState->AddTeamScore(EPlayerTeamState::B, BTeamObjectCount * AdditiveScore);
+	if (ATeamObjectCount > 0) OccupationGameState->AddTeamScore(EPlayerTeam::A, ATeamObjectCount * AdditiveScore);
+	if (BTeamObjectCount > 0) OccupationGameState->AddTeamScore(EPlayerTeam::B, BTeamObjectCount * AdditiveScore);
 }
 
 void AOccupationGameMode::RespawnPlayer(AController* KilledController)
@@ -142,10 +142,10 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 	FName SpawnTag;
 	switch (CollectorPlayerState->GetPlayerTeamState())
 	{
-	case EPlayerTeamState::A:
+	case EPlayerTeam::A:
 		SpawnTag = FName("ATeamSpawnZone");
 		break;
-	case EPlayerTeamState::B:
+	case EPlayerTeam::B:
 		SpawnTag = FName("BTeamSpawnZone");
 		break;
 	default:
@@ -202,17 +202,17 @@ void AOccupationGameMode::FinishRestartPlayer(AController* NewPlayer, const FRot
 	Super::FinishRestartPlayer(NewPlayer, StartRotation);
 }
 
-void AOccupationGameMode::AddOccupyObject(const EPlayerTeamState& Team)
+void AOccupationGameMode::AddOccupyObject(const EPlayerTeam& Team)
 {
-	if (Team == EPlayerTeamState::A) ++ATeamObjectCount;
-	else if (Team == EPlayerTeamState::B) ++BTeamObjectCount;
+	if (Team == EPlayerTeam::A) ++ATeamObjectCount;
+	else if (Team == EPlayerTeam::B) ++BTeamObjectCount;
 	else UE_LOG(LogScript, Warning, TEXT("Trying to AddOccupyObject with invalid value! it was %d"), Team);
 }
 
-void AOccupationGameMode::SubOccupyObject(const EPlayerTeamState& Team)
+void AOccupationGameMode::SubOccupyObject(const EPlayerTeam& Team)
 {
-	if (Team == EPlayerTeamState::A && ATeamObjectCount > 0) --ATeamObjectCount;
-	else if (Team == EPlayerTeamState::B && BTeamObjectCount > 0) --BTeamObjectCount;
+	if (Team == EPlayerTeam::A && ATeamObjectCount > 0) --ATeamObjectCount;
+	else if (Team == EPlayerTeam::B && BTeamObjectCount > 0) --BTeamObjectCount;
 	else UE_LOG(LogScript, Warning, TEXT("Trying to AddOccupyObject with invalid value! it was %d"), Team);
 }
 
@@ -240,10 +240,10 @@ void AOccupationGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
 			FName SpawnTag;
 			switch (CollectorPlayerState->GetPlayerTeamState())
 			{
-			case EPlayerTeamState::A:
+			case EPlayerTeam::A:
 				SpawnTag = FName("ATeamSpawnZone");
 				break;
-			case EPlayerTeamState::B:
+			case EPlayerTeam::B:
 				SpawnTag = FName("BTeamSpawnZone");
 				break;
 			default:
