@@ -35,9 +35,9 @@ public:
 
 private:
 	UPROPERTY(EditDefaultsOnly)
-	uint8 MaximumPlayers = 6;
+	uint8 MaximumPlayers;
 	
-	uint8 PlayersNumber = 0;
+	uint8 PlayersNumber;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class ULoadingWidget> LoadingWidgetClass;

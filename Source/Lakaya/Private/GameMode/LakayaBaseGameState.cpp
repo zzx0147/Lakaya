@@ -7,6 +7,8 @@
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	MaximumPlayers = 6;
+	PlayersNumber = 0;
 }
 
 void ALakayaBaseGameState::BeginPlay()
@@ -20,7 +22,7 @@ void ALakayaBaseGameState::BeginPlay()
 			if (LoadingWidget != nullptr)
 			{
 				LoadingWidget->OnBeginPlay();
-				LoadingWidget->SetMaximumPlayerNumber(6);
+				LoadingWidget->SetMaximumPlayerNumber(MaximumPlayers);
 				LoadingWidget->SetPlayerNumber(PlayerArray.Num());
 				LoadingWidget->AddToViewport();
 				LoadingWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -32,7 +34,7 @@ void ALakayaBaseGameState::BeginPlay()
 
 void ALakayaBaseGameState::Tick(float DeltaTime)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, *GetMatchState().ToString());
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, *GetMatchState().ToString());
 }
 
 void ALakayaBaseGameState::AddPlayerState(APlayerState* PlayerState)
