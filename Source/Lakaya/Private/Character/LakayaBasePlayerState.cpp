@@ -51,6 +51,8 @@ void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
 	{
 		Other->Health = Health;
 		Other->Team = Team;
+		Other->RespawnTime = RespawnTime;
+		Other->CharacterName = CharacterName;
 	}
 }
 
