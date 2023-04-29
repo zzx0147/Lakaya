@@ -50,7 +50,7 @@ void AOccupationGameMode::PostLogin(APlayerController* NewPlayer)
 	const int32 CurrentPlayerNum = OccupationGameState->PlayerArray.Num();
 	OccupationGameState->SetNumPlayers(CurrentPlayerNum);
 
-	if (GetNumPlayers() >= OccupationGameState->GetMaxPlayers())
+	if (GetNumPlayers() >= OccupationGameState->GetMaximumPlayers())
 	{
 		GetWorldTimerManager().SetTimer(TimerHandle_DelayedStart, this, &AOccupationGameMode::DelayedStartMatch,
 		                                MatchStartDelay, false);
@@ -63,7 +63,7 @@ bool AOccupationGameMode::ReadyToStartMatch_Implementation()
 
 	if (!GetbWaitToStart()) return false;
 
-	for (int i = 0; i < OccupationGameState->GetMaxPlayers(); i++)
+	for (int i = 0; i < OccupationGameState->GetMaximumPlayers(); i++)
 	{
 		if (OccupationGameState->PlayerArray.IsValidIndex(i))
 		{

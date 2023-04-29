@@ -20,7 +20,7 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 AOccupationGameState::AOccupationGameState()
 {
-	MaxPlayers = 2;
+	MaxPlayers = GetMaximumPlayers();
 	MaxScore = 100.f;
 	MatchDuration = 180.f;
 }
@@ -92,7 +92,7 @@ bool AOccupationGameState::IsSomeoneReachedMaxScore() const
 
 void AOccupationGameState::OnRep_NumPlayers()
 {
-	OnOccupationChangeJoinedPlayers.Broadcast(GetNumPlayers());
+	OnOccupationChangeJoinedPlayers.Broadcast(GetMaximumPlayers());
 }
 
 void AOccupationGameState::OnRep_ATeamScore()

@@ -27,10 +27,26 @@ void ULoadingWidget::NativeConstruct()
 		return;
 	}
 
-	MaxPlayerCount = OccupationGameState->GetMaxPlayers();
-	OnChangeJoinedPlayers(OccupationGameState->GetNumPlayers());
+	MaxPlayerCount = OccupationGameState->GetMaximumPlayers();
+	//OnChangeJoinedPlayers(OccupationGameState->GetNumPlayers());
 
-	OccupationGameState->OnOccupationChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
+	//OccupationGameState->OnOccupationChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
+}
+
+void ULoadingWidget::SetPlayerNumber(const uint8& PlayerCount)
+{
+	if (PlayerCount == MaxPlayerCount)
+	{
+		LoadingWidgetText->SetText(FText::FromString(TEXT("곧 게임을 시작합니다.")));
+		return;
+	}
+
+	LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), PlayerCount, MaxPlayerCount)));
+}
+
+void ULoadingWidget::SetMaximumPlayerNumber(const uint8& PlayerCount)
+{
+	MaxPlayerCount = PlayerCount;
 }
 
 void ULoadingWidget::OnChangeJoinedPlayers(const uint8& PlayerCount) const

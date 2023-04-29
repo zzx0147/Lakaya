@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
+#include "GameMode/LakayaBaseGameState.h"
 #include "Occupation/PlayerTeamState.h"
 #include "OccupationGameState.generated.h"
 
@@ -16,7 +17,7 @@ DECLARE_EVENT_FourParams(AOccupationGameState, FKillCharacterSignature, AControl
  * 
  */
 UCLASS()
-class LAKAYA_API AOccupationGameState : public AGameState
+class LAKAYA_API AOccupationGameState : public ALakayaBaseGameState
 {
 	GENERATED_BODY()
 
@@ -50,11 +51,13 @@ public:
 
 	const float& GetMaxScore() const { return MaxScore; }
 
+	UE_DEPRECATED(5.1, "This Function move to LakayaBaseGameState, instead, use LayayaBaseGameState::GetMaximumPlayers()")
 	UFUNCTION()
-	const uint8& GetMaxPlayers() const { return MaxPlayers; }
+	const uint8& GetMaxPlayers() const { return GetMaximumPlayers(); }
 
+	UE_DEPRECATED(5.1, "This Function move to LakayaBaseGameState, instead, use LayayaBaseGameState::GetPlayersNumber()")
 	UFUNCTION()
-	const uint8& GetNumPlayers() const { return NumPlayers; }
+	const uint8& GetNumPlayers() const { return GetPlayersNumber(); }
 
 	UFUNCTION()
 	const EPlayerTeamState& GetOccupationWinner() const { return CurrentOccupationWinner; }
@@ -69,6 +72,7 @@ public:
 	bool IsSomeoneReachedMaxScore() const;
 
 private:
+	UE_DEPRECATED(5.1, "This Function will be removed")
 	UFUNCTION()
 	void OnRep_NumPlayers();
 
@@ -82,12 +86,14 @@ private:
 	void OnRep_OccupationWinner();
 
 public:
+	UE_DEPRECATED(5.1, "This Event will be deleted, instead, Use LakayaBaseState::OnChangePlayerNumber")
 	FOnOccupationChangeJoinedPlayers OnOccupationChangeJoinedPlayers;
 	FOnOccupationChangeOccupationWinner OnOccupationChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreChanged;
 	FKillCharacterSignature OnKillCharacterNotify;
 
 private:
+	UE_DEPRECATED(5.1, "This variable will be Deleted, doesn't need, instead, use PlayerArray.Num() or LakayaBaseGameState::GetPlayerNumber()")
 	UPROPERTY(ReplicatedUsing = OnRep_NumPlayers)
 	uint8 NumPlayers;
 
@@ -106,6 +112,7 @@ private:
 	UPROPERTY(Replicated)
 	float MatchEndingTime;
 
+	UE_DEPRECATED(5.1, "This variable will be Deleted instead use LakayaBaseGameState::MaxPlayers")
 	UPROPERTY(EditAnywhere)
 	uint8 MaxPlayers;
 

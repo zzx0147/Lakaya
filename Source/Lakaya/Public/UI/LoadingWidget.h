@@ -16,7 +16,12 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 
+public:
+	virtual void SetPlayerNumber(const uint8& PlayerCount);
+	virtual void SetMaximumPlayerNumber(const uint8& PlayerCount);
+
 private:
+	UE_DEPRECATED(5.1, "This function will be removed")
 	UFUNCTION()
 	void OnChangeJoinedPlayers(const uint8& PlayerCount) const;
 
