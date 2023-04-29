@@ -53,12 +53,12 @@ void UGameResultWidget::OnChangeWinner(const EPlayerTeam& NewWinner)
 		break;
 	case EPlayerTeam::A:
 		WinnerString = FString(TEXT("A"));
-		if (OccupationPlayerState->GetPlayerTeamState() == EPlayerTeamState::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
+		if (OccupationPlayerState->GetPlayerTeamState() == EPlayerTeam::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
 		else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
 		break;
 	case EPlayerTeam::B:
 		WinnerString = FString(TEXT("B"));
-		if (OccupationPlayerState->GetPlayerTeamState() == EPlayerTeamState::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
+		if (OccupationPlayerState->GetPlayerTeamState() == EPlayerTeam::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
 		else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
 		break;
 	default:

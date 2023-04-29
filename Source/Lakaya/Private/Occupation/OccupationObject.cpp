@@ -98,17 +98,17 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	
 	// 소우자 팀에서 상호작용 할 경우 막아두기
 	FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetPlayerTeamState());
-	if (PlayerStateString.Equals("EPlayerTeamState::A", ESearchCase::IgnoreCase))
+	if (PlayerStateString.Equals("EPlayerTeam::A", ESearchCase::IgnoreCase))
 	{
-		if (ObjectOwner == EPlayerTeamState::A)
+		if (ObjectOwner == EPlayerTeam::A)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("이미 본인 소유의 점령 오브젝트입니다."));
 			return;
 		}
 	}
-	else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
+	else if (PlayerStateString.Equals("EPlayerTeam::B", ESearchCase::IgnoreCase))
 	{
-		if (ObjectOwner == EPlayerTeamState::B)
+		if (ObjectOwner == EPlayerTeam::B)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
 			return;
@@ -200,11 +200,11 @@ void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
 
-			if (ObjectOwner == EPlayerTeamState::B)
-				OccupationGameMode->SubOccupyObject(EPlayerTeamState::B);
+			if (ObjectOwner == EPlayerTeam::B)
+				OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
 
-			ObjectOwner = EPlayerTeamState::A;
-			OccupationGameMode->AddOccupyObject(EPlayerTeamState::A);
+			ObjectOwner = EPlayerTeam::A;
+			OccupationGameMode->AddOccupyObject(EPlayerTeam::A);
 			SetTeamObject(ObjectOwner);
 			return;
 		}
@@ -212,11 +212,11 @@ void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
 
-			if (ObjectOwner == EPlayerTeamState::A)
-				OccupationGameMode->SubOccupyObject(EPlayerTeamState::A);
+			if (ObjectOwner == EPlayerTeam::A)
+				OccupationGameMode->SubOccupyObject(EPlayerTeam::A);
 			
-			ObjectOwner = EPlayerTeamState::B;
-			OccupationGameMode->SubOccupyObject(EPlayerTeamState::B);
+			ObjectOwner = EPlayerTeam::B;
+			OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
 			SetTeamObject(ObjectOwner);
 			return;
 		}
