@@ -14,6 +14,7 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(ALakayaBasePlayerState, Health);
 	DOREPLIFETIME(ALakayaBasePlayerState, Team);
 	DOREPLIFETIME(ALakayaBasePlayerState, RespawnTime);
+	DOREPLIFETIME(ALakayaBasePlayerState, CharacterName);
 }
 
 void ALakayaBasePlayerState::PreInitializeComponents()
@@ -112,6 +113,12 @@ float ALakayaBasePlayerState::GetMaxHealth() const
 	return 0.f;
 }
 
+bool ALakayaBasePlayerState::ShouldChangeCharacterName(const FName& Name)
+{
+	//TODO: 캐릭터 이름 변경 가능 조건을 작성합니다.
+	return true;
+}
+
 void ALakayaBasePlayerState::OnRep_Health()
 {
 	OnHealthChanged.Broadcast(Health);
@@ -128,6 +135,11 @@ void ALakayaBasePlayerState::OnRep_RespawnTime()
 	BroadcastWhenAliveStateChanged();
 }
 
+void ALakayaBasePlayerState::OnRep_CharacterName()
+{
+	OnCharacterNameChanged.Broadcast(this, CharacterName);
+}
+
 void ALakayaBasePlayerState::BroadcastWhenAliveStateChanged()
 {
 	const auto AliveState = IsAlive();
@@ -137,6 +149,19 @@ void ALakayaBasePlayerState::BroadcastWhenAliveStateChanged()
 
 	OnAliveStateChanged.Broadcast(AliveState);
 	bRecentAliveState = AliveState;
+}
+
+void ALakayaBasePlayerState::RequestCharacterChange_Implementation(const FName& Name)
+{
+	if (!ShouldChangeCharacterName(Name)) return;
+	CharacterName = Name;
+	OnCharacterNameChanged.Broadcast(this, CharacterName);
+}
+
+bool ALakayaBasePlayerState::RequestCharacterChange_Validate(const FName& Name)
+{
+	//TODO: 캐릭터 이름이 유효한 키값인지 검사합니다.
+	return true;
 }
 
 void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserName, const FVector& CauserLocation,

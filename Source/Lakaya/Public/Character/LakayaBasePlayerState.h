@@ -15,6 +15,8 @@ DECLARE_EVENT_ThreeParams(ALakayaBasePlayerState, FPlayerKillSignature, AControl
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FAliveChangeSignature, bool)
 
+DECLARE_EVENT_TwoParams(ALakayaBasePlayerState, FCharacterNameChangeSignature, ALakayaBasePlayerState*, const FName&)
+
 UCLASS()
 class LAKAYA_API ALakayaBasePlayerState : public APlayerState
 {
@@ -52,6 +54,14 @@ public:
 	// 이 플레이어를 생존상태로 변경합니다.
 	void MakeAlive();
 
+	/**
+	 * @brief 서버에게 캐릭터 변경을 요청합니다. 픽창에서는 캐릭터가 실제로 변경되지는 않고 게임이 시작될 때 요청된 캐릭터가 생성되며,
+	 * 게임이 진행중일 때는 실제로 캐릭터가 변경됩니다.
+	 * @param Name 변경이 요청된 캐릭터 이름입니다. 이 값을 통해 데이터 테이블에서 캐릭터를 찾아 생성할 수 있습니다.
+	 */
+	UFUNCTION(Server, Reliable, WithValidation)
+	void RequestCharacterChange(const FName& Name);
+
 protected:
 	// 현재 서버의 시간을 가져옵니다.
 	float GetServerTime() const;
@@ -74,6 +84,13 @@ protected:
 	// 최대 체력을 가져옵니다.
 	virtual float GetMaxHealth() const;
 
+	/**
+	 * @brief 캐릭터 이름을 변경할 수 있는지 여부를 조사합니다.
+	 * @param Name 변경하려는 이름입니다.
+	 * @return true이면 캐릭터 이름을 변경할 수 있는 것으로 간주합니다.
+	 */
+	virtual bool ShouldChangeCharacterName(const FName& Name);
+
 	UFUNCTION()
 	virtual void OnRep_Health();
 
@@ -82,6 +99,9 @@ protected:
 
 	UFUNCTION()
 	virtual void OnRep_RespawnTime();
+
+	UFUNCTION()
+	virtual void OnRep_CharacterName();
 
 private:
 	// 생존 상태가 변경되었다면 이벤트를 호출하고, 그렇지 않다면 아무 것도 하지 않습니다.
@@ -109,6 +129,9 @@ public:
 	// 플레이어가 살아나거나 죽는 경우 호출됩니다. 매개변수로 생존 상태를 받습니다. true이면 생존, false이면 사망을 의미합니다.
 	FAliveChangeSignature OnAliveStateChanged;
 
+	// 캐릭터 이름이 변경될 때 호출됩니다. 매개변수로 이 플레이어 스테이트와 변경된 캐릭터 이름을 받습니다.
+	FCharacterNameChangeSignature OnCharacterNameChanged;
+
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Health, Transient)
 	float Health;
@@ -118,6 +141,9 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_RespawnTime, Transient)
 	float RespawnTime;
+
+	UPROPERTY(ReplicatedUsing=OnRep_CharacterName, Transient)
+	FName CharacterName;
 
 	FTimerHandle RespawnTimer;
 	bool bRecentAliveState;
