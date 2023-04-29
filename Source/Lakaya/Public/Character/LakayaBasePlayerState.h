@@ -17,6 +17,8 @@ DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FAliveChangeSignature, bool)
 
 DECLARE_EVENT_TwoParams(ALakayaBasePlayerState, FCharacterNameChangeSignature, ALakayaBasePlayerState*, const FName&)
 
+DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FCountInfoSignature, const uint16&)
+
 UCLASS()
 class LAKAYA_API ALakayaBasePlayerState : public APlayerState
 {
@@ -62,6 +64,18 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void RequestCharacterChange(const FName& Name);
 
+	// 현재 플레이어의 누적 사망 횟수를 가져옵니다.
+	const uint16& GetDeathCount() const { return DeathCount; }
+
+	// 현재 플레이어의 누적 킬 횟수를 가져옵니다.
+	const uint16& GetKillCount() const { return KillCount; }
+
+	// 플레이어의 누적 사망 횟수를 늘립니다.
+	void AddDeathCount();
+
+	// 플레이어의 누적 킬 횟수를 늘립니다.
+	void AddKillCount();
+
 protected:
 	// 현재 서버의 시간을 가져옵니다.
 	float GetServerTime() const;
@@ -103,6 +117,12 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_CharacterName();
 
+	UFUNCTION()
+	virtual void OnRep_DeathCount();
+
+	UFUNCTION()
+	virtual void OnRep_KillCount();
+
 private:
 	// 생존 상태가 변경되었다면 이벤트를 호출하고, 그렇지 않다면 아무 것도 하지 않습니다.
 	void BroadcastWhenAliveStateChanged();
@@ -132,6 +152,12 @@ public:
 	// 캐릭터 이름이 변경될 때 호출됩니다. 매개변수로 이 플레이어 스테이트와 변경된 캐릭터 이름을 받습니다.
 	FCharacterNameChangeSignature OnCharacterNameChanged;
 
+	// 플레이어의 누적 사망 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 누적 사망 횟수를 받습니다.
+	FCountInfoSignature OnDeathCountChanged;
+
+	// 플레이어의 누적 킬 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 킬 횟수를 받습니다.
+	FCountInfoSignature OnKillCountChanged;
+
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Health, Transient)
 	float Health;
@@ -144,6 +170,12 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_CharacterName, Transient)
 	FName CharacterName;
+
+	UPROPERTY(ReplicatedUsing=OnRep_DeathCount, Transient)
+	uint16 DeathCount;
+
+	UPROPERTY(ReplicatedUsing=OnRep_KillCount, Transient)
+	uint16 KillCount;
 
 	FTimerHandle RespawnTimer;
 	bool bRecentAliveState;
