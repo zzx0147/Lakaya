@@ -14,6 +14,9 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(ALakayaBasePlayerState, Health);
 	DOREPLIFETIME(ALakayaBasePlayerState, Team);
 	DOREPLIFETIME(ALakayaBasePlayerState, RespawnTime);
+	DOREPLIFETIME(ALakayaBasePlayerState, CharacterName);
+	DOREPLIFETIME(ALakayaBasePlayerState, DeathCount);
+	DOREPLIFETIME(ALakayaBasePlayerState, KillCount);
 }
 
 void ALakayaBasePlayerState::PreInitializeComponents()
@@ -29,9 +32,15 @@ float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const&
 	if (!ShouldTakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser)) return 0.f;
 	const auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	if (Damage == 0.f) return 0.f;
-
 	Health -= Damage;
+
+	// 힐이고, 최대체력을 초과한 경우 최대체력으로 맞춰줍니다.
+	if (Damage < 0.f)
+		if (const auto MaxHealth = GetMaxHealth(); Health > MaxHealth)
+			Health = MaxHealth;
+
 	OnHealthChanged.Broadcast(Health);
+	NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
 	if (Health < 0.f) OnPlayerKilled.Broadcast(GetOwningController(), DamageCauser, EventInstigator);
 
 	return Damage;
@@ -44,6 +53,10 @@ void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
 	{
 		Other->Health = Health;
 		Other->Team = Team;
+		Other->RespawnTime = RespawnTime;
+		Other->CharacterName = CharacterName;
+		Other->DeathCount = DeathCount;
+		Other->KillCount = KillCount;
 	}
 }
 
@@ -71,6 +84,16 @@ void ALakayaBasePlayerState::MakeAlive()
 {
 	RespawnTime = 0.f;
 	BroadcastWhenAliveStateChanged();
+}
+
+void ALakayaBasePlayerState::AddDeathCount()
+{
+	OnDeathCountChanged.Broadcast(++DeathCount);
+}
+
+void ALakayaBasePlayerState::AddKillCount()
+{
+	OnKillCountChanged.Broadcast(++KillCount);
 }
 
 float ALakayaBasePlayerState::GetServerTime() const
@@ -106,6 +129,12 @@ float ALakayaBasePlayerState::GetMaxHealth() const
 	return 0.f;
 }
 
+bool ALakayaBasePlayerState::ShouldChangeCharacterName(const FName& Name)
+{
+	//TODO: 캐릭터 이름 변경 가능 조건을 작성합니다.
+	return true;
+}
+
 void ALakayaBasePlayerState::OnRep_Health()
 {
 	OnHealthChanged.Broadcast(Health);
@@ -122,6 +151,21 @@ void ALakayaBasePlayerState::OnRep_RespawnTime()
 	BroadcastWhenAliveStateChanged();
 }
 
+void ALakayaBasePlayerState::OnRep_CharacterName()
+{
+	OnCharacterNameChanged.Broadcast(this, CharacterName);
+}
+
+void ALakayaBasePlayerState::OnRep_DeathCount()
+{
+	OnKillCountChanged.Broadcast(KillCount);
+}
+
+void ALakayaBasePlayerState::OnRep_KillCount()
+{
+	OnDeathCountChanged.Broadcast(DeathCount);
+}
+
 void ALakayaBasePlayerState::BroadcastWhenAliveStateChanged()
 {
 	const auto AliveState = IsAlive();
@@ -131,4 +175,23 @@ void ALakayaBasePlayerState::BroadcastWhenAliveStateChanged()
 
 	OnAliveStateChanged.Broadcast(AliveState);
 	bRecentAliveState = AliveState;
+}
+
+void ALakayaBasePlayerState::RequestCharacterChange_Implementation(const FName& Name)
+{
+	if (!ShouldChangeCharacterName(Name)) return;
+	CharacterName = Name;
+	OnCharacterNameChanged.Broadcast(this, CharacterName);
+}
+
+bool ALakayaBasePlayerState::RequestCharacterChange_Validate(const FName& Name)
+{
+	//TODO: 캐릭터 이름이 유효한 키값인지 검사합니다.
+	return true;
+}
+
+void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserName, const FVector& CauserLocation,
+                                                            const float& Damage)
+{
+	//TODO: 피격 레이더를 업데이트 합니다.
 }
