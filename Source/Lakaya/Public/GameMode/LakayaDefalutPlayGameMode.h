@@ -5,10 +5,9 @@
 #include "LakayaDefalutPlayGameMode.generated.h"
 
 
-//매치 스테이트를 하나 추가했습니다
 namespace MatchState
 {
-	extern ENGINE_API const FName SelectCharacter; //캐릭터를 선택할때의 상태입니다, WaitingToStart 다음 상태이며, 이 상태가 끝나면 InProgress로 넘어갑니다
+	extern const FName IsSelectCharacter; //캐릭터를 선택할때의 상태입니다, WaitingToStart 다음 상태이며, 이 상태가 끝나면 InProgress로 넘어갑니다
 }
 
 UCLASS()
@@ -23,6 +22,9 @@ protected:
 	// 플레이어가 로그인 할 경우 호출
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
+	//SetMatchState()가 호출되서 MatchState가 변경된 직후 호출됨, HandleMatchIsWaitingToStart() 같은 MatchState에 맞는 HandleMatch~~ 함수를 호출함
+	virtual void OnMatchStateSet() override;
+
 	// EnteringMap (맵 진입)
 	// 액터 틱은 아직 이루어지지 않으며, 월드는 제대로 초기화 되지 않은 상태.
 	// 모두 완전히 로드되면 다음 상태로 전환.
@@ -35,6 +37,10 @@ protected:
 	virtual bool ReadyToStartMatch_Implementation() override;
 	// virtual void StartMatch() override;
 	virtual void DelayedStartMatch();
+
+
+	//캐릭터 선택 스테이스로 넘어갈 때 호출되는 함수
+	virtual void HandleMatchIsSelectCharacter();
 
 	// InProgress (진행중)
 	// 여기에 들어갈 때 HandleMatchHasStarted()함수 호출

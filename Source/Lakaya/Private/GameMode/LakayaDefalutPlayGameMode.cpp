@@ -8,7 +8,7 @@
 
 namespace MatchState
 {
-	 const FName SelectCharacter = FName(TEXT("SelectCharacter"));
+	 const FName IsSelectCharacter = FName(TEXT("IsSelectCharacter"));
 }
 
 void ALakayaDefalutPlayGameMode::BeginPlay()
@@ -31,6 +31,16 @@ void ALakayaDefalutPlayGameMode::PostLogin(APlayerController* NewPlayer)
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("플레이어가 입장했습니다."));
 }
 
+void ALakayaDefalutPlayGameMode::OnMatchStateSet()
+{
+	Super::OnMatchStateSet();
+	if (MatchState == MatchState::IsSelectCharacter)
+	{
+		HandleMatchIsSelectCharacter();
+	}
+}
+
+
 void ALakayaDefalutPlayGameMode::HandleMatchIsWaitingToStart()
 {
 	Super::HandleMatchIsWaitingToStart();
@@ -44,6 +54,10 @@ bool ALakayaDefalutPlayGameMode::ReadyToStartMatch_Implementation()
 void ALakayaDefalutPlayGameMode::DelayedStartMatch()
 {
 	bWaitToStart = true;
+}
+
+void ALakayaDefalutPlayGameMode::HandleMatchIsSelectCharacter()
+{
 }
 
 void ALakayaDefalutPlayGameMode::HandleMatchHasStarted()

@@ -21,6 +21,10 @@ protected:
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
 	virtual void RemovePlayerState(APlayerState* PlayerState) override;
 	virtual void HandleMatchHasStarted() override;
+	virtual void HandleMatchIsCharacterSelect();
+
+public:
+	virtual void OnRep_MatchState() override;
 
 
 public:

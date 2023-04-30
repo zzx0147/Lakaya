@@ -2,6 +2,7 @@
 
 
 #include "GameMode/LakayaBaseGameState.h"
+#include "GameMode/LakayaDefalutPlayGameMode.h"
 #include "UI/LoadingWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
@@ -58,4 +59,17 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 	LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
+{
+}
+
+void ALakayaBaseGameState::OnRep_MatchState()
+{
+	Super::OnRep_MatchState();
+	if (MatchState == MatchState::IsSelectCharacter)
+	{
+		HandleMatchIsCharacterSelect();
+	}
 }
