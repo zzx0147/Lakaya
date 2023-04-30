@@ -4,6 +4,13 @@
 #include "GameFramework/GameMode.h"
 #include "LakayaDefalutPlayGameMode.generated.h"
 
+
+//매치 스테이트를 하나 추가했습니다
+namespace MatchState
+{
+	extern ENGINE_API const FName SelectCharacter; //캐릭터를 선택할때의 상태입니다, WaitingToStart 다음 상태이며, 이 상태가 끝나면 InProgress로 넘어갑니다
+}
+
 UCLASS()
 class LAKAYA_API ALakayaDefalutPlayGameMode : public AGameMode
 {

@@ -6,6 +6,11 @@
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 
+namespace MatchState
+{
+	 const FName SelectCharacter = FName(TEXT("SelectCharacter"));
+}
+
 void ALakayaDefalutPlayGameMode::BeginPlay()
 {
 	Super::BeginPlay();

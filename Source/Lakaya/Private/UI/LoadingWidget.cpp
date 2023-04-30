@@ -1,6 +1,6 @@
 #include "UI/LoadingWidget.h"
 
-#include "GameMode/OccupationGameState.h"
+//#include "GameMode/OccupationGameState.h"
 
 
 void ULoadingWidget::OnBeginPlay()
@@ -20,14 +20,14 @@ void ULoadingWidget::NativeConstruct()
 		return;
 	}
 
-	const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
-	if (OccupationGameState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_GameMode is null."));
-		return;
-	}
+	//const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
+	//if (OccupationGameState == nullptr)
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_GameMode is null."));
+	//	return;
+	//}
 
-	MaxPlayerCount = OccupationGameState->GetMaximumPlayers();
+	//MaxPlayerCount = OccupationGameState->GetMaximumPlayers();
 	//OnChangeJoinedPlayers(OccupationGameState->GetNumPlayers());
 
 	//OccupationGameState->OnOccupationChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
