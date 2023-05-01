@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameState.h"
 #include "GameMode/LakayaBaseGameState.h"
 #include "Occupation/PlayerTeam.h"
 #include "OccupationGameState.generated.h"

@@ -12,16 +12,28 @@ class LAKAYA_API UScoreBoardElement : public UUserWidget
 {
 	GENERATED_BODY()
 	
-	UScoreBoardElement(const FObjectInitializer& ObjectInitializer);
 public:
-	void SetData(int8 Rank,const FText PlayerName, int8 Score); // 정보를 받아서 UI를 업데이트
+	UE_DEPRECATED(5.1, "이 함수는 더이상 사용되지 않습니다. 대신 다른 setter를 사용하세요.")
+	void SetData(int8 Rank,const FText& PlayerName, int8 Score); // 정보를 받아서 UI를 업데이트
+
+	// 누적 킬 횟수를 업데이트합니다.
+	void SetKillCount(const uint16& KillCount);
+
+	// 누적 사망 횟수를 업데이트합니다.
+	void SetDeathCount(const uint16& DeathCount);
+
+	// 플레이어 이름을 설정합니다.
+	void SetPlayerName(const FText& PlayerName);
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 private:
+	//TODO: 아래의 두 텍스트블럭은 변경되는 UI 기획서에서 여전히 사용되는지 여부를 확인해봐야 합니다.
 	UTextBlock* RankText; //랭킹
-	UTextBlock* PlayerNameText; //플레이어 이름
 	UTextBlock* ScoreText; //점수
+
+	TWeakObjectPtr<UTextBlock> PlayerNameText; //플레이어 이름
+	TWeakObjectPtr<UTextBlock> KillText;
+	TWeakObjectPtr<UTextBlock> DeathText;
 };
