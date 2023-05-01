@@ -59,11 +59,12 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-	LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
+
 }
 
 void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 {
+	LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void ALakayaBaseGameState::OnRep_MatchState()
