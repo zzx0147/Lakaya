@@ -107,6 +107,13 @@ void ALakayaDefalutPlayGameMode::OnKilledCharacter(AController* VictimController
 	GetWorldTimerManager().SetTimer(NewTimer, [this, VictimController]() { RespawnPlayer(VictimController); }, PlayerRespawnTime, false);
 }
 
+void ALakayaDefalutPlayGameMode::StartSelectCharacter()
+{
+	if (MatchState != MatchState::WaitingToStart) return;
+
+	SetMatchState(MatchState::IsSelectCharacter);
+}
+
 void ALakayaDefalutPlayGameMode::RespawnPlayer(AController* KilledController)
 {
 	TArray<AActor*> PlayerStartActors;

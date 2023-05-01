@@ -36,6 +36,8 @@ protected:
 	virtual void HandleMatchIsWaitingToStart() override;
 	virtual bool ReadyToStartMatch_Implementation() override;
 	// virtual void StartMatch() override;
+
+	UE_DEPRECATED(5.1,TEXT("this Function will be remove, if you want start match manualy use StartMatch()"))
 	virtual void DelayedStartMatch();
 
 
@@ -63,6 +65,8 @@ protected:
 
 public:
 	virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser);
+	virtual void StartSelectCharacter();
+
 
 protected:
 	virtual void RespawnPlayer(AController* KilledController);

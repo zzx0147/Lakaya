@@ -52,7 +52,7 @@ void AOccupationGameMode::PostLogin(APlayerController* NewPlayer)
 
 	if (GetNumPlayers() >= OccupationGameState->GetMaximumPlayers())
 	{
-		GetWorldTimerManager().SetTimer(TimerHandle_DelayedStart, this, &AOccupationGameMode::DelayedStartMatch,
+		GetWorldTimerManager().SetTimer(TimerHandle_DelayedStart, this, &AGameMode::StartMatch,
 		                                MatchStartDelay, false);
 	}
 }
