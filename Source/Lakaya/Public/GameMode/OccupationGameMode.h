@@ -41,8 +41,6 @@ public:
 	 */
 	void SubOccupyObject(const EPlayerTeam& Team);
 
-	virtual void StartSelectCharacter() override;
-
 private:
 	void PlayerInitializeSetLocation(uint8 PlayersNum);
 	void DelayedEndedGame();
