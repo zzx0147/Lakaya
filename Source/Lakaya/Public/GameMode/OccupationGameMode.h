@@ -24,6 +24,7 @@ protected:
 	virtual bool ReadyToEndMatch_Implementation() override;
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
+	virtual void HandleMatchIsSelectCharacter() override;
 	virtual void RespawnPlayer(AController* KilledController) override;
 	virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation) override;
 
@@ -39,6 +40,8 @@ public:
 	 * @param Team 점령을 해제당한 팀입니다.
 	 */
 	void SubOccupyObject(const EPlayerTeam& Team);
+
+	virtual void StartSelectCharacter() override;
 
 private:
 	void PlayerInitializeSetLocation(uint8 PlayersNum);
