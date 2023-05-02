@@ -34,8 +34,15 @@ public:
 	UFUNCTION()
 	const uint8& GetPlayersNumber() const { return PlayersNumber; }
 
+	// 점수판의 표시 여부를 결정합니다. true를 넘기면 점수판이 표시됩니다.
+	void SetScoreBoardVisibility(const bool& Visible);
+
 public:
 	OnChangePlayerNumberSigniture OnChangePlayerNumber;
+
+protected:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UGameScoreBoardWidget> ScoreBoardClass;
 
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -46,4 +53,6 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class ULoadingWidget> LoadingWidgetClass;
 	TObjectPtr<ULoadingWidget> LoadingWidget;
+
+	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
 };
