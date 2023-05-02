@@ -39,6 +39,9 @@ public:
 	// 플레이어의 팀을 설정합니다.
 	virtual void SetTeam(const EPlayerTeam& DesireTeam);
 
+	// 플레이어의 현재 팀 정보를 가져옵니다.
+	const EPlayerTeam& GetTeam() const { return Team; }
+
 	/**
 	 * @brief 플레이어가 예약된 시간에 부활하도록 합니다.
 	 * @param ReservedRespawnTime 목표 부활 시간입니다. 이 시간에 플레이어가 부활합니다.

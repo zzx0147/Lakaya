@@ -2,7 +2,7 @@
 
 
 #include "GameMode/LakayaBaseGameState.h"
-#include "GameMode/LakayaDefalutPlayGameMode.h"
+#include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "UI/LoadingWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
@@ -43,6 +43,7 @@ void ALakayaBaseGameState::AddPlayerState(APlayerState* PlayerState)
 	Super::AddPlayerState(PlayerState);
 	if (LoadingWidget != nullptr) LoadingWidget->SetPlayerNumber(PlayerArray.Num());
 	OnChangePlayerNumber.Broadcast(PlayerArray.Num());
+	// PlayersNumber 멤버변수는 불필요해보임
 	PlayersNumber = PlayerArray.Num();
 	//if (PlayerArray.Num() >= MaximumPlayers)
 }

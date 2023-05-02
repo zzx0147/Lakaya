@@ -9,30 +9,14 @@
 #include "Components/CanvasPanelSlot.h"
 #include "UI/ScoreBoardElement.h"
 
-bool UGameScoreBoardWidget::OnMatchStart()
-{
-	SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	return true;
-}
-
 void UGameScoreBoardWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-	if (OccupationGameState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GameScoreBoardWidget_OccupationGameState is null."));
-		return;
-	}
 
 	ScoreBoardPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("ScoreBoard_Pan")));
-	if (ScoreBoardPanel == nullptr)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ScoreBoardPanel is null."));
-		return;
-	}
+	if (ScoreBoardPanel == nullptr) UE_LOG(LogTemp, Error, TEXT("ScoreBoardPanel is null."));
 
-	InitScoreBoardElements(6);
+	// InitScoreBoardElements(6);
 }
 
 void UGameScoreBoardWidget::InitScoreBoardElements(int8 ElementsNum)

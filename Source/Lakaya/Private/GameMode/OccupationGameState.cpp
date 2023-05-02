@@ -10,7 +10,6 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AOccupationGameState, NumPlayers);
 	DOREPLIFETIME(AOccupationGameState, ATeamScore);
 	DOREPLIFETIME(AOccupationGameState, BTeamScore);
 	DOREPLIFETIME(AOccupationGameState, MatchStartTime);
@@ -44,7 +43,6 @@ void AOccupationGameState::HandleMatchHasEnded()
 void AOccupationGameState::SetNumPlayers(const uint8& NewNumPlayers)
 {
 	NumPlayers = NewNumPlayers;
-	OnRep_NumPlayers();
 }
 
 void AOccupationGameState::NotifyKillCharacter_Implementation(AController* KilledController, AActor* KilledActor,
@@ -88,11 +86,6 @@ float AOccupationGameState::GetRemainMatchTime() const
 bool AOccupationGameState::IsSomeoneReachedMaxScore() const
 {
 	return ATeamScore >= MaxScore || BTeamScore >= MaxScore;
-}
-
-void AOccupationGameState::OnRep_NumPlayers()
-{
-	OnOccupationChangeJoinedPlayers.Broadcast(GetMaximumPlayers());
 }
 
 void AOccupationGameState::OnRep_ATeamScore()

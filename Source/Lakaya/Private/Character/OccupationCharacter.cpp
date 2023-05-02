@@ -4,7 +4,7 @@
 #include "Character/OccupationCharacter.h"
 
 #include "Character/OccupationPlayerState.h"
-#include "GameMode/LakayaDefalutPlayGameMode.h"
+#include "GameMode/LakayaDefaultPlayGameMode.h"
 
 
 float AOccupationCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -18,7 +18,7 @@ float AOccupationCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 void AOccupationCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::KillCharacter(EventInstigator, DamageCauser);
-	if (const auto GameMode = GetWorld()->GetAuthGameMode<ALakayaDefalutPlayGameMode>())
+	if (const auto GameMode = GetWorld()->GetAuthGameMode<ALakayaDefaultPlayGameMode>())
 		GameMode->OnKilledCharacter(GetController(), this, EventInstigator, DamageCauser);
 }
 

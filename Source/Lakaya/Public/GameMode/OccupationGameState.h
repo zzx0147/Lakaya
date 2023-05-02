@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameState.h"
 #include "GameMode/LakayaBaseGameState.h"
 #include "Occupation/PlayerTeam.h"
 #include "OccupationGameState.generated.h"
@@ -11,6 +10,7 @@
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeJoinedPlayers, const uint8&)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeOccupationWinner, const EPlayerTeam&)
 DECLARE_EVENT_TwoParams(AOccupationGameState, FTeamScoreSignature, const EPlayerTeam&, const float&)
+
 DECLARE_EVENT_FourParams(AOccupationGameState, FKillCharacterSignature, AController*, AActor*, AController*, AActor*)
 
 /**
@@ -51,14 +51,6 @@ public:
 
 	const float& GetMaxScore() const { return MaxScore; }
 
-	UE_DEPRECATED(5.1, "This Function move to LakayaBaseGameState, instead, use LayayaBaseGameState::GetMaximumPlayers()")
-	UFUNCTION()
-	const uint8& GetMaxPlayers() const { return GetMaximumPlayers(); }
-
-	UE_DEPRECATED(5.1, "This Function move to LakayaBaseGameState, instead, use LayayaBaseGameState::GetPlayersNumber()")
-	UFUNCTION()
-	const uint8& GetNumPlayers() const { return GetPlayersNumber(); }
-
 	UFUNCTION()
 	const EPlayerTeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
 
@@ -72,10 +64,6 @@ public:
 	bool IsSomeoneReachedMaxScore() const;
 
 private:
-	UE_DEPRECATED(5.1, "This Function will be removed")
-	UFUNCTION()
-	void OnRep_NumPlayers();
-
 	UFUNCTION()
 	void OnRep_ATeamScore();
 
@@ -86,15 +74,11 @@ private:
 	void OnRep_OccupationWinner();
 
 public:
-	UE_DEPRECATED(5.1, "This Event will be deleted, instead, Use LakayaBaseState::OnChangePlayerNumber")
-	FOnOccupationChangeJoinedPlayers OnOccupationChangeJoinedPlayers;
 	FOnOccupationChangeOccupationWinner OnOccupationChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreChanged;
 	FKillCharacterSignature OnKillCharacterNotify;
 
 private:
-	UE_DEPRECATED(5.1, "This variable will be Deleted, doesn't need, instead, use PlayerArray.Num() or LakayaBaseGameState::GetPlayerNumber()")
-	UPROPERTY(ReplicatedUsing = OnRep_NumPlayers)
 	uint8 NumPlayers;
 
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
