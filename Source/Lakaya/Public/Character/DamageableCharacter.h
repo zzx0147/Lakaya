@@ -78,7 +78,7 @@ private:
 	UFUNCTION(Client, Reliable)
 	void IndicateRPC(FName CauserName, FVector DamageCursorPosition, float time);
 	void IndicateRPC_Implementation(FName CauserName, FVector DamageCursorPosition, float time);
-
+	
 	UPROPERTY()
 	UNiagaraComponent* NiagaraComponent;
 	

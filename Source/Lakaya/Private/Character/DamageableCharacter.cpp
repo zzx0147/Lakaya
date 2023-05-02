@@ -14,6 +14,9 @@
 
 ADamageableCharacter::ADamageableCharacter()
 {
+	// static const ConstructorHelpers::FClassFinder<AActor> BP_ReResurrection(
+	// 	TEXT("/Game/Blueprints/ETC/BP_Resurrection.BP_Resurrection_C"));
+	
 	MaximumHealth = 100.f;
 }
 
@@ -97,7 +100,6 @@ void ADamageableCharacter::Respawn()
 	Health = MaximumHealth;
 	OnHealthChanged.Broadcast(this, Health);
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-	//SetActorEnableCollision(true);
 
 	RespawnNotify();
 }
@@ -114,11 +116,6 @@ void ADamageableCharacter::KillCharacter(AController* EventInstigator, AActor* D
 void ADamageableCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
 {
 	//GetMesh()->SetVisibility(false, true);
-
-	//GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
-	//GetMesh()->SetCollisionProfileName(TEXT("PhysicsActor"));
-	//GetMesh()->SetSimulatePhysics(true);
-	//bFixMeshTransform = false;
 
 	OnKillCharacterNotify.Broadcast(GetController(), this, EventInstigator, DamageCauser);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dead"));
@@ -179,13 +176,6 @@ void ADamageableCharacter::IndicateRPC_Implementation(FName CauserName, FVector 
 
 void ADamageableCharacter::RespawnNotify_Implementation()
 {
-	//GetMesh()->SetVisibility(true, true);
-
-	//GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
-	//GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
-	//GetMesh()->SetSimulatePhysics(false);
-	//bFixMeshTransform = true;
-	//GetMesh()->SetupAttachment(GetCapsuleComponent());
 	OnRespawnCharacterNotify.Broadcast(this);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	FOutputDeviceNull pAr;

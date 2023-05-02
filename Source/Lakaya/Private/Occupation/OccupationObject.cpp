@@ -27,7 +27,6 @@ AOccupationObject::AOccupationObject()
 	TriggerSphere->SetCollisionProfileName("Custom"); // Set to custom collision profile
 	TriggerSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	TriggerSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // Enable overlap for Pawn channel
-	// TriggerSphere->SetCollisionResponseToChannel(ECC_Object, ECR_Ignore); // Disable collision for Object channel
 	TriggerSphere->SetupAttachment(RootComponent);
 	
 	Trigger->SetCapsuleSize(50.0f, 100.0f, true);
@@ -268,10 +267,10 @@ void AOccupationObject::SetTeamObject(EObjectOwner Team)
 	switch (Team)
 	{
 	case EObjectOwner::A:
-		Cylinder->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/RedTeam.RedTeam")));
+		Cylinder->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Dev/JunHo/Material/MI_Light_Red")));
 		break;
 	case EObjectOwner::B:
-		Cylinder->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/BlueTeam.BlueTeam")));
+		Cylinder->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Dev/JunHo/Material/MI_Light_Green")));
 		break;
 	case EObjectOwner::None:
 		break;
