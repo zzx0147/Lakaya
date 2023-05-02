@@ -52,7 +52,7 @@ void AOccupationGameMode::PostLogin(APlayerController* NewPlayer)
 
 	if (GetNumPlayers() >= OccupationGameState->GetMaximumPlayers())
 	{
-		GetWorldTimerManager().SetTimer(TimerHandle_DelayedStart, this, &ALakayaDefalutPlayGameMode::StartSelectCharacter,
+		GetWorldTimerManager().SetTimer(TimerHandle_DelayedStart, this, &ALakayaDefaultPlayGameMode::StartSelectCharacter,
 		                                MatchStartDelay, false);
 	}
 }
