@@ -77,7 +77,9 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 void UOccupationScoreBoard::NativeConstruct()
 {
 	Super::NativeConstruct();
-	//TODO: A팀 B팀 각각에 대한 텍스트블럭을 찾아옵니다.
+
+	ATeamBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("ATeamVerticalBox")));
+	BTeamBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("BTeamVerticalBox")));
 
 	if (!ElementClass) UE_LOG(LogInit, Error, TEXT("UOccupationScoreBoard::ElementClass was nullptr!"));
 }
