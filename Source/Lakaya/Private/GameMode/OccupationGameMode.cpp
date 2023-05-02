@@ -63,31 +63,6 @@ bool AOccupationGameMode::ReadyToStartMatch_Implementation()
 
 	if (!GetbWaitToStart()) return false;
 
-	for (int i = 0; i < OccupationGameState->GetMaximumPlayers(); i++)
-	{
-		if (OccupationGameState->PlayerArray.IsValidIndex(i))
-		{
-			AOccupationPlayerState* CollectorPlayerState = Cast<AOccupationPlayerState>(
-				OccupationGameState->PlayerArray[i]);
-			if (CollectorPlayerState == nullptr)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
-				return false;
-			}
-
-			if (i % 2 == 0)
-			{
-				CollectorPlayerState->SetPlayerTeamState(EPlayerTeam::A);
-				UE_LOG(LogTemp, Warning, TEXT("A팀에 배정 되었습니다."));
-			}
-			else
-			{
-				CollectorPlayerState->SetPlayerTeamState(EPlayerTeam::B);
-				UE_LOG(LogTemp, Warning, TEXT("B팀에 배정 되었습니다."));
-			}
-		}
-	}
-
 	return true;
 }
 
@@ -117,6 +92,39 @@ void AOccupationGameMode::HandleMatchHasEnded()
 	OccupationGameState->SetOccupationWinner();
 	GetWorldTimerManager().SetTimer(TimerHandle_DelayedEnded, this, &AOccupationGameMode::DelayedEndedGame,
 	                                MatchEndDelay, false);
+}
+
+void AOccupationGameMode::HandleMatchIsSelectCharacter()
+{
+	Super::HandleMatchIsSelectCharacter();
+	if (OccupationGameState->GetMaximumPlayers() == OccupationGameState->PlayerArray.Num())
+	{
+		for (int i = 0; i < OccupationGameState->GetMaximumPlayers(); i++)
+		{
+			if (OccupationGameState->PlayerArray.IsValidIndex(i))
+			{
+				AOccupationPlayerState* CollectorPlayerState = Cast<AOccupationPlayerState>(
+					OccupationGameState->PlayerArray[i]);
+				if (CollectorPlayerState == nullptr)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
+					return;
+				}
+
+				if (i % 2 == 0)
+				{
+					CollectorPlayerState->SetPlayerTeamState(EPlayerTeam::A);
+					UE_LOG(LogTemp, Warning, TEXT("A팀에 배정 되었습니다."));
+				}
+				else
+				{
+					CollectorPlayerState->SetPlayerTeamState(EPlayerTeam::B);
+					UE_LOG(LogTemp, Warning, TEXT("B팀에 배정 되었습니다."));
+				}
+			}
+		}
+	}
+
 }
 
 void AOccupationGameMode::DelayedEndedGame()

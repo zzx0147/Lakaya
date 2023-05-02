@@ -58,6 +58,9 @@ void ALakayaDefaultPlayGameMode::DelayedStartMatch()
 
 void ALakayaDefaultPlayGameMode::HandleMatchIsSelectCharacter()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("HandleMatchIsSelectCharacter()"));
+	FTimerHandle TimerHandler;
+	GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 5.0f, false);
 }
 
 void ALakayaDefaultPlayGameMode::HandleMatchHasStarted()
@@ -112,6 +115,13 @@ void ALakayaDefaultPlayGameMode::StartSelectCharacter()
 	if (MatchState != MatchState::WaitingToStart) return;
 
 	SetMatchState(MatchState::IsSelectCharacter);
+}
+
+bool ALakayaDefaultPlayGameMode::HasMatchStarted() const
+{
+	if (MatchState == MatchState::IsSelectCharacter) return false;
+
+	return Super::HasMatchStarted();
 }
 
 void ALakayaDefaultPlayGameMode::RespawnPlayer(AController* KilledController)
