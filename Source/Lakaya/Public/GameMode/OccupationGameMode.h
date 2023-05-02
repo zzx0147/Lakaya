@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameMode/LakayaDefalutPlayGameMode.h"
+#include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "Occupation/PlayerTeam.h"
 #include "OccupationGameMode.generated.h"
 
 UCLASS()
-class LAKAYA_API AOccupationGameMode : public ALakayaDefalutPlayGameMode
+class LAKAYA_API AOccupationGameMode : public ALakayaDefaultPlayGameMode
 {
 	GENERATED_BODY()
 

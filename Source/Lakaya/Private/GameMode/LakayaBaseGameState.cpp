@@ -2,7 +2,7 @@
 
 
 #include "GameMode/LakayaBaseGameState.h"
-#include "GameMode/LakayaDefalutPlayGameMode.h"
+#include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "UI/LoadingWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()

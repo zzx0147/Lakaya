@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
-#include "LakayaDefalutPlayGameMode.generated.h"
+#include "LakayaDefaultPlayGameMode.generated.h"
 
 
 namespace MatchState
@@ -11,7 +11,7 @@ namespace MatchState
 }
 
 UCLASS()
-class LAKAYA_API ALakayaDefalutPlayGameMode : public AGameMode
+class LAKAYA_API ALakayaDefaultPlayGameMode : public AGameMode
 {
 	GENERATED_BODY()
 
@@ -37,7 +37,7 @@ protected:
 	virtual bool ReadyToStartMatch_Implementation() override;
 	// virtual void StartMatch() override;
 
-	UE_DEPRECATED(5.1,TEXT("this Function will be remove, if you want start match manualy use StartMatch()"))
+	UE_DEPRECATED(5.1, "this Function will be remove, if you want start match manualy use StartMatch()")
 	virtual void DelayedStartMatch();
 
 
