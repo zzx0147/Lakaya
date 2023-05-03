@@ -6,12 +6,9 @@
 #include "LoadingWidget.generated.h"
 
 UCLASS()
-class LAKAYA_API ULoadingWidget : public UMatchStateWidget
+class LAKAYA_API ULoadingWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
-public:
-	virtual void OnBeginPlay() override;
 	
 protected:
 	virtual void NativeConstruct() override;
