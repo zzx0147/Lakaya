@@ -21,7 +21,13 @@ enum EAbilityKind
 	WeaponAbility,
 
 	// 캐릭터의 무기 재장전 또는 스킬 능력입니다.
-	WeaponReload
+	WeaponReload,
+
+	// 캐릭터의 주요 이동관련 스킬입니다.
+	Dash,
+
+	// EAbilityKind의 총 개수를 의미합니다. 이 값은 항상 최하단에 위치해야 하며, 캐릭터의 스킬을 특정할 때 사용되는 값은 아닙니다. 
+	Count
 };
 
 DECLARE_EVENT_OneParam(AArmedCharacter, FAbilitiesSignature, const TArray<class UCharacterAbility*>&)
@@ -67,7 +73,7 @@ public:
 	// 능력이 변경되면 호출됩니다. 매개변수로 전체 능력들을 넘겨주기 때문에 정확히 어떤 능력이 변경된 것인지는 알 수 없습니다.
 	FAbilitiesSignature OnAbilitiesChanged;
 
-private:
-	UPROPERTY(VisibleAnywhere, Transient, ReplicatedUsing=OnRep_Abilities)
+protected:
+	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_Abilities)
 	TArray<UCharacterAbility*> Abilities;
 };

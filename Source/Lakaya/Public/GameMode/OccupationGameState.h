@@ -24,11 +24,6 @@ class LAKAYA_API AOccupationGameState : public ALakayaBaseGameState
 public:
 	AOccupationGameState();
 
-protected:
-	virtual void HandleMatchHasStarted() override;
-	virtual void HandleMatchHasEnded() override;
-
-public:
 	UFUNCTION()
 	void SetNumPlayers(const uint8& NewNumPlayers);
 

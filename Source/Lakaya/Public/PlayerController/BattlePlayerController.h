@@ -32,6 +32,8 @@ private:
 	void AbilityStop(const FInputActionValue& Value);
 	void ReloadStart(const FInputActionValue& Value);
 	void ReloadStop(const FInputActionValue& Value);
+	void DashStart(const FInputActionValue& Value);
+	void DashStop(const FInputActionValue& Value);
 
 protected:
 	UPROPERTY(EditAnywhere, Category=Widget)
@@ -79,6 +81,12 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* ReloadStopAction;
+
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
+	UInputAction* DashStartAction;
+
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
+	UInputAction* DashStopAction;
 
 	// 캐릭터 전용 위젯 컴포넌트의 클래스 정보를 불러올 데이터 테이블입니다.
 	UPROPERTY(EditAnywhere)

@@ -9,7 +9,7 @@
 #include "GameFramework/PlayerStart.h"
 #include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
-#include "PlayerController/OccupationPlayerController.h"
+#include "PlayerController/BattlePlayerController.h"
 
 AOccupationGameMode::AOccupationGameMode()
 {
@@ -24,7 +24,7 @@ AOccupationGameMode::AOccupationGameMode()
 		UE_LOG(LogTemp, Error, TEXT("OccupationGameMode_Failed to find player pawn blueprint."));
 
 	DefaultPawnClass = AOccupationCharacter::StaticClass();
-	PlayerControllerClass = AOccupationPlayerController::StaticClass();
+	PlayerControllerClass = ABattlePlayerController::StaticClass();
 	PlayerStateClass = AOccupationPlayerState::StaticClass();
 	GameStateClass = AOccupationGameState::StaticClass();
 }

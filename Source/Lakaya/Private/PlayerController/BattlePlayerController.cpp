@@ -34,7 +34,24 @@ ABattlePlayerController::ABattlePlayerController()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ReloadStopFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ReloadStop'"));
 
-	//TODO: 새 인풋 액션을 불러와야 합니다.
+	static const ConstructorHelpers::FObjectFinder<UInputAction> PrimaryStartFinder(TEXT(
+		"/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_PrimaryAbilityStart.IA_PrimaryAbilityStart'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> PrimaryStopFinder(TEXT(
+		"/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_PrimaryAbilityStop.IA_PrimaryAbilityStop'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> SecondaryStartFinder(TEXT(
+		"/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_SecondaryAbilityStart.IA_SecondaryAbilityStart'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> SecondaryStopFinder(TEXT(
+		"/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_SecondaryAbilityStop.IA_SecondaryAbilityStop'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> DashStartFinder(TEXT(
+		"/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_DashStart.IA_DashStart'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> DashStopFinder(TEXT(
+		"/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_DashStop.IA_DashStop'"));
+
 	if (ContextFinder.Succeeded()) WeaponControlContext = ContextFinder.Object;
 	if (FireStartFinder.Succeeded()) FireStartAction = FireStartFinder.Object;
 	if (FireStopFinder.Succeeded()) FireStopAction = FireStopFinder.Object;
@@ -42,6 +59,12 @@ ABattlePlayerController::ABattlePlayerController()
 	if (AbilityStopFinder.Succeeded()) AbilityStopAction = AbilityStopFinder.Object;
 	if (ReloadStartFinder.Succeeded()) ReloadStartAction = ReloadStartFinder.Object;
 	if (ReloadStopFinder.Succeeded()) ReloadStopAction = ReloadStopFinder.Object;
+	if (PrimaryStartFinder.Succeeded()) PrimaryStartAction = PrimaryStartFinder.Object;
+	if (PrimaryStopFinder.Succeeded()) PrimaryStopAction = PrimaryStopFinder.Object;
+	if (SecondaryStartFinder.Succeeded()) SecondStartAction = SecondaryStartFinder.Object;
+	if (SecondaryStopFinder.Succeeded()) SecondStopAction = SecondaryStopFinder.Object;
+	if (DashStartFinder.Succeeded()) DashStartAction = DashStartFinder.Object;
+	if (DashStopFinder.Succeeded()) DashStopAction = DashStopFinder.Object;
 
 	static ConstructorHelpers::FClassFinder<UCharacterBindableWidget> HealthFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
@@ -98,6 +121,10 @@ void ABattlePlayerController::SetupEnhancedInputComponent(UEnhancedInputComponen
 	                                   &ABattlePlayerController::ReloadStart);
 	EnhancedInputComponent->BindAction(ReloadStopAction, ETriggerEvent::Triggered, this,
 	                                   &ABattlePlayerController::ReloadStop);
+	EnhancedInputComponent->BindAction(DashStartAction, ETriggerEvent::Triggered, this,
+	                                   &ABattlePlayerController::DashStart);
+	EnhancedInputComponent->BindAction(DashStopAction, ETriggerEvent::Triggered, this,
+	                                   &ABattlePlayerController::DashStop);
 }
 
 void ABattlePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
@@ -197,4 +224,14 @@ void ABattlePlayerController::ReloadStart(const FInputActionValue& Value)
 void ABattlePlayerController::ReloadStop(const FInputActionValue& Value)
 {
 	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(WeaponReload);
+}
+
+void ABattlePlayerController::DashStart(const FInputActionValue& Value)
+{
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(EAbilityKind::Dash);
+}
+
+void ABattlePlayerController::DashStop(const FInputActionValue& Value)
+{
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(EAbilityKind::Dash);
 }
