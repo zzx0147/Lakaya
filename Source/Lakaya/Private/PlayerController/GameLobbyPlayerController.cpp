@@ -3,6 +3,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "GameMode/LakayaBaseGameState.h"
 
 
 void AGameLobbyPlayerController::SetupInputComponent()
@@ -24,8 +25,10 @@ void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputCompo
 	                                   &AGameLobbyPlayerController::MenuHandler);
 	EnhancedInputComponent->BindAction(LoadoutAction, ETriggerEvent::Triggered, this,
 	                                   &AGameLobbyPlayerController::LoadoutHandler);
-	EnhancedInputComponent->BindAction(ScoreAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::ScoreHandler);
+	EnhancedInputComponent->BindAction(ShowScoreAction, ETriggerEvent::Triggered, this,
+	                                   &AGameLobbyPlayerController::ShowScoreBoard);
+	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
+	                                   &AGameLobbyPlayerController::HideScoreBoard);
 }
 
 void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
@@ -48,13 +51,17 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> WeaponFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Loadout'"));
 
-	static const ConstructorHelpers::FObjectFinder<UInputAction> ScoreFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ScoreBoard'"));
+	static const ConstructorHelpers::FObjectFinder<UInputAction> ShowScoreFinder(
+		TEXT("/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_ShowScore.IA_ShowScore'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> HideScoreFinder(
+		TEXT("/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_HideScore.IA_HideScore'"));
 
 	if (ContextFinder.Succeeded()) InterfaceInputContext = ContextFinder.Object;
 	if (MenuFinder.Succeeded()) MenuAction = MenuFinder.Object;
 	if (WeaponFinder.Succeeded()) LoadoutAction = WeaponFinder.Object;
-	if (ScoreFinder.Succeeded()) ScoreAction = ScoreFinder.Object;
+	if (ShowScoreFinder.Succeeded()) ShowScoreAction = ShowScoreFinder.Object;
+	if (HideScoreFinder.Succeeded()) HideScoreAction = HideScoreFinder.Object;
 }
 
 void AGameLobbyPlayerController::BeginPlay()
@@ -75,8 +82,16 @@ void AGameLobbyPlayerController::LoadoutHandler(const FInputActionValue& Value)
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("WeaponLoadout"));
 }
 
-void AGameLobbyPlayerController::ScoreHandler(const FInputActionValue& Value)
+void AGameLobbyPlayerController::ShowScoreBoard(const FInputActionValue& Value)
 {
-	//TODO: UI를 띄웁니다.
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Score"));
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ShowScore"));
+	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+		GameState->SetScoreBoardVisibility(true);
+}
+
+void AGameLobbyPlayerController::HideScoreBoard(const FInputActionValue& Value)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("HideScore"));
+	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+		GameState->SetScoreBoardVisibility(false);
 }

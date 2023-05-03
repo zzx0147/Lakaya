@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Character/CharAnimInstance.h"
+#include "AnimInstance/CharAnimInstance.h"
 
 void UCharAnimInstance::SetIsCrouching(bool CrouchValue)
 {

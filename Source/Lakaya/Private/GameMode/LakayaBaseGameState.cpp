@@ -3,6 +3,7 @@
 
 #include "GameMode/LakayaBaseGameState.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
+#include "UI/GameScoreBoardWidget.h"
 #include "UI/LoadingWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
@@ -29,6 +30,16 @@ void ALakayaBaseGameState::BeginPlay()
 				LoadingWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 			}
 		}
+
+		if (ScoreBoardClass)
+		{
+			ScoreBoard = CreateWidget<UGameScoreBoardWidget>(LocalController, ScoreBoardClass);
+			if (ScoreBoard.IsValid())
+			{
+				ScoreBoard->AddToViewport();
+				ScoreBoard->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
 	}
 	PlayersNumber = PlayerArray.Num();
 }
@@ -42,6 +53,8 @@ void ALakayaBaseGameState::AddPlayerState(APlayerState* PlayerState)
 {
 	Super::AddPlayerState(PlayerState);
 	if (LoadingWidget != nullptr) LoadingWidget->SetPlayerNumber(PlayerArray.Num());
+	if (ScoreBoard.IsValid()) ScoreBoard->RegisterPlayer(PlayerState);
+
 	OnChangePlayerNumber.Broadcast(PlayerArray.Num());
 	// PlayersNumber 멤버변수는 불필요해보임
 	PlayersNumber = PlayerArray.Num();
@@ -59,7 +72,6 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-
 }
 
 void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
@@ -74,4 +86,10 @@ void ALakayaBaseGameState::OnRep_MatchState()
 	{
 		HandleMatchIsCharacterSelect();
 	}
+}
+
+void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
+{
+	if (ScoreBoard.IsValid())
+		ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
 }

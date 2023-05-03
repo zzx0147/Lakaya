@@ -30,7 +30,7 @@ protected:
 
 	/**
 	 * @brief 이 플레이어 컨트롤러가 빙의중인 폰이 변경될 때 호출됩니다. 서버에서든 클라이언트에서든 모두 호출됩니다.
-	 * @param OldPawn 빙의중이었던 폰 객체입니다.
+	 * @param ArgOldPawn 빙의중이었던 폰 객체입니다.
 	 * @param NewPawn 새로 빙의한 폰 객체입니다.
 	 */
 	UFUNCTION()
@@ -48,11 +48,12 @@ protected:
 	 */
 	virtual void SetupMappingContext(class UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem);
 
-	virtual void MenuHandler(const FInputActionValue& Value);
-	virtual void LoadoutHandler(const FInputActionValue& Value);
-	virtual void ScoreHandler(const FInputActionValue& Value);
-
 private:
+	void MenuHandler(const FInputActionValue& Value);
+	void LoadoutHandler(const FInputActionValue& Value);
+	void ShowScoreBoard(const FInputActionValue& Value);
+	void HideScoreBoard(const FInputActionValue& Value);
+
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
 
@@ -66,7 +67,10 @@ private:
 	UInputAction* LoadoutAction;
 
 	UPROPERTY(EditAnywhere, Category=Input)
-	UInputAction* ScoreAction;
+	UInputAction* ShowScoreAction;
+
+	UPROPERTY(EditAnywhere, Category=Input)
+	UInputAction* HideScoreAction;
 };
 
 template <class T>

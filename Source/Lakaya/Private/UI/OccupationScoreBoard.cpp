@@ -19,6 +19,7 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 	const auto LakayaState = Cast<ALakayaBasePlayerState>(PlayerState);
 	const auto Element = CreateWidget<UScoreBoardElement>(this, ElementClass);
 	if (!LakayaState || !Element) return;
+	UE_LOG(LogScript, Log, TEXT("UOccupationScoreBoard::RegisterPlayer Called"));
 
 	switch (LakayaState->GetTeam())
 	{
@@ -77,7 +78,11 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 void UOccupationScoreBoard::NativeConstruct()
 {
 	Super::NativeConstruct();
-	//TODO: A팀 B팀 각각에 대한 텍스트블럭을 찾아옵니다.
 
+	ATeamBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("ATeamVerticalBox")));
+	BTeamBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("BTeamVerticalBox")));
+
+	if (!ATeamBox.IsValid()) UE_LOG(LogInit, Error, TEXT("UOccupationScoreBoard::ATeamBox was nullptr!"));
+	if (!BTeamBox.IsValid()) UE_LOG(LogInit, Error, TEXT("UOccupationScoreBoard::BTeamBox was nullptr!"));
 	if (!ElementClass) UE_LOG(LogInit, Error, TEXT("UOccupationScoreBoard::ElementClass was nullptr!"));
 }
