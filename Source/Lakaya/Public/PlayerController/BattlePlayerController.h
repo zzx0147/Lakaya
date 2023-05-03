@@ -16,7 +16,6 @@ public:
 	ABattlePlayerController();
 
 protected:
-	virtual void BeginPlay() override;
 	virtual void SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent) override;
 	virtual void SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem) override;
 	virtual void OnPossessedPawnChangedCallback(APawn* ArgOldPawn, APawn* NewPawn) override;
@@ -35,17 +34,6 @@ private:
 	void DashStart(const FInputActionValue& Value);
 	void DashStop(const FInputActionValue& Value);
 
-protected:
-	UPROPERTY(EditAnywhere, Category=Widget)
-	TSubclassOf<class UCharacterBindableWidget> HealthWidgetClass;
-
-	UPROPERTY(EditAnywhere, Category=Widget)
-	TSubclassOf<UCharacterBindableWidget> ConsecutiveKillsWidgetClass;
-
-	UPROPERTY(EditAnywhere, Category=Widget)
-	TSubclassOf<UCharacterBindableWidget> DamageIndicatorClass;
-
-private:
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Context")
 	UInputMappingContext* WeaponControlContext;
 
@@ -88,10 +76,5 @@ private:
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* DashStopAction;
 
-	// 캐릭터 전용 위젯 컴포넌트의 클래스 정보를 불러올 데이터 테이블입니다.
-	UPROPERTY(EditAnywhere)
-	class UDataTable* CharacterBindableWidgetTable;
-
-	TArray<UCharacterBindableWidget*> CharacterBindableWidgets;
 	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
 };

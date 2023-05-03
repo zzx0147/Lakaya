@@ -7,8 +7,6 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "Character/ArmedCharacter.h"
-#include "PlayerController/CharacterBindWidgetData.h"
-#include "UI/CharacterBindableWidget.h"
 
 
 ABattlePlayerController::ABattlePlayerController()
@@ -65,37 +63,6 @@ ABattlePlayerController::ABattlePlayerController()
 	if (SecondaryStopFinder.Succeeded()) SecondStopAction = SecondaryStopFinder.Object;
 	if (DashStartFinder.Succeeded()) DashStartAction = DashStartFinder.Object;
 	if (DashStopFinder.Succeeded()) DashStopAction = DashStopFinder.Object;
-
-	static ConstructorHelpers::FClassFinder<UCharacterBindableWidget> HealthFinder(
-		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
-
-	static ConstructorHelpers::FClassFinder<UCharacterBindableWidget> ConsecutiveFinder(
-		TEXT("/Game/Blueprints/UMG/WBP_GamePlayConsecutiveKillsWidget"));
-
-	static ConstructorHelpers::FClassFinder<UCharacterBindableWidget> DamageIndicatorFinder(
-		TEXT("/Game/Blueprints/UMG/WBP_DirectionalDamageIndicator"));
-
-	if (HealthFinder.Succeeded()) HealthWidgetClass = HealthFinder.Class;
-	if (ConsecutiveFinder.Succeeded()) ConsecutiveKillsWidgetClass = ConsecutiveFinder.Class;
-	if (DamageIndicatorFinder.Succeeded()) DamageIndicatorClass = DamageIndicatorFinder.Class;
-
-	static const ConstructorHelpers::FObjectFinder<UDataTable> WidgetTableFinder(TEXT(
-		"/Script/Engine.DataTable'/Game/Dev/Yongwoo/DataTables/DT_CharacterBindableWidgetData.DT_CharacterBindableWidgetData'"));
-
-	if (WidgetTableFinder.Succeeded()) CharacterBindableWidgetTable = WidgetTableFinder.Object;
-}
-
-void ABattlePlayerController::BeginPlay()
-{
-	Super::BeginPlay();
-	if (!IsLocalController()) return;
-	CharacterBindableWidgets.Reserve(3);
-	CharacterBindableWidgets.Emplace(
-		CreateViewportWidget<UCharacterBindableWidget>(HealthWidgetClass, ESlateVisibility::Hidden));
-	CharacterBindableWidgets.Emplace(
-		CreateViewportWidget<UCharacterBindableWidget>(ConsecutiveKillsWidgetClass, ESlateVisibility::Hidden));
-	CharacterBindableWidgets.Emplace(
-		CreateViewportWidget<UCharacterBindableWidget>(DamageIndicatorClass, ESlateVisibility::Hidden));
 }
 
 void ABattlePlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
@@ -137,43 +104,7 @@ void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, 
 {
 	Super::OnPossessedPawnChangedCallback(ArgOldPawn, NewPawn);
 	if (!IsLocalController()) return;
-
-	// 이전의 캐릭터에서 UI의 바인딩을 해제합니다.
-	if (const auto CastedCharacter = Cast<ACharacter>(ArgOldPawn))
-	{
-		TArray<UCharacterBindableWidget*> WidgetsToRemove;
-		WidgetsToRemove.Reserve(CharacterBindableWidgets.Num());
-
-		// 제거 대상 위젯을 조사합니다.
-		for (const auto& Widget : CharacterBindableWidgets)
-			if (!Widget->UnbindCharacter(CastedCharacter))
-				WidgetsToRemove.Emplace(Widget);
-
-		// 제거되기를 희망하는 위젯들은 제거합니다.
-		for (const auto& Widget : WidgetsToRemove)
-		{
-			Widget->RemoveFromParent();
-			CharacterBindableWidgets.RemoveSwap(Widget, false);
-		}
-	}
-
 	ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
-	if (ArmedCharacter.IsValid())
-	{
-		// 빙의 대상 캐릭터에 맞는 위젯을 생성하고 바인딩합니다.
-		if (const auto Data = CharacterBindableWidgetTable->FindRow<FCharacterBindWidgetData>(
-			ArmedCharacter->GetCharacterName(),TEXT("SetupCharacterWidgetComponent")))
-		{
-			// 이 캐릭터에 필요한 위젯 추가 생성
-			CharacterBindableWidgets.Reserve(CharacterBindableWidgets.Num() + Data->WidgetList.Num());
-			for (const auto& WidgetClass : Data->WidgetList)
-				CharacterBindableWidgets.Emplace(CreateViewportWidget<UCharacterBindableWidget>(WidgetClass));
-
-			// 위젯 바인딩
-			for (const auto& Widget : CharacterBindableWidgets)
-				Widget->BindCharacter(ArmedCharacter.Get());
-		}
-	}
 }
 
 void ABattlePlayerController::PrimaryStart(const FInputActionValue& Value)
