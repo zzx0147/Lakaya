@@ -28,21 +28,13 @@ AMovablePlayerController::AMovablePlayerController()
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> UnCrouchFinder(
 		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_UnCrouch'"));
-
-	static const ConstructorHelpers::FObjectFinder<UInputAction> RunFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Run'"));
-
-	static const ConstructorHelpers::FObjectFinder<UInputAction> StopFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_StopRunning'"));
-
+	
 	if (ContextFinder.Succeeded()) MovementContext = ContextFinder.Object;
 	if (MoveFinder.Succeeded()) MoveAction = MoveFinder.Object;
 	if (LookFinder.Succeeded()) LookAction = LookFinder.Object;
 	if (JumpFinder.Succeeded()) JumpAction = JumpFinder.Object;
 	if (CrouchFinder.Succeeded()) CrouchAction = CrouchFinder.Object;
 	if (UnCrouchFinder.Succeeded()) UnCrouchAction = UnCrouchFinder.Object;
-	if (RunFinder.Succeeded()) RunAction = RunFinder.Object;
-	if (StopFinder.Succeeded()) StopRunAction = StopFinder.Object;
 }
 
 void AMovablePlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
@@ -54,9 +46,6 @@ void AMovablePlayerController::SetupEnhancedInputComponent(UEnhancedInputCompone
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Crouch);
 	EnhancedInputComponent->BindAction(UnCrouchAction, ETriggerEvent::Triggered, this,
 	                                   &AMovablePlayerController::UnCrouch);
-	EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Run);
-	EnhancedInputComponent->BindAction(StopRunAction, ETriggerEvent::Triggered, this,
-	                                   &AMovablePlayerController::StopRun);
 }
 
 void AMovablePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
@@ -96,16 +85,6 @@ void AMovablePlayerController::Crouch(const FInputActionValue& Value)
 void AMovablePlayerController::UnCrouch(const FInputActionValue& Value)
 {
 	if (MovableCharacter.IsValid()) MovableCharacter->UnCrouch();
-}
-
-void AMovablePlayerController::Run(const FInputActionValue& Value)
-{
-	if (MovableCharacter.IsValid()) MovableCharacter->Run();
-}
-
-void AMovablePlayerController::StopRun(const FInputActionValue& Value)
-{
-	if (MovableCharacter.IsValid()) MovableCharacter->StopRun();
 }
 
 void AMovablePlayerController::Jump(const FInputActionValue& Value)

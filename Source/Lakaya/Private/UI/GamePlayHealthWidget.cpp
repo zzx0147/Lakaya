@@ -4,21 +4,20 @@
 
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
-#include "Character/DamageableCharacter.h"
 #include "Character/StatComponent.h"
 
 
 void UGamePlayHealthWidget::BindCharacter(ACharacter* const& Character)
 {
 	Super::BindCharacter(Character);
-	const auto MyCharacter = Cast<ADamageableCharacter>(Character);
-	if (!MyCharacter) return;
-
-	BindStatComponent(MyCharacter->GetStatComponent());
-	MyCharacter->OnStatChanged.AddUObject(this, &UGamePlayHealthWidget::BindStatComponent);
-
-	OnChangeHealth(MyCharacter->GetHealth());
-	MyCharacter->OnHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeHealth);
+	// const auto MyCharacter = Cast<ADamageableCharacter>(Character);
+	// if (!MyCharacter) return;
+	//
+	// BindStatComponent(MyCharacter->GetStatComponent());
+	// MyCharacter->OnStatChanged.AddUObject(this, &UGamePlayHealthWidget::BindStatComponent);
+	//
+	// OnChangeHealth(MyCharacter->GetHealth());
+	// MyCharacter->OnHealthChanged.AddUObject(this, &UGamePlayHealthWidget::OnChangeHealth);
 
 	SetVisibility(ESlateVisibility::Visible);
 }
@@ -34,8 +33,8 @@ bool UGamePlayHealthWidget::UnbindCharacter(ACharacter* const& Character)
 
 	SetVisibility(ESlateVisibility::Hidden);
 
-	if (const auto MyCharacter = Cast<ALakayaBaseCharacter>(Character))
-		MyCharacter->OnStatChanged.RemoveAll(this);
+	// if (const auto MyCharacter = Cast<ALakayaBaseCharacter>(Character))
+	// 	MyCharacter->OnStatChanged.RemoveAll(this);
 
 	return true;
 }

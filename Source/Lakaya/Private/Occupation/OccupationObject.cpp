@@ -1,12 +1,10 @@
 #include "Occupation/OccupationObject.h"
-// #include "EnhancedInputSubsystems.h"
-// #include "BaseGizmos/GizmoElementShared.h"
+
 #include "Character/InteractableCharacter.h"
-#include "Character/OccupationPlayerState.h"
+#include "Character/LakayaBasePlayerState.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameMode/OccupationGameMode.h"
-// #include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "PlayerController/MovablePlayerController.h"
@@ -60,7 +58,7 @@ void AOccupationObject::Tick(float DeltaTime)
 
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 {
-	AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(Caller->GetController()->PlayerState);
+	auto* OccupationPlayerState = Cast<ALakayaBasePlayerState>(Caller->GetController()->PlayerState);
 	if (OccupationPlayerState == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
@@ -97,7 +95,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	}
 	
 	// 소우자 팀에서 상호작용 할 경우 막아두기
-	FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetPlayerTeamState());
+	FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetTeam());
 	if (PlayerStateString.Equals("EPlayerTeam::A", ESearchCase::IgnoreCase))
 	{
 		if (ObjectOwner == EPlayerTeam::A)
@@ -176,7 +174,7 @@ void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller)
 		// 상호작용에 성공했을 경우.
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction Success"));
 
-		AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(Caller->GetController()->PlayerState);
+		auto* OccupationPlayerState = Cast<ALakayaBasePlayerState>(Caller->GetController()->PlayerState);
 		if (OccupationPlayerState == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
@@ -190,7 +188,7 @@ void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller)
 			return;
 		}
 
-		FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetPlayerTeamState());
+		FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetTeam());
 		if (PlayerStateString.Equals("EPlayerTeamState::None", ESearchCase::IgnoreCase))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Suspected player captured successfully."));

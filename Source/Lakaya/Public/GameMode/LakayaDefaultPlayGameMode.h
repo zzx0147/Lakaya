@@ -35,11 +35,6 @@ protected:
 	// ReadyToStartMatch (경기 시작 준비)가 true를 반환하는 경우, 또는 StartMatch가 호출된 경우 다음 상태로 전환.
 	virtual void HandleMatchIsWaitingToStart() override;
 	virtual bool ReadyToStartMatch_Implementation() override;
-	// virtual void StartMatch() override;
-
-	UE_DEPRECATED(5.1, "this Function will be remove, if you want start match manualy use StartMatch()")
-	virtual void DelayedStartMatch();
-
 
 	//캐릭터 선택 스테이스로 넘어갈 때 호출되는 함수
 	virtual void HandleMatchIsSelectCharacter();
@@ -67,6 +62,7 @@ public:
 	virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser);
 	virtual void StartSelectCharacter();
 	virtual bool HasMatchStarted() const override;
+	UClass* GetDefaultPawnClassForController_Implementation(AController* InController);
 
 protected:
 	virtual void RespawnPlayer(AController* KilledController);
@@ -79,6 +75,9 @@ private:
 	uint8 PlayerRespawnTime = 3;
 	bool bWaitToStart = false;
 
+protected:
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FName, TSubclassOf<class AInteractableCharacter>> CharacterClasses;
 private:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;

@@ -13,7 +13,7 @@ void UGamePlayBulletWidget::BindCharacter(ACharacter* const& Character)
 	if (const auto CastedCharacter = Cast<ALakayaBaseCharacter>(Character))
 	{
 		BindBulletComponent(CastedCharacter->GetResourceComponent());
-		CastedCharacter->OnResourceChanged.AddUObject(this, &UGamePlayBulletWidget::BindBulletComponent);
+		// CastedCharacter->OnResourceChanged.AddUObject(this, &UGamePlayBulletWidget::BindBulletComponent);
 	}
 }
 
@@ -21,8 +21,8 @@ bool UGamePlayBulletWidget::UnbindCharacter(ACharacter* const& Character)
 {
 	OnChangeRemainBullets(0);
 	OnChangeMagazineCapacity(0);
-	if (const auto CastedCharacter = Cast<ALakayaBaseCharacter>(Character))
-		CastedCharacter->OnResourceChanged.RemoveAll(this);
+	// if (const auto CastedCharacter = Cast<ALakayaBaseCharacter>(Character))
+	// 	CastedCharacter->OnResourceChanged.RemoveAll(this);
 	return false;
 }
 

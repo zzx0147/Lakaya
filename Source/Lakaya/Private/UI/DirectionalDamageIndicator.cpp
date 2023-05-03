@@ -4,7 +4,7 @@
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
-#include "Character/DamageableCharacter.h"
+#include "GameFramework/Character.h"
 
 UDirectionalDamageIndicator::UDirectionalDamageIndicator(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -24,8 +24,8 @@ void UDirectionalDamageIndicator::BindCharacter(ACharacter* const& Character)
 	//TODO: 캐릭터에 바인딩합니다.
 
 	CharacterRef = Character;
-	auto MyCharacter = Cast<ADamageableCharacter>(CharacterRef);
-	MyCharacter->OnDamageReceived.AddUObject(this, &UDirectionalDamageIndicator::IndicateStart);
+	// auto MyCharacter = Cast<ADamageableCharacter>(CharacterRef);
+	// MyCharacter->OnDamageReceived.AddUObject(this, &UDirectionalDamageIndicator::IndicateStart);
 	SetVisibility(ESlateVisibility::Visible);
 }
 
