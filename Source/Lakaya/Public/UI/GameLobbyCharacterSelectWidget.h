@@ -11,7 +11,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(OnChangeSelectedCharacterDelegate, FName)
 
 //캐릭터 선택 UI 클래스
 UCLASS()
-class LAKAYA_API UGameLobbyCharacterSelectWidget : public UGameLobbyWeaponSelectWidget
+class LAKAYA_API UGameLobbyCharacterSelectWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

@@ -44,13 +44,19 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGameScoreBoardWidget> ScoreBoardClass;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class ULoadingWidget> LoadingWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGameLobbyCharacterSelectWidget> CharacterSelectWidgetClass;
+
 private:
 	UPROPERTY(EditDefaultsOnly)
 	uint8 MaximumPlayers;
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class ULoadingWidget> LoadingWidgetClass;
 	TObjectPtr<ULoadingWidget> LoadingWidget;
+
+	TObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
 };

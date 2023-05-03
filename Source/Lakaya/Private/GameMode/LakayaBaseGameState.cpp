@@ -5,6 +5,7 @@
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/LoadingWidget.h"
+#include "UI/GameLobbyCharacterSelectWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
@@ -22,11 +23,20 @@ void ALakayaBaseGameState::BeginPlay()
 			LoadingWidget = CreateWidget<ULoadingWidget>(LocalController, LoadingWidgetClass);
 			if (LoadingWidget != nullptr)
 			{
-				LoadingWidget->OnBeginPlay();
 				LoadingWidget->SetMaximumPlayerNumber(MaximumPlayers);
 				LoadingWidget->SetPlayerNumber(PlayerArray.Num());
 				LoadingWidget->AddToViewport();
 				LoadingWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			}
+		}
+
+		if (CharacterSelectWidgetClass.Get() != nullptr)
+		{
+			CharacterSelectWidget = CreateWidget<UGameLobbyCharacterSelectWidget>(LocalController, CharacterSelectWidgetClass);
+			if (CharacterSelectWidget != nullptr)
+			{
+				CharacterSelectWidget->AddToViewport();
+				CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
 
@@ -66,11 +76,13 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
+	CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 {
 	LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
+	CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
 }
 
 void ALakayaBaseGameState::OnRep_MatchState()
