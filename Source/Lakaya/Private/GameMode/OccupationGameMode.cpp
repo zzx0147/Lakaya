@@ -1,14 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "GameMode/OccupationGameMode.h"
-
 #include "Character/ArmedCharacter.h"
 #include "Character/OccupationCharacter.h"
 #include "Character/OccupationPlayerState.h"
 #include "GameFramework/PlayerStart.h"
 #include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include "PlayerController/InteractablePlayerController.h"
 #include "PlayerController/OccupationPlayerController.h"
 
 AOccupationGameMode::AOccupationGameMode()
@@ -24,7 +21,8 @@ AOccupationGameMode::AOccupationGameMode()
 		UE_LOG(LogTemp, Error, TEXT("OccupationGameMode_Failed to find player pawn blueprint."));
 
 	DefaultPawnClass = AOccupationCharacter::StaticClass();
-	PlayerControllerClass = AInteractableCharacter::StaticClass();
+	// PlayerControllerClass = AInteractableCharacter::StaticClass();
+	PlayerControllerClass = AInteractablePlayerController::StaticClass();
 	PlayerStateClass = AOccupationPlayerState::StaticClass();
 	GameStateClass = AOccupationGameState::StaticClass();
 }
