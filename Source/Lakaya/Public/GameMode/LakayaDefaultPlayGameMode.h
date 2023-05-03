@@ -35,11 +35,6 @@ protected:
 	// ReadyToStartMatch (경기 시작 준비)가 true를 반환하는 경우, 또는 StartMatch가 호출된 경우 다음 상태로 전환.
 	virtual void HandleMatchIsWaitingToStart() override;
 	virtual bool ReadyToStartMatch_Implementation() override;
-	// virtual void StartMatch() override;
-
-	UE_DEPRECATED(5.1, "this Function will be remove, if you want start match manualy use StartMatch()")
-	virtual void DelayedStartMatch();
-
 
 	//캐릭터 선택 스테이스로 넘어갈 때 호출되는 함수
 	virtual void HandleMatchIsSelectCharacter();

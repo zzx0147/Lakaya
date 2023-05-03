@@ -21,9 +21,6 @@ public:
 	virtual void SetMaximumPlayerNumber(const uint8& PlayerCount);
 
 private:
-	UE_DEPRECATED(5.1, "This function will be removed, event not used, instead use setter")
-	UFUNCTION()
-	void OnChangeJoinedPlayers(const uint8& PlayerCount) const;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* LoadingWidgetText;

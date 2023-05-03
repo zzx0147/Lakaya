@@ -48,15 +48,3 @@ void ULoadingWidget::SetMaximumPlayerNumber(const uint8& PlayerCount)
 {
 	MaxPlayerCount = PlayerCount;
 }
-
-void ULoadingWidget::OnChangeJoinedPlayers(const uint8& PlayerCount) const
-{
-	if (PlayerCount == MaxPlayerCount)
-	{
-		LoadingWidgetText->SetText(FText::FromString(TEXT("곧 게임을 시작합니다.")));
-		return;
-	}
-
-	LoadingWidgetText->SetText(
-		FText::FromString(FString::Printf(TEXT("(%d / %d)"), PlayerCount, MaxPlayerCount)));
-}

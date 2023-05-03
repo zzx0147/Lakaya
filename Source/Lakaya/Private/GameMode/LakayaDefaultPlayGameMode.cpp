@@ -51,14 +51,8 @@ bool ALakayaDefaultPlayGameMode::ReadyToStartMatch_Implementation()
 	return Super::ReadyToStartMatch_Implementation();
 }
 
-void ALakayaDefaultPlayGameMode::DelayedStartMatch()
-{
-	bWaitToStart = true;
-}
-
 void ALakayaDefaultPlayGameMode::HandleMatchIsSelectCharacter()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("HandleMatchIsSelectCharacter()"));
 	FTimerHandle TimerHandler;
 	GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 5.0f, false);
 }
