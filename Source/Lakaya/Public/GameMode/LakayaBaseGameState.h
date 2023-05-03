@@ -32,7 +32,7 @@ public:
 	const uint8& GetMaximumPlayers() const { return MaximumPlayers; }
 
 	UFUNCTION()
-	const uint8& GetPlayersNumber() const { return PlayersNumber; }
+	const uint8 GetPlayersNumber() const { return PlayerArray.Num(); }
 
 	// 점수판의 표시 여부를 결정합니다. true를 넘기면 점수판이 표시됩니다.
 	void SetScoreBoardVisibility(const bool& Visible);
@@ -47,8 +47,6 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly)
 	uint8 MaximumPlayers;
-	
-	uint8 PlayersNumber;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class ULoadingWidget> LoadingWidgetClass;

@@ -10,7 +10,6 @@ ALakayaBaseGameState::ALakayaBaseGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	MaximumPlayers = 6;
-	PlayersNumber = 0;
 }
 
 void ALakayaBaseGameState::BeginPlay()
@@ -41,7 +40,6 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 	}
-	PlayersNumber = PlayerArray.Num();
 }
 
 void ALakayaBaseGameState::Tick(float DeltaTime)
@@ -56,9 +54,6 @@ void ALakayaBaseGameState::AddPlayerState(APlayerState* PlayerState)
 	if (ScoreBoard.IsValid()) ScoreBoard->RegisterPlayer(PlayerState);
 
 	OnChangePlayerNumber.Broadcast(PlayerArray.Num());
-	// PlayersNumber 멤버변수는 불필요해보임
-	PlayersNumber = PlayerArray.Num();
-	//if (PlayerArray.Num() >= MaximumPlayers)
 }
 
 void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
@@ -66,7 +61,6 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 	Super::RemovePlayerState(PlayerState);
 	if (LoadingWidget != nullptr) LoadingWidget->SetPlayerNumber(PlayerArray.Num());
 	OnChangePlayerNumber.Broadcast(PlayerArray.Num());
-	PlayersNumber = PlayerArray.Num();
 }
 
 void ALakayaBaseGameState::HandleMatchHasStarted()
