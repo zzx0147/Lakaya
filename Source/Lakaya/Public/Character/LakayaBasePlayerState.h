@@ -96,6 +96,7 @@ protected:
 	 * @param NewPawn 새로 어태치된 폰입니다.
 	 * @param OldPawn 이제 어태치가 해제된 폰입니다.
 	 */
+	UFUNCTION()
 	virtual void OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn);
 
 	// 최대 체력을 가져옵니다.

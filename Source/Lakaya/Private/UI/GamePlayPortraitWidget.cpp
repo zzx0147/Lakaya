@@ -40,10 +40,10 @@ void UGamePlayPortraitWidget::NativeConstruct()
 
 void UGamePlayPortraitWidget::BindCharacter(ACharacter* const& Character)
 {
-	const FName& CharacterName = Cast<ALakayaBaseCharacter>(Character)->GetCharacterName();
+	// const FName& CharacterName = Cast<ALakayaBaseCharacter>(Character)->GetCharacterName();
 
-	if (CharacterPortraitTextureMap.Contains(CharacterName))
-		CharacterPortraitImage->SetBrushFromTexture(CharacterPortraitTextureMap[CharacterName]);
+	// if (CharacterPortraitTextureMap.Contains(CharacterName))
+	// 	CharacterPortraitImage->SetBrushFromTexture(CharacterPortraitTextureMap[CharacterName]);
 }
 
 

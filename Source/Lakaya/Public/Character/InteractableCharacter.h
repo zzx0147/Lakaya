@@ -19,7 +19,6 @@ class LAKAYA_API AInteractableCharacter : public AArmedCharacter
 protected:
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
-	virtual void KillCharacter(AController* EventInstigator, AActor* DamageCauser) override;
 
 public:
 	// 주변에 인터렉션 가능한 액터가 존재하는 경우 인터렉션을 시작합니다.

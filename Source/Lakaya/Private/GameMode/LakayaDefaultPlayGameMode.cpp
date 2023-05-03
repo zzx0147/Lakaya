@@ -154,12 +154,12 @@ void ALakayaDefaultPlayGameMode::RespawnPlayer(AController* KilledController)
 		return;
 	}
 	
-	ADamageableCharacter* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
-	if (KilledDamageableCharacter == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("KilledDamageableCharacter is null."));
-		return;
-	}
-	
-	KilledDamageableCharacter->Respawn();
+	// ADamageableCharacter* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
+	// if (KilledDamageableCharacter == nullptr)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("KilledDamageableCharacter is null."));
+	// 	return;
+	// }
+	//
+	// KilledDamageableCharacter->Respawn();
 }

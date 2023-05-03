@@ -32,12 +32,6 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	}
 }
 
-void AInteractableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
-{
-	Super::KillCharacter(EventInstigator, DamageCauser);
-	if (InteractingActor.IsValid()) Cast<IInteractable>(InteractingActor)->OnCharacterDead(this);
-}
-
 void AInteractableCharacter::StartInteraction()
 {
 	if (InteractableActor.IsValid()) RequestInteractionStart(GetServerTime(), InteractableActor.Get());
