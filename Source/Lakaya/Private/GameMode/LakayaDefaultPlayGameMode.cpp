@@ -3,9 +3,10 @@
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 
 #include "Character/ArmedCharacter.h"
+#include "Character/InteractableCharacter.h"
+#include "Character/LakayaBasePlayerState.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
-#include "Character/LakayaBasePlayerState.h"
 
 namespace MatchState
 {
@@ -121,11 +122,9 @@ bool ALakayaDefaultPlayGameMode::HasMatchStarted() const
 
 UClass* ALakayaDefaultPlayGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
-	auto PlayerState = InController->GetPlayerState<ALakayaBasePlayerState>();
-	if (PlayerState != nullptr)
-	{
-		return CharacterClasses[PlayerState->GetCharacterName()];
-	}
+	if (const auto PlayerState = InController->GetPlayerState<ALakayaBasePlayerState>())
+		if (CharacterClasses.Contains(PlayerState->GetCharacterName()))
+			return CharacterClasses[PlayerState->GetCharacterName()];
 
 	return Super::GetDefaultPawnClassForController_Implementation(InController);
 }
