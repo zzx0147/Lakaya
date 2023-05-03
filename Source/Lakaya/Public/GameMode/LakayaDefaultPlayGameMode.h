@@ -62,6 +62,7 @@ public:
 	virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser);
 	virtual void StartSelectCharacter();
 	virtual bool HasMatchStarted() const override;
+	UClass* GetDefaultPawnClassForController_Implementation(AController* InController);
 
 protected:
 	virtual void RespawnPlayer(AController* KilledController);
@@ -74,6 +75,9 @@ private:
 	uint8 PlayerRespawnTime = 3;
 	bool bWaitToStart = false;
 
+protected:
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FName, TSubclassOf<class AInteractableCharacter>> CharacterClasses;
 private:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;
