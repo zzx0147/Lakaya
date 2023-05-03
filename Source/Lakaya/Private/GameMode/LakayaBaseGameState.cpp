@@ -6,6 +6,7 @@
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/LoadingWidget.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
+#include "Character/LakayaBasePlayerState.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
@@ -37,6 +38,11 @@ void ALakayaBaseGameState::BeginPlay()
 			{
 				CharacterSelectWidget->AddToViewport();
 				CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
+				auto LocalPlayerState = GetWorld()->GetFirstPlayerController()->GetPlayerState<ALakayaBasePlayerState>();
+				if (LocalPlayerState != nullptr)
+				{
+					CharacterSelectWidget->OnChangeSelectedCharacter.AddUObject(LocalPlayerState, &ALakayaBasePlayerState::RequestCharacterChange);
+				}
 			}
 		}
 

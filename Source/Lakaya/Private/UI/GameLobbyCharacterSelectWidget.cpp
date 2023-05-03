@@ -22,7 +22,7 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 		Cast<UButton>(GetWidgetFromName(TEXT("Gangster_Btn")))
 	};
 
-	CharacterNameArray = { TEXT("Citizen"), TEXT("GovernmentMan"), TEXT("Gangster") };
+	CharacterNameArray = { TEXT("Rena"), TEXT("Wazi"), TEXT("Minami") };
 
 	CharacterRenderTargetMaterialArray =
 	{
@@ -70,7 +70,7 @@ void UGameLobbyCharacterSelectWidget::OnClickedCharacter3Button()
 	SelectCharacter(2);
 }
 
-void UGameLobbyCharacterSelectWidget::SelectCharacter(int32 CharacterNum)
+void UGameLobbyCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum)
 {
 	//캐릭터를 선택하면 캐릭터 3D 출력을 변경하고 이전의 버튼을 활성화한뒤 선택한 캐릭터의 버튼을 비활성화
 	//OnCharacterSelectedCharater로 변경된 캐릭터 번호를 브로드캐스트
