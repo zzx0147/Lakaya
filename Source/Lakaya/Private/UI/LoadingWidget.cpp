@@ -1,14 +1,5 @@
 #include "UI/LoadingWidget.h"
 
-//#include "GameMode/OccupationGameState.h"
-
-
-void ULoadingWidget::OnBeginPlay()
-{
-	Super::OnBeginPlay();
-	SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-}
-
 void ULoadingWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -47,16 +38,4 @@ void ULoadingWidget::SetPlayerNumber(const uint8& PlayerCount)
 void ULoadingWidget::SetMaximumPlayerNumber(const uint8& PlayerCount)
 {
 	MaxPlayerCount = PlayerCount;
-}
-
-void ULoadingWidget::OnChangeJoinedPlayers(const uint8& PlayerCount) const
-{
-	if (PlayerCount == MaxPlayerCount)
-	{
-		LoadingWidgetText->SetText(FText::FromString(TEXT("곧 게임을 시작합니다.")));
-		return;
-	}
-
-	LoadingWidgetText->SetText(
-		FText::FromString(FString::Printf(TEXT("(%d / %d)"), PlayerCount, MaxPlayerCount)));
 }

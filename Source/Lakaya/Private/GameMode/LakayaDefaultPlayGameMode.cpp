@@ -5,6 +5,7 @@
 #include "Character/ArmedCharacter.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
+#include "Character/LakayaBasePlayerState.h"
 
 namespace MatchState
 {
@@ -51,16 +52,10 @@ bool ALakayaDefaultPlayGameMode::ReadyToStartMatch_Implementation()
 	return Super::ReadyToStartMatch_Implementation();
 }
 
-void ALakayaDefaultPlayGameMode::DelayedStartMatch()
-{
-	bWaitToStart = true;
-}
-
 void ALakayaDefaultPlayGameMode::HandleMatchIsSelectCharacter()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("HandleMatchIsSelectCharacter()"));
 	FTimerHandle TimerHandler;
-	GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 5.0f, false);
+	GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 10.0f, false);
 }
 
 void ALakayaDefaultPlayGameMode::HandleMatchHasStarted()
@@ -122,6 +117,17 @@ bool ALakayaDefaultPlayGameMode::HasMatchStarted() const
 	if (MatchState == MatchState::IsSelectCharacter) return false;
 
 	return Super::HasMatchStarted();
+}
+
+UClass* ALakayaDefaultPlayGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
+{
+	auto PlayerState = InController->GetPlayerState<ALakayaBasePlayerState>();
+	if (PlayerState != nullptr)
+	{
+		return CharacterClasses[PlayerState->GetCharacterName()];
+	}
+
+	return Super::GetDefaultPawnClassForController_Implementation(InController);
 }
 
 void ALakayaDefaultPlayGameMode::RespawnPlayer(AController* KilledController)

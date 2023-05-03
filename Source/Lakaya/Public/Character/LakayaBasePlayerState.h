@@ -79,6 +79,8 @@ public:
 	// 플레이어의 누적 킬 횟수를 늘립니다.
 	void AddKillCount();
 
+	const FName& GetCharacterName() const { return CharacterName; }
+
 protected:
 	// 현재 서버의 시간을 가져옵니다.
 	float GetServerTime() const;
