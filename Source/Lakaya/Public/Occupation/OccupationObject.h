@@ -1,4 +1,5 @@
 #pragma once
+
 #include "CoreMinimal.h"
 #include "PlayerTeam.h"
 #include "Components/CapsuleComponent.h"
@@ -6,7 +7,6 @@
 #include "GameFramework/Actor.h"
 #include "Interactable/Interactable.h"
 #include "OccupationObject.generated.h"
-
 
 UCLASS()
 class LAKAYA_API AOccupationObject : public AActor, public IInteractable
@@ -24,6 +24,8 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
+	FORCEINLINE APawn* GetInteractingPawn() const { return InteractingPawn; }
+	
 private:
 	virtual void OnInteractionStart(const float& Time, APawn* Caller) override;
 	virtual void OnInteractionStop(const float& Time, APawn* Caller) override;

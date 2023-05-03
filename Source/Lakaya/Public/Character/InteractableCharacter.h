@@ -23,16 +23,21 @@ protected:
 
 public:
 	// 주변에 인터렉션 가능한 액터가 존재하는 경우 인터렉션을 시작합니다.
-	void StartInteraction();
+	// void StartInteraction();
 	
 	// 현재 인터렉션 중인 액터가 있는 경우 인터렉션을 중단합니다.
-	void StopInteraction();
+	// void StopInteraction();
 
+	/**
+	 * @brief 현재 인터렉션이 가능한지 판별합니다.
+	 */
+	bool ShouldInteract();
+	
 	// 인터렉션을 초기화합니다. 인터렉션이 끝나는 경우 호출됩니다.
 	void InitializeInteraction();
 
-	AActor* GetInteractableActor() const { return InteractableActor.Get(); }
-	AActor* GetInteractingActor() const { return InteractingActor.Get(); }
+	// AActor* GetInteractableActor() const { return InteractableActor.Get(); }
+	// AActor* GetInteractingActor() const { return InteractingActor.Get(); }
 
 protected:
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -59,4 +64,6 @@ private:
 
 	// 인터렉션이 가능한 액터입니다.
 	TWeakObjectPtr<AActor> InteractableActor;
+
+	// UPROPERTY()
 };

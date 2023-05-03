@@ -5,6 +5,7 @@
 
 #include "Interactable/Interactable.h"
 #include "Net/UnrealNetwork.h"
+#include "Occupation/OccupationObject.h"
 
 void AInteractableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -19,6 +20,11 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	{
 		InteractableActor = OtherActor;
 		OnInteractableActorChanged.Broadcast(InteractableActor.Get());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NotifyActorBeginOverlap_InteractableActor is null."));
+		return;
 	}
 }
 
@@ -38,14 +44,30 @@ void AInteractableCharacter::KillCharacter(AController* EventInstigator, AActor*
 	if (InteractingActor.IsValid()) Cast<IInteractable>(InteractingActor)->OnCharacterDead(this);
 }
 
-void AInteractableCharacter::StartInteraction()
+bool AInteractableCharacter::ShouldInteract()
 {
-	if (InteractableActor.IsValid()) RequestInteractionStart(GetServerTime(), InteractableActor.Get());
-}
+	if (InteractableActor.IsValid())
+	{
+		AOccupationObject* OccupationObject = Cast<AOccupationObject>(InteractableActor);
+		if (OccupationObject == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ShouldInteract_OccupationObject is null."));
+			return false;
+		}
+		if (OccupationObject->GetInteractingPawn() != nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ShouldInteract_GetInteractingPawn is valid."));
+			return false;
+		}
 
-void AInteractableCharacter::StopInteraction()
-{
-	if (InteractingActor.IsValid()) RequestInteractionStop(GetServerTime(), InteractingActor.Get());
+		RequestInteractionStart(GetServerTime(), InteractableActor.Get());
+		return true;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ShouldInteract_InValid is null."));
+		return false;
+	}
 }
 
 void AInteractableCharacter::InitializeInteraction()
