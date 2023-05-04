@@ -7,6 +7,11 @@
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 
+ALakayaBasePlayerState::ALakayaBasePlayerState()
+{
+	CharacterName = TEXT("Rena");
+}
+
 void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
