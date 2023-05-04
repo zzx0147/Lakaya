@@ -44,3 +44,8 @@ void UScoreBoardElement::SetPlayerName(const FText& PlayerName)
 {
 	if (PlayerNameText.IsValid()) PlayerNameText->SetText(PlayerName);
 }
+
+void UScoreBoardElement::SetPlayerName(const FString& PlayerName)
+{
+	SetPlayerName(FText::FromString(PlayerName));
+}

@@ -24,6 +24,7 @@ public:
 
 	// 플레이어 이름을 설정합니다.
 	void SetPlayerName(const FText& PlayerName);
+	void SetPlayerName(const FString& PlayerName);
 
 protected:
 	virtual void NativeConstruct() override;

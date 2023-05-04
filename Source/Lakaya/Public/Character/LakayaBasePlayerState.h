@@ -19,6 +19,8 @@ DECLARE_EVENT_TwoParams(ALakayaBasePlayerState, FCharacterNameChangeSignature, A
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FCountInfoSignature, const uint16&)
 
+DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FPlayerNameSignature, const FString&)
+
 UCLASS()
 class LAKAYA_API ALakayaBasePlayerState : public APlayerState
 {
@@ -28,6 +30,7 @@ public:
 	virtual void PreInitializeComponents() override;
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
+	virtual void OnRep_PlayerName() override;
 
 protected:
 	virtual void CopyProperties(APlayerState* PlayerState) override;
@@ -163,6 +166,9 @@ public:
 
 	// 플레이어의 누적 킬 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 킬 횟수를 받습니다.
 	FCountInfoSignature OnKillCountChanged;
+
+	// 플레이어의 이름이 변경될 때 호출됩니다. 매개변수로 변경된 플레이어의 이름을 받습니다.
+	FPlayerNameSignature OnPlayerNameChanged;
 
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Health, Transient)
