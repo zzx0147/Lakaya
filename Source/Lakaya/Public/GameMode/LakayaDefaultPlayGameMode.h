@@ -62,7 +62,7 @@ public:
 	virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser);
 	virtual void StartSelectCharacter();
 	virtual bool HasMatchStarted() const override;
-	UClass* GetDefaultPawnClassForController_Implementation(AController* InController);
+	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 
 protected:
 	virtual void RespawnPlayer(AController* KilledController);
