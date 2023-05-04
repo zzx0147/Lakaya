@@ -56,10 +56,6 @@ float ALakayaBaseCharacter::InternalTakeRadialDamage(float Damage, FRadialDamage
 	return Super::InternalTakeRadialDamage(Damage, RadialDamageEvent, EventInstigator, DamageCauser);
 }
 
-void ALakayaBaseCharacter::OnSetTeam(const EPlayerTeam& Team)
-{
-}
-
 float ALakayaBaseCharacter::GetServerTime() const
 {
 	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();

@@ -27,15 +27,19 @@ protected:
 
 public:
 	// 캐릭터에 부착된 스프링암 컴포넌트를 가져옵니다.
+	UFUNCTION(BlueprintGetter)
 	class USpringArmComponent* const& GetSpringArm() const { return SpringArm; }
 
 	// 캐릭터에 부착된 카메라 컴포넌트를 가져옵니다.
+	UFUNCTION(BlueprintGetter)
 	class UCameraComponent* const& GetCamera() const { return Camera; }
 
 	// 캐릭터의 팀이 설정되는 경우 호출됩니다.
-	virtual void OnSetTeam(const EPlayerTeam& Team);
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnSetTeam(const EPlayerTeam& Team);
 
-	// 캐릭터의 자원 컴포넌트를 가져옵니다. 
+	// 캐릭터의 자원 컴포넌트를 가져옵니다.
+	UFUNCTION(BlueprintGetter)
 	class UResourceComponent* const& GetResourceComponent() const { return ResourceComponent; }
 
 	// 캐릭터의 자원 컴포넌트를 캐스팅하여 가져옵니다.
@@ -43,6 +47,7 @@ public:
 	T* GetResourceComponent() const { return Cast<T>(ResourceComponent); }
 
 	// 캐릭터 고유의 최대 체력을 가져옵니다. 플레이어의 최종적인 체력을 의미하지는 않습니다.
+	UFUNCTION(BlueprintGetter)
 	const float& GetCharacterMaxHealth() const { return MaxHealth; }
 
 protected:
