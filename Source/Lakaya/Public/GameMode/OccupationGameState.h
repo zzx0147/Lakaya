@@ -91,10 +91,6 @@ private:
 	UPROPERTY(Replicated)
 	float MatchEndingTime;
 
-	UE_DEPRECATED(5.1, "This variable will be Deleted instead use LakayaBaseGameState::MaxPlayers")
-	UPROPERTY(EditAnywhere)
-	uint8 MaxPlayers;
-
 	UPROPERTY(EditAnywhere)
 	float MaxScore;
 
