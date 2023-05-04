@@ -5,7 +5,6 @@
 
 #include "Camera/CameraComponent.h"
 #include "Character/ResourceComponent.h"
-#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
@@ -23,7 +22,6 @@ ALakayaBaseCharacter::ALakayaBaseCharacter()
 	Camera->SetupAttachment(SpringArm);
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
-	GetCapsuleComponent()->SetCapsuleHalfHeight(GetCapsuleComponent()->GetUnscaledCapsuleRadius());
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationPitch = bUseControllerRotationRoll = false;
 }
