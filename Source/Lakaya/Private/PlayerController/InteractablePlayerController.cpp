@@ -89,7 +89,7 @@ void AInteractablePlayerController::StartInteraction(const FInputActionValue& Va
 		return;
 	}
 
-	InteractableCharacter->ShouldInteract();
+	if (!InteractableCharacter->ShouldInteractStart()) return;
 }
 
 void AInteractablePlayerController::StopInteraction(const FInputActionValue& Value)
@@ -101,5 +101,6 @@ void AInteractablePlayerController::StopInteraction(const FInputActionValue& Val
 		UE_LOG(LogTemp, Warning, TEXT("InteractablePlayerController_InteractableCharacter is null."));
 		return;
 	}
-	
+
+	if (!InteractableCharacter->ShouldInteractStop()) return;	
 }

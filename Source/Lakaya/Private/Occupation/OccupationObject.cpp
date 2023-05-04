@@ -1,15 +1,9 @@
 #include "Occupation/OccupationObject.h"
-// #include "EnhancedInputSubsystems.h"
-// #include "BaseGizmos/GizmoElementShared.h"
 #include "Character/InteractableCharacter.h"
-#include "Character/OccupationPlayerState.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameMode/OccupationGameMode.h"
-// #include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
-#include "PlayerController/MovablePlayerController.h"
 
 AOccupationObject::AOccupationObject()
 {
@@ -50,7 +44,7 @@ void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AOccupationObject, ObjectOwner);
+	// DOREPLIFETIME(AOccupationObject, ObjectOwner);
 }
 
 void AOccupationObject::Tick(float DeltaTime)
@@ -60,13 +54,15 @@ void AOccupationObject::Tick(float DeltaTime)
 
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 {
-	AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(Caller->GetController()->PlayerState);
-	if (OccupationPlayerState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
-		return;
-	}
-
+#pragma region TODO : ObjectOwner
+	// AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(Caller->GetController()->PlayerState);
+	// if (OccupationPlayerState == nullptr)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
+	// 	return;
+	// }
+#pragma endregion
+	
 	// 아무도 상호작용을 하지 않고 있는 경우
 	if (InteractingPawn == nullptr)
 	{
@@ -95,28 +91,66 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 			}
 		}
 	}
-	
-	// 소우자 팀에서 상호작용 할 경우 막아두기
-	FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetPlayerTeamState());
-	if (PlayerStateString.Equals("EPlayerTeam::A", ESearchCase::IgnoreCase))
-	{
-		if (ObjectOwner == EPlayerTeam::A)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("이미 본인 소유의 점령 오브젝트입니다."));
-			return;
-		}
-	}
-	else if (PlayerStateString.Equals("EPlayerTeam::B", ESearchCase::IgnoreCase))
-	{
-		if (ObjectOwner == EPlayerTeam::B)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
-			return;
-		}
-	}
 
+#pragma region TODO : ObjectOwner
+	// 소유자 팀에서 상호작용 할 경우 막아두기
+	// FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetPlayerTeamState());
+	// if (PlayerStateString.Equals("EPlayerTeam::A", ESearchCase::IgnoreCase))
+	// {
+	// 	if (ObjectOwner == EPlayerTeam::A)
+	// 	{
+	// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("이미 본인 소유의 점령 오브젝트입니다."));
+	// 		return;
+	// 	}
+	// }
+	// else if (PlayerStateString.Equals("EPlayerTeam::B", ESearchCase::IgnoreCase))
+	// {
+	// 	if (ObjectOwner == EPlayerTeam::B)
+	// 	{
+	// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
+	// 		return;
+	// 	}
+	// }
+#pragma endregion 
+	
 	// TODO : 점프 도중 상호작용 시, 물리를 무시하고 공중에서 상호작용합니다.
 	// 상호작용중에는 움직임을 막아줍니다.
+	CharacterImMovable(Caller);
+	
+	// 시작 한 후 4초가 지나게 되면 성공.
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindLambda([this, Caller]()
+	{
+		InteractionSuccess(Caller);
+	});
+	GetWorldTimerManager().SetTimer(InteractionTimerHandle, TimerDelegate, MaxInteractionDuration, false);
+}
+
+void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Stop!"));
+
+	InteractingPawn = nullptr;
+	FirstCallerTime = 0;
+	
+	// 상호작용이 끝나게 되면, 상호작용 관련 부분을 초기화 해줍니다.
+	OnInteractionFinish(Caller);
+	
+	// InteractionStop 기능에서 타이머가 이미 만료되었는지를 확인해줍니다.
+	// 그렇지 않은 경우 타이머를 취소.
+	if (GetWorldTimerManager().IsTimerActive(InteractionTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(InteractionTimerHandle);
+	}
+}
+
+void AOccupationObject::OnCharacterDead(APawn* Caller)
+{
+	AInteractable::OnCharacterDead(Caller);
+}
+
+void AOccupationObject::CharacterImMovable(APawn* Caller)
+{
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Start!"));
@@ -128,21 +162,10 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 		UE_LOG(LogTemp, Warning, TEXT("OninteractionStart_CastedCaller is null."));
 		return;
 	}
-	
-	// 시작 시간을 가져옵니다.
-	InteractingStartTime = UGameplayStatics::GetRealTimeSeconds(this);
-
-	// 시작 한 후 4초가 지나게 되면 성공.
-	GetWorldTimerManager().SetTimer(InteractionTimerHandle, this, &AOccupationObject::AutomaticInteractionStop, MaxInteractionDuration, false);
 }
 
-void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller)
+void AOccupationObject::CharacterMovable(APawn* Caller)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Stop!"));
-
-	InteractingPawn = nullptr;
-	FirstCallerTime = 0;
-	
 	// 상호작용이 끝나게 되면 다시 움직일 수 있도록 해줍니다.
 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
 	{
@@ -153,126 +176,118 @@ void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller)
 		UE_LOG(LogTemp, Warning, TEXT("CastedCaller is null."));
 		return;
 	}
-
-	// InteractionStop 기능에서 타이머가 이미 만료되었는지를 확인해줍니다.
-	// 그렇지 않으 경우 타이머를 취소.
-	if (GetWorldTimerManager().IsTimerActive(InteractionTimerHandle))
-	{
-		GetWorldTimerManager().ClearTimer(InteractionTimerHandle);
-	}
-
-	// 끝났을 때 시점의 시간을 가져옵니다.
-	InteractingStopTime = UGameplayStatics::GetRealTimeSeconds(this);
-
-	// 상호작용한 시간을 가져옵니다.
-	float InteractionDuration = InteractingStopTime - InteractingStartTime;
-	
-	UE_LOG(LogTemp, Warning, TEXT("InteractingStopTime : %f seconds"), InteractingStopTime);
-	UE_LOG(LogTemp, Warning, TEXT("InteractingStartTime : %f seconds"), InteractingStartTime);
-	UE_LOG(LogTemp, Warning, TEXT("Interaction Duration : %f seconds"), InteractionDuration);
-
-	if (InteractionDuration > MaxInteractionDuration)
-	{
-		// 상호작용에 성공했을 경우.
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction Success"));
-
-		AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(Caller->GetController()->PlayerState);
-		if (OccupationPlayerState == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
-			return;
-		}
-
-		AOccupationGameMode* OccupationGameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
-		if (OccupationGameMode == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationGameMode is null."));
-			return;
-		}
-
-		FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetPlayerTeamState());
-		if (PlayerStateString.Equals("EPlayerTeamState::None", ESearchCase::IgnoreCase))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Suspected player captured successfully."));
-			return;
-		}
-		else if (PlayerStateString.Equals("EPlayerTeamState::A", ESearchCase::IgnoreCase))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
-
-			if (ObjectOwner == EPlayerTeam::B)
-				OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
-
-			ObjectOwner = EPlayerTeam::A;
-			OccupationGameMode->AddOccupyObject(EPlayerTeam::A);
-			SetTeamObject(ObjectOwner);
-			return;
-		}
-		else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
-
-			if (ObjectOwner == EPlayerTeam::A)
-				OccupationGameMode->SubOccupyObject(EPlayerTeam::A);
-			
-			ObjectOwner = EPlayerTeam::B;
-			OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
-			SetTeamObject(ObjectOwner);
-			return;
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Error ! Error ! Error !"));
-			return;
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Interaction Failed."));
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction Failed."));
-		return;
-	}
 }
 
-void AOccupationObject::OnCharacterDead(APawn* Caller)
+void AOccupationObject::InteractionSuccess(APawn* Caller)
 {
-	IInteractable::OnCharacterDead(Caller);
-}
-
-void AOccupationObject::AutomaticInteractionStop()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Cylinder AutomaticInteractionStop !"));
-
-	if(InteractingPawn == nullptr)
+	if (InteractingPawn == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AutomaticInteractionStop_InteractingPawn is null."));
 		return;
 	}
 	
-	OnInteractionStop(UGameplayStatics::GetRealTimeSeconds(this), InteractingPawn);
 	InteractingPawn = nullptr;
-}
 
-void AOccupationObject::OnRep_BroadCastTeamObject()
-{
-	SetTeamObject(ObjectOwner);
-}
+#pragma region TODO : ObjectOwner
+	// AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(Caller->GetController()->PlayerState);
+	// if (OccupationPlayerState == nullptr)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
+	// 	return;
+	// }
+#pragma endregion
 
-void AOccupationObject::SetTeamObject(const EPlayerTeam& Team)
-{
-	switch (Team)
+	Cast<AInteractableCharacter>(Caller)->SetInteractionState(EInteractionState::Success);
+	
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Black, FString::Printf(TEXT("Interaction Successed !")));
+
+	// 상호작용이 끝나게 되면, 상호작용 관련 부분을 초기화 해줍니다.
+	OnInteractionFinish(Caller);
+	
+	// 상호작용을 성공하고 1초 뒤에 State 상태는 Success에서 None 상태로 변경
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindLambda([this, Caller]()
 	{
-	case EPlayerTeam::A:
-		Cylinder->SetMaterial(
-			0, LoadObject<UMaterialInterface>(
-				nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/RedTeam.RedTeam")));
-		break;
-	case EPlayerTeam::B:
-		Cylinder->SetMaterial(
-			0, LoadObject<UMaterialInterface>(
-				nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/BlueTeam.BlueTeam")));
-		break;
-	case EPlayerTeam::None:
-		break;
-	}
+		Cast<AInteractableCharacter>(Caller)->SetInteractionState(EInteractionState::None);
+	});
+
+	GetWorldTimerManager().SetTimer(InteractionStateHandle, TimerDelegate, 1.0f, false);
+	
+#pragma region TODO : ObjectOwner
+	// FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetPlayerTeamState());
+	// if (PlayerStateString.Equals("EPlayerTeamState::None", ESearchCase::IgnoreCase))
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("Suspected player captured successfully."));
+	// 	return;
+	// }
+	// else if (PlayerStateString.Equals("EPlayerTeamState::A", ESearchCase::IgnoreCase))
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
+	//
+	// 	if (ObjectOwner == EPlayerTeam::B)
+	// 		OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
+	//
+	// 	ObjectOwner = EPlayerTeam::A;
+	// 	OccupationGameMode->AddOccupyObject(EPlayerTeam::A);
+	// 	SetTeamObject(ObjectOwner);
+	// 	return;
+	// }
+	// else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
+	//
+	// 	if (ObjectOwner == EPlayerTeam::A)
+	// 		OccupationGameMode->SubOccupyObject(EPlayerTeam::A);
+	// 		
+	// 	ObjectOwner = EPlayerTeam::B;
+	// 	OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
+	// 	SetTeamObject(ObjectOwner);
+	// 	return;
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("Error ! Error ! Error !"));
+	// 	return;
+	// }
+#pragma endregion
 }
+
+void AOccupationObject::OnInteractionFinish(APawn* Caller)
+{
+	// 상호작용이 끝나게 되면 다시 움직일 수 있도록 해줍니다.
+	CharacterMovable(Caller);
+
+	auto* InteractableCharacter = Cast<AInteractableCharacter>(Caller);
+	if (InteractableCharacter == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InteractionSuccess_InteractableCharacter is null."));
+		return;
+	}
+	InteractableCharacter->InitializeInteraction();
+}
+
+#pragma region TODO : ObjectOwner
+// void AOccupationObject::OnRep_BroadCastTeamObject()
+// {
+// 	SetTeamObject(ObjectOwner);
+// }
+
+// void AOccupationObject::SetTeamObject(const EPlayerTeam& Team)
+// {
+// 	switch (Team)
+// 	{
+// 	case EPlayerTeam::A:
+// 		Cylinder->SetMaterial(
+// 			0, LoadObject<UMaterialInterface>(
+// 				nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/RedTeam.RedTeam")));
+// 		break;
+// 	case EPlayerTeam::B:
+// 		Cylinder->SetMaterial(
+// 			0, LoadObject<UMaterialInterface>(
+// 				nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/BlueTeam.BlueTeam")));
+// 		break;
+// 	case EPlayerTeam::None:
+// 		break;
+// 	}
+// }
+#pragma endregion

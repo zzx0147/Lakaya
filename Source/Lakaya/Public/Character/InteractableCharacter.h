@@ -8,6 +8,16 @@
 
 DECLARE_EVENT_OneParam(AInteractableCharacter, FInteractionSignature, AActor*);
 
+UENUM()
+enum class EInteractionState : uint8
+{
+	None UMETA(DisplayerName = "None"),
+	OnGoing UMETA(DisplayerName = "OnGoing"),
+	Success UMETA(DisPlayerName = "Success"),
+	Stopped UMETA(DisPlayerName = "Stopped"),
+	Canceled UMETA(DisPlayerName = "Canceled"),
+};
+
 /**
  *
  */
@@ -16,29 +26,27 @@ class LAKAYA_API AInteractableCharacter : public AArmedCharacter
 {
 	GENERATED_BODY()
 
+public:
+	AInteractableCharacter();
+	
 protected:
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 	virtual void KillCharacter(AController* EventInstigator, AActor* DamageCauser) override;
 
 public:
-	// 주변에 인터렉션 가능한 액터가 존재하는 경우 인터렉션을 시작합니다.
-	// void StartInteraction();
-	
-	// 현재 인터렉션 중인 액터가 있는 경우 인터렉션을 중단합니다.
-	// void StopInteraction();
+	// 현재 인터렉션이 가능한지 판별합니다.
+	bool ShouldInteractStart();
 
-	/**
-	 * @brief 현재 인터렉션이 가능한지 판별합니다.
-	 */
-	bool ShouldInteract();
+	// 현재 인터렉션을 중단할 수 있는지 판별합니다.
+	bool ShouldInteractStop();
 	
 	// 인터렉션을 초기화합니다. 인터렉션이 끝나는 경우 호출됩니다.
 	void InitializeInteraction();
+	
+	FORCEINLINE const EInteractionState& GetInteractionState() const { return InteractionState; }
 
-	// AActor* GetInteractableActor() const { return InteractableActor.Get(); }
-	// AActor* GetInteractingActor() const { return InteractingActor.Get(); }
-
+	FORCEINLINE void SetInteractionState(const EInteractionState& NewState) { InteractionState = NewState; }	
 protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void RequestInteractionStart(const float& Time, AActor* Actor);
@@ -65,5 +73,9 @@ private:
 	// 인터렉션이 가능한 액터입니다.
 	TWeakObjectPtr<AActor> InteractableActor;
 
-	// UPROPERTY()
+	UPROPERTY()
+	bool bInteractionRequested;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_InteractingActor)
+	EInteractionState InteractionState = EInteractionState::None;
 };

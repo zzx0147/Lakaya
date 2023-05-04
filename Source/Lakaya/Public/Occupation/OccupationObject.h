@@ -9,7 +9,7 @@
 #include "OccupationObject.generated.h"
 
 UCLASS()
-class LAKAYA_API AOccupationObject : public AActor, public IInteractable
+class LAKAYA_API AOccupationObject : public AInteractable
 {
 	GENERATED_BODY()
 
@@ -30,19 +30,22 @@ private:
 	virtual void OnInteractionStart(const float& Time, APawn* Caller) override;
 	virtual void OnInteractionStop(const float& Time, APawn* Caller) override;
 	virtual void OnCharacterDead(APawn* Caller) override;
-	// virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
-	// virtual void OnInteractionStart(APawn* Caller) override;
-	// virtual void OnLocalInteractionStopBegin(APawn* Caller) override;
-	// virtual void OnServerInteractionStopBegin(const float& Time, APawn* Caller) override;
-	// virtual void OnInteractionStop(APawn* Caller) override;
 
 private:
-	void AutomaticInteractionStop();
+	// 플레이어가 움직일 수 있도록 해줍니다.
+	void CharacterMovable(APawn* Caller);
 
+	// 플레이어의 움직임을 제한합니다.
+	void CharacterImMovable(APawn* Caller);
+
+	// 상호작용을 성공합니다.
+	void InteractionSuccess(APawn* Caller);
+
+	// 상호작용이 끝났습니다.
+	void OnInteractionFinish(APawn* Caller);
+	
 private:
 	const float MaxInteractionDuration = 3;
-	float InteractingStartTime;
-	float InteractingStopTime;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
@@ -54,24 +57,21 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Trigger")
 	USphereComponent* TriggerSphere;
 
-private:
-	UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject, Transient)
-	EPlayerTeam ObjectOwner;
+#pragma region TODO : ObjectOwner
+	// UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject, Transient)
+	// EPlayerTeam ObjectOwner;
 
-private:
-	UFUNCTION()
-	void OnRep_BroadCastTeamObject();
-
-private:
-	void SetTeamObject(const EPlayerTeam& Team);
-
+	// UFUNCTION()
+	// void OnRep_BroadCastTeamObject();
+	
+	// void SetTeamObject(const EPlayerTeam& Team);
+#pragma endregion 
 private:
 	FTimerHandle InteractionTimerHandle;
+	FTimerHandle InteractionStateHandle;
 
 private:
 	TWeakObjectPtr<class AInteractableCharacter> InteractingCharacter;
 	APawn* InteractingPawn;
 	float FirstCallerTime = 0;
-	
-	float RecentInteractionTime = FLT_MAX;
 };

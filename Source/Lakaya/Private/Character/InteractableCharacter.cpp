@@ -13,10 +13,15 @@ void AInteractableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(AInteractableCharacter, InteractingActor);
 }
 
+AInteractableCharacter::AInteractableCharacter()
+{
+	bInteractionRequested = false;
+}
+
 void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
-	if (OtherActor->Implements<UInteractable>())
+	if (OtherActor->ActorHasTag(TEXT("Interactable")))
 	{
 		InteractableActor = OtherActor;
 		OnInteractableActorChanged.Broadcast(InteractableActor.Get());
@@ -41,31 +46,61 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 void AInteractableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::KillCharacter(EventInstigator, DamageCauser);
-	if (InteractingActor.IsValid()) Cast<IInteractable>(InteractingActor)->OnCharacterDead(this);
+	if (InteractingActor.IsValid()) Cast<AInteractable>(InteractingActor)->OnCharacterDead(this);
 }
 
-bool AInteractableCharacter::ShouldInteract()
+bool AInteractableCharacter::ShouldInteractStart()
 {
 	if (InteractableActor.IsValid())
 	{
 		AOccupationObject* OccupationObject = Cast<AOccupationObject>(InteractableActor);
 		if (OccupationObject == nullptr)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ShouldInteract_OccupationObject is null."));
+			UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStart_OccupationObject is null."));
 			return false;
 		}
 		if (OccupationObject->GetInteractingPawn() != nullptr)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ShouldInteract_GetInteractingPawn is valid."));
+			UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStart_GetInteractingPawn is valid."));
 			return false;
 		}
 
+		if (InteractionState != EInteractionState::None)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("InteractionState is not none."));
+			return false;
+		}
+			
+		bInteractionRequested = true;
 		RequestInteractionStart(GetServerTime(), InteractableActor.Get());
+		// UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStart Completed."));
 		return true;
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ShouldInteract_InValid is null."));
+		UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStart_InValid is null."));
+		return false;
+	}
+}
+
+bool AInteractableCharacter::ShouldInteractStop()
+{
+	if (InteractableActor.IsValid())
+	{
+		if (InteractionState != EInteractionState::OnGoing)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("InteractionState is not ongoing."));
+			return false;
+		}
+		
+		bInteractionRequested = false;
+		RequestInteractionStop(GetServerTime(), InteractableActor.Get());
+		// UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStop Completed."));
+		return true;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStop_InValid is null."));
 		return false;
 	}
 }
@@ -83,24 +118,44 @@ void AInteractableCharacter::OnRep_InteractingActor()
 
 bool AInteractableCharacter::RequestInteractionStart_Validate(const float& Time, AActor* Actor)
 {
-	return Actor && Actor->Implements<UInteractable>() && Time < GetServerTime() + 0.05f;
+	if (Actor && Actor->ActorHasTag("Interactable") && Time < GetServerTime() + 0.05f)
+	{
+		// UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStart_Validate completed."))
+		return true;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStart_Valide Failed."));
+		return false;
+	}
 }
 
 void AInteractableCharacter::RequestInteractionStart_Implementation(const float& Time, AActor* Actor)
 {
 	InteractingActor = Actor;
-	Cast<IInteractable>(Actor)->OnInteractionStart(Time, this);
+	SetInteractionState(EInteractionState::OnGoing);
+	Cast<AInteractable>(Actor)->OnInteractionStart(Time, this);
 	OnInteractingActorChanged.Broadcast(InteractingActor.Get());
 }
 
 bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, AActor* Actor)
 {
-	return Actor && Actor->Implements<UInteractable>() && Time < GetServerTime() + 0.05f;
+	if (Actor && Actor->ActorHasTag("Interactable") && Time < GetServerTime() + 0.05f)
+	{
+		// UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStop_Validate completed."));
+		return true;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStop_Validate failed."));
+		return false;
+	}
 }
 
 void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor)
 {
-	InteractingActor = nullptr;
-	Cast<IInteractable>(Actor)->OnInteractionStop(GetServerTime(), this);
+	InitializeInteraction();
+	SetInteractionState(EInteractionState::None);
+	Cast<AInteractable>(Actor)->OnInteractionStop(GetServerTime(), this);
 	OnInteractingActorChanged.Broadcast(InteractingActor.Get());
 }
