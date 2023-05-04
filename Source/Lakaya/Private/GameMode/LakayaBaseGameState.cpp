@@ -53,6 +53,7 @@ void ALakayaBaseGameState::BeginPlay()
 			{
 				ScoreBoard->AddToViewport();
 				ScoreBoard->SetVisibility(ESlateVisibility::Hidden);
+				for (auto& Player : PlayerArray) ScoreBoard->RegisterPlayer(Player);
 			}
 		}
 	}
