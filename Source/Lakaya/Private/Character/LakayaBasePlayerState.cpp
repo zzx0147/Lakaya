@@ -71,7 +71,7 @@ void ALakayaBasePlayerState::BeginPlay()
 		if (HealthWidget.IsValid())
 		{
 			HealthWidget->AddToViewport();
-			HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			HealthWidget->SetVisibility(ESlateVisibility::Hidden);
 			
 			OnHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetCurrentHealth);
 			OnMaxHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetMaximumHealth);
@@ -152,9 +152,15 @@ bool ALakayaBasePlayerState::ShouldTakeDamage(float DamageAmount, FDamageEvent c
 
 void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
 {
-	if (Team != EPlayerTeam::None)
-		if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
-			Character->OnSetTeam(Team);
+	if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
+	{
+		if (Team != EPlayerTeam::None) Character->OnSetTeam(Team);
+		HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	else
+	{
+		HealthWidget->SetVisibility(ESlateVisibility::Hidden);
+	}
 
 	BroadcastMaxHealthChanged();
 	
