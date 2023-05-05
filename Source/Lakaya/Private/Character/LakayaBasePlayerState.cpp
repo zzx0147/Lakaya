@@ -107,7 +107,7 @@ bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) con
 void ALakayaBasePlayerState::SetTeam(const EPlayerTeam& DesireTeam)
 {
 	Team = DesireTeam;
-	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->OnSetTeam(Team);
+	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->SetTeam(Team);
 	OnTeamChanged.Broadcast(Team);
 }
 
@@ -156,7 +156,7 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 {
 	if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
 	{
-		if (Team != EPlayerTeam::None) Character->OnSetTeam(Team);
+		if (Team != EPlayerTeam::None) Character->SetTeam(Team);
 		if (HealthWidget.IsValid()) HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 	else
@@ -193,7 +193,7 @@ void ALakayaBasePlayerState::OnRep_Health()
 
 void ALakayaBasePlayerState::OnRep_Team()
 {
-	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->OnSetTeam(Team);
+	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->SetTeam(Team);
 	OnTeamChanged.Broadcast(Team);
 }
 
