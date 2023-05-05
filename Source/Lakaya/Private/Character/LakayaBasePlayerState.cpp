@@ -8,11 +8,6 @@
 #include "Net/UnrealNetwork.h"
 #include "UI/GamePlayHealthWidget.h"
 
-ALakayaBasePlayerState::ALakayaBasePlayerState()
-{
-	CharacterName = TEXT("Rena");
-}
-
 void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -27,6 +22,8 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 
 ALakayaBasePlayerState::ALakayaBasePlayerState()
 {
+	CharacterName = TEXT("Rena");
+
 	static ConstructorHelpers::FClassFinder<UGamePlayHealthWidget> HealthFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
 
