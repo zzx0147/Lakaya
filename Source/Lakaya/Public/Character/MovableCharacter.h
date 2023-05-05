@@ -10,7 +10,4 @@ UCLASS()
 class LAKAYA_API AMovableCharacter : public ALakayaBaseCharacter
 {
 	GENERATED_BODY()
-
-public:
-	AMovableCharacter();
 };

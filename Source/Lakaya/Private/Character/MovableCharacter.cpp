@@ -2,10 +2,3 @@
 
 
 #include "Character/MovableCharacter.h"
-
-#include "GameFramework/CharacterMovementComponent.h"
-
-AMovableCharacter::AMovableCharacter()
-{
-	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
-}

@@ -22,8 +22,6 @@ protected:
 private:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
-	void Crouch(const FInputActionValue& Value);
-	void UnCrouch(const FInputActionValue& Value);
 	void Jump(const FInputActionValue& Value);
 
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Context")
@@ -40,12 +38,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
 	UInputAction* JumpAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
-	UInputAction* CrouchAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
-	UInputAction* UnCrouchAction;
 
 	TWeakObjectPtr<class AMovableCharacter> MovableCharacter;
 };
