@@ -37,9 +37,8 @@ void ABuffPlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, A
 		for (int16 Index = KillStreakBuffLevel; Index >= 0; --Index)
 			if (Buffs.IsValidIndex(Index))
 				ExpireBuff(Buffs[Index]);
-
-		SetKillStreakBuffLevel(0);
 	}
+	SetKillStreakBuffLevel(0);
 }
 
 void ABuffPlayerState::ApplyBuff(const FName& BuffName)
