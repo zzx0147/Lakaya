@@ -43,7 +43,18 @@ float ALakayaBaseCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 
 	// 플레이어 스테이트에서 데미지를 처리하고나서, 애니메이션 재생을 위해 캐릭터에서도 데미지를 처리합니다.
 	const auto Damage = LocalState->TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	return Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+}
+
+void ALakayaBaseCharacter::PreInitializeComponents()
+{
+	Super::PreInitializeComponents();
+	if (HasAuthority() && ResourceClass)
+	{
+		ResourceComponent = Cast<UResourceComponent>(
+			AddComponentByClass(ResourceClass, false, FTransform::Identity, false));
+		if (ResourceComponent) ResourceComponent->SetIsReplicated(true);
+	}
 }
 
 float ALakayaBaseCharacter::InternalTakeRadialDamage(float Damage, FRadialDamageEvent const& RadialDamageEvent,
@@ -62,6 +73,5 @@ float ALakayaBaseCharacter::GetServerTime() const
 void ALakayaBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ALakayaBaseCharacter, ResourceComponent);
+	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, ResourceComponent, COND_OwnerOnly);
 }

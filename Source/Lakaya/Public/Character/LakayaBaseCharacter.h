@@ -22,6 +22,7 @@ public:
 	                         AActor* DamageCauser) override;
 
 protected:
+	virtual void PreInitializeComponents() override;
 	virtual float InternalTakeRadialDamage(float Damage, FRadialDamageEvent const& RadialDamageEvent,
 	                                       AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -34,13 +35,13 @@ public:
 	UFUNCTION(BlueprintGetter)
 	class UCameraComponent* const& GetCamera() const { return Camera; }
 
-	// 캐릭터의 팀이 설정되는 경우 호출됩니다.
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnSetTeam(const EPlayerTeam& Team);
-
 	// 캐릭터의 자원 컴포넌트를 가져옵니다.
 	UFUNCTION(BlueprintGetter)
 	class UResourceComponent* const& GetResourceComponent() const { return ResourceComponent; }
+
+	// 캐릭터의 팀이 설정되는 경우 호출됩니다.
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnSetTeam(const EPlayerTeam& Team);
 
 	// 캐릭터의 자원 컴포넌트를 캐스팅하여 가져옵니다.
 	template <class T>
@@ -53,15 +54,19 @@ public:
 protected:
 	// 현재 시점의 서버 시간을 가져옵니다.
 	float GetServerTime() const;
-	
+
 	// 이 캐릭터의 고유한 최대 체력을 나타냅니다.
 	UPROPERTY(EditAnywhere)
 	float MaxHealth;
 
-	UPROPERTY(EditAnywhere, Replicated)
-	UResourceComponent* ResourceComponent;
+	// 이 캐릭터가 사용할 자원 컴포넌트 클래스를 지정합니다.
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UResourceComponent> ResourceClass;
 
 private:
+	UPROPERTY(VisibleAnywhere, Replicated)
+	UResourceComponent* ResourceComponent;
+
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	USpringArmComponent* SpringArm;
 

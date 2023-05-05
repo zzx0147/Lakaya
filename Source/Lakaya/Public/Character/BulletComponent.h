@@ -18,8 +18,11 @@ class LAKAYA_API UBulletComponent : public UResourceComponent
 
 public:
 	UBulletComponent();
-	virtual void InitializeComponent() override;
 
+protected:
+	virtual void OnRegister() override;
+
+public:
 	const uint16& GetBullets() const { return Bullets; }
 
 	//TODO: StatPlayerState에서 연관된 스탯을 참조하여 최대총알 개수가 증가되도록 변경해야 합니다.
@@ -52,6 +55,15 @@ protected:
 
 	UFUNCTION()
 	virtual void OnRep_MaxBullets();
+
+	UFUNCTION()
+	virtual void OnOwnerControllerChanged(APawn* Pawn, AController* OldController, AController* NewController);
+
+	// 총알 개수를 표시하는 위젯을 셋업합니다.
+	virtual void SetupBulletWidget(APlayerController* LocalController);
+
+	// 총알 개수를 표시하는 위젯을 제거합니다.
+	virtual void RemoveBulletWidget();
 
 public:
 	// 현재 총알이 변경되면 호출됩니다.
