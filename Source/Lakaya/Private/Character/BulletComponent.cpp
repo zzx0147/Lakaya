@@ -4,19 +4,38 @@
 #include "Character/BulletComponent.h"
 
 #include "Net/UnrealNetwork.h"
+#include "UI/GamePlayBulletWidget.h"
 
 UBulletComponent::UBulletComponent()
 {
-	Bullets = MaxBullets = 30;
+	MaxBullets = 30;
+}
+
+void UBulletComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+	Reload();
+	if (const auto Pawn = GetOwner<APawn>())
+		if (const auto LocalController = Pawn->GetController<APlayerController>();
+			LocalController && LocalController->IsLocalController())
+		{
+			BulletWidget = CreateWidget<UGamePlayBulletWidget>(LocalController, BulletWidgetClass);
+			if (BulletWidget.IsValid())
+			{
+				BulletWidget->SetMaxBullet(GetMaxBullets());
+				BulletWidget->SetRemainBullet(Bullets);
+
+				OnMaxBulletsChanged.AddUObject(BulletWidget.Get(), &UGamePlayBulletWidget::SetMaxBullet);
+				OnBulletsChanged.AddUObject(BulletWidget.Get(), &UGamePlayBulletWidget::SetRemainBullet);
+			}
+		}
 }
 
 void UBulletComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(UBulletComponent, Bullets);
-	DOREPLIFETIME(UBulletComponent, MaxBullets);
+	DOREPLIFETIME_CONDITION(UBulletComponent, Bullets, COND_OwnerOnly);
 }
-
 
 bool UBulletComponent::CostBullet(const uint16& Value)
 {

@@ -64,7 +64,7 @@ void ALakayaBasePlayerState::OnRep_PlayerName()
 void ALakayaBasePlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController();
+	if (const auto LocalController = Cast<APlayerController>(GetOwningController());
 		LocalController && LocalController->IsLocalController())
 	{
 		HealthWidget = CreateWidget<UGamePlayHealthWidget>(LocalController, HealthWidgetClass);
@@ -72,10 +72,10 @@ void ALakayaBasePlayerState::BeginPlay()
 		{
 			HealthWidget->AddToViewport();
 			HealthWidget->SetVisibility(ESlateVisibility::Hidden);
-			
+
 			OnHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetCurrentHealth);
 			OnMaxHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetMaximumHealth);
-			
+
 			HealthWidget->SetMaximumHealth(GetMaxHealth());
 			HealthWidget->SetCurrentHealth(Health);
 		}
@@ -155,15 +155,15 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 	if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
 	{
 		if (Team != EPlayerTeam::None) Character->OnSetTeam(Team);
-		HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		if (HealthWidget.IsValid()) HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 	else
 	{
-		HealthWidget->SetVisibility(ESlateVisibility::Hidden);
+		if (HealthWidget.IsValid()) HealthWidget->SetVisibility(ESlateVisibility::Hidden);
 	}
 
 	BroadcastMaxHealthChanged();
-	
+
 	if (HasAuthority())
 	{
 		// 캐릭터가 변경된 경우 그 캐릭터에 맞는 체력으로 재설정합니다.
