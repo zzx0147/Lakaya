@@ -28,7 +28,7 @@ class LAKAYA_API ALakayaBasePlayerState : public APlayerState
 
 public:
 	ALakayaBasePlayerState();
-	
+
 	virtual void PreInitializeComponents() override;
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
