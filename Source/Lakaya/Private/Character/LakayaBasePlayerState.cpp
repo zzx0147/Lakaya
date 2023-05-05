@@ -18,6 +18,7 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(ALakayaBasePlayerState, CharacterName);
 	DOREPLIFETIME(ALakayaBasePlayerState, DeathCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillCount);
+	DOREPLIFETIME(ALakayaBasePlayerState, KillStreak);
 }
 
 ALakayaBasePlayerState::ALakayaBasePlayerState()
@@ -52,7 +53,7 @@ float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const&
 
 	OnHealthChanged.Broadcast(Health);
 	NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
-	if (Health < 0.f) OnPlayerKilled.Broadcast(GetOwningController(), DamageCauser, EventInstigator);
+	if (Health <= 0.f) OnPlayerKilled.Broadcast(GetOwningController(), DamageCauser, EventInstigator);
 
 	return Damage;
 }
@@ -124,14 +125,27 @@ void ALakayaBasePlayerState::MakeAlive()
 	BroadcastWhenAliveStateChanged();
 }
 
-void ALakayaBasePlayerState::AddDeathCount()
+void ALakayaBasePlayerState::IncreaseDeathCount()
 {
 	OnDeathCountChanged.Broadcast(++DeathCount);
 }
 
-void ALakayaBasePlayerState::AddKillCount()
+void ALakayaBasePlayerState::IncreaseKillCount()
 {
 	OnKillCountChanged.Broadcast(++KillCount);
+}
+
+void ALakayaBasePlayerState::IncreaseKillStreak()
+{
+	OnKillStreakChanged.Broadcast(++KillStreak);
+}
+
+void ALakayaBasePlayerState::ResetKillStreak()
+{
+	// 변경될 필요가 없다면 리턴합니다.
+	if (KillStreak == 0) return;
+	KillStreak = 0;
+	OnKillStreakChanged.Broadcast(KillStreak);
 }
 
 float ALakayaBasePlayerState::GetServerTime() const
@@ -217,11 +231,16 @@ void ALakayaBasePlayerState::OnRep_KillCount()
 	OnDeathCountChanged.Broadcast(DeathCount);
 }
 
+void ALakayaBasePlayerState::OnRep_KillStreak()
+{
+	OnKillStreakChanged.Broadcast(KillStreak);
+}
+
 void ALakayaBasePlayerState::BroadcastWhenAliveStateChanged()
 {
 	const auto AliveState = IsAlive();
 
-	// 생존 상태가 변경된 것이 없는 경우 아무 것도 하지 않습니다.
+	// 생존 상태가 변경된 것이 없는 경우 아무것도 하지 않습니다.
 	if (bRecentAliveState == AliveState) return;
 
 	OnAliveStateChanged.Broadcast(AliveState);
