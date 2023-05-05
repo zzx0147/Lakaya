@@ -3,6 +3,8 @@
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 
 #include "Character/ArmedCharacter.h"
+#include "Character/InteractableCharacter.h"
+#include "Character/LakayaBasePlayerState.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -51,16 +53,10 @@ bool ALakayaDefaultPlayGameMode::ReadyToStartMatch_Implementation()
 	return Super::ReadyToStartMatch_Implementation();
 }
 
-void ALakayaDefaultPlayGameMode::DelayedStartMatch()
-{
-	bWaitToStart = true;
-}
-
 void ALakayaDefaultPlayGameMode::HandleMatchIsSelectCharacter()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("HandleMatchIsSelectCharacter()"));
 	FTimerHandle TimerHandler;
-	GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 5.0f, false);
+	GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 10.0f, false);
 }
 
 void ALakayaDefaultPlayGameMode::HandleMatchHasStarted()
@@ -124,6 +120,15 @@ bool ALakayaDefaultPlayGameMode::HasMatchStarted() const
 	return Super::HasMatchStarted();
 }
 
+UClass* ALakayaDefaultPlayGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
+{
+	if (const auto PlayerState = InController->GetPlayerState<ALakayaBasePlayerState>())
+		if (CharacterClasses.Contains(PlayerState->GetCharacterName()))
+			return CharacterClasses[PlayerState->GetCharacterName()];
+
+	return Super::GetDefaultPawnClassForController_Implementation(InController);
+}
+
 void ALakayaDefaultPlayGameMode::RespawnPlayer(AController* KilledController)
 {
 	TArray<AActor*> PlayerStartActors;
@@ -154,12 +159,12 @@ void ALakayaDefaultPlayGameMode::RespawnPlayer(AController* KilledController)
 		return;
 	}
 	
-	ADamageableCharacter* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
-	if (KilledDamageableCharacter == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("KilledDamageableCharacter is null."));
-		return;
-	}
-	
-	KilledDamageableCharacter->Respawn();
+	// ADamageableCharacter* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
+	// if (KilledDamageableCharacter == nullptr)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("KilledDamageableCharacter is null."));
+	// 	return;
+	// }
+	//
+	// KilledDamageableCharacter->Respawn();
 }

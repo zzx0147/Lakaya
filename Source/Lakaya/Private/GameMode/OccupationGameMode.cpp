@@ -1,12 +1,11 @@
 #include "GameMode/OccupationGameMode.h"
-#include "Character/ArmedCharacter.h"
-#include "Character/OccupationCharacter.h"
-#include "Character/OccupationPlayerState.h"
+#include "Character/InteractableCharacter.h"
+#include "Character/StatPlayerState.h"
 #include "GameFramework/PlayerStart.h"
 #include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include "PlayerController/BattlePlayerController.h"
 #include "PlayerController/InteractablePlayerController.h"
-#include "PlayerController/OccupationPlayerController.h"
 
 AOccupationGameMode::AOccupationGameMode()
 {
@@ -15,15 +14,15 @@ AOccupationGameMode::AOccupationGameMode()
 	MatchStartDelay = 5.f;
 	MatchEndDelay = 2.f;
 
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnObject(
-		TEXT("/Game/Characters/LakayaCharacter/Dummy/BP_PlayerDummy"));
-	if (!PlayerPawnObject.Succeeded())
-		UE_LOG(LogTemp, Error, TEXT("OccupationGameMode_Failed to find player pawn blueprint."));
+	// static ConstructorHelpers::FClassFinder<APawn> PlayerPawnObject(
+	// 	TEXT("/Game/Characters/LakayaCharacter/Dummy/BP_PlayerDummy"));
+	// if (!PlayerPawnObject.Succeeded())
+	// 	UE_LOG(LogTemp, Error, TEXT("OccupationGameMode_Failed to find player pawn blueprint."));
 
-	DefaultPawnClass = AOccupationCharacter::StaticClass();
-	// PlayerControllerClass = AInteractableCharacter::StaticClass();
+	DefaultPawnClass = AInteractableCharacter::StaticClass();
+	PlayerControllerClass = ABattlePlayerController::StaticClass();
 	PlayerControllerClass = AInteractablePlayerController::StaticClass();
-	PlayerStateClass = AOccupationPlayerState::StaticClass();
+	PlayerStateClass = AStatPlayerState::StaticClass();
 	GameStateClass = AOccupationGameState::StaticClass();
 }
 
@@ -100,8 +99,7 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 		{
 			if (OccupationGameState->PlayerArray.IsValidIndex(i))
 			{
-				AOccupationPlayerState* CollectorPlayerState = Cast<AOccupationPlayerState>(
-					OccupationGameState->PlayerArray[i]);
+				auto* CollectorPlayerState = Cast<ALakayaBasePlayerState>(OccupationGameState->PlayerArray[i]);
 				if (CollectorPlayerState == nullptr)
 				{
 					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
@@ -110,12 +108,12 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 
 				if (i % 2 == 0)
 				{
-					CollectorPlayerState->SetPlayerTeamState(EPlayerTeam::A);
+					CollectorPlayerState->SetTeam(EPlayerTeam::A);
 					UE_LOG(LogTemp, Warning, TEXT("A팀에 배정 되었습니다."));
 				}
 				else
 				{
-					CollectorPlayerState->SetPlayerTeamState(EPlayerTeam::B);
+					CollectorPlayerState->SetTeam(EPlayerTeam::B);
 					UE_LOG(LogTemp, Warning, TEXT("B팀에 배정 되었습니다."));
 				}
 			}
@@ -137,7 +135,7 @@ void AOccupationGameMode::UpdateTeamScoreTick()
 
 void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 {
-	const AOccupationPlayerState* CollectorPlayerState = Cast<AOccupationPlayerState>(KilledController->PlayerState);
+	const auto* CollectorPlayerState = Cast<ALakayaBasePlayerState>(KilledController->PlayerState);
 	if (CollectorPlayerState == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("LakayaDefaultPlayGameMode_CollectorPlayerState is null."));
@@ -145,7 +143,7 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 	}
 
 	FName SpawnTag;
-	switch (CollectorPlayerState->GetPlayerTeamState())
+	switch (CollectorPlayerState->GetTeam())
 	{
 	case EPlayerTeam::A:
 		SpawnTag = FName("ATeamSpawnZone");
@@ -190,21 +188,14 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 		return;
 	}
 
-	ADamageableCharacter* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
-	if (KilledDamageableCharacter == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("KilledDamageableCharacter is null."));
-		return;
-	}
-
-	KilledDamageableCharacter->Respawn();
-}
-
-void AOccupationGameMode::FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation)
-{
-	if (const auto Character = NewPlayer->GetPawn<ALakayaBaseCharacter>())
-		Character->SetupCharacter(TEXT("Test"));
-	Super::FinishRestartPlayer(NewPlayer, StartRotation);
+	// auto* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
+	// if (KilledDamageableCharacter == nullptr)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("KilledDamageableCharacter is null."));
+	// 	return;
+	// }
+	//
+	// KilledDamageableCharacter->Respawn();
 }
 
 void AOccupationGameMode::AddOccupyObject(const EPlayerTeam& Team)
@@ -227,7 +218,7 @@ void AOccupationGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
 	{
 		if (OccupationGameState->PlayerArray.IsValidIndex(i))
 		{
-			const AOccupationPlayerState* CollectorPlayerState = Cast<AOccupationPlayerState>(
+			const auto* CollectorPlayerState = Cast<ALakayaBasePlayerState>(
 				OccupationGameState->PlayerArray[i]);
 			if (CollectorPlayerState == nullptr)
 			{
@@ -243,7 +234,7 @@ void AOccupationGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
 			}
 
 			FName SpawnTag;
-			switch (CollectorPlayerState->GetPlayerTeamState())
+			switch (CollectorPlayerState->GetTeam())
 			{
 			case EPlayerTeam::A:
 				SpawnTag = FName("ATeamSpawnZone");

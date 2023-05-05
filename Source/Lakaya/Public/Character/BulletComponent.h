@@ -19,19 +19,23 @@ class LAKAYA_API UBulletComponent : public UResourceComponent
 public:
 	UBulletComponent();
 
-	
-	
+protected:
+	virtual void OnRegister() override;
+
+public:
 	const uint16& GetBullets() const { return Bullets; }
+
+	//TODO: StatPlayerState에서 연관된 스탯을 참조하여 최대총알 개수가 증가되도록 변경해야 합니다.
 	const uint16& GetMaxBullets() const { return MaxBullets; }
 
 	/**
 	 * @brief 총알을 차감하고, 그에 따른 함수를 실행합니다.
 	 * @param Value 총알을 차감할 양입니다.
-	 * @param Caller 멤버함수를 실행할 객체입니다. 보통 this를 넘겨주면 됩니다.
+	 * @param Caller 멤버함수가 실행될 객체입니다. 보통 this를 넘겨주면 됩니다.
 	 * @param OnSuccess 차감에 성공하면 실행될 멤버함수입니다.
 	 * @param OnFailed 차감에 실패하면 실행될 멤버함수입니다.
 	 */
-	template <class UserClass>
+	template <class UserClass = nullptr_t>
 	void CostBullet(const uint16& Value, UserClass* const& Caller = nullptr,
 	                TMemberFunction<UserClass> OnSuccess = nullptr, TMemberFunction<UserClass> OnFailed = nullptr);
 
@@ -52,6 +56,15 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_MaxBullets();
 
+	UFUNCTION()
+	virtual void OnOwnerControllerChanged(APawn* Pawn, AController* OldController, AController* NewController);
+
+	// 총알 개수를 표시하는 위젯을 셋업합니다.
+	virtual void SetupBulletWidget(APlayerController* LocalController);
+
+	// 총알 개수를 표시하는 위젯을 제거합니다.
+	virtual void RemoveBulletWidget();
+
 public:
 	// 현재 총알이 변경되면 호출됩니다.
 	FBulletSignature OnBulletsChanged;
@@ -59,12 +72,20 @@ public:
 	// 최대 총알 개수가 변경되면 호출됩니다.
 	FBulletSignature OnMaxBulletsChanged;
 
+protected:
+	// 최대 탄창 크기를 지정합니다. 최종적인 탄창 크기는 아니며, 버프로 증가되는 탄창 크기는 별도로 계산됩니다.
+	UPROPERTY(EditAnywhere)
+	uint16 MaxBullets;
+
+	// 총알 개수를 표시하는 위젯의 클래스를 지정합니다.
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UGamePlayBulletWidget> BulletWidgetClass;
+
 private:
-	UPROPERTY(ReplicatedUsing=OnRep_Bullets)
+	UPROPERTY(ReplicatedUsing=OnRep_Bullets, Transient)
 	uint16 Bullets;
 
-	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_MaxBullets)
-	uint16 MaxBullets;
+	TWeakObjectPtr<UGamePlayBulletWidget> BulletWidget;
 };
 
 template <class UserClass>

@@ -19,17 +19,23 @@ DECLARE_EVENT_TwoParams(ALakayaBasePlayerState, FCharacterNameChangeSignature, A
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FCountInfoSignature, const uint16&)
 
+DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FPlayerNameSignature, const FString&)
+
 UCLASS()
 class LAKAYA_API ALakayaBasePlayerState : public APlayerState
 {
 	GENERATED_BODY()
 
 public:
+	ALakayaBasePlayerState();
+
 	virtual void PreInitializeComponents() override;
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
+	virtual void OnRep_PlayerName() override;
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void CopyProperties(APlayerState* PlayerState) override;
 
 public:
@@ -79,9 +85,14 @@ public:
 	// 플레이어의 누적 킬 횟수를 늘립니다.
 	void AddKillCount();
 
+	const FName& GetCharacterName() const { return CharacterName; }
+
 protected:
 	// 현재 서버의 시간을 가져옵니다.
 	float GetServerTime() const;
+
+	// OnMaxHealthChanged 이벤트를 호출합니다.
+	void BroadcastMaxHealthChanged() const;
 
 	/**
 	 * @brief 폰의 ShouldTakeDamage를 모방한 함수입니다. 데미지를 받을지 여부를 판단합니다.
@@ -96,6 +107,7 @@ protected:
 	 * @param NewPawn 새로 어태치된 폰입니다.
 	 * @param OldPawn 이제 어태치가 해제된 폰입니다.
 	 */
+	UFUNCTION()
 	virtual void OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn);
 
 	// 최대 체력을 가져옵니다.
@@ -140,8 +152,11 @@ private:
 	void NoticePlayerHit(const FName& CauserName, const FVector& CauserLocation, const float& Damage);
 
 public:
-	// 현재 체력이 변경되는 경우 호출됩니다. 매개변수로 현재 체력을 받습니다.
+	// 현재 체력이 변경되는 경우 호출됩니다. 매개변수로 변경된 현재 체력을 받습니다.
 	FHealthChangeSignature OnHealthChanged;
+
+	// 최대 체력이 변경되는 경우 호출됩니다. 매개변수로 변경된 전체 체력을 받습니다.
+	FHealthChangeSignature OnMaxHealthChanged;
 
 	// 현재 팀이 변경되는 경우 호출됩니다. 매개변수로 현재 팀을 받습니다.
 	FTeamSignature OnTeamChanged;
@@ -160,6 +175,13 @@ public:
 
 	// 플레이어의 누적 킬 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 킬 횟수를 받습니다.
 	FCountInfoSignature OnKillCountChanged;
+
+	// 플레이어의 이름이 변경될 때 호출됩니다. 매개변수로 변경된 플레이어의 이름을 받습니다.
+	FPlayerNameSignature OnPlayerNameChanged;
+
+protected:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UGamePlayHealthWidget> HealthWidgetClass;
 
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Health, Transient)
@@ -182,6 +204,7 @@ private:
 
 	FTimerHandle RespawnTimer;
 	bool bRecentAliveState;
+	TWeakObjectPtr<UGamePlayHealthWidget> HealthWidget;
 };
 
 template <class T>

@@ -6,6 +6,7 @@
 #include "Character/LakayaBaseCharacter.h"
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
+#include "UI/GamePlayHealthWidget.h"
 
 void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -17,6 +18,16 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(ALakayaBasePlayerState, CharacterName);
 	DOREPLIFETIME(ALakayaBasePlayerState, DeathCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillCount);
+}
+
+ALakayaBasePlayerState::ALakayaBasePlayerState()
+{
+	CharacterName = TEXT("Rena");
+
+	static ConstructorHelpers::FClassFinder<UGamePlayHealthWidget> HealthFinder(
+		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
+
+	if (HealthFinder.Succeeded()) HealthWidgetClass = HealthFinder.Class;
 }
 
 void ALakayaBasePlayerState::PreInitializeComponents()
@@ -46,6 +57,33 @@ float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const&
 	return Damage;
 }
 
+void ALakayaBasePlayerState::OnRep_PlayerName()
+{
+	Super::OnRep_PlayerName();
+	OnPlayerNameChanged.Broadcast(GetPlayerName());
+}
+
+void ALakayaBasePlayerState::BeginPlay()
+{
+	Super::BeginPlay();
+	if (const auto LocalController = Cast<APlayerController>(GetOwningController());
+		LocalController && LocalController->IsLocalController())
+	{
+		HealthWidget = CreateWidget<UGamePlayHealthWidget>(LocalController, HealthWidgetClass);
+		if (HealthWidget.IsValid())
+		{
+			HealthWidget->AddToViewport();
+			HealthWidget->SetVisibility(ESlateVisibility::Hidden);
+
+			OnHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetCurrentHealth);
+			OnMaxHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetMaximumHealth);
+
+			HealthWidget->SetMaximumHealth(GetMaxHealth());
+			HealthWidget->SetCurrentHealth(Health);
+		}
+	}
+}
+
 void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
 {
 	Super::CopyProperties(PlayerState);
@@ -69,7 +107,7 @@ bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) con
 void ALakayaBasePlayerState::SetTeam(const EPlayerTeam& DesireTeam)
 {
 	Team = DesireTeam;
-	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->OnSetTeam(Team);
+	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->SetTeam(Team);
 	OnTeamChanged.Broadcast(Team);
 }
 
@@ -101,6 +139,11 @@ float ALakayaBasePlayerState::GetServerTime() const
 	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 }
 
+void ALakayaBasePlayerState::BroadcastMaxHealthChanged() const
+{
+	OnMaxHealthChanged.Broadcast(GetMaxHealth());
+}
+
 bool ALakayaBasePlayerState::ShouldTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
                                               AController* EventInstigator, AActor* DamageCauser)
 {
@@ -111,9 +154,17 @@ bool ALakayaBasePlayerState::ShouldTakeDamage(float DamageAmount, FDamageEvent c
 
 void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
 {
-	if (Team != EPlayerTeam::None)
-		if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
-			Character->OnSetTeam(Team);
+	if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
+	{
+		if (Team != EPlayerTeam::None) Character->SetTeam(Team);
+		if (HealthWidget.IsValid()) HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	else
+	{
+		if (HealthWidget.IsValid()) HealthWidget->SetVisibility(ESlateVisibility::Hidden);
+	}
+
+	BroadcastMaxHealthChanged();
 
 	if (HasAuthority())
 	{
@@ -142,7 +193,7 @@ void ALakayaBasePlayerState::OnRep_Health()
 
 void ALakayaBasePlayerState::OnRep_Team()
 {
-	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->OnSetTeam(Team);
+	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->SetTeam(Team);
 	OnTeamChanged.Broadcast(Team);
 }
 

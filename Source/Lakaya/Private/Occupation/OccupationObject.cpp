@@ -1,5 +1,6 @@
 #include "Occupation/OccupationObject.h"
 #include "Character/InteractableCharacter.h"
+#include "Character/LakayaBasePlayerState.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -62,7 +63,13 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	// 	return;
 	// }
 #pragma endregion
-	
+	auto* OccupationPlayerState = Cast<ALakayaBasePlayerState>(Caller->GetController()->PlayerState);
+	if (OccupationPlayerState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
+		return;
+	}
+
 	// 아무도 상호작용을 하지 않고 있는 경우
 	if (InteractingPawn == nullptr)
 	{
@@ -91,6 +98,27 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 			}
 		}
 	}
+
+#pragma region TODO : ObjectOwner
+	// 소유자 팀에서 상호작용 할 경우 막아두기
+	// FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetTeam());
+	// if (PlayerStateString.Equals("EPlayerTeam::A", ESearchCase::IgnoreCase))
+	// {
+	// 	if (ObjectOwner == EPlayerTeam::A)
+	// 	{
+	// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("이미 본인 소유의 점령 오브젝트입니다."));
+	// 		return;
+	// 	}
+	// }
+	// else if (PlayerStateString.Equals("EPlayerTeam::B", ESearchCase::IgnoreCase))
+	// {
+	// 	if (ObjectOwner == EPlayerTeam::B)
+	// 	{
+	// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
+	// 		return;
+	// 	}
+	// }
+#pragma endregion
 
 #pragma region TODO : ObjectOwner
 	// 소유자 팀에서 상호작용 할 경우 막아두기
@@ -176,6 +204,85 @@ void AOccupationObject::CharacterMovable(APawn* Caller)
 		UE_LOG(LogTemp, Warning, TEXT("CastedCaller is null."));
 		return;
 	}
+
+	// InteractionStop 기능에서 타이머가 이미 만료되었는지를 확인해줍니다.
+	// 그렇지 않으 경우 타이머를 취소.
+	if (GetWorldTimerManager().IsTimerActive(InteractionTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(InteractionTimerHandle);
+	}
+
+	// 끝났을 때 시점의 시간을 가져옵니다.
+	// InteractingStopTime = UGameplayStatics::GetRealTimeSeconds(this);
+
+	// 상호작용한 시간을 가져옵니다.
+	// float InteractionDuration = InteractingStopTime - InteractingStartTime;
+	
+	// UE_LOG(LogTemp, Warning, TEXT("InteractingStopTime : %f seconds"), InteractingStopTime);
+	// UE_LOG(LogTemp, Warning, TEXT("InteractingStartTime : %f seconds"), InteractingStartTime);
+	// UE_LOG(LogTemp, Warning, TEXT("Interaction Duration : %f seconds"), InteractionDuration);
+
+	// if (InteractionDuration > MaxInteractionDuration)
+	// {
+	// 	// 상호작용에 성공했을 경우.
+	// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction Success"));
+	//
+	// 	auto* OccupationPlayerState = Cast<ALakayaBasePlayerState>(Caller->GetController()->PlayerState);
+	// 	if (OccupationPlayerState == nullptr)
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
+	// 		return;
+	// 	}
+	//
+	// 	AOccupationGameMode* OccupationGameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
+	// 	if (OccupationGameMode == nullptr)
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationGameMode is null."));
+	// 		return;
+	// 	}
+	//
+	// 	FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetTeam());
+	// 	if (PlayerStateString.Equals("EPlayerTeamState::None", ESearchCase::IgnoreCase))
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("Suspected player captured successfully."));
+	// 		return;
+	// 	}
+	// 	else if (PlayerStateString.Equals("EPlayerTeamState::A", ESearchCase::IgnoreCase))
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
+	//
+	// 		if (ObjectOwner == EPlayerTeam::B)
+	// 			OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
+	//
+	// 		ObjectOwner = EPlayerTeam::A;
+	// 		OccupationGameMode->AddOccupyObject(EPlayerTeam::A);
+	// 		SetTeamObject(ObjectOwner);
+	// 		return;
+	// 	}
+	// 	else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
+	//
+	// 		if (ObjectOwner == EPlayerTeam::A)
+	// 			OccupationGameMode->SubOccupyObject(EPlayerTeam::A);
+	// 		
+	// 		ObjectOwner = EPlayerTeam::B;
+	// 		OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
+	// 		SetTeamObject(ObjectOwner);
+	// 		return;
+	// 	}
+	// 	else
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("Error ! Error ! Error !"));
+	// 		return;
+	// 	}
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("Interaction Failed."));
+	// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction Failed."));
+	// 	return;
+	// }
 }
 
 void AOccupationObject::InteractionSuccess(APawn* Caller)

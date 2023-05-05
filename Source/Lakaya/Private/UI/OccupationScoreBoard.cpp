@@ -68,9 +68,9 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 	});
 	LakayaState->OnDeathCountChanged.AddUObject(Element, &UScoreBoardElement::SetDeathCount);
 	LakayaState->OnKillCountChanged.AddUObject(Element, &UScoreBoardElement::SetKillCount);
+	LakayaState->OnPlayerNameChanged.AddUObject(Element, &UScoreBoardElement::SetPlayerName);
 
-	//TODO: 플레이어 이름이 잘 표시되는지 검증 필요. 리플리케이트가 늦어서 플레이어 이름이 제대로 표시되지 않는다면 플레이어 이름 변경 이벤트 선언 필요
-	Element->SetPlayerName(FText::FromString(LakayaState->GetPlayerName()));
+	Element->SetPlayerName(LakayaState->GetPlayerName());
 	Element->SetDeathCount(LakayaState->GetDeathCount());
 	Element->SetKillCount(LakayaState->GetKillCount());
 }

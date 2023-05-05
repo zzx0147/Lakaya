@@ -32,7 +32,6 @@ public:
 protected:
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
-	virtual void KillCharacter(AController* EventInstigator, AActor* DamageCauser) override;
 
 public:
 	// 현재 인터렉션이 가능한지 판별합니다.

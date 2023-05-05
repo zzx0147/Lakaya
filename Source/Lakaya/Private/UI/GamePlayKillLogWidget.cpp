@@ -2,7 +2,6 @@
 
 #include "UI/GamePlayKillLogWidget.h"
 
-#include "Character/DamageableCharacter.h"
 #include "Components/VerticalBox.h"
 #include "GameMode/OccupationGameState.h"
 #include "UI/KillLogElement.h"
@@ -57,5 +56,5 @@ void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController
 	else Element = Cast<UKillLogElement>(KillLogBox->GetChildAt(InitialChildCount));
 
 	KillLogBox->ShiftChild(KillLogBox->GetChildrenCount(), Element);
-	Element->SetKillLog(Cast<ADamageableCharacter>(Causer), Cast<ACharacter>(KilledActor));
+	// Element->SetKillLog(Cast<ADamageableCharacter>(Causer), Cast<ACharacter>(KilledActor));
 }

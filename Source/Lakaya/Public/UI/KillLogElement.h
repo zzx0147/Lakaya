@@ -25,7 +25,7 @@ public:
 	 * @param Attacker Victim을 처치한 캐릭터입니다.
 	 * @param Victim 처치당한 캐릭터입니다.
 	 */
-	void SetKillLog(class ADamageableCharacter* Attacker, class ACharacter* Victim);
+	void SetKillLog(ACharacter* Attacker, class ACharacter* Victim);
 
 	// 킬 로그를 즉시 만료시켜 비활성화 합니다.
 	void ExpireInstant();

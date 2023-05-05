@@ -1,8 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Character/InteractableCharacter.h"
-
 #include "Interactable/Interactable.h"
 #include "Net/UnrealNetwork.h"
 #include "Occupation/OccupationObject.h"
@@ -43,11 +39,11 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	}
 }
 
-void AInteractableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
-{
-	Super::KillCharacter(EventInstigator, DamageCauser);
-	if (InteractingActor.IsValid()) Cast<AInteractable>(InteractingActor)->OnCharacterDead(this);
-}
+// void AInteractableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
+// {
+// 	Super::KillCharacter(EventInstigator, DamageCauser);
+// 	if (InteractingActor.IsValid()) Cast<AInteractable>(InteractingActor)->OnCharacterDead(this);
+// }
 
 bool AInteractableCharacter::ShouldInteractStart()
 {
