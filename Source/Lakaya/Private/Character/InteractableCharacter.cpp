@@ -73,12 +73,10 @@ bool AInteractableCharacter::ShouldInteractStart()
 			
 		bInteractionRequested = true;
 		RequestInteractionStart(GetServerTime(), InteractableActor.Get());
-		// UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStart Completed."));
 		return true;
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStart_InValid is null."));
 		return false;
 	}
 }
@@ -95,12 +93,10 @@ bool AInteractableCharacter::ShouldInteractStop()
 		
 		bInteractionRequested = false;
 		RequestInteractionStop(GetServerTime(), InteractableActor.Get());
-		// UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStop Completed."));
 		return true;
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStop_InValid is null."));
 		return false;
 	}
 }

@@ -266,6 +266,11 @@ void AOccupationObject::OnInteractionFinish(APawn* Caller)
 	InteractableCharacter->InitializeInteraction();
 }
 
+void AOccupationObject::OnRep_BroadCastTeamObject()
+{
+	
+}
+
 #pragma region TODO : ObjectOwner
 // void AOccupationObject::OnRep_BroadCastTeamObject()
 // {

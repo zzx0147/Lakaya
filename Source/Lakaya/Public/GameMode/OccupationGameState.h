@@ -46,13 +46,15 @@ public:
 	 */
 	void AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore);
 
+public:
 	// 해당 팀의 점수를 받아옵니다.
-	float GetTeamScore(const EPlayerTeam& Team) const;
+	FORCEINLINE float GetTeamScore(const EPlayerTeam& Team) const;
 
-	const float& GetMaxScore() const { return MaxScore; }
+	// 최대 점수를 가져옵니다.
+	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }
 
-	UFUNCTION()
-	const EPlayerTeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
+	// 승리자의 정보를 가져옵니다.
+	FORCEINLINE const EPlayerTeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
 
 	// 현재 시간을 기준으로 매칭 시간을 설정합니다. 반드시 서버에서 호출해야 합니다.
 	void SetMatchTime();

@@ -77,8 +77,7 @@ void AOccupationGameMode::HandleMatchHasStarted()
 	// 플레이어 인원만큼 위치를 조정해줍니다. (각각의 팀 위치에서)
 	PlayerInitializeSetLocation(OccupationGameState->PlayerArray.Num());
 
-	GetWorldTimerManager().SetTimer(UpdateScoreTimer, this, &AOccupationGameMode::UpdateTeamScoreTick, ScoreUpdateDelay,
-	                                true);
+	GetWorldTimerManager().SetTimer(UpdateScoreTimer, this, &AOccupationGameMode::UpdateTeamScoreTick, ScoreUpdateDelay,true);
 
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasStarted"));
 }

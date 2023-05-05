@@ -31,8 +31,6 @@ private:
 	virtual void OnInteractionStop(const float& Time, APawn* Caller) override;
 	virtual void OnCharacterDead(APawn* Caller) override;
 
-private:
-	// 플레이어가 움직일 수 있도록 해줍니다.
 	void CharacterMovable(APawn* Caller);
 
 	// 플레이어의 움직임을 제한합니다.
@@ -43,10 +41,14 @@ private:
 
 	// 상호작용이 끝났습니다.
 	void OnInteractionFinish(APawn* Caller);
+
+public:
+	void SetTeamObject(const EObjectTeam& Team);
 	
 private:
-	const float MaxInteractionDuration = 3;
-
+	UFUNCTION()
+	void OnRep_BroadCastTeamObject();
+	
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UCapsuleComponent* Trigger;
@@ -57,21 +59,16 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Trigger")
 	USphereComponent* TriggerSphere;
 
-#pragma region TODO : ObjectOwner
-	// UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject, Transient)
-	// EPlayerTeam ObjectOwner;
-
-	// UFUNCTION()
-	// void OnRep_BroadCastTeamObject();
-	
-	// void SetTeamObject(const EPlayerTeam& Team);
-#pragma endregion 
 private:
-	FTimerHandle InteractionTimerHandle;
-	FTimerHandle InteractionStateHandle;
+	UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject)
+	EObjectTeam ObjectTeam = EObjectTeam::None;
 
 private:
 	TWeakObjectPtr<class AInteractableCharacter> InteractingCharacter;
 	APawn* InteractingPawn;
 	float FirstCallerTime = 0;
+	const float MaxInteractionDuration = 3;
+
+	FTimerHandle InteractionTimerHandle;
+	FTimerHandle InteractionStateHandle;
 };

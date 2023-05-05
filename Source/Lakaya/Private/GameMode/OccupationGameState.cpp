@@ -61,6 +61,9 @@ void AOccupationGameState::AddTeamScore(const EPlayerTeam& Team, const float& Ad
 {
 	if (Team == EPlayerTeam::A) ATeamScore += AdditiveScore;
 	else if (Team == EPlayerTeam::B) BTeamScore += AdditiveScore;
+
+	UE_LOG(LogTemp, Warning, TEXT("ATeamScore : %f"), ATeamScore);
+	UE_LOG(LogTemp, Warning, TEXT("BTeamScore : %f"), BTeamScore);
 }
 
 float AOccupationGameState::GetTeamScore(const EPlayerTeam& Team) const
