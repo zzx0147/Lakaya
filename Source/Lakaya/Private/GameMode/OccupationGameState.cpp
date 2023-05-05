@@ -18,7 +18,6 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 AOccupationGameState::AOccupationGameState()
 {
-	MaxPlayers = GetMaximumPlayers();
 	MaxScore = 100.f;
 	MatchDuration = 180.f;
 }

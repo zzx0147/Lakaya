@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "LakayaBaseCharacter.h"
-#include "MovableCharacter.generated.h"
+#include "StatPlayerState.h"
+#include "BuffPlayerState.generated.h"
 
 UCLASS()
-class LAKAYA_API AMovableCharacter : public ALakayaBaseCharacter
+class LAKAYA_API ABuffPlayerState : public AStatPlayerState
 {
 	GENERATED_BODY()
 };

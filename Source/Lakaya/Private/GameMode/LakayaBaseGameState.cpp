@@ -38,11 +38,6 @@ void ALakayaBaseGameState::BeginPlay()
 			{
 				CharacterSelectWidget->AddToViewport();
 				CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
-				auto LocalPlayerState = GetWorld()->GetFirstPlayerController()->GetPlayerState<ALakayaBasePlayerState>();
-				if (LocalPlayerState != nullptr)
-				{
-					CharacterSelectWidget->OnChangeSelectedCharacter.AddUObject(LocalPlayerState, &ALakayaBasePlayerState::RequestCharacterChange);
-				}
 			}
 		}
 
@@ -53,6 +48,7 @@ void ALakayaBaseGameState::BeginPlay()
 			{
 				ScoreBoard->AddToViewport();
 				ScoreBoard->SetVisibility(ESlateVisibility::Hidden);
+				for (auto& Player : PlayerArray) ScoreBoard->RegisterPlayer(Player);
 			}
 		}
 	}
@@ -89,6 +85,13 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 {
 	LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
 	CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
+
+	if(const auto LocalController = GetWorld()->GetFirstPlayerController())
+		if (const auto LocalPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
+		{
+			CharacterSelectWidget->OnChangeSelectedCharacter.Clear();
+			CharacterSelectWidget->OnChangeSelectedCharacter.AddUObject(LocalPlayerState, &ALakayaBasePlayerState::RequestCharacterChange);
+		}
 }
 
 void ALakayaBaseGameState::OnRep_MatchState()

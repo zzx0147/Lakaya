@@ -42,7 +42,6 @@ public:
 	virtual ELifetimeCondition
 	AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const override;
 
-public:
 	/**
 	 * @brief 캐릭터의 능력을 사용합니다. (키 누름)
 	 * @param Kind 사용할 능력을 특정합니다.
@@ -56,6 +55,7 @@ public:
 	void StopAbility(const EAbilityKind& Kind);
 
 	// 캐릭터의 능력들을 가져옵니다. 이렇게 가져온 배열은 EAbilityKind를 통해 특정할 수 있습니다.
+	UFUNCTION(BlueprintGetter)
 	const TArray<class UCharacterAbility*>& GetAbilities() const { return Abilities; }
 
 protected:
