@@ -59,6 +59,7 @@ void ABuffPlayerState::OnRep_KillStreakBuffLevel()
 
 void ABuffPlayerState::SetKillStreakBuffLevel(const uint8& NewLevel)
 {
+	if (KillStreakBuffLevel == NewLevel) return;
 	KillStreakBuffLevel = NewLevel;
 	OnKillStreakBuffLevelChanged.Broadcast(KillStreakBuffLevel);
 }
