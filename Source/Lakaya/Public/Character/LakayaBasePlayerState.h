@@ -46,7 +46,8 @@ public:
 	virtual void SetTeam(const EPlayerTeam& DesireTeam);
 
 	// 플레이어의 현재 팀 정보를 가져옵니다.
-	FORCEINLINE const EPlayerTeam& GetTeam() const { return Team; }
+	UFUNCTION(BlueprintGetter)
+	const EPlayerTeam& GetTeam() const { return Team; }
 
 	/**
 	 * @brief 플레이어가 예약된 시간에 부활하도록 합니다.
@@ -60,7 +61,8 @@ public:
 	void SetRespawnTimer(const float& ReservedRespawnTime, T* Object = nullptr, void (T::*Function)() = nullptr);
 
 	// 이 플레이어의 생존 여부를 가져옵니다.
-	bool IsAlive() const;
+	UFUNCTION(BlueprintGetter)
+	const bool& IsAlive() const { return bRecentAliveState; }
 
 	// 이 플레이어를 생존상태로 변경합니다.
 	void MakeAlive();
@@ -153,8 +155,16 @@ protected:
 	virtual void OnRep_KillStreak();
 
 private:
-	// 생존 상태가 변경되었다면 이벤트를 호출하고, 그렇지 않다면 아무 것도 하지 않습니다.
-	void BroadcastWhenAliveStateChanged();
+	/**
+	 * @brief RespawnTime을 통해 생존 상태를 판별하고, 생존상태가 변경되었다면 업데이트합니다.
+	 * @param CurrentTime 생존 판별 기준이 될 현재 시간입니다.
+	 */
+	void UpdateAliveStateWithRespawnTime(const float& CurrentTime);
+
+	// 생존 상태를 강제로 지정합니다. 생존 상태는 기본적으로 RespawnTime을 통해 추론되지만
+	// GetServerTime()의 시간오차로 인해 RespawnTimer가 콜백된 시점에
+	// RespawnTime을 통해 추론한 생존상태가 여전히 false일 수 있는 문제를 회피하기 위해 만들어졌습니다.
+	void SetAliveState(const bool& AliveState);
 
 	/**
 	 * @brief 플레이어가 피격됐음을 오너 클라이언트에게 알려줍니다.
@@ -231,12 +241,13 @@ template <class T>
 void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, T* Object, void (T::*Function)())
 {
 	RespawnTime = ReservedRespawnTime;
-	BroadcastWhenAliveStateChanged();
+	const auto CurrentTime = GetServerTime();
+	UpdateAliveStateWithRespawnTime(CurrentTime);
 
 	// 만약 RespawnTime이 현재 시간보다 낮게 설정된 경우 이 타이머는 설정되지 않습니다.
 	GetWorldTimerManager().SetTimer(RespawnTimer, [this, Object, Function]
 	{
-		BroadcastWhenAliveStateChanged();
+		SetAliveState(true);
 		if (Object && Function) (Object.*Function)();
-	}, ReservedRespawnTime - GetServerTime(), false);
+	}, ReservedRespawnTime - CurrentTime, false);
 }

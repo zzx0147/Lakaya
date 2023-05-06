@@ -6,7 +6,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "Character/MovableCharacter.h"
 #include "GameFramework/Character.h"
 
 AMovablePlayerController::AMovablePlayerController()
@@ -43,20 +42,16 @@ void AMovablePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubs
 	InputSubsystem->AddMappingContext(MovementContext, MovementContextPriority);
 }
 
-void AMovablePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, APawn* NewPawn)
-{
-	MovableCharacter = Cast<AMovableCharacter>(NewPawn);
-	if (!MovableCharacter.IsValid()) UE_LOG(LogInit, Warning, TEXT("Possessed pawn was not AMovableCharacter"));
-}
-
 void AMovablePlayerController::Move(const FInputActionValue& Value)
 {
-	if (!MovableCharacter.IsValid()) return;
-	const auto Vector = Value.Get<FVector2D>();
-	const FRotationMatrix Matrix((FRotator(0, GetControlRotation().Yaw, 0)));
+	if (const auto LocalCharacter = GetCharacter())
+	{
+		const auto Vector = Value.Get<FVector2D>();
+		const FRotationMatrix Matrix((FRotator(0, GetControlRotation().Yaw, 0)));
 
-	MovableCharacter->AddMovementInput(Matrix.GetUnitAxis(EAxis::X), Vector.Y);
-	MovableCharacter->AddMovementInput(Matrix.GetUnitAxis(EAxis::Y), Vector.X);
+		LocalCharacter->AddMovementInput(Matrix.GetUnitAxis(EAxis::X), Vector.Y);
+		LocalCharacter->AddMovementInput(Matrix.GetUnitAxis(EAxis::Y), Vector.X);
+	}
 }
 
 void AMovablePlayerController::Look(const FInputActionValue& Value)
@@ -68,5 +63,5 @@ void AMovablePlayerController::Look(const FInputActionValue& Value)
 
 void AMovablePlayerController::Jump(const FInputActionValue& Value)
 {
-	if (MovableCharacter.IsValid()) MovableCharacter->Jump();
+	if (const auto LocalCharacter = GetCharacter()) LocalCharacter->Jump();
 }
