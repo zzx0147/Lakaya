@@ -16,6 +16,7 @@ void ABuffPlayerState::IncreaseKillStreak()
 {
 	Super::IncreaseKillStreak();
 
+	// TODO: 다른 플레이어 처치시 호출되는 이벤트 함수가 따로 생긴다면 그쪽으로 옮겨져야 합니다.
 	// 캐릭터로부터 연속처치시 적용될 버프 정보를 가져와서 버프를 적용합니다.
 	if (const auto Character = GetPawn<ALakayaBaseCharacter>())
 		if (auto& Buffs = Character->GetKillStreakBuffs(); Buffs.IsValidIndex(KillStreakBuffLevel))

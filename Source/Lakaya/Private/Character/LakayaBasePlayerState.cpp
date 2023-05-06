@@ -24,6 +24,7 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 ALakayaBasePlayerState::ALakayaBasePlayerState()
 {
 	CharacterName = TEXT("Rena");
+	bRecentAliveState = true;
 
 	static ConstructorHelpers::FClassFinder<UGamePlayHealthWidget> HealthFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
@@ -35,7 +36,6 @@ void ALakayaBasePlayerState::PreInitializeComponents()
 {
 	Super::PreInitializeComponents();
 	OnPawnSet.AddUniqueDynamic(this, &ALakayaBasePlayerState::OnPawnSetCallback);
-	bRecentAliveState = true;
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -112,17 +112,10 @@ void ALakayaBasePlayerState::SetTeam(const EPlayerTeam& DesireTeam)
 	OnTeamChanged.Broadcast(Team);
 }
 
-bool ALakayaBasePlayerState::IsAlive() const
-{
-	// 부활시간이 설정되지 않았거나(0.f), 부활시간이 지난 경우 생존으로 간주합니다.
-	// 반대로 부활시간이 음수이거나, 아직 부활시간을 지나지 않은 경우 사망으로 간주합니다.
-	return RespawnTime >= 0.f && RespawnTime < GetServerTime();
-}
-
 void ALakayaBasePlayerState::MakeAlive()
 {
 	RespawnTime = 0.f;
-	BroadcastWhenAliveStateChanged();
+	SetAliveState(true);
 }
 
 void ALakayaBasePlayerState::IncreaseDeathCount()
@@ -213,7 +206,12 @@ void ALakayaBasePlayerState::OnRep_Team()
 
 void ALakayaBasePlayerState::OnRep_RespawnTime()
 {
-	BroadcastWhenAliveStateChanged();
+	const auto CurrentTime = GetServerTime();
+	UpdateAliveStateWithRespawnTime(CurrentTime);
+
+	// 부활시간에 OnAliveStateChanged 이벤트가 호출될 수 있도록 타이머를 설정합니다.
+	GetWorldTimerManager().SetTimer(RespawnTimer, [this] { SetAliveState(true); },
+	                                RespawnTime - CurrentTime, false);
 }
 
 void ALakayaBasePlayerState::OnRep_CharacterName()
@@ -236,15 +234,16 @@ void ALakayaBasePlayerState::OnRep_KillStreak()
 	OnKillStreakChanged.Broadcast(KillStreak);
 }
 
-void ALakayaBasePlayerState::BroadcastWhenAliveStateChanged()
+void ALakayaBasePlayerState::UpdateAliveStateWithRespawnTime(const float& CurrentTime)
 {
-	const auto AliveState = IsAlive();
+	SetAliveState(RespawnTime >= 0.f && RespawnTime < CurrentTime);
+}
 
-	// 생존 상태가 변경된 것이 없는 경우 아무것도 하지 않습니다.
+void ALakayaBasePlayerState::SetAliveState(const bool& AliveState)
+{
 	if (bRecentAliveState == AliveState) return;
-
-	OnAliveStateChanged.Broadcast(AliveState);
 	bRecentAliveState = AliveState;
+	OnAliveStateChanged.Broadcast(AliveState);
 }
 
 void ALakayaBasePlayerState::RequestCharacterChange_Implementation(const FName& Name)
