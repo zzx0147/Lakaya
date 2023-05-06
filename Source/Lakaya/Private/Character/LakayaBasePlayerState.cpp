@@ -155,7 +155,7 @@ bool ALakayaBasePlayerState::ShouldTakeDamage(float DamageAmount, FDamageEvent c
                                               AController* EventInstigator, AActor* DamageCauser)
 {
 	// 플레이어가 생존해있고, 데미지가 공격이 아닌 회복인 경우나 EventInstigator가 nullptr인 경우, 같은 팀이 아닌 경우 피해를 받도록 합니다.
-	return IsAlive() && (DamageAmount > 0.f || !EventInstigator
+	return IsAlive() && (DamageAmount < 0.f || !EventInstigator
 		|| !IsSameTeam(EventInstigator->GetPlayerState<ALakayaBasePlayerState>()));
 }
 
