@@ -84,14 +84,12 @@ void AGameLobbyPlayerController::LoadoutHandler(const FInputActionValue& Value)
 
 void AGameLobbyPlayerController::ShowScoreBoard(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ShowScore"));
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 		GameState->SetScoreBoardVisibility(true);
 }
 
 void AGameLobbyPlayerController::HideScoreBoard(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("HideScore"));
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 		GameState->SetScoreBoardVisibility(false);
 }

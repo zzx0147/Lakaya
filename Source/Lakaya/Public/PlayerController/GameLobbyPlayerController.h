@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
-#include "Blueprint/UserWidget.h"
-#include "Components/SlateWrapperTypes.h"
 #include "GameFramework/PlayerController.h"
 #include "GameLobbyPlayerController.generated.h"
 
@@ -23,10 +21,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
-
-	template <class T>
-	T* CreateViewportWidget(const TSubclassOf<UUserWidget>& UserWidgetClass,
-	                        const ESlateVisibility& Visibility = ESlateVisibility::SelfHitTestInvisible);
 
 	/**
 	 * @brief 이 플레이어 컨트롤러가 빙의중인 폰이 변경될 때 호출됩니다. 서버에서든 클라이언트에서든 모두 호출됩니다.
@@ -72,16 +66,3 @@ private:
 	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* HideScoreAction;
 };
-
-template <class T>
-T* AGameLobbyPlayerController::CreateViewportWidget(const TSubclassOf<UUserWidget>& UserWidgetClass,
-                                                    const ESlateVisibility& Visibility)
-{
-	auto Widget = CreateWidget<T>(this, UserWidgetClass);
-	if (Widget)
-	{
-		Widget->AddToViewport();
-		Widget->SetVisibility(Visibility);
-	}
-	return Widget;
-}

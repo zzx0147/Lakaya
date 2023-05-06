@@ -17,7 +17,6 @@ public:
 protected:
 	virtual void SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent) override;
 	virtual void SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem) override;
-	virtual void OnPossessedPawnChangedCallback(APawn* OldPawn, APawn* NewPawn) override;
 
 private:
 	void Move(const FInputActionValue& Value);
@@ -38,6 +37,4 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
 	UInputAction* JumpAction;
-
-	TWeakObjectPtr<class AMovableCharacter> MovableCharacter;
 };

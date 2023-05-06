@@ -103,8 +103,7 @@ void ABattlePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsy
 void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, APawn* NewPawn)
 {
 	Super::OnPossessedPawnChangedCallback(ArgOldPawn, NewPawn);
-	if (!IsLocalController()) return;
-	ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
+	if (IsLocalController()) ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
 }
 
 void ABattlePlayerController::PrimaryStart(const FInputActionValue& Value)
@@ -159,10 +158,10 @@ void ABattlePlayerController::ReloadStop(const FInputActionValue& Value)
 
 void ABattlePlayerController::DashStart(const FInputActionValue& Value)
 {
-	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(EAbilityKind::Dash);
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(Dash);
 }
 
 void ABattlePlayerController::DashStop(const FInputActionValue& Value)
 {
-	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(EAbilityKind::Dash);
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(Dash);
 }
