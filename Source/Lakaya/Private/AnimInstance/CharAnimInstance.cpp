@@ -3,11 +3,6 @@
 
 #include "AnimInstance/CharAnimInstance.h"
 
-void UCharAnimInstance::SetIsCrouching(bool CrouchValue)
-{
-	bIsCrouch = CrouchValue;
-}
-
 // void UCharAnimInstance::SetState(EFocusState state)
 // {
 // 	switch (state)
