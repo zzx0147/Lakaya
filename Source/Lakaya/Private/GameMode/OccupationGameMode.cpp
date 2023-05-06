@@ -10,7 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "PlayerController/BattlePlayerController.h"
 
-AOccupationGameMode::AOccupationGameMode()
+AOccupationGameMode::AOccupationGameMode() : Super()
 {
 	ScoreUpdateDelay = 0.5f;
 	AdditiveScore = 0.1f;

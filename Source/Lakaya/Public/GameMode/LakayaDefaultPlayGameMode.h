@@ -15,6 +15,7 @@ class LAKAYA_API ALakayaDefaultPlayGameMode : public AGameMode
 {
 	GENERATED_BODY()
 
+public:
 	ALakayaDefaultPlayGameMode();
 	
 protected:
