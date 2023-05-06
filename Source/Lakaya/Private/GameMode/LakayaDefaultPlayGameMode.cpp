@@ -13,6 +13,13 @@ namespace MatchState
 	 const FName IsSelectCharacter = FName(TEXT("IsSelectCharacter"));
 }
 
+ALakayaDefaultPlayGameMode::ALakayaDefaultPlayGameMode()
+{
+	PlayerRespawnTime = 3;
+	bWaitToStart = false;
+	CharacterSelectTime = 10.0f;
+}
+
 void ALakayaDefaultPlayGameMode::BeginPlay()
 {
 	Super::BeginPlay();
@@ -56,7 +63,7 @@ bool ALakayaDefaultPlayGameMode::ReadyToStartMatch_Implementation()
 void ALakayaDefaultPlayGameMode::HandleMatchIsSelectCharacter()
 {
 	FTimerHandle TimerHandler;
-	GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 10.0f, false);
+	GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, CharacterSelectTime, false);
 }
 
 void ALakayaDefaultPlayGameMode::HandleMatchHasStarted()
