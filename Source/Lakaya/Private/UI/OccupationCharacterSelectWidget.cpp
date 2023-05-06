@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #define DO_CHECK 1
 
+#include "UI/OccupationCharacterSelectWidget.h"
 #include "Components/VerticalBox.h"
 #include "UI/ImageTextWidget.h"
-#include "UI/OccupationCharacterSelectWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 
 UOccupationCharacterSelectWidget::UOccupationCharacterSelectWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
