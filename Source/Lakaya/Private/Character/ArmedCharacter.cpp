@@ -20,14 +20,14 @@ ELifetimeCondition AArmedCharacter::AllowActorComponentToReplicate(const UActorC
 
 void AArmedCharacter::StartAbility(const EAbilityKind& Kind)
 {
-	if (Abilities.Num() > Kind)
+	if (Abilities.IsValidIndex(Kind))
 		if (const auto& Ability = Abilities[Kind])
 			Ability->AbilityStart();
 }
 
 void AArmedCharacter::StopAbility(const EAbilityKind& Kind)
 {
-	if (Abilities.Num() > Kind)
+	if (Abilities.IsValidIndex(Kind))
 		if (const auto& Ability = Abilities[Kind])
 			Ability->AbilityStop();
 }

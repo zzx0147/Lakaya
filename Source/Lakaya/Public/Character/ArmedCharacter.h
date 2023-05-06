@@ -6,6 +6,7 @@
 #include "MovableCharacter.h"
 #include "ArmedCharacter.generated.h"
 
+UENUM()
 enum EAbilityKind
 {
 	// 캐릭터의 첫번째 능력입니다.
@@ -46,12 +47,14 @@ public:
 	 * @brief 캐릭터의 능력을 사용합니다. (키 누름)
 	 * @param Kind 사용할 능력을 특정합니다.
 	 */
+	UFUNCTION(BlueprintCallable)
 	void StartAbility(const EAbilityKind& Kind);
 
 	/**
 	 * @brief 캐릭터의 능력 사용을 중단합니다. (키 뗌)
 	 * @param Kind 사용할 능력을 특정합니다.
 	 */
+	UFUNCTION(BlueprintCallable)
 	void StopAbility(const EAbilityKind& Kind);
 
 	// 캐릭터의 능력들을 가져옵니다. 이렇게 가져온 배열은 EAbilityKind를 통해 특정할 수 있습니다.

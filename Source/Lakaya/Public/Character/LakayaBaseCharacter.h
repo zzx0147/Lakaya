@@ -39,10 +39,6 @@ public:
 	UFUNCTION(BlueprintGetter)
 	class UResourceComponent* const& GetResourceComponent() const { return ResourceComponent; }
 
-	// 캐릭터의 팀이 설정되는 경우 호출됩니다.
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnSetTeam(const EPlayerTeam& Team);
-
 	// 캐릭터의 자원 컴포넌트를 캐스팅하여 가져옵니다.
 	template <class T>
 	T* GetResourceComponent() const { return Cast<T>(ResourceComponent); }
@@ -51,7 +47,22 @@ public:
 	UFUNCTION(BlueprintGetter)
 	const float& GetCharacterMaxHealth() const { return MaxHealth; }
 
+	// 연속처치시 적용될 버프 목록을 가져옵니다.
+	UFUNCTION(BlueprintGetter)
+	const TArray<FName>& GetKillStreakBuffs() const { return KillStreakBuffs; }
+
+	// 캐릭터에게 팀을 설정해줍니다.
+	UFUNCTION(BlueprintNativeEvent)
+	void SetTeam(const EPlayerTeam& Team);
+
+	// 캐릭터의 생존 상태를 변경합니다.
+	UFUNCTION(BlueprintNativeEvent)
+	void SetAliveState(bool IsAlive);
+
 protected:
+	virtual void SetTeam_Implementation(const EPlayerTeam& Team) { return; }
+	virtual void SetAliveState_Implementation(bool IsAlive) { return; }
+
 	// 현재 시점의 서버 시간을 가져옵니다.
 	float GetServerTime() const;
 
@@ -62,6 +73,10 @@ protected:
 	// 이 캐릭터가 사용할 자원 컴포넌트 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UResourceComponent> ResourceClass;
+
+	// 연속처치시 플레이어에게 적용될 버프를 지정합니다.
+	UPROPERTY(EditAnywhere)
+	TArray<FName> KillStreakBuffs;
 
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
