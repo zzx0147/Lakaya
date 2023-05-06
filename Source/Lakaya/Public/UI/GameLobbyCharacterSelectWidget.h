@@ -22,6 +22,9 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
+public:
+	virtual void RegisterPlayer(APlayerState* PlayerState) { return; };
+
 protected:
 
 	//버튼에 바인딩되는 함수들은 UFUNTION을 사용해야함

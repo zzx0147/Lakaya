@@ -15,6 +15,9 @@ class LAKAYA_API ALakayaDefaultPlayGameMode : public AGameMode
 {
 	GENERATED_BODY()
 
+public:
+	ALakayaDefaultPlayGameMode();
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
@@ -72,12 +75,15 @@ public:
 	bool GetbWaitToStart() { return bWaitToStart; }
 
 private:
-	uint8 PlayerRespawnTime = 3;
-	bool bWaitToStart = false;
+	uint8 PlayerRespawnTime;
+	bool bWaitToStart;
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FName, TSubclassOf<class AInteractableCharacter>> CharacterClasses;
+
+	UPROPERTY(EditDefaultsOnly)
+	float CharacterSelectTime;
 private:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;

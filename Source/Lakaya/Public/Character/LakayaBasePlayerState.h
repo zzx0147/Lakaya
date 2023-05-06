@@ -79,13 +79,24 @@ public:
 	// 현재 플레이어의 누적 킬 횟수를 가져옵니다.
 	const uint16& GetKillCount() const { return KillCount; }
 
-	// 플레이어의 누적 사망 횟수를 늘립니다.
-	void AddDeathCount();
-
-	// 플레이어의 누적 킬 횟수를 늘립니다.
-	void AddKillCount();
-
+	// 플레이어가 선택한 캐릭터의 이름을 가져옵니다.
+	UFUNCTION(BlueprintGetter)
 	const FName& GetCharacterName() const { return CharacterName; }
+
+	// 플레이어의 연속처치 횟수를 가져옵니다.
+	const uint16& GetKillStreak() const { return KillStreak; }
+
+	// 플레이어의 누적 사망 횟수를 늘립니다.
+	virtual void IncreaseDeathCount();
+
+	// 플레이어의 킬 횟수를 늘립니다.
+	virtual void IncreaseKillCount();
+
+	// 플레이어의 연속처치 횟수를 늘립니다.
+	virtual void IncreaseKillStreak();
+
+	// 플레이어의 연속처치 횟수를 초기화합니다.
+	virtual void ResetKillStreak();
 
 protected:
 	// 현재 서버의 시간을 가져옵니다.
@@ -138,6 +149,9 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_KillCount();
 
+	UFUNCTION()
+	virtual void OnRep_KillStreak();
+
 private:
 	// 생존 상태가 변경되었다면 이벤트를 호출하고, 그렇지 않다면 아무 것도 하지 않습니다.
 	void BroadcastWhenAliveStateChanged();
@@ -176,6 +190,9 @@ public:
 	// 플레이어의 누적 킬 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 킬 횟수를 받습니다.
 	FCountInfoSignature OnKillCountChanged;
 
+	// 플레이어의 연속처치 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 연속처치 횟수를 받습니다.
+	FCountInfoSignature OnKillStreakChanged;
+
 	// 플레이어의 이름이 변경될 때 호출됩니다. 매개변수로 변경된 플레이어의 이름을 받습니다.
 	FPlayerNameSignature OnPlayerNameChanged;
 
@@ -201,6 +218,9 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_KillCount, Transient)
 	uint16 KillCount;
+
+	UPROPERTY(ReplicatedUsing=OnRep_KillStreak, Transient)
+	uint16 KillStreak;
 
 	FTimerHandle RespawnTimer;
 	bool bRecentAliveState;

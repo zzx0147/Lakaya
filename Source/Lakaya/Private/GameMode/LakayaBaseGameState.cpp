@@ -64,6 +64,7 @@ void ALakayaBaseGameState::AddPlayerState(APlayerState* PlayerState)
 	Super::AddPlayerState(PlayerState);
 	if (LoadingWidget != nullptr) LoadingWidget->SetPlayerNumber(PlayerArray.Num());
 	if (ScoreBoard.IsValid()) ScoreBoard->RegisterPlayer(PlayerState);
+	if (CharacterSelectWidget != nullptr) CharacterSelectWidget->RegisterPlayer(PlayerState);
 
 	OnChangePlayerNumber.Broadcast(PlayerArray.Num());
 }

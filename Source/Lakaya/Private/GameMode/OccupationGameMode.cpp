@@ -7,7 +7,7 @@
 #include "PlayerController/BattlePlayerController.h"
 #include "PlayerController/InteractablePlayerController.h"
 
-AOccupationGameMode::AOccupationGameMode()
+AOccupationGameMode::AOccupationGameMode() : Super()
 {
 	ScoreUpdateDelay = 0.5f;
 	AdditiveScore = 0.1f;
