@@ -3,6 +3,7 @@
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameMode/OccupationGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
@@ -55,14 +56,6 @@ void AOccupationObject::Tick(float DeltaTime)
 
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 {
-#pragma region TODO : ObjectOwner
-	// AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(Caller->GetController()->PlayerState);
-	// if (OccupationPlayerState == nullptr)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
-	// 	return;
-	// }
-#pragma endregion
 	auto* OccupationPlayerState = Cast<ALakayaBasePlayerState>(Caller->GetController()->PlayerState);
 	if (OccupationPlayerState == nullptr)
 	{
@@ -101,45 +94,24 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 
 #pragma region TODO : ObjectOwner
 	// 소유자 팀에서 상호작용 할 경우 막아두기
-	// FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetTeam());
-	// if (PlayerStateString.Equals("EPlayerTeam::A", ESearchCase::IgnoreCase))
-	// {
-	// 	if (ObjectOwner == EPlayerTeam::A)
-	// 	{
-	// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("이미 본인 소유의 점령 오브젝트입니다."));
-	// 		return;
-	// 	}
-	// }
-	// else if (PlayerStateString.Equals("EPlayerTeam::B", ESearchCase::IgnoreCase))
-	// {
-	// 	if (ObjectOwner == EPlayerTeam::B)
-	// 	{
-	// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
-	// 		return;
-	// 	}
-	// }
+	FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetTeam());
+	if (PlayerStateString.Equals("EObjectTeam::A", ESearchCase::IgnoreCase))
+	{
+		if (ObjectTeam == EObjectTeam::A)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("이미 본인 소유의 점령 오브젝트입니다."));
+			return;
+		}
+	}
+	else if (PlayerStateString.Equals("EObjectTeam::B", ESearchCase::IgnoreCase))
+	{
+		if (ObjectTeam == EObjectTeam::B)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
+			return;
+		}
+	}
 #pragma endregion
-
-#pragma region TODO : ObjectOwner
-	// 소유자 팀에서 상호작용 할 경우 막아두기
-	// FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetPlayerTeamState());
-	// if (PlayerStateString.Equals("EPlayerTeam::A", ESearchCase::IgnoreCase))
-	// {
-	// 	if (ObjectOwner == EPlayerTeam::A)
-	// 	{
-	// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("이미 본인 소유의 점령 오브젝트입니다."));
-	// 		return;
-	// 	}
-	// }
-	// else if (PlayerStateString.Equals("EPlayerTeam::B", ESearchCase::IgnoreCase))
-	// {
-	// 	if (ObjectOwner == EPlayerTeam::B)
-	// 	{
-	// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
-	// 		return;
-	// 	}
-	// }
-#pragma endregion 
 	
 	// TODO : 점프 도중 상호작용 시, 물리를 무시하고 공중에서 상호작용합니다.
 	// 상호작용중에는 움직임을 막아줍니다.
@@ -211,82 +183,17 @@ void AOccupationObject::CharacterMovable(APawn* Caller)
 	{
 		GetWorldTimerManager().ClearTimer(InteractionTimerHandle);
 	}
-
-	// 끝났을 때 시점의 시간을 가져옵니다.
-	// InteractingStopTime = UGameplayStatics::GetRealTimeSeconds(this);
-
-	// 상호작용한 시간을 가져옵니다.
-	// float InteractionDuration = InteractingStopTime - InteractingStartTime;
-	
-	// UE_LOG(LogTemp, Warning, TEXT("InteractingStopTime : %f seconds"), InteractingStopTime);
-	// UE_LOG(LogTemp, Warning, TEXT("InteractingStartTime : %f seconds"), InteractingStartTime);
-	// UE_LOG(LogTemp, Warning, TEXT("Interaction Duration : %f seconds"), InteractionDuration);
-
-	// if (InteractionDuration > MaxInteractionDuration)
-	// {
-	// 	// 상호작용에 성공했을 경우.
-	// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction Success"));
-	//
-	// 	auto* OccupationPlayerState = Cast<ALakayaBasePlayerState>(Caller->GetController()->PlayerState);
-	// 	if (OccupationPlayerState == nullptr)
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
-	// 		return;
-	// 	}
-	//
-	// 	AOccupationGameMode* OccupationGameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
-	// 	if (OccupationGameMode == nullptr)
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationGameMode is null."));
-	// 		return;
-	// 	}
-	//
-	// 	FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetTeam());
-	// 	if (PlayerStateString.Equals("EPlayerTeamState::None", ESearchCase::IgnoreCase))
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("Suspected player captured successfully."));
-	// 		return;
-	// 	}
-	// 	else if (PlayerStateString.Equals("EPlayerTeamState::A", ESearchCase::IgnoreCase))
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
-	//
-	// 		if (ObjectOwner == EPlayerTeam::B)
-	// 			OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
-	//
-	// 		ObjectOwner = EPlayerTeam::A;
-	// 		OccupationGameMode->AddOccupyObject(EPlayerTeam::A);
-	// 		SetTeamObject(ObjectOwner);
-	// 		return;
-	// 	}
-	// 	else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
-	//
-	// 		if (ObjectOwner == EPlayerTeam::A)
-	// 			OccupationGameMode->SubOccupyObject(EPlayerTeam::A);
-	// 		
-	// 		ObjectOwner = EPlayerTeam::B;
-	// 		OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
-	// 		SetTeamObject(ObjectOwner);
-	// 		return;
-	// 	}
-	// 	else
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("Error ! Error ! Error !"));
-	// 		return;
-	// 	}
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Interaction Failed."));
-	// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Interaction Failed."));
-	// 	return;
-	// }
 }
 
 void AOccupationObject::InteractionSuccess(APawn* Caller)
 {
+	auto* OccupationGameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
+	if (OccupationGameMode == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InteractionSuccess_OccupationGameMode is null."));
+		return;
+	}
+	
 	if (InteractingPawn == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AutomaticInteractionStop_InteractingPawn is null."));
@@ -295,14 +202,12 @@ void AOccupationObject::InteractionSuccess(APawn* Caller)
 	
 	InteractingPawn = nullptr;
 
-#pragma region TODO : ObjectOwner
-	// AOccupationPlayerState* OccupationPlayerState = Cast<AOccupationPlayerState>(Caller->GetController()->PlayerState);
-	// if (OccupationPlayerState == nullptr)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
-	// 	return;
-	// }
-#pragma endregion
+	auto* OccupationPlayerState = Cast<ALakayaBasePlayerState>(Caller->GetController()->PlayerState);
+	if (OccupationPlayerState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
+		return;
+	}
 
 	Cast<AInteractableCharacter>(Caller)->SetInteractionState(EInteractionState::Success);
 	
@@ -321,41 +226,39 @@ void AOccupationObject::InteractionSuccess(APawn* Caller)
 	GetWorldTimerManager().SetTimer(InteractionStateHandle, TimerDelegate, 1.0f, false);
 	
 #pragma region TODO : ObjectOwner
-	// FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetPlayerTeamState());
-	// if (PlayerStateString.Equals("EPlayerTeamState::None", ESearchCase::IgnoreCase))
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Suspected player captured successfully."));
-	// 	return;
-	// }
-	// else if (PlayerStateString.Equals("EPlayerTeamState::A", ESearchCase::IgnoreCase))
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
-	//
-	// 	if (ObjectOwner == EPlayerTeam::B)
-	// 		OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
-	//
-	// 	ObjectOwner = EPlayerTeam::A;
-	// 	OccupationGameMode->AddOccupyObject(EPlayerTeam::A);
-	// 	SetTeamObject(ObjectOwner);
-	// 	return;
-	// }
-	// else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
-	//
-	// 	if (ObjectOwner == EPlayerTeam::A)
-	// 		OccupationGameMode->SubOccupyObject(EPlayerTeam::A);
-	// 		
-	// 	ObjectOwner = EPlayerTeam::B;
-	// 	OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
-	// 	SetTeamObject(ObjectOwner);
-	// 	return;
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Error ! Error ! Error !"));
-	// 	return;
-	// }
+	FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetTeam());
+	if (PlayerStateString.Equals("EPlayerTeam::None", ESearchCase::IgnoreCase))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Suspected player captured successfully."));
+		return;
+	}
+	else if (PlayerStateString.Equals("EPlayerTeam::A", ESearchCase::IgnoreCase))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
+	
+		if (ObjectTeam == EObjectTeam::B)
+			OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
+	
+		SetTeamObject(EObjectTeam::A);
+		OccupationGameMode->AddOccupyObject(EPlayerTeam::A);
+		return;
+	}
+	else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
+	
+		if (ObjectTeam == EObjectTeam::A)
+			OccupationGameMode->SubOccupyObject(EPlayerTeam::A);
+			
+		SetTeamObject(EObjectTeam::B);
+		OccupationGameMode->AddOccupyObject(EPlayerTeam::B);
+		return;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Error ! Error ! Error !"));
+		return;
+	}
 #pragma endregion
 }
 
@@ -375,31 +278,26 @@ void AOccupationObject::OnInteractionFinish(APawn* Caller)
 
 void AOccupationObject::OnRep_BroadCastTeamObject()
 {
-	
+	SetTeamObject(ObjectTeam);
 }
 
-#pragma region TODO : ObjectOwner
-// void AOccupationObject::OnRep_BroadCastTeamObject()
-// {
-// 	SetTeamObject(ObjectOwner);
-// }
-
-// void AOccupationObject::SetTeamObject(const EPlayerTeam& Team)
-// {
-// 	switch (Team)
-// 	{
-// 	case EPlayerTeam::A:
-// 		Cylinder->SetMaterial(
-// 			0, LoadObject<UMaterialInterface>(
-// 				nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/RedTeam.RedTeam")));
-// 		break;
-// 	case EPlayerTeam::B:
-// 		Cylinder->SetMaterial(
-// 			0, LoadObject<UMaterialInterface>(
-// 				nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/BlueTeam.BlueTeam")));
-// 		break;
-// 	case EPlayerTeam::None:
-// 		break;
-// 	}
-// }
-#pragma endregion
+void AOccupationObject::SetTeamObject(const EObjectTeam& Team)
+{
+	ObjectTeam = EObjectTeam::A;
+	UE_LOG(LogTemp, Warning, TEXT("SetTeamObject"));
+	// switch (Team)
+	// {
+	// case EPlayerTeam::A:
+	// 	Cylinder->SetMaterial(
+	// 		0, LoadObject<UMaterialInterface>(
+	// 			nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/RedTeam.RedTeam")));
+	// 	break;
+	// case EPlayerTeam::B:
+	// 	Cylinder->SetMaterial(
+	// 		0, LoadObject<UMaterialInterface>(
+	// 			nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/BlueTeam.BlueTeam")));
+	// 	break;
+	// case EPlayerTeam::None:
+	// 	break;
+	// }
+}
