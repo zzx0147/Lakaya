@@ -26,6 +26,8 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_IsReloading();
 
+	virtual void ReloadTimerHandler();
+
 public:
 	// 재장전 상태가 변경되면 호출됩니다.
 	FIsReloadingSignature OnReloadStateChanged;

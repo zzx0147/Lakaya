@@ -28,6 +28,9 @@ public:
 	//TODO: StatPlayerState에서 연관된 스탯을 참조하여 최대총알 개수가 증가되도록 변경해야 합니다.
 	const uint16& GetMaxBullets() const { return MaxBullets; }
 
+	// 탄창이 가득차있는지 여부를 조사합니다.
+	bool IsFull() const { return GetBullets() == GetMaxBullets(); }
+
 	/**
 	 * @brief 총알을 차감하고, 그에 따른 함수를 실행합니다.
 	 * @param Value 총알을 차감할 양입니다.
