@@ -9,6 +9,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 
 ALakayaBaseCharacter::ALakayaBaseCharacter()
@@ -21,9 +22,11 @@ ALakayaBaseCharacter::ALakayaBaseCharacter()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
 
+	PrimaryActorTick.bCanEverTick = true;
+	PlayerRotationInterpolationAlpha = 0.5f;
+
 	GetCharacterMovement()->bOrientRotationToMovement = false;
-	bUseControllerRotationYaw = true;
-	bUseControllerRotationPitch = bUseControllerRotationRoll = false;
+	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
 }
 
 ELifetimeCondition ALakayaBaseCharacter::AllowActorComponentToReplicate(
@@ -65,13 +68,57 @@ float ALakayaBaseCharacter::InternalTakeRadialDamage(float Damage, FRadialDamage
 	return Super::InternalTakeRadialDamage(Damage, RadialDamageEvent, EventInstigator, DamageCauser);
 }
 
+void ALakayaBaseCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	// 서버에서는 계속해서 플레이어의 회전정보를 업데이트합니다.
+	if (HasAuthority())
+	{
+		PlayerRotation.Rotation = GetCamera()->GetComponentRotation().Quaternion();
+		PlayerRotation.Time = GetServerTime();
+	}
+
+	// 시뮬레이트되는 클라이언트에서는 계속해서 플레이어의 회전을 외삽합니다. 
+	else if (GetLocalRole() == ROLE_SimulatedProxy)
+	{
+		const auto CurrentTime = GetServerTime();
+		LatestUpdateRotation = FQuat::Slerp(LatestUpdateRotation, GetRawExtrapolatedRotator(CurrentTime),
+		                                    PlayerRotationInterpolationAlpha);
+		DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + LatestUpdateRotation.Vector() * 100.f,
+		              FColor::Green, false, 0.3f);
+	}
+}
+
+FRotator ALakayaBaseCharacter::GetPlayerRotation() const
+{
+	// 서버이거나 Autonomous인 경우 그냥 카메라 컴포넌트를 사용합니다.
+	if (HasAuthority() || GetLocalRole() == ROLE_AutonomousProxy) return GetCamera()->GetComponentRotation();
+	return LatestUpdateRotation.Rotator();
+}
+
 float ALakayaBaseCharacter::GetServerTime() const
 {
 	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+}
+
+void ALakayaBaseCharacter::OnRep_PlayerRotation()
+{
+	// 최신 주기를 이전 주기로 바꿔주고, 새로 들어온 PlayerRotation을 최신주기로 설정합니다.
+	PrevPlayerRotation = LatestPlayerRotation;
+	LatestPlayerRotation = PlayerRotation;
+}
+
+FQuat ALakayaBaseCharacter::GetRawExtrapolatedRotator(const float& CurrentTime) const
+{
+	return FQuat::Slerp(PrevPlayerRotation.Rotation, LatestPlayerRotation.Rotation,
+	                    UKismetMathLibrary::NormalizeToRange(CurrentTime, PrevPlayerRotation.Time,
+	                                                         LatestPlayerRotation.Time));
 }
 
 void ALakayaBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, ResourceComponent, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, PlayerRotation, COND_SkipOwner);
 }

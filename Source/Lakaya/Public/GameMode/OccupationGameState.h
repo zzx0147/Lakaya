@@ -43,7 +43,7 @@ public:
 
 public:
 	// 해당 팀의 점수를 받아옵니다.
-	FORCEINLINE float GetTeamScore(const EPlayerTeam& Team) const;
+	float GetTeamScore(const EPlayerTeam& Team) const;
 
 	// 최대 점수를 가져옵니다.
 	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }
