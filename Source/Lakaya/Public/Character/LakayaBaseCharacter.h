@@ -7,6 +7,18 @@
 #include "Occupation/PlayerTeam.h"
 #include "LakayaBaseCharacter.generated.h"
 
+USTRUCT()
+struct FPlayerRotationPacket
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FQuat Rotation;
+
+	UPROPERTY()
+	float Time;
+};
+
 UCLASS()
 class LAKAYA_API ALakayaBaseCharacter : public ACharacter
 {
@@ -17,9 +29,9 @@ public:
 
 	virtual ELifetimeCondition
 	AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const override;
-
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
+	virtual void Tick(float DeltaSeconds) override;
 
 protected:
 	virtual void PreInitializeComponents() override;
@@ -51,6 +63,10 @@ public:
 	UFUNCTION(BlueprintGetter)
 	const TArray<FName>& GetKillStreakBuffs() const { return KillStreakBuffs; }
 
+	// 현재 플레이어가 바라보는 방향 정보를 가져옵니다.
+	UFUNCTION(BlueprintGetter)
+	FRotator GetPlayerRotation() const;
+
 	// 캐릭터에게 팀을 설정해줍니다.
 	UFUNCTION(BlueprintNativeEvent)
 	void SetTeam(const EPlayerTeam& Team);
@@ -66,6 +82,14 @@ protected:
 	// 현재 시점의 서버 시간을 가져옵니다.
 	float GetServerTime() const;
 
+	UFUNCTION()
+	virtual void OnRep_PlayerRotation();
+
+private:
+	// 단순히 이전 주기의 플레이어 회전과 최신 주기의 플레이어 회전을 선형 외삽한 값을 반환합니다.
+	FQuat GetRawExtrapolatedRotator(const float& CurrentTime) const;
+
+protected:
 	// 이 캐릭터의 고유한 최대 체력을 나타냅니다.
 	UPROPERTY(EditAnywhere)
 	float MaxHealth;
@@ -78,6 +102,12 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TArray<FName> KillStreakBuffs;
 
+	// 플레이어의 최신 회전값에 얼마나 근접하여 보간할지 지정합니다.
+	// 이 값이 1에 근접할수록 반응성이 향상되지만 도약현상이 자주 보일 수 있습니다.
+	// 0에 너무 가까우면 회전이 동기화되지 않는 것처럼 보일 수 있습니다.
+	UPROPERTY(EditAnywhere, meta=(ClampMin = 0.1f, ClampMax = 1.0f))
+	float PlayerRotationInterpolationAlpha;
+
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	UResourceComponent* ResourceComponent;
@@ -87,4 +117,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	UCameraComponent* Camera;
+
+	UPROPERTY(ReplicatedUsing=OnRep_PlayerRotation, Transient)
+	FPlayerRotationPacket PlayerRotation;
+
+	FPlayerRotationPacket PrevPlayerRotation;
+	FPlayerRotationPacket LatestPlayerRotation;
+
+	FQuat LatestUpdateRotation;
 };
