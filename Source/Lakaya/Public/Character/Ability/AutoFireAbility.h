@@ -24,6 +24,11 @@ protected:
 	virtual void RequestStart_Implementation(const float& RequestTime) override;
 	virtual void RequestStop_Implementation(const float& RequestTime) override;
 
+public:
+	UFUNCTION(BlueprintGetter)
+	const bool& IsFiring() const { return bIsFiring; }
+
+protected:
 	UFUNCTION()
 	virtual void OnRep_IsFiring();
 
@@ -64,6 +69,7 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_IsFiring, Transient)
 	bool bIsFiring;
 
+	bool bIsFireRequested;
 	FTimerHandle FireTimer;
 	TWeakObjectPtr<class UCameraComponent> CameraComponent;
 	TWeakObjectPtr<USceneComponent> RootComponent;
