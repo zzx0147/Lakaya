@@ -27,7 +27,7 @@ class LAKAYA_API AInteractableCharacter : public AArmedCharacter
 	GENERATED_BODY()
 
 public:
-	AInteractableCharacter();
+	explicit AInteractableCharacter(const FObjectInitializer& ObjectInitializer);
 	
 protected:
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
