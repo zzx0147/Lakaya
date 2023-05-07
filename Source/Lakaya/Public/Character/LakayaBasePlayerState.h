@@ -21,6 +21,8 @@ DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FCountInfoSignature, const uint16
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FPlayerNameSignature, const FString&)
 
+DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOwnerChangeSignature, AActor*)
+
 UCLASS()
 class LAKAYA_API ALakayaBasePlayerState : public APlayerState
 {
@@ -33,10 +35,12 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 	virtual void OnRep_PlayerName() override;
+	virtual void SetOwner(AActor* NewOwner);
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void CopyProperties(APlayerState* PlayerState) override;
+	virtual void OnRep_Owner() override;
 
 public:
 	// Other와 같은 팀인지 판별합니다.
@@ -208,6 +212,8 @@ public:
 	// 플레이어의 이름이 변경될 때 호출됩니다. 매개변수로 변경된 플레이어의 이름을 받습니다.
 	FPlayerNameSignature OnPlayerNameChanged;
 
+	// 오너가 변경될 때 호출됩니다. 매개변수로 변경된 오너의 AActor 포인터를 받습니다.
+	FOwnerChangeSignature OnOwnerChanged;
 protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGamePlayHealthWidget> HealthWidgetClass;

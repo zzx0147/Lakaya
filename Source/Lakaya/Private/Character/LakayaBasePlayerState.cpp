@@ -99,6 +99,11 @@ void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
 	}
 }
 
+void ALakayaBasePlayerState::OnRep_Owner()
+{
+	OnOwnerChanged.Broadcast(Owner);
+}
+
 bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) const
 {
 	// 두 플레이어가 개인전상태가 아니고, Team 값이 같은 경우 같은 팀으로 판별합니다.
@@ -263,4 +268,10 @@ void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserN
                                                             const float& Damage)
 {
 	//TODO: 피격 레이더를 업데이트 합니다.
+}
+
+void ALakayaBasePlayerState::SetOwner(AActor* NewOwner)
+{
+	Super::SetOwner(NewOwner);
+	OnOwnerChanged.Broadcast(Owner);
 }
