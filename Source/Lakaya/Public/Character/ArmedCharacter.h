@@ -40,6 +40,8 @@ class LAKAYA_API AArmedCharacter : public AMovableCharacter
 	GENERATED_BODY()
 
 public:
+	explicit AArmedCharacter(const FObjectInitializer& ObjectInitializer);
+	
 	virtual ELifetimeCondition
 	AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const override;
 

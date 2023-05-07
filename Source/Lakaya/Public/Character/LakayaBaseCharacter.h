@@ -25,7 +25,11 @@ class LAKAYA_API ALakayaBaseCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	ALakayaBaseCharacter();
+	const static FName SpringArmComponentName;
+	const static FName CameraComponentName;
+	const static FName ResourceComponentName;
+
+	explicit ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
 	virtual ELifetimeCondition
 	AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const override;
@@ -34,7 +38,6 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 protected:
-	virtual void PreInitializeComponents() override;
 	virtual float InternalTakeRadialDamage(float Damage, FRadialDamageEvent const& RadialDamageEvent,
 	                                       AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -48,11 +51,8 @@ public:
 	class UCameraComponent* const& GetCamera() const { return Camera; }
 
 	// 캐릭터의 자원 컴포넌트를 가져옵니다.
+	template <class T = class UResourceComponent>
 	UFUNCTION(BlueprintGetter)
-	class UResourceComponent* const& GetResourceComponent() const { return ResourceComponent; }
-
-	// 캐릭터의 자원 컴포넌트를 캐스팅하여 가져옵니다.
-	template <class T>
 	T* GetResourceComponent() const { return Cast<T>(ResourceComponent); }
 
 	// 캐릭터 고유의 최대 체력을 가져옵니다. 플레이어의 최종적인 체력을 의미하지는 않습니다.
@@ -94,10 +94,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float MaxHealth;
 
-	// 이 캐릭터가 사용할 자원 컴포넌트 클래스를 지정합니다.
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UResourceComponent> ResourceClass;
-
 	// 연속처치시 플레이어에게 적용될 버프를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TArray<FName> KillStreakBuffs;
@@ -123,6 +119,5 @@ private:
 
 	FPlayerRotationPacket PrevPlayerRotation;
 	FPlayerRotationPacket LatestPlayerRotation;
-
 	FQuat LatestUpdateRotation;
 };

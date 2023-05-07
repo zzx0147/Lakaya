@@ -12,6 +12,10 @@ void AArmedCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AArmedCharacter, Abilities);
 }
 
+AArmedCharacter::AArmedCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+}
+
 ELifetimeCondition AArmedCharacter::AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const
 {
 	if (ComponentToReplicate->IsA(UCharacterAbility::StaticClass())) return COND_None;

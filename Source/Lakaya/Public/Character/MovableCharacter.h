@@ -10,4 +10,7 @@ UCLASS()
 class LAKAYA_API AMovableCharacter : public ALakayaBaseCharacter
 {
 	GENERATED_BODY()
+
+public:
+	explicit AMovableCharacter(const FObjectInitializer& ObjectInitializer);
 };
