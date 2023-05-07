@@ -106,7 +106,7 @@ protected:
 
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
-	UResourceComponent* ResourceComponent;
+	class UResourceComponent* ResourceComponent;
 
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	USpringArmComponent* SpringArm;
