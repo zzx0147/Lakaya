@@ -23,7 +23,7 @@ ALakayaBaseCharacter::ALakayaBaseCharacter()
 	Camera->SetupAttachment(SpringArm);
 
 	PrimaryActorTick.bCanEverTick = true;
-	PlayerRotationInterpolationAlpha = 0.5f;
+	PlayerRotationInterpolationAlpha = 0.65f;
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
@@ -82,8 +82,8 @@ void ALakayaBaseCharacter::Tick(float DeltaSeconds)
 	// 시뮬레이트되는 클라이언트에서는 계속해서 플레이어의 회전을 외삽합니다. 
 	else if (GetLocalRole() == ROLE_SimulatedProxy)
 	{
-		const auto CurrentTime = GetServerTime();
-		LatestUpdateRotation = FQuat::Slerp(LatestUpdateRotation, GetRawExtrapolatedRotator(CurrentTime),
+		// 이전 프레임에서 사용했던 회전값과 현재 시간을 기준으로 외삽된 Raw회전값을 구면보간하여 현재 프레임에서 사용한 회전값을 지정합니다. 
+		LatestUpdateRotation = FQuat::Slerp(LatestUpdateRotation, GetRawExtrapolatedRotator(GetServerTime()),
 		                                    PlayerRotationInterpolationAlpha);
 		DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + LatestUpdateRotation.Vector() * 100.f,
 		              FColor::Green, false, 0.3f);
@@ -111,6 +111,8 @@ void ALakayaBaseCharacter::OnRep_PlayerRotation()
 
 FQuat ALakayaBaseCharacter::GetRawExtrapolatedRotator(const float& CurrentTime) const
 {
+	// 이전 주기의 회전 정보와, 최신 주기의 회전 정보를 구면보간하여 반환합니다.
+	// 베지어 곡선 같은 것을 사용하지 않기 때문에 보간하여 사용하지 않으면 도약현상이 발생할 수 있습니다. 
 	return FQuat::Slerp(PrevPlayerRotation.Rotation, LatestPlayerRotation.Rotation,
 	                    UKismetMathLibrary::NormalizeToRange(CurrentTime, PrevPlayerRotation.Time,
 	                                                         LatestPlayerRotation.Time));

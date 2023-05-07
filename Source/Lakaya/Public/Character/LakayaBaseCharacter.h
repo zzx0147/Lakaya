@@ -102,8 +102,10 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TArray<FName> KillStreakBuffs;
 
-	// 플레이어의 최신 회전값에 얼마나 근접하여 보간할지 지정합니다. 이 값이 1에 근접할수록 도약현상이 자주 보일 수 있습니다.
-	UPROPERTY(EditAnywhere)
+	// 플레이어의 최신 회전값에 얼마나 근접하여 보간할지 지정합니다.
+	// 이 값이 1에 근접할수록 반응성이 향상되지만 도약현상이 자주 보일 수 있습니다.
+	// 0에 너무 가까우면 회전이 동기화되지 않는 것처럼 보일 수 있습니다.
+	UPROPERTY(EditAnywhere, meta=(ClampMin = 0.1f, ClampMax = 1.0f))
 	float PlayerRotationInterpolationAlpha;
 
 private:
