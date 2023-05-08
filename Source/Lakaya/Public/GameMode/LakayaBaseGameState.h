@@ -21,6 +21,7 @@ protected:
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
 	virtual void RemovePlayerState(APlayerState* PlayerState) override;
 	virtual void HandleMatchHasStarted() override;
+	virtual void HandleMatchHasEnded() override;
 	virtual void HandleMatchIsCharacterSelect();
 
 public:
@@ -79,6 +80,8 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_MatchEndingTime)
 	float MatchEndingTime;
+
+	FTimerHandle EndingTimer;
 
 	TObjectPtr<ULoadingWidget> LoadingWidget;
 

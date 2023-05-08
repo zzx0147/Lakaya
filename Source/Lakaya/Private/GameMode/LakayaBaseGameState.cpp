@@ -104,10 +104,21 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 
 	if (HasAuthority())
 	{
-		//TODO: 게임 종료 타이머를 셋팅하고, HandleMatchHasEnded에서 게임종료 타이머가 남아있다면 해제.
+		GetWorldTimerManager().SetTimer(EndingTimer, [this]
+		{
+			if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
+				AuthGameMode->EndMatch();
+		}, MatchDuration, false);
+
 		MatchEndingTime = GetServerWorldTimeSeconds() + MatchDuration;
 		if (InGameTimeWidget.IsValid()) InGameTimeWidget->SetWidgetTimer(MatchEndingTime);
 	}
+}
+
+void ALakayaBaseGameState::HandleMatchHasEnded()
+{
+	Super::HandleMatchHasEnded();
+	GetWorldTimerManager().ClearTimer(EndingTimer);
 }
 
 void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
