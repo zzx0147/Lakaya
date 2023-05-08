@@ -51,12 +51,6 @@ public:
 	// 승리자의 정보를 가져옵니다.
 	FORCEINLINE const EPlayerTeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
 
-	// 현재 시간을 기준으로 매칭 시간을 설정합니다. 반드시 서버에서 호출해야 합니다.
-	void SetMatchTime();
-
-	// 남은 매칭 시간을 가져옵니다. 아직 매칭시간 정보가 설정되지 않았거나, 시간이 지나간 경우 0을 반환합니다.
-	float GetRemainMatchTime() const;
-
 	// 어떤 팀이든 최대 점수에 도달한 팀이 있는지 여부를 조사합니다.
 	bool IsSomeoneReachedMaxScore() const;
 
@@ -87,15 +81,6 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore, Transient)
 	float BTeamScore;
 
-	UPROPERTY(Replicated)
-	float MatchStartTime;
-
-	UPROPERTY(Replicated)
-	float MatchEndingTime;
-
 	UPROPERTY(EditAnywhere)
 	float MaxScore;
-
-	UPROPERTY(EditAnywhere)
-	float MatchDuration;
 };

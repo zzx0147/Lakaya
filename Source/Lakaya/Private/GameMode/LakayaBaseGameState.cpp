@@ -2,16 +2,25 @@
 
 
 #include "GameMode/LakayaBaseGameState.h"
-#include "GameMode/LakayaDefaultPlayGameMode.h"
-#include "UI/GameScoreBoardWidget.h"
-#include "UI/LoadingWidget.h"
-#include "UI/GameLobbyCharacterSelectWidget.h"
 #include "Character/LakayaBasePlayerState.h"
+#include "GameMode/LakayaDefaultPlayGameMode.h"
+#include "Net/UnrealNetwork.h"
+#include "UI/GameLobbyCharacterSelectWidget.h"
+#include "UI/GameScoreBoardWidget.h"
+#include "UI/GameTimeWidget.h"
+#include "UI/LoadingWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	MaximumPlayers = 6;
+	MatchDuration = 300.f;
+}
+
+void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ALakayaBaseGameState, MatchEndingTime);
 }
 
 void ALakayaBaseGameState::BeginPlay()
@@ -33,7 +42,8 @@ void ALakayaBaseGameState::BeginPlay()
 
 		if (CharacterSelectWidgetClass.Get() != nullptr)
 		{
-			CharacterSelectWidget = CreateWidget<UGameLobbyCharacterSelectWidget>(LocalController, CharacterSelectWidgetClass);
+			CharacterSelectWidget = CreateWidget<UGameLobbyCharacterSelectWidget>(
+				LocalController, CharacterSelectWidgetClass);
 			if (CharacterSelectWidget != nullptr)
 			{
 				CharacterSelectWidget->AddToViewport();
@@ -49,6 +59,16 @@ void ALakayaBaseGameState::BeginPlay()
 				ScoreBoard->AddToViewport();
 				ScoreBoard->SetVisibility(ESlateVisibility::Hidden);
 				for (auto& Player : PlayerArray) ScoreBoard->RegisterPlayer(Player);
+			}
+		}
+
+		if (InGameTimerWidgetClass)
+		{
+			InGameTimeWidget = CreateWidget<UGameTimeWidget>(LocalController, InGameTimerWidgetClass);
+			if (InGameTimeWidget.IsValid())
+			{
+				InGameTimeWidget->AddToViewport();
+				InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
 	}
@@ -80,6 +100,14 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 	CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
+	InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+	if (HasAuthority())
+	{
+		//TODO: 게임 종료 타이머를 셋팅하고, HandleMatchHasEnded에서 게임종료 타이머가 남아있다면 해제.
+		MatchEndingTime = GetServerWorldTimeSeconds() + MatchDuration;
+		if (InGameTimeWidget.IsValid()) InGameTimeWidget->SetWidgetTimer(MatchEndingTime);
+	}
 }
 
 void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
@@ -87,11 +115,12 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 	LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
 	CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
 
-	if(const auto LocalController = GetWorld()->GetFirstPlayerController())
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController())
 		if (const auto LocalPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 		{
 			CharacterSelectWidget->OnChangeSelectedCharacter.Clear();
-			CharacterSelectWidget->OnChangeSelectedCharacter.AddUObject(LocalPlayerState, &ALakayaBasePlayerState::RequestCharacterChange);
+			CharacterSelectWidget->OnChangeSelectedCharacter.AddUObject(
+				LocalPlayerState, &ALakayaBasePlayerState::RequestCharacterChange);
 		}
 }
 
@@ -108,4 +137,9 @@ void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
 {
 	if (ScoreBoard.IsValid())
 		ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
+}
+
+void ALakayaBaseGameState::OnRep_MatchEndingTime()
+{
+	if (InGameTimeWidget.IsValid()) InGameTimeWidget->SetWidgetTimer(MatchEndingTime);
 }
