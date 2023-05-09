@@ -65,13 +65,14 @@ bool AOccupationGameMode::ReadyToStartMatch_Implementation()
 
 bool AOccupationGameMode::ReadyToEndMatch_Implementation()
 {
-	return OccupationGameState->GetRemainMatchTime() <= 0.f || OccupationGameState->IsSomeoneReachedMaxScore();
+	// return OccupationGameState->GetMatchRemainTime() <= 0.f || OccupationGameState->IsSomeoneReachedMaxScore();
+	return false;
 }
 
 void AOccupationGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-	OccupationGameState->SetMatchTime();
+	// OccupationGameState->SetMatchTime();
 
 	// 플레이어 인원만큼 위치를 조정해줍니다. (각각의 팀 위치에서)
 	PlayerInitializeSetLocation(OccupationGameState->PlayerArray.Num());

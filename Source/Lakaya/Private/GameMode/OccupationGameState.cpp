@@ -11,8 +11,6 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 	DOREPLIFETIME(AOccupationGameState, ATeamScore);
 	DOREPLIFETIME(AOccupationGameState, BTeamScore);
-	DOREPLIFETIME(AOccupationGameState, MatchStartTime);
-	DOREPLIFETIME(AOccupationGameState, MatchEndingTime);
 	DOREPLIFETIME(AOccupationGameState, CurrentOccupationWinner);
 }
 
@@ -54,18 +52,6 @@ float AOccupationGameState::GetTeamScore(const EPlayerTeam& Team) const
 	if (Team == EPlayerTeam::B) return BTeamScore;
 	UE_LOG(LogScript, Warning, TEXT("Trying to GetTeamScore with not valid value! it was %d"), Team);
 	return 0.f;
-}
-
-void AOccupationGameState::SetMatchTime()
-{
-	MatchStartTime = GetServerWorldTimeSeconds();
-	MatchEndingTime = MatchStartTime + MatchDuration;
-}
-
-float AOccupationGameState::GetRemainMatchTime() const
-{
-	const auto Current = GetServerWorldTimeSeconds();
-	return MatchEndingTime < Current ? 0 : MatchEndingTime - Current;
 }
 
 bool AOccupationGameState::IsSomeoneReachedMaxScore() const
