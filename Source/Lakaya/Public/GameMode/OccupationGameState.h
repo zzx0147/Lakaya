@@ -24,6 +24,11 @@ class LAKAYA_API AOccupationGameState : public ALakayaBaseGameState
 public:
 	AOccupationGameState();
 
+private:
+	virtual void BeginPlay() override;
+	virtual void HandleMatchHasStarted() override;
+	
+public:
 	UFUNCTION()
 	void SetNumPlayers(const uint8& NewNumPlayers);
 
@@ -40,7 +45,7 @@ public:
 	 * @param AdditiveScore 추가될 점수입니다.
 	 */
 	void AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore);
-
+	
 public:
 	// 해당 팀의 점수를 받아옵니다.
 	float GetTeamScore(const EPlayerTeam& Team) const;
@@ -52,7 +57,7 @@ public:
 	FORCEINLINE const EPlayerTeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
 
 	// 어떤 팀이든 최대 점수에 도달한 팀이 있는지 여부를 조사합니다.
-	bool IsSomeoneReachedMaxScore() const;
+	FORCEINLINE const bool GetSomeoneReachedMaxScore() const { return ATeamScore >= MaxScore || BTeamScore >= MaxScore; }
 
 private:
 	UFUNCTION()
@@ -63,11 +68,6 @@ private:
 
 	UFUNCTION()
 	void OnRep_OccupationWinner();
-
-public:
-	FOnOccupationChangeOccupationWinner OnOccupationChangeOccupationWinner;
-	FTeamScoreSignature OnTeamScoreChanged;
-	FKillCharacterSignature OnKillCharacterNotify;
 
 private:
 	uint8 NumPlayers;
@@ -83,4 +83,17 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float MaxScore;
+
+private:
+	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UTeamScoreWidget> TeamScoreWidgetClass;
+
+	// 팀스코어 위젯 입니다.
+	TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
+
+public:
+	FOnOccupationChangeOccupationWinner OnOccupationChangeOccupationWinner;
+	FTeamScoreSignature OnTeamScoreChanged;
+	FKillCharacterSignature OnKillCharacterNotify;
 };

@@ -69,7 +69,7 @@ protected:
 	// 게임중에 표시되는 타이머 위젯 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGameTimeWidget> InGameTimerWidgetClass;
-
+	
 	// 게임이 최대 몇초간 진행될지 정의합니다.
 	UPROPERTY(EditAnywhere)
 	float MatchDuration;
@@ -83,10 +83,12 @@ private:
 
 	FTimerHandle EndingTimer;
 
+	// 로딩 위젯 입니다.
 	TObjectPtr<ULoadingWidget> LoadingWidget;
 
+	// 캐릭터 선택창 위젯 입니다.
 	TObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
-
+	
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
 };

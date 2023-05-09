@@ -1,7 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "GameMode/OccupationGameState.h"
-
+#include "UI/TeamScoreWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -18,6 +19,38 @@ AOccupationGameState::AOccupationGameState()
 {
 	MaxScore = 100.f;
 	MatchDuration = 180.f;
+}
+
+void AOccupationGameState::BeginPlay()
+{
+	Super::BeginPlay();
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+	{
+		if (TeamScoreWidgetClass)
+		{
+			TeamScoreWidget = CreateWidget<UTeamScoreWidget>(LocalController, TeamScoreWidgetClass);
+			if (TeamScoreWidget == nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_TeamScoreWidget is null."));
+				return;
+			}
+			TeamScoreWidget->AddToViewport();
+			TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_LocalPlayerController is null."));
+		return;
+	}
+}
+
+void AOccupationGameState::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+
+	if (IsValid(TeamScoreWidget))
+		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
 }
 
 void AOccupationGameState::SetNumPlayers(const uint8& NewNumPlayers)
@@ -52,11 +85,6 @@ float AOccupationGameState::GetTeamScore(const EPlayerTeam& Team) const
 	if (Team == EPlayerTeam::B) return BTeamScore;
 	UE_LOG(LogScript, Warning, TEXT("Trying to GetTeamScore with not valid value! it was %d"), Team);
 	return 0.f;
-}
-
-bool AOccupationGameState::IsSomeoneReachedMaxScore() const
-{
-	return ATeamScore >= MaxScore || BTeamScore >= MaxScore;
 }
 
 void AOccupationGameState::OnRep_ATeamScore()

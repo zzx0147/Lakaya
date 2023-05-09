@@ -12,7 +12,7 @@
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	MaximumPlayers = 6;
 	MatchDuration = 300.f;
 }
@@ -20,6 +20,7 @@ ALakayaBaseGameState::ALakayaBaseGameState()
 void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
 	DOREPLIFETIME(ALakayaBaseGameState, MatchEndingTime);
 }
 

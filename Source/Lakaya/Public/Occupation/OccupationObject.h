@@ -22,7 +22,7 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-	FORCEINLINE APawn* GetInteractingPawn() const { return InteractingPawn; }
+	FORCEINLINE APawn* const GetInteractingPawn() const { return InteractingPawn; }
 	
 private:
 	virtual void OnInteractionStart(const float& Time, APawn* Caller) override;
