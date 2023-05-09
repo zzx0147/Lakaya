@@ -10,29 +10,22 @@
 AOccupationObject::AOccupationObject()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	Tags.Add("Interactable");
 
-	Trigger = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Trigger"));
-	Cylinder = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Cylinder"));
+	Trigger = CreateDefaultSubobject<USphereComponent>(TEXT("Trigger Sphere"));
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 
 	RootComponent = Trigger;
-	Cylinder->SetupAttachment(RootComponent);
+	Mesh->SetupAttachment(RootComponent);
 
-	TriggerSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Trigger Sphere"));
-	TriggerSphere->InitSphereRadius(200.0f);
-	TriggerSphere->SetCollisionProfileName("Custom"); // Set to custom collision profile
-	TriggerSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	TriggerSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // Enable overlap for Pawn channel
-	// TriggerSphere->SetCollisionResponseToChannel(ECC_Object, ECR_Ignore); // Disable collision for Object channel
-	TriggerSphere->SetupAttachment(RootComponent);
+	Trigger->InitSphereRadius(200.0f);
+	Trigger->SetupAttachment(RootComponent);
+	Trigger->SetRelativeLocation(FVector::ZeroVector);
 
-	Trigger->SetCapsuleSize(50.0f, 100.0f, true);
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Cylinder(
 		TEXT("/Game/Dev/KML/antena/White/Antenna.Antenna"));
+	
 	if (SM_Cylinder.Succeeded())
-		Cylinder->SetStaticMesh(SM_Cylinder.Object);
-
-	Trigger->SetRelativeLocation(FVector::ZeroVector);
+		Mesh->SetStaticMesh(SM_Cylinder.Object);
 
 	bReplicates = true;
 }
@@ -45,8 +38,6 @@ void AOccupationObject::BeginPlay()
 void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	// DOREPLIFETIME(AOccupationObject, ObjectOwner);
 }
 
 void AOccupationObject::Tick(float DeltaTime)
@@ -79,6 +70,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("%s is faster!"), *SecondCaller->GetName());
 			if (InteractingPawn != nullptr && InteractingPawn->GetController() == Caller->Controller) return;
+			// TODO :
 			InteractingPawn = SecondCaller;
 		}
 		else
@@ -87,43 +79,42 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 			if (SecondCaller != nullptr && SecondCaller->GetController() == Caller->Controller)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("이미 누군가가 상호작용을 하고 있습니다."));
+				// TODO : 
 				return;
 			}
 		}
 	}
 
-#pragma region TODO : ObjectOwner
 	// 소유자 팀에서 상호작용 할 경우 막아두기
+	// TODO : IsSameTeam()
 	FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetTeam());
-	if (PlayerStateString.Equals("EObjectTeam::A", ESearchCase::IgnoreCase))
+	if (PlayerStateString.Equals("EPlayerTeam::A", ESearchCase::IgnoreCase))
 	{
-		if (ObjectTeam == EObjectTeam::A)
+		if (ObjectTeam == EPlayerTeam::A)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("이미 본인 소유의 점령 오브젝트입니다."));
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("이미 점령한 오브젝트 입니다."));
 			return;
 		}
 	}
-	else if (PlayerStateString.Equals("EObjectTeam::B", ESearchCase::IgnoreCase))
+	else if (PlayerStateString.Equals("EPlayerTeam::B", ESearchCase::IgnoreCase))
 	{
-		if (ObjectTeam == EObjectTeam::B)
+		if (ObjectTeam == EPlayerTeam::B)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
 			return;
 		}
 	}
-#pragma endregion
 	
 	// TODO : 점프 도중 상호작용 시, 물리를 무시하고 공중에서 상호작용합니다.
 	// 상호작용중에는 움직임을 막아줍니다.
 	CharacterImMovable(Caller);
 	
-	// 시작 한 후 4초가 지나게 되면 성공.
-	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindLambda([this, Caller]()
+	// 시작 한 후 3초가 지나게 되면 성공.
+	// TODO : 
+	GetWorldTimerManager().SetTimer(InteractionTimerHandle, [this, Caller]
 	{
 		InteractionSuccess(Caller);
-	});
-	GetWorldTimerManager().SetTimer(InteractionTimerHandle, TimerDelegate, MaxInteractionDuration, false);
+	}, MaxInteractionDuration , false);
 }
 
 void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller)
@@ -155,7 +146,7 @@ void AOccupationObject::CharacterImMovable(APawn* Caller)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Start!"));
 		CastedCaller->GetCharacterMovement()->DisableMovement();
-		InteractingPawn = Caller;
+		// InteractingPawn = Caller;
 	}
 	else
 	{
@@ -179,10 +170,10 @@ void AOccupationObject::CharacterMovable(APawn* Caller)
 
 	// InteractionStop 기능에서 타이머가 이미 만료되었는지를 확인해줍니다.
 	// 그렇지 않으 경우 타이머를 취소.
-	if (GetWorldTimerManager().IsTimerActive(InteractionTimerHandle))
-	{
-		GetWorldTimerManager().ClearTimer(InteractionTimerHandle);
-	}
+	// if (GetWorldTimerManager().IsTimerActive(InteractionTimerHandle))
+	// {
+	// 	GetWorldTimerManager().ClearTimer(InteractionTimerHandle);
+	// }
 }
 
 void AOccupationObject::InteractionSuccess(APawn* Caller)
@@ -217,15 +208,14 @@ void AOccupationObject::InteractionSuccess(APawn* Caller)
 	OnInteractionFinish(Caller);
 	
 	// 상호작용을 성공하고 1초 뒤에 State 상태는 Success에서 None 상태로 변경
+	// TODO :
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindLambda([this, Caller]()
 	{
 		Cast<AInteractableCharacter>(Caller)->SetInteractionState(EInteractionState::None);
 	});
-
 	GetWorldTimerManager().SetTimer(InteractionStateHandle, TimerDelegate, 1.0f, false);
 	
-#pragma region TODO : ObjectOwner
 	FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetTeam());
 	if (PlayerStateString.Equals("EPlayerTeam::None", ESearchCase::IgnoreCase))
 	{
@@ -236,10 +226,10 @@ void AOccupationObject::InteractionSuccess(APawn* Caller)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
 	
-		if (ObjectTeam == EObjectTeam::B)
+		if (ObjectTeam == EPlayerTeam::B)
 			OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
 	
-		SetTeamObject(EObjectTeam::A);
+		SetTeamObject(EPlayerTeam::A);
 		OccupationGameMode->AddOccupyObject(EPlayerTeam::A);
 		return;
 	}
@@ -247,10 +237,10 @@ void AOccupationObject::InteractionSuccess(APawn* Caller)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
 	
-		if (ObjectTeam == EObjectTeam::A)
+		if (ObjectTeam == EPlayerTeam::A)
 			OccupationGameMode->SubOccupyObject(EPlayerTeam::A);
 			
-		SetTeamObject(EObjectTeam::B);
+		SetTeamObject(EPlayerTeam::B);
 		OccupationGameMode->AddOccupyObject(EPlayerTeam::B);
 		return;
 	}
@@ -259,7 +249,6 @@ void AOccupationObject::InteractionSuccess(APawn* Caller)
 		UE_LOG(LogTemp, Warning, TEXT("Error ! Error ! Error !"));
 		return;
 	}
-#pragma endregion
 }
 
 void AOccupationObject::OnInteractionFinish(APawn* Caller)
@@ -281,10 +270,11 @@ void AOccupationObject::OnRep_BroadCastTeamObject()
 	SetTeamObject(ObjectTeam);
 }
 
-void AOccupationObject::SetTeamObject(const EObjectTeam& Team)
+void AOccupationObject::SetTeamObject(const EPlayerTeam& Team)
 {
-	ObjectTeam = EObjectTeam::A;
+	ObjectTeam = EPlayerTeam::A;
 	UE_LOG(LogTemp, Warning, TEXT("SetTeamObject"));
+	
 	// switch (Team)
 	// {
 	// case EPlayerTeam::A:

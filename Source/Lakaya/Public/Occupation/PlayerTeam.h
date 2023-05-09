@@ -23,16 +23,3 @@ enum class EPlayerTeam : uint8
 	// 개인전
 	Individual
 };
-
-UENUM()
-enum class EObjectTeam : uint8
-{
-	// 현재 어느 팀이든 소속되어 있지 않은 상태
-	None UMETA(DisplayerName = "None"),
-
-	// A팀에 소속이 된 상태
-	A UMETA(DisplayerName = "A"),
-
-	// B팀에 소속이 된 상태
-	B UMETA(DisplayerName = "B")
-};

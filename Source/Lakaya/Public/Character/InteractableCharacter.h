@@ -18,9 +18,19 @@ enum class EInteractionState : uint8
 	Canceled UMETA(DisPlayerName = "Canceled"),
 };
 
-/**
- *
- */
+USTRUCT()
+struct FInteractionInfo
+{
+	GENERATED_BODY();
+
+	// 현재 인터랙션 중인 액터입니다.
+	UPROPERTY(ReplicatedUsing = OnRep_InteractingActor)
+	TWeakObjectPtr<AActor> InteractingActor;
+
+	UFUNCTION()
+	void OnRep_InteractingActor();
+};
+
 UCLASS(Config = Game)
 class LAKAYA_API AInteractableCharacter : public AArmedCharacter
 {
@@ -53,9 +63,8 @@ protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void RequestInteractionStop(const float& Time, AActor* Actor);
 
-	UFUNCTION()
-	void OnRep_InteractingActor();
-
+	// UFUNCTION()
+	// void OnRep_InteractingActor();
 public:
 	// 인터렉션이 가능한 액터가 변경되는 경우 호출됩니다. 매개변수로 넘겨진 액터가 nullptr이면 인터렉션이 불가능해졌음을 의미하며,
 	// 그렇지 않은 경우 해당 액터와 인터렉션이 가능해졌음을 의미합니다.
@@ -65,10 +74,6 @@ public:
 	FInteractionSignature OnInteractingActorChanged;
 
 private:
-	// 현재 인터렉션 중인 액터입니다.
-	UPROPERTY(ReplicatedUsing=OnRep_InteractingActor)
-	TWeakObjectPtr<AActor> InteractingActor;
-
 	// 인터렉션이 가능한 액터입니다.
 	TWeakObjectPtr<AActor> InteractableActor;
 

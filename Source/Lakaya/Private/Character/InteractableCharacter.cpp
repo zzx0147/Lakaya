@@ -39,12 +39,6 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	}
 }
 
-// void AInteractableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
-// {
-// 	Super::KillCharacter(EventInstigator, DamageCauser);
-// 	if (InteractingActor.IsValid()) Cast<AInteractable>(InteractingActor)->OnCharacterDead(this);
-// }
-
 bool AInteractableCharacter::ShouldInteractStart()
 {
 	if (InteractableActor.IsValid())
@@ -100,6 +94,7 @@ bool AInteractableCharacter::ShouldInteractStop()
 void AInteractableCharacter::InitializeInteraction()
 {
 	InteractingActor = nullptr;
+	SetInteractionState(EInteractionState::None);
 	OnInteractingActorChanged.Broadcast(InteractingActor.Get());
 }
 
@@ -117,7 +112,7 @@ bool AInteractableCharacter::RequestInteractionStart_Validate(const float& Time,
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStart_Valide Failed."));
+		UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStart_Valide failed."));
 		return false;
 	}
 }
@@ -126,6 +121,7 @@ void AInteractableCharacter::RequestInteractionStart_Implementation(const float&
 {
 	InteractingActor = Actor;
 	SetInteractionState(EInteractionState::OnGoing);
+	// TODO :
 	Cast<AInteractable>(Actor)->OnInteractionStart(Time, this);
 	OnInteractingActorChanged.Broadcast(InteractingActor.Get());
 }
@@ -147,7 +143,6 @@ bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, 
 void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor)
 {
 	InitializeInteraction();
-	SetInteractionState(EInteractionState::None);
 	Cast<AInteractable>(Actor)->OnInteractionStop(GetServerTime(), this);
 	OnInteractingActorChanged.Broadcast(InteractingActor.Get());
 }
