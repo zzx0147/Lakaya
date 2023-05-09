@@ -9,7 +9,7 @@ void AInteractableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(AInteractableCharacter, InteractingActor);
 }
 
-AInteractableCharacter::AInteractableCharacter()
+AInteractableCharacter::AInteractableCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	bInteractionRequested = false;
 }
@@ -60,7 +60,7 @@ bool AInteractableCharacter::ShouldInteractStart()
 			UE_LOG(LogTemp, Warning, TEXT("InteractionState is not none."));
 			return false;
 		}
-			
+
 		bInteractionRequested = true;
 		RequestInteractionStart(GetServerTime(), InteractableActor.Get());
 		return true;
@@ -80,7 +80,7 @@ bool AInteractableCharacter::ShouldInteractStop()
 			UE_LOG(LogTemp, Warning, TEXT("InteractionState is not ongoing."));
 			return false;
 		}
-		
+
 		bInteractionRequested = false;
 		RequestInteractionStop(GetServerTime(), InteractableActor.Get());
 		return true;

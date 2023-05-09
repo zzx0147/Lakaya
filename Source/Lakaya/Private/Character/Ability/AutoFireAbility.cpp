@@ -11,7 +11,7 @@
 void UAutoFireAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION(UAutoFireAbility, bIsFiring, COND_SkipOwner);
+	DOREPLIFETIME(UAutoFireAbility, bIsFiring);
 }
 
 UAutoFireAbility::UAutoFireAbility()
@@ -29,10 +29,9 @@ void UAutoFireAbility::AbilityStart()
 		return;
 	}
 
-	if (bIsFiring) return;
-	bIsFiring = true;
+	if (bIsFireRequested) return;
+	bIsFireRequested = true;
 	Super::AbilityStart();
-	OnFiringStateChanged.Broadcast(bIsFiring);
 }
 
 void UAutoFireAbility::AbilityStop()
@@ -43,18 +42,16 @@ void UAutoFireAbility::AbilityStop()
 		return;
 	}
 
-	if (!bIsFiring) return;
-	bIsFiring = false;
+	if (!bIsFireRequested) return;
+	bIsFireRequested = false;
 	Super::AbilityStop();
-	OnFiringStateChanged.Broadcast(bIsFiring);
 }
 
 void UAutoFireAbility::BeginPlay()
 {
 	Super::BeginPlay();
-	if (const auto Character = GetOwner())
+	if (const auto Character = GetOwner(); Character && Character->HasAuthority())
 	{
-		if (!Character->HasAuthority()) return;
 		CameraComponent = Cast<UCameraComponent>(Character->FindComponentByClass(UCameraComponent::StaticClass()));
 		if (!CameraComponent.IsValid())
 			UE_LOG(LogInit, Error, TEXT("Fail to find CameraComponent in UAutoFireComponent!"));
@@ -114,9 +111,8 @@ void UAutoFireAbility::SingleFire()
 		GetWorld()->LineTraceSingleByChannel(Result, Location, Destination, ECC_Camera, CollisionQueryParams))
 	{
 		auto Pawn = GetOwner<APawn>();
-		auto Controller = Pawn ? Pawn->GetController() : nullptr;
-		UGameplayStatics::ApplyPointDamage(Result.GetActor(), FireDamage, Location, Result, Controller, GetOwner(),
-		                                   nullptr);
+		UGameplayStatics::ApplyPointDamage(Result.GetActor(), FireDamage, Location, Result,
+		                                   Pawn ? Pawn->GetController() : nullptr, GetOwner(), nullptr);
 	}
 }
 

@@ -39,8 +39,10 @@ protected:
 	virtual void CopyProperties(APlayerState* PlayerState) override;
 
 public:
-	// Other와 같은 팀인지 판별합니다.
-	virtual bool IsSameTeam(const ALakayaBasePlayerState* Other) const;
+	bool IsSameTeam(const ALakayaBasePlayerState* Other) const;
+
+	UFUNCTION(BlueprintGetter)
+	bool IsSameTeam(const EPlayerTeam& Other) const;
 
 	// 플레이어의 팀을 설정합니다.
 	virtual void SetTeam(const EPlayerTeam& DesireTeam);

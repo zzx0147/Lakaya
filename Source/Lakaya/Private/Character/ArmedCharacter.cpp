@@ -6,10 +6,26 @@
 #include "Character/Ability/CharacterAbility.h"
 #include "Net/UnrealNetwork.h"
 
+const TArray<FName> AArmedCharacter::AbilityComponentNames = {
+	FName(TEXT("PrimaryAbility")), FName(TEXT("SecondaryAbility")), FName(TEXT("WeaponFire")),
+	FName(TEXT("WeaponAbility")), FName(TEXT("WeaponReload")), FName(TEXT("DashAbility"))
+};
+
 void AArmedCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AArmedCharacter, Abilities);
+}
+
+AArmedCharacter::AArmedCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	Abilities.Reserve(EAbilityKind::Count);
+	for (auto Index = 0; Index < EAbilityKind::Count; ++Index)
+	{
+		const auto Ability = CreateDefaultSubobject<UCharacterAbility>(AbilityComponentNames[Index]);
+		Ability->SetIsReplicated(true);
+		Abilities.EmplaceAt(Index, Ability);
+	}
 }
 
 ELifetimeCondition AArmedCharacter::AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const
