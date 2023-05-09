@@ -17,18 +17,18 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 
 	CharacterButtonArray =
 	{
-		Cast<UButton>(GetWidgetFromName(TEXT("Citizen_Btn"))),
-		Cast<UButton>(GetWidgetFromName(TEXT("GovernmentMan_Btn"))),
-		Cast<UButton>(GetWidgetFromName(TEXT("Gangster_Btn")))
+		Cast<UButton>(GetWidgetFromName(FName(TEXT("Rena_Btn")))),
+		Cast<UButton>(GetWidgetFromName(FName(TEXT("Wazi_Btn")))),
+		Cast<UButton>(GetWidgetFromName(FName(TEXT("Minami_Btn"))))
 	};
 
-	CharacterNameArray = { TEXT("Citizen"), TEXT("GovernmentMan"), TEXT("Gangster") };
+	CharacterNameArray = { TEXT("Rena"), TEXT("Wazi"), TEXT("Minami") };
 
 	CharacterRenderTargetMaterialArray =
 	{
-		LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/RenderTarget/MI_Citizen")),
-		LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/RenderTarget/MI_GovernmentMan")),
-		LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/RenderTarget/MI_Gangster"))
+		LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/RenderTarget/MI_Rena")),
+		LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/RenderTarget/MI_Wazi")),
+		LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/RenderTarget/MI_Minami"))
 	};
 
 	check(SelectedCharacterImage != nullptr);
@@ -54,27 +54,27 @@ void UGameLobbyCharacterSelectWidget::NativeTick(const FGeometry& MyGeometry, fl
 
 void UGameLobbyCharacterSelectWidget::OnClickedCharacter1Button()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("OnClickedCitizenButton")));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("OnClickedCitizenButton")));
 	SelectCharacter(0);
 }
 
 void UGameLobbyCharacterSelectWidget::OnClickedCharacter2Button()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("OnClickedGovernmentManButton")));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("OnClickedGovernmentManButton")));
 	SelectCharacter(1);
 }
 
 void UGameLobbyCharacterSelectWidget::OnClickedCharacter3Button()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("OnClickedGangsterButton")));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("OnClickedGangsterButton")));
 	SelectCharacter(2);
 }
 
-void UGameLobbyCharacterSelectWidget::SelectCharacter(int32 CharacterNum)
+void UGameLobbyCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum)
 {
 	//캐릭터를 선택하면 캐릭터 3D 출력을 변경하고 이전의 버튼을 활성화한뒤 선택한 캐릭터의 버튼을 비활성화
 	//OnCharacterSelectedCharater로 변경된 캐릭터 번호를 브로드캐스트
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("SelectCharacter %d"), CharacterNum));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("SelectCharacter %d"), CharacterNum));
 
 	SelectedCharacterImage->SetBrushFromMaterial(CharacterRenderTargetMaterialArray[CharacterNum]);
 	PrevCharacterButton->SetIsEnabled(true);

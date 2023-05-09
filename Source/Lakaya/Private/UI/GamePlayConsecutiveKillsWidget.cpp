@@ -3,31 +3,18 @@
 #include "UI/GamePlayConsecutiveKillsWidget.h"
 
 #include "Components/ProgressBar.h"
-#include "Weapon/WeaponComponent.h"
 
 
-void UGamePlayConsecutiveKillsWidget::BindWeapon(UWeaponComponent* const& WeaponComponent)
+void UGamePlayConsecutiveKillsWidget::BindCharacter(ACharacter* const& Character)
 {
-	if (WeaponComponent)
-	{
-		WeaponComponent->OnUpgradeLevelChanged.AddUObject(
-			this, &UGamePlayConsecutiveKillsWidget::OnChangeConsecutiveKills);
-
-		MaximumConsecutiveKills = WeaponComponent->GetMaximumUpgradeLevel();
-		ConsecutiveKills = WeaponComponent->GetUpgradeLevel();
-		ConsecutiveKillsProgressBar->SetPercent((float)ConsecutiveKills / MaximumConsecutiveKills);
-	}
+	Super::BindCharacter(Character);
+	//TODO: 캐릭터에 연속처치 시스템을 추가하고, 위젯을 바인딩합니다.
 }
 
-void UGamePlayConsecutiveKillsWidget::UnBindWeapon(UWeaponComponent* const& WeaponComponent)
+bool UGamePlayConsecutiveKillsWidget::UnbindCharacter(ACharacter* const& Character)
 {
-	if (WeaponComponent)
-	{
-		WeaponComponent->OnUpgradeLevelChanged.RemoveAll(this);
-
-		ConsecutiveKills = MaximumConsecutiveKills = 0;
-		ConsecutiveKillsProgressBar->SetPercent((float)ConsecutiveKills / MaximumConsecutiveKills);
-	}
+	Super::UnbindCharacter(Character);
+	return true;
 }
 
 void UGamePlayConsecutiveKillsWidget::NativeConstruct()

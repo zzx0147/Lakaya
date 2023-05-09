@@ -3,36 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ThirdPersonCharacter.h"
+#include "LakayaBaseCharacter.h"
 #include "MovableCharacter.generated.h"
 
 UCLASS()
-class LAKAYA_API AMovableCharacter : public AThirdPersonCharacter
+class LAKAYA_API AMovableCharacter : public ALakayaBaseCharacter
 {
 	GENERATED_BODY()
 
 public:
-	AMovableCharacter();
-
-	virtual void Crouch(bool bClientSimulation = false) override;
-
-	bool IsOwnedByLocalPlayer() const;
-	void Run();
-	void StopRun();
-
-private:
-	UFUNCTION(Server, Reliable, WithValidation)
-	void RequestSetRunState(bool IsRunning, const float& Time);
-
-	UFUNCTION()
-	void OnRep_IsRunning();
-
-private:
-	UPROPERTY(EditAnywhere, Category = Movement)
-	float RunMultiplier;
-
-	UPROPERTY(ReplicatedUsing=OnRep_IsRunning)
-	bool bIsRunning;
-
-	float RecentRunEventTime;
+	explicit AMovableCharacter(const FObjectInitializer& ObjectInitializer);
 };

@@ -3,105 +3,47 @@
 
 #include "Character/ArmedCharacter.h"
 
-#include "Weapon/WeaponClassData.h"
-#include "Weapon/WeaponComponent.h"
-#include "Engine/DataTable.h"
+#include "Character/Ability/CharacterAbility.h"
 #include "Net/UnrealNetwork.h"
 
-AArmedCharacter::AArmedCharacter()
-{
-	bReplicateUsingRegisteredSubObjectList = true;
-
-	static const ConstructorHelpers::FObjectFinder<UDataTable> DataFinder(
-		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/DT_WeaponClassDataTable'"));
-
-	if (DataFinder.Succeeded()) WeaponClassDataTable = DataFinder.Object;
-}
+const TArray<FName> AArmedCharacter::AbilityComponentNames = {
+	FName(TEXT("PrimaryAbility")), FName(TEXT("SecondaryAbility")), FName(TEXT("WeaponFire")),
+	FName(TEXT("WeaponAbility")), FName(TEXT("WeaponReload")), FName(TEXT("DashAbility"))
+};
 
 void AArmedCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AArmedCharacter, PrimaryWeapon);
+	DOREPLIFETIME(AArmedCharacter, Abilities);
 }
 
-void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponClassRowName)
+AArmedCharacter::AArmedCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	const auto Data = WeaponClassDataTable->FindRow<FWeaponClassData>(WeaponClassRowName,TEXT("SetupPrimaryWeapon"));
-
-	PrimaryWeapon = Cast<UWeaponComponent>(
-		AddComponentByClass(Data->WeaponClass.LoadSynchronous(), false, FTransform::Identity, false));
-
-	if (!PrimaryWeapon) UE_LOG(LogActor, Fatal, TEXT("PrimaryWeapon was setted as nullptr"));
-	PrimaryWeapon->RequestSetupData(Data->AssetRowName);
-	PrimaryWeapon->SetIsReplicated(true);
-	if (!PrimaryWeapon->GetIsReplicated()) UE_LOG(LogTemp, Fatal, TEXT("PrimaryWeapon is NOT replicated"));
-	OnPrimaryWeaponChanged.Broadcast(PrimaryWeapon);
+	Abilities.Reserve(EAbilityKind::Count);
+	for (auto Index = 0; Index < EAbilityKind::Count; ++Index)
+	{
+		const auto Ability = CreateDefaultSubobject<UCharacterAbility>(AbilityComponentNames[Index]);
+		Ability->SetIsReplicated(true);
+		Abilities.EmplaceAt(Index, Ability);
+	}
 }
 
 ELifetimeCondition AArmedCharacter::AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const
 {
-	if (ComponentToReplicate->IsA(UWeaponComponent::StaticClass())) return COND_None;
+	if (ComponentToReplicate->IsA(UCharacterAbility::StaticClass())) return COND_None;
 	return Super::AllowActorComponentToReplicate(ComponentToReplicate);
 }
 
-void AArmedCharacter::BeginPlay()
+void AArmedCharacter::StartAbility(const EAbilityKind& Kind)
 {
-	Super::BeginPlay();
-
-	//TODO: 무기 셋업은 게임모드에서 수행되어야 합니다.
-	if (HasAuthority()) SetupPrimaryWeapon(TEXT("Test"));
+	if (Abilities.IsValidIndex(Kind))
+		if (const auto& Ability = Abilities[Kind])
+			Ability->AbilityStart();
 }
 
-void AArmedCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
+void AArmedCharacter::StopAbility(const EAbilityKind& Kind)
 {
-	Super::KillCharacter(EventInstigator, DamageCauser);
-	PrimaryWeapon->UpgradeInitialize();
-	if (const auto Causer = Cast<AArmedCharacter>(DamageCauser)) Causer->PrimaryWeapon->UpgradeWeapon();
-}
-
-void AArmedCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
-{
-	Super::KillCharacterNotify_Implementation(EventInstigator, DamageCauser);
-	PrimaryWeapon->OnCharacterDead();
-}
-
-void AArmedCharacter::RespawnNotify_Implementation()
-{
-	Super::RespawnNotify_Implementation();
-	PrimaryWeapon->OnCharacterRespawn();
-}
-
-void AArmedCharacter::FireStart()
-{
-	PrimaryWeapon->FireStart();
-}
-
-void AArmedCharacter::FireStop()
-{
-	PrimaryWeapon->FireStop();
-}
-
-void AArmedCharacter::AbilityStart()
-{
-	PrimaryWeapon->AbilityStart();
-}
-
-void AArmedCharacter::AbilityStop()
-{
-	PrimaryWeapon->AbilityStop();
-}
-
-void AArmedCharacter::ReloadStart()
-{
-	PrimaryWeapon->ReloadStart();
-}
-
-void AArmedCharacter::ReloadStop()
-{
-	PrimaryWeapon->ReloadStop();
-}
-
-void AArmedCharacter::OnRep_PrimaryWeapon()
-{
-	OnPrimaryWeaponChanged.Broadcast(PrimaryWeapon);
+	if (Abilities.IsValidIndex(Kind))
+		if (const auto& Ability = Abilities[Kind])
+			Ability->AbilityStop();
 }

@@ -3,152 +3,61 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameState.h"
+#include "GameMode/LakayaBaseGameState.h"
+#include "Occupation/PlayerTeam.h"
 #include "OccupationGameState.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeJoinedPlayers, uint8);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeGameState, EOccupationGameState);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamScore, float);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamScore, float);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeOccupationWinner, EOccupationWinner)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeJoinedPlayers, const uint8&)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeOccupationWinner, const EPlayerTeam&)
+DECLARE_EVENT_TwoParams(AOccupationGameState, FTeamScoreSignature, const EPlayerTeam&, const float&)
 
-UENUM()
-enum class EOccupationGameState : uint8
-{
-	Menu UMETA(DisplayerName = "Menu"), // 메뉴 선택, 설정 ... 상태
-	StandBy UMETA(DisplayName = "StandBy"), // 다른 플레이어 입장 대기 상태
-	// SelectWait UMETA(DisplayName = "SelectWait"), // 무기 및 캐릭터 선택 대기 상태
-	StandByToPregressLoading UMETA(DisplayName = "StandByToPregressLoading"),
-	Progress UMETA(DisplayName = "Progress"), // 게임진행 상태
-	Finish UMETA(DisplayName = "Finish") // 게임종료 상태
-};
-
-UENUM()
-enum class EOccupationWinner : uint8
-{
-	UnCertain UMETA(DisplayerName = "UnCertain"), // 승리자가 정해지지 않은 상태.
-	A UMETA(DisplayerName = "A"), // A팀이 승리한 상태.
-	B UMETA(DisplayerName = "B") // B팀이 승리한 상태.
-};
+DECLARE_EVENT_FourParams(AOccupationGameState, FKillCharacterSignature, AController*, AActor*, AController*, AActor*)
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API AOccupationGameState : public AGameState
+class LAKAYA_API AOccupationGameState : public ALakayaBaseGameState
 {
 	GENERATED_BODY()
 
-private:
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaSeconds) override;
-	
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+public:
+	AOccupationGameState();
+
+	UFUNCTION()
+	void SetNumPlayers(const uint8& NewNumPlayers);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NotifyKillCharacter(AController* KilledController, AActor* KilledActor, AController* EventInstigator,
+	                         AActor* Causer);
+
+	// 현재 두 팀의 점수를 기준으로 승자를 정합니다.
+	void SetOccupationWinner();
+
+	/**
+	 * @brief 팀에 점수를 부여합니다.
+	 * @param Team 점수를 부여할 팀입니다.
+	 * @param AdditiveScore 추가될 점수입니다.
+	 */
+	void AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore);
 
 public:
-	UFUNCTION()
-	void SetNumPlayers(const uint8 NewNumPlayers);
+	// 해당 팀의 점수를 받아옵니다.
+	float GetTeamScore(const EPlayerTeam& Team) const;
 
-	UFUNCTION()
-	void SetGameState(const EOccupationGameState NewGameState);
-	
-	UFUNCTION()
-	void SetOccupationWinner(const EOccupationWinner NewWinner);
+	// 최대 점수를 가져옵니다.
+	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }
 
-	UFUNCTION()
-	void SetATeamScore();
+	// 승리자의 정보를 가져옵니다.
+	FORCEINLINE const EPlayerTeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
 
-	UFUNCTION()
-	void SetBTeamScore();
+	// 어떤 팀이든 최대 점수에 도달한 팀이 있는지 여부를 조사합니다.
+	bool IsSomeoneReachedMaxScore() const;
 
-	UFUNCTION()
-	void AddATeamObjectNum();
-
-	UFUNCTION()
-	void AddBTeamObjectNum();
-
-	UFUNCTION()
-	void SubATeamObjectNum();
-
-	UFUNCTION()
-	void SubBTeamObjectNum();
-
-	UFUNCTION()
-	FORCEINLINE uint8 GetMaxPlayers() const { return MaxPlayers; }
-
-	UFUNCTION()
-	FORCEINLINE uint8 GetNumPlayers() const { return NumPlayers; }
-	
-	UFUNCTION()
-	FORCEINLINE float GetATeamScore() const { return ATeamScore; }
-
-	UFUNCTION()
-	FORCEINLINE float GetBTeamScore() const { return BTeamScore; }
-
-	UFUNCTION()
-	FORCEINLINE float GetATeamObjectNum() const { return ATeamObjectNum; }
-
-	UFUNCTION()
-	FORCEINLINE float GetBTeamObjectNum() const { return BTeamObjectNum; }
-
-	UFUNCTION()
-	FORCEINLINE float GetMaxScore() const { return MaxScore; }
-
-	UFUNCTION()
-	FORCEINLINE EOccupationWinner GetOccupationWinner() const { return CurrentOccupationWinner; }
-	
-	/**
-	 * @brief 매치가 시작되었을 때 호출됩니다. 
-	 * @param MatchTime 매치가 몇초동안 진행되는지 나타냅니다.
-	 */
-	void OnMatchStarted(const float& MatchTime);
-
-	// 남은 매칭 시간을 가져옵니다. 아직 매칭시간 정보가 설정되지 않았거나, 시간이 지나간 경우 0을 반환합니다.
-	float GetRemainMatchTime();
-
-	void EndTimeCheck();
 private:
-	UPROPERTY(ReplicatedUsing = OnRep_NumPlayers)
-	uint8 NumPlayers;
-
-	UPROPERTY(ReplicatedUsing = OnRep_GameState)
-	EOccupationGameState CurrentGameState = EOccupationGameState::Menu;
-
-	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
-	EOccupationWinner CurrentOccupationWinner = EOccupationWinner::UnCertain;
-
-	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore)
-	float ATeamScore = 0;
-
-	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore)
-	float BTeamScore = 0;
-
-	UPROPERTY(Replicated)
-	float StartTime;
-
-	UPROPERTY(Replicated)
-	float MatchEndingTime;
-		
-	uint8 ATeamObjectNum = 0;
-
-	uint8 BTeamObjectNum = 0;
-
-	UPROPERTY(EditAnywhere)
-	uint8 MaxPlayers = 4;
-
-	const float Standard = 0.2f;
-
-	const float MaxScore = 100.0f;
-private:
-	UFUNCTION()
-	void OnRep_NumPlayers();
-
-	UFUNCTION()
-	void OnRep_GameState();
-
 	UFUNCTION()
 	void OnRep_ATeamScore();
-	
+
 	UFUNCTION()
 	void OnRep_BTeamScore();
 
@@ -156,14 +65,22 @@ private:
 	void OnRep_OccupationWinner();
 
 public:
-	FOnOccupationChangeJoinedPlayers OnOccupationChangeJoinedPlayers;
-	FOnOccupationChangeGameState OnOccupationChangeGameState;
-	FOnOccupationChangeATeamScore OnOccupationChangeATeamScore;
-	FOnOccupationChangeBTeamScore OnOccupationChangeBTeamScore;
 	FOnOccupationChangeOccupationWinner OnOccupationChangeOccupationWinner;
-	
+	FTeamScoreSignature OnTeamScoreChanged;
+	FKillCharacterSignature OnKillCharacterNotify;
+
 private:
-	FTimerHandle TimerHandle_AteamScoreIncrease;
-	FTimerHandle TimerHandle_BteamScoreIncrease;
-	FTimerHandle TimerHandle_GameTimeCheck;
+	uint8 NumPlayers;
+
+	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
+	EPlayerTeam CurrentOccupationWinner;
+
+	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore, Transient)
+	float ATeamScore;
+
+	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore, Transient)
+	float BTeamScore;
+
+	UPROPERTY(EditAnywhere)
+	float MaxScore;
 };
