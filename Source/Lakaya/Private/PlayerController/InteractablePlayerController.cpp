@@ -8,13 +8,13 @@
 AInteractablePlayerController::AInteractablePlayerController()
 {
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> InteractionContextFinder(
-		TEXT("/Game/Dev/Yongwoo/Input/IC_InteractionControl"));
+		TEXT("/Game/Input/IC_InteractionControl"));
 	
 	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionStartFinder(
-		TEXT("/Game/Dev/Yongwoo/Input/IA_InteractionStart"));
+		TEXT("/Game/Input/IA_InteractionStart"));
 	
 	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionStopFinder(
-		TEXT("/Game/Dev/Yongwoo/Input/IA_InteractionStop"));
+		TEXT("/Game/Input/IA_InteractionStop"));
 
 #pragma region Null 체크
 	if (InteractionContextFinder.Succeeded()) InteractionContext = InteractionContextFinder.Object;

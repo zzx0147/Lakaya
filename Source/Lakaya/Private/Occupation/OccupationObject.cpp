@@ -22,7 +22,7 @@ AOccupationObject::AOccupationObject()
 	Trigger->SetRelativeLocation(FVector::ZeroVector);
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Cylinder(
-		TEXT("/Game/Dev/KML/antena/White/Antenna.Antenna"));
+		TEXT("/Game/Dev/MeeLim/antena/White/Antenna.Antenna"));
 	
 	if (SM_Cylinder.Succeeded())
 		Mesh->SetStaticMesh(SM_Cylinder.Object);
