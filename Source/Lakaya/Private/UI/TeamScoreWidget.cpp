@@ -3,12 +3,19 @@
 
 #include "UI/TeamScoreWidget.h"
 #include "Components/TextBlock.h"
+#include "GameMode/OccupationGameState.h"
+
+bool UTeamScoreWidget::OnMatchStart()
+{
+	SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	return true;
+}
 
 void UTeamScoreWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	const auto OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
 	if (OccupationGameState == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("GameTimeWidget_GameState is null."));
@@ -22,9 +29,6 @@ void UTeamScoreWidget::NativeConstruct()
 		return;
 	}
 
-	OnChangeATeamScore(OccupationGameState->GetATeamScore());
-	OnChangeBTeamScore(OccupationGameState->GetBTeamScore());
-	
 	BTeamScoreText = Cast<UTextBlock>(GetWidgetFromName(TEXT("BTeamScoreText")));
 	if (BTeamScoreText == nullptr)
 	{
@@ -32,46 +36,28 @@ void UTeamScoreWidget::NativeConstruct()
 		return;
 	}
 
-	OccupationGameState->OnOccupationChangeATeamScore.AddUObject(this, &UTeamScoreWidget::OnChangeATeamScore);
-	OccupationGameState->OnOccupationChangeBTeamScore.AddUObject(this, &UTeamScoreWidget::OnChangeBTeamScore);
-	OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &UTeamScoreWidget::SetTeamScoreWidget);
-	
-	SetVisibility(ESlateVisibility::Hidden);
+	MaxScore = OccupationGameState->GetMaxScore();
+	OnChangeATeamScore(OccupationGameState->GetTeamScore(EPlayerTeam::A));
+	OnChangeBTeamScore(OccupationGameState->GetTeamScore(EPlayerTeam::B));
+
+	OccupationGameState->OnTeamScoreChanged.AddUObject(this, &UTeamScoreWidget::OnTeamScoreChanged);
 }
 
-void UTeamScoreWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-}
-
-void UTeamScoreWidget::SetTeamScoreWidget(EOccupationGameState ChangeGameState)
-{
-	if (ChangeGameState == EOccupationGameState::Progress)
-	{
-		SetVisibility(ESlateVisibility::Visible);
-		return;
-	}
-}
-
-void UTeamScoreWidget::ReMoveTeamScoreWidget(EOccupationGameState ChangeGameState)
-{
-	// TODO
-}
-
-void UTeamScoreWidget::OnChangeATeamScore(float NewScore)
+void UTeamScoreWidget::OnChangeATeamScore(const float& NewScore) const
 {
 	ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), NewScore)));
-	if (NewScore >= OccupationGameState->GetMaxScore())
-	{
-		ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), 1.0f)));
-	}
+	if (NewScore >= MaxScore) ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), 1.0f)));
 }
 
-void UTeamScoreWidget::OnChangeBTeamScore(float NewScore)
+void UTeamScoreWidget::OnChangeBTeamScore(const float& NewScore) const
 {
 	BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("B팀 %.1f%%"), NewScore)));
-	if (NewScore >= OccupationGameState->GetMaxScore())
-	{
-		BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("B팀 %.1f%%"), 1.0f)));
-	}
+	if (NewScore >= MaxScore) BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("B팀 %.1f%%"), 1.0f)));
+}
+
+void UTeamScoreWidget::OnTeamScoreChanged(const EPlayerTeam& Team, const float& Score) const
+{
+	if (Team == EPlayerTeam::A) OnChangeATeamScore(Score);
+	else if (Team == EPlayerTeam::B) OnChangeBTeamScore(Score);
+	else UE_LOG(LogScript, Warning, TEXT("Event broadcasted with invalid value! it was %d"), Team);
 }

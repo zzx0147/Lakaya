@@ -2,15 +2,10 @@
 
 #include "UI/GamePlayKillLogWidget.h"
 
-#include "Character/DamageableCharacter.h"
 #include "Components/VerticalBox.h"
+#include "GameMode/OccupationGameState.h"
 #include "UI/KillLogElement.h"
 
-void UGamePlayKillLogWidget::OnCharacterBeginPlay(ADamageableCharacter* Character)
-{
-	if (Character) Character->OnKillCharacterNotify.AddUObject(this, &UGamePlayKillLogWidget::OnKillCharacterNotify);
-	else UE_LOG(LogInit, Error, TEXT("SetupKillLogWidget::Character was nullptr!"));
-}
 
 UGamePlayKillLogWidget::UGamePlayKillLogWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -44,6 +39,9 @@ void UGamePlayKillLogWidget::NativeConstruct()
 		Result->SetVisibility(ESlateVisibility::Collapsed);
 		return Result;
 	});
+
+	if (const auto GameState = GetWorld()->GetGameState<AOccupationGameState>())
+		GameState->OnKillCharacterNotify.AddUObject(this, &UGamePlayKillLogWidget::OnKillCharacterNotify);
 }
 
 void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController, AActor* KilledActor,
@@ -57,6 +55,6 @@ void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController
 	}
 	else Element = Cast<UKillLogElement>(KillLogBox->GetChildAt(InitialChildCount));
 
-	// KillLogBox->ShiftChild(KillLogBox->GetChildrenCount(), Element);
-	Element->SetKillLog(Cast<ADamageableCharacter>(Causer), Cast<ACharacter>(KilledActor));
+	KillLogBox->ShiftChild(KillLogBox->GetChildrenCount(), Element);
+	// Element->SetKillLog(Cast<ADamageableCharacter>(Causer), Cast<ACharacter>(KilledActor));
 }

@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
-#include "GameMode/OccupationGameState.h"
 #include "GameTimeWidget.generated.h"
 
 /**
@@ -17,22 +16,23 @@ class LAKAYA_API UGameTimeWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UGameTimeWidget(const FObjectInitializer& ObjectInitializer);
+	explicit UGameTimeWidget(const FObjectInitializer& ObjectInitializer);
 
-private:
+protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* GameTimeWidgetText;
-
 public:
-	UFUNCTION()
-	void SetGameTimeWidget(EOccupationGameState ChangeGameState);
+	UFUNCTION(BlueprintSetter)
+	void SetWidgetTimer(const float& ArgDestinationTime);
 
-private:
+protected:
 	UPROPERTY(EditAnywhere)
 	FText TimeTextFormat;
 
-	TWeakObjectPtr<AOccupationGameState> OccupationGameState;
+private:
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* GameTimeWidgetText;
+
+	float DestinationTime;
 };

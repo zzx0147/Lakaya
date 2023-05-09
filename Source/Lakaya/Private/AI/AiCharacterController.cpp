@@ -37,27 +37,24 @@ void AAiCharacterController::BeginPlay()
 	// UE_LOG(LogTemp, Warning, TEXT("AiController BeginPlay."));
 }
 
-void AAiCharacterController::AiFireStart(AOccupationCharacter* OccuCharacter)
-{
-	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
-   
-	if (OccuCharacter) OccuCharacter->FireStart();
-	else
-	{
-		UE_LOG(LogInit, Warning, TEXT("Error Ai Start Fire"))
-	}
-}
-
-void AAiCharacterController::AiFireStop(AOccupationCharacter* OccuCharacter)
-{
-	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
-   
-	if (OccuCharacter) OccuCharacter->FireStop();
-	else
-	{
-		UE_LOG(LogInit, Warning, TEXT("Error Ai Stop Fire"))
-	}
-}
-
-
-
+// void AAiCharacterController::AiFireStart(AOccupationCharacter* OccuCharacter)
+// {
+// 	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
+//    
+// 	// if (OccuCharacter) OccuCharacter->FireStart();
+// 	// else
+// 	// {
+// 	// 	UE_LOG(LogInit, Warning, TEXT("Error Ai Start Fire"))
+// 	// }
+// }
+//
+// void AAiCharacterController::AiFireStop(AOccupationCharacter* OccuCharacter)
+// {
+// 	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
+//    
+// 	// if (OccuCharacter) OccuCharacter->FireStop();
+// 	// else
+// 	// {
+// 	// 	UE_LOG(LogInit, Warning, TEXT("Error Ai Stop Fire"))
+// 	// }
+// }
