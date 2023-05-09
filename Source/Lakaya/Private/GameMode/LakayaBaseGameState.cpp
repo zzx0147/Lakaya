@@ -100,7 +100,8 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 	CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
-	InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (InGameTimeWidget.IsValid())
+		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 	if (HasAuthority())
 	{
