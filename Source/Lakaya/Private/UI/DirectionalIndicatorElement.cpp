@@ -4,7 +4,6 @@
 
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
-#include "Character/DamageableCharacter.h"
 #include "Components/Image.h"
 
 UDirectionalIndicatorElement::UDirectionalIndicatorElement(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
