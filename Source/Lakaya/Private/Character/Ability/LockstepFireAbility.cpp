@@ -10,6 +10,7 @@
 
 ULockstepFireAbility::ULockstepFireAbility()
 {
+	LockstepDelay = 0.1f;
 	FirstFireDelay = 0.f;
 	FireDelay = 0.2f;
 	BaseDamage = 20.f;
@@ -53,7 +54,6 @@ void ULockstepFireAbility::RequestStop_Implementation(const float& RequestTime)
 void ULockstepFireAbility::OnRegister()
 {
 	Super::OnRegister();
-	FireInfos.Heapify();
 	if (const auto LocalOwner = GetOwner())
 	{
 		CollisionQueryParams.AddIgnoredActor(LocalOwner);
@@ -133,9 +133,8 @@ void ULockstepFireAbility::LockstepCallback()
 	{
 		FireInfos.HeapPop(FireInfo, false);
 		SingleFire(FireInfo);
-		RecentTopFireTime = FireInfos.IsEmpty() ? FLT_MAX : FireInfos.HeapTop().Time;
 	}
-	while (RecentTopFireTime <= CurrentTime);
+	while (!FireInfos.IsEmpty() && FireInfos.HeapTop().Time <= CurrentTime);
 	UpdateLockstepTimer(CurrentTime);
 }
 
@@ -144,7 +143,7 @@ void ULockstepFireAbility::InvokeFireEvent()
 	if (const auto LocalOwner = GetOwner(); LocalOwner && Camera.IsValid())
 		NotifyFire(FFireInfo
 			{
-				GetServerTime() + 0.2f,
+				GetServerTime() + LockstepDelay,
 				Camera->GetComponentLocation(),
 				Camera->GetForwardVector(),
 				LocalOwner->GetActorLocation()
@@ -153,10 +152,14 @@ void ULockstepFireAbility::InvokeFireEvent()
 
 void ULockstepFireAbility::UpdateLockstepTimer(const float& CurrentTime)
 {
-	if (FireInfos.IsEmpty()) return;
+	if (FireInfos.IsEmpty())
+	{
+		RecentTopFireTime = FLT_MAX;
+		return;
+	}
 
 	// 힙의 맨 윗 이벤트가 변경되었다면 타이머를 새로 셋팅합니다.
-	if (const auto TopTime = FireInfos.HeapTop().Time; RecentTopFireTime > TopTime)
+	if (const auto TopTime = FireInfos.HeapTop().Time; RecentTopFireTime != TopTime)
 	{
 		GetWorld()->GetTimerManager().SetTimer(LockstepTimer, this, &ULockstepFireAbility::LockstepCallback,
 		                                       TopTime - CurrentTime);

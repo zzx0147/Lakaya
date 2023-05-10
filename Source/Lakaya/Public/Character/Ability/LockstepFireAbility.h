@@ -26,8 +26,8 @@ struct FFireInfo
 	UPROPERTY()
 	FVector ActorLocation;
 
-	bool operator>(const FFireInfo& Other) const { return Time < Other.Time; }
-	bool operator<(const FFireInfo& Other) const { return Time > Other.Time; }
+	bool operator>(const FFireInfo& Other) const { return Time > Other.Time; }
+	bool operator<(const FFireInfo& Other) const { return Time < Other.Time; }
 
 	// 카메라에서 액터를 향하는 이동벡터를 가져옵니다.
 	FORCEINLINE FVector GetCameraToActor() const { return CameraLocation - ActorLocation; }
@@ -123,6 +123,10 @@ protected:
 	// 피격시 적용할 기본 피해량을 지정합니다.
 	UPROPERTY(EditAnywhere)
 	float BaseDamage;
+
+	// 몇 초간 지연된 이후 사격이 시작되는지 정의합니다.
+	UPROPERTY(EditAnywhere)
+	float LockstepDelay;
 
 private:
 	// 플레이어의 격발 의지를 나타냅니다.
