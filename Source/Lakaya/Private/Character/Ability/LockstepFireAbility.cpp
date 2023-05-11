@@ -10,11 +10,21 @@
 
 ULockstepFireAbility::ULockstepFireAbility()
 {
+	bWantsInitializeComponent = true;
 	LockstepDelay = 0.1f;
 	FirstFireDelay = 0.f;
 	FireDelay = 0.2f;
 	BaseDamage = 20.f;
 	FireRange = 5000.f;
+}
+
+void ULockstepFireAbility::InitializeComponent()
+{
+	Super::InitializeComponent();
+	CollisionQueryParams.AddIgnoredActor(GetOwner());
+
+	Camera = GetOwner()->FindComponentByClass<UCameraComponent>();
+	if (!Camera.IsValid()) UE_LOG(LogInit, Error, TEXT("Camera was nullptr on ULockstepFireAbility::OnRegister"));
 }
 
 void ULockstepFireAbility::AbilityStart()
@@ -49,18 +59,6 @@ void ULockstepFireAbility::RequestStop_Implementation(const float& RequestTime)
 {
 	Super::RequestStop_Implementation(RequestTime);
 	if (bWantsToFire) SetWantsToFire(false);
-}
-
-void ULockstepFireAbility::OnRegister()
-{
-	Super::OnRegister();
-	if (const auto LocalOwner = GetOwner())
-	{
-		CollisionQueryParams.AddIgnoredActor(LocalOwner);
-
-		Camera = LocalOwner->FindComponentByClass<UCameraComponent>();
-		if (!Camera.IsValid()) UE_LOG(LogInit, Error, TEXT("Camera was nullptr on ULockstepFireAbility::OnRegister"));
-	}
 }
 
 void ULockstepFireAbility::FireTick()

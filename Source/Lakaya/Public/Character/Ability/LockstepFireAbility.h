@@ -60,13 +60,13 @@ class LAKAYA_API ULockstepFireAbility : public UStopRemoteCallAbility
 
 public:
 	ULockstepFireAbility();
+	virtual void InitializeComponent() override;
 	virtual void AbilityStart() override;
 	virtual void AbilityStop() override;
 
 protected:
 	virtual void RequestStart_Implementation(const float& RequestTime) override;
 	virtual void RequestStop_Implementation(const float& RequestTime) override;
-	virtual void OnRegister() override;
 
 	// 격발타이머의 핸들러입니다.
 	virtual void FireTick();
