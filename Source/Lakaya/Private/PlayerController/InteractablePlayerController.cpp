@@ -8,13 +8,13 @@
 AInteractablePlayerController::AInteractablePlayerController()
 {
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> InteractionContextFinder(
-		TEXT("/Game/Dev/Yongwoo/Input/IC_InteractionControl"));
+		TEXT("/Game/Input/IC_InteractionControl"));
 	
 	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionStartFinder(
-		TEXT("/Game/Dev/Yongwoo/Input/IA_InteractionStart"));
+		TEXT("/Game/Input/IA_InteractionStart"));
 	
 	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionStopFinder(
-		TEXT("/Game/Dev/Yongwoo/Input/IA_InteractionStop"));
+		TEXT("/Game/Input/IA_InteractionStop"));
 
 #pragma region Null 체크
 	if (InteractionContextFinder.Succeeded()) InteractionContext = InteractionContextFinder.Object;
@@ -46,38 +46,38 @@ void AInteractablePlayerController::SetupMappingContext(UEnhancedInputLocalPlaye
 void AInteractablePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	TraceQueryParams.AddIgnoredActor(this);
+	// TraceQueryParams.AddIgnoredActor(this);
 }
 
-void AInteractablePlayerController::NotifyActorBeginOverlap(AActor* OtherActor)
-{
-	Super::NotifyActorBeginOverlap(OtherActor);
-
-	if (!InputSubSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
-
-	++InteractableCount;
-
-	if (!InputSubSystem->HasMappingContext(InteractionContext))
-	{
-		InputSubSystem->AddMappingContext(InteractionContext, InteractionPriority);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow, TEXT("Interaction context added"));
-	}
-}
-
-void AInteractablePlayerController::NotifyActorEndOverlap(AActor* OtherActor)
-{
-	Super::NotifyActorEndOverlap(OtherActor);
-
-	if (!InputSubSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
-
-	--InteractableCount;
-
-	if (InteractableCount == 0)
-	{
-		InputSubSystem->RemoveMappingContext(InteractionContext);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow, TEXT("Interaction context removed"));
-	}
-}
+// void AInteractablePlayerController::NotifyActorBeginOverlap(AActor* OtherActor)
+// {
+// 	Super::NotifyActorBeginOverlap(OtherActor);
+//
+// 	if (!InputSubSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
+//
+// 	++InteractableCount;
+//
+// 	if (!InputSubSystem->HasMappingContext(InteractionContext))
+// 	{
+// 		InputSubSystem->AddMappingContext(InteractionContext, InteractionPriority);
+// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow, TEXT("Interaction context added"));
+// 	}
+// }
+//
+// void AInteractablePlayerController::NotifyActorEndOverlap(AActor* OtherActor)
+// {
+// 	Super::NotifyActorEndOverlap(OtherActor);
+//
+// 	if (!InputSubSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
+//
+// 	--InteractableCount;
+//
+// 	if (InteractableCount == 0)
+// 	{
+// 		InputSubSystem->RemoveMappingContext(InteractionContext);
+// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow, TEXT("Interaction context removed"));
+// 	}
+// }
 
 void AInteractablePlayerController::StartInteraction(const FInputActionValue& Value)
 {

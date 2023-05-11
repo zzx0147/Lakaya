@@ -43,19 +43,19 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 	InterfaceContextPriority = 100;
 
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
-		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_InterfaceControl'"));
+		TEXT("InputMappingContext'/Game/Input/IC_InterfaceControl'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> MenuFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Menu'"));
+		TEXT("InputAction'/Game/Input/IA_Menu'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> WeaponFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Loadout'"));
+		TEXT("InputAction'/Game/Input/IA_Loadout'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ShowScoreFinder(
-		TEXT("/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_ShowScore.IA_ShowScore'"));
+		TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_ShowScore.IA_ShowScore'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> HideScoreFinder(
-		TEXT("/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_HideScore.IA_HideScore'"));
+		TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_HideScore.IA_HideScore'"));
 
 	if (ContextFinder.Succeeded()) InterfaceInputContext = ContextFinder.Object;
 	if (MenuFinder.Succeeded()) MenuAction = MenuFinder.Object;

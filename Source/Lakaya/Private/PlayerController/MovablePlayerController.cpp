@@ -11,16 +11,16 @@
 AMovablePlayerController::AMovablePlayerController()
 {
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
-		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_CharacterControl'"));
+		TEXT("InputMappingContext'/Game/Input/IC_CharacterControl'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> MoveFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Move'"));
+		TEXT("InputAction'/Game/Input/IA_Move'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> LookFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Look'"));
+		TEXT("InputAction'/Game/Input/IA_Look'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> JumpFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_Jump'"));
+		TEXT("InputAction'/Game/Input/IA_Jump'"));
 
 	if (ContextFinder.Succeeded()) MovementContext = ContextFinder.Object;
 	if (MoveFinder.Succeeded()) MoveAction = MoveFinder.Object;

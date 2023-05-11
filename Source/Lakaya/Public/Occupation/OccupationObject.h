@@ -2,9 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "PlayerTeam.h"
-#include "Components/CapsuleComponent.h"
-#include "Components/SphereComponent.h"
-#include "GameFramework/Actor.h"
+
 #include "Interactable/Interactable.h"
 #include "OccupationObject.generated.h"
 
@@ -43,25 +41,15 @@ private:
 	void OnInteractionFinish(APawn* Caller);
 
 public:
-	void SetTeamObject(const EObjectTeam& Team);
+	void SetTeamObject(const EPlayerTeam& Team);
 	
 private:
 	UFUNCTION()
 	void OnRep_BroadCastTeamObject();
-	
-private:
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UCapsuleComponent* Trigger;
-
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* Cylinder;
-
-	UPROPERTY(VisibleAnywhere, Category = "Trigger")
-	USphereComponent* TriggerSphere;
 
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject)
-	EObjectTeam ObjectTeam = EObjectTeam::None;
+	EPlayerTeam ObjectTeam = EPlayerTeam::None;
 
 private:
 	TWeakObjectPtr<class AInteractableCharacter> InteractingCharacter;

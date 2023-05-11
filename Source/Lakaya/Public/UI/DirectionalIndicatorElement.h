@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "NiagaraSystem.h"
 #include "Blueprint/UserWidget.h"
 #include "DirectionalIndicatorElement.generated.h"
 

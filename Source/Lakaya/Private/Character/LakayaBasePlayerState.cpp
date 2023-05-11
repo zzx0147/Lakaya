@@ -107,8 +107,13 @@ void ALakayaBasePlayerState::OnRep_Owner()
 
 bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) const
 {
+	return Other && IsSameTeam(Other->Team);
+}
+
+bool ALakayaBasePlayerState::IsSameTeam(const EPlayerTeam& Other) const
+{
 	// 두 플레이어가 개인전상태가 아니고, Team 값이 같은 경우 같은 팀으로 판별합니다.
-	return Other && Other->Team != EPlayerTeam::Individual && Team != EPlayerTeam::Individual && Other->Team == Team;
+	return Other != EPlayerTeam::Individual && Team != EPlayerTeam::Individual && Other == Team;
 }
 
 void ALakayaBasePlayerState::SetTeam(const EPlayerTeam& DesireTeam)

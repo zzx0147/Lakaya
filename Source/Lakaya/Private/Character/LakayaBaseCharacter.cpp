@@ -12,18 +12,25 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 
-ALakayaBaseCharacter::ALakayaBaseCharacter()
+const FName ALakayaBaseCharacter::SpringArmComponentName = FName(TEXT("SpringArm"));
+const FName ALakayaBaseCharacter::CameraComponentName = FName(TEXT("Camera"));
+const FName ALakayaBaseCharacter::ResourceComponentName = FName(TEXT("ResourceComponent"));
+
+ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	MaxHealth = 100.f;
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	PrimaryActorTick.bCanEverTick = true;
+	PlayerRotationInterpolationAlpha = 0.65f;
+
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(SpringArmComponentName);
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->bUsePawnControlRotation = true;
 
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	Camera = CreateDefaultSubobject<UCameraComponent>(CameraComponentName);
 	Camera->SetupAttachment(SpringArm);
 
-	PrimaryActorTick.bCanEverTick = true;
-	PlayerRotationInterpolationAlpha = 0.65f;
+	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(ResourceComponentName);
+	ResourceComponent->SetIsReplicated(true);
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
@@ -47,17 +54,6 @@ float ALakayaBaseCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 	// 플레이어 스테이트에서 데미지를 처리하고나서, 애니메이션 재생을 위해 캐릭터에서도 데미지를 처리합니다.
 	const auto Damage = LocalState->TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	return Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-}
-
-void ALakayaBaseCharacter::PreInitializeComponents()
-{
-	Super::PreInitializeComponents();
-	if (HasAuthority() && ResourceClass)
-	{
-		ResourceComponent = Cast<UResourceComponent>(
-			AddComponentByClass(ResourceClass, false, FTransform::Identity, false));
-		if (ResourceComponent) ResourceComponent->SetIsReplicated(true);
-	}
 }
 
 float ALakayaBaseCharacter::InternalTakeRadialDamage(float Damage, FRadialDamageEvent const& RadialDamageEvent,

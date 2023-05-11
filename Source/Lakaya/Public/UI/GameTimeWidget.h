@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MatchStateWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "GameTimeWidget.generated.h"
 
@@ -11,24 +11,28 @@
  * 
  */
 UCLASS()
-class LAKAYA_API UGameTimeWidget : public UMatchStateWidget
+class LAKAYA_API UGameTimeWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
 	explicit UGameTimeWidget(const FObjectInitializer& ObjectInitializer);
 
-	virtual bool OnMatchStart() override;
-
-private:
+protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* GameTimeWidgetText;
+public:
+	UFUNCTION(BlueprintSetter)
+	void SetWidgetTimer(const float& ArgDestinationTime);
 
+protected:
 	UPROPERTY(EditAnywhere)
 	FText TimeTextFormat;
 
-	TWeakObjectPtr<class AOccupationGameState> OccupationGameState;
+private:
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* GameTimeWidgetText;
+
+	float DestinationTime;
 };

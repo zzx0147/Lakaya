@@ -93,7 +93,7 @@ void UEOSGameInstance::CreateSession()
 					SessionSettings.bShouldAdvertise = true;
 
 					SessionSettings.bIsLANMatch = false;
-					SessionSettings.NumPublicConnections = 5;
+					SessionSettings.NumPublicConnections = 6;
 					SessionSettings.bAllowJoinInProgress = true;
 					SessionSettings.bAllowJoinViaPresence = true;
 					SessionSettings.bUsesPresence = true;
@@ -130,7 +130,7 @@ void UEOSGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 		{
 			SessionPtr->ClearOnCreateSessionCompleteDelegates(this);
 			UE_LOG(LogTemp,Warning,TEXT("Start Game Level Open"));
-			UGameplayStatics::OpenLevel(this, FName("TestGamePlayLevel"), true, FString("?listen"));
+			UGameplayStatics::OpenLevel(this, FName("LV_Completed"), true, FString("?listen"));
 
 			/*FString ConnectionInfo = FString();
 			SessionPtr->GetResolvedConnectString(SessionName, ConnectionInfo);
@@ -449,7 +449,7 @@ void UEOSGameInstance::StartSession()
 				newSessionSettings.bShouldAdvertise = true;
 
 				newSessionSettings.bIsLANMatch = false;
-				newSessionSettings.NumPublicConnections = 5;
+				newSessionSettings.NumPublicConnections = 6;
 				newSessionSettings.bAllowJoinInProgress = false;
 				newSessionSettings.bAllowJoinViaPresence = true;
 				newSessionSettings.bUsesPresence = true;

@@ -14,7 +14,7 @@ void UGamePlayHealthWidget::NativeConstruct()
 	HealthProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("HPBar_Prb")));
 	HealthText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Health_Text")));
 	MaximumHealthText = Cast<UTextBlock>(GetWidgetFromName(TEXT("MaximumHealth_Text")));
-
+	
 	check(HealthText != nullptr);
 	check(MaximumHealthText != nullptr);
 	check(HealthProgressBar != nullptr);

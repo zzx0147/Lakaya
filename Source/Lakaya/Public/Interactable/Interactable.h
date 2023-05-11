@@ -1,16 +1,17 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
-
 #include "CoreMinimal.h"
+#include "Components/SphereComponent.h"
+#include "GameFramework/Actor.h"
 #include "Interactable.generated.h"
-
-
 
 UCLASS()
 class AInteractable : public AActor
 {
 	GENERATED_BODY()
+
+	// 생성자 : 트리거 지정
+public:
+	AInteractable();
 	
 public:
 	/**
@@ -32,4 +33,11 @@ public:
 	 * @param Caller 사망한 캐릭터입니다.
 	 */
 	virtual void OnCharacterDead(APawn* Caller) { return; }
+
+protected:
+	UPROPERTY(VisibleAnywhere, Category = "Mesh")
+	UStaticMeshComponent* Mesh;
+
+	UPROPERTY(VisibleAnywhere, Category = "Trigger")
+	USphereComponent* Trigger;
 };

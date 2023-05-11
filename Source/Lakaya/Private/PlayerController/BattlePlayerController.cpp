@@ -12,43 +12,43 @@
 ABattlePlayerController::ABattlePlayerController()
 {
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
-		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_WeaponControl'"));
+		TEXT("InputMappingContext'/Game/Input/IC_WeaponControl'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> FireStartFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_FireStart'"));
+		TEXT("InputAction'/Game/Input/IA_FireStart'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> FireStopFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_FireStop'"));
+		TEXT("InputAction'/Game/Input/IA_FireStop'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> AbilityStartFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_AbilityStart'"));
+		TEXT("InputAction'/Game/Input/IA_AbilityStart'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> AbilityStopFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_AbilityStop'"));
+		TEXT("InputAction'/Game/Input/IA_AbilityStop'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ReloadStartFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ReloadStart'"));
+		TEXT("InputAction'/Game/Input/IA_ReloadStart'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ReloadStopFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ReloadStop'"));
+		TEXT("InputAction'/Game/Input/IA_ReloadStop'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> PrimaryStartFinder(TEXT(
-		"/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_PrimaryAbilityStart.IA_PrimaryAbilityStart'"));
+		"/Script/EnhancedInput.InputAction'/Game/Input/IA_PrimaryAbilityStart.IA_PrimaryAbilityStart'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> PrimaryStopFinder(TEXT(
-		"/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_PrimaryAbilityStop.IA_PrimaryAbilityStop'"));
+		"/Script/EnhancedInput.InputAction'/Game/Input/IA_PrimaryAbilityStop.IA_PrimaryAbilityStop'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> SecondaryStartFinder(TEXT(
-		"/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_SecondaryAbilityStart.IA_SecondaryAbilityStart'"));
+		"/Script/EnhancedInput.InputAction'/Game/Input/IA_SecondaryAbilityStart.IA_SecondaryAbilityStart'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> SecondaryStopFinder(TEXT(
-		"/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_SecondaryAbilityStop.IA_SecondaryAbilityStop'"));
+		"/Script/EnhancedInput.InputAction'/Game/Input/IA_SecondaryAbilityStop.IA_SecondaryAbilityStop'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> DashStartFinder(TEXT(
-		"/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_DashStart.IA_DashStart'"));
+		"/Script/EnhancedInput.InputAction'/Game/Input/IA_DashStart.IA_DashStart'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> DashStopFinder(TEXT(
-		"/Script/EnhancedInput.InputAction'/Game/Dev/Yongwoo/Input/IA_DashStop.IA_DashStop'"));
+		"/Script/EnhancedInput.InputAction'/Game/Input/IA_DashStop.IA_DashStop'"));
 
 	if (ContextFinder.Succeeded()) WeaponControlContext = ContextFinder.Object;
 	if (FireStartFinder.Succeeded()) FireStartAction = FireStartFinder.Object;
