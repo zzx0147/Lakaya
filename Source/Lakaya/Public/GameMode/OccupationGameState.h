@@ -41,6 +41,9 @@ public:
 	 */
 	void AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore);
 
+protected:
+	virtual void AddPlayerState(APlayerState* PlayerState) override;
+
 public:
 	// 해당 팀의 점수를 받아옵니다.
 	float GetTeamScore(const EPlayerTeam& Team) const;
@@ -59,6 +62,8 @@ public:
 
 	// 어떤 팀이든 최대 점수에 도달한 팀이 있는지 여부를 조사합니다.
 	bool IsSomeoneReachedMaxScore() const;
+
+	virtual void CreateCharacterSelectWidget(APlayerController* LocalController) override;
 
 private:
 	UFUNCTION()
@@ -98,4 +103,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float MatchDuration;
+
+	TMap<EPlayerTeam,TArray<class ALakayaBasePlayerState*>> PlayersByTeamMap;
+
+	EPlayerTeam ClientTeam;
 };

@@ -1,23 +1,34 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+#define DO_CHECK 1
 
 #include "UI/ImageTextWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
 
 
+UImageTextWidget::UImageTextWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+
+}
+
 void UImageTextWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	Text = Cast<UTextBlock>(GetWidgetFromName(TEXT("Text")));
-	Image = Cast<UImage>(GetWidgetFromName(TEXT("Image")));
+	TextElement = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextElement")));
+	ImageElement = Cast<UImage>(GetWidgetFromName(TEXT("ImageElement")));
+
+	check(TextElement != nullptr);
+	check(ImageElement != nullptr);
+
+	TextElement->SetText(TextData);
 }
 
 void UImageTextWidget::SetText(FText NewText)
 {
-	if (Text != nullptr)
+	//TextElement = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextElement")));
+	TextData = NewText;
+	if (TextElement != nullptr)
 	{
-		Text->SetText(NewText);
+		TextElement->SetText(TextData);
 	}
 }

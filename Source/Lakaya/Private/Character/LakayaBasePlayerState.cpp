@@ -101,6 +101,7 @@ void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
 
 void ALakayaBasePlayerState::OnRep_Owner()
 {
+	Super::OnRep_Owner();
 	OnOwnerChanged.Broadcast(Owner);
 }
 

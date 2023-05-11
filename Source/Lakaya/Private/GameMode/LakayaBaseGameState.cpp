@@ -14,9 +14,12 @@ ALakayaBaseGameState::ALakayaBaseGameState()
 	MaximumPlayers = 6;
 }
 
+
 void ALakayaBaseGameState::BeginPlay()
 {
 	Super::BeginPlay();
+	//게임 스테이트의 BeginPlay에서는 LocalController의 PlayerState가 항상 존재함이 보장되지 않음 여기서는 로컬 컨트롤러의 PlayerState를 가져오려고 하면 안됨
+	
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
 		if (LoadingWidgetClass.Get() != nullptr)
@@ -31,15 +34,6 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 
-		if (CharacterSelectWidgetClass.Get() != nullptr)
-		{
-			CharacterSelectWidget = CreateWidget<UGameLobbyCharacterSelectWidget>(LocalController, CharacterSelectWidgetClass);
-			if (CharacterSelectWidget != nullptr)
-			{
-				CharacterSelectWidget->AddToViewport();
-				CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
-			}
-		}
 
 		if (ScoreBoardClass)
 		{
@@ -64,8 +58,6 @@ void ALakayaBaseGameState::AddPlayerState(APlayerState* PlayerState)
 	Super::AddPlayerState(PlayerState);
 	if (LoadingWidget != nullptr) LoadingWidget->SetPlayerNumber(PlayerArray.Num());
 	if (ScoreBoard.IsValid()) ScoreBoard->RegisterPlayer(PlayerState);
-	if (CharacterSelectWidget != nullptr) CharacterSelectWidget->RegisterPlayer(PlayerState);
-
 	OnChangePlayerNumber.Broadcast(PlayerArray.Num());
 }
 
@@ -87,12 +79,8 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 	LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
 	CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
 
-	if(const auto LocalController = GetWorld()->GetFirstPlayerController())
-		if (const auto LocalPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
-		{
-			CharacterSelectWidget->OnChangeSelectedCharacter.Clear();
-			CharacterSelectWidget->OnChangeSelectedCharacter.AddUObject(LocalPlayerState, &ALakayaBasePlayerState::RequestCharacterChange);
-		}
+	//if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+	//	CreateCharacterSelectWidget(LocalController);//위젯이 아직 없으면 생성함
 }
 
 void ALakayaBaseGameState::OnRep_MatchState()
@@ -108,4 +96,25 @@ void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
 {
 	if (ScoreBoard.IsValid())
 		ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
+}
+
+void ALakayaBaseGameState::CreateCharacterSelectWidget(APlayerController* LocalController)
+{
+	//로컬 컨트롤러와 PlayerState는 존재함이 보장됨, 서버의 경우 BeginPlay애서 클라이언트의 경우 OnRep_PlayerState에서 호출해줌
+	if (CharacterSelectWidget != nullptr) return;
+
+	if (CharacterSelectWidgetClass.Get() != nullptr)
+	{
+		CharacterSelectWidget = CreateWidget<UGameLobbyCharacterSelectWidget>(LocalController, CharacterSelectWidgetClass);
+		if (CharacterSelectWidget != nullptr)
+		{
+			CharacterSelectWidget->AddToViewport();
+			CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
+
+			if (const auto BasePlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
+			{
+				CharacterSelectWidget->OnChangeSelectedCharacter.AddUObject(BasePlayerState, &ALakayaBasePlayerState::RequestCharacterChange);
+			}
+		}
+	}
 }

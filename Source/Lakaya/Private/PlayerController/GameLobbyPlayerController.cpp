@@ -64,10 +64,34 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 	if (HideScoreFinder.Succeeded()) HideScoreAction = HideScoreFinder.Object;
 }
 
+void AGameLobbyPlayerController::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+	if (PlayerState != nullptr)
+	{
+		if (IsLocalPlayerController())//클라의 경우 PlayerState가 생겼을 때 캐릭터 선택 위젯을 생성
+			if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+			{
+				GameState->CreateCharacterSelectWidget(this);
+			}
+	}
+}
+
 void AGameLobbyPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 	OnPossessedPawnChanged.AddUniqueDynamic(this, &AGameLobbyPlayerController::OnPossessedPawnChangedCallback);
+
+
+
+	if (IsLocalPlayerController())//서버의 경우에만 BeginPlay에서 캐릭터 선택 위젯을 생성
+		if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+		{
+			if (const auto ThisPlayerState = GetPlayerState<APlayerState>())
+			{
+				GameState->CreateCharacterSelectWidget(this);
+			}
+		}
 }
 
 void AGameLobbyPlayerController::MenuHandler(const FInputActionValue& Value)

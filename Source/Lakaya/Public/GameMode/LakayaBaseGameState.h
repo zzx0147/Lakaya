@@ -37,6 +37,9 @@ public:
 	// 점수판의 표시 여부를 결정합니다. true를 넘기면 점수판이 표시됩니다.
 	void SetScoreBoardVisibility(const bool& Visible);
 
+	virtual void CreateCharacterSelectWidget(APlayerController* LocalController);
+protected:
+
 public:
 	OnChangePlayerNumberSigniture OnChangePlayerNumber;
 
@@ -50,13 +53,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameLobbyCharacterSelectWidget> CharacterSelectWidgetClass;
 
+	TObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 private:
 	UPROPERTY(EditDefaultsOnly)
 	uint8 MaximumPlayers;
 
 	TObjectPtr<ULoadingWidget> LoadingWidget;
 
-	TObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
 };
