@@ -49,6 +49,9 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_MatchEndingTime();
 
+private:
+	void InternalSetScoreBoardVisibility(const bool& Visible);
+
 public:
 	// 현재 접속중인 플레이어 인원이 변경되면 호출됩니다. 매개변수로 변경된 플레이어 인원을 받습니다.
 	OnChangePlayerNumberSigniture OnChangePlayerNumber;
