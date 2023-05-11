@@ -51,6 +51,12 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_MatchEndingTime();
 
+	UFUNCTION()
+	virtual void OnRep_CharacterSelectEndingTime();
+
+private:
+	void SetupTimerWidget(FTimerHandle& TimerHandle,const float& Duration,float& EndingTime, std::function<void(void)> Callback, TWeakObjectPtr<class UGameTimeWidget> TimeWidget);
+
 public:
 	// 현재 접속중인 플레이어 인원이 변경되면 호출됩니다. 매개변수로 변경된 플레이어 인원을 받습니다.
 	OnChangePlayerNumberSigniture OnChangePlayerNumber;
@@ -72,9 +78,16 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGameTimeWidget> InGameTimerWidgetClass;
 
+	// 게임중에 표시되는 타이머 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGameTimeWidget> CharacterSelectTimerWidgetClass;
+
 	// 게임이 최대 몇초간 진행될지 정의합니다.
 	UPROPERTY(EditAnywhere)
 	float MatchDuration;
+
+	UPROPERTY(EditDefaultsOnly)
+	float CharacterSelectDuration;
 
 	TObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 private:
@@ -84,11 +97,18 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_MatchEndingTime)
 	float MatchEndingTime;
 
+	UPROPERTY(ReplicatedUsing = OnRep_CharacterSelectEndingTime)
+	float CharacterSelectEndingTime;
+
+
 	FTimerHandle EndingTimer;
+
+	FTimerHandle CharacterSelectTimer;
 
 	TObjectPtr<ULoadingWidget> LoadingWidget;
 
 
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
+	TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;
 };

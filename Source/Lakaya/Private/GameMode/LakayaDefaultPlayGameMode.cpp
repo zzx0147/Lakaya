@@ -17,7 +17,7 @@ ALakayaDefaultPlayGameMode::ALakayaDefaultPlayGameMode()
 {
 	PlayerRespawnTime = 3;
 	bWaitToStart = false;
-	CharacterSelectTime = 10.0f;
+	//CharacterSelectTime = 10.0f;
 }
 
 void ALakayaDefaultPlayGameMode::BeginPlay()
@@ -63,7 +63,7 @@ bool ALakayaDefaultPlayGameMode::ReadyToStartMatch_Implementation()
 void ALakayaDefaultPlayGameMode::HandleMatchIsSelectCharacter()
 {
 	FTimerHandle TimerHandler;
-	GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, CharacterSelectTime, false);
+	//GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 10.0f, false);
 }
 
 void ALakayaDefaultPlayGameMode::HandleMatchHasStarted()

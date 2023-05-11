@@ -82,8 +82,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FName, TSubclassOf<class AInteractableCharacter>> CharacterClasses;
 
-	UPROPERTY(EditDefaultsOnly)
-	float CharacterSelectTime;
+
 private:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;

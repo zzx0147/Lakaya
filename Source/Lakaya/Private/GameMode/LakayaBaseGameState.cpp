@@ -21,6 +21,7 @@ void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ALakayaBaseGameState, MatchEndingTime);
+	DOREPLIFETIME(ALakayaBaseGameState, CharacterSelectEndingTime);
 }
 
 void ALakayaBaseGameState::BeginPlay()
@@ -63,6 +64,16 @@ void ALakayaBaseGameState::BeginPlay()
 				InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
+
+		if (CharacterSelectTimerWidgetClass)
+		{
+			CharacterSelectTimeWidget = CreateWidget<UGameTimeWidget>(LocalController, CharacterSelectTimerWidgetClass);
+			if (CharacterSelectTimeWidget.IsValid())
+			{
+				CharacterSelectTimeWidget->AddToViewport();
+				CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
 	}
 }
 
@@ -90,20 +101,15 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 	CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
+	if (CharacterSelectTimeWidget.IsValid())
+		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 	if (InGameTimeWidget.IsValid())
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-	if (HasAuthority())
-	{
-		GetWorldTimerManager().SetTimer(EndingTimer, [this]
-		{
-			if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
-				AuthGameMode->EndMatch();
-		}, MatchDuration, false);
+	SetupTimerWidget(EndingTimer, MatchDuration, MatchEndingTime, [this] {
+		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->EndMatch(); }
+	, InGameTimeWidget);
 
-		MatchEndingTime = GetServerWorldTimeSeconds() + MatchDuration;
-		if (InGameTimeWidget.IsValid()) InGameTimeWidget->SetWidgetTimer(MatchEndingTime);
-	}
 }
 
 void ALakayaBaseGameState::HandleMatchHasEnded()
@@ -116,6 +122,13 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 {
 	LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
 	CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
+	if (CharacterSelectTimeWidget.IsValid())
+		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]() {
+		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->StartMatch(); }
+	, CharacterSelectTimeWidget);
+
 
 	//if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	//	CreateCharacterSelectWidget(LocalController);//위젯이 아직 없으면 생성함
@@ -160,4 +173,20 @@ void ALakayaBaseGameState::CreateCharacterSelectWidget(APlayerController* LocalC
 void ALakayaBaseGameState::OnRep_MatchEndingTime()
 {
 	if (InGameTimeWidget.IsValid()) InGameTimeWidget->SetWidgetTimer(MatchEndingTime);
+}
+
+void ALakayaBaseGameState::OnRep_CharacterSelectEndingTime()
+{
+	if (CharacterSelectTimeWidget.IsValid()) CharacterSelectTimeWidget->SetWidgetTimer(CharacterSelectEndingTime);
+}
+
+void ALakayaBaseGameState::SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime, std::function<void(void)> Callback, TWeakObjectPtr<UGameTimeWidget> TimeWidget)
+{
+	if (HasAuthority())
+	{
+		GetWorldTimerManager().SetTimer(TimerHandle, Callback, Duration, false);
+
+		EndingTime = GetServerWorldTimeSeconds() + Duration;
+		if (TimeWidget.IsValid()) TimeWidget->SetWidgetTimer(EndingTime);
+	}
 }
