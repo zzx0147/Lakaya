@@ -1,9 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "GameMode/OccupationGameState.h"
-
+#include "UI/TeamScoreWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "Net/UnrealNetwork.h"
-
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -18,6 +16,38 @@ AOccupationGameState::AOccupationGameState()
 {
 	MaxScore = 100.f;
 	MatchDuration = 180.f;
+}
+
+void AOccupationGameState::BeginPlay()
+{
+	Super::BeginPlay();
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+	{
+		if (TeamScoreWidgetClass)
+		{
+			TeamScoreWidget = CreateWidget<UTeamScoreWidget>(LocalController, TeamScoreWidgetClass);
+			if (TeamScoreWidget == nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_TeamScoreWidget is null."));
+				return;
+			}
+			TeamScoreWidget->AddToViewport();
+			TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_LocalPlayerController is null."));
+		return;
+	}
+}
+
+void AOccupationGameState::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+
+	if (IsValid(TeamScoreWidget))
+		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
 }
 
 void AOccupationGameState::SetNumPlayers(const uint8& NewNumPlayers)
@@ -39,8 +69,16 @@ void AOccupationGameState::SetOccupationWinner()
 
 void AOccupationGameState::AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore)
 {
-	if (Team == EPlayerTeam::A) ATeamScore += AdditiveScore;
-	else if (Team == EPlayerTeam::B) BTeamScore += AdditiveScore;
+	if (Team == EPlayerTeam::A)
+	{
+		ATeamScore += AdditiveScore;
+		OnRep_ATeamScore();
+	}
+	else if (Team == EPlayerTeam::B)
+	{
+		BTeamScore += AdditiveScore;
+		OnRep_BTeamScore();
+	}
 
 	UE_LOG(LogTemp, Warning, TEXT("ATeamScore : %f"), ATeamScore);
 	UE_LOG(LogTemp, Warning, TEXT("BTeamScore : %f"), BTeamScore);
@@ -54,19 +92,16 @@ float AOccupationGameState::GetTeamScore(const EPlayerTeam& Team) const
 	return 0.f;
 }
 
-bool AOccupationGameState::IsSomeoneReachedMaxScore() const
-{
-	return ATeamScore >= MaxScore || BTeamScore >= MaxScore;
-}
-
 void AOccupationGameState::OnRep_ATeamScore()
 {
-	OnTeamScoreChanged.Broadcast(EPlayerTeam::A, ATeamScore);
+	OnTeamScoreSignature.Broadcast(EPlayerTeam::A, ATeamScore);
+	UE_LOG(LogTemp, Warning, TEXT("OnRep_ATeamScore"));
 }
 
 void AOccupationGameState::OnRep_BTeamScore()
 {
-	OnTeamScoreChanged.Broadcast(EPlayerTeam::B, ATeamScore);
+	OnTeamScoreSignature.Broadcast(EPlayerTeam::B, BTeamScore);
+	UE_LOG(LogTemp, Warning, TEXT("OnRep_BTeamScore"));
 }
 
 void AOccupationGameState::OnRep_OccupationWinner()

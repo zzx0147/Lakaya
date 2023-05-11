@@ -9,10 +9,11 @@
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
+#include "UI/TeamScoreWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	MaximumPlayers = 6;
 	MatchDuration = 300.f;
 }
@@ -20,6 +21,7 @@ ALakayaBaseGameState::ALakayaBaseGameState()
 void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
 	DOREPLIFETIME(ALakayaBaseGameState, MatchEndingTime);
 }
 
@@ -102,7 +104,7 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
 	if (InGameTimeWidget.IsValid())
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
+	
 	if (HasAuthority())
 	{
 		GetWorldTimerManager().SetTimer(EndingTimer, [this]
@@ -119,7 +121,6 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 void ALakayaBaseGameState::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
-	InternalSetScoreBoardVisibility(false);
 	GetWorldTimerManager().ClearTimer(EndingTimer);
 }
 
@@ -148,16 +149,11 @@ void ALakayaBaseGameState::OnRep_MatchState()
 
 void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
 {
-	if (IsMatchInProgress()) InternalSetScoreBoardVisibility(Visible);
+	if (ScoreBoard.IsValid())
+		ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
 }
 
 void ALakayaBaseGameState::OnRep_MatchEndingTime()
 {
 	if (InGameTimeWidget.IsValid()) InGameTimeWidget->SetWidgetTimer(MatchEndingTime);
-}
-
-void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible)
-{
-	if (!ScoreBoard.IsValid()) return;
-	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
 }

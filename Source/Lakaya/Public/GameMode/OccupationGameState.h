@@ -10,7 +10,6 @@
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeJoinedPlayers, const uint8&)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeOccupationWinner, const EPlayerTeam&)
 DECLARE_EVENT_TwoParams(AOccupationGameState, FTeamScoreSignature, const EPlayerTeam&, const float&)
-
 DECLARE_EVENT_FourParams(AOccupationGameState, FKillCharacterSignature, AController*, AActor*, AController*, AActor*)
 
 /**
@@ -24,6 +23,11 @@ class LAKAYA_API AOccupationGameState : public ALakayaBaseGameState
 public:
 	AOccupationGameState();
 
+private:
+	virtual void BeginPlay() override;
+	virtual void HandleMatchHasStarted() override;
+	
+public:
 	UFUNCTION()
 	void SetNumPlayers(const uint8& NewNumPlayers);
 
@@ -40,7 +44,7 @@ public:
 	 * @param AdditiveScore 추가될 점수입니다.
 	 */
 	void AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore);
-
+	
 public:
 	// 해당 팀의 점수를 받아옵니다.
 	float GetTeamScore(const EPlayerTeam& Team) const;
@@ -52,7 +56,22 @@ public:
 	FORCEINLINE const EPlayerTeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
 
 	// 어떤 팀이든 최대 점수에 도달한 팀이 있는지 여부를 조사합니다.
-	bool IsSomeoneReachedMaxScore() const;
+	FORCEINLINE const bool GetSomeoneReachedMaxScore() const { return ATeamScore >= MaxScore || BTeamScore >= MaxScore; }
+
+private:
+	uint8 NumPlayers;
+
+	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
+	EPlayerTeam CurrentOccupationWinner;
+
+	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore)
+	float ATeamScore = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore)
+	float BTeamScore = 0;
+
+	UPROPERTY(EditAnywhere)
+	float MaxScore;
 
 private:
 	UFUNCTION()
@@ -63,24 +82,17 @@ private:
 
 	UFUNCTION()
 	void OnRep_OccupationWinner();
+	
+private:
+	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UTeamScoreWidget> TeamScoreWidgetClass;
+	
+	// 팀스코어 위젯 입니다.
+	TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
 
 public:
 	FOnOccupationChangeOccupationWinner OnOccupationChangeOccupationWinner;
-	FTeamScoreSignature OnTeamScoreChanged;
+	FTeamScoreSignature OnTeamScoreSignature;
 	FKillCharacterSignature OnKillCharacterNotify;
-
-private:
-	uint8 NumPlayers;
-
-	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
-	EPlayerTeam CurrentOccupationWinner;
-
-	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore, Transient)
-	float ATeamScore;
-
-	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore, Transient)
-	float BTeamScore;
-
-	UPROPERTY(EditAnywhere)
-	float MaxScore;
 };
