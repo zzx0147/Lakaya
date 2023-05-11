@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "MatchStateWidget.h"
+#include "GameMode/OccupationGameState.h"
 #include "Occupation/PlayerTeam.h"
 #include "TeamScoreWidget.generated.h"
 
@@ -10,12 +11,9 @@ class LAKAYA_API UTeamScoreWidget : public UMatchStateWidget
 {
 	GENERATED_BODY()
 
-public:
-	// virtual bool OnMatchStart() override;
-
 protected:
 	virtual void NativeConstruct() override;
-
+	
 private:
 	UFUNCTION()
 	void OnChangeATeamScore(const float& NewScore) const;

@@ -6,7 +6,7 @@ void UTeamScoreWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	const auto OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	auto OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
 	if (OccupationGameState == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("GameTimeWidget_GameState is null."));
@@ -35,13 +35,30 @@ void UTeamScoreWidget::NativeConstruct()
 	OnChangeBTeamScore(OccupationGameState->GetTeamScore(EPlayerTeam::B));
 
 	// 점수가 바뀌게 되면, 점수를 최신화 해줍니다.
-	OccupationGameState->OnTeamScoreChanged.AddUObject(this, &UTeamScoreWidget::OnTeamScoreChanged);
+	OccupationGameState->OnTeamScoreSignature.AddUObject(this, &UTeamScoreWidget::OnTeamScoreChanged);
+
+	if (OccupationGameState->OnTeamScoreSignature.IsBound())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OnTeamScoreSignature is bound!"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OnTeamScoreSignature is not bound!"));
+	}
 }
 
 void UTeamScoreWidget::OnChangeATeamScore(const float& NewScore) const
 {
-	ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), NewScore)));
-	if (NewScore >= MaxScore) ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), 1.0f)));
+	if (GEngine->GetNetMode(GetWorld()) == ENetMode::NM_ListenServer)
+	{
+		ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), NewScore)));
+		if (NewScore >= MaxScore) ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), 1.0f)));
+	}
+	else
+	{
+		ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), NewScore)));
+		if (NewScore >= MaxScore) ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), 1.0f)));
+	}
 }
 
 void UTeamScoreWidget::OnChangeBTeamScore(const float& NewScore) const

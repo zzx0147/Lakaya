@@ -69,8 +69,16 @@ void AOccupationGameState::SetOccupationWinner()
 
 void AOccupationGameState::AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore)
 {
-	if (Team == EPlayerTeam::A) ATeamScore += AdditiveScore;
-	else if (Team == EPlayerTeam::B) BTeamScore += AdditiveScore;
+	if (Team == EPlayerTeam::A)
+	{
+		ATeamScore += AdditiveScore;
+		OnRep_ATeamScore();
+	}
+	else if (Team == EPlayerTeam::B)
+	{
+		BTeamScore += AdditiveScore;
+		OnRep_BTeamScore();
+	}
 
 	UE_LOG(LogTemp, Warning, TEXT("ATeamScore : %f"), ATeamScore);
 	UE_LOG(LogTemp, Warning, TEXT("BTeamScore : %f"), BTeamScore);
@@ -86,12 +94,14 @@ float AOccupationGameState::GetTeamScore(const EPlayerTeam& Team) const
 
 void AOccupationGameState::OnRep_ATeamScore()
 {
-	OnTeamScoreChanged.Broadcast(EPlayerTeam::A, ATeamScore);
+	OnTeamScoreSignature.Broadcast(EPlayerTeam::A, ATeamScore);
+	UE_LOG(LogTemp, Warning, TEXT("OnRep_ATeamScore"));
 }
 
 void AOccupationGameState::OnRep_BTeamScore()
 {
-	OnTeamScoreChanged.Broadcast(EPlayerTeam::B, BTeamScore);
+	OnTeamScoreSignature.Broadcast(EPlayerTeam::B, BTeamScore);
+	UE_LOG(LogTemp, Warning, TEXT("OnRep_BTeamScore"));
 }
 
 void AOccupationGameState::OnRep_OccupationWinner()
