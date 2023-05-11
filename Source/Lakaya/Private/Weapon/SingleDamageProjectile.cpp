@@ -30,7 +30,7 @@ void ASingleDamageProjectile::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 	if (!HasAuthority()) return;
-	UGameplayStatics::ApplyDamage(OtherActor, Damage, GetOwner<AController>(), this, nullptr);
+	UGameplayStatics::ApplyDamage(OtherActor, Damage, GetInstigator<AController>(), GetOwner(), nullptr);
 }
 
 void ASingleDamageProjectile::SetDamage(const float& ArgDamage)
