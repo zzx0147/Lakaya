@@ -10,7 +10,6 @@
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeJoinedPlayers, const uint8&)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeOccupationWinner, const EPlayerTeam&)
 DECLARE_EVENT_TwoParams(AOccupationGameState, FTeamScoreSignature, const EPlayerTeam&, const float&)
-
 DECLARE_EVENT_FourParams(AOccupationGameState, FKillCharacterSignature, AController*, AActor*, AController*, AActor*)
 
 /**
@@ -76,10 +75,10 @@ private:
 	EPlayerTeam CurrentOccupationWinner;
 
 	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore, Transient)
-	float ATeamScore;
+	float ATeamScore = 0;
 
 	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore, Transient)
-	float BTeamScore;
+	float BTeamScore = 0;
 
 	UPROPERTY(EditAnywhere)
 	float MaxScore;
@@ -88,7 +87,7 @@ private:
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UTeamScoreWidget> TeamScoreWidgetClass;
-
+	
 	// 팀스코어 위젯 입니다.
 	TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
 

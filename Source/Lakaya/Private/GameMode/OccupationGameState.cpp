@@ -1,10 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "GameMode/OccupationGameState.h"
 #include "UI/TeamScoreWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Net/UnrealNetwork.h"
-
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -94,7 +91,7 @@ void AOccupationGameState::OnRep_ATeamScore()
 
 void AOccupationGameState::OnRep_BTeamScore()
 {
-	OnTeamScoreChanged.Broadcast(EPlayerTeam::B, ATeamScore);
+	OnTeamScoreChanged.Broadcast(EPlayerTeam::B, BTeamScore);
 }
 
 void AOccupationGameState::OnRep_OccupationWinner()

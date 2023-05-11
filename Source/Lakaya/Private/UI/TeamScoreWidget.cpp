@@ -2,12 +2,6 @@
 #include "Components/TextBlock.h"
 #include "GameMode/OccupationGameState.h"
 
-// bool UTeamScoreWidget::OnMatchStart()
-// {
-// 	SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-// 	return true;
-// }
-
 void UTeamScoreWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -33,10 +27,14 @@ void UTeamScoreWidget::NativeConstruct()
 		return;
 	}
 
+	// 최대 점수를 지정해줍니다.
 	MaxScore = OccupationGameState->GetMaxScore();
+
+	// 생성되었을 때, 점수를 초기화 해줍니다.
 	OnChangeATeamScore(OccupationGameState->GetTeamScore(EPlayerTeam::A));
 	OnChangeBTeamScore(OccupationGameState->GetTeamScore(EPlayerTeam::B));
 
+	// 점수가 바뀌게 되면, 점수를 최신화 해줍니다.
 	OccupationGameState->OnTeamScoreChanged.AddUObject(this, &UTeamScoreWidget::OnTeamScoreChanged);
 }
 
@@ -57,4 +55,5 @@ void UTeamScoreWidget::OnTeamScoreChanged(const EPlayerTeam& Team, const float& 
 	if (Team == EPlayerTeam::A) OnChangeATeamScore(Score);
 	else if (Team == EPlayerTeam::B) OnChangeBTeamScore(Score);
 	else UE_LOG(LogScript, Warning, TEXT("Event broadcasted with invalid value! it was %d"), Team);
+	UE_LOG(LogTemp, Warning, TEXT("OnTeamScoreChanged."));
 }

@@ -15,7 +15,6 @@ public:
 	ALakayaBaseGameState();
 
 protected:
-	//게임 상태가 IsWatingToStart로 넘어가면 호출됨
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void AddPlayerState(APlayerState* PlayerState) override;

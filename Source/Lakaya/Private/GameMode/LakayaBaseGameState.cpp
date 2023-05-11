@@ -9,6 +9,7 @@
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
+#include "UI/TeamScoreWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
@@ -103,7 +104,7 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
 	if (InGameTimeWidget.IsValid())
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
+	
 	if (HasAuthority())
 	{
 		GetWorldTimerManager().SetTimer(EndingTimer, [this]

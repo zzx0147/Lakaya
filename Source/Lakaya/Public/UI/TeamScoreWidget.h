@@ -23,6 +23,7 @@ private:
 	UFUNCTION()
 	void OnChangeBTeamScore(const float& NewScore) const;
 
+	UFUNCTION()
 	void OnTeamScoreChanged(const EPlayerTeam& Team, const float& Score) const;
 
 	UPROPERTY(meta = (BindWidget))
