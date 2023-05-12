@@ -3,6 +3,7 @@
 
 #include "AI/AiCharacterController.h"
 #include "AI/AiCharacter.h"
+#include "Character/Ability/AutoFireAbility.h"
 #include "GameMode/OccupationGameMode.h"
 #include "GameMode/OccupationGameState.h"
 
@@ -37,24 +38,52 @@ void AAiCharacterController::BeginPlay()
 	// UE_LOG(LogTemp, Warning, TEXT("AiController BeginPlay."));
 }
 
-// void AAiCharacterController::AiFireStart(AOccupationCharacter* OccuCharacter)
-// {
-// 	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
-//    
-// 	// if (OccuCharacter) OccuCharacter->FireStart();
-// 	// else
-// 	// {
-// 	// 	UE_LOG(LogInit, Warning, TEXT("Error Ai Start Fire"))
-// 	// }
-// }
-//
-// void AAiCharacterController::AiFireStop(AOccupationCharacter* OccuCharacter)
-// {
-// 	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
-//    
-// 	// if (OccuCharacter) OccuCharacter->FireStop();
-// 	// else
-// 	// {
-// 	// 	UE_LOG(LogInit, Warning, TEXT("Error Ai Stop Fire"))
-// 	// }
-// }
+void AAiCharacterController::AIFireStart(AInteractableCharacter* InteractableCharacter)
+{
+	InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
+	auto& Abilities = InteractableCharacter->GetAbilities();
+	if(Abilities.IsValidIndex(WeaponFire))
+	{
+		if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
+		{
+			FireAbility->AbilityStart();
+		}
+	}
+	
+	// if(const auto Character = Cast<AArmedCharacter>(ArmedCharacter))
+	// {
+	// 	auto& Abilities = Character->GetAbilities();
+	// 	if(Abilities.IsValidIndex(WeaponFire))
+	// 	{
+	// 		if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
+	// 		{
+	// 			FireAbility->AbilityStart();
+	// 		}
+	// 	}
+	// }
+}
+
+void AAiCharacterController::AIFireStop(AInteractableCharacter* InteractableCharacter)
+{
+	InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
+	auto& Abilities = InteractableCharacter->GetAbilities();
+	if(Abilities.IsValidIndex(WeaponFire))
+	{
+		if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
+		{
+			FireAbility->AbilityStop();
+		}
+	}
+	
+	// if(const auto Character = Cast<AArmedCharacter>(GetCharacter()))
+	// {
+	// 	auto& Abilities = Character->GetAbilities();
+	// 	if(Abilities.IsValidIndex(WeaponFire))
+	// 	{
+	// 		if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
+	// 		{
+	// 			FireAbility->AbilityStop();
+	// 		}
+	// 	}
+	// }
+}
