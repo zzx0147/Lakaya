@@ -58,8 +58,6 @@ private:
 	class AOccupationGameState* OccupationGameState;
 
 	FTimerHandle UpdateScoreTimer;
-	FTimerHandle TimerHandle_DelayedStart;
-	FTimerHandle TimerHandle_DelayedEnded;
 	
 	uint8 ATeamObjectCount;
 	uint8 BTeamObjectCount;

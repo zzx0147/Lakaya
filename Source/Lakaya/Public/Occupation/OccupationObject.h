@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "PlayerTeam.h"
-
 #include "Interactable/Interactable.h"
 #include "OccupationObject.generated.h"
 
@@ -16,7 +15,6 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:

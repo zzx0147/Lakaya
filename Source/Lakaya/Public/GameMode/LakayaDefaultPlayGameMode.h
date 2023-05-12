@@ -63,9 +63,13 @@ protected:
 	
 	virtual bool HasMatchStarted() const override;
 
-public:
+protected:
 	virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser);
+
+public:
 	virtual void StartSelectCharacter();
+
+public:
 	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 
 protected:
@@ -75,8 +79,10 @@ public:
 	uint8 GetPlayerRespawnTime() { return PlayerRespawnTime; }
 	bool GetbWaitToStart() { return bWaitToStart; }
 
-private:
+protected:
 	uint8 PlayerRespawnTime;
+
+private:
 	bool bWaitToStart;
 
 protected:
@@ -93,8 +99,10 @@ protected:
 	// 게임이 종료된 이후, 몇 초 뒤에 세션이 종료될지 정의합니다.
 	UPROPERTY(EditAnywhere)
 	float MatchEndDelay;
+
+	FTimerHandle TimerHandle_DelayedStart;
+	FTimerHandle TimerHandle_DelayedEnded;
 	
-private:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;
 	FTimerHandle TimerHandle_Respawn;
