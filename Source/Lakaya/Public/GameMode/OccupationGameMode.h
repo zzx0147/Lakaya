@@ -55,14 +55,6 @@ private:
 	UPROPERTY(EditAnywhere)
 	float AdditiveScore;
 
-	// 게임 시작이 준비된 이후, 몇 초 뒤에 게임이 할지 정의합니다.
-	UPROPERTY(EditAnywhere)
-	float MatchStartDelay;
-
-	// 게임이 종료된 이후, 몇 초 뒤에 세션이 종료될지 정의합니다.
-	UPROPERTY(EditAnywhere)
-	float MatchEndDelay;
-
 	class AOccupationGameState* OccupationGameState;
 
 	FTimerHandle UpdateScoreTimer;

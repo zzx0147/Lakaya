@@ -59,6 +59,16 @@ public:
 	FORCEINLINE const bool GetSomeoneReachedMaxScore() const { return ATeamScore >= MaxScore || BTeamScore >= MaxScore; }
 
 private:
+	UFUNCTION()
+	void OnRep_ATeamScore();
+
+	UFUNCTION()
+	void OnRep_BTeamScore();
+
+	UFUNCTION()
+	void OnRep_OccupationWinner();
+	
+private:
 	uint8 NumPlayers;
 
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
@@ -73,16 +83,6 @@ private:
 	UPROPERTY(EditAnywhere)
 	float MaxScore;
 
-private:
-	UFUNCTION()
-	void OnRep_ATeamScore();
-
-	UFUNCTION()
-	void OnRep_BTeamScore();
-
-	UFUNCTION()
-	void OnRep_OccupationWinner();
-	
 private:
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)

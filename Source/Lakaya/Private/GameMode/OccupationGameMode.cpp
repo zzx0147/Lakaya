@@ -4,23 +4,16 @@
 #include "GameFramework/PlayerStart.h"
 #include "GameMode/OccupationGameState.h"
 #include "Kismet/GameplayStatics.h"
-#include "PlayerController/BattlePlayerController.h"
 #include "PlayerController/InteractablePlayerController.h"
 
 AOccupationGameMode::AOccupationGameMode() : Super()
 {
 	ScoreUpdateDelay = 0.5f;
 	AdditiveScore = 0.1f;
-	MatchStartDelay = 5.f;
-	MatchEndDelay = 2.f;
-
-	// static ConstructorHelpers::FClassFinder<APawn> PlayerPawnObject(
-	// 	TEXT("/Game/Characters/LakayaCharacter/Dummy/BP_PlayerDummy"));
-	// if (!PlayerPawnObject.Succeeded())
-	// 	UE_LOG(LogTemp, Error, TEXT("OccupationGameMode_Failed to find player pawn blueprint."));
+	// MatchStartDelay = 5.f;
+	// MatchEndDelay = 2.f;
 
 	DefaultPawnClass = AInteractableCharacter::StaticClass();
-	PlayerControllerClass = ABattlePlayerController::StaticClass();
 	PlayerControllerClass = AInteractablePlayerController::StaticClass();
 	PlayerStateClass = AStatPlayerState::StaticClass();
 	GameStateClass = AOccupationGameState::StaticClass();
@@ -188,15 +181,6 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_KilledCharacter is not a pawn or an actor."));
 		return;
 	}
-
-	// auto* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
-	// if (KilledDamageableCharacter == nullptr)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("KilledDamageableCharacter is null."));
-	// 	return;
-	// }
-	//
-	// KilledDamageableCharacter->Respawn();
 }
 
 void AOccupationGameMode::AddOccupyObject(const EPlayerTeam& Team)

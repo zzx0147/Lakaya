@@ -18,6 +18,8 @@ ALakayaDefaultPlayGameMode::ALakayaDefaultPlayGameMode()
 	PlayerRespawnTime = 3;
 	bWaitToStart = false;
 	CharacterSelectTime = 10.0f;
+	MatchStartDelay = 5.f;
+	MatchEndDelay = 2.f;
 }
 
 void ALakayaDefaultPlayGameMode::BeginPlay()
