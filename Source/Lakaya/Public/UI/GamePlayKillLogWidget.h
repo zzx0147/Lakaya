@@ -33,7 +33,7 @@ private:
 	uint8 MaxElementCount;
 
 	class UVerticalBox* KillLogBox;
-	SimpleObjectPool<UKillLogElement> ElementPool;
+	TSimpleObjectPool<UKillLogElement> ElementPool;
 	uint8 InitialChildCount;
 	uint8 ShownElementCount;
 };
