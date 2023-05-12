@@ -73,7 +73,7 @@ bool ULockstepFireAbility::ShouldFire()
 	return true;
 }
 
-void ULockstepFireAbility::SingleFire(const FFireInfo& FireInfo)
+void ULockstepFireAbility::SingleFire(const FLockstepFireInfo& FireInfo)
 {
 	// 카메라로부터 CameraDeadZone만큼 떨어진 곳에서부터 충돌판정을 시작하도록 합니다.
 	const auto Start = FireInfo.GetCameraForward(CameraDeadZone);
@@ -126,7 +126,7 @@ bool ULockstepFireAbility::ShouldAbilityStart()
 void ULockstepFireAbility::LockstepCallback()
 {
 	const float CurrentTime = GetServerTime();
-	FFireInfo FireInfo;
+	FLockstepFireInfo FireInfo;
 	do
 	{
 		FireInfos.HeapPop(FireInfo, false);
@@ -139,7 +139,7 @@ void ULockstepFireAbility::LockstepCallback()
 void ULockstepFireAbility::InvokeFireEvent()
 {
 	if (const auto LocalOwner = GetOwner(); LocalOwner && Camera.IsValid())
-		NotifyFire(FFireInfo
+		NotifyFire(FLockstepFireInfo
 			{
 				GetServerTime() + LockstepDelay,
 				Camera->GetComponentLocation(),
@@ -165,7 +165,7 @@ void ULockstepFireAbility::UpdateLockstepTimer(const float& CurrentTime)
 	}
 }
 
-void ULockstepFireAbility::NotifyFire_Implementation(const FFireInfo& FireInfo)
+void ULockstepFireAbility::NotifyFire_Implementation(const FLockstepFireInfo& FireInfo)
 {
 	const auto CurrentTime = GetServerTime();
 

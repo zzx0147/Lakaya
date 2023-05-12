@@ -9,7 +9,7 @@
 DECLARE_EVENT_OneParam(ULockstepFireAbility, FWantsToFireStateChangedSignature, bool)
 
 USTRUCT()
-struct FFireInfo
+struct FLockstepFireInfo
 {
 	GENERATED_BODY()
 
@@ -26,8 +26,8 @@ struct FFireInfo
 	UPROPERTY()
 	FVector ActorLocation;
 
-	bool operator>(const FFireInfo& Other) const { return Time > Other.Time; }
-	bool operator<(const FFireInfo& Other) const { return Time < Other.Time; }
+	bool operator>(const FLockstepFireInfo& Other) const { return Time > Other.Time; }
+	bool operator<(const FLockstepFireInfo& Other) const { return Time < Other.Time; }
 
 	// 카메라에서 액터를 향하는 이동벡터를 가져옵니다.
 	FORCEINLINE FVector GetCameraToActor() const { return CameraLocation - ActorLocation; }
@@ -75,7 +75,7 @@ protected:
 	virtual bool ShouldFire();
 
 	// 단위 격발을 정의합니다.
-	virtual void SingleFire(const FFireInfo& FireInfo);
+	virtual void SingleFire(const FLockstepFireInfo& FireInfo);
 
 	// 발사에 실패하는 경우 호출됩니다.
 	virtual void FailToFire();
@@ -97,7 +97,7 @@ protected:
 private:
 	// 격발을 모든 인스턴스에게 전파합니다.
 	UFUNCTION(NetMulticast, Reliable)
-	void NotifyFire(const FFireInfo& FireInfo);
+	void NotifyFire(const FLockstepFireInfo& FireInfo);
 
 public:
 	// 플레이어의 격발 의지가 변경되었을 때 호출됩니다.
@@ -135,7 +135,7 @@ private:
 	FTimerHandle FireTimer;
 	TWeakObjectPtr<class UCameraComponent> Camera;
 	FCollisionQueryParams CollisionQueryParams;
-	TArray<FFireInfo> FireInfos;
+	TArray<FLockstepFireInfo> FireInfos;
 	float RecentTopFireTime = FLT_MAX;
 	FTimerHandle LockstepTimer;
 };
