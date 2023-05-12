@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SimpleObjectPool.h"
 #include "StartRemoteCallAbility.h"
 #include "SpawnProjectileAbility.generated.h"
 
@@ -18,10 +19,15 @@ public:
 	virtual void AbilityStart() override;
 
 protected:
+	virtual void InitializeComponent() override;
 	virtual void RequestStart_Implementation(const float& RequestTime) override;
 
 	UFUNCTION()
 	virtual void OnRep_EnableTime();
+
+private:
+	UFUNCTION()
+	void OnProjectileReturned(class ASingleDamageProjectile* const& Projectile);
 
 public:
 	// 스킬 사용가능시점이 변경된 경우 호출됩니다.
@@ -34,7 +40,7 @@ protected:
 
 	// 스킬 사용시 스폰될 투사체 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ASingleDamageProjectile> ProjectileClass;
+	TSubclassOf<ASingleDamageProjectile> ProjectileClass;
 
 	// 액터의 전방으로 어느정도 떨어진 거리에서 투사체를 스폰할지 지정합니다.
 	UPROPERTY(EditAnywhere)
@@ -44,8 +50,14 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float BaseDamage;
 
+	// 초기 생성할 오브젝트 풀 크기를 지정합니다.
+	UPROPERTY(EditAnywhere)
+	uint8 ObjectPoolSize;
+
 private:
 	// 스킬이 사용가능해지는 시점을 의미합니다.
 	UPROPERTY(ReplicatedUsing=OnRep_EnableTime, Transient)
 	float EnableTime;
+
+	TSimpleObjectPool<ASingleDamageProjectile> ProjectilePool;
 };
