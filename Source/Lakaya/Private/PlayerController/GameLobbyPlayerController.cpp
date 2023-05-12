@@ -4,6 +4,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "GameMode/LakayaBaseGameState.h"
+#include "Components/SlateWrapperTypes.h"
 
 
 void AGameLobbyPlayerController::SetupInputComponent()
@@ -104,6 +105,18 @@ void AGameLobbyPlayerController::LoadoutHandler(const FInputActionValue& Value)
 {
 	//TODO: UI를 띄웁니다.
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("WeaponLoadout"));
+	if (PlayerState != nullptr)
+	{
+		if (IsLocalPlayerController())//클라의 경우 PlayerState가 생겼을 때 캐릭터 선택 위젯을 생성
+			if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+			{
+				//if(GameState->SetCharacterSelectWidgetVisibility)
+
+				if (GameState->GetCharacterSelectWidgetVisibility() == ESlateVisibility::Visible)
+					GameState->SetCharacterSelectWidgetVisibility(ESlateVisibility::Hidden);
+				else GameState->SetCharacterSelectWidgetVisibility(ESlateVisibility::Visible);
+			}
+	}
 }
 
 void AGameLobbyPlayerController::ShowScoreBoard(const FInputActionValue& Value)

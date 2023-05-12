@@ -47,6 +47,10 @@ public:
 
 	virtual void CreateCharacterSelectWidget(APlayerController* LocalController);
 
+	virtual void SetCharacterSelectWidgetVisibility(const ESlateVisibility& IsVisible);
+
+	ESlateVisibility GetCharacterSelectWidgetVisibility() const;
+
 protected:
 	UFUNCTION()
 	virtual void OnRep_MatchEndingTime();
@@ -90,6 +94,7 @@ protected:
 	float CharacterSelectDuration;
 
 	TObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
+
 private:
 	UPROPERTY(EditDefaultsOnly)
 	uint8 MaximumPlayers;

@@ -165,9 +165,34 @@ void ALakayaBaseGameState::CreateCharacterSelectWidget(APlayerController* LocalC
 			if (const auto BasePlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 			{
 				CharacterSelectWidget->OnChangeSelectedCharacter.AddUObject(BasePlayerState, &ALakayaBasePlayerState::RequestCharacterChange);
+				CharacterSelectWidget->OnChangeSelectedCharacter.AddLambda([this](const FName& Name) {
+					if (MatchState == MatchState::InProgress) SetCharacterSelectWidgetVisibility(ESlateVisibility::Hidden);
+					});
 			}
 		}
 	}
+}
+
+void ALakayaBaseGameState::SetCharacterSelectWidgetVisibility(const ESlateVisibility& IsVisible)
+{
+	if (CharacterSelectWidget != nullptr && MatchState == MatchState::InProgress)
+	{
+		CharacterSelectWidget->SetVisibility(IsVisible);
+		if (const auto PlayerController = GetWorld()->GetFirstPlayerController<APlayerController>())
+		{
+			PlayerController->SetShowMouseCursor(IsVisible == ESlateVisibility::Visible);
+		}
+	}
+
+
+}
+
+ESlateVisibility ALakayaBaseGameState::GetCharacterSelectWidgetVisibility() const
+{
+	if (CharacterSelectWidget != nullptr)
+		return CharacterSelectWidget->GetVisibility();
+
+	return ESlateVisibility::Hidden;
 }
 
 void ALakayaBaseGameState::OnRep_MatchEndingTime()
