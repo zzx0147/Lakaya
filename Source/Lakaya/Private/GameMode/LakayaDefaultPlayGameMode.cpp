@@ -7,6 +7,7 @@
 #include "Character/LakayaBasePlayerState.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameMode/LakayaBaseGameState.h"
 
 namespace MatchState
 {
@@ -38,6 +39,23 @@ void ALakayaDefaultPlayGameMode::PostLogin(APlayerController* NewPlayer)
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), GetNumPlayers());
 
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("플레이어가 입장했습니다."));
+
+	if (const auto BasePlayerState = NewPlayer->GetPlayerState<ALakayaBasePlayerState>())
+	{
+		BasePlayerState->OnCharacterNameChanged.AddLambda(
+			[this, NewPlayer](ALakayaBasePlayerState* ArgBasePlayerState, const FName& ArgCharacterName){
+
+				if (GetGameState<ALakayaBaseGameState>()->GetMatchState() == MatchState::InProgress)
+				{
+					if (auto PlayerPawn = NewPlayer->GetPawn())
+					{
+						NewPlayer->UnPossess();
+						PlayerPawn->Destroy();
+						RestartPlayer(NewPlayer);
+					}
+				}
+			});
+	}
 }
 
 void ALakayaDefaultPlayGameMode::OnMatchStateSet()
