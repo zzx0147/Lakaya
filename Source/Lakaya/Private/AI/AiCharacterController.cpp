@@ -38,10 +38,11 @@ void AAiCharacterController::BeginPlay()
 	// UE_LOG(LogTemp, Warning, TEXT("AiController BeginPlay."));
 }
 
-void AAiCharacterController::AIFireStart(AInteractableCharacter* InteractableCharacter)
+void AAiCharacterController::AIFireStart(AArmedCharacter* ArmCharacter)
 {
-	InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
-	auto& Abilities = InteractableCharacter->GetAbilities();
+	ArmCharacter = Cast<AArmedCharacter>(GetCharacter());
+	
+	auto& Abilities = ArmCharacter->GetAbilities();
 	if(Abilities.IsValidIndex(WeaponFire))
 	{
 		if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
@@ -49,24 +50,13 @@ void AAiCharacterController::AIFireStart(AInteractableCharacter* InteractableCha
 			FireAbility->AbilityStart();
 		}
 	}
-	
-	// if(const auto Character = Cast<AArmedCharacter>(ArmedCharacter))
-	// {
-	// 	auto& Abilities = Character->GetAbilities();
-	// 	if(Abilities.IsValidIndex(WeaponFire))
-	// 	{
-	// 		if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
-	// 		{
-	// 			FireAbility->AbilityStart();
-	// 		}
-	// 	}
-	// }
 }
 
-void AAiCharacterController::AIFireStop(AInteractableCharacter* InteractableCharacter)
+void AAiCharacterController::AIFireStop(AArmedCharacter* ArmCharacter)
 {
-	InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
-	auto& Abilities = InteractableCharacter->GetAbilities();
+	ArmCharacter = Cast<AArmedCharacter>(GetCharacter());
+	
+	auto& Abilities = ArmCharacter->GetAbilities();
 	if(Abilities.IsValidIndex(WeaponFire))
 	{
 		if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
@@ -74,16 +64,4 @@ void AAiCharacterController::AIFireStop(AInteractableCharacter* InteractableChar
 			FireAbility->AbilityStop();
 		}
 	}
-	
-	// if(const auto Character = Cast<AArmedCharacter>(GetCharacter()))
-	// {
-	// 	auto& Abilities = Character->GetAbilities();
-	// 	if(Abilities.IsValidIndex(WeaponFire))
-	// 	{
-	// 		if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
-	// 		{
-	// 			FireAbility->AbilityStop();
-	// 		}
-	// 	}
-	// }
 }

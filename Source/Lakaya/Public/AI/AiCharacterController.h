@@ -30,10 +30,10 @@ private:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable)
-	void AIFireStart(AInteractableCharacter* InteractableCharacter);
+	void AIFireStart(AArmedCharacter* ArmCharacter);
 
 	UFUNCTION(BlueprintCallable)
-	void AIFireStop(AInteractableCharacter* InteractableCharacter);
+	void AIFireStop(AArmedCharacter* ArmCharacter);
 
 private:
 	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
