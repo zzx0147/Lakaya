@@ -29,11 +29,11 @@ public:
 private:
 	virtual void BeginPlay() override;
 
-	// UFUNCTION(BlueprintCallable)
-	// void AiFireStart(AOccupationCharacter* OccuCharacter);
-	//
-	// UFUNCTION(BlueprintCallable)
-	// void AiFireStop(AOccupationCharacter* OccuCharacter);
+	UFUNCTION(BlueprintCallable)
+	void AIFireStart(AArmedCharacter* ArmCharacter);
+
+	UFUNCTION(BlueprintCallable)
+	void AIFireStop(AArmedCharacter* ArmCharacter);
 
 private:
 	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
