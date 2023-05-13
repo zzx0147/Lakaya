@@ -13,6 +13,7 @@ UResultNotifyFireAbility::UResultNotifyFireAbility()
 	FireDelay = 0.2f;
 	FireRange = 10000.f;
 	FireDamage = 20.f;
+	bShouldFireSmoothing = false;
 }
 
 void UResultNotifyFireAbility::AbilityStart()
@@ -85,14 +86,8 @@ void UResultNotifyFireAbility::SingleFire()
 		End = Result.ImpactPoint;
 		UGameplayStatics::ApplyPointDamage(Result.GetActor(), FireDamage, ActorLocation, Result,
 		                                   GetTypedOuter<AController>(), GetOwner(), nullptr);
-		NotifyFireResult(End, Result.ImpactNormal,
-		                 Result.GetActor()
-			                 ? Result.GetActor()->IsA<ALakayaBaseCharacter>()
-				                   ? EFireResult::Creature
-				                   : EFireResult::Environment
-			                 : EFireResult::None);
 	}
-	else NotifyFireResult(End, FVector::ZeroVector, EFireResult::None);
+	InvokeFireNotify(Result);
 	DrawDebugLine(GetWorld(), ActorLocation, End, FColor::Red, false, 2.f);
 }
 
@@ -106,6 +101,27 @@ void UResultNotifyFireAbility::ClearFireTimer()
 {
 	GetWorld()->GetTimerManager().ClearTimer(FireTimer);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
+}
+
+void UResultNotifyFireAbility::InvokeFireNotify(const FHitResult& HitResult)
+{
+	const auto End = HitResult.bBlockingHit ? HitResult.ImpactPoint : HitResult.TraceEnd;
+	const auto Normal = HitResult.bBlockingHit ? HitResult.ImpactNormal : FVector::ZeroVector;
+	const auto Actor = HitResult.GetActor();
+	const auto FireResult = Actor
+		                        ? Actor->IsA<ALakayaBaseCharacter>()
+			                          ? EFireResult::Creature
+			                          : EFireResult::Environment
+		                        : EFireResult::None;
+	
+	if (bShouldFireSmoothing) NotifyFireResult(End, Normal, FireResult);
+	else NotifySingleFire(HitResult.TraceStart, End, Normal, FireResult);
+}
+
+void UResultNotifyFireAbility::NotifySingleFire_Implementation(const FVector& Start, const FVector& End,
+                                                               const FVector& Normal, const EFireResult& FireResult)
+{
+	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.f);
 }
 
 void UResultNotifyFireAbility::NotifyFireResult_Implementation(const FVector& HitPoint, const FVector& Normal,
