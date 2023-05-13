@@ -115,6 +115,7 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 void ALakayaBaseGameState::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
+	InternalSetScoreBoardVisibility(false);
 	GetWorldTimerManager().ClearTimer(EndingTimer);
 }
 
@@ -145,8 +146,7 @@ void ALakayaBaseGameState::OnRep_MatchState()
 
 void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
 {
-	if (ScoreBoard.IsValid())
-		ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
+	if (IsMatchInProgress()) InternalSetScoreBoardVisibility(Visible);
 }
 
 void ALakayaBaseGameState::CreateCharacterSelectWidget(APlayerController* LocalController)
@@ -214,4 +214,10 @@ void ALakayaBaseGameState::SetupTimerWidget(FTimerHandle& TimerHandle, const flo
 		EndingTime = GetServerWorldTimeSeconds() + Duration;
 		if (TimeWidget.IsValid()) TimeWidget->SetWidgetTimer(EndingTime);
 	}
+}
+
+void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible)
+{
+	if (!ScoreBoard.IsValid()) return;
+	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
 }
