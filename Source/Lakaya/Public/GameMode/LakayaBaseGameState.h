@@ -51,6 +51,9 @@ public:
 
 	ESlateVisibility GetCharacterSelectWidgetVisibility() const;
 
+	UFUNCTION(NetMulticast, Reliable)
+	virtual void NotifyPlayerKilled(AController* VictimController, AActor* Victim,AController* InstigatorController, AActor* DamageCauser);
+
 protected:
 	UFUNCTION()
 	virtual void OnRep_MatchEndingTime();

@@ -195,6 +195,12 @@ ESlateVisibility ALakayaBaseGameState::GetCharacterSelectWidgetVisibility() cons
 	return ESlateVisibility::Hidden;
 }
 
+void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(AController* VictimController, AActor* Victim,
+	AController* InstigatorController, AActor* DamageCauser)
+{
+	//TODO : OnPlayerKillNofityed.BroadCast();
+}
+
 void ALakayaBaseGameState::OnRep_MatchEndingTime()
 {
 	if (InGameTimeWidget.IsValid()) InGameTimeWidget->SetWidgetTimer(MatchEndingTime);
