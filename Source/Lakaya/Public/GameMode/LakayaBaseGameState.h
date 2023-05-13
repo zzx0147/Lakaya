@@ -4,7 +4,7 @@
 #include "GameFramework/GameState.h"
 #include "LakayaBaseGameState.generated.h"
 
-DECLARE_EVENT_OneParam(ALakayaBaseGameState, OnChangePlayerNumberSigniture, const uint8&)
+DECLARE_EVENT_OneParam(ALakayaBaseGameState, OnChangePlayerNumberSignature, const uint8&)
 
 UCLASS()
 class LAKAYA_API ALakayaBaseGameState : public AGameState
@@ -69,7 +69,7 @@ private:
 
 public:
 	// 현재 접속중인 플레이어 인원이 변경되면 호출됩니다. 매개변수로 변경된 플레이어 인원을 받습니다.
-	OnChangePlayerNumberSigniture OnChangePlayerNumber;
+	OnChangePlayerNumberSignature OnChangePlayerNumber;
 
 protected:
 	// Tab키를 눌렀을 때 표시되는 점수판 위젯의 클래스를 지정합니다.

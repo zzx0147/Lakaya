@@ -7,7 +7,7 @@
 
 //선택한 캐릭터가 변경되었을 때 작동하는 델리게이트, 해당 캐릭터의 이름을 넘겨줍니다
 //param1 캐릭터 이름
-DECLARE_EVENT_OneParam(UGameLobbyCharacterSelectWidget,OnChangeSelectedCharacterSigniture,const FName&)
+DECLARE_EVENT_OneParam(UGameLobbyCharacterSelectWidget,OnChangeSelectedCharacterSignature,const FName&)
 
 //캐릭터 선택 UI 클래스
 UCLASS()
@@ -38,7 +38,7 @@ protected:
 	void SelectCharacter(const uint8& CharacterNum);
 
 public:
-	OnChangeSelectedCharacterSigniture OnChangeSelectedCharacter;
+	OnChangeSelectedCharacterSignature OnChangeSelectedCharacter;
 
 private:
 	TArray<TObjectPtr<UButton>> CharacterButtonArray;
