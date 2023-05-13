@@ -34,8 +34,8 @@ void USpawnProjectileAbility::InitializeComponent()
 	if (!GetOwner()->HasAuthority()) return;
 	ProjectilePool.SetupObjectPool(ObjectPoolSize, [this]()-> ASingleDamageProjectile* {
 		FActorSpawnParameters Params;
-		Params.Owner = GetTypedOuter<AController>();
-		Params.Instigator = GetTypedOuter<APawn>();
+		Params.Instigator = GetOwner<APawn>();
+		Params.Owner = Params.Instigator ? Params.Instigator->GetController() : nullptr;
 		const auto Projectile = GetWorld()->SpawnActor<ASingleDamageProjectile>(ProjectileClass, Params);
 
 		if (!Projectile)
@@ -47,6 +47,7 @@ void USpawnProjectileAbility::InitializeComponent()
 		Projectile->SetReplicates(true);
 		Projectile->DisableProjectile();
 		Projectile->OnAttackEnded.AddUObject(this, &USpawnProjectileAbility::OnProjectileReturned);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Projectile spawned"));
 		return Projectile;
 	});
 }

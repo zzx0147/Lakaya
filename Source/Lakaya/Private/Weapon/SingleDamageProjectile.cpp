@@ -13,6 +13,7 @@ const FName ASingleDamageProjectile::MovementComponentName = FName(TEXT("Movemen
 
 ASingleDamageProjectile::ASingleDamageProjectile(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	bReplicates = true;
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(SphereComponentName);
 	SphereComponent->SetSphereRadius(50.f);
 	SphereComponent->SetCollisionProfileName(TEXT("Trigger"));
@@ -41,7 +42,8 @@ void ASingleDamageProjectile::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 	if (!HasAuthority()) return;
-	UGameplayStatics::ApplyDamage(OtherActor, Damage, GetInstigator<AController>(), GetOwner(), nullptr);
+	UGameplayStatics::ApplyDamage(OtherActor, Damage, GetInstigator()->GetController(), GetInstigator(), nullptr);
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Projectile Apply Damage!"));
 	OnAttackEnded.Broadcast(this);
 }
 
