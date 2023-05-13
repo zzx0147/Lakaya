@@ -26,10 +26,10 @@ AOccupationGameMode::AOccupationGameMode() : Super()
 	GameStateClass = AOccupationGameState::StaticClass();
 }
 
-void AOccupationGameMode::OnKilledCharacter(AController* VictimController, AActor* Victim,
+void AOccupationGameMode::OnPlayerKilled(AController* VictimController, AActor* Victim,
                                             AController* InstigatorController, AActor* DamageCauser)
 {
-	Super::OnKilledCharacter(VictimController, Victim, InstigatorController, DamageCauser);
+	Super::OnPlayerKilled(VictimController, Victim, InstigatorController, DamageCauser);
 	OccupationGameState->NotifyKillCharacter(VictimController, Victim, InstigatorController, DamageCauser);
 }
 

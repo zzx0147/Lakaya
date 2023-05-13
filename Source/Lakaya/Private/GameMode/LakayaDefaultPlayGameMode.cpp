@@ -116,9 +116,21 @@ void ALakayaDefaultPlayGameMode::Logout(AController* Exiting)
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
 }
 
-void ALakayaDefaultPlayGameMode::OnKilledCharacter(AController* VictimController, AActor* Victim,
+void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, AActor* Victim,
 	AController* InstigatorController, AActor* DamageCauser)
 {
+	if (const auto InstigatorPlayerState = InstigatorController->GetPlayerState<ALakayaBasePlayerState>())
+		InstigatorPlayerState->IncreaseKillCount();
+
+	if (const auto VictimPlayerState = VictimController->GetPlayerState<ALakayaBasePlayerState>())
+		VictimPlayerState->IncreaseDeathCount();
+
+	if (const auto BaseGameState = GetGameState<ALakayaBaseGameState>())
+	{
+		BaseGameState->NotifyPlayerKilled(VictimController, Victim, InstigatorController, DamageCauser);
+	}
+
+
 	FTimerHandle* ExistingTimer = RespawnTimers.Find(VictimController);
 	if (ExistingTimer != nullptr)
 	{
@@ -129,7 +141,7 @@ void ALakayaDefaultPlayGameMode::OnKilledCharacter(AController* VictimController
 	RespawnTimers.Add(VictimController, FTimerHandle());
 	FTimerHandle& NewTimer = RespawnTimers[VictimController];
 	GetWorldTimerManager().SetTimer(NewTimer, [this, VictimController]() { RespawnPlayer(VictimController); }, PlayerRespawnTime, false);
-}
+} 
 
 void ALakayaDefaultPlayGameMode::StartSelectCharacter()
 {

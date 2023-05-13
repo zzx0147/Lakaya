@@ -62,7 +62,7 @@ protected:
 	virtual void Logout(AController* Exiting) override;
 
 public:
-	virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser);
+	virtual void OnPlayerKilled(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser);
 	virtual void StartSelectCharacter();
 	virtual bool HasMatchStarted() const override;
 	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
