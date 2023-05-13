@@ -18,6 +18,7 @@ ALakayaDefaultPlayGameMode::ALakayaDefaultPlayGameMode()
 {
 	PlayerRespawnTime = 3;
 	bWaitToStart = false;
+	MinRespawnDelay = 5.0f;
 	//CharacterSelectTime = 10.0f;
 }
 
@@ -125,25 +126,33 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 	if (const auto InstigatorPlayerState = InstigatorController->GetPlayerState<ALakayaBasePlayerState>())
 		InstigatorPlayerState->IncreaseKillCount();
 
-	if (const auto VictimPlayerState = VictimController->GetPlayerState<ALakayaBasePlayerState>())
-		VictimPlayerState->IncreaseDeathCount();
+	const auto VictimPlayerState = VictimController->GetPlayerState<ALakayaBasePlayerState>();
+	if (VictimPlayerState != nullptr) VictimPlayerState->IncreaseDeathCount();
 
 	if (const auto BaseGameState = GetGameState<ALakayaBaseGameState>())
-	{
 		BaseGameState->NotifyPlayerKilled(VictimController, InstigatorController, DamageCauser);
-	}
 
-
-	FTimerHandle* ExistingTimer = RespawnTimers.Find(VictimController);
-	if (ExistingTimer != nullptr)
+	if (ShouldRespawn())
 	{
-		GetWorldTimerManager().ClearTimer(*ExistingTimer);
-		RespawnTimers.Remove(VictimController);
+		VictimPlayerState->SetRespawnTimer(GetGameState<AGameState>()->GetServerWorldTimeSeconds() + MinRespawnDelay, this, &ALakayaDefaultPlayGameMode::RespawnPlayer);
+		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnTimerSetted!!!"));
+	}
+	else
+	{
+		VictimPlayerState->SetRespawnTimer(-1.0f, this);
 	}
 
-	RespawnTimers.Add(VictimController, FTimerHandle());
-	FTimerHandle& NewTimer = RespawnTimers[VictimController];
-	GetWorldTimerManager().SetTimer(NewTimer, [this, VictimController]() { RespawnPlayer(VictimController); }, PlayerRespawnTime, false);
+
+	//FTimerHandle* ExistingTimer = RespawnTimers.Find(VictimController);
+	//if (ExistingTimer != nullptr)
+	//{
+	//	GetWorldTimerManager().ClearTimer(*ExistingTimer);
+	//	RespawnTimers.Remove(VictimController);
+	//}
+
+	//RespawnTimers.Add(VictimController, FTimerHandle());
+	//FTimerHandle& NewTimer = RespawnTimers[VictimController];
+	//GetWorldTimerManager().SetTimer(NewTimer, [this, VictimController]() { RespawnPlayer(VictimController); }, PlayerRespawnTime, false);
 } 
 
 void ALakayaDefaultPlayGameMode::StartSelectCharacter()
@@ -171,6 +180,9 @@ UClass* ALakayaDefaultPlayGameMode::GetDefaultPawnClassForController_Implementat
 
 void ALakayaDefaultPlayGameMode::RespawnPlayer(AController* KilledController)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnPlayer!!!!"));
+
+
 	TArray<AActor*> PlayerStartActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStartActors);
 
@@ -207,4 +219,9 @@ void ALakayaDefaultPlayGameMode::RespawnPlayer(AController* KilledController)
 	// }
 	//
 	// KilledDamageableCharacter->Respawn();
+}
+
+bool ALakayaDefaultPlayGameMode::ShouldRespawn()
+{
+	return true;
 }

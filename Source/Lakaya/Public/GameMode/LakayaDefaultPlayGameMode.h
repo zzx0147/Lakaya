@@ -69,6 +69,7 @@ public:
 
 protected:
 	virtual void RespawnPlayer(AController* KilledController);
+	virtual bool ShouldRespawn();
 
 public:
 	uint8 GetPlayerRespawnTime() { return PlayerRespawnTime; }

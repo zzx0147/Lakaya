@@ -64,7 +64,7 @@ public:
 	 * @param Function 부활 시간이 도래했을 때 실행할 Object의 멤버함수입니다.
 	 */
 	template <class T = nullptr_t>
-	void SetRespawnTimer(const float& ReservedRespawnTime, T* Object = nullptr, void (T::*Function)() = nullptr);
+	void SetRespawnTimer(const float& ReservedRespawnTime, T* Object = nullptr, void (T::*Function)(AController*) = nullptr);
 
 	// 이 플레이어의 생존 여부를 가져옵니다.
 	UFUNCTION(BlueprintGetter)
@@ -246,7 +246,7 @@ private:
 };
 
 template <class T>
-void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, T* Object, void (T::*Function)())
+void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, T* Object, void (T::*Function)(AController*))
 {
 	RespawnTime = ReservedRespawnTime;
 	const auto CurrentTime = GetServerTime();
@@ -256,6 +256,6 @@ void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, T
 	GetWorldTimerManager().SetTimer(RespawnTimer, [this, Object, Function]
 	{
 		SetAliveState(true);
-		if (Object && Function) (Object.*Function)();
+		if (Object && Function) (Object->*Function)(GetOwningController());
 	}, ReservedRespawnTime - CurrentTime, false);
 }
