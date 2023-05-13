@@ -40,7 +40,7 @@ void AOccupationGameMode::PostLogin(APlayerController* NewPlayer)
 	const int32 CurrentPlayerNum = OccupationGameState->PlayerArray.Num();
 	OccupationGameState->SetNumPlayers(CurrentPlayerNum);
 
-	if (GetNumPlayers() >= OccupationGameState->GetMaximumPlayers())
+	if (CurrentPlayerNum == OccupationGameState->GetMaximumPlayers())
 	{
 		GetWorldTimerManager().SetTimer(TimerHandle_DelayedStart, this, &ALakayaDefaultPlayGameMode::StartSelectCharacter,
 		                                MatchStartDelay, false);
@@ -93,8 +93,8 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 		{
 			if (OccupationGameState->PlayerArray.IsValidIndex(i))
 			{
-				auto* CollectorPlayerState = Cast<ALakayaBasePlayerState>(OccupationGameState->PlayerArray[i]);
-				if (CollectorPlayerState == nullptr)
+				auto* LakayaBasePlayerState = Cast<ALakayaBasePlayerState>(OccupationGameState->PlayerArray[i]);
+				if (LakayaBasePlayerState == nullptr)
 				{
 					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
 					return;
@@ -102,12 +102,12 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 
 				if (i % 2 == 0)
 				{
-					CollectorPlayerState->SetTeam(EPlayerTeam::A);
+					LakayaBasePlayerState->SetTeam(EPlayerTeam::A);
 					UE_LOG(LogTemp, Warning, TEXT("A팀에 배정 되었습니다."));
 				}
 				else
 				{
-					CollectorPlayerState->SetTeam(EPlayerTeam::B);
+					LakayaBasePlayerState->SetTeam(EPlayerTeam::B);
 					UE_LOG(LogTemp, Warning, TEXT("B팀에 배정 되었습니다."));
 				}
 			}
@@ -129,15 +129,15 @@ void AOccupationGameMode::UpdateTeamScoreTick()
 
 void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 {
-	const auto* CollectorPlayerState = Cast<ALakayaBasePlayerState>(KilledController->PlayerState);
-	if (CollectorPlayerState == nullptr)
+	const auto* LakayaBasePlayerState = Cast<ALakayaBasePlayerState>(KilledController->PlayerState);
+	if (LakayaBasePlayerState == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("LakayaDefaultPlayGameMode_CollectorPlayerState is null."));
 		return;
 	}
 
 	FName SpawnTag;
-	switch (CollectorPlayerState->GetTeam())
+	switch (LakayaBasePlayerState->GetTeam())
 	{
 	case EPlayerTeam::A:
 		SpawnTag = FName("ATeamSpawnZone");
@@ -203,15 +203,15 @@ void AOccupationGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
 	{
 		if (OccupationGameState->PlayerArray.IsValidIndex(i))
 		{
-			const auto* CollectorPlayerState = Cast<ALakayaBasePlayerState>(
+			const auto* LakayaBasePlayerState = Cast<ALakayaBasePlayerState>(
 				OccupationGameState->PlayerArray[i]);
-			if (CollectorPlayerState == nullptr)
+			if (LakayaBasePlayerState == nullptr)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
 				return;
 			}
 
-			AController* OccuController = Cast<AController>(CollectorPlayerState->GetOwner());
+			AController* OccuController = Cast<AController>(LakayaBasePlayerState->GetOwner());
 			if (OccuController == nullptr)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_PlayerController is null."));
@@ -219,7 +219,7 @@ void AOccupationGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
 			}
 
 			FName SpawnTag;
-			switch (CollectorPlayerState->GetTeam())
+			switch (LakayaBasePlayerState->GetTeam())
 			{
 			case EPlayerTeam::A:
 				SpawnTag = FName("ATeamSpawnZone");

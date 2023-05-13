@@ -51,7 +51,6 @@ void ALakayaDefaultPlayGameMode::OnMatchStateSet()
 	}
 }
 
-
 void ALakayaDefaultPlayGameMode::HandleMatchIsWaitingToStart()
 {
 	Super::HandleMatchIsWaitingToStart();

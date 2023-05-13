@@ -49,7 +49,7 @@ void AAiCharacterController::AIFireStart(AArmedCharacter* ArmCharacter)
 		{
 			FireAbility->AbilityStart();
 		}
-	}
+	}	
 }
 
 void AAiCharacterController::AIFireStop(AArmedCharacter* ArmCharacter)
