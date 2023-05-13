@@ -53,7 +53,7 @@ float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const&
 
 	OnHealthChanged.Broadcast(Health);
 	NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
-	if (Health <= 0.f) OnPlayerKilled.Broadcast(GetOwningController(), DamageCauser, EventInstigator);
+	if (Health <= 0.f) OnPlayerKilled.Broadcast(GetOwningController(), EventInstigator, DamageCauser);
 
 	return Damage;
 }

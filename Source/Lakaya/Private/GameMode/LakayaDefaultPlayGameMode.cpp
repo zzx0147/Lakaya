@@ -55,7 +55,11 @@ void ALakayaDefaultPlayGameMode::PostLogin(APlayerController* NewPlayer)
 					}
 				}
 			});
+
+		BasePlayerState->OnPlayerKilled.AddUObject(this, &ALakayaDefaultPlayGameMode::OnPlayerKilled);
 	}
+
+
 }
 
 void ALakayaDefaultPlayGameMode::OnMatchStateSet()
@@ -116,8 +120,7 @@ void ALakayaDefaultPlayGameMode::Logout(AController* Exiting)
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), NumPlayers);
 }
 
-void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, AActor* Victim,
-	AController* InstigatorController, AActor* DamageCauser)
+void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, AController* InstigatorController, AActor* DamageCauser)
 {
 	if (const auto InstigatorPlayerState = InstigatorController->GetPlayerState<ALakayaBasePlayerState>())
 		InstigatorPlayerState->IncreaseKillCount();
@@ -127,7 +130,7 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 
 	if (const auto BaseGameState = GetGameState<ALakayaBaseGameState>())
 	{
-		BaseGameState->NotifyPlayerKilled(VictimController, Victim, InstigatorController, DamageCauser);
+		BaseGameState->NotifyPlayerKilled(VictimController, InstigatorController, DamageCauser);
 	}
 
 

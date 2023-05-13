@@ -195,10 +195,11 @@ ESlateVisibility ALakayaBaseGameState::GetCharacterSelectWidgetVisibility() cons
 	return ESlateVisibility::Hidden;
 }
 
-void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(AController* VictimController, AActor* Victim,
-	AController* InstigatorController, AActor* DamageCauser)
+void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(AController* VictimController, AController* InstigatorController, AActor* DamageCauser)
 {
-	//TODO : OnPlayerKillNofityed.BroadCast();
+	//TODO : OnPlayerKillNofity.BroadCast();
+	OnPlayerKillNotified.Broadcast(VictimController, InstigatorController, DamageCauser);
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Player Killed!"));
 }
 
 void ALakayaBaseGameState::OnRep_MatchEndingTime()

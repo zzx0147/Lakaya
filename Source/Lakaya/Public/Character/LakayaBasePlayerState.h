@@ -11,7 +11,7 @@ DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FHealthChangeSignature, const flo
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FTeamSignature, const EPlayerTeam&)
 
-DECLARE_EVENT_ThreeParams(ALakayaBasePlayerState, FPlayerKillSignature, AController*, AActor*, AController*)
+DECLARE_EVENT_ThreeParams(ALakayaBasePlayerState, FPlayerKillSignature, AController*, AController*, AActor*)
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FAliveChangeSignature, bool)
 

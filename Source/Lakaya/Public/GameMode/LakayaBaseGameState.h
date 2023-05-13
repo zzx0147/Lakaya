@@ -5,6 +5,7 @@
 #include "LakayaBaseGameState.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBaseGameState, OnChangePlayerNumberSignature, const uint8&)
+DECLARE_EVENT_ThreeParams(ALakayaBaseGameState, FOnPlayerKillNotifiedSignature, AController*, AController*, AActor*)
 
 UCLASS()
 class LAKAYA_API ALakayaBaseGameState : public AGameState
@@ -52,7 +53,7 @@ public:
 	ESlateVisibility GetCharacterSelectWidgetVisibility() const;
 
 	UFUNCTION(NetMulticast, Reliable)
-	virtual void NotifyPlayerKilled(AController* VictimController, AActor* Victim,AController* InstigatorController, AActor* DamageCauser);
+	virtual void NotifyPlayerKilled(AController* VictimController,AController* InstigatorController, AActor* DamageCauser);
 
 protected:
 	UFUNCTION()
@@ -70,6 +71,9 @@ private:
 public:
 	// 현재 접속중인 플레이어 인원이 변경되면 호출됩니다. 매개변수로 변경된 플레이어 인원을 받습니다.
 	OnChangePlayerNumberSignature OnChangePlayerNumber;
+	
+	//플레이어가 죽은 것이 전달되었을 때 호출됩니다 매개변수로 죽은 플레이어의 컨트롤러, 죽인 플레이어 컨트롤러, 데미지 커서를 받습니다 
+	FOnPlayerKillNotifiedSignature OnPlayerKillNotified;
 
 protected:
 	// Tab키를 눌렀을 때 표시되는 점수판 위젯의 클래스를 지정합니다.
