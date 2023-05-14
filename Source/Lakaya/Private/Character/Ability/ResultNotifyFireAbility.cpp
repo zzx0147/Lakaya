@@ -14,6 +14,8 @@ UResultNotifyFireAbility::UResultNotifyFireAbility()
 	FireRange = 10000.f;
 	FireDamage = 20.f;
 	bShouldFireSmoothing = false;
+	PoolCount = 20;
+	DecalShowingTime = 10.f;
 }
 
 void UResultNotifyFireAbility::AbilityStart()
@@ -35,6 +37,16 @@ void UResultNotifyFireAbility::InitializeComponent()
 	Super::InitializeComponent();
 	Camera = GetOwner()->FindComponentByClass<UCameraComponent>();
 	CollisionQueryParams.AddIgnoredActor(GetOwner());
+
+	// 데칼 오브젝트 풀 생성
+	for (const auto& Pair : DecalClasses)
+	{
+		if (!Pair.Value) continue;
+		DecalPool.Emplace(Pair.Key).SetupObjectPool(PoolCount, [this, DecalClass = Pair.Value]
+		{
+			return GetWorld()->SpawnActor<AActor>(DecalClass);
+		});
+	}
 }
 
 void UResultNotifyFireAbility::RequestStart_Implementation(const float& RequestTime)
@@ -113,19 +125,39 @@ void UResultNotifyFireAbility::InvokeFireNotify(const FHitResult& HitResult)
 			                          ? EFireResult::Creature
 			                          : EFireResult::Environment
 		                        : EFireResult::None;
-	
+
 	if (bShouldFireSmoothing) NotifyFireResult(End, Normal, FireResult);
 	else NotifySingleFire(HitResult.TraceStart, End, Normal, FireResult);
+}
+
+void UResultNotifyFireAbility::DrawDecal(const FVector& Location, const FVector& Normal, const EFireResult& Kind)
+{
+	if (!DecalPool.Contains(Kind)) return;
+	if (const auto Decal = DecalPool[Kind].GetObject())
+	{
+		Decal->SetActorLocationAndRotation(Location, Normal.Rotation());
+		
+		// 일정시간 뒤 보이지 않는 곳으로 이동시켜두고, 다시 오브젝트 풀에 밀어넣습니다.
+		FTimerHandle TempTimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TempTimerHandle, [this, Decal, Kind]
+		{
+			Decal->SetActorLocation(FVector(-9999.f, -9999.f, -9999.f));
+			if (DecalPool.Contains(Kind)) DecalPool[Kind].ReturnObject(Decal);
+			else Decal->Destroy();
+		}, DecalShowingTime, false);
+	}
 }
 
 void UResultNotifyFireAbility::NotifySingleFire_Implementation(const FVector& Start, const FVector& End,
                                                                const FVector& Normal, const EFireResult& FireResult)
 {
+	DrawDecal(End, Normal, FireResult);
 	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.f);
 }
 
 void UResultNotifyFireAbility::NotifyFireResult_Implementation(const FVector& HitPoint, const FVector& Normal,
                                                                const EFireResult& FireResult)
 {
+	DrawDecal(HitPoint, Normal, FireResult);
 	DrawDebugLine(GetWorld(), GetOwner()->GetActorLocation(), HitPoint, FColor::Green, false, 2.f);
 }
