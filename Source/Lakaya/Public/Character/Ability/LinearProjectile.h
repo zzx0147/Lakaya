@@ -3,36 +3,48 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "SummonAbilityInstance.h"
 #include "LinearProjectile.generated.h"
 
-// 정해진 직선상에서 움직이는 투사체를 표현하는 액터입니다.
 UCLASS()
-class LAKAYA_API ALinearProjectile : public AActor
+class LAKAYA_API ALinearProjectile : public ASummonAbilityInstance
 {
 	GENERATED_BODY()
 
 public:
-	static const FName SphereComponentName;
+	static const FName SceneComponentName;
+	static const FName CollisionComponentName;
 	static const FName StaticMeshComponentName;
 
-	ALinearProjectile();
-
+	explicit ALinearProjectile(const FObjectInitializer& ObjectInitializer);
 	virtual void PostInitializeComponents() override;
-	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+	virtual void OnSummoned() override;
+	virtual void Tick(float DeltaSeconds) override;
 
 protected:
-	virtual void BeginPlay() override;
+	UFUNCTION()
+	virtual void OnRep_SummonedTime();
+
+	UFUNCTION()
+	virtual void OnCollisionComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	                                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+	                                              const FHitResult& SweepResult);
+
+	float GetServerTime() const;
+
+	UPROPERTY(EditAnywhere)
+	float LinearVelocity;
 
 private:
-	UFUNCTION()
-	void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	                          UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-	                          const FHitResult& SweepResult);
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* SceneComponent;
 
 	UPROPERTY(VisibleAnywhere)
-	class USphereComponent* SphereComponent;
+	class USphereComponent* CollisionComponent;
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* StaticMeshComponent;
+
+	UPROPERTY(ReplicatedUsing=OnRep_SummonedTime, Transient)
+	float SummonedTime;
 };

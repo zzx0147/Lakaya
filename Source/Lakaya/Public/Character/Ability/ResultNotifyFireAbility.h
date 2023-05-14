@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SimpleObjectPool.h"
 #include "StopRemoteCallAbility.h"
 #include "ResultNotifyFireAbility.generated.h"
 
@@ -63,6 +64,7 @@ private:
 	                      const EFireResult& FireResult);
 
 	void InvokeFireNotify(const FHitResult& HitResult);
+	void DrawDecal(const FVector& Location, const FVector& Normal, const EFireResult& Kind);
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -77,13 +79,26 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float FireDamage;
 
-	// 사격 궤적이 총구로부터 자연스럽게 그려져야만 한다는 제약조건입니다. true이면 총구에서부터 그려지지만, 궤적이 벽을 뚫을 수 있게 됩니다.
+	// 사격 궤적이 총구로부터 그려져야만 한다는 제약조건입니다. true이면 총구에서부터 그려지지만, 궤적이 벽을 뚫을 수도 있습니다.
 	UPROPERTY(EditAnywhere)
 	bool bShouldFireSmoothing;
 
+	// 사격이 어떤 물체에 충돌했을 때 어떤 액터를 보여줄지 지정합니다. 지정되지 않는 경우 데칼이 그려지지 않습니다.
+	UPROPERTY(EditAnywhere)
+	TMap<EFireResult, TSubclassOf<AActor>> DecalClasses;
+
+	// 초기 오브젝트 풀의 초기화 사이즈를 지정합니다.
+	UPROPERTY(EditAnywhere)
+	uint8 PoolCount;
+
+	// 데칼이 몇초간 보여질지를 정의합니다.
+	UPROPERTY(EditAnywhere)
+	float DecalShowingTime;
+
 private:
 	bool bWantsToFire;
-	TWeakObjectPtr<class UCameraComponent> Camera;
+	TWeakObjectPtr<UCameraComponent> Camera;
 	FTimerHandle FireTimer;
 	FCollisionQueryParams CollisionQueryParams;
+	TMap<EFireResult, TSimpleObjectPool<AActor>> DecalPool;
 };
