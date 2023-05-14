@@ -13,6 +13,7 @@ class LAKAYA_API UStartRemoteCallAbility : public UCharacterAbility
 	GENERATED_BODY()
 
 public:
+	UStartRemoteCallAbility();
 	virtual void AbilityStart() override;
 
 protected:

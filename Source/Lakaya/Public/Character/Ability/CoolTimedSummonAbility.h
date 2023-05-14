@@ -5,17 +5,17 @@
 #include "CoreMinimal.h"
 #include "SimpleObjectPool.h"
 #include "StartRemoteCallAbility.h"
-#include "SpawnProjectileAbility.generated.h"
+#include "CoolTimedSummonAbility.generated.h"
 
-DECLARE_EVENT_OneParam(USpawnProjectileAbility, FEnableTimeSignature, const float&)
+DECLARE_EVENT_OneParam(UCoolTimedSummonAbility, FEnableTimeSignature, const float&)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class LAKAYA_API USpawnProjectileAbility : public UStartRemoteCallAbility
+class LAKAYA_API UCoolTimedSummonAbility : public UStartRemoteCallAbility
 {
 	GENERATED_BODY()
 
 public:
-	USpawnProjectileAbility();
+	UCoolTimedSummonAbility();
 	virtual void AbilityStart() override;
 
 protected:
@@ -27,7 +27,7 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnProjectileReturned(class ASingleDamageProjectile* const& Projectile);
+	void OnAbilityInstanceEnded(class ASummonAbilityInstance* const& AbilityInstance);
 
 public:
 	// 스킬 사용가능시점이 변경된 경우 호출됩니다.
@@ -38,16 +38,17 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float CoolTime;
 
-	// 스킬 사용시 스폰될 투사체 클래스를 지정합니다.
+	// 소환될 스킬의 인스턴스입니다.
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<ASingleDamageProjectile> ProjectileClass;
+	TSubclassOf<ASummonAbilityInstance> AbilityInstanceClass;
 
+	// 액터에서 어느정도 떨어진 거리에서 어빌리티 인스턴스를 소환할지 지정합니다. bWantsTransformSet이 false인 경우 사용되지 않습니다.
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ALinearProjectile> LinearProjectileClass;
+	float SummonDistance;
 
-	// 액터의 전방으로 어느정도 떨어진 거리에서 투사체를 스폰할지 지정합니다.
+	// 액터에서 어느정도 떨어진 거리까지 트레이스를 수행할지 지정합니다. bWantsTransformSet이 false인 경우 사용되지 않습니다.
 	UPROPERTY(EditAnywhere)
-	float SpawnDistance;
+	float SearchFromActor;
 
 	// 투사체가 사용할 기본 데미지를 지정합니다.
 	UPROPERTY(EditAnywhere)
@@ -57,10 +58,15 @@ protected:
 	UPROPERTY(EditAnywhere)
 	uint8 ObjectPoolSize;
 
+	// 어빌리티 인스턴스가 플레이어가 바라보는 방향으로 로케이션, 로테이션이 셋업되도록 합니다.
+	UPROPERTY(EditAnywhere)
+	bool bWantsTransformSet;
+
 private:
 	// 스킬이 사용가능해지는 시점을 의미합니다.
 	UPROPERTY(ReplicatedUsing=OnRep_EnableTime, Transient)
 	float EnableTime;
 
-	TSimpleObjectPool<ASingleDamageProjectile> ProjectilePool;
+	FCollisionQueryParams CollisionQueryParams;
+	TSimpleObjectPool<ASummonAbilityInstance> AbilityInstancePool;
 };
