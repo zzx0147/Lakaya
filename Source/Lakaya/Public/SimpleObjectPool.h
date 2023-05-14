@@ -3,7 +3,7 @@
 #include "list"
 
 template <class T>
-class SimpleObjectPool
+class TSimpleObjectPool
 {
 public:
 	/**
@@ -28,21 +28,21 @@ private:
 };
 
 template <class T>
-void SimpleObjectPool<T>::SetupObjectPool(const uint16& InitialCount, std::function<T*()> MakeFunction)
+void TSimpleObjectPool<T>::SetupObjectPool(const uint16& InitialCount, std::function<T*()> MakeFunction)
 {
 	InstanceMaker = MakeFunction;
-	for (uint16 Count = 0; Count < InitialCount; ++Count)
-		AvailableObjects.emplace_back(InstanceMaker());
+	for (uint16 Count = 0; Count < InitialCount; ++Count) AvailableObjects.emplace_back(InstanceMaker());
 }
 
 template <class T>
-T* SimpleObjectPool<T>::GetObject()
+T* TSimpleObjectPool<T>::GetObject()
 {
 	if (AvailableObjects.empty())
 	{
 		if (InstanceMaker) return InstanceMaker();
-		else UE_LOG(LogTemp, Error, TEXT("Pool was not setted!"))
-	};
+		UE_LOG(LogTemp, Error, TEXT("Pool was not setted!"))
+		return nullptr;
+	}
 
 	auto Instance = AvailableObjects.back();
 	AvailableObjects.pop_back();
@@ -50,7 +50,7 @@ T* SimpleObjectPool<T>::GetObject()
 }
 
 template <class T>
-void SimpleObjectPool<T>::ReturnObject(T* Object)
+void TSimpleObjectPool<T>::ReturnObject(T* Object)
 {
 	AvailableObjects.emplace_back(Object);
 }
