@@ -6,6 +6,11 @@
 #include "GameFramework/GameStateBase.h"
 
 
+UStartRemoteCallAbility::UStartRemoteCallAbility()
+{
+	SetIsReplicated(true);
+}
+
 void UStartRemoteCallAbility::AbilityStart()
 {
 	Super::AbilityStart();
