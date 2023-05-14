@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,14 +5,9 @@
 #include "Occupation/PlayerTeam.h"
 #include "OccupationGameState.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeJoinedPlayers, const uint8&)
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeOccupationWinner, const EPlayerTeam&)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeOccupationWinner, const EPlayerTeam&)
 DECLARE_EVENT_TwoParams(AOccupationGameState, FTeamScoreSignature, const EPlayerTeam&, const float&)
-DECLARE_EVENT_FourParams(AOccupationGameState, FKillCharacterSignature, AController*, AActor*, AController*, AActor*)
 
-/**
- * 
- */
 UCLASS()
 class LAKAYA_API AOccupationGameState : public ALakayaBaseGameState
 {
@@ -28,9 +21,6 @@ private:
 	virtual void HandleMatchHasStarted() override;
 	
 public:
-	UFUNCTION()
-	void SetNumPlayers(const uint8& NewNumPlayers);
-
 	UFUNCTION(NetMulticast, Reliable)
 	void NotifyKillCharacter(AController* KilledController, AActor* KilledActor, AController* EventInstigator,
 	                         AActor* Causer);
@@ -69,8 +59,6 @@ private:
 	void OnRep_OccupationWinner();
 	
 private:
-	uint8 NumPlayers;
-
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
 	EPlayerTeam CurrentOccupationWinner;
 
@@ -92,7 +80,6 @@ private:
 	TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
 
 public:
-	FOnOccupationChangeOccupationWinner OnOccupationChangeOccupationWinner;
+	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;
-	FKillCharacterSignature OnKillCharacterNotify;
 };

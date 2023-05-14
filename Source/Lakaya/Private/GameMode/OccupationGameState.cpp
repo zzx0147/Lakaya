@@ -21,6 +21,7 @@ AOccupationGameState::AOccupationGameState()
 void AOccupationGameState::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
 		if (TeamScoreWidgetClass)
@@ -50,11 +51,6 @@ void AOccupationGameState::HandleMatchHasStarted()
 		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
 }
 
-void AOccupationGameState::SetNumPlayers(const uint8& NewNumPlayers)
-{
-	NumPlayers = NewNumPlayers;
-}
-
 void AOccupationGameState::NotifyKillCharacter_Implementation(AController* KilledController, AActor* KilledActor,
                                                               AController* EventInstigator, AActor* Causer)
 {
@@ -64,7 +60,7 @@ void AOccupationGameState::NotifyKillCharacter_Implementation(AController* Kille
 void AOccupationGameState::SetOccupationWinner()
 {
 	CurrentOccupationWinner = ATeamScore > BTeamScore ? EPlayerTeam::A : EPlayerTeam::B;
-	OnOccupationChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
+	OnChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
 }
 
 void AOccupationGameState::AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore)
@@ -95,16 +91,14 @@ float AOccupationGameState::GetTeamScore(const EPlayerTeam& Team) const
 void AOccupationGameState::OnRep_ATeamScore()
 {
 	OnTeamScoreSignature.Broadcast(EPlayerTeam::A, ATeamScore);
-	UE_LOG(LogTemp, Warning, TEXT("OnRep_ATeamScore"));
 }
 
 void AOccupationGameState::OnRep_BTeamScore()
 {
 	OnTeamScoreSignature.Broadcast(EPlayerTeam::B, BTeamScore);
-	UE_LOG(LogTemp, Warning, TEXT("OnRep_BTeamScore"));
 }
 
 void AOccupationGameState::OnRep_OccupationWinner()
 {
-	OnOccupationChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
+	OnChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
 }

@@ -64,26 +64,17 @@ protected:
 	virtual bool HasMatchStarted() const override;
 
 protected:
+	virtual void PlayerInitializeSetLocation(uint8 PlayersNum);
+	virtual void RespawnPlayer(AController* KilledController);
 	virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser);
-
-public:
 	virtual void StartSelectCharacter();
-
+	virtual void DelayedEndedGame();
+	
 public:
 	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
-
-protected:
-	virtual void RespawnPlayer(AController* KilledController);
-
-public:
+	
 	uint8 GetPlayerRespawnTime() { return PlayerRespawnTime; }
 	bool GetbWaitToStart() { return bWaitToStart; }
-
-protected:
-	uint8 PlayerRespawnTime;
-
-private:
-	bool bWaitToStart;
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
@@ -100,6 +91,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float MatchEndDelay;
 
+	uint8 PlayerRespawnTime;
+	bool bWaitToStart;
+	
 	FTimerHandle TimerHandle_DelayedStart;
 	FTimerHandle TimerHandle_DelayedEnded;
 	

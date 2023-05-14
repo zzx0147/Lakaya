@@ -38,13 +38,20 @@ void AOccupationGameMode::PostLogin(APlayerController* NewPlayer)
 	}
 
 	const int32 CurrentPlayerNum = OccupationGameState->PlayerArray.Num();
-	OccupationGameState->SetNumPlayers(CurrentPlayerNum);
+	// OccupationGameState->SetNumPlayers(CurrentPlayerNum);
 
 	if (CurrentPlayerNum == OccupationGameState->GetMaximumPlayers())
 	{
-		GetWorldTimerManager().SetTimer(TimerHandle_DelayedStart, this, &ALakayaDefaultPlayGameMode::StartSelectCharacter,
+		GetWorldTimerManager().SetTimer(TimerHandle_DelayedStart, this, &AOccupationGameMode::StartSelectCharacter,
 		                                MatchStartDelay, false);
 	}
+}
+
+void AOccupationGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+
+	// TODO : 플레이어가 나갈 시 나간 플레이어의 정보를 ai에게 넣어줘야함
 }
 
 bool AOccupationGameMode::ReadyToStartMatch_Implementation()
@@ -114,11 +121,6 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 		}
 	}
 
-}
-
-void AOccupationGameMode::DelayedEndedGame()
-{
-	UGameplayStatics::OpenLevel(GetWorld(), "MainLobbyLevel");
 }
 
 void AOccupationGameMode::UpdateTeamScoreTick()

@@ -121,11 +121,21 @@ void ALakayaDefaultPlayGameMode::StartSelectCharacter()
 	SetMatchState(MatchState::IsSelectCharacter);
 }
 
+void ALakayaDefaultPlayGameMode::DelayedEndedGame()
+{
+	UGameplayStatics::OpenLevel(GetWorld(), "MainLobbyLevel");
+}
+
 bool ALakayaDefaultPlayGameMode::HasMatchStarted() const
 {
 	if (MatchState == MatchState::IsSelectCharacter) return false;
 
 	return Super::HasMatchStarted();
+}
+
+void ALakayaDefaultPlayGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
+{
+	// TODO
 }
 
 UClass* ALakayaDefaultPlayGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)

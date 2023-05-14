@@ -18,8 +18,6 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
-	virtual void Tick(float DeltaTime) override;
-
 	FORCEINLINE APawn* const GetInteractingPawn() const { return InteractingPawn; }
 	
 private:

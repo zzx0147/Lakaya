@@ -15,17 +15,20 @@ class LAKAYA_API AOccupationGameMode : public ALakayaDefaultPlayGameMode
 public:
 	AOccupationGameMode();
 
-	virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser) override;
-
 protected:
 	// 함수에 대한 설명은 부모클래스에 설명되어 있음.
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+	virtual void Logout(AController* Exiting) override;
 	virtual bool ReadyToStartMatch_Implementation() override;
 	virtual bool ReadyToEndMatch_Implementation() override;
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 	virtual void HandleMatchIsSelectCharacter() override;
+
+protected:
 	virtual void RespawnPlayer(AController* KilledController) override;
+	virtual void PlayerInitializeSetLocation(uint8 PlayersNum) override;
+	virtual void OnKilledCharacter(AController* VictimController, AActor* Victim, AController* InstigatorController, AActor* DamageCauser) override;
 
 public:
 	/**
@@ -41,9 +44,6 @@ public:
 	void SubOccupyObject(const EPlayerTeam& Team);
 
 private:
-	void PlayerInitializeSetLocation(uint8 PlayersNum);
-	void DelayedEndedGame();
-
 	// 일정시간마다 호출되어 각 팀에 점수를 부여합니다.
 	void UpdateTeamScoreTick();
 

@@ -40,11 +40,6 @@ void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
-void AOccupationObject::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 {
 	auto* OccupationPlayerState = Cast<ALakayaBasePlayerState>(Caller->GetController()->PlayerState);

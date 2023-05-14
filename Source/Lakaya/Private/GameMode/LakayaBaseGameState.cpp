@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "GameMode/LakayaBaseGameState.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
@@ -74,11 +71,6 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 	}
-}
-
-void ALakayaBaseGameState::Tick(float DeltaTime)
-{
-	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, *GetMatchState().ToString());
 }
 
 void ALakayaBaseGameState::AddPlayerState(APlayerState* PlayerState)

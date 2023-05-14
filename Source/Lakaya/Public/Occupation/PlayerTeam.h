@@ -1,13 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "PlayerTeam.generated.h"
 
-/**
- * 
- */
 UENUM()
 enum class EPlayerTeam : uint8
 {
@@ -21,5 +16,5 @@ enum class EPlayerTeam : uint8
 	B UMETA(DisplayerName = "B"),
 
 	// 개인전
-	Individual
+	Individual UMETA(DisplayerName = "Individual")
 };
