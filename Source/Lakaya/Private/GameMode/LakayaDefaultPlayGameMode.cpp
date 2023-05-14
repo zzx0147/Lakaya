@@ -22,6 +22,16 @@ ALakayaDefaultPlayGameMode::ALakayaDefaultPlayGameMode()
 	//CharacterSelectTime = 10.0f;
 }
 
+void ALakayaDefaultPlayGameMode::InitStartSpot_Implementation(AActor* StartSpot, AController* NewPlayer)
+{
+	if (StartSpot == nullptr) return;
+
+	if (const auto Pawn = NewPlayer->GetPawn())
+	{
+		Pawn->SetActorLocation(StartSpot->GetActorLocation(), false, nullptr, ETeleportType::ResetPhysics);
+	}
+}
+
 void ALakayaDefaultPlayGameMode::BeginPlay()
 {
 	Super::BeginPlay();
@@ -180,7 +190,9 @@ UClass* ALakayaDefaultPlayGameMode::GetDefaultPawnClassForController_Implementat
 
 void ALakayaDefaultPlayGameMode::RespawnPlayer(AController* KilledController)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnPlayer!!!!"));
+	RestartPlayer(KilledController);
+
+	/*GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnPlayer!!!!"));
 
 
 	TArray<AActor*> PlayerStartActors;
@@ -210,7 +222,7 @@ void ALakayaDefaultPlayGameMode::RespawnPlayer(AController* KilledController)
 		UE_LOG(LogTemp, Warning, TEXT("KilledCharacter is not a pawn or an actor."));
 		return;
 	}
-	
+	*/
 	// ADamageableCharacter* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
 	// if (KilledDamageableCharacter == nullptr)
 	// {

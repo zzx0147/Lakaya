@@ -135,61 +135,63 @@ void AOccupationGameMode::UpdateTeamScoreTick()
 
 void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 {
-	//Super::RespawnPlayer(KilledController);
+	Super::RespawnPlayer(KilledController);
 	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnPlayer!!!!"));
 
-	const auto* CollectorPlayerState = Cast<ALakayaBasePlayerState>(KilledController->PlayerState);
-	if (CollectorPlayerState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("LakayaDefaultPlayGameMode_CollectorPlayerState is null."));
-		return;
-	}
+	//RestartPlayer(KilledController);
 
-	FName SpawnTag;
-	switch (CollectorPlayerState->GetTeam())
-	{
-	case EPlayerTeam::A:
-		SpawnTag = FName("ATeamSpawnZone");
-		break;
-	case EPlayerTeam::B:
-		SpawnTag = FName("BTeamSpawnZone");
-		break;
-	default:
-		UE_LOG(LogTemp, Warning, TEXT("Invalid player team state."));
-		return;
-	}
+	//const auto* CollectorPlayerState = Cast<ALakayaBasePlayerState>(KilledController->PlayerState);
+	//if (CollectorPlayerState == nullptr)
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("LakayaDefaultPlayGameMode_CollectorPlayerState is null."));
+	//	return;
+	//}
 
-	UE_LOG(LogTemp, Warning, TEXT("SpawnTag: %s"), *SpawnTag.ToString());
+	//FName SpawnTag;
+	//switch (CollectorPlayerState->GetTeam())
+	//{
+	//case EPlayerTeam::A:
+	//	SpawnTag = FName("ATeamSpawnZone");
+	//	break;
+	//case EPlayerTeam::B:
+	//	SpawnTag = FName("BTeamSpawnZone");
+	//	break;
+	//default:
+	//	UE_LOG(LogTemp, Warning, TEXT("Invalid player team state."));
+	//	return;
+	//}
 
-	TArray<AActor*> PlayerStartActors;
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(), SpawnTag, PlayerStartActors);
+	//UE_LOG(LogTemp, Warning, TEXT("SpawnTag: %s"), *SpawnTag.ToString());
 
-	UE_LOG(LogTemp, Warning, TEXT("PlayerStartActors.Num(): %d"), PlayerStartActors.Num());
+	//TArray<AActor*> PlayerStartActors;
+	//UGameplayStatics::GetAllActorsWithTag(GetWorld(), SpawnTag, PlayerStartActors);
 
-	if (PlayerStartActors.Num() == 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No Player Start Actors found."));
-		return;
-	}
+	//UE_LOG(LogTemp, Warning, TEXT("PlayerStartActors.Num(): %d"), PlayerStartActors.Num());
 
-	const APlayerStart* PlayerStart = Cast<APlayerStart>(
-		PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
-	APawn* KilledPawn = Cast<APawn>(KilledController->GetPawn());
-	ACharacter* KilledCharacterActor = Cast<ACharacter>(KilledController->GetCharacter());
+	//if (PlayerStartActors.Num() == 0)
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("No Player Start Actors found."));
+	//	return;
+	//}
 
-	if (KilledPawn != nullptr)
-	{
-		KilledPawn->SetActorLocation(PlayerStart->GetActorLocation());
-	}
-	else if (KilledController != nullptr)
-	{
-		KilledCharacterActor->SetActorLocation(PlayerStart->GetActorLocation());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_KilledCharacter is not a pawn or an actor."));
-		return;
-	}
+	//const APlayerStart* PlayerStart = Cast<APlayerStart>(
+	//	PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
+	//APawn* KilledPawn = Cast<APawn>(KilledController->GetPawn());
+	//ACharacter* KilledCharacterActor = Cast<ACharacter>(KilledController->GetCharacter());
+
+	//if (KilledPawn != nullptr)
+	//{
+	//	KilledPawn->SetActorLocation(PlayerStart->GetActorLocation());
+	//}
+	//else if (KilledController != nullptr)
+	//{
+	//	KilledCharacterActor->SetActorLocation(PlayerStart->GetActorLocation());
+	//}
+	//else
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_KilledCharacter is not a pawn or an actor."));
+	//	return;
+	//}
 
 	// auto* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
 	// if (KilledDamageableCharacter == nullptr)

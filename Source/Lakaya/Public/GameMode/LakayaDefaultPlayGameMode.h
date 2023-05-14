@@ -18,6 +18,9 @@ class LAKAYA_API ALakayaDefaultPlayGameMode : public AGameMode
 public:
 	ALakayaDefaultPlayGameMode();
 	
+public:
+	void InitStartSpot_Implementation(AActor* StartSpot, AController* NewPlayer) override;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
