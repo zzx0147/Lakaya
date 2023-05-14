@@ -4,54 +4,83 @@
 #include "Character/Ability/LinearProjectile.h"
 
 #include "Components/SphereComponent.h"
+#include "GameFramework/GameStateBase.h"
+#include "Net/UnrealNetwork.h"
 
-const FName ALinearProjectile::SphereComponentName = FName(TEXT("SphereComponent"));
-const FName ALinearProjectile::StaticMeshComponentName = FName(TEXT("StaticMeshComponent"));
+const FName ALinearProjectile::SceneComponentName = FName("SceneComponent");
+const FName ALinearProjectile::CollisionComponentName = FName("CollisionComponent");
+const FName ALinearProjectile::StaticMeshComponentName = FName("StaticMeshComponent");
 
-ALinearProjectile::ALinearProjectile()
+ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	bReplicates = true;
 	AActor::SetReplicateMovement(true);
+	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.bCanEverTick = true;
+	LinearVelocity = 100.f;
 
-	SphereComponent = CreateDefaultSubobject<USphereComponent>(SphereComponentName);
-	SphereComponent->SetEnableGravity(false);
-	SphereComponent->InitSphereRadius(50.f);
-	SphereComponent->SetCollisionProfileName(TEXT("Trigger"));
-	SetRootComponent(SphereComponent);
+	SceneComponent = CreateDefaultSubobject<USceneComponent>(SceneComponentName);
+	SetRootComponent(SceneComponent);
 
-	StaticMeshComponent = CreateOptionalDefaultSubobject<UStaticMeshComponent>(StaticMeshComponentName);
-	if (StaticMeshComponent)
-	{
-		StaticMeshComponent->SetupAttachment(SphereComponent);
-		StaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	}
+	CollisionComponent = CreateDefaultSubobject<USphereComponent>(CollisionComponentName);
+	CollisionComponent->SetupAttachment(SceneComponent);
+	CollisionComponent->SetCollisionProfileName(TEXT("Trigger"));
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	CollisionComponent->SetEnableGravity(false);
+	CollisionComponent->SetSimulatePhysics(true);
+	CollisionComponent->CanCharacterStepUpOn = ECB_No;
+
+	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(StaticMeshComponentName);
+	StaticMeshComponent->SetupAttachment(CollisionComponent);
+	StaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	StaticMeshComponent->SetVisibility(true);
+	StaticMeshComponent->CanCharacterStepUpOn = ECB_No;
+}
+
+void ALinearProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ALinearProjectile, SummonedTime)
 }
 
 void ALinearProjectile::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	SphereComponent->IgnoreActorWhenMoving(this, true);
-	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ALinearProjectile::OnSphereBeginOverlap);
+	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ALinearProjectile::OnCollisionComponentBeginOverlap);
+	StaticMeshComponent->SetVisibility(false);
 }
 
-void ALinearProjectile::NotifyActorBeginOverlap(AActor* OtherActor)
+float ALinearProjectile::GetServerTime() const
 {
-	Super::NotifyActorBeginOverlap(OtherActor);
-	if (!HasAuthority()) return;
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("NotifyActorBeginOverlap!"));
+	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 }
 
-void ALinearProjectile::BeginPlay()
+void ALinearProjectile::OnSummoned()
 {
-	Super::BeginPlay();
-	if (!HasAuthority()) return;
-	SphereComponent->AddImpulse(SphereComponent->GetForwardVector() * 3000.f);
+	Super::OnSummoned();
+	CollisionComponent->SetPhysicsLinearVelocity(GetActorForwardVector() * LinearVelocity);
+	SummonedTime = GetServerTime();
+	StaticMeshComponent->SetVisibility(true);
 }
 
-void ALinearProjectile::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                                             UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-                                             const FHitResult& SweepResult)
+void ALinearProjectile::Tick(float DeltaSeconds)
 {
-	if (!HasAuthority()) return;
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red,TEXT("OnSphereBeginOverlap!"));
+	Super::Tick(DeltaSeconds);
+	CollisionComponent->SetWorldLocation(
+		GetActorLocation() + GetActorForwardVector() * LinearVelocity * SummonedTime - GetServerTime());
+}
+
+void ALinearProjectile::OnRep_SummonedTime()
+{
+	SetActorTickEnabled(SummonedTime > 0.f);
+}
+
+void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                                                         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+                                                         bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!HasAuthority() || OtherActor == GetInstigator() || OtherActor == this) return;
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("OnCollision"));
+	SummonedTime = 0.f;
+	StaticMeshComponent->SetVisibility(false);
+	BroadcastOnAbilityEnded();
 }
