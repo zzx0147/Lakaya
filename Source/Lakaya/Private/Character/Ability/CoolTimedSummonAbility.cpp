@@ -13,6 +13,7 @@ UCoolTimedSummonAbility::UCoolTimedSummonAbility()
 	ObjectPoolSize = 1;
 	CoolTime = 5.f;
 	SummonDistance = 50.f;
+	SearchFromActor = 5000.f;
 }
 
 void UCoolTimedSummonAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

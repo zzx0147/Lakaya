@@ -50,10 +50,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float SearchFromActor;
 
-	// 투사체가 사용할 기본 데미지를 지정합니다.
-	UPROPERTY(EditAnywhere)
-	float BaseDamage;
-
 	// 초기 생성할 오브젝트 풀 크기를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	uint8 ObjectPoolSize;
