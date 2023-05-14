@@ -42,6 +42,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ASingleDamageProjectile> ProjectileClass;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ALinearProjectile> LinearProjectileClass;
+
 	// 액터의 전방으로 어느정도 떨어진 거리에서 투사체를 스폰할지 지정합니다.
 	UPROPERTY(EditAnywhere)
 	float SpawnDistance;
