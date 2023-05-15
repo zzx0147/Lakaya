@@ -2,6 +2,8 @@
 
 
 #include "AnimInstance/CharAnimInstance.h"
+#include "Character/InteractableCharacter.h"
+#include "Occupation/OccupationObject.h"
 
 void UCharAnimInstance::NativeBeginPlay()
 {
@@ -30,18 +32,54 @@ void UCharAnimInstance::NativeBeginPlay()
 			}
 		}
 
-		// if(Abilities.IsValidIndex(WeaponAbility))
-		// {
-		// 	if(const auto WeaponSkillAbility = Cast<UReloadAbility>(Abilities[WeaponAbility]))
-		// 	{
-		// 		WeaponSkillAbility->OnFiringStateChanged.
-		// 		AddLambda([this](const bool& WeaponSkillState)
-		// 			{bIsWeaponSkill = WeaponSkillState;} );
-		// 	}
-		// }
+		if (const auto InteractableCharacter = Cast<AInteractableCharacter>(TryGetPawnOwner()))
+		{
+			InteractableCharacter->OnInteractingActorChanged.
+			AddUObject(this, &UCharAnimInstance::OnInteractingActorChanged);
+		}
 	}
-
-	
-	// Cast<AFocusableCharacter>(TryGetPawnOwner())->GetFocusChangedEvent
-	// (EFocusContext::Simulated,EFocusSpace::MainHand).AddUObject(this,&UCharAnimInstance::SetState);
 }
+
+void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
+{
+	if (const auto InteractableCharacter =
+		Cast<AInteractableCharacter>(TryGetPawnOwner()))
+	{
+		if (NewInteractingActor)
+		{
+			bIsInteracting = true;
+		}
+		else
+		{
+			bIsInteracting = false;
+		}
+	}
+}
+
+// void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
+// {
+// 	if (const auto InteractableCharacter =
+// 		Cast<AInteractableCharacter>(TryGetPawnOwner()))
+// 	{
+// 		const EInteractionState InteractionState =
+// 			InteractableCharacter->GetInteractionState();
+// 		switch (InteractionState)
+// 		{
+// 		case EInteractionState::OnGoing:
+// 			bIsInteracting = true;
+// 			break;
+// 		case EInteractionState::Success:
+// 			bIsInteracting = false;
+// 			break;
+// 		case EInteractionState::Stopped:
+// 			bIsInteracting = false;
+// 			break;
+// 		case EInteractionState::Canceled:
+// 			bIsInteracting = false;
+// 			break;
+// 		default:
+// 			bIsInteracting = false;
+// 			break;
+// 		}
+// 	}
+// }
