@@ -5,6 +5,8 @@
 #include "Interactable/Interactable.h"
 #include "OccupationObject.generated.h"
 
+DECLARE_EVENT_OneParam(AOccupationObject, FOccupationStateSignature, EPlayerTeam);
+
 UCLASS()
 class LAKAYA_API AOccupationObject : public AInteractable
 {
@@ -19,6 +21,7 @@ protected:
 
 public:
 	FORCEINLINE APawn* const GetInteractingPawn() const { return InteractingPawn; }
+	FORCEINLINE EPlayerTeam const GetObjectTeam() const { return ObjectTeam; }
 	
 private:
 	virtual void OnInteractionStart(const float& Time, APawn* Caller) override;
@@ -53,6 +56,8 @@ private:
 	float FirstCallerTime = 0;
 	const float MaxInteractionDuration = 3;
 
+	FOccupationStateSignature FOnOccupationStateSignature;
+	
 	FTimerHandle InteractionTimerHandle;
 	FTimerHandle InteractionStateHandle;
 };

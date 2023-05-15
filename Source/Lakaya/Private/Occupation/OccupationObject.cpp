@@ -17,7 +17,7 @@ AOccupationObject::AOccupationObject()
 	RootComponent = Trigger;
 	Mesh->SetupAttachment(RootComponent);
 
-	Trigger->InitSphereRadius(350.0f);
+	Trigger->InitSphereRadius(600.0f);
 	Trigger->SetupAttachment(RootComponent);
 	Trigger->SetRelativeLocation(FVector::ZeroVector);
 
@@ -38,6 +38,8 @@ void AOccupationObject::BeginPlay()
 void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AOccupationObject, ObjectTeam);
 }
 
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
@@ -56,7 +58,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	{
 		if (ObjectTeam == EPlayerTeam::A)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("이미 점령한 오브젝트 입니다."));
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OccupationObject_이미 점령한 오브젝트 입니다."));
 			return;
 		}
 	}
@@ -64,7 +66,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	{
 		if (ObjectTeam == EPlayerTeam::B)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("OccupationObject_이미 점령한 오브젝트 입니다."));
 			return;
 		}
 	}
@@ -259,12 +261,15 @@ void AOccupationObject::OnInteractionFinish(APawn* Caller)
 		UE_LOG(LogTemp, Warning, TEXT("InteractionSuccess_InteractableCharacter is null."));
 		return;
 	}
+	
 	InteractableCharacter->InitializeInteraction();
+	// InteractingActor = nullptr;
 }
 
 void AOccupationObject::OnRep_BroadCastTeamObject()
 {
 	SetTeamObject(ObjectTeam);
+	FOnOccupationStateSignature.Broadcast(ObjectTeam);
 }
 
 void AOccupationObject::SetTeamObject(const EPlayerTeam& Team)

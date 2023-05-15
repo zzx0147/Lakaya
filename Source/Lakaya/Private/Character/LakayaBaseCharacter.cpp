@@ -3,6 +3,7 @@
 
 #include "Character/LakayaBaseCharacter.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Character/ResourceComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -34,6 +35,11 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
+
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> ResurrectionFinder(
+		TEXT("/Script/Niagara.NiagaraSystem'/Game/Effects/M_VFX/Char_Common/VFX_Resurrection.VFX_Resurrection'"));
+
+	ResurrectionNiagaraSystem = ResurrectionFinder.Object;
 }
 
 ELifetimeCondition ALakayaBaseCharacter::AllowActorComponentToReplicate(
@@ -91,6 +97,15 @@ FRotator ALakayaBaseCharacter::GetPlayerRotation() const
 	// 서버이거나 Autonomous인 경우 그냥 카메라 컴포넌트를 사용합니다.
 	if (HasAuthority() || GetLocalRole() == ROLE_AutonomousProxy) return GetCamera()->GetComponentRotation();
 	return LatestUpdateRotation.Rotator();
+}
+
+void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
+{
+	ResourceComponent->OnAliveStateChanged(IsAlive);
+	if (IsAlive && ResurrectionNiagaraSystem)
+		UNiagaraFunctionLibrary::SpawnSystemAttached(ResurrectionNiagaraSystem, RootComponent, FName(),
+		                                             FVector::ZeroVector, FRotator::ZeroRotator,
+		                                             EAttachLocation::SnapToTarget, true);
 }
 
 float ALakayaBaseCharacter::GetServerTime() const

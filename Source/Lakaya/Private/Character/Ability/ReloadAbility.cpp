@@ -23,6 +23,12 @@ void UReloadAbility::AbilityStart()
 	if (!bIsReloading) Super::AbilityStart();
 }
 
+void UReloadAbility::OnAliveStateChanged(const bool& AliveState)
+{
+	Super::OnAliveStateChanged(AliveState);
+	if (!AliveState && GetOwner()->HasAuthority()) bIsReloading = false;
+}
+
 void UReloadAbility::BeginPlay()
 {
 	Super::BeginPlay();
@@ -37,8 +43,8 @@ void UReloadAbility::RequestStart_Implementation(const float& RequestTime)
 {
 	Super::RequestStart_Implementation(RequestTime);
 
-	// 재장전중이지 않고, BulletComponent가 존재하고, 탄창이 가득차있지 않는 경우에만 재장전을 시작합니다.
-	if (bIsReloading || !BulletComponent.IsValid() || BulletComponent->IsFull()) return;
+	// 재장전중이지 않고, BulletComponent가 존재하고, 탄창이 가득차있지 않고, 살아있는 경우에만 재장전을 시작합니다.
+	if (bIsReloading || !BulletComponent.IsValid() || BulletComponent->IsFull() || !GetAliveState()) return;
 
 	bIsReloading = true;
 	GetWorld()->GetTimerManager().SetTimer(OwnerTimer, this, &UReloadAbility::ReloadTimerHandler, ReloadDelay);

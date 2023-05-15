@@ -7,6 +7,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Character/BulletComponent.h"
 #include "Character/LakayaBaseCharacter.h"
+#include "Components/ArrowComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 UResultNotifyFireAbility::UResultNotifyFireAbility()
@@ -35,10 +36,23 @@ void UResultNotifyFireAbility::AbilityStop()
 	Super::AbilityStop();
 }
 
+void UResultNotifyFireAbility::OnAliveStateChanged(const bool& AliveState)
+{
+	Super::OnAliveStateChanged(AliveState);
+	if (!AliveState && GetOwner()->HasAuthority())
+	{
+		bWantsToFire = false;
+		ClearFireTimer();
+	}
+}
+
 void UResultNotifyFireAbility::InitializeComponent()
 {
 	Super::InitializeComponent();
 	BulletComponent = GetOwner()->FindComponentByClass<UBulletComponent>();
+	if (auto MuzzleComponents = GetOwner()->GetComponentsByTag(UArrowComponent::StaticClass(), FName("Muzzle"));
+		MuzzleComponents.IsValidIndex(0))
+		MuzzleComponent = Cast<UArrowComponent>(MuzzleComponents[0]);
 	CollisionQueryParams.AddIgnoredActor(GetOwner());
 
 	// 데칼 오브젝트 풀 생성
@@ -57,7 +71,7 @@ void UResultNotifyFireAbility::InitializeComponent()
 void UResultNotifyFireAbility::RequestStart_Implementation(const float& RequestTime)
 {
 	Super::RequestStart_Implementation(RequestTime);
-	if (bWantsToFire) return;
+	if (bWantsToFire || !GetAliveState()) return;
 	bWantsToFire = true;
 	if (auto& TimerManager = GetWorld()->GetTimerManager(); !TimerManager.TimerExists(FireTimer))
 	{
@@ -69,7 +83,7 @@ void UResultNotifyFireAbility::RequestStart_Implementation(const float& RequestT
 void UResultNotifyFireAbility::RequestStop_Implementation(const float& RequestTime)
 {
 	Super::RequestStop_Implementation(RequestTime);
-	if (!bWantsToFire) return;
+	if (!bWantsToFire || !GetAliveState()) return;
 	bWantsToFire = false;
 }
 
@@ -88,18 +102,21 @@ bool UResultNotifyFireAbility::ShouldFire()
 
 void UResultNotifyFireAbility::SingleFire()
 {
-	const auto ActorLocation = GetOwner()->GetActorLocation();
+	const auto LineStart = MuzzleComponent.IsValid()
+		                       ? MuzzleComponent->GetComponentLocation()
+		                       : GetOwner()->GetActorLocation();
 	auto End = GetCameraForwardTracePoint(FireRange, CollisionQueryParams);
 
 	FHitResult Result;
-	if (GetWorld()->LineTraceSingleByChannel(Result, ActorLocation, End, ECC_Visibility, CollisionQueryParams))
+	if (GetWorld()->LineTraceSingleByChannel(Result, LineStart, End, ECC_Visibility, CollisionQueryParams))
 	{
 		End = Result.ImpactPoint;
-		UGameplayStatics::ApplyPointDamage(Result.GetActor(), FireDamage, ActorLocation, Result,
-		                                   GetTypedOuter<AController>(), GetOwner(), nullptr);
+		const auto Pawn = GetOwner<APawn>();
+		UGameplayStatics::ApplyPointDamage(Result.GetActor(), FireDamage, LineStart, Result,
+		                                   Pawn ? Pawn->GetController() : nullptr, GetOwner(), nullptr);
 	}
 	InvokeFireNotify(Result);
-	DrawDebugLine(GetWorld(), ActorLocation, End, FColor::Red, false, 2.f);
+	DrawDebugLine(GetWorld(), LineStart, End, FColor::Red, false, 2.f);
 }
 
 void UResultNotifyFireAbility::FailToFire()
@@ -149,24 +166,34 @@ void UResultNotifyFireAbility::DrawDecal(const FVector& Location, const FVector&
 
 void UResultNotifyFireAbility::DrawTrail(const FVector& Start, const FVector& End)
 {
-	if (NiagaraSystem)
-		if (const auto Niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraSystem, Start))
-			Niagara->SetNiagaraVariableVec3(TEXT("BeamEnd"), End - Start);
+	if (!TrailNiagaraSystem) return;
+	if (const auto Niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TrailNiagaraSystem, Start))
+		Niagara->SetNiagaraVariableVec3(TEXT("BeamEnd"), End - Start);
+}
+
+void UResultNotifyFireAbility::DrawImpact(const FVector& Location, const FVector& Normal, const EFireResult& Kind)
+{
+	if (!ImpactNiagaraSystems.Contains(Kind)) return;
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactNiagaraSystems[Kind], Location, Normal.Rotation());
 }
 
 void UResultNotifyFireAbility::NotifySingleFire_Implementation(const FVector& Start, const FVector& End,
                                                                const FVector& Normal, const EFireResult& FireResult)
 {
-	DrawDecal(End, Normal, FireResult);
 	DrawTrail(Start, End);
+	DrawDecal(End, Normal, FireResult);
+	DrawImpact(End, Normal, FireResult);
 	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.f);
 }
 
 void UResultNotifyFireAbility::NotifyFireResult_Implementation(const FVector& HitPoint, const FVector& Normal,
                                                                const EFireResult& FireResult)
 {
-	const FVector Start = GetOwner()->GetActorLocation();
-	DrawDecal(HitPoint, Normal, FireResult);
+	const FVector Start = MuzzleComponent.IsValid()
+		                      ? MuzzleComponent->GetComponentLocation()
+		                      : GetOwner()->GetActorLocation();
 	DrawTrail(Start, HitPoint);
+	DrawDecal(HitPoint, Normal, FireResult);
+	DrawImpact(HitPoint, Normal, FireResult);
 	DrawDebugLine(GetWorld(), Start, HitPoint, FColor::Green, false, 2.f);
 }

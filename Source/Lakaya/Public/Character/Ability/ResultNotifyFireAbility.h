@@ -29,6 +29,7 @@ public:
 	UResultNotifyFireAbility();
 	virtual void AbilityStart() override;
 	virtual void AbilityStop() override;
+	virtual void OnAliveStateChanged(const bool& AliveState) override;
 
 protected:
 	virtual void InitializeComponent() override;
@@ -66,6 +67,7 @@ private:
 	void InvokeFireNotify(const FHitResult& HitResult);
 	void DrawDecal(const FVector& Location, const FVector& Normal, const EFireResult& Kind);
 	void DrawTrail(const FVector& Start, const FVector& End);
+	void DrawImpact(const FVector& Location, const FVector& Normal, const EFireResult& Kind);
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -98,7 +100,11 @@ protected:
 
 	// 총기 궤적을 그리는 나이아가라 시스템을 지정합니다.
 	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* NiagaraSystem;
+	class UNiagaraSystem* TrailNiagaraSystem;
+
+	// 어떤 물체에 사격이 적중한 경우 재생되는 나이아가라 시스템을 지정합니다.
+	UPROPERTY(EditAnywhere)
+	TMap<EFireResult, UNiagaraSystem*> ImpactNiagaraSystems;
 
 	// 매 격발마다 총알이 차감될 양을 설정합니다.
 	UPROPERTY(EditAnywhere)
@@ -109,6 +115,7 @@ private:
 	FTimerHandle FireTimer;
 	FCollisionQueryParams CollisionQueryParams;
 	TMap<EFireResult, TSimpleObjectPool<AActor>> DecalPool;
+	TWeakObjectPtr<class UArrowComponent> MuzzleComponent;
 
 	//TODO: 기능구현 클래스는 자원으로부터는 중립적이어야 재사용하기 편해집니다. 추후 자원 차감 로직은 다른 쪽으로 옮겨져야 합니다.
 	TWeakObjectPtr<class UBulletComponent> BulletComponent;
