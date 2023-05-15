@@ -47,7 +47,7 @@ void UCoolTimedSummonAbility::InitializeComponent()
 		}
 
 		AbilityInstance->OnAbilityEnded.AddUObject(this, &UCoolTimedSummonAbility::OnAbilityInstanceEnded);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("AbilityInstance spawned"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("AbilityInstance spawned"));
 		return AbilityInstance;
 	});
 }

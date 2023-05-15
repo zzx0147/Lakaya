@@ -139,19 +139,19 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 				{
 					if (ArgTeam == EPlayerTeam::A)
 					{
-						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("TeamChange! A!"));
+						//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("TeamChange! A!"));
 					}
 					else if (ArgTeam == EPlayerTeam::B)
 					{
-						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("TeamChange! B!"));
+						//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("TeamChange! B!"));
 					}
 					else if (ArgTeam == EPlayerTeam::None)
 					{
-						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("TeamChange! NONE!"));
+						//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("TeamChange! NONE!"));
 					}
 					else if (ArgTeam == EPlayerTeam::Individual)
 					{
-						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("TeamChange! Individual!"));
+						//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("TeamChange! Individual!"));
 					}
 
 					if (ArgTeam == EPlayerTeam::A || ArgTeam == EPlayerTeam::B)

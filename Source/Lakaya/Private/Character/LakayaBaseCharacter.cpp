@@ -87,8 +87,8 @@ void ALakayaBaseCharacter::Tick(float DeltaSeconds)
 		// 이전 프레임에서 사용했던 회전값과 현재 시간을 기준으로 외삽된 Raw회전값을 구면보간하여 현재 프레임에서 사용한 회전값을 지정합니다. 
 		LatestUpdateRotation = FQuat::Slerp(LatestUpdateRotation, GetRawExtrapolatedRotator(GetServerTime()),
 		                                    PlayerRotationInterpolationAlpha);
-		DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + LatestUpdateRotation.Vector() * 100.f,
-		              FColor::Green, false, 0.3f);
+		//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + LatestUpdateRotation.Vector() * 100.f,
+		//              FColor::Green, false, 0.3f);
 	}
 }
 

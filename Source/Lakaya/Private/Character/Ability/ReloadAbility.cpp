@@ -49,7 +49,7 @@ void UReloadAbility::RequestStart_Implementation(const float& RequestTime)
 	bIsReloading = true;
 	GetWorld()->GetTimerManager().SetTimer(OwnerTimer, this, &UReloadAbility::ReloadTimerHandler, ReloadDelay);
 	OnReloadStateChanged.Broadcast(bIsReloading);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ReloadTimerSetted!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ReloadTimerSetted!"));
 }
 
 void UReloadAbility::OnRep_IsReloading()
@@ -63,7 +63,7 @@ void UReloadAbility::ReloadTimerHandler()
 	if (BulletComponent.IsValid())
 	{
 		BulletComponent->Reload();
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Reloaded!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Reloaded!"));
 	}
 	else UE_LOG(LogActorComponent, Error, TEXT("BulletComponent is invalid!"));
 	OnReloadStateChanged.Broadcast(bIsReloading);

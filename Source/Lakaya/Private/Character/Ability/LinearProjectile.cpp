@@ -79,7 +79,7 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
                                                          bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (!HasAuthority() || OtherActor == GetInstigator() || OtherActor == this) return;
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("OnCollision"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("OnCollision"));
 	SummonedTime = 0.f;
 	StaticMeshComponent->SetVisibility(false);
 	BroadcastOnAbilityEnded();

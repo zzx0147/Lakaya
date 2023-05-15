@@ -50,7 +50,7 @@ void AInteractablePlayerController::BeginPlay()
 
 void AInteractablePlayerController::StartInteraction(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StartInteraction."));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StartInteraction."));
 	auto* InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
 	if (InteractableCharacter == nullptr)
 	{
@@ -63,7 +63,7 @@ void AInteractablePlayerController::StartInteraction(const FInputActionValue& Va
 
 void AInteractablePlayerController::StopInteraction(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StopInteraction."));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StopInteraction."));
 	auto* InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
 	if (InteractableCharacter == nullptr)
 	{

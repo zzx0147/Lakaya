@@ -92,7 +92,7 @@ void UResultNotifyFireAbility::RequestStart_Implementation(const float& RequestT
 	if (auto& TimerManager = GetWorld()->GetTimerManager(); !TimerManager.TimerExists(FireTimer))
 	{
 		TimerManager.SetTimer(FireTimer, this, &UResultNotifyFireAbility::FireTick, FireDelay, true, FirstFireDelay);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
 	}
 	
 	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
@@ -170,7 +170,7 @@ void UResultNotifyFireAbility::FailToFire()
 void UResultNotifyFireAbility::ClearFireTimer()
 {
 	GetWorld()->GetTimerManager().ClearTimer(FireTimer);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
 }
 
 void UResultNotifyFireAbility::InvokeFireNotify(const FHitResult& HitResult)
@@ -241,5 +241,5 @@ void UResultNotifyFireAbility::NotifyFireResult_Implementation(const FVector& Hi
 	DrawTrail(Start, HitPoint);
 	DrawDecal(HitPoint, Normal, FireResult);
 	DrawImpact(HitPoint, Normal, FireResult);
-	DrawDebugLine(GetWorld(), Start, HitPoint, FColor::Green, false, 2.f);
+	//DrawDebugLine(GetWorld(), Start, HitPoint, FColor::Green, false, 2.f);
 }

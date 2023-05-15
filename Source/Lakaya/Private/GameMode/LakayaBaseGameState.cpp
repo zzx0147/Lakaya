@@ -231,7 +231,7 @@ void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(AController* Victim
 {
 	//TODO : OnPlayerKillNofity.BroadCast();
 	OnPlayerKillNotified.Broadcast(VictimController, InstigatorController, DamageCauser);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Player Killed!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Player Killed!"));
 }
 
 void ALakayaBaseGameState::OnRep_MatchEndingTime()

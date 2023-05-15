@@ -147,7 +147,7 @@ void ALakayaDefaultPlayGameMode::PostLogin(APlayerController* NewPlayer)
 	UE_LOG(LogTemp, Warning, TEXT("The Player has entered the game."));
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), GetNumPlayers());
 
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("플레이어가 입장했습니다."));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("플레이어가 입장했습니다."));
 
 	if (const auto BasePlayerState = NewPlayer->GetPlayerState<ALakayaBasePlayerState>())
 	{
@@ -256,7 +256,7 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 	if (ShouldRespawn())
 	{
 		VictimPlayerState->SetRespawnTimer(GetGameState<AGameState>()->GetServerWorldTimeSeconds() + MinRespawnDelay, this, &ALakayaDefaultPlayGameMode::RespawnPlayer);
-		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnTimerSetted!!!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnTimerSetted!!!"));
 	}
 	else
 	{

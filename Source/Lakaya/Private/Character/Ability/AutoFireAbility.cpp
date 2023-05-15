@@ -72,7 +72,7 @@ void UAutoFireAbility::RequestStart_Implementation(const float& RequestTime)
 	if (auto& TimerManager = GetWorld()->GetTimerManager(); !TimerManager.TimerExists(FireTimer))
 	{
 		TimerManager.SetTimer(FireTimer, this, &UAutoFireAbility::FireTick, FireDelay, true, InitDelay);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
 	}
 	OnFiringStateChanged.Broadcast(bIsFiring);
 }
@@ -128,7 +128,7 @@ void UAutoFireAbility::FireTick()
 	if (!bIsFiring)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(FireTimer);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
 	}
 	else if (ShouldFire()) SingleFire();
 	else FailToFire();

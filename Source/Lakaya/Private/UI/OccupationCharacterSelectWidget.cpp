@@ -46,7 +46,7 @@ void UOccupationCharacterSelectWidget::RegisterPlayer(APlayerState* PlayerState)
 				BasePlayerState->OnCharacterNameChanged.AddLambda(
 					[this, PlayerNameWidget](ALakayaBasePlayerState* ArgBasePlayerState, const FName& ArgCharacterName)
 					{
-						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, *FString::Printf(TEXT("Change Character %s"), *ArgCharacterName.ToString()));
+						//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, *FString::Printf(TEXT("Change Character %s"), *ArgCharacterName.ToString()));
 						CharacterSelectedPlayerListBoxMap[ArgCharacterName]->AddChildToVerticalBox(PlayerNameWidget);
 						PlayerNameWidget->SetText(FText::FromString(ArgBasePlayerState->GetPlayerName()));
 					}

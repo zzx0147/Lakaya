@@ -123,7 +123,7 @@ void AOccupationGameMode::UpdateTeamScoreTick()
 void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 {
 	Super::RespawnPlayer(KilledController);
-	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnPlayer!!!!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnPlayer!!!!"));
 
 
 	//const auto* CollectorPlayerState = Cast<ALakayaBasePlayerState>(KilledController->PlayerState);

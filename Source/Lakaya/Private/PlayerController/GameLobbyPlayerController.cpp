@@ -156,13 +156,13 @@ void AGameLobbyPlayerController::BeginPlay()
 void AGameLobbyPlayerController::MenuHandler(const FInputActionValue& Value)
 {
 	//TODO: UI를 띄웁니다.
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Menu"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Menu"));
 }
 
 void AGameLobbyPlayerController::LoadoutHandler(const FInputActionValue& Value)
 {
 	//TODO: UI를 띄웁니다.
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("WeaponLoadout"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("WeaponLoadout"));
 	if (PlayerState != nullptr)
 	{
 		if (IsLocalPlayerController())//클라의 경우 PlayerState가 생겼을 때 캐릭터 선택 위젯을 생성
