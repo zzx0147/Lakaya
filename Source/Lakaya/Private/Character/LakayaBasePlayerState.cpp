@@ -8,6 +8,7 @@
 #include "Character/LakayaBaseCharacter.h"
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
+#include "UI/DirectionalDamageIndicator.h"
 #include "UI/GamePlayHealthWidget.h"
 
 void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -30,14 +31,19 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 
 	static ConstructorHelpers::FClassFinder<UGamePlayHealthWidget> HealthFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
-
+	static ConstructorHelpers::FClassFinder<UDirectionalDamageIndicator> DirectionDamageFinder(
+		TEXT("/Game/Blueprints/UMG/WBP_DirectionalDamageIndicator"));
+	
 	if (HealthFinder.Succeeded()) HealthWidgetClass = HealthFinder.Class;
+	if (DirectionDamageFinder.Succeeded()) DirectionDamageIndicatorClass = DirectionDamageFinder.Class;
 }
 
 void ALakayaBasePlayerState::PreInitializeComponents()
 {
 	Super::PreInitializeComponents();
 	OnPawnSet.AddUniqueDynamic(this, &ALakayaBasePlayerState::OnPawnSetCallback);
+
+	
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -84,6 +90,33 @@ void ALakayaBasePlayerState::BeginPlay()
 			HealthWidget->SetMaximumHealth(GetMaxHealth());
 			HealthWidget->SetCurrentHealth(Health);
 		}
+
+		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(LocalController, DirectionDamageIndicatorClass);
+		if (DirectionDamageIndicatorWidget == nullptr)
+		{
+				UE_LOG(LogTemp, Warning, TEXT("LakayaBasePlayerState_PreInitializeComponents DirectionDamageIndicatorWidget is null."));
+				return;
+		}
+
+		DirectionDamageIndicatorWidget->AddToViewport();
+		DirectionDamageIndicatorWidget->SetVisibility(ESlateVisibility::Hidden);
+		
+		// DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(LocalController, )
+		
+		// if (DirectionDamageIndicatorClass)
+		// {
+		// 	DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(LocalController, DirectionDamageIndicatorClass);
+		//
+		// 	if (DirectionDamageIndicatorWidget == nullptr)
+		// 	{
+		// 		UE_LOG(LogTemp, Warning, TEXT("LakayaBasePlayerState_PreInitializeComponents DirectionDamageIndicatorWidget is null."));
+		// 		return;
+		// 	}
+		//
+		// 	DirectionDamageIndicatorWidget->AddToViewport();
+		// 	DirectionDamageIndicatorWidget->SetVisibility(ESlateVisibility::Hidden);
+		// 	UE_LOG(LogTemp, Warning, TEXT("DirectionDamageIndicatorWidget success."))
+		// }
 	}
 }
 
@@ -275,22 +308,26 @@ bool ALakayaBasePlayerState::RequestCharacterChange_Validate(const FName& Name)
 void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserName, const FVector& CauserLocation,
                                                             const float& Damage)
 {
-	//TODO: 피격 레이더를 업데이트 합니다.
-
-	// ScreenEffect : 피격 당할 시 화면에 표기 되는 이펙트
-	FSoftObjectPath NiagaraPath;
-	NiagaraPath = (TEXT("/Game/Effects/M_VFX/VFX_Screeneffect.VFX_Screeneffect"));
-	UNiagaraSystem* NiagaraEffect = Cast<UNiagaraSystem>(NiagaraPath.TryLoad());
+	// TODO : 피격 레이더를 업데이트 합니다.
+	if(GetPlayerController()->IsLocalPlayerController())
+	{
+		DirectionDamageIndicatorWidget->IndicateStart(CauserName.ToString(), CauserLocation, 3.0f);
+		
+		// ScreenEffect : 피격 당할 시 화면에 표기 되는 이펙트
+		FSoftObjectPath NiagaraPath;
+		NiagaraPath = (TEXT("/Game/Effects/M_VFX/VFX_Screeneffect.VFX_Screeneffect"));
+		UNiagaraSystem* NiagaraEffect = Cast<UNiagaraSystem>(NiagaraPath.TryLoad());
       
-	if (NiagaraEffect)
-	{
-		UNiagaraComponent* NiagaraComponent =
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect,
-		FVector(0.0f, 0.0f, 0.0f));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to load Niagara system!"));
+		if (NiagaraEffect)
+		{
+			UNiagaraComponent* NiagaraComponent =
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect,
+			FVector(0.0f, 0.0f, 0.0f));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to load Niagara system!"));
+		}
 	}
 }
 

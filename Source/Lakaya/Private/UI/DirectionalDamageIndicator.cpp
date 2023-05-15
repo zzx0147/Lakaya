@@ -18,26 +18,26 @@ UDirectionalDamageIndicator::UDirectionalDamageIndicator(const FObjectInitialize
 	IndicateTime = 3.0f;
 }
 
-void UDirectionalDamageIndicator::BindCharacter(ACharacter* const& Character)
-{
-	Super::BindCharacter(Character);
-	//TODO: 캐릭터에 바인딩합니다.
-
-	CharacterRef = Character;
+// void UDirectionalDamageIndicator::BindCharacter(ACharacter* const& Character)
+// {
+// 	Super::BindCharacter(Character);
+// 	//TODO: 캐릭터에 바인딩합니다.
+//
+// 	CharacterRef = Character;
 	// auto MyCharacter = Cast<ADamageableCharacter>(CharacterRef);
 	// MyCharacter->OnDamageReceived.AddUObject(this, &UDirectionalDamageIndicator::IndicateStart);
-	SetVisibility(ESlateVisibility::Visible);
-}
+	// SetVisibility(ESlateVisibility::Visible);
+// }
 
-bool UDirectionalDamageIndicator::UnbindCharacter(ACharacter* const& Character)
-{
-	Super::UnbindCharacter(Character);
-
-	CharacterRef = nullptr;
-	SetVisibility(ESlateVisibility::Hidden);
-
-	return true;
-}
+// bool UDirectionalDamageIndicator::UnbindCharacter(ACharacter* const& Character)
+// {
+// 	Super::UnbindCharacter(Character);
+//
+// 	CharacterRef = nullptr;
+// 	SetVisibility(ESlateVisibility::Hidden);
+//
+// 	return true;
+// }
 
 void UDirectionalDamageIndicator::NativeConstruct()
 {
@@ -79,5 +79,6 @@ void UDirectionalDamageIndicator::IndicateStart(const FString& CauserName, const
 		tempSlot->SetPosition(FVector2d(0.0f, 0.0f));
 		tempSlot->SetOffsets(FMargin(0.0f));
 	}
-	result->IndicateStart(CharacterRef->GetRootComponent(), DamageCursorPosition, IndicateTime);
+	
+	result->IndicateStart(GetOwningPlayer()->GetCharacter()->GetRootComponent(), DamageCursorPosition, IndicateTime);
 }

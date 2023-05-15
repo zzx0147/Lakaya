@@ -19,8 +19,8 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 
-	virtual void BindCharacter(ACharacter* const& Character) override;
-	virtual bool UnbindCharacter(ACharacter* const& Character) override;
+	// virtual void BindCharacter(ACharacter* const& Character) override;
+	// virtual bool UnbindCharacter(ACharacter* const& Character) override;
 
 private:
 	TObjectPtr<UImage> CharacterPortraitImage;//캐릭터 초상화를 표기하는 Image 위젯

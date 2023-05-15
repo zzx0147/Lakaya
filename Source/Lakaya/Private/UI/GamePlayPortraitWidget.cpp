@@ -38,19 +38,19 @@ void UGamePlayPortraitWidget::NativeConstruct()
 }
 
 
-void UGamePlayPortraitWidget::BindCharacter(ACharacter* const& Character)
-{
+// void UGamePlayPortraitWidget::BindCharacter(ACharacter* const& Character)
+// {
 	// const FName& CharacterName = Cast<ALakayaBaseCharacter>(Character)->GetCharacterName();
 
 	// if (CharacterPortraitTextureMap.Contains(CharacterName))
 	// 	CharacterPortraitImage->SetBrushFromTexture(CharacterPortraitTextureMap[CharacterName]);
-}
+// }
 
 
-bool UGamePlayPortraitWidget::UnbindCharacter(ACharacter* const& Character)
-{
+// bool UGamePlayPortraitWidget::UnbindCharacter(ACharacter* const& Character)
+// {
 	// FSlateBrush NoBrush;
 	// NoBrush.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0));
 	// CharacterPortraitImage->SetBrush(NoBrush);
-	return true;
-}
+	// return true;
+// }
