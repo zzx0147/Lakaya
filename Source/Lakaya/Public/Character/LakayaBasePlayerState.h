@@ -52,7 +52,7 @@ public:
 	virtual void SetTeam(const EPlayerTeam& DesireTeam);
 
 	// 플레이어의 현재 팀 정보를 가져옵니다.
-	UFUNCTION(BlueprintGetter)
+	UFUNCTION(BlueprintCallable)
 	const EPlayerTeam& GetTeam() const { return Team; }
 
 	/**
