@@ -49,9 +49,10 @@ bool AInteractableCharacter::ShouldInteractStart()
 			UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStart_OccupationObject is null."));
 			return false;
 		}
+		
 		if (OccupationObject->GetInteractingPawn() != nullptr)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStart_GetInteractingPawn is valid."));
+			UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStart_오브젝트를 누군가 상호작용하고 있습니다."));
 			return false;
 		}
 
@@ -78,7 +79,7 @@ bool AInteractableCharacter::ShouldInteractStop()
 		if (InteractionState != EInteractionState::OnGoing)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("InteractionState is not ongoing."));
-			return false;
+			// return false;
 		}
 
 		bInteractionRequested = false;
@@ -130,7 +131,7 @@ bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, 
 {
 	if (Actor && Actor->ActorHasTag("Interactable") && Time < GetServerTime() + 0.05f)
 	{
-		// UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStop_Validate completed."));
+		UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStop_Validate completed."));
 		return true;
 	}
 	else

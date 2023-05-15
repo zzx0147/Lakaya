@@ -33,6 +33,9 @@ protected:
 	// 플레이어가 로그인 할 경우 호출
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
+	// 플레이어가 로그아웃 할 경우 호출
+	virtual void Logout(AController* Exiting) override;
+	
 	//SetMatchState()가 호출되서 MatchState가 변경된 직후 호출됨, HandleMatchIsWaitingToStart() 같은 MatchState에 맞는 HandleMatch~~ 함수를 호출함
 	virtual void OnMatchStateSet() override;
 
@@ -66,34 +69,35 @@ protected:
 	// 일반적인 흐름의 마지막 상태.
 	virtual void HandleLeavingMap() override;
 
-	// 플레이어가 로그아웃 할 경우 호출
-	virtual void Logout(AController* Exiting) override;
 
 public:
 	virtual void OnPlayerKilled(AController* VictimController, AController* InstigatorController, AActor* DamageCauser);
 	virtual void StartSelectCharacter();
 	virtual bool HasMatchStarted() const override;
-	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 
 protected:
+	virtual void PlayerInitializeSetLocation(uint8 PlayersNum);
 	virtual void RespawnPlayer(AController* KilledController);
 	virtual bool ShouldRespawn();
 
+	virtual void DelayedEndedGame();
+	
 public:
-	uint8 GetPlayerRespawnTime() { return PlayerRespawnTime; }
-	bool GetbWaitToStart() { return bWaitToStart; }
+	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 
-private:
-	uint8 PlayerRespawnTime;
-	bool bWaitToStart;
+	//uint8 GetPlayerRespawnTime() { return PlayerRespawnTime; }
+	//bool GetbWaitToStart() { return bWaitToStart; }
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FName, TSubclassOf<class AInteractableCharacter>> CharacterClasses;
 
+	UPROPERTY(EditDefaultsOnly)
+	float CharacterSelectStartDelay;
 
 private:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;
 	FTimerHandle TimerHandle_Respawn;
+	FTimerHandle TimerHandle_DelayedCharacterSelectStart;
 };

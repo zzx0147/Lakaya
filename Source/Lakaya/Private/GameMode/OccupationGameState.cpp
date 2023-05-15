@@ -1,7 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "GameMode/OccupationGameState.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
+#include "UI/TeamScoreWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "Net/UnrealNetwork.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
@@ -26,27 +26,63 @@ AOccupationGameState::AOccupationGameState()
 
 }
 
-void AOccupationGameState::SetNumPlayers(const uint8& NewNumPlayers)
+void AOccupationGameState::BeginPlay()
 {
-	NumPlayers = NewNumPlayers;
+	Super::BeginPlay();
+	
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+	{
+		if (TeamScoreWidgetClass)
+		{
+			TeamScoreWidget = CreateWidget<UTeamScoreWidget>(LocalController, TeamScoreWidgetClass);
+			if (TeamScoreWidget == nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_TeamScoreWidget is null."));
+				return;
+			}
+			TeamScoreWidget->AddToViewport();
+			TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_LocalPlayerController is null."));
+		return;
+	}
+}
+
+void AOccupationGameState::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+
+	if (IsValid(TeamScoreWidget))
+		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
 }
 
 void AOccupationGameState::NotifyKillCharacter_Implementation(AController* KilledController, AActor* KilledActor,
                                                               AController* EventInstigator, AActor* Causer)
 {
-	OnKillCharacterNotify.Broadcast(KilledController, KilledActor, EventInstigator, Causer);
+	//OnKillCharacterNotify.Broadcast(KilledController, KilledActor, EventInstigator, Causer);
 }
 
 void AOccupationGameState::SetOccupationWinner()
 {
 	CurrentOccupationWinner = ATeamScore > BTeamScore ? EPlayerTeam::A : EPlayerTeam::B;
-	OnOccupationChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
+	OnChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
 }
 
 void AOccupationGameState::AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore)
 {
-	if (Team == EPlayerTeam::A) ATeamScore += AdditiveScore;
-	else if (Team == EPlayerTeam::B) BTeamScore += AdditiveScore;
+	if (Team == EPlayerTeam::A)
+	{
+		ATeamScore += AdditiveScore;
+		OnRep_ATeamScore();
+	}
+	else if (Team == EPlayerTeam::B)
+	{
+		BTeamScore += AdditiveScore;
+		OnRep_BTeamScore();
+	}
 
 	UE_LOG(LogTemp, Warning, TEXT("ATeamScore : %f"), ATeamScore);
 	UE_LOG(LogTemp, Warning, TEXT("BTeamScore : %f"), BTeamScore);
@@ -59,7 +95,7 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 	if (const auto BasePlayerState = Cast<ALakayaBasePlayerState>(PlayerState))
 	{
 		EPlayerTeam PlayerTeam = BasePlayerState->GetTeam();
-		if (PlayerTeam == EPlayerTeam::A || PlayerTeam == EPlayerTeam::B)//팀이 있으면 바로 배열에 추가
+		if (PlayerTeam == EPlayerTeam::A || PlayerTeam == EPlayerTeam::B)//���� ������ �ٷ� �迭�� �߰�
 		{
 			PlayersByTeamMap[PlayerTeam].Add(BasePlayerState);
 			if (ClientTeam == PlayerTeam)
@@ -67,7 +103,7 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 				CharacterSelectWidget->RegisterPlayer(BasePlayerState);
 			}
 		}
-		else//없으면 팀이 변경되었을때 추가
+		else//������ ���� ����Ǿ����� �߰�
 		{
 			BasePlayerState->OnTeamChanged.AddLambda([this, BasePlayerState](const EPlayerTeam& ArgTeam)
 				{
@@ -91,7 +127,7 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 					if (ArgTeam == EPlayerTeam::A || ArgTeam == EPlayerTeam::B)
 					{
 						PlayersByTeamMap[ArgTeam].Add(BasePlayerState);
-						if (ClientTeam == ArgTeam)//클라이언트 팀이 NONE 일 수 있음
+						if (ClientTeam == ArgTeam)//Ŭ���̾�Ʈ ���� NONE �� �� ����
 						{
 							CharacterSelectWidget->RegisterPlayer(BasePlayerState);
 						}
@@ -110,24 +146,19 @@ float AOccupationGameState::GetTeamScore(const EPlayerTeam& Team) const
 	return 0.f;
 }
 
-bool AOccupationGameState::IsSomeoneReachedMaxScore() const
-{
-	return ATeamScore >= MaxScore || BTeamScore >= MaxScore;
-}
-
 void AOccupationGameState::OnRep_ATeamScore()
 {
-	OnTeamScoreChanged.Broadcast(EPlayerTeam::A, ATeamScore);
+	OnTeamScoreSignature.Broadcast(EPlayerTeam::A, ATeamScore);
 }
 
 void AOccupationGameState::OnRep_BTeamScore()
 {
-	OnTeamScoreChanged.Broadcast(EPlayerTeam::B, ATeamScore);
+	OnTeamScoreSignature.Broadcast(EPlayerTeam::B, BTeamScore);
 }
 
 void AOccupationGameState::OnRep_OccupationWinner()
 {
-	OnOccupationChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
+	OnChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
 }
 
 void AOccupationGameState::CreateCharacterSelectWidget(APlayerController* LocalController)

@@ -16,16 +16,13 @@ public:
 	ALakayaBaseGameState();
 
 protected:
-	//게임 상태가 IsWatingToStart로 넘어가면 호출됨
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
 	virtual void RemovePlayerState(APlayerState* PlayerState) override;
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 	virtual void HandleMatchIsCharacterSelect();
 
-public:
 	virtual void OnRep_MatchState() override;
 
 public:
@@ -92,7 +89,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGameTimeWidget> InGameTimerWidgetClass;
 
-	// 게임중에 표시되는 타이머 위젯 클래스를 지정합니다.
+	// 캐릭터 선택 중에 표시되는 타이머 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameTimeWidget> CharacterSelectTimerWidgetClass;
 
@@ -105,7 +102,7 @@ protected:
 
 	TObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 
-private:
+protected:
 	UPROPERTY(EditDefaultsOnly)
 	uint8 MaximumPlayers;
 
@@ -120,10 +117,11 @@ private:
 
 	FTimerHandle CharacterSelectTimer;
 
+	// 로딩 위젯 입니다.
 	TObjectPtr<ULoadingWidget> LoadingWidget;
-
-
+	
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
+	
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
 	TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;
 };

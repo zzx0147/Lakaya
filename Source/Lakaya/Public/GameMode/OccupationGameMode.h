@@ -19,7 +19,9 @@ public:
 
 protected:
 	// 함수에 대한 설명은 부모클래스에 설명되어 있음.
+	virtual void BeginPlay() override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+	virtual void Logout(AController* Exiting) override;
 	virtual bool ReadyToStartMatch_Implementation() override;
 	virtual bool ReadyToEndMatch_Implementation() override;
 	virtual void HandleMatchHasStarted() override;
@@ -41,9 +43,6 @@ public:
 	void SubOccupyObject(const EPlayerTeam& Team);
 
 private:
-	void PlayerInitializeSetLocation(uint8 PlayersNum);
-	void DelayedEndedGame();
-
 	// 일정시간마다 호출되어 각 팀에 점수를 부여합니다.
 	void UpdateTeamScoreTick();
 
@@ -55,20 +54,10 @@ private:
 	UPROPERTY(EditAnywhere)
 	float AdditiveScore;
 
-	// 게임 시작이 준비된 이후, 몇 초 뒤에 게임이 할지 정의합니다.
-	UPROPERTY(EditAnywhere)
-	float MatchStartDelay;
-
-	// 게임이 종료된 이후, 몇 초 뒤에 세션이 종료될지 정의합니다.
-	UPROPERTY(EditAnywhere)
-	float MatchEndDelay;
-
 	class AOccupationGameState* OccupationGameState;
 
 	FTimerHandle UpdateScoreTimer;
-	FTimerHandle TimerHandle_DelayedStart;
-	FTimerHandle TimerHandle_DelayedEnded;
-	
+
 	uint8 ATeamObjectCount;
 	uint8 BTeamObjectCount;
 };

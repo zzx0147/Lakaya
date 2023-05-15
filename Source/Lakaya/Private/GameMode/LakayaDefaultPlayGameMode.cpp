@@ -21,9 +21,11 @@ const FString ALakayaDefaultPlayGameMode::BTeamSpawnTag = FString(TEXT("BTeamSpa
 
 ALakayaDefaultPlayGameMode::ALakayaDefaultPlayGameMode()
 {
-	PlayerRespawnTime = 3;
-	bWaitToStart = false;
+	//PlayerRespawnTime = 3;
+	//bWaitToStart = false;
+	bDelayedStart = true;
 	MinRespawnDelay = 5.0f;
+	CharacterSelectStartDelay = 3.0f;
 	//CharacterSelectTime = 10.0f;
 }
 
@@ -166,6 +168,22 @@ void ALakayaDefaultPlayGameMode::PostLogin(APlayerController* NewPlayer)
 		BasePlayerState->OnPlayerKilled.AddUObject(this, &ALakayaDefaultPlayGameMode::OnPlayerKilled);
 	}
 
+	const auto BaseGameState = GetWorld()->GetGameState<ALakayaBaseGameState>();
+	if (BaseGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_OccupationGameState is null."));
+		return;
+	}
+
+	const int32 CurrentPlayerNum = BaseGameState->PlayerArray.Num();
+	// OccupationGameState->SetNumPlayers(CurrentPlayerNum);
+
+	if (CurrentPlayerNum == BaseGameState->GetMaximumPlayers())
+	{
+		GetWorldTimerManager().SetTimer(TimerHandle_DelayedCharacterSelectStart, this, &ALakayaDefaultPlayGameMode::StartSelectCharacter,
+			CharacterSelectStartDelay, false);
+	}
+
 
 }
 
@@ -177,7 +195,6 @@ void ALakayaDefaultPlayGameMode::OnMatchStateSet()
 		HandleMatchIsSelectCharacter();
 	}
 }
-
 
 void ALakayaDefaultPlayGameMode::HandleMatchIsWaitingToStart()
 {
@@ -268,11 +285,21 @@ void ALakayaDefaultPlayGameMode::StartSelectCharacter()
 	SetMatchState(MatchState::IsSelectCharacter);
 }
 
+void ALakayaDefaultPlayGameMode::DelayedEndedGame()
+{
+	UGameplayStatics::OpenLevel(GetWorld(), "MainLobbyLevel");
+}
+
 bool ALakayaDefaultPlayGameMode::HasMatchStarted() const
 {
 	if (MatchState == MatchState::IsSelectCharacter) return false;
 
 	return Super::HasMatchStarted();
+}
+
+void ALakayaDefaultPlayGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
+{
+	// TODO
 }
 
 UClass* ALakayaDefaultPlayGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)

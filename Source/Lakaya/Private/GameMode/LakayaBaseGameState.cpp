@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "GameMode/LakayaBaseGameState.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
@@ -9,10 +6,11 @@
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
+#include "UI/TeamScoreWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	MaximumPlayers = 6;
 	MatchDuration = 300.f;
 }
@@ -20,6 +18,7 @@ ALakayaBaseGameState::ALakayaBaseGameState()
 void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
 	DOREPLIFETIME(ALakayaBaseGameState, MatchEndingTime);
 	DOREPLIFETIME(ALakayaBaseGameState, CharacterSelectEndingTime);
 }
@@ -42,7 +41,6 @@ void ALakayaBaseGameState::BeginPlay()
 				LoadingWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 			}
 		}
-
 
 		if (ScoreBoardClass)
 		{
@@ -77,10 +75,6 @@ void ALakayaBaseGameState::BeginPlay()
 	}
 }
 
-void ALakayaBaseGameState::Tick(float DeltaTime)
-{
-	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, *GetMatchState().ToString());
-}
 
 void ALakayaBaseGameState::AddPlayerState(APlayerState* PlayerState)
 {
@@ -100,7 +94,8 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-	CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
+	if(CharacterSelectWidget != nullptr)
+		CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 	if (InGameTimeWidget.IsValid())
@@ -110,12 +105,19 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->EndMatch(); }
 	, InGameTimeWidget);
 
+	if (HasAuthority())
+	{
+		GetWorldTimerManager().SetTimer(EndingTimer, [this]
+			{
+				if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
+				AuthGameMode->EndMatch();
+			}, MatchDuration, false);
+	}
 }
 
 void ALakayaBaseGameState::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
-	InternalSetScoreBoardVisibility(false);
 	GetWorldTimerManager().ClearTimer(EndingTimer);
 }
 
@@ -146,7 +148,8 @@ void ALakayaBaseGameState::OnRep_MatchState()
 
 void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
 {
-	if (IsMatchInProgress()) InternalSetScoreBoardVisibility(Visible);
+	if (ScoreBoard.IsValid())
+		ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
 }
 
 void ALakayaBaseGameState::CreateCharacterSelectWidget(APlayerController* LocalController)
