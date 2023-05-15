@@ -29,6 +29,7 @@ public:
 	UResultNotifyFireAbility();
 	virtual void AbilityStart() override;
 	virtual void AbilityStop() override;
+	virtual void OnAliveStateChanged(const bool& AliveState) override;
 
 protected:
 	virtual void InitializeComponent() override;

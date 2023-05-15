@@ -35,6 +35,16 @@ void UResultNotifyFireAbility::AbilityStop()
 	Super::AbilityStop();
 }
 
+void UResultNotifyFireAbility::OnAliveStateChanged(const bool& AliveState)
+{
+	Super::OnAliveStateChanged(AliveState);
+	if (!AliveState && GetOwner()->HasAuthority())
+	{
+		bWantsToFire = false;
+		ClearFireTimer();
+	}
+}
+
 void UResultNotifyFireAbility::InitializeComponent()
 {
 	Super::InitializeComponent();

@@ -23,6 +23,12 @@ void UReloadAbility::AbilityStart()
 	if (!bIsReloading) Super::AbilityStart();
 }
 
+void UReloadAbility::OnAliveStateChanged(const bool& AliveState)
+{
+	Super::OnAliveStateChanged(AliveState);
+	if (!AliveState && GetOwner()->HasAuthority()) bIsReloading = false;
+}
+
 void UReloadAbility::BeginPlay()
 {
 	Super::BeginPlay();
