@@ -183,8 +183,6 @@ void ALakayaDefaultPlayGameMode::PostLogin(APlayerController* NewPlayer)
 		GetWorldTimerManager().SetTimer(TimerHandle_DelayedCharacterSelectStart, this, &ALakayaDefaultPlayGameMode::StartSelectCharacter,
 			CharacterSelectStartDelay, false);
 	}
-
-
 }
 
 void ALakayaDefaultPlayGameMode::OnMatchStateSet()
@@ -264,18 +262,6 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 	{
 		VictimPlayerState->SetRespawnTimer(-1.0f, this);
 	}
-
-
-	//FTimerHandle* ExistingTimer = RespawnTimers.Find(VictimController);
-	//if (ExistingTimer != nullptr)
-	//{
-	//	GetWorldTimerManager().ClearTimer(*ExistingTimer);
-	//	RespawnTimers.Remove(VictimController);
-	//}
-
-	//RespawnTimers.Add(VictimController, FTimerHandle());
-	//FTimerHandle& NewTimer = RespawnTimers[VictimController];
-	//GetWorldTimerManager().SetTimer(NewTimer, [this, VictimController]() { RespawnPlayer(VictimController); }, PlayerRespawnTime, false);
 } 
 
 void ALakayaDefaultPlayGameMode::StartSelectCharacter()

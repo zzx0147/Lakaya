@@ -6,13 +6,14 @@
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
+#include "UI/GameResultWidget.h"
 #include "UI/TeamScoreWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	MaximumPlayers = 6;
-	MatchDuration = 300.f;
+	MatchDuration = 180.f;
 }
 
 void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -26,7 +27,6 @@ void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 void ALakayaBaseGameState::BeginPlay()
 {
 	Super::BeginPlay();
-	//���� ������Ʈ�� BeginPlay������ LocalController�� PlayerState�� �׻� �������� ������� ���� ���⼭�� ���� ��Ʈ�ѷ��� PlayerState�� ���������� �ϸ� �ȵ�
 	
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
@@ -72,6 +72,17 @@ void ALakayaBaseGameState::BeginPlay()
 				CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
+
+		// if (GameResultWidgetClass)
+		// {
+		// 	GameResultWidget = CreateWidget<UGameResultWidget>(LocalController, GameResultWidgetClass);
+		// 	if (GameResultWidget.IsValid())
+		// 	{
+		// 		UE_LOG(LogTemp, Warning, TEXT("시발 있어요 위젯.시발 있어요 위젯.시발 있어요 위젯.시발 있어요 위젯.시발 있어요 위젯."));
+		// 		GameResultWidget->AddToViewport();
+		// 		GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
+		// 	}
+		// }
 	}
 }
 
@@ -186,8 +197,6 @@ void ALakayaBaseGameState::SetCharacterSelectWidgetVisibility(const ESlateVisibi
 			PlayerController->SetShowMouseCursor(IsVisible == ESlateVisibility::Visible);
 		}
 	}
-
-
 }
 
 ESlateVisibility ALakayaBaseGameState::GetCharacterSelectWidgetVisibility() const

@@ -53,6 +53,8 @@ public:
 
 	virtual void CreateCharacterSelectWidget(APlayerController* LocalController) override;
 
+	void EndTimeCheck();
+	
 private:
 	UFUNCTION()
 	void OnRep_ATeamScore();
@@ -65,7 +67,7 @@ private:
 	
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
-	EPlayerTeam CurrentOccupationWinner;
+	EPlayerTeam CurrentOccupationWinner = EPlayerTeam::None;
 
 	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore)
 	float ATeamScore = 0;
@@ -81,6 +83,8 @@ private:
 
 	EPlayerTeam ClientTeam;
 
+	FTimerHandle TimerHandle_GameTimeCheck;
+
 private:
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
@@ -89,7 +93,13 @@ private:
 	// 팀스코어 위젯 입니다.
 	TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
 
+	// 게임 종료 시 승리자를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGameResultWidget> GameResultWidgetClass;
+	
+	TWeakObjectPtr<UGameResultWidget> GameResultWidget;
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;
 };
+

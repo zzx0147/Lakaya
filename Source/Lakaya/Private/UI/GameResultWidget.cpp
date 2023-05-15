@@ -1,17 +1,14 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "UI/GameResultWidget.h"
 
 #include "Character/LakayaBasePlayerState.h"
 #include "GameFramework/Character.h"
 #include "GameMode/OccupationGameState.h"
 
-bool UGameResultWidget::OnMatchEnding()
-{
-	SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	return true;
-}
+// bool UGameResultWidget::OnMatchEnding()
+// {
+// 	SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+// 	return true;
+// }
 
 void UGameResultWidget::NativeConstruct()
 {
@@ -38,7 +35,7 @@ void UGameResultWidget::OnChangeWinner(const EPlayerTeam& NewWinner)
 {
 	SetVisibility(ESlateVisibility::Visible);
 
-	auto* OccupationPlayerState = Cast<ALakayaBasePlayerState>(GetOwningPlayer()->GetCharacter()->GetController());
+	auto* OccupationPlayerState = Cast<ALakayaBasePlayerState>(GetOwningPlayer()->GetCharacter()->GetPlayerState());
 	if (OccupationPlayerState == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationPlayerState is null."));
