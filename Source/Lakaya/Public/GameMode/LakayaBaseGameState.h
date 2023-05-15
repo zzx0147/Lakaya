@@ -97,6 +97,10 @@ protected:
 	TSubclassOf<class UGamePlayCrosshairWidget> CrosshairWidgetClass;
 
 
+	// 게임 종료 시 승리자를 띄우는 위젯 클래스를 지정합니다.
+	// UPROPERTY(EditDefaultsOnly)
+	// TSubclassOf<class UGameResultWidget> GameResultWidgetClass;
+	
 	// 게임이 최대 몇초간 진행될지 정의합니다.
 	UPROPERTY(EditAnywhere)
 	float MatchDuration;
@@ -115,19 +119,17 @@ protected:
 
 	UPROPERTY(ReplicatedUsing = OnRep_CharacterSelectEndingTime)
 	float CharacterSelectEndingTime;
-
-
+	
 	FTimerHandle EndingTimer;
 
 	FTimerHandle CharacterSelectTimer;
 
-	// 로딩 위젯 입니다.
 	TObjectPtr<ULoadingWidget> LoadingWidget;
 
 	TObjectPtr<class UGamePlayCrosshairWidget> CrosshairWidget;
 	
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
-	
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
 	TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;
+	// TWeakObjectPtr<UGameResultWidget> GameResultWidget;
 };

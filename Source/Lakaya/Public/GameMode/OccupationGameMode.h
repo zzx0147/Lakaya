@@ -45,7 +45,7 @@ public:
 private:
 	// 일정시간마다 호출되어 각 팀에 점수를 부여합니다.
 	void UpdateTeamScoreTick();
-
+	
 	// 1초마다 점수가 오를지를 나타냅니다.
 	UPROPERTY(EditAnywhere)
 	float ScoreUpdateDelay;

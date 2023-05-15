@@ -4,7 +4,9 @@
 #include "Blueprint/UserWidget.h"
 #include "Net/UnrealNetwork.h"
 #include "Character/LakayaBasePlayerState.h"
+#include "GameMode/OccupationGameMode.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
+#include "UI/GameResultWidget.h"
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -18,7 +20,7 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 AOccupationGameState::AOccupationGameState()
 {
 	MaxScore = 100.f;
-	MatchDuration = 180.f;
+	MatchDuration = 10.f;
 	ClientTeam = EPlayerTeam::None;
 
 	PlayersByTeamMap.Add(EPlayerTeam::A, TArray<ALakayaBasePlayerState*>());
@@ -40,12 +42,27 @@ void AOccupationGameState::BeginPlay()
 			TeamScoreWidget->AddToViewport();
 			TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
+
+		if (GameResultWidgetClass)
+		{
+			GameResultWidget = CreateWidget<UGameResultWidget>(LocalController, GameResultWidgetClass);
+			if (GameResultWidget.IsValid())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("시발 있어요 위젯.시발 있어요 위젯.시발 있어요 위젯.시발 있어요 위젯.시발 있어요 위젯."));
+				GameResultWidget->AddToViewport();
+				GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_LocalPlayerController is null."));
 		return;
 	}
+
+	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this,
+	&AOccupationGameState::EndTimeCheck, 1.0f, true);
+	
 	Super::BeginPlay();
 }
 
@@ -63,10 +80,28 @@ void AOccupationGameState::NotifyKillCharacter_Implementation(AController* Kille
 	//OnKillCharacterNotify.Broadcast(KilledController, KilledActor, EventInstigator, Causer);
 }
 
+void AOccupationGameState::EndTimeCheck()
+{
+	if (((ATeamScore >= MaxScore || BTeamScore >= MaxScore)))
+	{
+		GetWorldTimerManager().ClearTimer(TimerHandle_GameTimeCheck);
+
+		auto GameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
+		if (GameMode == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
+			return;
+		}
+      
+		GameMode->EndMatch();
+	}
+
+}
+
 void AOccupationGameState::SetOccupationWinner()
 {
 	CurrentOccupationWinner = ATeamScore > BTeamScore ? EPlayerTeam::A : EPlayerTeam::B;
-	OnChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
+	OnRep_OccupationWinner();
 }
 
 void AOccupationGameState::AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore)
@@ -81,9 +116,6 @@ void AOccupationGameState::AddTeamScore(const EPlayerTeam& Team, const float& Ad
 		BTeamScore += AdditiveScore;
 		OnRep_BTeamScore();
 	}
-
-	// UE_LOG(LogTemp, Warning, TEXT("ATeamScore : %f"), ATeamScore);
-	// UE_LOG(LogTemp, Warning, TEXT("BTeamScore : %f"), BTeamScore);
 }
 
 void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)

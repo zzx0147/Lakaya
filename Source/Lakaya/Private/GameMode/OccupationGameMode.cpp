@@ -28,6 +28,8 @@ void AOccupationGameMode::OnPlayerKilled(AController* VictimController, AControl
 void AOccupationGameMode::BeginPlay()
 {
 	OccupationGameState = GetGameState<AOccupationGameState>();
+
+
 }
 
 void AOccupationGameMode::PostLogin(APlayerController* NewPlayer)
@@ -75,8 +77,9 @@ void AOccupationGameMode::HandleMatchHasEnded()
 	Super::HandleMatchHasEnded();
 	GetWorldTimerManager().ClearTimer(UpdateScoreTimer);
 	OccupationGameState->SetOccupationWinner();
-	//GetWorldTimerManager().SetTimer(TimerHandle_DelayedEnded, this, &AOccupationGameMode::DelayedEndedGame,
-	//                                MatchEndDelay, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_DelayedEnded, this, &AOccupationGameMode::DelayedEndedGame,
+	                                MatchEndDelay, false);
+	UE_LOG(LogTemp, Warning, TEXT("시발 HandleMatchHasEnded가 떳어요"));
 }
 
 void AOccupationGameMode::HandleMatchIsSelectCharacter()

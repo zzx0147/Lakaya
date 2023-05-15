@@ -95,6 +95,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float CharacterSelectStartDelay;
 
+	FTimerHandle TimerHandle_DelayedEnded;
+	float MatchEndDelay = 5.0f;
+	
 private:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;
