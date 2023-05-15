@@ -72,5 +72,5 @@ void UTeamScoreWidget::OnTeamScoreChanged(const EPlayerTeam& Team, const float& 
 	if (Team == EPlayerTeam::A) OnChangeATeamScore(Score);
 	else if (Team == EPlayerTeam::B) OnChangeBTeamScore(Score);
 	else UE_LOG(LogScript, Warning, TEXT("Event broadcasted with invalid value! it was %d"), Team);
-	UE_LOG(LogTemp, Warning, TEXT("OnTeamScoreChanged."));
+	// UE_LOG(LogTemp, Warning, TEXT("OnTeamScoreChanged."));
 }

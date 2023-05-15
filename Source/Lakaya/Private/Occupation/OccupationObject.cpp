@@ -56,7 +56,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	{
 		if (ObjectTeam == EPlayerTeam::A)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("이미 점령한 오브젝트 입니다."));
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OccupationObject_이미 점령한 오브젝트 입니다."));
 			return;
 		}
 	}
@@ -64,7 +64,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	{
 		if (ObjectTeam == EPlayerTeam::B)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("OccupationObject_이미 점령한 오브젝트 입니다."));
 			return;
 		}
 	}

@@ -19,6 +19,7 @@ protected:
 
 public:
 	FORCEINLINE APawn* const GetInteractingPawn() const { return InteractingPawn; }
+	FORCEINLINE EPlayerTeam const GetObjectTeam() const { return ObjectTeam; }
 	
 private:
 	virtual void OnInteractionStart(const float& Time, APawn* Caller) override;

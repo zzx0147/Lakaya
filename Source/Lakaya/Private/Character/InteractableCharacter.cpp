@@ -1,4 +1,6 @@
 #include "Character/InteractableCharacter.h"
+
+#include "Character/LakayaBasePlayerState.h"
 #include "Interactable/Interactable.h"
 #include "Net/UnrealNetwork.h"
 #include "Occupation/OccupationObject.h"
@@ -49,13 +51,29 @@ bool AInteractableCharacter::ShouldInteractStart()
 			UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStart_OccupationObject is null."));
 			return false;
 		}
+
+		// if (const auto InteractablePlayerState = Cast<ALakayaBasePlayerState>(GetPlayerState()))
+		// {
+		// 	if (InteractablePlayerState->IsSameTeam(OccupationObject->GetObjectTeam()))
+		// 	{
+		// 		UE_LOG(LogTemp, Warning, TEXT("InteractableCharacter_이미 점령한 오브젝트입니다."));
+		// 		return false;
+		// 	}
+		// }
+		// else
+		// {
+		// 	UE_LOG(LogTemp, Warning, TEXT("InteractableCharacter_InteractablePlayerState is null."));
+		// 	return false;
+		// }
+
+		
 		
 		if (OccupationObject->GetInteractingPawn() != nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStart_오브젝트를 누군가 상호작용하고 있습니다."));
 			return false;
 		}
-
+		
 		if (InteractionState != EInteractionState::None)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("InteractionState is not none."));
