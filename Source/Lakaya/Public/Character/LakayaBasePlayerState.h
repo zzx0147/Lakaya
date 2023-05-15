@@ -243,6 +243,14 @@ private:
 	FTimerHandle RespawnTimer;
 	bool bRecentAliveState;
 	TWeakObjectPtr<UGamePlayHealthWidget> HealthWidget;
+
+private:
+	// 게임중에 표시되는 피격 레이더 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UDirectionalDamageIndicator> DirectionDamageIndicatorClass;
+	
+	// 팀스코어 위젯 입니다.
+	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;
 };
 
 template <class T>

@@ -84,8 +84,8 @@ void AOccupationGameState::AddTeamScore(const EPlayerTeam& Team, const float& Ad
 		OnRep_BTeamScore();
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("ATeamScore : %f"), ATeamScore);
-	UE_LOG(LogTemp, Warning, TEXT("BTeamScore : %f"), BTeamScore);
+	// UE_LOG(LogTemp, Warning, TEXT("ATeamScore : %f"), ATeamScore);
+	// UE_LOG(LogTemp, Warning, TEXT("BTeamScore : %f"), BTeamScore);
 }
 
 void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
