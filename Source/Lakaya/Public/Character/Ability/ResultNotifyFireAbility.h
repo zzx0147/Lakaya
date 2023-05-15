@@ -7,6 +7,10 @@
 #include "StopRemoteCallAbility.h"
 #include "ResultNotifyFireAbility.generated.h"
 
+// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+DECLARE_EVENT_OneParam(UResultNotifyFireAbility, FIsFireSignature, bool)
+// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+
 UENUM()
 enum class EFireResult
 {
@@ -36,12 +40,22 @@ protected:
 	virtual void RequestStart_Implementation(const float& RequestTime) override;
 	virtual void RequestStop_Implementation(const float& RequestTime) override;
 
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+	UFUNCTION(NetMulticast, Reliable)
+	virtual void OnRep_IsFired();
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+
 	UFUNCTION()
 	virtual void FireTick();
 	virtual bool ShouldFire();
 	virtual void SingleFire();
 	virtual void FailToFire();
 	virtual void ClearFireTimer();
+
+public:
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+	FIsFireSignature WeaponFireCheck;
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
 
 private:
 	/**
@@ -115,6 +129,11 @@ protected:
 	uint8 BulletCost;
 
 private:
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+	UPROPERTY(ReplicatedUsing=OnRep_IsFired, Transient)
+	bool bIsFired;
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+
 	bool bWantsToFire;
 	FTimerHandle FireTimer;
 	FCollisionQueryParams CollisionQueryParams;

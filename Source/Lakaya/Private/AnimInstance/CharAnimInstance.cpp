@@ -3,6 +3,8 @@
 
 #include "AnimInstance/CharAnimInstance.h"
 #include "Character/InteractableCharacter.h"
+#include "Character/Ability/LockstepFireAbility.h"
+#include "Character/Ability/ResultNotifyFireAbility.h"
 #include "Occupation/OccupationObject.h"
 
 void UCharAnimInstance::NativeBeginPlay()
@@ -12,13 +14,24 @@ void UCharAnimInstance::NativeBeginPlay()
 	if(const auto Character = Cast<AArmedCharacter>(TryGetPawnOwner()))
 	{
 		auto& Abilities = Character->GetAbilities();
+		// if(Abilities.IsValidIndex(WeaponFire))
+		// {
+		// 	if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
+		// 	{
+		// 		FireAbility->OnFiringStateChanged.
+		// 		AddLambda([this](const bool& FireState)
+		// 			{bIsAutoFire = FireState;} );
+		// 	}
+		// }
+
 		if(Abilities.IsValidIndex(WeaponFire))
 		{
-			if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
+			if(const auto ResultNotifyFireAbility = Cast<UResultNotifyFireAbility>(Abilities[WeaponFire]))
 			{
-				FireAbility->OnFiringStateChanged.
+				ResultNotifyFireAbility->WeaponFireCheck.
 				AddLambda([this](const bool& FireState)
 					{bIsAutoFire = FireState;} );
+				UE_LOG(LogTemp, Error, TEXT("Fire!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
 			}
 		}
 
