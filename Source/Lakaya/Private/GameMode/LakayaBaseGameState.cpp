@@ -7,6 +7,7 @@
 #include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
 #include "UI/TeamScoreWidget.h"
+#include "UI/GamePlayCrossHairWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
@@ -72,6 +73,16 @@ void ALakayaBaseGameState::BeginPlay()
 				CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
+
+		if (CrosshairWidgetClass)
+		{
+			CrosshairWidget = CreateWidget<UGamePlayCrosshairWidget>(LocalController, CrosshairWidgetClass);
+			if (CrosshairWidget != nullptr)
+			{
+				CrosshairWidget->AddToViewport();
+				CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
 	}
 }
 
@@ -100,6 +111,10 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 	if (InGameTimeWidget.IsValid())
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (CrosshairWidget != nullptr)
+		CrosshairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+
 
 	SetupTimerWidget(EndingTimer, MatchDuration, MatchEndingTime, [this] {
 		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->EndMatch(); }
