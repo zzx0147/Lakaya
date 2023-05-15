@@ -71,7 +71,7 @@ private:
 
 	bool bIsFireRequested;
 	FTimerHandle FireTimer;
-	TWeakObjectPtr<class UCameraComponent> CameraComponent;
+	TWeakObjectPtr<class UCameraComponent> Camera;
 	TWeakObjectPtr<USceneComponent> RootComponent;
 	FCollisionQueryParams CollisionQueryParams;
 };

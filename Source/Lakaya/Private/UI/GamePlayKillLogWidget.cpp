@@ -40,11 +40,11 @@ void UGamePlayKillLogWidget::NativeConstruct()
 		return Result;
 	});
 
-	if (const auto GameState = GetWorld()->GetGameState<AOccupationGameState>())
-		GameState->OnKillCharacterNotify.AddUObject(this, &UGamePlayKillLogWidget::OnKillCharacterNotify);
+	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+		GameState->OnPlayerKillNotified.AddUObject(this, &UGamePlayKillLogWidget::OnKillCharacterNotify);
 }
 
-void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController, AActor* KilledActor,
+void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController,
                                                    AController* Instigator, AActor* Causer)
 {
 	UKillLogElement* Element;

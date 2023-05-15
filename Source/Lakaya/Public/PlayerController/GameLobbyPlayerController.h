@@ -17,6 +17,7 @@ class LAKAYA_API AGameLobbyPlayerController : public APlayerController
 
 public:
 	AGameLobbyPlayerController();
+	virtual void OnRep_PlayerState();
 
 protected:
 	virtual void BeginPlay() override;

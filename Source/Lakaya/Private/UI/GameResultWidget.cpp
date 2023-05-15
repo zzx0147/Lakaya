@@ -31,7 +31,7 @@ void UGameResultWidget::NativeConstruct()
 		return;
 	}
 
-	OccupationGameState->OnOccupationChangeOccupationWinner.AddUObject(this, &UGameResultWidget::OnChangeWinner);
+	OccupationGameState->OnChangeOccupationWinner.AddUObject(this, &UGameResultWidget::OnChangeWinner);
 }
 
 void UGameResultWidget::OnChangeWinner(const EPlayerTeam& NewWinner)

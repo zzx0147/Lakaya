@@ -53,7 +53,7 @@ float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const&
 
 	OnHealthChanged.Broadcast(Health);
 	NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
-	if (Health <= 0.f) OnPlayerKilled.Broadcast(GetOwningController(), DamageCauser, EventInstigator);
+	if (Health <= 0.f) OnPlayerKilled.Broadcast(GetOwningController(), EventInstigator, DamageCauser);
 
 	return Damage;
 }
@@ -97,6 +97,12 @@ void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
 		Other->DeathCount = DeathCount;
 		Other->KillCount = KillCount;
 	}
+}
+
+void ALakayaBasePlayerState::OnRep_Owner()
+{
+	Super::OnRep_Owner();
+	OnOwnerChanged.Broadcast(Owner);
 }
 
 bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) const
@@ -268,4 +274,10 @@ void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserN
                                                             const float& Damage)
 {
 	//TODO: 피격 레이더를 업데이트 합니다.
+}
+
+void ALakayaBasePlayerState::SetOwner(AActor* NewOwner)
+{
+	Super::SetOwner(NewOwner);
+	OnOwnerChanged.Broadcast(Owner);
 }

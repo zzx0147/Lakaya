@@ -11,7 +11,7 @@ DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FHealthChangeSignature, const flo
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FTeamSignature, const EPlayerTeam&)
 
-DECLARE_EVENT_ThreeParams(ALakayaBasePlayerState, FPlayerKillSignature, AController*, AActor*, AController*)
+DECLARE_EVENT_ThreeParams(ALakayaBasePlayerState, FPlayerKillSignature, AController*, AController*, AActor*)
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FAliveChangeSignature, bool)
 
@@ -20,6 +20,8 @@ DECLARE_EVENT_TwoParams(ALakayaBasePlayerState, FCharacterNameChangeSignature, A
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FCountInfoSignature, const uint16&)
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FPlayerNameSignature, const FString&)
+
+DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOwnerChangeSignature, AActor*)
 
 UCLASS()
 class LAKAYA_API ALakayaBasePlayerState : public APlayerState
@@ -33,10 +35,12 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 	virtual void OnRep_PlayerName() override;
+	virtual void SetOwner(AActor* NewOwner);
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void CopyProperties(APlayerState* PlayerState) override;
+	virtual void OnRep_Owner() override;
 
 public:
 	bool IsSameTeam(const ALakayaBasePlayerState* Other) const;
@@ -48,7 +52,7 @@ public:
 	virtual void SetTeam(const EPlayerTeam& DesireTeam);
 
 	// 플레이어의 현재 팀 정보를 가져옵니다.
-	UFUNCTION(BlueprintGetter)
+	UFUNCTION(BlueprintCallable)
 	const EPlayerTeam& GetTeam() const { return Team; }
 
 	/**
@@ -60,7 +64,7 @@ public:
 	 * @param Function 부활 시간이 도래했을 때 실행할 Object의 멤버함수입니다.
 	 */
 	template <class T = nullptr_t>
-	void SetRespawnTimer(const float& ReservedRespawnTime, T* Object = nullptr, void (T::*Function)() = nullptr);
+	void SetRespawnTimer(const float& ReservedRespawnTime, T* Object = nullptr, void (T::*Function)(AController*) = nullptr);
 
 	// 이 플레이어의 생존 여부를 가져옵니다.
 	UFUNCTION(BlueprintGetter)
@@ -208,6 +212,8 @@ public:
 	// 플레이어의 이름이 변경될 때 호출됩니다. 매개변수로 변경된 플레이어의 이름을 받습니다.
 	FPlayerNameSignature OnPlayerNameChanged;
 
+	// 오너가 변경될 때 호출됩니다. 매개변수로 변경된 오너의 AActor 포인터를 받습니다.
+	FOwnerChangeSignature OnOwnerChanged;
 protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGamePlayHealthWidget> HealthWidgetClass;
@@ -240,7 +246,7 @@ private:
 };
 
 template <class T>
-void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, T* Object, void (T::*Function)())
+void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, T* Object, void (T::*Function)(AController*))
 {
 	RespawnTime = ReservedRespawnTime;
 	const auto CurrentTime = GetServerTime();
@@ -250,6 +256,6 @@ void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, T
 	GetWorldTimerManager().SetTimer(RespawnTimer, [this, Object, Function]
 	{
 		SetAliveState(true);
-		if (Object && Function) (Object.*Function)();
+		if (Object && Function) (Object->*Function)(GetOwningController());
 	}, ReservedRespawnTime - CurrentTime, false);
 }

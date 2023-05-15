@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "PlayerTeam.h"
-
 #include "Interactable/Interactable.h"
 #include "OccupationObject.generated.h"
 
@@ -16,13 +15,10 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
-	virtual void Tick(float DeltaTime) override;
-
-	FORCEINLINE APawn* GetInteractingPawn() const { return InteractingPawn; }
+	FORCEINLINE APawn* const GetInteractingPawn() const { return InteractingPawn; }
 	
 private:
 	virtual void OnInteractionStart(const float& Time, APawn* Caller) override;

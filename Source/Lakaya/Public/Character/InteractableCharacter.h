@@ -56,6 +56,7 @@ public:
 	FORCEINLINE const EInteractionState& GetInteractionState() const { return InteractionState; }
 
 	FORCEINLINE void SetInteractionState(const EInteractionState& NewState) { InteractionState = NewState; }	
+
 protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void RequestInteractionStart(const float& Time, AActor* Actor);
