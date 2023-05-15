@@ -102,7 +102,6 @@ protected:
 
 private:
 	bool bWantsToFire;
-	TWeakObjectPtr<UCameraComponent> Camera;
 	FTimerHandle FireTimer;
 	FCollisionQueryParams CollisionQueryParams;
 	TMap<EFireResult, TSimpleObjectPool<AActor>> DecalPool;

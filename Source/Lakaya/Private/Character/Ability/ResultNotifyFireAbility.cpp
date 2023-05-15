@@ -5,7 +5,6 @@
 
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
-#include "Camera/CameraComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -37,7 +36,6 @@ void UResultNotifyFireAbility::AbilityStop()
 void UResultNotifyFireAbility::InitializeComponent()
 {
 	Super::InitializeComponent();
-	Camera = GetOwner()->FindComponentByClass<UCameraComponent>();
 	CollisionQueryParams.AddIgnoredActor(GetOwner());
 
 	// 데칼 오브젝트 풀 생성
@@ -86,17 +84,10 @@ bool UResultNotifyFireAbility::ShouldFire()
 
 void UResultNotifyFireAbility::SingleFire()
 {
-	if (!Camera.IsValid() || !GetOwner()) return;
-	const auto CameraForward = Camera->GetForwardVector();
-	const auto CameraLocation = Camera->GetComponentLocation();
 	const auto ActorLocation = GetOwner()->GetActorLocation();
-	auto End = CameraLocation + CameraForward * (CameraForward.Dot(CameraLocation - ActorLocation) + FireRange);
+	auto End = GetCameraForwardTracePoint(FireRange, CollisionQueryParams);
 
 	FHitResult Result;
-	if (GetWorld()->LineTraceSingleByChannel(Result, CameraLocation, End, ECC_Visibility, CollisionQueryParams))
-		End = Result.ImpactPoint;
-	DrawDebugLine(GetWorld(), CameraLocation, End, FColor::Cyan, false, 2.f);
-
 	if (GetWorld()->LineTraceSingleByChannel(Result, ActorLocation, End, ECC_Visibility, CollisionQueryParams))
 	{
 		End = Result.ImpactPoint;
