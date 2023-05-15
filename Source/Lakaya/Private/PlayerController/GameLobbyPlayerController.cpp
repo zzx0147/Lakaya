@@ -5,6 +5,8 @@
 #include "InputMappingContext.h"
 #include "GameMode/LakayaBaseGameState.h"
 #include "Components/SlateWrapperTypes.h"
+#include "GameFramework/PlayerState.h"
+#include "Interfaces/NetworkPredictionInterface.h"
 
 
 void AGameLobbyPlayerController::SetupInputComponent()
@@ -18,6 +20,62 @@ void AGameLobbyPlayerController::SetupInputComponent()
 	const auto InputSubsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	if (!InputSubsystem) UE_LOG(LogInit, Fatal, TEXT("UEnhancedInputLocalPlayerSubsystem was not exist!"));
 	SetupMappingContext(InputSubsystem);
+}
+
+void AGameLobbyPlayerController::OnPossess(APawn* PawnToPossess)
+{
+	if (PawnToPossess != NULL &&
+		(PlayerState == NULL || !PlayerState->IsOnlyASpectator()))
+	{
+		const bool bNewPawn = (GetPawn() != PawnToPossess);
+
+		if (GetPawn() && bNewPawn)
+		{
+			UnPossess();
+		}
+
+		if (PawnToPossess->Controller != NULL && PawnToPossess->Controller != this)//이 컨트롤러가 나랑 같으면 하면 안됨 조건 추가
+		{
+			PawnToPossess->Controller->UnPossess();
+		}
+
+		PawnToPossess->PossessedBy(this);
+
+		// update rotation to match possessed pawn's rotation
+		SetControlRotation(PawnToPossess->GetActorRotation());
+
+		SetPawn(PawnToPossess);
+		check(GetPawn() != NULL);
+
+		if (GetPawn() && GetPawn()->PrimaryActorTick.bStartWithTickEnabled)
+		{
+			GetPawn()->SetActorTickEnabled(true);
+		}
+
+		INetworkPredictionInterface* NetworkPredictionInterface = GetPawn() ? Cast<INetworkPredictionInterface>(GetPawn()->GetMovementComponent()) : NULL;
+		if (NetworkPredictionInterface)
+		{
+			NetworkPredictionInterface->ResetPredictionData_Server();
+		}
+
+		AcknowledgedPawn = NULL;
+
+		// Local PCs will have the Restart() triggered right away in ClientRestart (via PawnClientRestart()), but the server should call Restart() locally for remote PCs.
+		// We're really just trying to avoid calling Restart() multiple times.
+		if (!IsLocalPlayerController())
+		{
+			GetPawn()->DispatchRestart(false);
+		}
+
+		ClientRestart(GetPawn());
+
+		ChangeState(NAME_Playing);
+		if (bAutoManageActiveCameraTarget)
+		{
+			AutoManageActiveCameraTarget(GetPawn());
+			ResetCameraMode();
+		}
+	}
 }
 
 void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
