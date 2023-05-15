@@ -4,3 +4,7 @@
 #include "Character/ResourceComponent.h"
 
 
+UResourceComponent::UResourceComponent()
+{
+	SetIsReplicated(true);
+}

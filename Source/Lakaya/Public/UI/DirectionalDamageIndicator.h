@@ -7,21 +7,22 @@
 
 
 UCLASS()
-class LAKAYA_API UDirectionalDamageIndicator : public UCharacterBindableWidget
+class LAKAYA_API UDirectionalDamageIndicator : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
 	UDirectionalDamageIndicator(const FObjectInitializer& ObjectInitializer);
 
-	virtual void BindCharacter(ACharacter* const& Character) override;
-	virtual bool UnbindCharacter(ACharacter* const& Character) override;
+	// virtual void BindCharacter(ACharacter* const& Character) override;
+	// virtual bool UnbindCharacter(ACharacter* const& Character) override;
 
 protected:
 	virtual void NativeConstruct() override;
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
+public:
 	virtual void IndicateStart(const FString& CauserName, const FVector& DamageCursorPosition,const float& Damage);
 
 private:

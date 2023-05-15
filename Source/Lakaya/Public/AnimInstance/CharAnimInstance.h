@@ -28,4 +28,5 @@ public:
 	bool bIsInteracting;
 	
 	virtual void NativeBeginPlay() override;
+	void OnInteractingActorChanged(AActor* NewInteractingActor);
 };

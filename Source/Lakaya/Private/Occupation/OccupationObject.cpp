@@ -17,7 +17,7 @@ AOccupationObject::AOccupationObject()
 	RootComponent = Trigger;
 	Mesh->SetupAttachment(RootComponent);
 
-	Trigger->InitSphereRadius(350.0f);
+	Trigger->InitSphereRadius(600.0f);
 	Trigger->SetupAttachment(RootComponent);
 	Trigger->SetRelativeLocation(FVector::ZeroVector);
 
