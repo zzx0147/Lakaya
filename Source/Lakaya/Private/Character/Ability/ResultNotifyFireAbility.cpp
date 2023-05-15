@@ -105,8 +105,9 @@ void UResultNotifyFireAbility::SingleFire()
 	if (GetWorld()->LineTraceSingleByChannel(Result, ActorLocation, End, ECC_Visibility, CollisionQueryParams))
 	{
 		End = Result.ImpactPoint;
+		const auto Pawn = GetOwner<APawn>();
 		UGameplayStatics::ApplyPointDamage(Result.GetActor(), FireDamage, ActorLocation, Result,
-		                                   GetTypedOuter<AController>(), GetOwner(), nullptr);
+		                                   Pawn ? Pawn->GetController() : nullptr, GetOwner(), nullptr);
 	}
 	InvokeFireNotify(Result);
 	DrawDebugLine(GetWorld(), ActorLocation, End, FColor::Red, false, 2.f);
@@ -159,16 +160,23 @@ void UResultNotifyFireAbility::DrawDecal(const FVector& Location, const FVector&
 
 void UResultNotifyFireAbility::DrawTrail(const FVector& Start, const FVector& End)
 {
-	if (NiagaraSystem)
-		if (const auto Niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraSystem, Start))
-			Niagara->SetNiagaraVariableVec3(TEXT("BeamEnd"), End - Start);
+	if (!TrailNiagaraSystem) return;
+	if (const auto Niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TrailNiagaraSystem, Start))
+		Niagara->SetNiagaraVariableVec3(TEXT("BeamEnd"), End - Start);
+}
+
+void UResultNotifyFireAbility::DrawImpact(const FVector& Location, const FVector& Normal, const EFireResult& Kind)
+{
+	if (!ImpactNiagaraSystems.Contains(Kind)) return;
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactNiagaraSystems[Kind], Location, Normal.Rotation());
 }
 
 void UResultNotifyFireAbility::NotifySingleFire_Implementation(const FVector& Start, const FVector& End,
                                                                const FVector& Normal, const EFireResult& FireResult)
 {
-	DrawDecal(End, Normal, FireResult);
 	DrawTrail(Start, End);
+	DrawDecal(End, Normal, FireResult);
+	DrawImpact(End, Normal, FireResult);
 	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.f);
 }
 
@@ -176,7 +184,8 @@ void UResultNotifyFireAbility::NotifyFireResult_Implementation(const FVector& Hi
                                                                const EFireResult& FireResult)
 {
 	const FVector Start = GetOwner()->GetActorLocation();
-	DrawDecal(HitPoint, Normal, FireResult);
 	DrawTrail(Start, HitPoint);
+	DrawDecal(HitPoint, Normal, FireResult);
+	DrawImpact(HitPoint, Normal, FireResult);
 	DrawDebugLine(GetWorld(), Start, HitPoint, FColor::Green, false, 2.f);
 }

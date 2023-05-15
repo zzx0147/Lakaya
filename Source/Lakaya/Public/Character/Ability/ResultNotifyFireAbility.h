@@ -67,6 +67,7 @@ private:
 	void InvokeFireNotify(const FHitResult& HitResult);
 	void DrawDecal(const FVector& Location, const FVector& Normal, const EFireResult& Kind);
 	void DrawTrail(const FVector& Start, const FVector& End);
+	void DrawImpact(const FVector& Location, const FVector& Normal, const EFireResult& Kind);
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -99,7 +100,11 @@ protected:
 
 	// 총기 궤적을 그리는 나이아가라 시스템을 지정합니다.
 	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* NiagaraSystem;
+	class UNiagaraSystem* TrailNiagaraSystem;
+
+	// 어떤 물체에 사격이 적중한 경우 재생되는 나이아가라 시스템을 지정합니다.
+	UPROPERTY(EditAnywhere)
+	TMap<EFireResult, UNiagaraSystem*> ImpactNiagaraSystems;
 
 	// 매 격발마다 총알이 차감될 양을 설정합니다.
 	UPROPERTY(EditAnywhere)
