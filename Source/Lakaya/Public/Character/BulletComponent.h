@@ -18,6 +18,7 @@ class LAKAYA_API UBulletComponent : public UResourceComponent
 
 public:
 	UBulletComponent();
+	virtual void OnAliveStateChanged(const bool& AliveState) override;
 
 protected:
 	virtual void OnRegister() override;

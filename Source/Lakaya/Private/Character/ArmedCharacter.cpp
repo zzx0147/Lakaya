@@ -34,6 +34,12 @@ ELifetimeCondition AArmedCharacter::AllowActorComponentToReplicate(const UActorC
 	return Super::AllowActorComponentToReplicate(ComponentToReplicate);
 }
 
+void AArmedCharacter::SetAliveState_Implementation(bool IsAlive)
+{
+	Super::SetAliveState_Implementation(IsAlive);
+	for (const auto& Ability : Abilities) Ability->OnAliveStateChanged(IsAlive);
+}
+
 void AArmedCharacter::StartAbility(const EAbilityKind& Kind)
 {
 	if (Abilities.IsValidIndex(Kind))
