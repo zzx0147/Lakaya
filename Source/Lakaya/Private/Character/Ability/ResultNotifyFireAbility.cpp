@@ -169,6 +169,10 @@ void UResultNotifyFireAbility::DrawTrail(const FVector& Start, const FVector& En
 	if (!TrailNiagaraSystem) return;
 	if (const auto Niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TrailNiagaraSystem, Start))
 		Niagara->SetNiagaraVariableVec3(TEXT("BeamEnd"), End - Start);
+
+	// TODO : GunImpact
+	if (!GunImpactSystem) return;
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), GunImpactSystem, Start);
 }
 
 void UResultNotifyFireAbility::DrawImpact(const FVector& Location, const FVector& Normal, const EFireResult& Kind)
