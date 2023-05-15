@@ -3,6 +3,8 @@
 
 #include "Character/LakayaBasePlayerState.h"
 
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
@@ -274,6 +276,22 @@ void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserN
                                                             const float& Damage)
 {
 	//TODO: 피격 레이더를 업데이트 합니다.
+
+	// ScreenEffect : 피격 당할 시 화면에 표기 되는 이펙트
+	FSoftObjectPath NiagaraPath;
+	NiagaraPath = (TEXT("/Game/Effects/M_VFX/VFX_Screeneffect.VFX_Screeneffect"));
+	UNiagaraSystem* NiagaraEffect = Cast<UNiagaraSystem>(NiagaraPath.TryLoad());
+      
+	if (NiagaraEffect)
+	{
+		UNiagaraComponent* NiagaraComponent =
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect,
+		FVector(0.0f, 0.0f, 0.0f));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to load Niagara system!"));
+	}
 }
 
 void ALakayaBasePlayerState::SetOwner(AActor* NewOwner)
