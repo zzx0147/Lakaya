@@ -3,6 +3,7 @@
 
 #include "Character/LakayaBaseCharacter.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Character/ResourceComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -34,6 +35,11 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
+
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> ResurrectionFinder(
+		TEXT("/Script/Niagara.NiagaraSystem'/Game/Effects/M_VFX/Char_Common/VFX_Resurrection.VFX_Resurrection'"));
+
+	ResurrectionNiagaraSystem = ResurrectionFinder.Object;
 }
 
 ELifetimeCondition ALakayaBaseCharacter::AllowActorComponentToReplicate(
@@ -96,6 +102,10 @@ FRotator ALakayaBaseCharacter::GetPlayerRotation() const
 void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 {
 	ResourceComponent->OnAliveStateChanged(IsAlive);
+	if (IsAlive && ResurrectionNiagaraSystem)
+		UNiagaraFunctionLibrary::SpawnSystemAttached(ResurrectionNiagaraSystem, RootComponent, FName(),
+		                                             FVector::ZeroVector, FRotator::ZeroRotator,
+		                                             EAttachLocation::SnapToTarget, true);
 }
 
 float ALakayaBaseCharacter::GetServerTime() const

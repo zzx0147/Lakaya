@@ -115,6 +115,7 @@ private:
 	FTimerHandle FireTimer;
 	FCollisionQueryParams CollisionQueryParams;
 	TMap<EFireResult, TSimpleObjectPool<AActor>> DecalPool;
+	TWeakObjectPtr<class UArrowComponent> MuzzleComponent;
 
 	//TODO: 기능구현 클래스는 자원으로부터는 중립적이어야 재사용하기 편해집니다. 추후 자원 차감 로직은 다른 쪽으로 옮겨져야 합니다.
 	TWeakObjectPtr<class UBulletComponent> BulletComponent;
