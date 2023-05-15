@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "PlayerTeam.generated.h"
 
-UENUM()
+UENUM(BlueprintType)
 enum class EPlayerTeam : uint8
 {
 	// 현재 팀 배정을 받지 못한 상태
