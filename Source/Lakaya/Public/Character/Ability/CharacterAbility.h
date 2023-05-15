@@ -22,8 +22,8 @@ public:
 	// 능력 사용을 중단합니다. 이 함수는 클라이언트에서 호출됩니다.
 	virtual void AbilityStop() { return; }
 
-	// 캐릭터가 사망하는 경우 호출됩니다. 이 함수는 서버에서 호출됩니다.
-	virtual void OnCharacterDead() { return; }
+	// 캐릭터의 생존 상태가 업데이트될 때 호출됩니다. 서버, 클라이언트 모두에서 호출됩니다.
+	virtual void OnAliveStateChanged(const bool& AliveState) { return; }
 
 protected:
 	FORCEINLINE class UCameraComponent* GetCameraComponent() const { return CameraComponent.Get(); }

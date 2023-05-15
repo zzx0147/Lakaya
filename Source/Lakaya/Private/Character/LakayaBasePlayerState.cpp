@@ -172,10 +172,17 @@ bool ALakayaBasePlayerState::ShouldTakeDamage(float DamageAmount, FDamageEvent c
 
 void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
 {
+	if (const auto OldCharacter = Cast<ALakayaBaseCharacter>(OldPawn))
+	{
+		OldCharacter->SetTeam(EPlayerTeam::None);
+		OnAliveStateChanged.RemoveAll(OldCharacter);
+	}
+	
 	if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
 	{
 		if (Team != EPlayerTeam::None) Character->SetTeam(Team);
 		if (HealthWidget.IsValid()) HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);
 	}
 	else
 	{
