@@ -6,5 +6,5 @@
 
 UResourceComponent::UResourceComponent()
 {
-	SetIsReplicated(true);
+	SetIsReplicatedByDefault(true);
 }

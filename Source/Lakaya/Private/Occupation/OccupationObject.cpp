@@ -18,7 +18,7 @@ AOccupationObject::AOccupationObject()
 	Mesh->SetupAttachment(RootComponent);
 
 	Trigger->InitSphereRadius(600.0f);
-	Trigger->SetupAttachment(RootComponent);
+	//Trigger->SetupAttachment(RootComponent);
 	Trigger->SetRelativeLocation(FVector::ZeroVector);
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> SM_Cylinder(

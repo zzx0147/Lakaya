@@ -33,7 +33,7 @@ void UBulletComponent::OnRegister()
 			LocalController && LocalController->IsLocalController())
 			SetupBulletWidget(LocalController);
 
-		Pawn->ReceiveControllerChangedDelegate.AddDynamic(this, &UBulletComponent::OnOwnerControllerChanged);
+		Pawn->ReceiveControllerChangedDelegate.AddUniqueDynamic(this, &UBulletComponent::OnOwnerControllerChanged);
 	}
 }
 

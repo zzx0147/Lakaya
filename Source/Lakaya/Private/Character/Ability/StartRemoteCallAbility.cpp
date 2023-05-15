@@ -8,7 +8,7 @@
 
 UStartRemoteCallAbility::UStartRemoteCallAbility()
 {
-	SetIsReplicated(true);
+	SetIsReplicatedByDefault(true);
 }
 
 void UStartRemoteCallAbility::AbilityStart()
