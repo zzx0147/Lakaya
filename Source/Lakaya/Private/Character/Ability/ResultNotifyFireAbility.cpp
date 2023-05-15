@@ -116,7 +116,7 @@ void UResultNotifyFireAbility::SingleFire()
 		                                   Pawn ? Pawn->GetController() : nullptr, GetOwner(), nullptr);
 	}
 	InvokeFireNotify(Result);
-	DrawDebugLine(GetWorld(), LineStart, End, FColor::Red, false, 2.f);
+	// DrawDebugLine(GetWorld(), LineStart, End, FColor::Red, false, 2.f);
 }
 
 void UResultNotifyFireAbility::FailToFire()
@@ -183,7 +183,7 @@ void UResultNotifyFireAbility::NotifySingleFire_Implementation(const FVector& St
 	DrawTrail(Start, End);
 	DrawDecal(End, Normal, FireResult);
 	DrawImpact(End, Normal, FireResult);
-	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.f);
+	// DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.f);
 }
 
 void UResultNotifyFireAbility::NotifyFireResult_Implementation(const FVector& HitPoint, const FVector& Normal,

@@ -85,7 +85,7 @@ void ULockstepFireAbility::SingleFire(const FLockstepFireInfo& FireInfo)
 	if (FHitResult Result;
 		GetWorld()->LineTraceSingleByChannel(Result, Start, End, ECC_Visibility, CollisionQueryParams))
 		End = Result.ImpactPoint;
-	DrawDebugLine(GetWorld(), Start, End, FColor::Cyan, false, 2.f);
+	// DrawDebugLine(GetWorld(), Start, End, FColor::Cyan, false, 2.f);
 
 	// 액터로부터 End까지 트레이스하여 실질적인 사격 판정을 수행합니다.
 	if (FHitResult Result;
@@ -97,7 +97,7 @@ void ULockstepFireAbility::SingleFire(const FLockstepFireInfo& FireInfo)
 			UGameplayStatics::ApplyPointDamage(Result.GetActor(), BaseDamage, FireInfo.ActorLocation, Result,
 			                                   Owner ? Owner->GetController() : nullptr, GetOwner(), nullptr);
 	}
-	DrawDebugLine(GetWorld(), FireInfo.ActorLocation, End, FColor::Red, false, 2.f);
+	// DrawDebugLine(GetWorld(), FireInfo.ActorLocation, End, FColor::Red, false, 2.f);
 }
 
 void ULockstepFireAbility::FailToFire()
