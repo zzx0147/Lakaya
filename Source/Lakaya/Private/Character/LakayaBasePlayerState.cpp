@@ -3,9 +3,12 @@
 
 #include "Character/LakayaBasePlayerState.h"
 
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
+#include "UI/DirectionalDamageIndicator.h"
 #include "UI/GamePlayHealthWidget.h"
 
 void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -28,8 +31,11 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 
 	static ConstructorHelpers::FClassFinder<UGamePlayHealthWidget> HealthFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
-
+	static ConstructorHelpers::FClassFinder<UDirectionalDamageIndicator> DirectionDamageFinder(
+		TEXT("/Game/Blueprints/UMG/WBP_DirectionalDamageIndicator"));
+	
 	if (HealthFinder.Succeeded()) HealthWidgetClass = HealthFinder.Class;
+	if (DirectionDamageFinder.Succeeded()) DirectionDamageIndicatorClass = DirectionDamageFinder.Class;
 }
 
 void ALakayaBasePlayerState::PreInitializeComponents()
@@ -53,7 +59,7 @@ float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const&
 
 	OnHealthChanged.Broadcast(Health);
 	NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
-	if (Health <= 0.f) OnPlayerKilled.Broadcast(GetOwningController(), DamageCauser, EventInstigator);
+	if (Health <= 0.f) OnPlayerKilled.Broadcast(GetOwningController(), EventInstigator, DamageCauser);
 
 	return Damage;
 }
@@ -82,6 +88,15 @@ void ALakayaBasePlayerState::BeginPlay()
 			HealthWidget->SetMaximumHealth(GetMaxHealth());
 			HealthWidget->SetCurrentHealth(Health);
 		}
+
+		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(LocalController, DirectionDamageIndicatorClass);
+		if (DirectionDamageIndicatorWidget == nullptr)
+		{
+				UE_LOG(LogTemp, Warning, TEXT("LakayaBasePlayerState_PreInitializeComponents DirectionDamageIndicatorWidget is null."));
+				return;
+		}
+		
+		DirectionDamageIndicatorWidget->AddToViewport();
 	}
 }
 
@@ -97,6 +112,12 @@ void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
 		Other->DeathCount = DeathCount;
 		Other->KillCount = KillCount;
 	}
+}
+
+void ALakayaBasePlayerState::OnRep_Owner()
+{
+	Super::OnRep_Owner();
+	OnOwnerChanged.Broadcast(Owner);
 }
 
 bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) const
@@ -166,10 +187,17 @@ bool ALakayaBasePlayerState::ShouldTakeDamage(float DamageAmount, FDamageEvent c
 
 void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
 {
+	if (const auto OldCharacter = Cast<ALakayaBaseCharacter>(OldPawn))
+	{
+		OldCharacter->SetTeam(EPlayerTeam::None);
+		OnAliveStateChanged.RemoveAll(OldCharacter);
+	}
+	
 	if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
 	{
 		if (Team != EPlayerTeam::None) Character->SetTeam(Team);
 		if (HealthWidget.IsValid()) HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);
 	}
 	else
 	{
@@ -267,5 +295,30 @@ bool ALakayaBasePlayerState::RequestCharacterChange_Validate(const FName& Name)
 void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserName, const FVector& CauserLocation,
                                                             const float& Damage)
 {
-	//TODO: 피격 레이더를 업데이트 합니다.
+	// TODO : 피격 레이더를 업데이트 합니다.
+	if(GetPlayerController()->IsLocalPlayerController())
+	{
+		DirectionDamageIndicatorWidget->IndicateStart(CauserName.ToString(), CauserLocation, 3.0f);
+		
+		// ScreenEffect : 피격 당할 시 화면에 표기 되는 이펙트
+		FSoftObjectPath NiagaraPath;
+		NiagaraPath = (TEXT("/Game/Effects/M_VFX/VFX_Screeneffect.VFX_Screeneffect"));
+		UNiagaraSystem* NiagaraEffect = Cast<UNiagaraSystem>(NiagaraPath.TryLoad());
+      
+		if (NiagaraEffect)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect,FVector::ZeroVector);
+			UE_LOG(LogTemp, Warning, TEXT("아야.")); 
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to load Niagara system!"));
+		}
+	}
+}
+
+void ALakayaBasePlayerState::SetOwner(AActor* NewOwner)
+{
+	Super::SetOwner(NewOwner);
+	OnOwnerChanged.Broadcast(Owner);
 }

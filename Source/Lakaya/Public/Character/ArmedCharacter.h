@@ -47,6 +47,10 @@ public:
 	virtual ELifetimeCondition
 	AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const override;
 
+protected:
+	virtual void SetAliveState_Implementation(bool IsAlive) override;
+
+public:
 	/**
 	 * @brief 캐릭터의 능력을 사용합니다. (키 누름)
 	 * @param Kind 사용할 능력을 특정합니다.

@@ -17,7 +17,7 @@ AOccupationObject::AOccupationObject()
 	RootComponent = Trigger;
 	Mesh->SetupAttachment(RootComponent);
 
-	Trigger->InitSphereRadius(200.0f);
+	Trigger->InitSphereRadius(600.0f);
 	Trigger->SetupAttachment(RootComponent);
 	Trigger->SetRelativeLocation(FVector::ZeroVector);
 
@@ -38,11 +38,8 @@ void AOccupationObject::BeginPlay()
 void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-}
 
-void AOccupationObject::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+	DOREPLIFETIME(AOccupationObject, ObjectTeam);
 }
 
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
@@ -54,6 +51,26 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 		return;
 	}
 
+	// 소유자 팀에서 상호작용 할 경우 막아두기
+	// TODO : IsSameTeam(), 오브젝트에는 PlayerState 없어요
+	FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetTeam());
+	if (PlayerStateString.Equals("EPlayerTeam::A", ESearchCase::IgnoreCase))
+	{
+		if (ObjectTeam == EPlayerTeam::A)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OccupationObject_이미 점령한 오브젝트 입니다."));
+			return;
+		}
+	}
+	else if (PlayerStateString.Equals("EPlayerTeam::B", ESearchCase::IgnoreCase))
+	{
+		if (ObjectTeam == EPlayerTeam::B)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("OccupationObject_이미 점령한 오브젝트 입니다."));
+			return;
+		}
+	}
+	
 	// 아무도 상호작용을 하지 않고 있는 경우
 	if (InteractingPawn == nullptr)
 	{
@@ -85,26 +102,8 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 		}
 	}
 
-	// 소유자 팀에서 상호작용 할 경우 막아두기
-	// TODO : IsSameTeam()
-	FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetTeam());
-	if (PlayerStateString.Equals("EPlayerTeam::A", ESearchCase::IgnoreCase))
-	{
-		if (ObjectTeam == EPlayerTeam::A)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("이미 점령한 오브젝트 입니다."));
-			return;
-		}
-	}
-	else if (PlayerStateString.Equals("EPlayerTeam::B", ESearchCase::IgnoreCase))
-	{
-		if (ObjectTeam == EPlayerTeam::B)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("이미 점령한 오브젝트 입니다."));
-			return;
-		}
-	}
 	
+
 	// TODO : 점프 도중 상호작용 시, 물리를 무시하고 공중에서 상호작용합니다.
 	// 상호작용중에는 움직임을 막아줍니다.
 	CharacterImMovable(Caller);
@@ -227,13 +226,13 @@ void AOccupationObject::InteractionSuccess(APawn* Caller)
 		UE_LOG(LogTemp, Warning, TEXT("Team A player captured successfully."));
 	
 		if (ObjectTeam == EPlayerTeam::B)
-			OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
+			 OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
 	
 		SetTeamObject(EPlayerTeam::A);
 		OccupationGameMode->AddOccupyObject(EPlayerTeam::A);
 		return;
 	}
-	else if (PlayerStateString.Equals("EPlayerTeamState::B", ESearchCase::IgnoreCase))
+	else if (PlayerStateString.Equals("EPlayerTeam::B", ESearchCase::IgnoreCase))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Team B player captured successfully."));
 	
@@ -262,19 +261,21 @@ void AOccupationObject::OnInteractionFinish(APawn* Caller)
 		UE_LOG(LogTemp, Warning, TEXT("InteractionSuccess_InteractableCharacter is null."));
 		return;
 	}
+	
 	InteractableCharacter->InitializeInteraction();
+	// InteractingActor = nullptr;
 }
 
 void AOccupationObject::OnRep_BroadCastTeamObject()
 {
 	SetTeamObject(ObjectTeam);
+	FOnOccupationStateSignature.Broadcast(ObjectTeam);
 }
 
 void AOccupationObject::SetTeamObject(const EPlayerTeam& Team)
 {
-	ObjectTeam = EPlayerTeam::A;
-	UE_LOG(LogTemp, Warning, TEXT("SetTeamObject"));
-	
+	ObjectTeam = Team;
+	// UE_LOG(LogTemp, Warning, TEXT("SetTeamObject"));
 	// switch (Team)
 	// {
 	// case EPlayerTeam::A:

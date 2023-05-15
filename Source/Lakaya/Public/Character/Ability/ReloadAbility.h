@@ -18,6 +18,7 @@ public:
 	UReloadAbility();
 
 	virtual void AbilityStart() override;
+	virtual void OnAliveStateChanged(const bool& AliveState) override;
 
 protected:
 	virtual void BeginPlay() override;

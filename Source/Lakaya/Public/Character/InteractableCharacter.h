@@ -56,6 +56,7 @@ public:
 	FORCEINLINE const EInteractionState& GetInteractionState() const { return InteractionState; }
 
 	FORCEINLINE void SetInteractionState(const EInteractionState& NewState) { InteractionState = NewState; }	
+
 protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void RequestInteractionStart(const float& Time, AActor* Actor);
@@ -68,7 +69,7 @@ protected:
 public:
 	// 인터렉션이 가능한 액터가 변경되는 경우 호출됩니다. 매개변수로 넘겨진 액터가 nullptr이면 인터렉션이 불가능해졌음을 의미하며,
 	// 그렇지 않은 경우 해당 액터와 인터렉션이 가능해졌음을 의미합니다.
-	FInteractionSignature OnInteractableActorChanged;
+	// FInteractionSignature OnInteractableActorChanged;
 
 	// 인터렉션중인 액터가 변화한 경우 호출됩니다. 매개변수로 넘겨진 액터가 nullptr이면 인터렉션 중단을 의미하며, 그렇지 않은 경우 인터렉션중임을 의미합니다.
 	FInteractionSignature OnInteractingActorChanged;

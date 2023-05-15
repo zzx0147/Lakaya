@@ -77,7 +77,7 @@ public:
 
 protected:
 	virtual void SetTeam_Implementation(const EPlayerTeam& Team) { return; }
-	virtual void SetAliveState_Implementation(bool IsAlive) { return; }
+	virtual void SetAliveState_Implementation(bool IsAlive);
 
 	// 현재 시점의 서버 시간을 가져옵니다.
 	float GetServerTime() const;
@@ -103,6 +103,10 @@ protected:
 	// 0에 너무 가까우면 회전이 동기화되지 않는 것처럼 보일 수 있습니다.
 	UPROPERTY(EditAnywhere, meta=(ClampMin = 0.1f, ClampMax = 1.0f))
 	float PlayerRotationInterpolationAlpha;
+
+	// 캐릭터가 부활했을 때 재생할 나이아가라 시스템을 지정합니다.
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* ResurrectionNiagaraSystem;
 
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
