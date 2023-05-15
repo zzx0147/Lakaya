@@ -33,6 +33,7 @@ AOccupationObject::AOccupationObject()
 void AOccupationObject::BeginPlay()
 {
 	Super::BeginPlay();
+	FOnOccupationStateSignature.AddUObject(this,&AOccupationObject::SetTeam);
 }
 
 void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -230,6 +231,7 @@ void AOccupationObject::InteractionSuccess(APawn* Caller)
 	
 		SetTeamObject(EPlayerTeam::A);
 		OccupationGameMode->AddOccupyObject(EPlayerTeam::A);
+		OnRep_BroadCastTeamObject();
 		return;
 	}
 	else if (PlayerStateString.Equals("EPlayerTeam::B", ESearchCase::IgnoreCase))
@@ -241,7 +243,9 @@ void AOccupationObject::InteractionSuccess(APawn* Caller)
 			
 		SetTeamObject(EPlayerTeam::B);
 		OccupationGameMode->AddOccupyObject(EPlayerTeam::B);
+		OnRep_BroadCastTeamObject();
 		return;
+		
 	}
 	else
 	{
@@ -275,20 +279,5 @@ void AOccupationObject::OnRep_BroadCastTeamObject()
 void AOccupationObject::SetTeamObject(const EPlayerTeam& Team)
 {
 	ObjectTeam = Team;
-	// UE_LOG(LogTemp, Warning, TEXT("SetTeamObject"));
-	// switch (Team)
-	// {
-	// case EPlayerTeam::A:
-	// 	Cylinder->SetMaterial(
-	// 		0, LoadObject<UMaterialInterface>(
-	// 			nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/RedTeam.RedTeam")));
-	// 	break;
-	// case EPlayerTeam::B:
-	// 	Cylinder->SetMaterial(
-	// 		0, LoadObject<UMaterialInterface>(
-	// 			nullptr, TEXT("/Game/Characters/LakayaCharacter/Dummy/Materials/BlueTeam.BlueTeam")));
-	// 	break;
-	// case EPlayerTeam::None:
-	// 	break;
-	// }
+	// OnRep_BroadCastTeamObject();
 }

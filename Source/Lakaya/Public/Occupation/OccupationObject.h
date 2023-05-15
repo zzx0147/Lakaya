@@ -42,6 +42,9 @@ private:
 public:
 	void SetTeamObject(const EPlayerTeam& Team);
 	
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetTeam(EPlayerTeam Team);
+	
 private:
 	UFUNCTION()
 	void OnRep_BroadCastTeamObject();
