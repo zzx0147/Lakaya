@@ -93,6 +93,11 @@ FRotator ALakayaBaseCharacter::GetPlayerRotation() const
 	return LatestUpdateRotation.Rotator();
 }
 
+void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
+{
+	ResourceComponent->OnAliveStateChanged(IsAlive);
+}
+
 float ALakayaBaseCharacter::GetServerTime() const
 {
 	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();

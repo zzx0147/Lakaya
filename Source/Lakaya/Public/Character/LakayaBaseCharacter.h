@@ -77,7 +77,7 @@ public:
 
 protected:
 	virtual void SetTeam_Implementation(const EPlayerTeam& Team) { return; }
-	virtual void SetAliveState_Implementation(bool IsAlive) { return; }
+	virtual void SetAliveState_Implementation(bool IsAlive);
 
 	// 현재 시점의 서버 시간을 가져옵니다.
 	float GetServerTime() const;
