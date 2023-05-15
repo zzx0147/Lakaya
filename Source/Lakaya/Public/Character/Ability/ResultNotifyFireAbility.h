@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SimpleObjectPool.h"
 #include "StopRemoteCallAbility.h"
 #include "ResultNotifyFireAbility.generated.h"
 
@@ -63,6 +64,8 @@ private:
 	                      const EFireResult& FireResult);
 
 	void InvokeFireNotify(const FHitResult& HitResult);
+	void DrawDecal(const FVector& Location, const FVector& Normal, const EFireResult& Kind);
+	void DrawTrail(const FVector& Start, const FVector& End);
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -77,13 +80,36 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float FireDamage;
 
-	// 사격 궤적이 총구로부터 자연스럽게 그려져야만 한다는 제약조건입니다. true이면 총구에서부터 그려지지만, 궤적이 벽을 뚫을 수 있게 됩니다.
+	// 사격 궤적이 총구로부터 그려져야만 한다는 제약조건입니다. true이면 총구에서부터 그려지지만, 궤적이 벽을 뚫을 수도 있습니다.
 	UPROPERTY(EditAnywhere)
 	bool bShouldFireSmoothing;
 
+	// 사격이 어떤 물체에 충돌했을 때 어떤 액터를 보여줄지 지정합니다. 지정되지 않는 경우 데칼이 그려지지 않습니다.
+	UPROPERTY(EditAnywhere)
+	TMap<EFireResult, TSubclassOf<AActor>> DecalClasses;
+
+	// 초기 오브젝트 풀의 초기화 사이즈를 지정합니다.
+	UPROPERTY(EditAnywhere)
+	uint8 PoolCount;
+
+	// 데칼이 몇초간 보여질지를 정의합니다.
+	UPROPERTY(EditAnywhere)
+	float DecalShowingTime;
+
+	// 총기 궤적을 그리는 나이아가라 시스템을 지정합니다.
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* NiagaraSystem;
+
+	// 매 격발마다 총알이 차감될 양을 설정합니다.
+	UPROPERTY(EditAnywhere)
+	uint8 BulletCost;
+
 private:
 	bool bWantsToFire;
-	TWeakObjectPtr<class UCameraComponent> Camera;
 	FTimerHandle FireTimer;
 	FCollisionQueryParams CollisionQueryParams;
+	TMap<EFireResult, TSimpleObjectPool<AActor>> DecalPool;
+
+	//TODO: 기능구현 클래스는 자원으로부터는 중립적이어야 재사용하기 편해집니다. 추후 자원 차감 로직은 다른 쪽으로 옮겨져야 합니다.
+	TWeakObjectPtr<class UBulletComponent> BulletComponent;
 };

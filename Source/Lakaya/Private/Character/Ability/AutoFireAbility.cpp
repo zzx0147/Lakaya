@@ -52,8 +52,8 @@ void UAutoFireAbility::BeginPlay()
 	Super::BeginPlay();
 	if (const auto Character = GetOwner(); Character && Character->HasAuthority())
 	{
-		CameraComponent = Cast<UCameraComponent>(Character->FindComponentByClass(UCameraComponent::StaticClass()));
-		if (!CameraComponent.IsValid())
+		Camera = Cast<UCameraComponent>(Character->FindComponentByClass(UCameraComponent::StaticClass()));
+		if (!Camera.IsValid())
 			UE_LOG(LogInit, Error, TEXT("Fail to find CameraComponent in UAutoFireComponent!"));
 
 		RootComponent = Character->GetRootComponent();
@@ -96,10 +96,10 @@ bool UAutoFireAbility::ShouldFire()
 
 void UAutoFireAbility::SingleFire()
 {
-	if (!CameraComponent.IsValid() || !RootComponent.IsValid()) return;
+	if (!Camera.IsValid() || !RootComponent.IsValid()) return;
 
-	const auto Forward = CameraComponent->GetForwardVector();
-	const auto Location = CameraComponent->GetComponentLocation();
+	const auto Forward = Camera->GetForwardVector();
+	const auto Location = Camera->GetComponentLocation();
 
 	// 캐릭터를 기준으로 정의된 사정거리를 카메라 기준으로 변환하는 수식입니다.
 	// (카메라의 전방 벡터에 카메라->캐릭터 벡터를 투영한 길이 + 사정거리) * 카메라 전방 벡터 + 카메라의 위치.
