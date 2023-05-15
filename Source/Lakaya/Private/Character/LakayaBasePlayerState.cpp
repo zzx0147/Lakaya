@@ -42,8 +42,6 @@ void ALakayaBasePlayerState::PreInitializeComponents()
 {
 	Super::PreInitializeComponents();
 	OnPawnSet.AddUniqueDynamic(this, &ALakayaBasePlayerState::OnPawnSetCallback);
-
-	
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -97,26 +95,8 @@ void ALakayaBasePlayerState::BeginPlay()
 				UE_LOG(LogTemp, Warning, TEXT("LakayaBasePlayerState_PreInitializeComponents DirectionDamageIndicatorWidget is null."));
 				return;
 		}
-
+		
 		DirectionDamageIndicatorWidget->AddToViewport();
-		DirectionDamageIndicatorWidget->SetVisibility(ESlateVisibility::Hidden);
-		
-		// DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(LocalController, )
-		
-		// if (DirectionDamageIndicatorClass)
-		// {
-		// 	DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(LocalController, DirectionDamageIndicatorClass);
-		//
-		// 	if (DirectionDamageIndicatorWidget == nullptr)
-		// 	{
-		// 		UE_LOG(LogTemp, Warning, TEXT("LakayaBasePlayerState_PreInitializeComponents DirectionDamageIndicatorWidget is null."));
-		// 		return;
-		// 	}
-		//
-		// 	DirectionDamageIndicatorWidget->AddToViewport();
-		// 	DirectionDamageIndicatorWidget->SetVisibility(ESlateVisibility::Hidden);
-		// 	UE_LOG(LogTemp, Warning, TEXT("DirectionDamageIndicatorWidget success."))
-		// }
 	}
 }
 
