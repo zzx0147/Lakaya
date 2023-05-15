@@ -8,11 +8,16 @@
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameMode/LakayaBaseGameState.h"
+#include "EngineUtils.h"
+#include "Components/CapsuleComponent.h"
 
 namespace MatchState
 {
 	 const FName IsSelectCharacter = FName(TEXT("IsSelectCharacter"));
 }
+
+const FString ALakayaDefaultPlayGameMode::ATeamSpawnTag = FString(TEXT("ATeamSpawnZone"));
+const FString ALakayaDefaultPlayGameMode::BTeamSpawnTag = FString(TEXT("BTeamSpawnZone"));
 
 ALakayaDefaultPlayGameMode::ALakayaDefaultPlayGameMode()
 {
@@ -20,6 +25,46 @@ ALakayaDefaultPlayGameMode::ALakayaDefaultPlayGameMode()
 	bWaitToStart = false;
 	MinRespawnDelay = 5.0f;
 	//CharacterSelectTime = 10.0f;
+}
+
+void ALakayaDefaultPlayGameMode::RestartPlayer(AController* NewPlayer)
+{
+	if (NewPlayer == nullptr || NewPlayer->IsPendingKillPending())
+	{
+		return;
+	}
+
+	FString SpawnTag;
+	if (const auto BasePlayerState = NewPlayer->GetPlayerState<ALakayaBasePlayerState>())
+	{
+		switch (BasePlayerState->GetTeam())
+		{
+		case EPlayerTeam::A:
+			SpawnTag = ATeamSpawnTag;
+			break;
+		case EPlayerTeam::B:
+			SpawnTag = BTeamSpawnTag;
+			break;
+		default:
+			SpawnTag = TEXT("");
+			break;
+		}
+	}
+
+	AActor* StartSpot = FindPlayerStart(NewPlayer, SpawnTag);
+
+	// If a start spot wasn't found,
+	if (StartSpot == nullptr)
+	{
+		// Check for a previously assigned spot
+		if (NewPlayer->StartSpot != nullptr)
+		{
+			StartSpot = NewPlayer->StartSpot.Get();
+			UE_LOG(LogGameMode, Warning, TEXT("RestartPlayer: Player start not found, using last start spot"));
+		}
+	}
+
+	RestartPlayerAtPlayerStart(NewPlayer, StartSpot);
 }
 
 void ALakayaDefaultPlayGameMode::InitStartSpot_Implementation(AActor* StartSpot, AController* NewPlayer)
@@ -30,6 +75,57 @@ void ALakayaDefaultPlayGameMode::InitStartSpot_Implementation(AActor* StartSpot,
 	{
 		Pawn->SetActorLocation(StartSpot->GetActorLocation(), false, nullptr, ETeleportType::ResetPhysics);
 	}
+}
+
+AActor* ALakayaDefaultPlayGameMode::FindPlayerStart_Implementation(AController* Player, const FString& IncomingName)
+{
+	UWorld* World = GetWorld();
+
+	// If incoming start is specified, then just use it
+	if (!IncomingName.IsEmpty())
+	{
+		const FName IncomingPlayerStartTag = FName(*IncomingName);
+		for (TActorIterator<APlayerStart> It(World); It; ++It)
+		{
+			APlayerStart* Start = *It;
+			if (Start && Start->PlayerStartTag == IncomingPlayerStartTag)
+			{
+				if (const auto Capsule = Start->GetCapsuleComponent())
+				{
+					TSet<AActor*> OverlappingActors;
+					Capsule->GetOverlappingActors(OverlappingActors,AInteractableCharacter::StaticClass());
+					if (OverlappingActors.Num() == 0)
+						return Start;
+				}
+			}
+		}
+	}
+
+	// Always pick StartSpot at start of match
+	if (ShouldSpawnAtStartSpot(Player))
+	{
+		if (AActor* PlayerStartSpot = Player->StartSpot.Get())
+		{
+			return PlayerStartSpot;
+		}
+		else
+		{
+			UE_LOG(LogGameMode, Error, TEXT("FindPlayerStart: ShouldSpawnAtStartSpot returned true but the Player StartSpot was null."));
+		}
+	}
+
+	AActor* BestStart = ChoosePlayerStart(Player);
+	if (BestStart == nullptr)
+	{
+		// No player start found
+		UE_LOG(LogGameMode, Log, TEXT("FindPlayerStart: PATHS NOT DEFINED or NO PLAYERSTART with positive rating"));
+
+		// This is a bit odd, but there was a complex chunk of code that in the end always resulted in this, so we may as well just 
+		// short cut it down to this.  Basically we are saying spawn at 0,0,0 if we didn't find a proper player start
+		BestStart = World->GetWorldSettings();
+	}
+
+	return BestStart;
 }
 
 void ALakayaDefaultPlayGameMode::BeginPlay()

@@ -14,12 +14,17 @@ UCLASS()
 class LAKAYA_API ALakayaDefaultPlayGameMode : public AGameMode
 {
 	GENERATED_BODY()
+public:
+	const static FString ATeamSpawnTag;
+	const static FString BTeamSpawnTag;
 
 public:
 	ALakayaDefaultPlayGameMode();
-	
+	void RestartPlayer(AController* NewPlayer) override;
+
 public:
 	void InitStartSpot_Implementation(AActor* StartSpot, AController* NewPlayer) override;
+	AActor* FindPlayerStart_Implementation(AController* Player, const FString& IncomingName) override;
 
 protected:
 	virtual void BeginPlay() override;
