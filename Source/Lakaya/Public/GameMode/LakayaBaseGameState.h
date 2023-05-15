@@ -93,6 +93,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameTimeWidget> CharacterSelectTimerWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGamePlayCrosshairWidget> CrosshairWidgetClass;
+
+
 	// 게임이 최대 몇초간 진행될지 정의합니다.
 	UPROPERTY(EditAnywhere)
 	float MatchDuration;
@@ -119,6 +123,8 @@ protected:
 
 	// 로딩 위젯 입니다.
 	TObjectPtr<ULoadingWidget> LoadingWidget;
+
+	TObjectPtr<class UGamePlayCrosshairWidget> CrosshairWidget;
 	
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
 	

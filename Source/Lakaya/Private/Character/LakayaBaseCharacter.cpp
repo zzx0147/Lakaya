@@ -101,6 +101,7 @@ FRotator ALakayaBaseCharacter::GetPlayerRotation() const
 
 void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 {
+	UE_LOG(LogTemp, Warning, TEXT("SetAliveState"));
 	ResourceComponent->OnAliveStateChanged(IsAlive);
 	if (IsAlive && ResurrectionNiagaraSystem)
 		UNiagaraFunctionLibrary::SpawnSystemAttached(ResurrectionNiagaraSystem, RootComponent, FName(),

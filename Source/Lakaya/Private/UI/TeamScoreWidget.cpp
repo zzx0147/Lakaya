@@ -51,20 +51,20 @@ void UTeamScoreWidget::OnChangeATeamScore(const float& NewScore) const
 {
 	if (GEngine->GetNetMode(GetWorld()) == ENetMode::NM_ListenServer)
 	{
-		ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), NewScore)));
-		if (NewScore >= MaxScore) ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), 1.0f)));
+		ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), NewScore)));
+		if (NewScore >= MaxScore) ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), 1.0f)));
 	}
 	else
 	{
-		ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), NewScore)));
-		if (NewScore >= MaxScore) ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), 1.0f)));
+		ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), NewScore)));
+		if (NewScore >= MaxScore) ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), 1.0f)));
 	}
 }
 
 void UTeamScoreWidget::OnChangeBTeamScore(const float& NewScore) const
 {
-	BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("B팀 %.1f%%"), NewScore)));
-	if (NewScore >= MaxScore) BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("B팀 %.1f%%"), 1.0f)));
+	BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), NewScore)));
+	if (NewScore >= MaxScore) BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), 1.0f)));
 }
 
 void UTeamScoreWidget::OnTeamScoreChanged(const EPlayerTeam& Team, const float& Score) const
