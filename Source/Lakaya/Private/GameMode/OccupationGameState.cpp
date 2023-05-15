@@ -23,7 +23,6 @@ AOccupationGameState::AOccupationGameState()
 
 	PlayersByTeamMap.Add(EPlayerTeam::A, TArray<ALakayaBasePlayerState*>());
 	PlayersByTeamMap.Add(EPlayerTeam::B, TArray<ALakayaBasePlayerState*>());
-
 }
 
 void AOccupationGameState::BeginPlay()
