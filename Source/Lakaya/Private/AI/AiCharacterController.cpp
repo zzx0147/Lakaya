@@ -4,6 +4,7 @@
 #include "AI/AiCharacterController.h"
 #include "AI/AiCharacter.h"
 #include "Character/Ability/AutoFireAbility.h"
+#include "Character/Ability/ResultNotifyFireAbility.h"
 #include "GameMode/OccupationGameMode.h"
 #include "GameMode/OccupationGameState.h"
 
@@ -38,6 +39,20 @@ void AAiCharacterController::BeginPlay()
 	// UE_LOG(LogTemp, Warning, TEXT("AiController BeginPlay."));
 }
 
+// void AAiCharacterController::AIFireStart(AArmedCharacter* ArmCharacter)
+// {
+// 	ArmCharacter = Cast<AArmedCharacter>(GetCharacter());
+// 	
+// 	auto& Abilities = ArmCharacter->GetAbilities();
+// 	if(Abilities.IsValidIndex(WeaponFire))
+// 	{
+// 		if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
+// 		{
+// 			FireAbility->AbilityStart();
+// 		}
+// 	}	
+// }
+
 void AAiCharacterController::AIFireStart(AArmedCharacter* ArmCharacter)
 {
 	ArmCharacter = Cast<AArmedCharacter>(GetCharacter());
@@ -45,12 +60,26 @@ void AAiCharacterController::AIFireStart(AArmedCharacter* ArmCharacter)
 	auto& Abilities = ArmCharacter->GetAbilities();
 	if(Abilities.IsValidIndex(WeaponFire))
 	{
-		if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
+		if(const auto FireAbility = Cast<UResultNotifyFireAbility>(Abilities[WeaponFire]))
 		{
 			FireAbility->AbilityStart();
 		}
 	}	
 }
+
+// void AAiCharacterController::AIFireStop(AArmedCharacter* ArmCharacter)
+// {
+// 	ArmCharacter = Cast<AArmedCharacter>(GetCharacter());
+// 	
+// 	auto& Abilities = ArmCharacter->GetAbilities();
+// 	if(Abilities.IsValidIndex(WeaponFire))
+// 	{
+// 		if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
+// 		{
+// 			FireAbility->AbilityStop();
+// 		}
+// 	}
+// }
 
 void AAiCharacterController::AIFireStop(AArmedCharacter* ArmCharacter)
 {
@@ -59,7 +88,7 @@ void AAiCharacterController::AIFireStop(AArmedCharacter* ArmCharacter)
 	auto& Abilities = ArmCharacter->GetAbilities();
 	if(Abilities.IsValidIndex(WeaponFire))
 	{
-		if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
+		if(const auto FireAbility = Cast<UResultNotifyFireAbility>(Abilities[WeaponFire]))
 		{
 			FireAbility->AbilityStop();
 		}
