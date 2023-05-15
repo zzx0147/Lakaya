@@ -49,7 +49,7 @@ void UResultNotifyFireAbility::OnAliveStateChanged(const bool& AliveState)
 void UResultNotifyFireAbility::InitializeComponent()
 {
 	Super::InitializeComponent();
-	BulletComponent = GetOwner()->FindComponentByClass<UBulletComponent>();
+	// BulletComponent = GetOwner()->FindComponentByClass<UBulletComponent>();
 	if (auto MuzzleComponents = GetOwner()->GetComponentsByTag(UArrowComponent::StaticClass(), FName("Muzzle"));
 		MuzzleComponents.IsValidIndex(0))
 		MuzzleComponent = Cast<UArrowComponent>(MuzzleComponents[0]);
@@ -97,7 +97,8 @@ void UResultNotifyFireAbility::FireTick()
 bool UResultNotifyFireAbility::ShouldFire()
 {
 	// BulletComponent가 존재하는 경우 CostBullet에 실패하면 false를 반환합니다. 
-	return !BulletComponent.IsValid() || BulletComponent->CostBullet(BulletCost);
+	// return !BulletComponent.IsValid() || BulletComponent->CostBullet(BulletCost);
+	return true;
 }
 
 void UResultNotifyFireAbility::SingleFire()

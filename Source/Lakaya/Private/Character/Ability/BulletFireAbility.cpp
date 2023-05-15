@@ -3,7 +3,7 @@
 
 #include "Character/Ability/BulletFireAbility.h"
 
-#include "Character/BulletComponent.h"
+// #include "Character/BulletComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 
 
@@ -15,16 +15,18 @@ UBulletFireAbility::UBulletFireAbility()
 void UBulletFireAbility::BeginPlay()
 {
 	Super::BeginPlay();
-	if (const auto Character = GetOwner<ALakayaBaseCharacter>())
-	{
-		if (!Character->HasAuthority()) return;
-		BulletComponent = Character->GetResourceComponent<UBulletComponent>();
-		if (!BulletComponent.IsValid())
-			UE_LOG(LogInit, Error, TEXT("Fail to find BulletComponent in UBulletFireAbility!"));
-	}
+	// if (const auto Character = GetOwner<ALakayaBaseCharacter>())
+	// {
+	// 	if (!Character->HasAuthority()) return;
+	// 	BulletComponent = Character->GetResourceComponent<UBulletComponent>();
+	// 	if (!BulletComponent.IsValid())
+	// 		UE_LOG(LogInit, Error, TEXT("Fail to find BulletComponent in UBulletFireAbility!"));
+	// }
 }
 
 bool UBulletFireAbility::ShouldFire()
 {
-	return BulletComponent.IsValid() && BulletComponent->CostBullet(BulletCost);
+	// return BulletComponent.IsValid() && BulletComponent->CostBullet(BulletCost);
+
+	return true;
 }
