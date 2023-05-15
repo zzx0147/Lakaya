@@ -5,7 +5,7 @@
 
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
-// #include "Character/ResourceComponent.h"
+#include "Character/ResourceComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
@@ -15,7 +15,7 @@
 
 const FName ALakayaBaseCharacter::SpringArmComponentName = FName(TEXT("SpringArm"));
 const FName ALakayaBaseCharacter::CameraComponentName = FName(TEXT("Camera"));
-// const FName ALakayaBaseCharacter::ResourceComponentName = FName(TEXT("ResourceComponent"));
+const FName ALakayaBaseCharacter::ResourceComponentName = FName(TEXT("ResourceComponent"));
 
 ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -30,8 +30,8 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	Camera = CreateDefaultSubobject<UCameraComponent>(CameraComponentName);
 	Camera->SetupAttachment(SpringArm);
 
-	// ResourceComponent = CreateDefaultSubobject<UResourceComponent>(ResourceComponentName);
-	// ResourceComponent->SetIsReplicated(true);
+	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(ResourceComponentName);
+	ResourceComponent->SetIsReplicated(true);
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
@@ -45,7 +45,7 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 ELifetimeCondition ALakayaBaseCharacter::AllowActorComponentToReplicate(
 	const UActorComponent* ComponentToReplicate) const
 {
-	// if (ComponentToReplicate->IsA(UResourceComponent::StaticClass())) return COND_None;
+	if (ComponentToReplicate->IsA(UResourceComponent::StaticClass())) return COND_None;
 	return Super::AllowActorComponentToReplicate(ComponentToReplicate);
 }
 
@@ -102,7 +102,7 @@ FRotator ALakayaBaseCharacter::GetPlayerRotation() const
 void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 {
 	UE_LOG(LogTemp, Warning, TEXT("SetAliveState"));
-	// ResourceComponent->OnAliveStateChanged(IsAlive);
+	ResourceComponent->OnAliveStateChanged(IsAlive);
 	if (IsAlive && ResurrectionNiagaraSystem)
 		UNiagaraFunctionLibrary::SpawnSystemAttached(ResurrectionNiagaraSystem, RootComponent, FName(),
 		                                             FVector(0.0f, 0.0f, -90.0f), FRotator::ZeroRotator,
@@ -133,6 +133,6 @@ FQuat ALakayaBaseCharacter::GetRawExtrapolatedRotator(const float& CurrentTime) 
 void ALakayaBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	// DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, ResourceComponent, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, ResourceComponent, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, PlayerRotation, COND_SkipOwner);
 }

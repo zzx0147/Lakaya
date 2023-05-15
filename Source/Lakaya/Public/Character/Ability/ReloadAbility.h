@@ -42,5 +42,5 @@ private:
 	bool bIsReloading;
 
 	FTimerHandle OwnerTimer;
-	// TWeakObjectPtr<class UBulletComponent> BulletComponent;
+	TWeakObjectPtr<class UBulletComponent> BulletComponent;
 };

@@ -27,7 +27,7 @@ class LAKAYA_API ALakayaBaseCharacter : public ACharacter
 public:
 	const static FName SpringArmComponentName;
 	const static FName CameraComponentName;
-	// const static FName ResourceComponentName;
+	const static FName ResourceComponentName;
 
 	explicit ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
@@ -51,9 +51,9 @@ public:
 	class UCameraComponent* const& GetCamera() const { return Camera; }
 
 	// 캐릭터의 자원 컴포넌트를 가져옵니다.
-	// template <class T = class UResourceComponent>
-	// UFUNCTION(BlueprintGetter)
-	// T* GetResourceComponent() const { return Cast<T>(ResourceComponent); }
+	template <class T = class UResourceComponent>
+	UFUNCTION(BlueprintGetter)
+	T* GetResourceComponent() const { return Cast<T>(ResourceComponent); }
 
 	// 캐릭터 고유의 최대 체력을 가져옵니다. 플레이어의 최종적인 체력을 의미하지는 않습니다.
 	UFUNCTION(BlueprintGetter)
@@ -109,8 +109,8 @@ protected:
 	class UNiagaraSystem* ResurrectionNiagaraSystem;
 
 private:
-	// UPROPERTY(VisibleAnywhere, Replicated)
-	// class UResourceComponent* ResourceComponent;
+	UPROPERTY(VisibleAnywhere, Replicated)
+	class UResourceComponent* ResourceComponent;
 
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	USpringArmComponent* SpringArm;

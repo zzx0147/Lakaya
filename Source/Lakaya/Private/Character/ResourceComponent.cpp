@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-// #include "Character/ResourceComponent.h"
+#include "Character/ResourceComponent.h"
 
 
-// UResourceComponent::UResourceComponent()
-// {
-// 	SetIsReplicated(true);
-// }
+UResourceComponent::UResourceComponent()
+{
+	SetIsReplicated(true);
+}
