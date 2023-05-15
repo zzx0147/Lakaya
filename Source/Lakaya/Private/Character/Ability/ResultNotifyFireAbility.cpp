@@ -3,6 +3,8 @@
 
 #include "Character/Ability/ResultNotifyFireAbility.h"
 
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Kismet/GameplayStatics.h"
@@ -44,7 +46,9 @@ void UResultNotifyFireAbility::InitializeComponent()
 		if (!Pair.Value) continue;
 		DecalPool.Emplace(Pair.Key).SetupObjectPool(PoolCount, [this, DecalClass = Pair.Value]
 		{
-			return GetWorld()->SpawnActor<AActor>(DecalClass);
+			const auto Actor = GetWorld()->SpawnActor<AActor>(DecalClass);
+			Actor->SetActorLocation(FVector(-9999.f, -9999.f, -9999.f));
+			return Actor;
 		});
 	}
 }
@@ -136,7 +140,7 @@ void UResultNotifyFireAbility::DrawDecal(const FVector& Location, const FVector&
 	if (const auto Decal = DecalPool[Kind].GetObject())
 	{
 		Decal->SetActorLocationAndRotation(Location, Normal.Rotation());
-		
+
 		// 일정시간 뒤 보이지 않는 곳으로 이동시켜두고, 다시 오브젝트 풀에 밀어넣습니다.
 		FTimerHandle TempTimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(TempTimerHandle, [this, Decal, Kind]
@@ -148,16 +152,26 @@ void UResultNotifyFireAbility::DrawDecal(const FVector& Location, const FVector&
 	}
 }
 
+void UResultNotifyFireAbility::DrawTrail(const FVector& Start, const FVector& End)
+{
+	if (NiagaraSystem)
+		if (const auto Niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraSystem, Start))
+			Niagara->SetNiagaraVariableVec3(TEXT("BeamEnd"), End - Start);
+}
+
 void UResultNotifyFireAbility::NotifySingleFire_Implementation(const FVector& Start, const FVector& End,
                                                                const FVector& Normal, const EFireResult& FireResult)
 {
 	DrawDecal(End, Normal, FireResult);
+	DrawTrail(Start, End);
 	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.f);
 }
 
 void UResultNotifyFireAbility::NotifyFireResult_Implementation(const FVector& HitPoint, const FVector& Normal,
                                                                const EFireResult& FireResult)
 {
+	const FVector Start = GetOwner()->GetActorLocation();
 	DrawDecal(HitPoint, Normal, FireResult);
-	DrawDebugLine(GetWorld(), GetOwner()->GetActorLocation(), HitPoint, FColor::Green, false, 2.f);
+	DrawTrail(Start, HitPoint);
+	DrawDebugLine(GetWorld(), Start, HitPoint, FColor::Green, false, 2.f);
 }
