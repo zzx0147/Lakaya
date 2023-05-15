@@ -67,7 +67,7 @@ void UResultNotifyFireAbility::InitializeComponent()
 void UResultNotifyFireAbility::RequestStart_Implementation(const float& RequestTime)
 {
 	Super::RequestStart_Implementation(RequestTime);
-	if (bWantsToFire) return;
+	if (bWantsToFire || !GetAliveState()) return;
 	bWantsToFire = true;
 	if (auto& TimerManager = GetWorld()->GetTimerManager(); !TimerManager.TimerExists(FireTimer))
 	{
@@ -79,7 +79,7 @@ void UResultNotifyFireAbility::RequestStart_Implementation(const float& RequestT
 void UResultNotifyFireAbility::RequestStop_Implementation(const float& RequestTime)
 {
 	Super::RequestStop_Implementation(RequestTime);
-	if (!bWantsToFire) return;
+	if (!bWantsToFire || !GetAliveState()) return;
 	bWantsToFire = false;
 }
 

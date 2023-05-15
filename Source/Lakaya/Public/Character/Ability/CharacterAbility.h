@@ -23,7 +23,7 @@ public:
 	virtual void AbilityStop() { return; }
 
 	// 캐릭터의 생존 상태가 업데이트될 때 호출됩니다. 서버, 클라이언트 모두에서 호출됩니다.
-	virtual void OnAliveStateChanged(const bool& AliveState) { return; }
+	virtual void OnAliveStateChanged(const bool& AliveState);
 
 protected:
 	FORCEINLINE class UCameraComponent* GetCameraComponent() const { return CameraComponent.Get(); }
@@ -53,6 +53,10 @@ protected:
 	FVector GetNormalToCameraForwardTracePoint(const float& FromActor,
 	                                           const FCollisionQueryParams& CollisionQueryParams) const;
 
+	// 가장 최근 업데이트된 캐릭터의 생존 상태를 가져옵니다.
+	FORCEINLINE const bool& GetAliveState() const { return bRecentAliveState; }
+
 private:
 	TWeakObjectPtr<UCameraComponent> CameraComponent;
+	bool bRecentAliveState;
 };

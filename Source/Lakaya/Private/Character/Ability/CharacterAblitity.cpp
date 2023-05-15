@@ -13,6 +13,12 @@ void UCharacterAbility::InitializeComponent()
 {
 	Super::InitializeComponent();
 	CameraComponent = GetOwner()->FindComponentByClass<UCameraComponent>();
+	bRecentAliveState = true;
+}
+
+void UCharacterAbility::OnAliveStateChanged(const bool& AliveState)
+{
+	bRecentAliveState = AliveState;
 }
 
 FVector UCharacterAbility::GetDistancedToCameraDirection(const float& Distance, const float& FromActor,
