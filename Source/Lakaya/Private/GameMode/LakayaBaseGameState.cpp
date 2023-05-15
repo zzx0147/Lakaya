@@ -113,6 +113,8 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	if (CrosshairWidget != nullptr)
 		CrosshairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (const auto PlayerController = GetWorld()->GetFirstPlayerController())
+		PlayerController->SetShowMouseCursor(false);
 
 
 
@@ -138,6 +140,9 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 
 void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 {
+	if (const auto PlayerController = GetWorld()->GetFirstPlayerController())
+		PlayerController->SetShowMouseCursor(true);
+
 	LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
 	CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
 	if (CharacterSelectTimeWidget.IsValid())
