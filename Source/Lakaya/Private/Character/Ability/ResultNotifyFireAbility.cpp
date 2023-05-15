@@ -5,6 +5,7 @@
 
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Character/BulletComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -17,6 +18,7 @@ UResultNotifyFireAbility::UResultNotifyFireAbility()
 	bShouldFireSmoothing = false;
 	PoolCount = 20;
 	DecalShowingTime = 10.f;
+	BulletCost = 1;
 }
 
 void UResultNotifyFireAbility::AbilityStart()
@@ -36,6 +38,7 @@ void UResultNotifyFireAbility::AbilityStop()
 void UResultNotifyFireAbility::InitializeComponent()
 {
 	Super::InitializeComponent();
+	BulletComponent = GetOwner()->FindComponentByClass<UBulletComponent>();
 	CollisionQueryParams.AddIgnoredActor(GetOwner());
 
 	// 데칼 오브젝트 풀 생성
@@ -79,7 +82,8 @@ void UResultNotifyFireAbility::FireTick()
 
 bool UResultNotifyFireAbility::ShouldFire()
 {
-	return true;
+	// BulletComponent가 존재하는 경우 CostBullet에 실패하면 false를 반환합니다. 
+	return !BulletComponent.IsValid() || BulletComponent->CostBullet(BulletCost);
 }
 
 void UResultNotifyFireAbility::SingleFire()
