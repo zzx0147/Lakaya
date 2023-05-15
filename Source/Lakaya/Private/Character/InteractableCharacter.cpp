@@ -20,7 +20,7 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 	if (OtherActor->ActorHasTag(TEXT("Interactable")))
 	{
 		InteractableActor = OtherActor;
-		OnInteractableActorChanged.Broadcast(InteractableActor.Get());
+		// OnInteractableActorChanged.Broadcast(InteractableActor.Get());
 	}
 	else
 	{
@@ -35,7 +35,7 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	if (OtherActor == InteractableActor)
 	{
 		InteractableActor = nullptr;
-		OnInteractableActorChanged.Broadcast(InteractableActor.Get());
+		// OnInteractableActorChanged.Broadcast(InteractableActor.Get());
 	}
 }
 
