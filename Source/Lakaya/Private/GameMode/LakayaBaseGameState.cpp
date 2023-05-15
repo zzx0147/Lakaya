@@ -69,7 +69,7 @@ void ALakayaBaseGameState::BeginPlay()
 			CharacterSelectTimeWidget = CreateWidget<UGameTimeWidget>(LocalController, CharacterSelectTimerWidgetClass);
 			if (CharacterSelectTimeWidget.IsValid())
 			{
-				CharacterSelectTimeWidget->AddToViewport();
+				CharacterSelectTimeWidget->AddToViewport(10);
 				CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
