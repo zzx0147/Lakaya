@@ -79,7 +79,7 @@ bool AInteractableCharacter::ShouldInteractStop()
 		if (InteractionState != EInteractionState::OnGoing)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("InteractionState is not ongoing."));
-			return false;
+			// return false;
 		}
 
 		bInteractionRequested = false;
@@ -131,7 +131,7 @@ bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, 
 {
 	if (Actor && Actor->ActorHasTag("Interactable") && Time < GetServerTime() + 0.05f)
 	{
-		// UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStop_Validate completed."));
+		UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStop_Validate completed."));
 		return true;
 	}
 	else
