@@ -27,8 +27,6 @@ AOccupationGameState::AOccupationGameState()
 
 void AOccupationGameState::BeginPlay()
 {
-	Super::BeginPlay();
-	
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
 		if (TeamScoreWidgetClass)
@@ -48,6 +46,7 @@ void AOccupationGameState::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_LocalPlayerController is null."));
 		return;
 	}
+	Super::BeginPlay();
 }
 
 void AOccupationGameState::HandleMatchHasStarted()
