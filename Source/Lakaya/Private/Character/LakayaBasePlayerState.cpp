@@ -307,9 +307,8 @@ void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserN
       
 		if (NiagaraEffect)
 		{
-			UNiagaraComponent* NiagaraComponent =
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect,
-			FVector(0.0f, 0.0f, 0.0f));
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect,FVector::ZeroVector);
+			UE_LOG(LogTemp, Warning, TEXT("아야.")); 
 		}
 		else
 		{

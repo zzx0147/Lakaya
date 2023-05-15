@@ -104,7 +104,7 @@ void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 	ResourceComponent->OnAliveStateChanged(IsAlive);
 	if (IsAlive && ResurrectionNiagaraSystem)
 		UNiagaraFunctionLibrary::SpawnSystemAttached(ResurrectionNiagaraSystem, RootComponent, FName(),
-		                                             FVector::ZeroVector, FRotator::ZeroRotator,
+		                                             FVector(0.0f, 0.0f, -90.0f), FRotator::ZeroRotator,
 		                                             EAttachLocation::SnapToTarget, true);
 }
 
