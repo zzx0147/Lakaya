@@ -5,6 +5,8 @@
 #include "Interactable/Interactable.h"
 #include "OccupationObject.generated.h"
 
+DECLARE_EVENT_OneParam(AOccupationObject, FOccupationStateSignature, EPlayerTeam);
+
 UCLASS()
 class LAKAYA_API AOccupationObject : public AInteractable
 {
@@ -54,6 +56,8 @@ private:
 	float FirstCallerTime = 0;
 	const float MaxInteractionDuration = 3;
 
+	FOccupationStateSignature FOnOccupationStateSignature;
+	
 	FTimerHandle InteractionTimerHandle;
 	FTimerHandle InteractionStateHandle;
 };

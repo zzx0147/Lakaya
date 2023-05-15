@@ -52,21 +52,19 @@ bool AInteractableCharacter::ShouldInteractStart()
 			return false;
 		}
 
-		// if (const auto InteractablePlayerState = Cast<ALakayaBasePlayerState>(GetPlayerState()))
-		// {
-		// 	if (InteractablePlayerState->IsSameTeam(OccupationObject->GetObjectTeam()))
-		// 	{
-		// 		UE_LOG(LogTemp, Warning, TEXT("InteractableCharacter_이미 점령한 오브젝트입니다."));
-		// 		return false;
-		// 	}
-		// }
-		// else
-		// {
-		// 	UE_LOG(LogTemp, Warning, TEXT("InteractableCharacter_InteractablePlayerState is null."));
-		// 	return false;
-		// }
-
-		
+		if (auto InteractablePlayerState = Cast<ALakayaBasePlayerState>(GetPlayerState()))
+		{
+			if (InteractablePlayerState->GetTeam() == OccupationObject->GetObjectTeam())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("InteractableCharacter_이미 점령한 오브젝트입니다."));
+				return false;
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("InteractablePlayerState is null."));
+			return false;
+		}
 		
 		if (OccupationObject->GetInteractingPawn() != nullptr)
 		{
@@ -86,6 +84,7 @@ bool AInteractableCharacter::ShouldInteractStart()
 	}
 	else
 	{
+		UE_LOG(LogTemp, Warning, TEXT("없어."));
 		return false;
 	}
 }
@@ -94,11 +93,11 @@ bool AInteractableCharacter::ShouldInteractStop()
 {
 	if (InteractableActor.IsValid())
 	{
-		if (InteractionState != EInteractionState::OnGoing)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("InteractionState is not ongoing."));
+		// if (InteractionState != EInteractionState::OnGoing)
+		// {
+			// UE_LOG(LogTemp, Warning, TEXT(""));
 			// return false;
-		}
+		// }
 
 		bInteractionRequested = false;
 		RequestInteractionStop(GetServerTime(), InteractableActor.Get());
@@ -140,7 +139,6 @@ void AInteractableCharacter::RequestInteractionStart_Implementation(const float&
 {
 	InteractingActor = Actor;
 	SetInteractionState(EInteractionState::OnGoing);
-	// TODO :
 	Cast<AInteractable>(Actor)->OnInteractionStart(Time, this);
 	OnInteractingActorChanged.Broadcast(InteractingActor.Get());
 }
@@ -149,7 +147,7 @@ bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, 
 {
 	if (Actor && Actor->ActorHasTag("Interactable") && Time < GetServerTime() + 0.05f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStop_Validate completed."));
+		// UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStop_Validate completed."));
 		return true;
 	}
 	else
@@ -161,7 +159,8 @@ bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, 
 
 void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor)
 {
-	InitializeInteraction();
+	InteractingActor = nullptr;
+	SetInteractionState(EInteractionState::None);
 	Cast<AInteractable>(Actor)->OnInteractionStop(GetServerTime(), this);
 	OnInteractingActorChanged.Broadcast(InteractingActor.Get());
 }

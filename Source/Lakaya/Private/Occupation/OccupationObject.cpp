@@ -38,6 +38,8 @@ void AOccupationObject::BeginPlay()
 void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AOccupationObject, ObjectTeam);
 }
 
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
@@ -259,12 +261,15 @@ void AOccupationObject::OnInteractionFinish(APawn* Caller)
 		UE_LOG(LogTemp, Warning, TEXT("InteractionSuccess_InteractableCharacter is null."));
 		return;
 	}
+	
 	InteractableCharacter->InitializeInteraction();
+	// InteractingActor = nullptr;
 }
 
 void AOccupationObject::OnRep_BroadCastTeamObject()
 {
 	SetTeamObject(ObjectTeam);
+	FOnOccupationStateSignature.Broadcast(ObjectTeam);
 }
 
 void AOccupationObject::SetTeamObject(const EPlayerTeam& Team)
