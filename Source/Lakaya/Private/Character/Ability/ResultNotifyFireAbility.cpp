@@ -9,6 +9,16 @@
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/ArrowComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
+
+// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+void UResultNotifyFireAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(UResultNotifyFireAbility, bIsFired);
+}
+// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
 
 UResultNotifyFireAbility::UResultNotifyFireAbility()
 {
@@ -73,11 +83,21 @@ void UResultNotifyFireAbility::RequestStart_Implementation(const float& RequestT
 	Super::RequestStart_Implementation(RequestTime);
 	if (bWantsToFire || !GetAliveState()) return;
 	bWantsToFire = true;
+	
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+	if (bIsFired || !GetAliveState()) return;
+	bIsFired = true;
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+	
 	if (auto& TimerManager = GetWorld()->GetTimerManager(); !TimerManager.TimerExists(FireTimer))
 	{
 		TimerManager.SetTimer(FireTimer, this, &UResultNotifyFireAbility::FireTick, FireDelay, true, FirstFireDelay);
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
 	}
+	
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+	WeaponFireCheck.Broadcast(bIsFired);
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
 }
 
 void UResultNotifyFireAbility::RequestStop_Implementation(const float& RequestTime)
@@ -85,7 +105,20 @@ void UResultNotifyFireAbility::RequestStop_Implementation(const float& RequestTi
 	Super::RequestStop_Implementation(RequestTime);
 	if (!bWantsToFire || !GetAliveState()) return;
 	bWantsToFire = false;
+
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+	if (!bIsFired || !GetAliveState()) return;
+	bIsFired = false;
+	WeaponFireCheck.Broadcast(bIsFired);
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
 }
+
+// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+void UResultNotifyFireAbility::OnRep_IsFired_Implementation()
+{
+	WeaponFireCheck.Broadcast(bIsFired);
+}
+// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
 
 void UResultNotifyFireAbility::FireTick()
 {
@@ -122,7 +155,16 @@ void UResultNotifyFireAbility::SingleFire()
 void UResultNotifyFireAbility::FailToFire()
 {
 	bWantsToFire = false;
+	
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+	bIsFired = false;
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+	
 	ClearFireTimer();
+
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
+	WeaponFireCheck.Broadcast(bIsFired);
+	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
 }
 
 void UResultNotifyFireAbility::ClearFireTimer()
