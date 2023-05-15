@@ -116,7 +116,7 @@ void UResultNotifyFireAbility::SingleFire()
 		                                   Pawn ? Pawn->GetController() : nullptr, GetOwner(), nullptr);
 	}
 	InvokeFireNotify(Result);
-	DrawDebugLine(GetWorld(), LineStart, End, FColor::Red, false, 2.f);
+	// DrawDebugLine(GetWorld(), LineStart, End, FColor::Red, false, 2.f);
 }
 
 void UResultNotifyFireAbility::FailToFire()
@@ -169,6 +169,10 @@ void UResultNotifyFireAbility::DrawTrail(const FVector& Start, const FVector& En
 	if (!TrailNiagaraSystem) return;
 	if (const auto Niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TrailNiagaraSystem, Start))
 		Niagara->SetNiagaraVariableVec3(TEXT("BeamEnd"), End - Start);
+
+	// TODO : GunImpact
+	if (!GunImpactSystem) return;
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), GunImpactSystem, Start);
 }
 
 void UResultNotifyFireAbility::DrawImpact(const FVector& Location, const FVector& Normal, const EFireResult& Kind)
@@ -183,7 +187,7 @@ void UResultNotifyFireAbility::NotifySingleFire_Implementation(const FVector& St
 	DrawTrail(Start, End);
 	DrawDecal(End, Normal, FireResult);
 	DrawImpact(End, Normal, FireResult);
-	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.f);
+	// DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.f);
 }
 
 void UResultNotifyFireAbility::NotifyFireResult_Implementation(const FVector& HitPoint, const FVector& Normal,

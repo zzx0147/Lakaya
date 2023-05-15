@@ -106,7 +106,7 @@ void UAutoFireAbility::SingleFire()
 	// (카메라의 전방 벡터에 카메라->캐릭터 벡터를 투영한 길이 + 사정거리) * 카메라 전방 벡터 + 카메라의 위치.
 	const auto Destination = Location +
 		(Forward.Dot(Location - RootComponent->GetComponentLocation()) + FireRange) * Forward;
-	DrawDebugLine(GetWorld(), Location, Destination, FColor::Red, false, 1.f);
+	// DrawDebugLine(GetWorld(), Location, Destination, FColor::Red, false, 1.f);
 
 	if (FHitResult Result;
 		GetWorld()->LineTraceSingleByChannel(Result, Location, Destination, ECC_Camera, CollisionQueryParams))
