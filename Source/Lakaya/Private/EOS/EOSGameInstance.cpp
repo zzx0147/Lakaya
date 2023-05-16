@@ -494,7 +494,8 @@ void UEOSGameInstance::EndSession()
 		{
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
-				CleanUpSession();
+				SessionPtr->EndSession(NAME_GameSession);
+				//CleanUpSession();
 				//SessionPtr->OnEndSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnEndSessionComplete);
 			}
 		}

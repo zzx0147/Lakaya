@@ -42,6 +42,8 @@ public:
 
 private:
 	TArray<TObjectPtr<UButton>> CharacterButtonArray;
+
+	UPROPERTY(EditDefaultsOnly)
 	TArray<TObjectPtr<UMaterialInterface>> CharacterRenderTargetMaterialArray;
 	TArray<FName> CharacterNameArray;
 
