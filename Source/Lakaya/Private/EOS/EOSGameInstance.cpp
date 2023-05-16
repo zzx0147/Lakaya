@@ -80,6 +80,7 @@ void UEOSGameInstance::OnLoginComplete(int32 LocalUserNum, bool bWasSuccessful, 
 
 void UEOSGameInstance::CreateSession()
 {
+	//TODO: 중첩 분기문을 줄여봅시다..
 	if (bIsLoggedIn)
 	{
 		if (OnlineSubsystem)
@@ -131,6 +132,9 @@ void UEOSGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 			SessionPtr->ClearOnCreateSessionCompleteDelegates(this);
 			UE_LOG(LogTemp,Warning,TEXT("Start Game Level Open"));
 			UGameplayStatics::OpenLevel(this, FName("LV_Completed_20230429"), true, FString("?listen"));
+			
+			//TODO: 이걸로 대체해보아요..
+			// UGameplayStatics::OpenLevelBySoftObjectPtr()
 
 			/*FString ConnectionInfo = FString();
 			SessionPtr->GetResolvedConnectString(SessionName, ConnectionInfo);
@@ -161,6 +165,7 @@ void UEOSGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 
 void UEOSGameInstance::DestroySession()
 {
+	//TODO: 중첩 분기문을 줄여봅시다..
 	if (bIsLoggedIn)
 	{
 		if (OnlineSubsystem)
@@ -210,6 +215,7 @@ void UEOSGameInstance::FindSession()
 
 void UEOSGameInstance::OnFindSessionComplete(bool bWasSuccessful)
 {
+	//TODO: 중첩 분기문을 줄여봅시다..
 	UE_LOG(LogTemp, Warning, TEXT("Success: %d"), bWasSuccessful);
 	if (bWasSuccessful)
 	{
@@ -237,6 +243,7 @@ void UEOSGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCo
 	UE_LOG(LogTemp, Warning, TEXT("JoinSessionComplete!"));
 	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("JoinSessionComplete"));
 
+	//TODO: 중첩 분기문을 줄여봅시다..
 	if (OnlineSubsystem)
 	{
 		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
@@ -560,6 +567,7 @@ void UEOSGameInstance::CleanUpSession()
 	}
 }
 
+//TODO: 타이포..
 void UEOSGameInstance::OnDestorySessionCompleteAndReJoinSession(FName SessionName, bool bWasSuccessful)
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString::Printf(TEXT("EmptySessionDestoryed ReJoin Start")));

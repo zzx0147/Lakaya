@@ -20,11 +20,11 @@ public:
 
 public:
 	ALakayaDefaultPlayGameMode();
-	void RestartPlayer(AController* NewPlayer) override;
+	virtual void RestartPlayer(AController* NewPlayer) override;
 
 public:
-	void InitStartSpot_Implementation(AActor* StartSpot, AController* NewPlayer) override;
-	AActor* FindPlayerStart_Implementation(AController* Player, const FString& IncomingName) override;
+	virtual void InitStartSpot_Implementation(AActor* StartSpot, AController* NewPlayer) override;
+	virtual AActor* FindPlayerStart_Implementation(AController* Player, const FString& IncomingName) override;
 
 protected:
 	virtual void BeginPlay() override;

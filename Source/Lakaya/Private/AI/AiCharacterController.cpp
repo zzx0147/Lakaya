@@ -2,9 +2,11 @@
 
 
 #include "AI/AiCharacterController.h"
+//TODO: 이거 필요없는 헤더
 #include "AI/AiCharacter.h"
 #include "Character/Ability/AutoFireAbility.h"
 #include "Character/Ability/ResultNotifyFireAbility.h"
+//TODO: 이거 필요없는 헤더
 #include "GameMode/OccupationGameMode.h"
 #include "GameMode/OccupationGameState.h"
 
@@ -17,6 +19,7 @@ void AAiCharacterController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//TODO: 할 필요 없는 널 체크
 	AOccupationGameMode* OccupationGameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
 	if (OccupationGameMode == nullptr)
 	{
@@ -30,6 +33,7 @@ void AAiCharacterController::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_GameState is null."));
 		return;
 	}
+	//TODO: 할 필요 없는 널 체크
 
 	// OccupationGameState->AddMaxPlayer();
 	// OccupationGameState->AddPlayerState(GetCharacter()->GetController()->PlayerState);
