@@ -1,46 +1,34 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
-#include "Components/TextBlock.h"
+#include "MatchStateWidget.h"
 #include "GameMode/OccupationGameState.h"
+#include "Occupation/PlayerTeam.h"
 #include "TeamScoreWidget.generated.h"
 
-/**
- * 
- */
 UCLASS()
-class LAKAYA_API UTeamScoreWidget : public UUserWidget
+class LAKAYA_API UTeamScoreWidget : public UMatchStateWidget
 {
 	GENERATED_BODY()
 
-private:
+protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
+	
 private:
+	UFUNCTION()
+	void OnChangeATeamScore(const float& NewScore) const;
+
+	UFUNCTION()
+	void OnChangeBTeamScore(const float& NewScore) const;
+
+	UFUNCTION()
+	void OnTeamScoreChanged(const EPlayerTeam& Team, const float& Score) const;
+
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* ATeamScoreText;
+	class UTextBlock* ATeamScoreText;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* BTeamScoreText;
-	
-public:
-	UFUNCTION()
-	void SetTeamScoreWidget(EOccupationGameState ChangeGameState);
 
-public:
-	UFUNCTION()
-	void ReMoveTeamScoreWidget(EOccupationGameState ChangeGameState);
-	
-	UFUNCTION()
-	void OnChangeATeamScore(float NewScore);
-	
-	UFUNCTION()
-	void OnChangeBTeamScore(float NewScore);
-
-private:
-	AOccupationGameState* OccupationGameState;
+	float MaxScore;
 };

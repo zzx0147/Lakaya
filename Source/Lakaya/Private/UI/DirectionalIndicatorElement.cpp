@@ -4,7 +4,6 @@
 
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
-#include "Character/DamageableCharacter.h"
 #include "Components/Image.h"
 
 UDirectionalIndicatorElement::UDirectionalIndicatorElement(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -46,7 +45,7 @@ void UDirectionalIndicatorElement::NativeTick(const FGeometry& MyGeometry, float
 	}
 }
 
-void UDirectionalIndicatorElement::IndicateStart(USceneComponent* NewMyPosition, FVector NewTargetPosition, float Time)
+void UDirectionalIndicatorElement::IndicateStart(USceneComponent* NewMyPosition, const FVector& NewTargetPosition,const float& Time)
 {
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandleIndicate);
 

@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "NiagaraSystem.h"
 #include "Blueprint/UserWidget.h"
-#include "Character/DamageableCharacter.h"
 #include "DirectionalIndicatorElement.generated.h"
 
 UCLASS()
@@ -21,13 +20,13 @@ protected:
 
 
 public:
-	virtual void IndicateStart(USceneComponent* NewMyPosition, FVector NewTargetPosition, float Time);
+	virtual void IndicateStart(USceneComponent* NewMyPosition,const FVector& NewTargetPosition,const float& Time);
 	virtual void IndicateStop();
 
 private:
-	class UImage* DirectionalIndicatorImage;
+	TObjectPtr<class UImage> DirectionalIndicatorImage;
 	FTimerHandle TimerHandleIndicate;
-	USceneComponent* MyPosition;
+	TObjectPtr<USceneComponent> MyPosition;
 	FVector TargetPosition;
 	bool bIsIndicating;
 };

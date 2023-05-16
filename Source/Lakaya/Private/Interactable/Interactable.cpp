@@ -3,5 +3,7 @@
 
 #include "Interactable/Interactable.h"
 
-#include "GameFramework/GameStateBase.h"
-#include "GameFramework/PlayerState.h"
+AInteractable::AInteractable()
+{
+	Tags.Add("Interactable");
+}

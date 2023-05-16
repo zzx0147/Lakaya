@@ -2,7 +2,11 @@
 
 
 #include "AI/AiCharacterController.h"
+//TODO: 이거 필요없는 헤더
 #include "AI/AiCharacter.h"
+#include "Character/Ability/AutoFireAbility.h"
+#include "Character/Ability/ResultNotifyFireAbility.h"
+//TODO: 이거 필요없는 헤더
 #include "GameMode/OccupationGameMode.h"
 #include "GameMode/OccupationGameState.h"
 
@@ -15,19 +19,22 @@ void AAiCharacterController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AOccupationGameMode* OccupationGameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
-	if (OccupationGameMode == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("AiCharacterController_GameMode is null."));
-		return;
-	}
-	
-	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-	if (OccupationGameState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_GameState is null."));
-		return;
-	}
+	/*
+	// TODO: 할 필요 없는 널 체크
+	// AOccupationGameMode* OccupationGameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
+	// if (OccupationGameMode == nullptr)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("AiCharacterController_GameMode is null."));
+	// 	return;
+	// }
+	//
+	// AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	// if (OccupationGameState == nullptr)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_GameState is null."));
+	// 	return;
+	// }
+	// TODO: 할 필요 없는 널 체크
 
 	// OccupationGameState->AddMaxPlayer();
 	// OccupationGameState->AddPlayerState(GetCharacter()->GetController()->PlayerState);
@@ -35,29 +42,15 @@ void AAiCharacterController::BeginPlay()
 	// int32 CurrentPlayerNum = OccupationGameState->PlayerArray.Num();
 	// OccupationGameState->SetNumPlayers(CurrentPlayerNum);
 	// UE_LOG(LogTemp, Warning, TEXT("AiController BeginPlay."));
+	*/
 }
 
-void AAiCharacterController::AiFireStart(AOccupationCharacter* OccuCharacter)
+void AAiCharacterController::AIFireStart(AArmedCharacter* ArmCharacter)
 {
-	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
-   
-	if (OccuCharacter) OccuCharacter->FireStart();
-	else
-	{
-		UE_LOG(LogInit, Warning, TEXT("Error Ai Start Fire"))
-	}
+	if (ArmCharacter) ArmCharacter->StartAbility(WeaponFire);
 }
 
-void AAiCharacterController::AiFireStop(AOccupationCharacter* OccuCharacter)
+void AAiCharacterController::AIFireStop(AArmedCharacter* ArmCharacter)
 {
-	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
-   
-	if (OccuCharacter) OccuCharacter->FireStop();
-	else
-	{
-		UE_LOG(LogInit, Warning, TEXT("Error Ai Stop Fire"))
-	}
+	if (ArmCharacter) ArmCharacter->StopAbility(WeaponFire);
 }
-
-
-

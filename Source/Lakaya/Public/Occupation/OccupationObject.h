@@ -1,75 +1,66 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/CapsuleComponent.h"
-#include "Components/SphereComponent.h"
-#include "GameFramework/Actor.h"
+#include "PlayerTeam.h"
 #include "Interactable/Interactable.h"
 #include "OccupationObject.generated.h"
 
-UENUM()
-enum class EObjectOwner : uint8
-{
-	None UMETA(DisplayName = "None"), // 아무도 소유하고 있지 않은 상태
-	A UMETA(DisplayName = "A"), // A팀이 소유하고 있는 상태
-	B UMETA(DisplayName = "B"), // B팀이 소유하고 있는 상태
-};
+DECLARE_EVENT_OneParam(AOccupationObject, FOccupationStateSignature, EPlayerTeam);
 
 UCLASS()
-class LAKAYA_API AOccupationObject : public AActor, public IInteractable
+class LAKAYA_API AOccupationObject : public AInteractable
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AOccupationObject();
 
 protected:
 	virtual void BeginPlay() override;
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-public:	
-	virtual void Tick(float DeltaTime) override;
 
-private:
-	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
-	virtual void OnInteractionStart(APawn* Caller) override;
-	virtual void OnLocalInteractionStopBegin(APawn* Caller) override;
-	virtual void OnServerInteractionStopBegin(const float& Time, APawn* Caller) override;
-	virtual void OnInteractionStop(APawn* Caller) override;
-
-private:
-	void AutomaticInteractionStop();
-
-private:
-	const float MaxInteractionDuration = 3;
-	float InteractingStartTime;
-	float InteractingStopTime;
-
-private:
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UCapsuleComponent* Trigger;
-
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* Cylinder;
-
-	UPROPERTY(VisibleAnywhere, Category = "Trigger")
-	USphereComponent* TriggerSphere;
+public:
+	FORCEINLINE APawn* const GetInteractingPawn() const { return InteractingPawn; }
+	FORCEINLINE EPlayerTeam const GetObjectTeam() const { return ObjectTeam; }
 	
 private:
-	UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject)
-	EObjectOwner ObjectOwner = EObjectOwner::None;
+	virtual void OnInteractionStart(const float& Time, APawn* Caller) override;
+	virtual void OnInteractionStop(const float& Time, APawn* Caller) override;
+	virtual void OnCharacterDead(APawn* Caller) override;
 
+	void CharacterMovable(APawn* Caller);
+
+	// 플레이어의 움직임을 제한합니다.
+	void CharacterImMovable(APawn* Caller);
+
+	// 상호작용을 성공합니다.
+	void InteractionSuccess(APawn* Caller);
+
+	// 상호작용이 끝났습니다.
+	void OnInteractionFinish(APawn* Caller);
+
+public:
+	void SetTeamObject(const EPlayerTeam& Team);
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetTeam(EPlayerTeam Team);
+	
 private:
 	UFUNCTION()
 	void OnRep_BroadCastTeamObject();
 
 private:
-	void SetTeamObject(EObjectOwner Team);
-	
-private:
-	FTimerHandle InteractionTimerHandle;
+	UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject)
+	EPlayerTeam ObjectTeam = EPlayerTeam::None;
 
 private:
+	TWeakObjectPtr<class AInteractableCharacter> InteractingCharacter;
 	APawn* InteractingPawn;
-	APawn* Owner;
+	float FirstCallerTime = 0;
+	const float MaxInteractionDuration = 3;
+
+	FOccupationStateSignature FOnOccupationStateSignature;
+	
+	FTimerHandle InteractionTimerHandle;
+	FTimerHandle InteractionStateHandle;
 };
