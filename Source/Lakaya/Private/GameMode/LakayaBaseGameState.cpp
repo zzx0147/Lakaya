@@ -6,8 +6,10 @@
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
+//TODO: 필요없는 헤더 선언
 #include "UI/GameResultWidget.h"
 #include "UI/TeamScoreWidget.h"
+//TODO: 필요없는 헤더 선언
 #include "UI/GamePlayCrossHairWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
@@ -116,18 +118,21 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
+	
 	if(CharacterSelectWidget != nullptr)
 		CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
+	
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
+	
 	if (InGameTimeWidget.IsValid())
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	
 	if (CrosshairWidget != nullptr)
 		CrosshairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	
 	if (const auto PlayerController = GetWorld()->GetFirstPlayerController())
 		PlayerController->SetShowMouseCursor(false);
-
-
 
 	SetupTimerWidget(EndingTimer, MatchDuration, MatchEndingTime, [this] {
 		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->EndMatch(); }
@@ -136,10 +141,10 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	if (HasAuthority())
 	{
 		GetWorldTimerManager().SetTimer(EndingTimer, [this]
-			{
-				if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
+		{
+			if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
 				AuthGameMode->EndMatch();
-			}, MatchDuration, false);
+		}, MatchDuration, false);
 	}
 }
 
@@ -154,8 +159,10 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 	if (const auto PlayerController = GetWorld()->GetFirstPlayerController())
 		PlayerController->SetShowMouseCursor(true);
 
+	//TODO: 널체크 방어코드 추가 필요.
 	LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
 	CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
+	
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
@@ -188,6 +195,7 @@ void ALakayaBaseGameState::CreateCharacterSelectWidget(APlayerController* LocalC
 	//로컬 컨트롤러와 PlayerState는 존재함이 보장됨, 서버의 경우 BeginPlay애서 클라이언트의 경우 OnRep_PlayerState에서 호출해줌
 	if (CharacterSelectWidget != nullptr) return;
 
+	//TODO: 중첩 분기문 들여쓰기를 줄입시다. 바로 위의 if문에 합칠 수 있을 것 같아요.
 	if (CharacterSelectWidgetClass.Get() != nullptr)
 	{
 		CharacterSelectWidget = CreateWidget<UGameLobbyCharacterSelectWidget>(LocalController, CharacterSelectWidgetClass);
@@ -219,6 +227,7 @@ void ALakayaBaseGameState::SetCharacterSelectWidgetVisibility(const ESlateVisibi
 	}
 }
 
+//TODO: 다른 클래스에서 픽창 위젯의 비저빌리티를 체크하는 건 이상합니다.
 ESlateVisibility ALakayaBaseGameState::GetCharacterSelectWidgetVisibility() const
 {
 	if (CharacterSelectWidget != nullptr)

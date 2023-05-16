@@ -2,7 +2,9 @@
 
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 
+//TODO: 불필요한 헤더 선언
 #include "Character/ArmedCharacter.h"
+//TODO: 불필요한 헤더 선언
 #include "Character/InteractableCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "GameFramework/PlayerStart.h"
@@ -54,6 +56,7 @@ void ALakayaDefaultPlayGameMode::RestartPlayer(AController* NewPlayer)
 		}
 	}
 
+	//TODO: RestartPlayer를 오버라이딩할 필요 없이, FindPlayerStart에서 더 간단히 구현할 수 있습니다.
 	AActor* StartSpot = FindPlayerStart(NewPlayer, SpawnTag);
 
 	// If a start spot wasn't found,
@@ -82,6 +85,8 @@ void ALakayaDefaultPlayGameMode::InitStartSpot_Implementation(AActor* StartSpot,
 
 AActor* ALakayaDefaultPlayGameMode::FindPlayerStart_Implementation(AController* Player, const FString& IncomingName)
 {
+	//TODO: 이렇게 하기보다는 플레이어의 팀에 따라서 미리 저장해둔 플레이어 스타트 중 겹치지 않는 플레이어 스타트를 찾아서 리턴하도록 하고,
+	// 팀이 없거나 하는 경우에는 간단히 Super::FindPlayerStart_Implementation을 호출해주는 편이 나을 것 같습니다.
 	UWorld* World = GetWorld();
 
 	// If incoming start is specified, then just use it
@@ -134,8 +139,10 @@ AActor* ALakayaDefaultPlayGameMode::FindPlayerStart_Implementation(AController* 
 void ALakayaDefaultPlayGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	//TODO: ATeam, BTeam에 대응하는 플레이어 스타트를 불러와서 부활할 때마다 태그 비교 연산을 할 필요 없도록 합니다.
 }
 
+//TODO: 사용되지 않는 오버라이딩 제거
 void ALakayaDefaultPlayGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -152,11 +159,14 @@ void ALakayaDefaultPlayGameMode::PostLogin(APlayerController* NewPlayer)
 
 	if (const auto BasePlayerState = NewPlayer->GetPlayerState<ALakayaBasePlayerState>())
 	{
+		//TODO: NewPlayer를 캡쳐할 필요 없이 ArgBasePlayerState를 사용하면 됩니다.
 		BasePlayerState->OnCharacterNameChanged.AddLambda(
 			[this, NewPlayer](ALakayaBasePlayerState* ArgBasePlayerState, const FName& ArgCharacterName){
 
+				//TODO: 매치스테이트는 게임모드에도 있습니다. IsMatchInProgress()를 사용하면 됩니다.
 				if (GetGameState<ALakayaBaseGameState>()->GetMatchState() == MatchState::InProgress)
 				{
+					//TODO: 사망한 상태에서 캐릭터를 변경하는 경우 즉시 부활하는 버그를 유발합니다.
 					if (auto PlayerPawn = NewPlayer->GetPawn())
 					{
 						NewPlayer->UnPossess();
@@ -195,11 +205,13 @@ void ALakayaDefaultPlayGameMode::OnMatchStateSet()
 	}
 }
 
+//TODO: 사용되지 않는 오버라이딩 제거
 void ALakayaDefaultPlayGameMode::HandleMatchIsWaitingToStart()
 {
 	Super::HandleMatchIsWaitingToStart();
 }
 
+//TODO: 사용되지 않는 오버라이딩 제거
 bool ALakayaDefaultPlayGameMode::ReadyToStartMatch_Implementation()
 {
 	return Super::ReadyToStartMatch_Implementation();
@@ -211,6 +223,7 @@ void ALakayaDefaultPlayGameMode::HandleMatchIsSelectCharacter()
 	//GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 10.0f, false);
 }
 
+//TODO: 사용되지 않는 오버라이딩 제거
 void ALakayaDefaultPlayGameMode::HandleMatchHasStarted()
 {
 	// 게임 시작 후, 서버 측 클라에게 UI바인딩.
@@ -224,6 +237,7 @@ void ALakayaDefaultPlayGameMode::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
 
+	//TODO: GetGameInstance<>() 함수를 사용하세요.
 	if (const auto GameInstance = GetGameInstance())
 	{
 		if (const auto EOSGameInstance = Cast<UEOSGameInstance>(GameInstance))
@@ -236,6 +250,7 @@ void ALakayaDefaultPlayGameMode::HandleMatchHasEnded()
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasEnded"));
 }
 
+//TODO: 사용되지 않는 오버라이딩 제거
 void ALakayaDefaultPlayGameMode::HandleLeavingMap()
 {
 	Super::HandleLeavingMap();
@@ -244,6 +259,7 @@ void ALakayaDefaultPlayGameMode::HandleLeavingMap()
 	UE_LOG(LogTemp, Error, TEXT("HandleLeavingMap"));
 }
 
+//TODO: 사용되지 않는 오버라이딩 제거
 void ALakayaDefaultPlayGameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
@@ -256,12 +272,14 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 	if (const auto InstigatorPlayerState = InstigatorController->GetPlayerState<ALakayaBasePlayerState>())
 		InstigatorPlayerState->IncreaseKillCount();
 
+	//TODO: 위의 코드처럼 분기문 내에 선언 및 널 체크를 동시에 할 수 있습니다.
 	const auto VictimPlayerState = VictimController->GetPlayerState<ALakayaBasePlayerState>();
 	if (VictimPlayerState != nullptr) VictimPlayerState->IncreaseDeathCount();
 
 	if (const auto BaseGameState = GetGameState<ALakayaBaseGameState>())
 		BaseGameState->NotifyPlayerKilled(VictimController, InstigatorController, DamageCauser);
 
+	//TODO: ShouldRespawn 함수는 사망한 플레이어가 부활할 수 있는지 여부를 검사하기 위해 기획되었습니다. 따라서 매개변수로 플레이어 스테이트나 컨트롤러를 받아야 합니다.
 	if (ShouldRespawn())
 	{
 		VictimPlayerState->SetRespawnTimer(GetGameState<AGameState>()->GetServerWorldTimeSeconds() + MinRespawnDelay, this, &ALakayaDefaultPlayGameMode::RespawnPlayer);
@@ -269,6 +287,7 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 	}
 	else
 	{
+		//TODO: this도 안넘겨도 됩니다.
 		VictimPlayerState->SetRespawnTimer(-1.0f, this);
 	}
 } 
@@ -282,16 +301,20 @@ void ALakayaDefaultPlayGameMode::StartSelectCharacter()
 
 void ALakayaDefaultPlayGameMode::DelayedEndedGame()
 {
+	//TODO: UGameplayStatics::OpenLevelBySoftObjectPtr()를 사용하면 하드코딩을 줄일 수 있습니다.
 	UGameplayStatics::OpenLevel(GetWorld(), "MainLobbyLevel");
 }
 
 bool ALakayaDefaultPlayGameMode::HasMatchStarted() const
 {
+	//TODO: 취향차이지만 아래의 주석과 같이 간단히 표현할 수도 있습니다.
+	// return MatchState == MatchState::IsSelectCharacter ? false : Super::HasMatchStarted();
 	if (MatchState == MatchState::IsSelectCharacter) return false;
 
 	return Super::HasMatchStarted();
 }
 
+//TODO: 사용되지 않는 함수
 void ALakayaDefaultPlayGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
 {
 	// TODO
@@ -306,6 +329,7 @@ UClass* ALakayaDefaultPlayGameMode::GetDefaultPawnClassForController_Implementat
 	return Super::GetDefaultPawnClassForController_Implementation(InController);
 }
 
+//TODO: 필요없는 함수 랩핑
 void ALakayaDefaultPlayGameMode::RespawnPlayer(AController* KilledController)
 {
 	RestartPlayer(KilledController);

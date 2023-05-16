@@ -3,9 +3,13 @@
 
 #include "AnimInstance/CharAnimInstance.h"
 #include "Character/InteractableCharacter.h"
+//TODO: 필요없는 헤더 선언
 #include "Character/Ability/LockstepFireAbility.h"
+//TODO: 필요없는 헤더 선언
 #include "Character/Ability/ResultNotifyFireAbility.h"
+//TODO: 필요없는 헤더 선언
 #include "Occupation/OccupationObject.h"
+//TODO: 필요없는 헤더 선언
 
 UCharAnimInstance::UCharAnimInstance()
 {
@@ -74,6 +78,8 @@ void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
 			bIsInteracting = false;
 		}
 	}
+	//TODO: 아래의 코드로 대체가능
+	// bIsInteracting = NewInteractingActor != nullptr;
 }
 
 void UCharAnimInstance::NativeUpdateAnimation(float DeltaSeconds)

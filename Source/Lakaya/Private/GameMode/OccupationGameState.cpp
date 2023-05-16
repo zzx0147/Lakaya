@@ -1,12 +1,12 @@
 #include "GameMode/OccupationGameState.h"
-#include "GameMode/LakayaDefaultPlayGameMode.h"
-#include "UI/TeamScoreWidget.h"
 #include "Blueprint/UserWidget.h"
-#include "Net/UnrealNetwork.h"
 #include "Character/LakayaBasePlayerState.h"
+#include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameMode.h"
+#include "Net/UnrealNetwork.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/GameResultWidget.h"
+#include "UI/TeamScoreWidget.h"
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -25,6 +25,9 @@ AOccupationGameState::AOccupationGameState()
 
 	PlayersByTeamMap.Add(EPlayerTeam::A, TArray<ALakayaBasePlayerState*>());
 	PlayersByTeamMap.Add(EPlayerTeam::B, TArray<ALakayaBasePlayerState*>());
+	//TODO: Emplace는 항상 Add와 같은 속도를 보여주거나 더 빠릅니다. 또 키값만 지정해도 값형식의 밸류는 알아서 기본생성됩니다.
+	// PlayersByTeamMap.Emplace(EPlayerTeam::A);
+	// PlayersByTeamMap.Emplace(EPlayerTeam::B);
 }
 
 void AOccupationGameState::BeginPlay()
@@ -37,6 +40,7 @@ void AOccupationGameState::BeginPlay()
 			if (TeamScoreWidget == nullptr)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_TeamScoreWidget is null."));
+				//TODO: 리턴을 하면 다른 멀쩡한 위젯들이 생성되지 않고 넘어갈 수 있습니다.
 				return;
 			}
 			TeamScoreWidget->AddToViewport();
@@ -125,14 +129,19 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 	if (const auto BasePlayerState = Cast<ALakayaBasePlayerState>(PlayerState))
 	{
 		EPlayerTeam PlayerTeam = BasePlayerState->GetTeam();
+		//TODO: 이렇게 하기보다는 PlayersByTeamMap.Contains(PlayerTeam)을 사용하는 게 좋습니다.
 		if (PlayerTeam == EPlayerTeam::A || PlayerTeam == EPlayerTeam::B)//���� ������ �ٷ� �迭�� �߰�
 		{
 			PlayersByTeamMap[PlayerTeam].Add(BasePlayerState);
+			//TODO: Emplace는 항상 Add보다 낫습니다.
+			//PlayersByTeamMap[PlayerTeam].Emplace(BasePlayerState);
+			
 			if (ClientTeam == PlayerTeam)
 			{
 				CharacterSelectWidget->RegisterPlayer(BasePlayerState);
 			}
 		}
+		//TODO: 팀이 없는 경우에만 람다를 등록하기보다는, 팀이 있더라도 게임도중 팀이 변경되는 경우를 상정하여 그냥 람다를 등록하는 것이 좋을 것 같습니다.
 		else//������ ���� ����Ǿ����� �߰�
 		{
 			BasePlayerState->OnTeamChanged.AddLambda([this, BasePlayerState](const EPlayerTeam& ArgTeam)
@@ -154,8 +163,10 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 						//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("TeamChange! Individual!"));
 					}
 
+					//TODO: 이렇게 하기보다는 PlayersByTeamMap.Contains(PlayerTeam)을 사용하는 게 좋습니다.
 					if (ArgTeam == EPlayerTeam::A || ArgTeam == EPlayerTeam::B)
 					{
+						//TODO: Emplace는 항상 Add보다 낫습니다.
 						PlayersByTeamMap[ArgTeam].Add(BasePlayerState);
 						if (ClientTeam == ArgTeam)//Ŭ���̾�Ʈ ���� NONE �� �� ����
 						{
@@ -202,20 +213,23 @@ void AOccupationGameState::CreateCharacterSelectWidget(APlayerController* LocalC
 		{
 			ClientTeam = NewTeam;//로컬 컨트롤러의 팀을 저장한다.(로컬 컨트롤러의 팀에 따라 표기할 팀이 달라짐)
 			
+			//TODO: 이렇게 하기보다는 PlayersByTeamMap.Contains(PlayerTeam)을 사용하는 게 좋습니다.
 			for (const auto temp : PlayersByTeamMap[ClientTeam])
 			{
 				CharacterSelectWidget->RegisterPlayer(temp);
 				//현재까지 등록된 플레이어 스테이트들을 위젯에 등록한다
 			}
 		}
-
+		//TODO: 팀이 없는 경우에만 람다를 등록하기보다는, 팀이 있더라도 게임도중 팀이 변경되는 경우를 상정하여 그냥 람다를 등록하는 것이 좋을 것 같습니다.
 		else
 		{
+			//TODO: 불필요한 캡쳐 : BasePlayerState
 			BasePlayerState->OnTeamChanged.AddLambda([this, BasePlayerState](const EPlayerTeam& ArgTeam)
 				{
 					if (ArgTeam == EPlayerTeam::A || ArgTeam == EPlayerTeam::B)
 					{
 						ClientTeam = ArgTeam;
+						//TODO: 이렇게 하기보다는 PlayersByTeamMap.Contains(PlayerTeam)을 사용하는 게 좋습니다.
 						for (const auto temp : PlayersByTeamMap[ClientTeam])
 						{
 							CharacterSelectWidget->RegisterPlayer(temp);
