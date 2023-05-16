@@ -7,10 +7,6 @@
 #include "StopRemoteCallAbility.h"
 #include "ResultNotifyFireAbility.generated.h"
 
-// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
-DECLARE_EVENT_OneParam(UResultNotifyFireAbility, FIsFireSignature, bool)
-// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
-
 UENUM()
 enum class EFireResult
 {
@@ -23,6 +19,9 @@ enum class EFireResult
 	// 생명체에 충돌했음을 의미합니다.
 	Creature
 };
+
+DECLARE_EVENT_FourParams(UResultNotifyFireAbility, FSingleFireSignature, const FVector&, const FVector&, const FVector&,
+                         const EFireResult&)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UResultNotifyFireAbility : public UStopRemoteCallAbility
@@ -40,22 +39,12 @@ protected:
 	virtual void RequestStart_Implementation(const float& RequestTime) override;
 	virtual void RequestStop_Implementation(const float& RequestTime) override;
 
-	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
-	UFUNCTION(NetMulticast, Reliable)
-	virtual void OnRep_IsFired();
-	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
-
 	UFUNCTION()
 	virtual void FireTick();
 	virtual bool ShouldFire();
 	virtual void SingleFire();
 	virtual void FailToFire();
 	virtual void ClearFireTimer();
-
-public:
-	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
-	FIsFireSignature WeaponFireCheck;
-	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
 
 private:
 	/**
@@ -82,6 +71,10 @@ private:
 	void DrawDecal(const FVector& Location, const FVector& Normal, const EFireResult& Kind);
 	void DrawTrail(const FVector& Start, const FVector& End);
 	void DrawImpact(const FVector& Location, const FVector& Normal, const EFireResult& Kind);
+
+public:
+	// 캐릭터가 사격을 실행한 후 호출됩니다. 매개변수로 사격 궤적 시작위치, 끝 위치, 충돌한 지점의 노멀벡터, 충돌한 물체의 종류를 받습니다.
+	FSingleFireSignature OnSingleFire;
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -119,7 +112,7 @@ protected:
 	// 총구화염을 그리는 나이아가라 시스템을 지정합니다.
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* GunImpactSystem;
-	
+
 	// 어떤 물체에 사격이 적중한 경우 재생되는 나이아가라 시스템을 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TMap<EFireResult, UNiagaraSystem*> ImpactNiagaraSystems;
@@ -129,11 +122,6 @@ protected:
 	uint8 BulletCost;
 
 private:
-	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
-	UPROPERTY(ReplicatedUsing=OnRep_IsFired, Transient)
-	bool bIsFired;
-	// TODO : AutoFireAbility 클래스처럼 만든 부분입니다.
-
 	bool bWantsToFire;
 	FTimerHandle FireTimer;
 	FCollisionQueryParams CollisionQueryParams;

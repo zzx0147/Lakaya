@@ -15,8 +15,16 @@ class LAKAYA_API UCharAnimInstance : public UAnimInstance
 	GENERATED_BODY()
 
 public:
+	UCharAnimInstance();
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	bool bIsAutoFire;
+
+	// 가장 최근 사격 시간을 나타냅니다.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float RecentFireTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float FireAnimDuration;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	bool bIsWeaponSkill;
@@ -28,5 +36,6 @@ public:
 	bool bIsInteracting;
 	
 	virtual void NativeBeginPlay() override;
+	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	void OnInteractingActorChanged(AActor* NewInteractingActor);
 };

@@ -55,16 +55,7 @@ void AAiCharacterController::BeginPlay()
 
 void AAiCharacterController::AIFireStart(AArmedCharacter* ArmCharacter)
 {
-	ArmCharacter = Cast<AArmedCharacter>(GetCharacter());
-	
-	auto& Abilities = ArmCharacter->GetAbilities();
-	if(Abilities.IsValidIndex(WeaponFire))
-	{
-		if(const auto FireAbility = Cast<UResultNotifyFireAbility>(Abilities[WeaponFire]))
-		{
-			FireAbility->AbilityStart();
-		}
-	}	
+	if (ArmCharacter) ArmCharacter->StartAbility(WeaponFire);
 }
 
 // void AAiCharacterController::AIFireStop(AArmedCharacter* ArmCharacter)
@@ -83,14 +74,5 @@ void AAiCharacterController::AIFireStart(AArmedCharacter* ArmCharacter)
 
 void AAiCharacterController::AIFireStop(AArmedCharacter* ArmCharacter)
 {
-	ArmCharacter = Cast<AArmedCharacter>(GetCharacter());
-	
-	auto& Abilities = ArmCharacter->GetAbilities();
-	if(Abilities.IsValidIndex(WeaponFire))
-	{
-		if(const auto FireAbility = Cast<UResultNotifyFireAbility>(Abilities[WeaponFire]))
-		{
-			FireAbility->AbilityStop();
-		}
-	}
+	if (ArmCharacter) ArmCharacter->StopAbility(WeaponFire);
 }

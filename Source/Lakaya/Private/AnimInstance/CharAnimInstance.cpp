@@ -7,6 +7,11 @@
 #include "Character/Ability/ResultNotifyFireAbility.h"
 #include "Occupation/OccupationObject.h"
 
+UCharAnimInstance::UCharAnimInstance()
+{
+	FireAnimDuration = 0.1f;
+}
+
 void UCharAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
@@ -28,9 +33,11 @@ void UCharAnimInstance::NativeBeginPlay()
 		{
 			if(const auto ResultNotifyFireAbility = Cast<UResultNotifyFireAbility>(Abilities[WeaponFire]))
 			{
-				ResultNotifyFireAbility->WeaponFireCheck.
-				AddLambda([this](const bool& FireState)
-					{bIsAutoFire = FireState;} );
+				ResultNotifyFireAbility->OnSingleFire.
+				AddLambda([this](const FVector& Start,const FVector&End, const FVector& Normal, const EFireResult& FireResult)
+				{
+					RecentFireTime = GetWorld()->TimeSeconds; 
+				} );
 				UE_LOG(LogTemp, Error, TEXT("Fire!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
 			}
 		}
@@ -67,6 +74,12 @@ void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
 			bIsInteracting = false;
 		}
 	}
+}
+
+void UCharAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
+{
+	Super::NativeUpdateAnimation(DeltaSeconds);
+	bIsAutoFire = RecentFireTime + FireAnimDuration > GetWorld()->TimeSeconds;
 }
 
 // void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
