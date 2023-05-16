@@ -10,6 +10,7 @@
 #include "GameMode/LakayaBaseGameState.h"
 #include "EngineUtils.h"
 #include "Components/CapsuleComponent.h"
+#include "EOS/EOSGameInstance.h"
 
 namespace MatchState
 {
@@ -222,6 +223,14 @@ void ALakayaDefaultPlayGameMode::HandleMatchHasStarted()
 void ALakayaDefaultPlayGameMode::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
+
+	if (const auto GameInstance = GetGameInstance())
+	{
+		if (const auto EOSGameInstance = Cast<UEOSGameInstance>(GameInstance))
+		{
+			EOSGameInstance->EndSession();
+		}
+	}
 
 	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasEnded"));
