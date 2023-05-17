@@ -3,9 +3,10 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "GameMode/LakayaBaseGameState.h"
 #include "Components/SlateWrapperTypes.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/PlayerState.h"
+#include "GameMode/LakayaBaseGameState.h"
 #include "Interfaces/NetworkPredictionInterface.h"
 
 
@@ -126,6 +127,7 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 void AGameLobbyPlayerController::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
+	//TODO: 중첩 분기문 줄이기
 	if (PlayerState != nullptr)
 	{
 		if (IsLocalPlayerController())//클라의 경우 PlayerState가 생겼을 때 캐릭터 선택 위젯을 생성
@@ -146,6 +148,7 @@ void AGameLobbyPlayerController::BeginPlay()
 	if (IsLocalPlayerController())//서버의 경우에만 BeginPlay에서 캐릭터 선택 위젯을 생성
 		if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 		{
+			//TODO: 불필요한 PlayerState 선언
 			if (const auto ThisPlayerState = GetPlayerState<APlayerState>())
 			{
 				GameState->CreateCharacterSelectWidget(this);
@@ -170,6 +173,7 @@ void AGameLobbyPlayerController::LoadoutHandler(const FInputActionValue& Value)
 			{
 				//if(GameState->SetCharacterSelectWidgetVisibility)
 
+				//TODO: 이렇게 하기보다는 캐릭터 픽창을 닫는 입력을 따로 추가하도록 해서 패턴매칭을 하는 것이 좋을 것 같습니다.
 				if (GameState->GetCharacterSelectWidgetVisibility() == ESlateVisibility::Visible)
 					GameState->SetCharacterSelectWidgetVisibility(ESlateVisibility::Hidden);
 				else GameState->SetCharacterSelectWidgetVisibility(ESlateVisibility::Visible);

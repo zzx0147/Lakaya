@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "CharacterBindableWidget.generated.h"
 
+//TODO: 사용되지 않는 클래스 제거 및 파생클래스 부모 변경
 /**
  *
  */

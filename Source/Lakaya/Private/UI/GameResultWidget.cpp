@@ -10,6 +10,7 @@
 // 	return true;
 // }
 
+//TODO: 지나치게 다른 클래스에 대한 의존도가 높습니다. 게임 결과만 표시하는데 굳이 게임스테이트나 플레이어스테이트까지 알아야할 필요가 있는지 모르겠습니다.
 void UGameResultWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
