@@ -1,16 +1,13 @@
 #include "GameMode/LakayaBaseGameState.h"
+
 #include "Character/LakayaBasePlayerState.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
+#include "UI/GamePlayCrossHairWidget.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
-//TODO: 필요없는 헤더 선언
-#include "UI/GameResultWidget.h"
-#include "UI/TeamScoreWidget.h"
-//TODO: 필요없는 헤더 선언
-#include "UI/GamePlayCrossHairWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {

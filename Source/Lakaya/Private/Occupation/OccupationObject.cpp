@@ -1,14 +1,9 @@
 #include "Occupation/OccupationObject.h"
+
 #include "Character/InteractableCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
-//TODO: 불필요한 헤더 선언
-#include "Components/CapsuleComponent.h"
-//TODO: 불필요한 헤더 선언
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameMode/OccupationGameMode.h"
-//TODO: 불필요한 헤더 선언
-#include "Kismet/GameplayStatics.h"
-//TODO: 불필요한 헤더 선언
 #include "Net/UnrealNetwork.h"
 
 AOccupationObject::AOccupationObject()

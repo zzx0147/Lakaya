@@ -1,13 +1,7 @@
 #include "GameMode/OccupationGameMode.h"
 #include "Character/InteractableCharacter.h"
 #include "Character/StatPlayerState.h"
-//TODO: 필요없는 헤더 선언
-#include "GameFramework/PlayerStart.h"
-//TODO: 필요없는 헤더 선언
 #include "GameMode/OccupationGameState.h"
-//TODO: 필요없는 헤더 선언
-#include "Kismet/GameplayStatics.h"
-//TODO: 필요없는 헤더 선언
 #include "PlayerController/InteractablePlayerController.h"
 
 AOccupationGameMode::AOccupationGameMode() : Super()
@@ -97,8 +91,13 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 	if (OccupationGameState->GetMaximumPlayers() == OccupationGameState->PlayerArray.Num())
 	{
 		//TODO: 이렇게 사용하면 더 간단히 표현할 수 있습니다.
+		// uint8 Count = 0;
 		// for (auto& LakayaBasePlayerState : OccupationGameState->PlayerArray)
-		// uint8 count를 루프 밖에 선언해두고, 루프 내에서 ++count 하여 사용하면 됩니다.
+		// {
+		// 	++Count;
+		// 	if (!LakayaBasePlayerState) continue;
+		// 	
+		// }
 		for (int i = 0; i < OccupationGameState->GetMaximumPlayers(); i++)
 		{
 			if (OccupationGameState->PlayerArray.IsValidIndex(i))
@@ -124,7 +123,7 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 				//TODO: 위의 분기문은 다음과 같이 축약 가능
 				// const auto Team = i % 2 == 0 ? EPlayerTeam::A : EPlayerTeam::B;
 				// LakayaBasePlayerState->SetTeam(Team);
-				// UE_LOG(LogNet,Log,TEXT("%d 팀에 배정 되었습니다."));
+				// UE_LOG(LogNet, Log, TEXT("%d 팀에 배정 되었습니다."), Team);
 			}
 		}
 	}

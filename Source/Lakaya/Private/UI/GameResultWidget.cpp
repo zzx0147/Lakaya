@@ -47,6 +47,6 @@ void UGameResultWidget::OnChangeWinner(const EPlayerTeam& NewWinner)
 	auto PlayerTeam = OccupationPlayerState->GetTeam();
 
 	if (WinTeam != EPlayerTeam::Individual && PlayerTeam != EPlayerTeam::Individual && WinTeam == PlayerTeam)
-		GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
-	else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
+		GameResultWidgetText->SetText(FText::FromString(TEXT("승리!")));
+	else GameResultWidgetText->SetText(FText::FromString(TEXT("패배.")));
 }
