@@ -3,8 +3,6 @@
 #include "UI/GamePlayBulletWidget.h"
 
 #include "Components/TextBlock.h"
-#include "Weapon/GunComponent.h"
-
 
 void UGamePlayBulletWidget::NativeConstruct()
 {
@@ -22,38 +20,15 @@ void UGamePlayBulletWidget::NativeConstruct()
 #pragma endregion
 }
 
-void UGamePlayBulletWidget::BindWeapon(UGunComponent* const& GunComponent)
-{
-	if (GunComponent)
-	{
-		GunComponent->OnCurrentBulletChanged.AddUObject(this, &UGamePlayBulletWidget::OnChangeRemainBullets);
-		GunComponent->OnMaximumBulletChanged.AddUObject(this, &UGamePlayBulletWidget::OnChangeMagazineCapacity);
-
-		OnChangeRemainBullets(GunComponent->GetRemainBullets());
-		OnChangeMagazineCapacity(GunComponent->GetMagazineCapacity());
-	}
-}
-
-void UGamePlayBulletWidget::UnBindWeapon(UGunComponent* const& GunComponent)
-{
-	if (GunComponent)
-	{
-		GunComponent->OnCurrentBulletChanged.RemoveAll(this);
-		GunComponent->OnMaximumBulletChanged.RemoveAll(this);
-
-		OnChangeRemainBullets(0);
-		OnChangeMagazineCapacity(0);
-	}
-}
-
-void UGamePlayBulletWidget::OnChangeRemainBullets(const uint16& NewRemainBullets)
+void UGamePlayBulletWidget::SetRemainBullet(const uint16& RemainBullet)
 {
 	//업데이트된 총알 갯수를 저장하고 텍스트로 표기
-	RemainBulletsText->SetText(FText::AsNumber(NewRemainBullets));
+	RemainBulletsText->SetText(FText::AsNumber(RemainBullet));
 }
 
-void UGamePlayBulletWidget::OnChangeMagazineCapacity(const uint16& NewMagazineCapacity)
+void UGamePlayBulletWidget::SetMaxBullet(const uint16& MaxBullet)
 {
+	//TODO: 텍스트 포맷을 따로 저장해두면 퍼포먼스를 높힐 수 있습니다.
 	//업데이트된 최대 총알 갯수를 저장하고 텍스트로 표기(앞에 /를 붙여서 표기)
-	MagazineCapacityText->SetText(FText::FromString(FString::Printf(TEXT("/%d"), NewMagazineCapacity)));
+	MagazineCapacityText->SetText(FText::FromString(FString::Printf(TEXT("/%d"), MaxBullet)));
 }

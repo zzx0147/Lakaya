@@ -4,6 +4,7 @@
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
+#include "GameFramework/Character.h"
 
 UDirectionalDamageIndicator::UDirectionalDamageIndicator(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -13,7 +14,30 @@ UDirectionalDamageIndicator::UDirectionalDamageIndicator(const FObjectInitialize
 	check(DirectionalIndicatorClassFinder.Class != nullptr);
 
 	IndicatorElementClass = DirectionalIndicatorClassFinder.Class;
+
+	IndicateTime = 3.0f;
 }
+
+// void UDirectionalDamageIndicator::BindCharacter(ACharacter* const& Character)
+// {
+// 	Super::BindCharacter(Character);
+// 	//TODO: 캐릭터에 바인딩합니다.
+//
+// 	CharacterRef = Character;
+	// auto MyCharacter = Cast<ADamageableCharacter>(CharacterRef);
+	// MyCharacter->OnDamageReceived.AddUObject(this, &UDirectionalDamageIndicator::IndicateStart);
+	// SetVisibility(ESlateVisibility::Visible);
+// }
+
+// bool UDirectionalDamageIndicator::UnbindCharacter(ACharacter* const& Character)
+// {
+// 	Super::UnbindCharacter(Character);
+//
+// 	CharacterRef = nullptr;
+// 	SetVisibility(ESlateVisibility::Hidden);
+//
+// 	return true;
+// }
 
 void UDirectionalDamageIndicator::NativeConstruct()
 {
@@ -27,16 +51,20 @@ void UDirectionalDamageIndicator::NativeConstruct()
 	}
 }
 
+//TODO: 불필요한 함수 오버라이딩 제거
 void UDirectionalDamageIndicator::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
 }
 
-void UDirectionalDamageIndicator::IndicateStart(const FName& CauserName, USceneComponent* MyPosition, FVector DamageCursorPosition, float time)
+void UDirectionalDamageIndicator::IndicateStart(const FString& CauserName, const FVector& DamageCursorPosition, const float& Damage)
 {
 	UDirectionalIndicatorElement* result = nullptr;
-	UDirectionalIndicatorElement** resultPtr = (IndicatorMap.Find(CauserName));
+	UDirectionalIndicatorElement** resultPtr = IndicatorMap.Find(CauserName);
+	//TODO: 다음과 같이 사용하면 더 간단히 표현할 수 있습니다.
+	// if (!IndicatorMap.Contains(CauserName))
+	// IndicatorMap[CauserName] 이렇게 사용하면 이중 포인터가 아닙니다.
 	if (resultPtr != nullptr) result = *resultPtr;
 
 
@@ -55,5 +83,6 @@ void UDirectionalDamageIndicator::IndicateStart(const FName& CauserName, USceneC
 		tempSlot->SetPosition(FVector2d(0.0f, 0.0f));
 		tempSlot->SetOffsets(FMargin(0.0f));
 	}
-	result->IndicateStart(MyPosition, DamageCursorPosition, time);
+	
+	result->IndicateStart(GetOwningPlayer()->GetCharacter()->GetRootComponent(), DamageCursorPosition, IndicateTime);
 }

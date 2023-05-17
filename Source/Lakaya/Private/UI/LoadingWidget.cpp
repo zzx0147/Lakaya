@@ -1,48 +1,30 @@
 #include "UI/LoadingWidget.h"
 
-#include "PlayerController/MenuCallingPlayerController.h"
-#include "Net/UnrealNetwork.h"
-
 void ULoadingWidget::NativeConstruct()
 {
-    Super::NativeConstruct();
+	Super::NativeConstruct();
 
-    OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-    if (OccupationGameState == nullptr)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_GameMode is null."));
-        return;
-    }
-
-    OnChangeJoinedPlayers(OccupationGameState->GetNumPlayers());
-    
-    // 바인딩
-    LoadingWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("LoadingWidgetText")));
-    if (LoadingWidgetText == nullptr)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_JoinedPlayerText is null."));
-        return;
-    }
-
-    OccupationGameState->OnOccupationChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
-    OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &ULoadingWidget::ReMoveLoadingWidget);
+	LoadingWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("LoadingWidgetText")));
+	if (LoadingWidgetText == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_JoinedPlayerText is null."));
+		return;
+	}
 }
 
-void ULoadingWidget::OnChangeJoinedPlayers(uint8 JoinedPlayers)
+void ULoadingWidget::SetPlayerNumber(const uint8& PlayerCount)
 {
-    if (JoinedPlayers == OccupationGameState->GetMaxPlayers())
-    {
-        LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("곧 게임을 시작합니다."))));
-        return;
-    }
-    
-    LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), JoinedPlayers, OccupationGameState->GetMaxPlayers())));
+	if (PlayerCount == MaxPlayerCount)
+	{
+		LoadingWidgetText->SetText(FText::FromString(TEXT("곧 게임을 시작합니다.")));
+		return;
+	}
+
+	//TODO: 텍스트 포맷을 따로 저장해두면 더 높은 퍼포먼스를 기대할 수 있습니다.
+	LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), PlayerCount, MaxPlayerCount)));
 }
 
-void ULoadingWidget::ReMoveLoadingWidget(EOccupationGameState ChangeGamState)
+void ULoadingWidget::SetMaximumPlayerNumber(const uint8& PlayerCount)
 {
-    if (ChangeGamState == EOccupationGameState::Progress)
-    {
-        this->RemoveFromParent();
-    }
+	MaxPlayerCount = PlayerCount;
 }

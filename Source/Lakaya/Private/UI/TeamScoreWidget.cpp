@@ -1,14 +1,13 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "UI/TeamScoreWidget.h"
 #include "Components/TextBlock.h"
+#include "GameMode/OccupationGameState.h"
 
+//TODO: AOccupationGameState에 대한 의존성을 제거하면 좋을 것 같습니다.
 void UTeamScoreWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	auto OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
 	if (OccupationGameState == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("GameTimeWidget_GameState is null."));
@@ -22,9 +21,6 @@ void UTeamScoreWidget::NativeConstruct()
 		return;
 	}
 
-	OnChangeATeamScore(OccupationGameState->GetATeamScore());
-	OnChangeBTeamScore(OccupationGameState->GetBTeamScore());
-	
 	BTeamScoreText = Cast<UTextBlock>(GetWidgetFromName(TEXT("BTeamScoreText")));
 	if (BTeamScoreText == nullptr)
 	{
@@ -32,46 +28,52 @@ void UTeamScoreWidget::NativeConstruct()
 		return;
 	}
 
-	OccupationGameState->OnOccupationChangeATeamScore.AddUObject(this, &UTeamScoreWidget::OnChangeATeamScore);
-	OccupationGameState->OnOccupationChangeBTeamScore.AddUObject(this, &UTeamScoreWidget::OnChangeBTeamScore);
-	OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &UTeamScoreWidget::SetTeamScoreWidget);
-	
-	SetVisibility(ESlateVisibility::Hidden);
-}
+	// 최대 점수를 지정해줍니다.
+	MaxScore = OccupationGameState->GetMaxScore();
 
-void UTeamScoreWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-}
+	// 생성되었을 때, 점수를 초기화 해줍니다.
+	OnChangeATeamScore(OccupationGameState->GetTeamScore(EPlayerTeam::A));
+	OnChangeBTeamScore(OccupationGameState->GetTeamScore(EPlayerTeam::B));
 
-void UTeamScoreWidget::SetTeamScoreWidget(EOccupationGameState ChangeGameState)
-{
-	if (ChangeGameState == EOccupationGameState::Progress)
+	// 점수가 바뀌게 되면, 점수를 최신화 해줍니다.
+	OccupationGameState->OnTeamScoreSignature.AddUObject(this, &UTeamScoreWidget::OnTeamScoreChanged);
+
+	if (OccupationGameState->OnTeamScoreSignature.IsBound())
 	{
-		SetVisibility(ESlateVisibility::Visible);
-		return;
+		UE_LOG(LogTemp, Warning, TEXT("OnTeamScoreSignature is bound!"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OnTeamScoreSignature is not bound!"));
 	}
 }
 
-void UTeamScoreWidget::ReMoveTeamScoreWidget(EOccupationGameState ChangeGameState)
+void UTeamScoreWidget::OnChangeATeamScore(const float& NewScore) const
 {
-	// TODO
-}
-
-void UTeamScoreWidget::OnChangeATeamScore(float NewScore)
-{
-	ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), NewScore)));
-	if (NewScore >= OccupationGameState->GetMaxScore())
+	//TODO: 위젯에서 넷모드를 체크하는 것은 부적절하며, 두 분기문의 내용이 완전히 동일하므로 아무런 기능도 없습니다.
+	if (GEngine->GetNetMode(GetWorld()) == ENetMode::NM_ListenServer)
 	{
-		ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("A팀 %.1f%%"), 1.0f)));
+		//TODO: 텍스트 포맷을 따로 저장해두면 더 빠른 퍼포먼스를 기대할 수 있습니다.
+		ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), NewScore)));
+		if (NewScore >= MaxScore) ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), 1.0f)));
+	}
+	else
+	{
+		ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), NewScore)));
+		if (NewScore >= MaxScore) ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), 1.0f)));
 	}
 }
 
-void UTeamScoreWidget::OnChangeBTeamScore(float NewScore)
+void UTeamScoreWidget::OnChangeBTeamScore(const float& NewScore) const
 {
-	BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("B팀 %.1f%%"), NewScore)));
-	if (NewScore >= OccupationGameState->GetMaxScore())
-	{
-		BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("B팀 %.1f%%"), 1.0f)));
-	}
+	BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), NewScore)));
+	if (NewScore >= MaxScore) BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), 1.0f)));
+}
+
+void UTeamScoreWidget::OnTeamScoreChanged(const EPlayerTeam& Team, const float& Score) const
+{
+	if (Team == EPlayerTeam::A) OnChangeATeamScore(Score);
+	else if (Team == EPlayerTeam::B) OnChangeBTeamScore(Score);
+	else UE_LOG(LogScript, Warning, TEXT("Event broadcasted with invalid value! it was %d"), Team);
+	// UE_LOG(LogTemp, Warning, TEXT("OnTeamScoreChanged."));
 }

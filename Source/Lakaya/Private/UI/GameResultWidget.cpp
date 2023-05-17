@@ -1,17 +1,19 @@
 #include "UI/GameResultWidget.h"
-#include "Character/CollectorPlayerState.h"
-#include "GameFramework/Character.h"
 
+#include "Character/LakayaBasePlayerState.h"
+#include "GameFramework/Character.h"
+#include "GameMode/OccupationGameState.h"
+
+// bool UGameResultWidget::OnMatchEnding()
+// {
+// 	SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+// 	return true;
+// }
+
+//TODO: 지나치게 다른 클래스에 대한 의존도가 높습니다. 게임 결과만 표시하는데 굳이 게임스테이트나 플레이어스테이트까지 알아야할 필요가 있는지 모르겠습니다.
 void UGameResultWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-	if (OccupationGameState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_GameMode is null."));
-		return;
-	}
 
 	GameResultWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("GameResultWidgetText")));
 	if (GameResultWidgetText == nullptr)
@@ -20,48 +22,31 @@ void UGameResultWidget::NativeConstruct()
 		return;
 	}
 
-	OccupationGameState->OnOccupationChangeOccupationWinner.AddUObject(this, &UGameResultWidget::OnChangeWinner);
+	OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	if (OccupationGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_GameMode is null."));
+		return;
+	}
 
-	SetVisibility(ESlateVisibility::Hidden);
+	OccupationGameState->OnChangeOccupationWinner.AddUObject(this, &UGameResultWidget::OnChangeWinner);
 }
 
-void UGameResultWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-}
-
-void UGameResultWidget::ReMoveLoadingWidget(EOccupationGameState ChangeGameState)
-{
-	// TODO :
-}
-
-void UGameResultWidget::OnChangeWinner(EOccupationWinner NewWinner)
+void UGameResultWidget::OnChangeWinner(const EPlayerTeam& NewWinner)
 {
 	SetVisibility(ESlateVisibility::Visible);
 
-	ACollectorPlayerState* PlayerState = Cast<ACollectorPlayerState>(GetOwningPlayer()->GetCharacter()->GetPlayerState());
-	if (PlayerState == nullptr)
+	auto* OccupationPlayerState = Cast<ALakayaBasePlayerState>(GetOwningPlayer()->GetCharacter()->GetPlayerState());
+	if (OccupationPlayerState == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameResultWidget_PlayerState is null."));
+		UE_LOG(LogTemp, Warning, TEXT("OccupationPlayerState is null."));
 		return;
 	}
-	
-	FString WinnerString;
-	switch (OccupationGameState->GetOccupationWinner())
-	{
-	case EOccupationWinner::UnCertain:
-		WinnerString = FString(TEXT("Undecided"));
-		break;
-	case EOccupationWinner::A:
-		if (PlayerState->GetPlayerTeamState() == EPlayerTeamState::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
-		else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
-		break;
-	case EOccupationWinner::B:
-		if (PlayerState->GetPlayerTeamState() == EPlayerTeamState::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
-		else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
-		break;
-	default:
-		WinnerString = FString(TEXT("Unknown"));
-		break;
-	}
+
+	auto WinTeam = OccupationGameState->GetOccupationWinner();
+	auto PlayerTeam = OccupationPlayerState->GetTeam();
+
+	if (WinTeam != EPlayerTeam::Individual && PlayerTeam != EPlayerTeam::Individual && WinTeam == PlayerTeam)
+		GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
+	else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
 }

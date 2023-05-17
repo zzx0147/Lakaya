@@ -15,31 +15,42 @@ class LAKAYA_API ABattlePlayerController : public AMovablePlayerController
 public:
 	ABattlePlayerController();
 
-	virtual void BeginPlay() override;
+protected:
 	virtual void SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent) override;
 	virtual void SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem) override;
-	virtual void OnPossessedPawnChangedCallback(APawn* OldPawn, APawn* NewPawn) override;
-	
-	virtual void OnCharacterBeginPlay(ACharacter* ArgCharacter);
-	virtual void OnWeaponChanged(class UWeaponComponent* const& WeaponComponent);
-
-protected:
-	template <class T>
-	T* CreateViewportWidget(const TSubclassOf<UUserWidget>& UserWidgetClass);
+	virtual void OnPossessedPawnChangedCallback(APawn* ArgOldPawn, APawn* NewPawn) override;
 
 private:
+	void PrimaryStart(const FInputActionValue& Value);
+	void PrimaryStop(const FInputActionValue& Value);
+	void SecondStart(const FInputActionValue& Value);
+	void SecondStop(const FInputActionValue& Value);
 	void FireStart(const FInputActionValue& Value);
 	void FireStop(const FInputActionValue& Value);
 	void AbilityStart(const FInputActionValue& Value);
 	void AbilityStop(const FInputActionValue& Value);
 	void ReloadStart(const FInputActionValue& Value);
 	void ReloadStop(const FInputActionValue& Value);
+	void DashStart(const FInputActionValue& Value);
+	void DashStop(const FInputActionValue& Value);
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Context")
 	UInputMappingContext* WeaponControlContext;
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Context")
 	int8 WeaponContextPriority;
+
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
+	UInputAction* PrimaryStartAction;
+
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
+	UInputAction* PrimaryStopAction;
+
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
+	UInputAction* SecondStartAction;
+
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
+	UInputAction* SecondStopAction;
 
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* FireStartAction;
@@ -59,38 +70,11 @@ private:
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* ReloadStopAction;
 
-	UPROPERTY(EditAnywhere, Category=Widget)
-	TSubclassOf<class UGamePlayKillLogWidget> KillLogClass;
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
+	UInputAction* DashStartAction;
 
-	UPROPERTY(EditAnywhere, Category=Widget)
-	TSubclassOf<class UGamePlayHealthWidget> HealthWidgetClass;
-
-	UPROPERTY(EditAnywhere, Category=Widget)
-	TSubclassOf<class UGamePlayBulletWidget> BulletWidgetClass;
-
-	UPROPERTY(EditAnywhere, Category=Widget)
-	TSubclassOf<class UGamePlayConsecutiveKillsWidget> ConsecutiveKillsWidgetClass;
-
-	UPROPERTY(VisibleAnywhere)
-	UGamePlayKillLogWidget* KillLogWidget;
-
-	UPROPERTY(VisibleAnywhere)
-	UGamePlayHealthWidget* HealthWidget;
-
-	UPROPERTY(VisibleAnywhere)
-	UGamePlayBulletWidget* BulletWidget;
-
-	UPROPERTY(VisibleAnywhere)
-	UGamePlayConsecutiveKillsWidget* ConsecutiveKillsWidget;
+	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
+	UInputAction* DashStopAction;
 
 	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
 };
-
-template <class T>
-T* ABattlePlayerController::CreateViewportWidget(const TSubclassOf<UUserWidget>& UserWidgetClass)
-{
-	auto Widget = CreateWidget<T>(this, UserWidgetClass);
-	Widget->AddToViewport();
-	Widget->SetVisibility(ESlateVisibility::Collapsed);
-	return Widget;
-}

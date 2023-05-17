@@ -80,6 +80,7 @@ void UEOSGameInstance::OnLoginComplete(int32 LocalUserNum, bool bWasSuccessful, 
 
 void UEOSGameInstance::CreateSession()
 {
+	//TODO: 중첩 분기문을 줄여봅시다..
 	if (bIsLoggedIn)
 	{
 		if (OnlineSubsystem)
@@ -130,7 +131,10 @@ void UEOSGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 		{
 			SessionPtr->ClearOnCreateSessionCompleteDelegates(this);
 			UE_LOG(LogTemp,Warning,TEXT("Start Game Level Open"));
-			UGameplayStatics::OpenLevel(this, FName("LV_Completed"), true, FString("?listen"));
+			UGameplayStatics::OpenLevel(this, FName("LV_Completed_20230429"), true, FString("?listen"));
+			
+			//TODO: 이걸로 대체해보아요..
+			// UGameplayStatics::OpenLevelBySoftObjectPtr()
 
 			/*FString ConnectionInfo = FString();
 			SessionPtr->GetResolvedConnectString(SessionName, ConnectionInfo);
@@ -161,6 +165,7 @@ void UEOSGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 
 void UEOSGameInstance::DestroySession()
 {
+	//TODO: 중첩 분기문을 줄여봅시다..
 	if (bIsLoggedIn)
 	{
 		if (OnlineSubsystem)
@@ -176,7 +181,7 @@ void UEOSGameInstance::DestroySession()
 
 void UEOSGameInstance::OnDestroySessionComplete(FName SessionName, bool bWasSuccessful)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Destroy Session is %d"), bWasSuccessful));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Destroy Session is %d"), bWasSuccessful));
 	if (OnlineSubsystem)
 	{
 		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
@@ -210,6 +215,7 @@ void UEOSGameInstance::FindSession()
 
 void UEOSGameInstance::OnFindSessionComplete(bool bWasSuccessful)
 {
+	//TODO: 중첩 분기문을 줄여봅시다..
 	UE_LOG(LogTemp, Warning, TEXT("Success: %d"), bWasSuccessful);
 	if (bWasSuccessful)
 	{
@@ -235,8 +241,9 @@ void UEOSGameInstance::OnFindSessionComplete(bool bWasSuccessful)
 void UEOSGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
 {
 	UE_LOG(LogTemp, Warning, TEXT("JoinSessionComplete!"));
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("JoinSessionComplete"));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("JoinSessionComplete"));
 
+	//TODO: 중첩 분기문을 줄여봅시다..
 	if (OnlineSubsystem)
 	{
 		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
@@ -249,7 +256,7 @@ void UEOSGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCo
 			{
 				if(ConnectionInfo.Equals(TEXT("EOS::GameNetDriver:26"))) 
 				{
-					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Session is Available But No Server, Destory Empty Session"));
+					//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Session is Available But No Server, Destory Empty Session"));
 
 					SessionPtr->OnDestroySessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnDestorySessionCompleteAndReJoinSession);
 					SessionPtr->DestroySession(SessionName);
@@ -260,22 +267,22 @@ void UEOSGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCo
 				if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
 				{
 					UE_LOG(LogTemp, Warning, TEXT("ClientTravel Start!"));
-					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("ClientTravel Start!"));
+					//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("ClientTravel Start!"));
 					UE_LOG(LogTemp, Warning, TEXT("!!!!!!!!!!%s"), *ConnectionInfo);
-					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("!!!%s"), *ConnectionInfo));
+					//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("!!!%s"), *ConnectionInfo));
 					PC->ClientTravel(ConnectionInfo, ETravelType::TRAVEL_Absolute);
 					UE_LOG(LogTemp, Warning, TEXT("ClientTravel END!"));
 				}
 				else
 				{
 					UE_LOG(LogTemp, Warning, TEXT("PlayerController is Empty!"));
-					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("PlayerController is Empty!"));
+					//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("PlayerController is Empty!"));
 				}
 			}
 			else
 			{
 				UE_LOG(LogTemp, Warning, TEXT("ConnectionInfo is Empty!"));
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("ConnectionInfo is Empty!"));
+				//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("ConnectionInfo is Empty!"));
 			}
 		}
 	}
@@ -312,11 +319,11 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 {
 
 	UE_LOG(LogTemp, Warning, TEXT("Success: %d"), bWasSuccessful);
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Success: %d"),bWasSuccessful));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Success: %d"),bWasSuccessful));
 	if (bWasSuccessful)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Found %d Lobbies"), SearchSettings->SearchResults.Num());
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Found %d Lobbies"), SearchSettings->SearchResults.Num()));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Found %d Lobbies"), SearchSettings->SearchResults.Num()));
 		if (OnlineSubsystem)
 		{
 			bool IsSuccess = false;
@@ -329,14 +336,14 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 					{
 						bool isJoinable;
 						Results.Session.SessionSettings.Get(FName(TEXT("ISJOINABLE")), isJoinable);
-						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Lobby is joinable? %d"), isJoinable));
+						//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Lobby is joinable? %d"), isJoinable));
 
 						if (isJoinable)
 						{
 							const FUniqueNetIdPtr UserId = MyPlayerController->GetLocalPlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
 
 							IsSuccess = SessionPtr->JoinSession(*UserId, NAME_GameSession, Results);
-							GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("try Join session, is success? %d"),IsSuccess));
+							//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("try Join session, is success? %d"),IsSuccess));
 							if (IsSuccess)
 							{
 								SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
@@ -477,7 +484,7 @@ void UEOSGameInstance::OnUpdateSessionComplete(FName SessionName, bool bWasSucce
 			{
 				if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 				{
-					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Update Session Complete"));
+					//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Update Session Complete"));
 					SessionPtr->OnUpdateSessionCompleteDelegates.Clear();
 				}
 			}
@@ -494,7 +501,8 @@ void UEOSGameInstance::EndSession()
 		{
 			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 			{
-				CleanUpSession();
+				SessionPtr->EndSession(NAME_GameSession);
+				//CleanUpSession();
 				//SessionPtr->OnEndSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnEndSessionComplete);
 			}
 		}
@@ -524,7 +532,7 @@ void UEOSGameInstance::PrintSessionState()
 		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 		{
 			EOnlineSessionState::Type State = SessionPtr->GetSessionState(NAME_GameSession);
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, EOnlineSessionState::ToString(State));
+			//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, EOnlineSessionState::ToString(State));
 		}
 	}
 }
@@ -559,9 +567,10 @@ void UEOSGameInstance::CleanUpSession()
 	}
 }
 
+//TODO: 타이포..
 void UEOSGameInstance::OnDestorySessionCompleteAndReJoinSession(FName SessionName, bool bWasSuccessful)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString::Printf(TEXT("EmptySessionDestoryed ReJoin Start")));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString::Printf(TEXT("EmptySessionDestoryed ReJoin Start")));
 	if (OnlineSubsystem)
 	{
 		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
