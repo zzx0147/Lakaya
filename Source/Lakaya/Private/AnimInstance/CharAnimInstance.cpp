@@ -2,14 +2,7 @@
 
 
 #include "AnimInstance/CharAnimInstance.h"
-#include "Character/InteractableCharacter.h"
-//TODO: 필요없는 헤더 선언
-#include "Character/Ability/LockstepFireAbility.h"
-//TODO: 필요없는 헤더 선언
-#include "Character/Ability/ResultNotifyFireAbility.h"
-//TODO: 필요없는 헤더 선언
-#include "Occupation/OccupationObject.h"
-//TODO: 필요없는 헤더 선언
+
 
 UCharAnimInstance::UCharAnimInstance()
 {
@@ -23,15 +16,6 @@ void UCharAnimInstance::NativeBeginPlay()
 	if(const auto Character = Cast<AArmedCharacter>(TryGetPawnOwner()))
 	{
 		auto& Abilities = Character->GetAbilities();
-		// if(Abilities.IsValidIndex(WeaponFire))
-		// {
-		// 	if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
-		// 	{
-		// 		FireAbility->OnFiringStateChanged.
-		// 		AddLambda([this](const bool& FireState)
-		// 			{bIsAutoFire = FireState;} );
-		// 	}
-		// }
 
 		if(Abilities.IsValidIndex(WeaponFire))
 		{
@@ -69,17 +53,17 @@ void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
 	if (const auto InteractableCharacter =
 		Cast<AInteractableCharacter>(TryGetPawnOwner()))
 	{
-		if (NewInteractingActor)
-		{
-			bIsInteracting = true;
-		}
-		else
-		{
-			bIsInteracting = false;
-		}
+		bIsInteracting = NewInteractingActor != nullptr;
+
+		// if (NewInteractingActor)
+		// {
+		// 	bIsInteracting = true;
+		// }
+		// else
+		// {
+		// 	bIsInteracting = false;
+		// }
 	}
-	//TODO: 아래의 코드로 대체가능
-	// bIsInteracting = NewInteractingActor != nullptr;
 }
 
 void UCharAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -87,31 +71,3 @@ void UCharAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Super::NativeUpdateAnimation(DeltaSeconds);
 	bIsAutoFire = RecentFireTime + FireAnimDuration > GetWorld()->TimeSeconds;
 }
-
-// void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
-// {
-// 	if (const auto InteractableCharacter =
-// 		Cast<AInteractableCharacter>(TryGetPawnOwner()))
-// 	{
-// 		const EInteractionState InteractionState =
-// 			InteractableCharacter->GetInteractionState();
-// 		switch (InteractionState)
-// 		{
-// 		case EInteractionState::OnGoing:
-// 			bIsInteracting = true;
-// 			break;
-// 		case EInteractionState::Success:
-// 			bIsInteracting = false;
-// 			break;
-// 		case EInteractionState::Stopped:
-// 			bIsInteracting = false;
-// 			break;
-// 		case EInteractionState::Canceled:
-// 			bIsInteracting = false;
-// 			break;
-// 		default:
-// 			bIsInteracting = false;
-// 			break;
-// 		}
-// 	}
-// }

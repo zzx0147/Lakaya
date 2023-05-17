@@ -10,7 +10,6 @@
 #include "Perception/AISenseConfig_Sight.h"
 #include "Character/ArmedCharacter.h"
 #include "Character/InteractableCharacter.h"
-// #include "Character/OccupationCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardData.h"
@@ -32,10 +31,10 @@ private:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable)
-	void AIFireStart(/*class*/AArmedCharacter* ArmCharacter);
+	void AIFireStart(class AArmedCharacter* ArmCharacter);
 
 	UFUNCTION(BlueprintCallable)
-	void AIFireStop(AArmedCharacter* ArmCharacter);
+	void AIFireStop(class AArmedCharacter* ArmCharacter);
 
 private:
 	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
