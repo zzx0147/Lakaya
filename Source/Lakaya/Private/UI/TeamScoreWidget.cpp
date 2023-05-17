@@ -2,6 +2,7 @@
 #include "Components/TextBlock.h"
 #include "GameMode/OccupationGameState.h"
 
+//TODO: AOccupationGameState에 대한 의존성을 제거하면 좋을 것 같습니다.
 void UTeamScoreWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -49,8 +50,10 @@ void UTeamScoreWidget::NativeConstruct()
 
 void UTeamScoreWidget::OnChangeATeamScore(const float& NewScore) const
 {
+	//TODO: 위젯에서 넷모드를 체크하는 것은 부적절하며, 두 분기문의 내용이 완전히 동일하므로 아무런 기능도 없습니다.
 	if (GEngine->GetNetMode(GetWorld()) == ENetMode::NM_ListenServer)
 	{
+		//TODO: 텍스트 포맷을 따로 저장해두면 더 빠른 퍼포먼스를 기대할 수 있습니다.
 		ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), NewScore)));
 		if (NewScore >= MaxScore) ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), 1.0f)));
 	}

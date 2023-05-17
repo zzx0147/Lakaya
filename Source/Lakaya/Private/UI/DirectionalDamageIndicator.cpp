@@ -51,6 +51,7 @@ void UDirectionalDamageIndicator::NativeConstruct()
 	}
 }
 
+//TODO: 불필요한 함수 오버라이딩 제거
 void UDirectionalDamageIndicator::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
@@ -61,6 +62,9 @@ void UDirectionalDamageIndicator::IndicateStart(const FString& CauserName, const
 {
 	UDirectionalIndicatorElement* result = nullptr;
 	UDirectionalIndicatorElement** resultPtr = IndicatorMap.Find(CauserName);
+	//TODO: 다음과 같이 사용하면 더 간단히 표현할 수 있습니다.
+	// if (!IndicatorMap.Contains(CauserName))
+	// IndicatorMap[CauserName] 이렇게 사용하면 이중 포인터가 아닙니다.
 	if (resultPtr != nullptr) result = *resultPtr;
 
 

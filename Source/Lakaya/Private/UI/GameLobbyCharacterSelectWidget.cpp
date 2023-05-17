@@ -50,6 +50,7 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 	OnClickedCharacter1Button();
 }
 
+//TODO: 불필요한 함수 오버라이딩
 void UGameLobbyCharacterSelectWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
