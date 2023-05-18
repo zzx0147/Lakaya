@@ -87,16 +87,20 @@ public:
 
 protected:
 	// 능력 사용을 시작할지 여부를 조사합니다.
-	virtual bool ShouldStartAbility(const EAbilityKind& Kind);
+	UFUNCTION(BlueprintNativeEvent)
+	bool ShouldStartAbility(EAbilityKind Kind);
 
 	// 능력 사용을 중단할지 여부를 조사합니다.
-	virtual bool ShouldStopAbility(const EAbilityKind& Kind);
+	UFUNCTION(BlueprintNativeEvent)
+	bool ShouldStopAbility(EAbilityKind Kind);
 
 	// 서버에서 능력 사용을 시작할지 여부를 조사합니다.
-	virtual bool ShouldStartAbilityOnServer(const EAbilityKind& Kind);
+	UFUNCTION(BlueprintNativeEvent)
+	bool ShouldStartAbilityOnServer(EAbilityKind Kind);
 
 	// 서버에서 능력 사용을 중단할지 여부를 조사합니다.
-	virtual bool ShouldStopAbilityOnServer(const EAbilityKind& Kind);
+	UFUNCTION(BlueprintNativeEvent)
+	bool ShouldStopAbilityOnServer(EAbilityKind Kind);
 
 	UPROPERTY(EditAnywhere, Replicated)
 	TArray<UCharacterAbility*> Abilities;

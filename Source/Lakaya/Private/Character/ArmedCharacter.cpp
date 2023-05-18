@@ -62,6 +62,16 @@ void AArmedCharacter::StopAbility(const EAbilityKind& Kind)
 		RequestStopAbility(Kind, GetServerTime());
 }
 
+bool AArmedCharacter::ShouldStopAbilityOnServer_Implementation(EAbilityKind Kind)
+{
+	return true;
+}
+
+bool AArmedCharacter::ShouldStartAbilityOnServer_Implementation(EAbilityKind Kind)
+{
+	return true;
+}
+
 void AArmedCharacter::RequestStopAbility_Implementation(const EAbilityKind& Kind, const float& Time)
 {
 	if (ShouldStopAbilityOnServer(Kind)) Abilities[Kind]->RemoteAbilityStop(Time);
@@ -84,22 +94,12 @@ bool AArmedCharacter::RequestStartAbility_Validate(const EAbilityKind& Kind, con
 	return Abilities.IsValidIndex(Kind) && Abilities[Kind] && GetServerTime() + 0.05f >= Time;
 }
 
-bool AArmedCharacter::ShouldStartAbility(const EAbilityKind& Kind)
+bool AArmedCharacter::ShouldStartAbility_Implementation(EAbilityKind Kind)
 {
 	return Abilities.IsValidIndex(Kind) && Abilities[Kind];
 }
 
-bool AArmedCharacter::ShouldStopAbility(const EAbilityKind& Kind)
+bool AArmedCharacter::ShouldStopAbility_Implementation(EAbilityKind Kind)
 {
 	return Abilities.IsValidIndex(Kind) && Abilities[Kind];
-}
-
-bool AArmedCharacter::ShouldStartAbilityOnServer(const EAbilityKind& Kind)
-{
-	return true;
-}
-
-bool AArmedCharacter::ShouldStopAbilityOnServer(const EAbilityKind& Kind)
-{
-	return true;
 }
