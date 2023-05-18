@@ -70,7 +70,7 @@ void AArmedCharacter::RequestStopAbility_Implementation(const EAbilityKind& Kind
 bool AArmedCharacter::RequestStopAbility_Validate(const EAbilityKind& Kind, const float& Time)
 {
 	// Time값이 조작되었는지 여부를 검사합니다. 0.05f는 서버시간의 허용오차를 의미합니다.
-	return GetServerTime() + 0.05f >= Time;
+	return Abilities.IsValidIndex(Kind) && Abilities[Kind] && GetServerTime() + 0.05f >= Time;
 }
 
 void AArmedCharacter::RequestStartAbility_Implementation(const EAbilityKind& Kind, const float& Time)
@@ -81,7 +81,7 @@ void AArmedCharacter::RequestStartAbility_Implementation(const EAbilityKind& Kin
 bool AArmedCharacter::RequestStartAbility_Validate(const EAbilityKind& Kind, const float& Time)
 {
 	// Time값이 조작되었는지 여부를 검사합니다. 0.05f는 서버시간의 허용오차를 의미합니다.
-	return GetServerTime() + 0.05f >= Time;
+	return Abilities.IsValidIndex(Kind) && Abilities[Kind] && GetServerTime() + 0.05f >= Time;
 }
 
 bool AArmedCharacter::ShouldStartAbility(const EAbilityKind& Kind)
