@@ -10,6 +10,7 @@ UCoolTimedSummonAbility::UCoolTimedSummonAbility()
 {
 	bWantsInitializeComponent = true;
 	bWantsTransformSet = true;
+	bCanEverStartRemoteCall = true;
 	ObjectPoolSize = 1;
 	CoolTime = 5.f;
 	SummonDistance = 50.f;
@@ -22,10 +23,10 @@ void UCoolTimedSummonAbility::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	DOREPLIFETIME(UCoolTimedSummonAbility, EnableTime);
 }
 
-void UCoolTimedSummonAbility::AbilityStart()
+void UCoolTimedSummonAbility::LocalAbilityStart()
 {
 	// 서버시간 예측의 오차와, 네트워크 딜레이를 감안하여 쿨타임이 돌기 조금 전부터 서버에 능력 사용요청을 할 수는 있도록 합니다.
-	if (EnableTime - 0.1f <= GetServerTime()) Super::AbilityStart();
+	if (EnableTime - 0.1f <= GetServerTime()) Super::LocalAbilityStart();
 }
 
 void UCoolTimedSummonAbility::InitializeComponent()
@@ -52,9 +53,9 @@ void UCoolTimedSummonAbility::InitializeComponent()
 	});
 }
 
-void UCoolTimedSummonAbility::RequestStart_Implementation(const float& RequestTime)
+void UCoolTimedSummonAbility::RemoteAbilityStart(const float& RequestTime)
 {
-	Super::RequestStart_Implementation(RequestTime);
+	Super::RemoteAbilityStart(RequestTime);
 	if (EnableTime > GetServerTime()) return;
 
 	if (const auto AbilityInstance = AbilityInstancePool.GetObject())

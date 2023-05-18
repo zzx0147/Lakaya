@@ -3,24 +3,24 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CharacterAbility.h"
 #include "SimpleObjectPool.h"
-#include "StartRemoteCallAbility.h"
 #include "CoolTimedSummonAbility.generated.h"
 
 DECLARE_EVENT_OneParam(UCoolTimedSummonAbility, FEnableTimeSignature, const float&)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class LAKAYA_API UCoolTimedSummonAbility : public UStartRemoteCallAbility
+class LAKAYA_API UCoolTimedSummonAbility : public UCharacterAbility
 {
 	GENERATED_BODY()
 
 public:
 	UCoolTimedSummonAbility();
-	virtual void AbilityStart() override;
+	virtual void LocalAbilityStart() override;
 
 protected:
 	virtual void InitializeComponent() override;
-	virtual void RequestStart_Implementation(const float& RequestTime) override;
+	virtual void RemoteAbilityStart(const float& RequestTime) override;
 
 	UFUNCTION()
 	virtual void OnRep_EnableTime();

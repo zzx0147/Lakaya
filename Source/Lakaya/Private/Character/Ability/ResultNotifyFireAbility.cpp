@@ -20,20 +20,21 @@ UResultNotifyFireAbility::UResultNotifyFireAbility()
 	PoolCount = 20;
 	DecalShowingTime = 10.f;
 	BulletCost = 1;
+	bCanEverStopRemoteCall = bCanEverStartRemoteCall = true;
 }
 
-void UResultNotifyFireAbility::AbilityStart()
+void UResultNotifyFireAbility::LocalAbilityStart()
 {
 	if (bWantsToFire) return;
 	if (!GetOwner()->HasAuthority()) bWantsToFire = true;
-	Super::AbilityStart();
+	Super::LocalAbilityStart();
 }
 
-void UResultNotifyFireAbility::AbilityStop()
+void UResultNotifyFireAbility::LocalAbilityStop()
 {
 	if (!bWantsToFire) return;
 	if (!GetOwner()->HasAuthority()) bWantsToFire = false;
-	Super::AbilityStop();
+	Super::LocalAbilityStop();
 }
 
 void UResultNotifyFireAbility::OnAliveStateChanged(const bool& AliveState)
@@ -68,9 +69,9 @@ void UResultNotifyFireAbility::InitializeComponent()
 	}
 }
 
-void UResultNotifyFireAbility::RequestStart_Implementation(const float& RequestTime)
+void UResultNotifyFireAbility::RemoteAbilityStart(const float& RequestTime)
 {
-	Super::RequestStart_Implementation(RequestTime);
+	Super::RemoteAbilityStart(RequestTime);
 	if (bWantsToFire || !GetAliveState()) return;
 	bWantsToFire = true;
 	
@@ -81,9 +82,9 @@ void UResultNotifyFireAbility::RequestStart_Implementation(const float& RequestT
 	}
 }
 
-void UResultNotifyFireAbility::RequestStop_Implementation(const float& RequestTime)
+void UResultNotifyFireAbility::RemoteAbilityStop(const float& RequestTime)
 {
-	Super::RequestStop_Implementation(RequestTime);
+	Super::RemoteAbilityStop(RequestTime);
 	if (!bWantsToFire || !GetAliveState()) return;
 	bWantsToFire = false;
 }
