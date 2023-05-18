@@ -23,12 +23,6 @@ void UCoolTimedSummonAbility::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	DOREPLIFETIME(UCoolTimedSummonAbility, EnableTime);
 }
 
-void UCoolTimedSummonAbility::LocalAbilityStart()
-{
-	// 서버시간 예측의 오차와, 네트워크 딜레이를 감안하여 쿨타임이 돌기 조금 전부터 서버에 능력 사용요청을 할 수는 있도록 합니다.
-	if (EnableTime - 0.1f <= GetServerTime()) Super::LocalAbilityStart();
-}
-
 void UCoolTimedSummonAbility::InitializeComponent()
 {
 	Super::InitializeComponent();
@@ -48,9 +42,15 @@ void UCoolTimedSummonAbility::InitializeComponent()
 		}
 
 		AbilityInstance->OnAbilityEnded.AddUObject(this, &UCoolTimedSummonAbility::OnAbilityInstanceEnded);
-		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("AbilityInstance spawned"));
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("AbilityInstance spawned"));
 		return AbilityInstance;
 	});
+}
+
+bool UCoolTimedSummonAbility::ShouldStartRemoteCall()
+{
+	// 서버시간 예측의 오차와, 네트워크 딜레이를 감안하여 쿨타임이 돌기 조금 전부터 서버에 능력 사용요청을 할 수는 있도록 합니다.
+	return EnableTime - 0.1f <= GetServerTime();
 }
 
 void UCoolTimedSummonAbility::RemoteAbilityStart(const float& RequestTime)

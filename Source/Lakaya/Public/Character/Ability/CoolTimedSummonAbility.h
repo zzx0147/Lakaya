@@ -16,10 +16,10 @@ class LAKAYA_API UCoolTimedSummonAbility : public UCharacterAbility
 
 public:
 	UCoolTimedSummonAbility();
-	virtual void LocalAbilityStart() override;
 
 protected:
 	virtual void InitializeComponent() override;
+	virtual bool ShouldStartRemoteCall() override;
 	virtual void RemoteAbilityStart(const float& RequestTime) override;
 
 	UFUNCTION()
