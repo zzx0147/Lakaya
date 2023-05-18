@@ -23,18 +23,18 @@ UResultNotifyFireAbility::UResultNotifyFireAbility()
 	bCanEverStopRemoteCall = bCanEverStartRemoteCall = true;
 }
 
-void UResultNotifyFireAbility::LocalAbilityStart()
+bool UResultNotifyFireAbility::ShouldStartRemoteCall()
 {
-	if (bWantsToFire) return;
+	if (bWantsToFire) return false;
 	if (!GetOwner()->HasAuthority()) bWantsToFire = true;
-	Super::LocalAbilityStart();
+	return true;
 }
 
-void UResultNotifyFireAbility::LocalAbilityStop()
+bool UResultNotifyFireAbility::ShouldStopRemoteCall()
 {
-	if (!bWantsToFire) return;
+	if (!bWantsToFire) return false;
 	if (!GetOwner()->HasAuthority()) bWantsToFire = false;
-	Super::LocalAbilityStop();
+	return true;
 }
 
 void UResultNotifyFireAbility::OnAliveStateChanged(const bool& AliveState)
@@ -74,11 +74,11 @@ void UResultNotifyFireAbility::RemoteAbilityStart(const float& RequestTime)
 	Super::RemoteAbilityStart(RequestTime);
 	if (bWantsToFire || !GetAliveState()) return;
 	bWantsToFire = true;
-	
+
 	if (auto& TimerManager = GetWorld()->GetTimerManager(); !TimerManager.TimerExists(FireTimer))
 	{
 		TimerManager.SetTimer(FireTimer, this, &UResultNotifyFireAbility::FireTick, FireDelay, true, FirstFireDelay);
-		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
 	}
 }
 
@@ -130,7 +130,7 @@ void UResultNotifyFireAbility::FailToFire()
 void UResultNotifyFireAbility::ClearFireTimer()
 {
 	GetWorld()->GetTimerManager().ClearTimer(FireTimer);
-	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
 }
 
 void UResultNotifyFireAbility::InvokeFireNotify(const FHitResult& HitResult)

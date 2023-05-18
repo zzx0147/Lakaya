@@ -30,8 +30,8 @@ class LAKAYA_API UResultNotifyFireAbility : public UCharacterAbility
 
 public:
 	UResultNotifyFireAbility();
-	virtual void LocalAbilityStart() override;
-	virtual void LocalAbilityStop() override;
+	virtual bool ShouldStartRemoteCall() override;
+	virtual bool ShouldStopRemoteCall() override;
 	virtual void OnAliveStateChanged(const bool& AliveState) override;
 
 protected:
