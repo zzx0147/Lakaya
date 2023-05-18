@@ -3,6 +3,7 @@
 
 #include "Camera/CameraComponent.h"
 #include "Character/Ability/CharacterAbility.h"
+#include "GameFramework/GameStateBase.h"
 
 UCharacterAbility::UCharacterAbility()
 {
@@ -19,6 +20,26 @@ void UCharacterAbility::InitializeComponent()
 void UCharacterAbility::OnAliveStateChanged(const bool& AliveState)
 {
 	bRecentAliveState = AliveState;
+}
+
+bool UCharacterAbility::ShouldStartRemoteCall()
+{
+	return false;
+}
+
+bool UCharacterAbility::ShouldStopRemoteCall()
+{
+	return false;
+}
+
+bool UCharacterAbility::CanStartRemoteCall()
+{
+	return bCanEverStartRemoteCall && ShouldStartRemoteCall();
+}
+
+bool UCharacterAbility::CanStopRemoteCall()
+{
+	return bCanEverStopRemoteCall && ShouldStopRemoteCall();
 }
 
 FVector UCharacterAbility::GetDistancedToCameraDirection(const float& Distance, const float& FromActor,
@@ -58,4 +79,9 @@ FVector UCharacterAbility::GetNormalToCameraForwardTracePoint(const float& FromA
 {
 	return (GetCameraForwardTracePoint(FromActor, CollisionQueryParams) - GetOwner()->GetActorLocation()).
 		GetUnsafeNormal();
+}
+
+float UCharacterAbility::GetServerTime() const
+{
+	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 }

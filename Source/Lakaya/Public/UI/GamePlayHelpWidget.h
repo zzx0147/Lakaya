@@ -6,7 +6,6 @@
 
 class UCanvasPanel;
 
-//TODO: 아무 기능이 없는 클래스로 보여서 삭제해도 될거같습니다.
 //플레이 UI중 도움말을 관리하는 클래스입니다
 UCLASS()
 class LAKAYA_API UGamePlayHelpWidget : public UUserWidget

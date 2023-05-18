@@ -63,7 +63,7 @@ public:
 	 * @param Object Function을 실행할 객체입니다.
 	 * @param Function 부활 시간이 도래했을 때 실행할 Object의 멤버함수입니다.
 	 */
-	template <class T = nullptr_t>
+	template <class T = ALakayaBasePlayerState>
 	void SetRespawnTimer(const float& ReservedRespawnTime, T* Object = nullptr, void (T::*Function)(AController*) = nullptr);
 
 	// 이 플레이어의 생존 여부를 가져옵니다.

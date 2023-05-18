@@ -164,7 +164,6 @@ void AGameLobbyPlayerController::MenuHandler(const FInputActionValue& Value)
 
 void AGameLobbyPlayerController::LoadoutHandler(const FInputActionValue& Value)
 {
-	//TODO: UI를 띄웁니다.
 	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("WeaponLoadout"));
 	if (PlayerState != nullptr)
 	{

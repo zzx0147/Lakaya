@@ -18,18 +18,19 @@ enum class EInteractionState : uint8
 	Canceled UMETA(DisPlayerName = "Canceled"),
 };
 
-// USTRUCT()
-// struct FInteractionInfo
-// {
-// 	GENERATED_BODY();
-//
-// 	// 현재 인터랙션 중인 액터입니다.
-// 	UPROPERTY(ReplicatedUsing = OnRep_InteractingActor)
-// 	TWeakObjectPtr<AActor> InteractingActor;
-//
-// 	UFUNCTION()
-// 	void OnRep_InteractingActor();
-// };
+USTRUCT()
+struct FInteractionInfo
+{
+	GENERATED_BODY();
+
+	// 현재 캐릭터의 인터렉션 상태를 나타냅니다.
+	UPROPERTY()
+	EInteractionState InteractionState;
+
+	// 현재 인터렉션 상태가 유지되는 목표 시간입니다.
+	UPROPERTY()
+	float EndingTime;
+};
 
 UCLASS(Config = Game)
 class LAKAYA_API AInteractableCharacter : public AArmedCharacter
@@ -44,11 +45,14 @@ protected:
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
 public:
+	void StartInteraction();
+	void StopInteraction();
+	
 	// 현재 인터렉션이 가능한지 판별합니다.
-	bool ShouldInteractStart();
+	virtual bool ShouldInteractStart();
 
 	// 현재 인터렉션을 중단할 수 있는지 판별합니다.
-	bool ShouldInteractStop();
+	virtual  bool ShouldInteractStop();
 	
 	// 인터렉션을 초기화합니다. 인터렉션이 끝나는 경우 호출됩니다.
 	void InitializeInteraction();
@@ -69,7 +73,7 @@ protected:
 public:
 	// 인터렉션이 가능한 액터가 변경되는 경우 호출됩니다. 매개변수로 넘겨진 액터가 nullptr이면 인터렉션이 불가능해졌음을 의미하며,
 	// 그렇지 않은 경우 해당 액터와 인터렉션이 가능해졌음을 의미합니다.
-	// FInteractionSignature OnInteractableActorChanged;
+	FInteractionSignature OnInteractableActorChanged;
 
 	// 인터렉션중인 액터가 변화한 경우 호출됩니다. 매개변수로 넘겨진 액터가 nullptr이면 인터렉션 중단을 의미하며, 그렇지 않은 경우 인터렉션중임을 의미합니다.
 	FInteractionSignature OnInteractingActorChanged;
