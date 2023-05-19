@@ -111,7 +111,6 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 			}
 		}
 	}
-
 }
 
 void AOccupationGameMode::UpdateTeamScoreTick()
@@ -125,7 +124,7 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 	Super::RespawnPlayer(KilledController);
 	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnPlayer!!!!"));
 
-
+#pragma region 주석
 	//const auto* CollectorPlayerState = Cast<ALakayaBasePlayerState>(KilledController->PlayerState);
 	//if (CollectorPlayerState == nullptr)
 	//{
@@ -187,6 +186,7 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 	// }
 	//
 	// KilledDamageableCharacter->Respawn();
+#pragma endregion
 }
 
 void AOccupationGameMode::AddOccupyObject(const EPlayerTeam& Team)

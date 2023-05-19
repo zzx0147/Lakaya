@@ -19,27 +19,18 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-public:
-	FORCEINLINE APawn* const GetInteractingPawn() const { return InteractingPawn; }
-	FORCEINLINE EPlayerTeam const GetObjectTeam() const { return ObjectTeam; }
-	
 private:
 	virtual void OnInteractionStart(const float& Time, APawn* Caller) override;
 	virtual void OnInteractionStop(const float& Time, APawn* Caller) override;
 	virtual void OnCharacterDead(APawn* Caller) override;
 
-	void CharacterMovable(APawn* Caller);
-
-	// 플레이어의 움직임을 제한합니다.
-	void CharacterImMovable(APawn* Caller);
-
-	// 상호작용을 성공합니다.
-	void InteractionSuccess(APawn* Caller);
-
-	// 상호작용이 끝났습니다.
-	void OnInteractionFinish(APawn* Caller);
-
 public:
+	// 상호작용이 끝났습니다.
+	void OnInteractionFinish(const APawn* Caller);
+
+	FORCEINLINE APawn* const GetInteractingPawn() const { return InteractingPawn; }
+	FORCEINLINE EPlayerTeam const GetObjectTeam() const { return ObjectTeam; }
+	
 	void SetTeamObject(const EPlayerTeam& Team);
 	
 	UFUNCTION(BlueprintImplementableEvent)
@@ -49,13 +40,10 @@ private:
 	UFUNCTION()
 	void OnRep_BroadCastTeamObject();
 
-private:
 	UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject)
 	EPlayerTeam ObjectTeam = EPlayerTeam::None;
 
-private:
-	TWeakObjectPtr<class AInteractableCharacter> InteractingCharacter;
-	APawn* InteractingPawn;
+	// TWeakObjectPtr<class AInteractableCharacter> InteractingCharacter;
 	float FirstCallerTime = 0;
 	const float MaxInteractionDuration = 3;
 

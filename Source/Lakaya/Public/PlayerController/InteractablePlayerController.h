@@ -20,10 +20,9 @@ protected:
 	virtual void BeginPlay() override;
 	
 private:
-	void StartInteraction(const FInputActionValue& Value);
-	void StopInteraction(const FInputActionValue& Value);
+	void OrderStartInteraction(const FInputActionValue& Value);
+	void OrderStopInteraction(const FInputActionValue& Value);
 	
-private:
 	UPROPERTY(EditAnywhere, Category = "IC_Interaction")
 	UInputMappingContext* InteractionContext;
 

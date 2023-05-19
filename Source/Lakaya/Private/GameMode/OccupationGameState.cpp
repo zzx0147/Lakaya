@@ -48,7 +48,6 @@ void AOccupationGameState::BeginPlay()
 			GameResultWidget = CreateWidget<UGameResultWidget>(LocalController, GameResultWidgetClass);
 			if (GameResultWidget.IsValid())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("시발 있어요 위젯.시발 있어요 위젯.시발 있어요 위젯.시발 있어요 위젯.시발 있어요 위젯."));
 				GameResultWidget->AddToViewport();
 				GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
 			}

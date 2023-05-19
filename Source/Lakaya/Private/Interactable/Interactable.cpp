@@ -6,4 +6,6 @@
 AInteractable::AInteractable()
 {
 	Tags.Add("Interactable");
+
+	InteractingPawn = nullptr;
 }
