@@ -2,8 +2,12 @@
 
 
 #include "AnimInstance/CharAnimInstance.h"
-#include "Character/InteractableCharacter.h"
-#include "Occupation/OccupationObject.h"
+
+
+UCharAnimInstance::UCharAnimInstance()
+{
+	FireAnimDuration = 0.1f;
+}
 
 void UCharAnimInstance::NativeBeginPlay()
 {
@@ -12,13 +16,17 @@ void UCharAnimInstance::NativeBeginPlay()
 	if(const auto Character = Cast<AArmedCharacter>(TryGetPawnOwner()))
 	{
 		auto& Abilities = Character->GetAbilities();
+
 		if(Abilities.IsValidIndex(WeaponFire))
 		{
-			if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
+			if(const auto ResultNotifyFireAbility = Cast<UResultNotifyFireAbility>(Abilities[WeaponFire]))
 			{
-				FireAbility->OnFiringStateChanged.
-				AddLambda([this](const bool& FireState)
-					{bIsAutoFire = FireState;} );
+				ResultNotifyFireAbility->OnSingleFire.
+				AddLambda([this](const FVector& Start,const FVector&End, const FVector& Normal, const EFireResult& FireResult)
+				{
+					RecentFireTime = GetWorld()->TimeSeconds; 
+				} );
+				UE_LOG(LogTemp, Error, TEXT("Fire!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
 			}
 		}
 
@@ -42,49 +50,24 @@ void UCharAnimInstance::NativeBeginPlay()
 
 void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
 {
-	// if (const auto InteractableCharacter =
-	// 	Cast<AInteractableCharacter>(TryGetPawnOwner()))
-	// {
-	// 	if (NewInteractingActor)
-	// 	{
-	// 		bIsInteracting = true;
-	// 	}
-	// 	else
-	// 	{
-	// 		bIsInteracting = false;
-	// 	}
-	// }
-
-	const auto InteractableCharacter = Cast<AInteractableCharacter>(TryGetPawnOwner());
+	if (const auto InteractableCharacter =
+		Cast<AInteractableCharacter>(TryGetPawnOwner()))
 	{
 		bIsInteracting = NewInteractingActor != nullptr;
+
+		// if (NewInteractingActor)
+		// {
+		// 	bIsInteracting = true;
+		// }
+		// else
+		// {
+		// 	bIsInteracting = false;
+		// }
 	}
 }
 
-// void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
-// {
-// 	if (const auto InteractableCharacter =
-// 		Cast<AInteractableCharacter>(TryGetPawnOwner()))
-// 	{
-// 		const EInteractionState InteractionState =
-// 			InteractableCharacter->GetInteractionState();
-// 		switch (InteractionState)
-// 		{
-// 		case EInteractionState::OnGoing:
-// 			bIsInteracting = true;
-// 			break;
-// 		case EInteractionState::Success:
-// 			bIsInteracting = false;
-// 			break;
-// 		case EInteractionState::Stopped:
-// 			bIsInteracting = false;
-// 			break;
-// 		case EInteractionState::Canceled:
-// 			bIsInteracting = false;
-// 			break;
-// 		default:
-// 			bIsInteracting = false;
-// 			break;
-// 		}
-// 	}
-// }
+void UCharAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
+{
+	Super::NativeUpdateAnimation(DeltaSeconds);
+	bIsAutoFire = RecentFireTime + FireAnimDuration > GetWorld()->TimeSeconds;
+}

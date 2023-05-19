@@ -10,6 +10,7 @@ UCoolTimedSummonAbility::UCoolTimedSummonAbility()
 {
 	bWantsInitializeComponent = true;
 	bWantsTransformSet = true;
+	bCanEverStartRemoteCall = true;
 	ObjectPoolSize = 1;
 	CoolTime = 5.f;
 	SummonDistance = 50.f;
@@ -20,12 +21,6 @@ void UCoolTimedSummonAbility::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(UCoolTimedSummonAbility, EnableTime);
-}
-
-void UCoolTimedSummonAbility::AbilityStart()
-{
-	// 서버시간 예측의 오차와, 네트워크 딜레이를 감안하여 쿨타임이 돌기 조금 전부터 서버에 능력 사용요청을 할 수는 있도록 합니다.
-	if (EnableTime - 0.1f <= GetServerTime()) Super::AbilityStart();
 }
 
 void UCoolTimedSummonAbility::InitializeComponent()
@@ -46,15 +41,22 @@ void UCoolTimedSummonAbility::InitializeComponent()
 			return nullptr;
 		}
 
+		AbilityInstance->SetReplicates(true);
 		AbilityInstance->OnAbilityEnded.AddUObject(this, &UCoolTimedSummonAbility::OnAbilityInstanceEnded);
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("AbilityInstance spawned"));
 		return AbilityInstance;
 	});
 }
 
-void UCoolTimedSummonAbility::RequestStart_Implementation(const float& RequestTime)
+bool UCoolTimedSummonAbility::ShouldStartRemoteCall()
 {
-	Super::RequestStart_Implementation(RequestTime);
+	// 서버시간 예측의 오차와, 네트워크 딜레이를 감안하여 쿨타임이 돌기 조금 전부터 서버에 능력 사용요청을 할 수는 있도록 합니다.
+	return EnableTime - 0.1f <= GetServerTime();
+}
+
+void UCoolTimedSummonAbility::RemoteAbilityStart(const float& RequestTime)
+{
+	Super::RemoteAbilityStart(RequestTime);
 	if (EnableTime > GetServerTime()) return;
 
 	if (const auto AbilityInstance = AbilityInstancePool.GetObject())
@@ -62,8 +64,11 @@ void UCoolTimedSummonAbility::RequestStart_Implementation(const float& RequestTi
 		if (bWantsTransformSet)
 		{
 			const auto Direction = GetNormalToCameraForwardTracePoint(SearchFromActor, CollisionQueryParams);
-			AbilityInstance->SetActorLocationAndRotation(GetOwner()->GetActorLocation() + Direction * SummonDistance,
-			                                             Direction.Rotation());
+			const auto ActorLocation = GetOwner()->GetActorLocation();
+			const auto SummonLocation = ActorLocation + Direction * SummonDistance;
+
+			AbilityInstance->SetActorLocationAndRotation(SummonLocation, Direction.Rotation());
+			DrawDebugLine(GetWorld(), ActorLocation, SummonLocation, FColor::Emerald, false, 3);
 		}
 		AbilityInstance->OnSummoned();
 	}
@@ -80,4 +85,5 @@ void UCoolTimedSummonAbility::OnRep_EnableTime()
 void UCoolTimedSummonAbility::OnAbilityInstanceEnded(ASummonAbilityInstance* const& AbilityInstance)
 {
 	AbilityInstancePool.ReturnObject(AbilityInstance);
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Projectile returned!"));
 }

@@ -93,6 +93,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameTimeWidget> CharacterSelectTimerWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGamePlayCrosshairWidget> CrosshairWidgetClass;
+
+
 	// 게임 종료 시 승리자를 띄우는 위젯 클래스를 지정합니다.
 	// UPROPERTY(EditDefaultsOnly)
 	// TSubclassOf<class UGameResultWidget> GameResultWidgetClass;
@@ -121,6 +125,9 @@ protected:
 	FTimerHandle CharacterSelectTimer;
 
 	TObjectPtr<ULoadingWidget> LoadingWidget;
+
+	TObjectPtr<class UGamePlayCrosshairWidget> CrosshairWidget;
+	
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
 	TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;

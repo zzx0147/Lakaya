@@ -20,32 +20,33 @@ UAutoFireAbility::UAutoFireAbility()
 	InitDelay = FireDelay = 0.2f;
 	FireRange = 5000.f;
 	FireDamage = 20.f;
+	bCanEverStopRemoteCall = bCanEverStartRemoteCall = true;
 }
 
-void UAutoFireAbility::AbilityStart()
+void UAutoFireAbility::LocalAbilityStart()
 {
 	if (GetOwner()->HasAuthority())
 	{
-		Super::AbilityStart();
+		Super::LocalAbilityStart();
 		return;
 	}
 
 	if (bIsFireRequested) return;
 	bIsFireRequested = true;
-	Super::AbilityStart();
+	Super::LocalAbilityStart();
 }
 
-void UAutoFireAbility::AbilityStop()
+void UAutoFireAbility::LocalAbilityStop()
 {
 	if (GetOwner()->HasAuthority())
 	{
-		Super::AbilityStop();
+		Super::LocalAbilityStop();
 		return;
 	}
 
 	if (!bIsFireRequested) return;
 	bIsFireRequested = false;
-	Super::AbilityStop();
+	Super::LocalAbilityStop();
 }
 
 void UAutoFireAbility::BeginPlay()
@@ -64,22 +65,22 @@ void UAutoFireAbility::BeginPlay()
 	}
 }
 
-void UAutoFireAbility::RequestStart_Implementation(const float& RequestTime)
+void UAutoFireAbility::RemoteAbilityStart(const float& RequestTime)
 {
-	Super::RequestStart_Implementation(RequestTime);
+	Super::RemoteAbilityStart(RequestTime);
 	if (bIsFiring) return;
 	bIsFiring = true;
 	if (auto& TimerManager = GetWorld()->GetTimerManager(); !TimerManager.TimerExists(FireTimer))
 	{
 		TimerManager.SetTimer(FireTimer, this, &UAutoFireAbility::FireTick, FireDelay, true, InitDelay);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
 	}
 	OnFiringStateChanged.Broadcast(bIsFiring);
 }
 
-void UAutoFireAbility::RequestStop_Implementation(const float& RequestTime)
+void UAutoFireAbility::RemoteAbilityStop(const float& RequestTime)
 {
-	Super::RequestStop_Implementation(RequestTime);
+	Super::RemoteAbilityStop(RequestTime);
 	if (!bIsFiring) return;
 	bIsFiring = false;
 	OnFiringStateChanged.Broadcast(bIsFiring);
@@ -128,7 +129,7 @@ void UAutoFireAbility::FireTick()
 	if (!bIsFiring)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(FireTimer);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
 	}
 	else if (ShouldFire()) SingleFire();
 	else FailToFire();

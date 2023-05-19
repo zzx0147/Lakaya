@@ -19,7 +19,7 @@ UBulletComponent::UBulletComponent()
 void UBulletComponent::OnAliveStateChanged(const bool& AliveState)
 {
 	Super::OnAliveStateChanged(AliveState);
-	if (AliveState && GetOwner()->HasAuthority()) Bullets = MaxBullets;
+	if (AliveState && GetOwner()->HasAuthority()) Reload();
 }
 
 void UBulletComponent::OnRegister()
@@ -33,7 +33,7 @@ void UBulletComponent::OnRegister()
 			LocalController && LocalController->IsLocalController())
 			SetupBulletWidget(LocalController);
 
-		Pawn->ReceiveControllerChangedDelegate.AddDynamic(this, &UBulletComponent::OnOwnerControllerChanged);
+		Pawn->ReceiveControllerChangedDelegate.AddUniqueDynamic(this, &UBulletComponent::OnOwnerControllerChanged);
 	}
 }
 

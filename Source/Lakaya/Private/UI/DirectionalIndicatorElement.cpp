@@ -32,11 +32,15 @@ void UDirectionalIndicatorElement::NativeTick(const FGeometry& MyGeometry, float
 	if (bIsIndicating)
 	{
 		FVector ForwardVector = MyPosition->GetForwardVector();//카메라의 포워드 벡터
+		//TODO: 새로운 구조체를 생성하기보다는 이렇게 하면 메모리 효율성이 높아집니다.
+		// ForwardVector.Z = 0.f;
 		ForwardVector = FVector(ForwardVector.X, ForwardVector.Y, 0.0f);//높이는 버린다
 
 		FVector ToTargetVector = TargetPosition - MyPosition->GetComponentLocation();//카메라로부터 적 위치를 가르키는 벡터
 		ToTargetVector = FVector(ToTargetVector.X, ToTargetVector.Y, 0.0f);//높이는 버린다
 
+		//TODO: 벡터를 즉시 로테이터로 변환할 수 있습니다. 이 함수는 벡터가 바라보는 방향을 나타내는 회전값을 만들어냅니다.
+		// ToTargetVector.Rotation()
 		double Degrees = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(ForwardVector.GetSafeNormal(),ToTargetVector.GetSafeNormal())));
 		
 		FVector CrossProduct = FVector::CrossProduct(ForwardVector, ToTargetVector);

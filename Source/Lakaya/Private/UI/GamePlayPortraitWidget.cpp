@@ -6,21 +6,21 @@
 
 UGamePlayPortraitWidget::UGamePlayPortraitWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	static const ConstructorHelpers::FObjectFinder<UTexture2D> CitizenPortraitFinder(
+	static const ConstructorHelpers::FObjectFinder<UTexture2D> RenaPortraitFinder(
+		TEXT("/Game/UI/CharacterPortrait/T_Rena"));
+	static const ConstructorHelpers::FObjectFinder<UTexture2D> WaziPortraitFinder(
+		TEXT("/Game/UI/CharacterPortrait/T_Wazi"));
+	static const ConstructorHelpers::FObjectFinder<UTexture2D> GangrimPortraitFinder(
 		TEXT("/Game/UI/CharacterPortrait/T_Citizen"));
-	static const ConstructorHelpers::FObjectFinder<UTexture2D> GovernmentManPortraitFinder(
-		TEXT("/Game/UI/CharacterPortrait/T_GovernmentMan"));
-	static const ConstructorHelpers::FObjectFinder<UTexture2D> GangsterPortraitFinder(
-		TEXT("/Game/UI/CharacterPortrait/T_Gangster"));
 
 	CharacterPortraitTextureMap.Reserve(3);
 
-	if (CitizenPortraitFinder.Succeeded()) CharacterPortraitTextureMap.Emplace(
-		FName(TEXT("Citizen")), CitizenPortraitFinder.Object);
-	if (GovernmentManPortraitFinder.Succeeded())CharacterPortraitTextureMap.Emplace(
-		FName(TEXT("GovernmentMan")), GovernmentManPortraitFinder.Object);
-	if (GangsterPortraitFinder.Succeeded())CharacterPortraitTextureMap.Emplace(
-		FName(TEXT("Gangster")), GangsterPortraitFinder.Object);
+	if (RenaPortraitFinder.Succeeded()) CharacterPortraitTextureMap.Emplace(
+		FName(TEXT("Rena")), RenaPortraitFinder.Object);
+	if (WaziPortraitFinder.Succeeded()) CharacterPortraitTextureMap.Emplace(
+		FName(TEXT("Wazi")), WaziPortraitFinder.Object);
+	if (GangrimPortraitFinder.Succeeded()) CharacterPortraitTextureMap.Emplace(
+		FName(TEXT("Gangrim")), GangrimPortraitFinder.Object);
 }
 
 void UGamePlayPortraitWidget::NativeConstruct()

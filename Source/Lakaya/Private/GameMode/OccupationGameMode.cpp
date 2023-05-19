@@ -1,9 +1,7 @@
 #include "GameMode/OccupationGameMode.h"
 #include "Character/InteractableCharacter.h"
 #include "Character/StatPlayerState.h"
-#include "GameFramework/PlayerStart.h"
 #include "GameMode/OccupationGameState.h"
-#include "Kismet/GameplayStatics.h"
 #include "PlayerController/InteractablePlayerController.h"
 
 AOccupationGameMode::AOccupationGameMode() : Super()
@@ -19,6 +17,7 @@ AOccupationGameMode::AOccupationGameMode() : Super()
 	GameStateClass = AOccupationGameState::StaticClass();
 }
 
+//TODO: 필요없는 함수 오버라이딩
 void AOccupationGameMode::OnPlayerKilled(AController* VictimController, AController* InstigatorController, AActor* DamageCauser)
 {
 	Super::OnPlayerKilled(VictimController, InstigatorController, DamageCauser);
@@ -32,6 +31,7 @@ void AOccupationGameMode::BeginPlay()
 
 }
 
+//TODO: 필요없는 함수 오버라이딩
 void AOccupationGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
@@ -44,6 +44,7 @@ void AOccupationGameMode::Logout(AController* Exiting)
 	// TODO : 플레이어가 나갈 시 나간 플레이어의 정보를 ai에게 넣어줘야함
 }
 
+//TODO: Tick을 비활성화해두고 매치스테이트를 직접 제어하는 방식으로 구조를 전환했으므로 더이상 사용되지 않습니다.
 bool AOccupationGameMode::ReadyToStartMatch_Implementation()
 {
 	if (GetMatchState() != MatchState::WaitingToStart) return false;
@@ -53,6 +54,7 @@ bool AOccupationGameMode::ReadyToStartMatch_Implementation()
 	return Super::ReadyToStartMatch_Implementation();
 }
 
+//TODO: Tick을 비활성화해두고 매치스테이트를 직접 제어하는 방식으로 구조를 전환했으므로 더이상 사용되지 않습니다.
 bool AOccupationGameMode::ReadyToEndMatch_Implementation()
 {
 	// return OccupationGameState->GetMatchRemainTime() <= 0.f || OccupationGameState->IsSomeoneReachedMaxScore();
@@ -85,8 +87,17 @@ void AOccupationGameMode::HandleMatchHasEnded()
 void AOccupationGameMode::HandleMatchIsSelectCharacter()
 {
 	Super::HandleMatchIsSelectCharacter();
+	//TODO: 비교연산을 수행하는 두 변수 모두 OccupationGameState의 멤버변수이므로, OccupationGameState에 함수를 만들어서 플레이어 숫자가 가득 찼는지 여부를 조사하는 편이 좋을 것 같습니다. 
 	if (OccupationGameState->GetMaximumPlayers() == OccupationGameState->PlayerArray.Num())
 	{
+		//TODO: 이렇게 사용하면 더 간단히 표현할 수 있습니다.
+		// uint8 Count = 0;
+		// for (auto& LakayaBasePlayerState : OccupationGameState->PlayerArray)
+		// {
+		// 	++Count;
+		// 	if (!LakayaBasePlayerState) continue;
+		// 	
+		// }
 		for (int i = 0; i < OccupationGameState->GetMaximumPlayers(); i++)
 		{
 			if (OccupationGameState->PlayerArray.IsValidIndex(i))
@@ -95,6 +106,7 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 				if (LakayaBasePlayerState == nullptr)
 				{
 					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
+					//TODO: 리턴을 해버리면 다른 정상적인 플레이어 스테이트는 팀이 배정되지 않고 넘어갑니다. 차라리 Fatal 로그를 사용하여 게임을 튕겨버리도록 하거나, continue를 하는 편이 낫습니다.
 					return;
 				}
 
@@ -108,6 +120,10 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 					LakayaBasePlayerState->SetTeam(EPlayerTeam::B);
 					UE_LOG(LogTemp, Warning, TEXT("B팀에 배정 되었습니다."));
 				}
+				//TODO: 위의 분기문은 다음과 같이 축약 가능
+				// const auto Team = i % 2 == 0 ? EPlayerTeam::A : EPlayerTeam::B;
+				// LakayaBasePlayerState->SetTeam(Team);
+				// UE_LOG(LogNet, Log, TEXT("%d 팀에 배정 되었습니다."), Team);
 			}
 		}
 	}
@@ -119,10 +135,11 @@ void AOccupationGameMode::UpdateTeamScoreTick()
 	if (BTeamObjectCount > 0) OccupationGameState->AddTeamScore(EPlayerTeam::B, BTeamObjectCount * AdditiveScore);
 }
 
+//TODO: 필요없는 함수 오버라이딩
 void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 {
 	Super::RespawnPlayer(KilledController);
-	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnPlayer!!!!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnPlayer!!!!"));
 
 #pragma region 주석
 	//const auto* CollectorPlayerState = Cast<ALakayaBasePlayerState>(KilledController->PlayerState);
@@ -200,5 +217,5 @@ void AOccupationGameMode::SubOccupyObject(const EPlayerTeam& Team)
 {
 	if (Team == EPlayerTeam::A && ATeamObjectCount > 0) --ATeamObjectCount;
 	else if (Team == EPlayerTeam::B && BTeamObjectCount > 0) --BTeamObjectCount;
-	else UE_LOG(LogScript, Warning, TEXT("Trying to AddOccupyObject with invalid value! it was %d"), Team);
+	else UE_LOG(LogScript, Warning, TEXT("Trying to SubOccupyObject with invalid value! it was %d"), Team);
 }

@@ -27,6 +27,10 @@ struct FInteractionInfo
 
 	// 현재 플레이어의 상호작용 상태를 나타냅니다.
 	EInteractionState InteractionState = EInteractionState::None;
+
+	// 현재 인터렉션 상태가 유지되는 목표 시간입니다.
+	UPROPERTY()
+	float EndingTime;
 };
 
 UCLASS(Config = Game)
@@ -65,7 +69,8 @@ private:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void RequestInteractionStop(const float& Time, AActor* Actor);
-	
+
+private:
 	// 인터렉션이 가능한 액터입니다.
 	TWeakObjectPtr<AActor> InteractableActor;
 

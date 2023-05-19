@@ -43,6 +43,7 @@ void AInteractablePlayerController::SetupMappingContext(UEnhancedInputLocalPlaye
 	InputSubsystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
 
+//TODO: 불필요한 함수 오버라이딩
 void AInteractablePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -52,6 +53,7 @@ void AInteractablePlayerController::OrderStartInteraction(const FInputActionValu
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StartInteraction."));
 	const auto InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
+
 	if (InteractableCharacter == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("InteractablePlayerController_InteractableCharacter is null."));

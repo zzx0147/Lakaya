@@ -33,7 +33,7 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
 	static ConstructorHelpers::FClassFinder<UDirectionalDamageIndicator> DirectionDamageFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_DirectionalDamageIndicator"));
-	
+
 	if (HealthFinder.Succeeded()) HealthWidgetClass = HealthFinder.Class;
 	if (DirectionDamageFinder.Succeeded()) DirectionDamageIndicatorClass = DirectionDamageFinder.Class;
 }
@@ -89,13 +89,15 @@ void ALakayaBasePlayerState::BeginPlay()
 			HealthWidget->SetCurrentHealth(Health);
 		}
 
-		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(LocalController, DirectionDamageIndicatorClass);
+		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(
+			LocalController, DirectionDamageIndicatorClass);
 		if (DirectionDamageIndicatorWidget == nullptr)
 		{
-				UE_LOG(LogTemp, Warning, TEXT("LakayaBasePlayerState_PreInitializeComponents DirectionDamageIndicatorWidget is null."));
-				return;
+			UE_LOG(LogTemp, Warning,
+			       TEXT("LakayaBasePlayerState_PreInitializeComponents DirectionDamageIndicatorWidget is null."));
+			return;
 		}
-		
+
 		DirectionDamageIndicatorWidget->AddToViewport();
 	}
 }
@@ -127,12 +129,13 @@ bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) con
 
 bool ALakayaBasePlayerState::IsSameTeam(const EPlayerTeam& Other) const
 {
-	// 두 플레이어가 개인전상태가 아니고, Team 값이 같은 경우 같은 팀으로 판별합니다.
-	return Other != EPlayerTeam::Individual && Team != EPlayerTeam::Individual && Other == Team;
+	// 현재 팀이 설정되지 않았거나 개인전 모드가 아니고, Team 값이 같은 경우 같은 팀으로 판별합니다.
+	return Team != EPlayerTeam::None && Team != EPlayerTeam::Individual && Other == Team;
 }
 
 void ALakayaBasePlayerState::SetTeam(const EPlayerTeam& DesireTeam)
 {
+	if (Team == DesireTeam) return;
 	Team = DesireTeam;
 	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->SetTeam(Team);
 	OnTeamChanged.Broadcast(Team);
@@ -180,9 +183,15 @@ void ALakayaBasePlayerState::BroadcastMaxHealthChanged() const
 bool ALakayaBasePlayerState::ShouldTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
                                               AController* EventInstigator, AActor* DamageCauser)
 {
-	// 플레이어가 생존해있고, 데미지가 공격이 아닌 회복인 경우나 EventInstigator가 nullptr인 경우, 같은 팀이 아닌 경우 피해를 받도록 합니다.
-	return IsAlive() && (DamageAmount < 0.f || !EventInstigator
-		|| !IsSameTeam(EventInstigator->GetPlayerState<ALakayaBasePlayerState>()));
+	// 플레이어가 이미 사망한 상태인 경우 데미지를 받지 않습니다.
+	if (!IsAlive()) return false;
+
+	// EventInstigator가 nullptr인 경우 글로벌 데미지이거나 어떤 정의할 수 없는 데미지이지만 일단 받아야하는 데미지라고 판단합니다.
+	if (!EventInstigator) return true;
+
+	// 데미지가 피해인 경우 다른 팀인 경우에만 받고, 데미지가 힐인 경우 같은 팀인 경우에만 받습니다.
+	const auto Other = EventInstigator->GetPlayerState<ALakayaBasePlayerState>();
+	return (DamageAmount > 0.f && !IsSameTeam(Other)) || (DamageAmount < 0.f && IsSameTeam(Other));
 }
 
 void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
@@ -192,7 +201,7 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		OldCharacter->SetTeam(EPlayerTeam::None);
 		OnAliveStateChanged.RemoveAll(OldCharacter);
 	}
-	
+
 	if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
 	{
 		if (Team != EPlayerTeam::None) Character->SetTeam(Team);
@@ -295,20 +304,21 @@ bool ALakayaBasePlayerState::RequestCharacterChange_Validate(const FName& Name)
 void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserName, const FVector& CauserLocation,
                                                             const float& Damage)
 {
-	// TODO : 피격 레이더를 업데이트 합니다.
-	if(GetPlayerController()->IsLocalPlayerController())
+	if (GetPlayerController()->IsLocalPlayerController())
 	{
+		//TODO: 위젯 nullptr 체크 필요, 매개변수 하드코딩 수정 필요
 		DirectionDamageIndicatorWidget->IndicateStart(CauserName.ToString(), CauserLocation, 3.0f);
-		
+
+		//TODO: 애셋을 피격한 시점에 로드하면 프레임드랍이 발생할 수 있으므로 생성자에서 로드하도록 하는 것이 좋습니다. 나이아가라 시스템의 경우 간단히 블루프린트 클래스 디폴트에서 넣을 수 있습니다.
 		// ScreenEffect : 피격 당할 시 화면에 표기 되는 이펙트
 		FSoftObjectPath NiagaraPath;
 		NiagaraPath = (TEXT("/Game/Effects/M_VFX/VFX_Screeneffect.VFX_Screeneffect"));
 		UNiagaraSystem* NiagaraEffect = Cast<UNiagaraSystem>(NiagaraPath.TryLoad());
-      
+
 		if (NiagaraEffect)
 		{
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect,FVector::ZeroVector);
-			UE_LOG(LogTemp, Warning, TEXT("아야.")); 
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect, FVector::ZeroVector);
+			UE_LOG(LogTemp, Warning, TEXT("아야."));
 		}
 		else
 		{

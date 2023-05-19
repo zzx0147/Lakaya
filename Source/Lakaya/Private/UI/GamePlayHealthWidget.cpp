@@ -36,6 +36,7 @@ void UGamePlayHealthWidget::SetMaximumHealth(const float& NewMaximumHealth)
 {
 	//업데이트된 최대 체력을 저장하고 소수점을 버린뒤 텍스트로 표기(맨 앞에 /를 붙여서 표기)
 	MaximumHealth = NewMaximumHealth;
+	//TODO: 체력 표시 포맷을 저장해두면 퍼포먼스가 높아집니다.
 	MaximumHealthText->SetText(FText::FromString(FString::Printf(TEXT("/%.0f"), MaximumHealth)));
 	
 	//체력바 업데이트
