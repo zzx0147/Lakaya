@@ -19,12 +19,6 @@ UReloadAbility::UReloadAbility()
 	bCanEverStartRemoteCall = true;
 }
 
-void UReloadAbility::InitializeComponent()
-{
-	Super::InitializeComponent();
-	BulletComponent = GetOwner()->FindComponentByClass<UBulletComponent>();
-}
-
 void UReloadAbility::OnAliveStateChanged(const bool& AliveState)
 {
 	Super::OnAliveStateChanged(AliveState);
@@ -41,7 +35,9 @@ void UReloadAbility::RemoteAbilityStart(const float& RequestTime)
 	Super::RemoteAbilityStart(RequestTime);
 
 	// 재장전중이지 않고, BulletComponent가 존재하고, 탄창이 가득차있지 않고, 살아있는 경우에만 재장전을 시작합니다.
-	if (bRecentReloadState || !BulletComponent.IsValid() || BulletComponent->IsFull() || !GetAliveState()) return;
+	if (const auto BulletComponent = GetResourceComponent<UBulletComponent>();
+		bRecentReloadState || !BulletComponent || BulletComponent->IsFull() || !GetAliveState())
+		return;
 
 	ReloadingTime = GetServerTime() + ReloadDelay;
 	SetReloadState(true);
@@ -57,9 +53,9 @@ bool UReloadAbility::ShouldStartRemoteCall()
 
 void UReloadAbility::ReloadTimerHandler()
 {
-	if (GetOwner()->HasAuthority() && BulletComponent.IsValid())
+	if (GetOwner()->HasAuthority())
 	{
-		BulletComponent->Reload();
+		GetResourceComponent<UBulletComponent>()->Reload();
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Reloaded!"));
 	}
 	SetReloadState(false);

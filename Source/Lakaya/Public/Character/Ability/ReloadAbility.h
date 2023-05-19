@@ -17,7 +17,6 @@ class LAKAYA_API UReloadAbility : public UCharacterAbility
 public:
 	UReloadAbility();
 
-	virtual void InitializeComponent() override;
 	virtual void OnAliveStateChanged(const bool& AliveState) override;
 
 protected:
@@ -49,5 +48,4 @@ private:
 
 	bool bRecentReloadState;
 	FTimerHandle ReloadTimer;
-	TWeakObjectPtr<class UBulletComponent> BulletComponent;
 };

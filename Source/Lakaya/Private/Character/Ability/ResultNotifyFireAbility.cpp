@@ -5,7 +5,6 @@
 
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
-#include "Character/BulletComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/ArrowComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -19,7 +18,6 @@ UResultNotifyFireAbility::UResultNotifyFireAbility()
 	bShouldFireSmoothing = false;
 	PoolCount = 20;
 	DecalShowingTime = 10.f;
-	BulletCost = 1;
 	bCanEverStopRemoteCall = bCanEverStartRemoteCall = true;
 }
 
@@ -50,7 +48,6 @@ void UResultNotifyFireAbility::OnAliveStateChanged(const bool& AliveState)
 void UResultNotifyFireAbility::InitializeComponent()
 {
 	Super::InitializeComponent();
-	BulletComponent = GetOwner()->FindComponentByClass<UBulletComponent>();
 	if (auto MuzzleComponents = GetOwner()->GetComponentsByTag(UArrowComponent::StaticClass(), FName("Muzzle"));
 		MuzzleComponents.IsValidIndex(0))
 		MuzzleComponent = Cast<UArrowComponent>(MuzzleComponents[0]);
@@ -98,8 +95,7 @@ void UResultNotifyFireAbility::FireTick()
 
 bool UResultNotifyFireAbility::ShouldFire()
 {
-	// BulletComponent가 존재하는 경우 CostBullet에 실패하면 false를 반환합니다. 
-	return !BulletComponent.IsValid() || BulletComponent->CostBullet(BulletCost);
+	return CostResource(FireCost);
 }
 
 void UResultNotifyFireAbility::SingleFire()
