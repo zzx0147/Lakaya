@@ -39,6 +39,9 @@ protected:
 // 	class AAIIndividualGameState* AIIndividualGameState;
 private:
 	UPROPERTY(EditDefaultsOnly)
+	int32 NumberOfAi;
+	
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class AAiCharacterController> AIControllerClass;
 
 	TArray<TObjectPtr<AAiCharacterController>> AiControllerArray;

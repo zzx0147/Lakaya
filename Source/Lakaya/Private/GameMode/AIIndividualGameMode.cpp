@@ -16,12 +16,14 @@ AAIIndividualGameMode::AAIIndividualGameMode()
 	// PlayerControllerClass = ABattlePlayerController::StaticClass();
 	// PlayerStateClass = AStatPlayerState::StaticClass();
 	// GameStateClass = AAIIndividualGameState::StaticClass();
+
+	NumberOfAi = 5;
 }
 
 void AAIIndividualGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	for(int i = 0 ; i < 5; ++i)
+	for(int i = 0 ; i <NumberOfAi; ++i)
 	{
 		AAiCharacterController* AiController;
 		AiController = GetWorld()->SpawnActor<AAiCharacterController>(AIControllerClass);
