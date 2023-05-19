@@ -13,21 +13,18 @@ const FName ALinearProjectile::StaticMeshComponentName = FName("StaticMeshCompon
 
 ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	AActor::SetReplicateMovement(true);
+	bReplicates = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	PrimaryActorTick.bCanEverTick = true;
 	LinearVelocity = 100.f;
 
-	SceneComponent = CreateDefaultSubobject<USceneComponent>(SceneComponentName);
-	SetRootComponent(SceneComponent);
-
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(CollisionComponentName);
-	CollisionComponent->SetupAttachment(SceneComponent);
 	CollisionComponent->SetCollisionProfileName(TEXT("Trigger"));
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	CollisionComponent->SetEnableGravity(false);
 	CollisionComponent->SetSimulatePhysics(true);
 	CollisionComponent->CanCharacterStepUpOn = ECB_No;
+	SetRootComponent(CollisionComponent);
 
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(StaticMeshComponentName);
 	StaticMeshComponent->SetupAttachment(CollisionComponent);
@@ -40,6 +37,8 @@ void ALinearProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ALinearProjectile, SummonedTime)
+	DOREPLIFETIME(ALinearProjectile, SummonedLocation)
+	DOREPLIFETIME(ALinearProjectile, SummonedRotation)
 }
 
 void ALinearProjectile::PostInitializeComponents()
@@ -59,19 +58,27 @@ void ALinearProjectile::OnSummoned()
 	Super::OnSummoned();
 	CollisionComponent->SetPhysicsLinearVelocity(GetActorForwardVector() * LinearVelocity);
 	SummonedTime = GetServerTime();
+	SummonedLocation = GetActorLocation();
+	SummonedRotation = GetActorRotation();
 	StaticMeshComponent->SetVisibility(true);
 }
 
 void ALinearProjectile::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	CollisionComponent->SetWorldLocation(
-		GetActorLocation() + GetActorForwardVector() * LinearVelocity * SummonedTime - GetServerTime());
+	SetActorLocation(SummonedLocation + GetActorForwardVector() * (LinearVelocity * (GetServerTime() - SummonedTime)));
 }
 
 void ALinearProjectile::OnRep_SummonedTime()
 {
-	SetActorTickEnabled(SummonedTime > 0.f);
+	const auto ProjectileState = SummonedTime > 0.f;
+	SetActorTickEnabled(ProjectileState);
+	StaticMeshComponent->SetVisibility(ProjectileState);
+}
+
+void ALinearProjectile::OnRep_SummonedRotation()
+{
+	SetActorRotation(SummonedRotation);
 }
 
 void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -79,7 +86,7 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
                                                          bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (!HasAuthority() || OtherActor == GetInstigator() || OtherActor == this) return;
-	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("OnCollision"));
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("OnCollision"));
 	SummonedTime = 0.f;
 	StaticMeshComponent->SetVisibility(false);
 	BroadcastOnAbilityEnded();

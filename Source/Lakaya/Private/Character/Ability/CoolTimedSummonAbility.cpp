@@ -41,6 +41,7 @@ void UCoolTimedSummonAbility::InitializeComponent()
 			return nullptr;
 		}
 
+		AbilityInstance->SetReplicates(true);
 		AbilityInstance->OnAbilityEnded.AddUObject(this, &UCoolTimedSummonAbility::OnAbilityInstanceEnded);
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("AbilityInstance spawned"));
 		return AbilityInstance;
@@ -63,8 +64,11 @@ void UCoolTimedSummonAbility::RemoteAbilityStart(const float& RequestTime)
 		if (bWantsTransformSet)
 		{
 			const auto Direction = GetNormalToCameraForwardTracePoint(SearchFromActor, CollisionQueryParams);
-			AbilityInstance->SetActorLocationAndRotation(GetOwner()->GetActorLocation() + Direction * SummonDistance,
-			                                             Direction.Rotation());
+			const auto ActorLocation = GetOwner()->GetActorLocation();
+			const auto SummonLocation = ActorLocation + Direction * SummonDistance;
+
+			AbilityInstance->SetActorLocationAndRotation(SummonLocation, Direction.Rotation());
+			DrawDebugLine(GetWorld(), ActorLocation, SummonLocation, FColor::Emerald, false, 3);
 		}
 		AbilityInstance->OnSummoned();
 	}
@@ -81,4 +85,5 @@ void UCoolTimedSummonAbility::OnRep_EnableTime()
 void UCoolTimedSummonAbility::OnAbilityInstanceEnded(ASummonAbilityInstance* const& AbilityInstance)
 {
 	AbilityInstancePool.ReturnObject(AbilityInstance);
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Projectile returned!"));
 }
