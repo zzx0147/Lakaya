@@ -5,6 +5,7 @@
 
 #include "Components/SphereComponent.h"
 #include "GameFramework/GameStateBase.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 const FName ALinearProjectile::SceneComponentName = FName("SceneComponent");
@@ -16,13 +17,12 @@ ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer
 	bReplicates = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	PrimaryActorTick.bCanEverTick = true;
-	LinearVelocity = 100.f;
+	LinearVelocity = 1000.f;
+	BaseDamage = 20.f;
 
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(CollisionComponentName);
 	CollisionComponent->SetCollisionProfileName(TEXT("Trigger"));
-	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	CollisionComponent->SetEnableGravity(false);
-	CollisionComponent->SetSimulatePhysics(true);
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	CollisionComponent->CanCharacterStepUpOn = ECB_No;
 	SetRootComponent(CollisionComponent);
 
@@ -56,17 +56,19 @@ float ALinearProjectile::GetServerTime() const
 void ALinearProjectile::OnSummoned()
 {
 	Super::OnSummoned();
-	CollisionComponent->SetPhysicsLinearVelocity(GetActorForwardVector() * LinearVelocity);
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SummonedTime = GetServerTime();
 	SummonedLocation = GetActorLocation();
 	SummonedRotation = GetActorRotation();
 	StaticMeshComponent->SetVisibility(true);
+	SetActorTickEnabled(true);
 }
 
 void ALinearProjectile::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	SetActorLocation(SummonedLocation + GetActorForwardVector() * (LinearVelocity * (GetServerTime() - SummonedTime)));
+	SetActorLocation(SummonedLocation + GetActorForwardVector() * (LinearVelocity * (GetServerTime() - SummonedTime)),
+	                 HasAuthority());
 }
 
 void ALinearProjectile::OnRep_SummonedTime()
@@ -86,8 +88,12 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
                                                          bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (!HasAuthority() || OtherActor == GetInstigator() || OtherActor == this) return;
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("OnCollision"));
+	UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, GetInstigator()->GetController(), GetInstigator(),
+	                              nullptr);
+	SetActorTickEnabled(false);
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SummonedTime = 0.f;
 	StaticMeshComponent->SetVisibility(false);
 	BroadcastOnAbilityEnded();
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("OnCollision"));
 }

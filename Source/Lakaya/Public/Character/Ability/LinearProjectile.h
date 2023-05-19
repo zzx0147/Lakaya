@@ -38,6 +38,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float LinearVelocity;
 
+	UPROPERTY(EditAnywhere)
+	float BaseDamage;
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* SceneComponent;
