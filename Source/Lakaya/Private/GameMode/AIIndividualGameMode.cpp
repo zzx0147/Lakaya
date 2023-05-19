@@ -4,6 +4,7 @@
 #include "Character/StatPlayerState.h"
 #include "GameMode/AIIndividualGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include "AI/AiCharacterController.h"
 #include "PlayerController/BattlePlayerController.h"
 
 AAIIndividualGameMode::AAIIndividualGameMode()
@@ -15,6 +16,28 @@ AAIIndividualGameMode::AAIIndividualGameMode()
 	// PlayerControllerClass = ABattlePlayerController::StaticClass();
 	// PlayerStateClass = AStatPlayerState::StaticClass();
 	// GameStateClass = AAIIndividualGameState::StaticClass();
+}
+
+void AAIIndividualGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+	for(int i = 0 ; i < 5; ++i)
+	{
+		AAiCharacterController* AiController;
+		AiController = GetWorld()->SpawnActor<AAiCharacterController>(AIControllerClass);
+		AiControllerArray.Emplace(AiController);
+		RegisterPlayer(AiController);
+	}
+}
+
+void AAIIndividualGameMode::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+	for(const auto AiController : AiControllerArray)
+	{
+		RestartPlayer(AiController);
+	}
+	
 }
 
 // void AAIIndividualGameMode::PostLogin(APlayerController* NewPlayer)

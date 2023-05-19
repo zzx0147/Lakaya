@@ -26,7 +26,6 @@ void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 void ALakayaBaseGameState::BeginPlay()
 {
-	Super::BeginPlay();
 	
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
