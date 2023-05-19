@@ -124,6 +124,6 @@ protected:
 
 private:
 	TWeakObjectPtr<UCameraComponent> CameraComponent;
-	TWeakObjectPtr<UResourceComponent> ResourceComponent;
+	TWeakObjectPtr<class UResourceComponent> ResourceComponent;
 	bool bRecentAliveState;
 };
