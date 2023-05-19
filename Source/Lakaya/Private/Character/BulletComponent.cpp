@@ -19,7 +19,7 @@ UBulletComponent::UBulletComponent()
 void UBulletComponent::OnAliveStateChanged(const bool& AliveState)
 {
 	Super::OnAliveStateChanged(AliveState);
-	if (AliveState && GetOwner()->HasAuthority()) Bullets = MaxBullets;
+	if (AliveState && GetOwner()->HasAuthority()) Reload();
 }
 
 void UBulletComponent::OnRegister()
