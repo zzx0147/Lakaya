@@ -35,6 +35,7 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorEndOverlap(OtherActor);
+	
 	if (OtherActor == InteractableActor)
 	{
 		InteractableActor = nullptr;
@@ -100,8 +101,8 @@ void AInteractableCharacter::StartInteraction()
 
 	bInteractionRequested = true;
 
-	GetCharacterMovement()->SetMovementMode(MOVE_None);
-	UE_LOG(LogTemp, Warning, TEXT("Move_None"));
+	// GetCharacterMovement()->SetMovementMode(MOVE_None);
+	// UE_LOG(LogTemp, Warning, TEXT("Move_None"));
 	
 	RequestInteractionStart(GetServerTime(), InteractableActor.Get());
 }
@@ -116,8 +117,8 @@ void AInteractableCharacter::StopInteraction()
 
 	bInteractionRequested = false;
 
-	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	UE_LOG(LogTemp, Warning, TEXT("Move_Walking"))
+	// GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	// UE_LOG(LogTemp, Warning, TEXT("Move_Walking"))
 	
 	RequestInteractionStop(GetServerTime(), InteractableActor.Get());
 }
@@ -182,6 +183,7 @@ void AInteractableCharacter::RequestInteractionStart_Implementation(const float&
 	OnInteractingActorChanged.Broadcast(InteractionInfo.InteractingActor.Get());
 	InteractionInfo.InteractionState = EInteractionState::OnGoing;
 	OnInteractionStateChanged.Broadcast(InteractionInfo);
+	GetCharacterMovement()->SetMovementMode(MOVE_None);
 	Cast<AInteractable>(Actor)->OnInteractionStart(Time, this);
 }
 
@@ -206,5 +208,6 @@ bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, 
 
 void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor)
 {
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	Cast<AInteractable>(Actor)->OnInteractionStop(GetServerTime(), this);
 }

@@ -165,43 +165,45 @@ void AOccupationObject::OnCharacterDead(APawn* Caller)
 // 상호작용에 성공했을 때, 실행되는 함수
 void AOccupationObject::OnInteractionFinish(const APawn* Caller)
 {
-	const auto OccupationGameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode<AGameMode>());
-
-	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
+	const auto OccupationGameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
+	if (OccupationGameMode == nullptr)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Start!"));
-		CastedCaller->GetCharacterMovement()->DisableMovement();
-		// InteractingPawn = Caller;
-		//TODO: CharacterMovementComponent는 ACharacter에 있으므로 AInteractableCharacter로 형변환할 필요는 없습니다. 또 그냥 함수의 매개변수 형식이 ACharacter면 캐스팅할 필요도 없어집니다.
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OninteractionStart_CastedCaller is null."));
+		UE_LOG(LogTemp, Warning, TEXT("InteractionSuccess_OccupationGameMode is null."));
 		return;
 	}
-}
 
-// void AOccupationObject::CharacterMovable(APawn* Caller)
-// {
-// 	// 상호작용이 끝나게 되면 다시 움직일 수 있도록 해줍니다.
-// 	if (auto CastedCaller = Cast<AInteractableCharacter>(Caller))
-// 	{
-// 		CastedCaller->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-// 		//TODO: CharacterMovementComponent는 ACharacter에 있으므로 AInteractableCharacter로 형변환할 필요는 없습니다. 또 그냥 함수의 매개변수 형식이 ACharacter면 캐스팅할 필요도 없어집니다.
-// 	}
-// 	else
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("CastedCaller is null."));
-// 		return;
-// 	}
-//
-// 	// InteractionStop 기능에서 타이머가 이미 만료되었는지를 확인해줍니다.
-// 	// 그렇지 않으 경우 타이머를 취소.
-// 	// if (GetWorldTimerManager().IsTimerActive(InteractionTimerHandle))
-// 	// {
-// 	// 	GetWorldTimerManager().ClearTimer(InteractionTimerHandle);
-// 	// }
-// }
+	const auto CallerState = Cast<ALakayaBasePlayerState>(Caller->GetPlayerState());
+
+	// 만약 성공한 플레이어 팀이 A라면
+	if (CallerState->IsSameTeam(EPlayerTeam::A))
+	{
+		if (ObjectTeam == EPlayerTeam::B)
+			OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
+
+		SetTeamObject(EPlayerTeam::A);
+		OccupationGameMode->AddOccupyObject(EPlayerTeam::A);
+		OnRep_BroadCastTeamObject();
+	}
+	else // 만약 성공한 플레이어 팀이 B팀 이라면
+	{
+		if (ObjectTeam == EPlayerTeam::A)
+			OccupationGameMode->SubOccupyObject(EPlayerTeam::A);
+
+		SetTeamObject(EPlayerTeam::B);
+		OccupationGameMode->AddOccupyObject(EPlayerTeam::B);
+		OnRep_BroadCastTeamObject();
+	}
+	// 상호작용이 끝나게 되면, 상호작용 관련 부분을 초기화 해줍니다.
+	// OnInteractionFinish(Caller);
+	
+	// 상호작용을 성공하고 1초 뒤에 State 상태는 Success에서 None 상태로 변경
+	// TODO :
+	// FTimerDelegate TimerDelegate;
+	// TimerDelegate.BindLambda([this, Caller]()
+	// {
+	// 	Cast<AInteractableCharacter>(Caller)->SetInteractionState(EInteractionState::None);
+	// });
+}
 
 // void AOccupationObject::InteractionSuccess(APawn* Caller)
 // {

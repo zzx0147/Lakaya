@@ -23,14 +23,16 @@ struct FInteractionInfo
 	GENERATED_BODY();
 
 	// 현재 인터랙션 중인 액터입니다.
+	UPROPERTY()
 	TWeakObjectPtr<AActor> InteractingActor;
 
 	// 현재 플레이어의 상호작용 상태를 나타냅니다.
+	UPROPERTY()
 	EInteractionState InteractionState = EInteractionState::None;
 
 	// 현재 인터렉션 상태가 유지되는 목표 시간입니다.
-	UPROPERTY()
-	float EndingTime;
+	// UPROPERTY()
+	// float EndingTime;
 };
 
 UCLASS(Config = Game)
