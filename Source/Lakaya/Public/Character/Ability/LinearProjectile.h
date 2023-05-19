@@ -26,6 +26,9 @@ protected:
 	virtual void OnRep_SummonedTime();
 
 	UFUNCTION()
+	virtual void OnRep_SummonedRotation();
+
+	UFUNCTION()
 	virtual void OnCollisionComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	                                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 	                                              const FHitResult& SweepResult);
@@ -47,4 +50,10 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_SummonedTime, Transient)
 	float SummonedTime;
+
+	UPROPERTY(Replicated, Transient)
+	FVector SummonedLocation;
+
+	UPROPERTY(ReplicatedUsing=OnRep_SummonedRotation, Transient)
+	FRotator SummonedRotation;
 };
