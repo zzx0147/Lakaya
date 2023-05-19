@@ -258,7 +258,7 @@ void UEOSGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCo
 				{
 					//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Session is Available But No Server, Destory Empty Session"));
 
-					SessionPtr->OnDestroySessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnDestorySessionCompleteAndReJoinSession);
+					SessionPtr->OnDestroySessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnDestroySessionCompleteAndReJoinSession);
 					SessionPtr->DestroySession(SessionName);
 					return;
 					//OnCreateSessionComplete(NAME_GameSession, true);//만약 세션은 들어왔는데 서버는 없다면 직접 서버를 만든다
@@ -320,46 +320,50 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(bool bWasSuccessful)
 
 	UE_LOG(LogTemp, Warning, TEXT("Success: %d"), bWasSuccessful);
 	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Success: %d"),bWasSuccessful));
-	if (bWasSuccessful)
+	if (!bWasSuccessful || OnlineSubsystem == nullptr) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("Found %d Lobbies"), SearchSettings->SearchResults.Num());
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Found %d Lobbies"), SearchSettings->SearchResults.Num()));
+
+	bool IsSuccess = false;
+	if (const auto SessionPtr = OnlineSubsystem->GetSessionInterface())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Found %d Lobbies"), SearchSettings->SearchResults.Num());
-		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Found %d Lobbies"), SearchSettings->SearchResults.Num()));
-		if (OnlineSubsystem)
+		SessionPtr->ClearOnFindSessionsCompleteDelegates(this);
+		if (SearchSettings->SearchResults.Num())
 		{
-			bool IsSuccess = false;
-			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
+			for (const FOnlineSessionSearchResult& Results : SearchSettings->SearchResults)
 			{
-				SessionPtr->ClearOnFindSessionsCompleteDelegates(this);
-				if (SearchSettings->SearchResults.Num())
+				bool isJoinable;
+				Results.Session.SessionSettings.Get(FName(TEXT("ISJOINABLE")), isJoinable);
+				//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Lobby is joinable? %d"), isJoinable));
+
+				//Results.Session.NumOpenPublicConnections;
+				//Results.Session.SessionSettings.NumPublicConnections;
+
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, 
+					FString::Printf(TEXT("NumOpenPublicConnections %d :: NumPublicConnections %d"), 
+						Results.Session.NumOpenPublicConnections, Results.Session.SessionSettings.NumPublicConnections));
+
+				if (isJoinable && Results.Session.NumOpenPublicConnections > 0 && Results.Session.NumOpenPublicConnections < Results.Session.SessionSettings.NumPublicConnections )
 				{
-					for (const FOnlineSessionSearchResult& Results : SearchSettings->SearchResults)
+					const FUniqueNetIdPtr UserId = MyPlayerController->GetLocalPlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
+
+					IsSuccess = SessionPtr->JoinSession(*UserId, NAME_GameSession, Results);
+					//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("try Join session, is success? %d"),IsSuccess));
+					if (IsSuccess)
 					{
-						bool isJoinable;
-						Results.Session.SessionSettings.Get(FName(TEXT("ISJOINABLE")), isJoinable);
-						//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Lobby is joinable? %d"), isJoinable));
-
-						if (isJoinable)
-						{
-							const FUniqueNetIdPtr UserId = MyPlayerController->GetLocalPlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
-
-							IsSuccess = SessionPtr->JoinSession(*UserId, NAME_GameSession, Results);
-							//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("try Join session, is success? %d"),IsSuccess));
-							if (IsSuccess)
-							{
-								SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
-								break;
-							}
-						}
+						SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnJoinSessionComplete);
+						break;
 					}
 				}
-
-			}
-			if (OnQuickJoinSessionComplete.IsBound())
-			{
-				OnQuickJoinSessionComplete.Broadcast(IsSuccess);
-				OnQuickJoinSessionComplete.Clear();
 			}
 		}
+	}
+
+	if (OnQuickJoinSessionComplete.IsBound())
+	{
+		OnQuickJoinSessionComplete.Broadcast(IsSuccess);
+		OnQuickJoinSessionComplete.Clear();
 	}
 }
 
@@ -490,7 +494,6 @@ void UEOSGameInstance::OnUpdateSessionComplete(FName SessionName, bool bWasSucce
 			}
 		}
 	}
-
 }
 
 void UEOSGameInstance::EndSession()
@@ -567,8 +570,7 @@ void UEOSGameInstance::CleanUpSession()
 	}
 }
 
-//TODO: 타이포..
-void UEOSGameInstance::OnDestorySessionCompleteAndReJoinSession(FName SessionName, bool bWasSuccessful)
+void UEOSGameInstance::OnDestroySessionCompleteAndReJoinSession(FName SessionName, bool bWasSuccessful)
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString::Printf(TEXT("EmptySessionDestoryed ReJoin Start")));
 	if (OnlineSubsystem)

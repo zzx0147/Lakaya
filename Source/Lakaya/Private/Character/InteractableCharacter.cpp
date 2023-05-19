@@ -41,6 +41,16 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	}
 }
 
+void AInteractableCharacter::StartInteraction()
+{
+	//TODO: 인터렉션 가능 여부를 하위 클래스에 질의하고, 가능한 경우 서버에 인터렉션을 요청합니다.
+}
+
+void AInteractableCharacter::StopInteraction()
+{
+	//TODO: 인터렉션 중단 가능 여부를 하위 클래스에 질의하고, 가능한 경우 서버에 인터렉션 중단을 요청합니다.
+}
+
 bool AInteractableCharacter::ShouldInteractStart()
 {
 	if (InteractableActor.IsValid())
@@ -139,8 +149,8 @@ void AInteractableCharacter::RequestInteractionStart_Implementation(const float&
 {
 	InteractingActor = Actor;
 	SetInteractionState(EInteractionState::OnGoing);
-	Cast<AInteractable>(Actor)->OnInteractionStart(Time, this);
 	OnInteractingActorChanged.Broadcast(InteractingActor.Get());
+	Cast<AInteractable>(Actor)->OnInteractionStart(Time, this);
 }
 
 bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, AActor* Actor)

@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CharacterAbility.h"
 #include "SimpleObjectPool.h"
-#include "StopRemoteCallAbility.h"
 #include "ResultNotifyFireAbility.generated.h"
 
 UENUM()
@@ -24,20 +24,20 @@ DECLARE_EVENT_FourParams(UResultNotifyFireAbility, FSingleFireSignature, const F
                          const EFireResult&)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class LAKAYA_API UResultNotifyFireAbility : public UStopRemoteCallAbility
+class LAKAYA_API UResultNotifyFireAbility : public UCharacterAbility
 {
 	GENERATED_BODY()
 
 public:
 	UResultNotifyFireAbility();
-	virtual void AbilityStart() override;
-	virtual void AbilityStop() override;
+	virtual bool ShouldStartRemoteCall() override;
+	virtual bool ShouldStopRemoteCall() override;
 	virtual void OnAliveStateChanged(const bool& AliveState) override;
 
 protected:
 	virtual void InitializeComponent() override;
-	virtual void RequestStart_Implementation(const float& RequestTime) override;
-	virtual void RequestStop_Implementation(const float& RequestTime) override;
+	virtual void RemoteAbilityStart(const float& RequestTime) override;
+	virtual void RemoteAbilityStop(const float& RequestTime) override;
 
 	UFUNCTION()
 	virtual void FireTick();

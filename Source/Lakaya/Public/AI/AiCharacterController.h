@@ -4,16 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-// 필요없는 헤더
-#include "NavigationSystem.h"
-#include "Perception/AIPerceptionComponent.h"
-#include "Perception/AISenseConfig_Sight.h"
-#include "Character/ArmedCharacter.h"
-#include "Character/InteractableCharacter.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "BehaviorTree/BehaviorTree.h"
-#include "BehaviorTree/BlackboardData.h"
-// 필요없는 헤더
 #include "AiCharacterController.generated.h"
 
 /**
@@ -28,15 +18,12 @@ public:
 	AAiCharacterController();
 
 private:
-	virtual void BeginPlay() override;
-
 	UFUNCTION(BlueprintCallable)
 	void AIFireStart(class AArmedCharacter* ArmCharacter);
 
 	UFUNCTION(BlueprintCallable)
-	void AIFireStop(class AArmedCharacter* ArmCharacter);
+	void AIFireStop(AArmedCharacter* ArmCharacter);
 
 private:
-	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
-   
+	TWeakObjectPtr<AArmedCharacter> ArmedCharacter;
 };

@@ -2,17 +2,14 @@
 
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 
-//TODO: 불필요한 헤더 선언
-#include "Character/ArmedCharacter.h"
-//TODO: 불필요한 헤더 선언
+#include "EngineUtils.h"
 #include "Character/InteractableCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
-#include "GameFramework/PlayerStart.h"
-#include "Kismet/GameplayStatics.h"
-#include "GameMode/LakayaBaseGameState.h"
-#include "EngineUtils.h"
 #include "Components/CapsuleComponent.h"
 #include "EOS/EOSGameInstance.h"
+#include "GameFramework/PlayerStart.h"
+#include "GameMode/LakayaBaseGameState.h"
+#include "Kismet/GameplayStatics.h"
 
 namespace MatchState
 {
@@ -237,13 +234,9 @@ void ALakayaDefaultPlayGameMode::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
 
-	//TODO: GetGameInstance<>() 함수를 사용하세요.
-	if (const auto GameInstance = GetGameInstance())
+	if (const auto GameInstance = GetGameInstance<UEOSGameInstance>())
 	{
-		if (const auto EOSGameInstance = Cast<UEOSGameInstance>(GameInstance))
-		{
-			EOSGameInstance->EndSession();
-		}
+		GameInstance->EndSession();
 	}
 
 	// TODO
@@ -272,7 +265,6 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 	if (const auto InstigatorPlayerState = InstigatorController->GetPlayerState<ALakayaBasePlayerState>())
 		InstigatorPlayerState->IncreaseKillCount();
 
-	//TODO: 위의 코드처럼 분기문 내에 선언 및 널 체크를 동시에 할 수 있습니다.
 	const auto VictimPlayerState = VictimController->GetPlayerState<ALakayaBasePlayerState>();
 	if (VictimPlayerState != nullptr) VictimPlayerState->IncreaseDeathCount();
 
@@ -287,8 +279,7 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 	}
 	else
 	{
-		//TODO: this도 안넘겨도 됩니다.
-		VictimPlayerState->SetRespawnTimer(-1.0f, this);
+		VictimPlayerState->SetRespawnTimer(-1.0f);
 	}
 } 
 
