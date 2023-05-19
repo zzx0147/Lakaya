@@ -42,17 +42,22 @@ void UCharAnimInstance::NativeBeginPlay()
 
 void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
 {
-	if (const auto InteractableCharacter =
-		Cast<AInteractableCharacter>(TryGetPawnOwner()))
+	// if (const auto InteractableCharacter =
+	// 	Cast<AInteractableCharacter>(TryGetPawnOwner()))
+	// {
+	// 	if (NewInteractingActor)
+	// 	{
+	// 		bIsInteracting = true;
+	// 	}
+	// 	else
+	// 	{
+	// 		bIsInteracting = false;
+	// 	}
+	// }
+
+	const auto InteractableCharacter = Cast<AInteractableCharacter>(TryGetPawnOwner());
 	{
-		if (NewInteractingActor)
-		{
-			bIsInteracting = true;
-		}
-		else
-		{
-			bIsInteracting = false;
-		}
+		bIsInteracting = NewInteractingActor != nullptr;
 	}
 }
 

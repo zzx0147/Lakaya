@@ -58,7 +58,6 @@ void AInteractablePlayerController::OrderStartInteraction(const FInputActionValu
 		return;
 	}
 
-	// if (!InteractableCharacter->StartInteraction()) return;
 	InteractableCharacter->StartInteraction();
 }
 
@@ -72,6 +71,5 @@ void AInteractablePlayerController::OrderStopInteraction(const FInputActionValue
 		return;
 	}
 
-	// if (!InteractableCharacter->StopInteraction()) return;	
 	InteractableCharacter->StopInteraction();
 }
