@@ -25,11 +25,11 @@ private:
 	virtual void OnCharacterDead(APawn* Caller) override;
 
 public:
-	// 상호작용이 끝났습니다.
+	// 상호작용에 성공했을 때, 실행되는 함수입니다.
 	void OnInteractionFinish(const APawn* Caller);
 
-	FORCEINLINE APawn* const GetInteractingPawn() const { return InteractingPawn; }
-	FORCEINLINE EPlayerTeam const GetObjectTeam() const { return ObjectTeam; }
+	FORCEINLINE APawn* GetInteractingPawn() const { return InteractingPawn.Get(); }
+	FORCEINLINE EPlayerTeam GetObjectTeam() const { return ObjectTeam; }
 	
 	void SetTeamObject(const EPlayerTeam& Team);
 	

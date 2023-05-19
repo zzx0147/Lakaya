@@ -100,7 +100,8 @@ void AInteractableCharacter::StartInteraction()
 
 	bInteractionRequested = true;
 
-	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->SetMovementMode(MOVE_None);
+	UE_LOG(LogTemp, Warning, TEXT("Move_None"));
 	
 	RequestInteractionStart(GetServerTime(), InteractableActor.Get());
 }
@@ -116,24 +117,25 @@ void AInteractableCharacter::StopInteraction()
 	bInteractionRequested = false;
 
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	UE_LOG(LogTemp, Warning, TEXT("Move_Walking"))
 	
 	RequestInteractionStop(GetServerTime(), InteractableActor.Get());
 }
 
+// 상호작용이 끝나게 되면 실행되는 함수입니다.
 void AInteractableCharacter::FinishInteraction(EInteractionState NewState, float Time)
 {
 	// 사용작용이 끝났을 때, 성공했다면 NewState = Success
 	// 실패했다면, NewState = None
 	
 	InteractionInfo.InteractionState = NewState;
-
 	OnInteractionStateChanged.Broadcast(InteractionInfo);
 
 	// 상호작용에 실패했을 때
 	if (InteractionInfo.InteractionState == EInteractionState::None)
 	{
 		InteractionInfo.InteractingActor = nullptr;
-	
+		OnInteractingActorChanged.Broadcast(InteractionInfo.InteractingActor.Get());
 		return;
 	}
 
@@ -141,6 +143,7 @@ void AInteractableCharacter::FinishInteraction(EInteractionState NewState, float
 	Cast<AOccupationObject>(InteractionInfo.InteractingActor)->OnInteractionFinish(this);
 
 	InteractionInfo.InteractingActor = nullptr;
+	OnInteractingActorChanged.Broadcast(InteractionInfo.InteractingActor.Get());
 	
 	// 성공했다면 1초뒤에 None상태로 돌아옵니다.
 	if (InteractionInfo.InteractionState == EInteractionState::Success)
@@ -176,6 +179,7 @@ bool AInteractableCharacter::RequestInteractionStart_Validate(const float& Time,
 void AInteractableCharacter::RequestInteractionStart_Implementation(const float& Time, AActor* Actor)
 {
 	InteractionInfo.InteractingActor = Actor;
+	OnInteractingActorChanged.Broadcast(InteractionInfo.InteractingActor.Get());
 	InteractionInfo.InteractionState = EInteractionState::OnGoing;
 	OnInteractionStateChanged.Broadcast(InteractionInfo);
 	Cast<AInteractable>(Actor)->OnInteractionStart(Time, this);

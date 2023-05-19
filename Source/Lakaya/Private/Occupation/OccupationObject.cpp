@@ -45,6 +45,8 @@ void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Start!"));
+	
 	const auto OccupationPlayerState = Cast<ALakayaBasePlayerState>(Caller->GetController()->PlayerState);
 	if (OccupationPlayerState == nullptr)
 	{
@@ -123,9 +125,6 @@ void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller)
 
 	InteractingPawn = nullptr;
 	FirstCallerTime = 0;
-
-	// 상호작용이 끝나게 되면, 상호작용 관련 부분을 초기화 해줍니다.
-	// OnInteractionFinish(Caller);
 
 	// InteractionStop 기능에서 타이머가 이미 만료되었는지를 확인해줍니다.
 	// 그렇지 않은 경우 타이머를 취소.

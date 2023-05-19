@@ -51,7 +51,7 @@ void AInteractablePlayerController::BeginPlay()
 void AInteractablePlayerController::OrderStartInteraction(const FInputActionValue& Value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StartInteraction."));
-	auto InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
+	const auto InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
 	if (InteractableCharacter == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("InteractablePlayerController_InteractableCharacter is null."));
@@ -64,7 +64,7 @@ void AInteractablePlayerController::OrderStartInteraction(const FInputActionValu
 void AInteractablePlayerController::OrderStopInteraction(const FInputActionValue& Value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StopInteraction."));
-	auto InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
+	const auto InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
 	if (InteractableCharacter == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("InteractablePlayerController_InteractableCharacter is null."));

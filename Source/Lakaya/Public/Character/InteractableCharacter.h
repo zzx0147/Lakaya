@@ -52,6 +52,7 @@ public:
 	void StopInteraction();
 
 	// 상호작용이 끝남을 알려줍니다.
+	// 상호작용이 끝나게 되면 실행되는 함수입니다.
 	void FinishInteraction(EInteractionState NewState, float Time);
 	
 	FORCEINLINE const EInteractionState& GetInteractionState() const { return InteractionInfo.InteractionState; }
