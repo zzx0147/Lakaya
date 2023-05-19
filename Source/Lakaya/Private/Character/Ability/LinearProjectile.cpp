@@ -95,5 +95,4 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 	SummonedTime = 0.f;
 	StaticMeshComponent->SetVisibility(false);
 	BroadcastOnAbilityEnded();
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("OnCollision"));
 }
