@@ -2,6 +2,8 @@
 
 
 #include "Camera/CameraComponent.h"
+#include "Character/BulletComponent.h"
+#include "Character/ResourceComponent.h"
 #include "Character/Ability/CharacterAbility.h"
 #include "GameFramework/GameStateBase.h"
 
@@ -14,6 +16,7 @@ void UCharacterAbility::InitializeComponent()
 {
 	Super::InitializeComponent();
 	CameraComponent = GetOwner()->FindComponentByClass<UCameraComponent>();
+	ResourceComponent = GetOwner()->FindComponentByClass<UResourceComponent>();
 	bRecentAliveState = true;
 }
 
@@ -84,4 +87,51 @@ FVector UCharacterAbility::GetNormalToCameraForwardTracePoint(const float& FromA
 float UCharacterAbility::GetServerTime() const
 {
 	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+}
+
+bool UCharacterAbility::CostResource(const EResourceKind& ResourceKind, const float& Value)
+{
+	switch (ResourceKind)
+	{
+	case EResourceKind::Bullet:
+		{
+			if (const auto BulletComponent = GetResourceComponent<UBulletComponent>())
+				return BulletComponent->CostBullet(Value);
+			return false;
+		}
+	default:
+		return false;
+	}
+}
+
+bool UCharacterAbility::CostResource(const TArray<FResourceCostData>& CostArray)
+{
+	// 자원들이 모두 소모가능한 만큼 충분히 존재하는지 체크합니다.
+	for (const auto& [ResourceKind, Value] : CostArray)
+	{
+		switch (ResourceKind)
+		{
+		case EResourceKind::Bullet:
+			{
+				if (const auto BulletComponent = GetResourceComponent<UBulletComponent>();
+					!BulletComponent || !BulletComponent->IsEnough(Value))
+					return false;
+				break;
+			}
+		default:
+			return false;
+		}
+	}
+
+	// 실제로 자원들에 대한 소모를 진행합니다.
+	for (const auto& [ResourceKind, Value] : CostArray)
+	{
+		switch (ResourceKind)
+		{
+		case EResourceKind::Bullet:
+			GetResourceComponent<UBulletComponent>()->CostBullet(Value);
+			break;
+		}
+	}
+	return true;
 }

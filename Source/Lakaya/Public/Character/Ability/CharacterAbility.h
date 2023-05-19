@@ -6,6 +6,23 @@
 #include "Components/ActorComponent.h"
 #include "CharacterAbility.generated.h"
 
+UENUM()
+enum class EResourceKind
+{
+	Bullet
+};
+
+USTRUCT()
+struct FResourceCostData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	EResourceKind ResourceKind;
+
+	UPROPERTY(EditAnywhere)
+	float Value;
+};
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UCharacterAbility : public UActorComponent
@@ -46,8 +63,11 @@ protected:
 
 	// 서버에게 능력 중단 요청 신호를 보낼지 여부를 조사합니다.
 	virtual bool ShouldStopRemoteCall();
-	
+
 	FORCEINLINE class UCameraComponent* GetCameraComponent() const { return CameraComponent.Get(); }
+
+	template <class T = class UResourceComponent>
+	FORCEINLINE T* GetResourceComponent() const { return Cast<T>(ResourceComponent); }
 
 	/**
 	 * @brief 액터에서 카메라가 바라보는 방향으로 움직인 월드공간의 위치를 가져옵니다.
@@ -78,6 +98,21 @@ protected:
 	FORCEINLINE const bool& GetAliveState() const { return bRecentAliveState; }
 
 	float GetServerTime() const;
+	
+	/**
+	 * @brief 캐릭터의 자원에 대해 소모를 시도합니다.
+	 * @param ResourceKind 소모할 자원의 종류입니다.
+	 * @param Value 자원을 얼마나 소모할지 지정합니다.
+	 * @return 소모에 성공하면 true, 실패하는 경우 false를 반환합니다.
+	 */
+	bool CostResource(const EResourceKind& ResourceKind, const float& Value);
+
+	/**
+	 * @brief 여러가지 자원들을 동시에 소모를 시도합니다.
+	 * @param CostArray 특정 자원을 얼마나 소모할지 나타내는 배열입니다.
+	 * @return 소모에 성공하면 true, 실패하는 경우 false를 반환합니다.
+	 */
+	bool CostResource(const TArray<FResourceCostData>& CostArray);
 
 	// true로 설정하면 서버에게 플레이어가 능력 사용을 시작했음을 알립니다.
 	UPROPERTY(EditAnywhere)
@@ -89,5 +124,6 @@ protected:
 
 private:
 	TWeakObjectPtr<UCameraComponent> CameraComponent;
+	TWeakObjectPtr<UResourceComponent> ResourceComponent;
 	bool bRecentAliveState;
 };

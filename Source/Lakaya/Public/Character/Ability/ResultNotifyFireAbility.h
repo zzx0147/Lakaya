@@ -111,15 +111,15 @@ protected:
 
 	// 총구화염을 그리는 나이아가라 시스템을 지정합니다.
 	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* GunImpactSystem;
+	UNiagaraSystem* GunImpactSystem;
 
 	// 어떤 물체에 사격이 적중한 경우 재생되는 나이아가라 시스템을 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TMap<EFireResult, UNiagaraSystem*> ImpactNiagaraSystems;
 
-	// 매 격발마다 총알이 차감될 양을 설정합니다.
+	// 매 사격시에 소모될 자원들의 종류와 그 양을 지정합니다.
 	UPROPERTY(EditAnywhere)
-	uint8 BulletCost;
+	TArray<FResourceCostData> FireCost;
 
 private:
 	bool bWantsToFire;
@@ -127,7 +127,4 @@ private:
 	FCollisionQueryParams CollisionQueryParams;
 	TMap<EFireResult, TSimpleObjectPool<AActor>> DecalPool;
 	TWeakObjectPtr<class UArrowComponent> MuzzleComponent;
-
-	//TODO: 기능구현 클래스는 자원으로부터는 중립적이어야 재사용하기 편해집니다. 추후 자원 차감 로직은 다른 쪽으로 옮겨져야 합니다.
-	TWeakObjectPtr<class UBulletComponent> BulletComponent;
 };
