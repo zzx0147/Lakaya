@@ -1,16 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "OnlineSessionSettings.h"
 #include "Interfaces/OnlineSessionInterface.h"
+#include "OnlineSubsystem.h"
 #include "EOSGameInstance.generated.h"
-
-/**
- *
- */
 
 //퀵 조인 완료시 콜백해주는 델리게이트
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickJoinSessionComplete,bool,IsSucsess);
@@ -29,15 +24,15 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Login();
-	void OnLoginComplete(int32 LocalUserNum, bool bWasSuccessful, const FUniqueNetId& UserId, const FString& Error);
+	void OnLoginComplete(int32 LocalUserNum,const bool bWasSuccessful, const FUniqueNetId& UserId, const FString& Error);
 
 	UFUNCTION(BlueprintCallable)
 	void CreateSession();
-	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful);
+	void OnCreateSessionComplete(FName SessionName,const bool bWasSuccessful);
 
 	UFUNCTION(BlueprintCallable)
 	void DestroySession();
-	void OnDestroySessionComplete(FName SessionName, bool bWasSuccessful);
+	void OnDestroySessionComplete(FName SessionName,const bool bWasSuccessful);
 
 	UFUNCTION(BlueprintCallable)
 	void FindSession();
@@ -68,7 +63,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void EndSession();
-	void OnEndSessionComplete(FName SessionName, bool bWasSiccessfil);
+	void OnEndSessionComplete(FName SessionName, bool bWasSuccessful);
 
 	UFUNCTION(BlueprintCallable)
 	void PrintSessionState();
@@ -77,11 +72,16 @@ public:
 
 	void OnDestroySessionCompleteAndReJoinSession(FName SessionName, bool bWasSuccessful);
 
+private:
+	static bool IsServer();
+
 public:
 	UPROPERTY(BlueprintAssignable,VisibleAnywhere, BlueprintCallable, Category = "Event")
 	FOnQuickJoinSessionComplete OnQuickJoinSessionComplete;
 protected:
-	class IOnlineSubsystem* OnlineSubsystem;
+	IOnlineSubsystem* OnlineSubsystem;
+
+	IOnlineSessionPtr OnlineSessionPtr;
 
 	bool bIsLoggedIn;
 
