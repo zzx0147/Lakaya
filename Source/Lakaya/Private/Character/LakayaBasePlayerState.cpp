@@ -304,7 +304,10 @@ bool ALakayaBasePlayerState::RequestCharacterChange_Validate(const FName& Name)
 void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserName, const FVector& CauserLocation,
                                                             const float& Damage)
 {
-	if (GetPlayerController()->IsLocalPlayerController())
+	const auto PlayerController = GetPlayerController();
+	if(!PlayerController) return;
+	
+	if (PlayerController->IsLocalPlayerController())
 	{
 		//TODO: 위젯 nullptr 체크 필요, 매개변수 하드코딩 수정 필요
 		DirectionDamageIndicatorWidget->IndicateStart(CauserName.ToString(), CauserLocation, 3.0f);
