@@ -6,7 +6,7 @@
 #include "MovableCharacter.h"
 #include "ArmedCharacter.generated.h"
 
-UENUM()
+UENUM(BlueprintType)
 enum EAbilityKind
 {
 	// 캐릭터의 첫번째 능력입니다.
@@ -85,6 +85,9 @@ public:
 	UFUNCTION(BlueprintGetter)
 	const TArray<class UCharacterAbility*>& GetAbilities() const { return Abilities; }
 
+	template <class T = UCharacterAbility>
+	T* FindAbility(const EAbilityKind& Kind) const;
+
 protected:
 	// 능력 사용을 시작할지 여부를 조사합니다.
 	UFUNCTION(BlueprintNativeEvent)
@@ -105,3 +108,10 @@ protected:
 	UPROPERTY(EditAnywhere, Replicated)
 	TArray<UCharacterAbility*> Abilities;
 };
+
+template <class T>
+T* AArmedCharacter::FindAbility(const EAbilityKind& Kind) const
+{
+	if (Abilities.IsValidIndex(Kind)) return Cast<T>(Abilities[Kind]);
+	return nullptr;
+}
