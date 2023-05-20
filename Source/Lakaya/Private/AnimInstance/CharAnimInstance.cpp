@@ -15,32 +15,24 @@ void UCharAnimInstance::NativeBeginPlay()
 
 	if(const auto Character = Cast<AArmedCharacter>(TryGetPawnOwner()))
 	{
-		auto& Abilities = Character->GetAbilities();
-
-		if(Abilities.IsValidIndex(WeaponFire))
+		if(const auto ResultNotifyFireAbility = Character->FindAbility<UResultNotifyFireAbility>(WeaponFire))
 		{
-			if(const auto ResultNotifyFireAbility = Cast<UResultNotifyFireAbility>(Abilities[WeaponFire]))
+			ResultNotifyFireAbility->OnSingleFire.
+			AddLambda([this](const FVector&,const FVector&, const FVector&, const EFireResult&)
 			{
-				ResultNotifyFireAbility->OnSingleFire.
-				AddLambda([this](const FVector& Start,const FVector&End, const FVector& Normal, const EFireResult& FireResult)
-				{
-					RecentFireTime = GetWorld()->TimeSeconds; 
-				} );
-				UE_LOG(LogTemp, Error, TEXT("Fire!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-			}
+				RecentFireTime = GetWorld()->TimeSeconds; 
+			} );
+			UE_LOG(LogTemp, Error, TEXT("Fire!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
 		}
 
-		if(Abilities.IsValidIndex(WeaponReload))
+		if(const auto ReloadAbility = Character->FindAbility<UReloadAbility>(WeaponReload))
 		{
-			if(const auto ReloadAbility = Cast<UReloadAbility>(Abilities[WeaponReload]))
-			{
-				ReloadAbility->OnReloadStateChanged.
-				AddLambda([this](const bool& ReloadState)
-					{bIsReload = ReloadState;} );
-			}
+			ReloadAbility->OnReloadStateChanged.
+			AddLambda([this](const bool& ReloadState)
+				{bIsReload = ReloadState;} );
 		}
 
-		if (const auto InteractableCharacter = Cast<AInteractableCharacter>(TryGetPawnOwner()))
+		if (const auto InteractableCharacter = Cast<AInteractableCharacter>(Character))
 		{
 			InteractableCharacter->OnInteractingActorChanged.
 			AddUObject(this, &UCharAnimInstance::OnInteractingActorChanged);

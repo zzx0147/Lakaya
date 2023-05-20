@@ -20,10 +20,13 @@ AAIIndividualGameMode::AAIIndividualGameMode()
 	NumberOfAi = 5;
 }
 
-void AAIIndividualGameMode::BeginPlay()
+void AAIIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 {
-	Super::BeginPlay();
-	for(int i = 0 ; i <NumberOfAi; ++i)
+	Super::PostLogin(NewPlayer);
+
+	if (AiControllerArray.Num() > 0) return;
+
+	for (int i = 0; i < NumberOfAi; ++i)//첫번째 플레이어가 접속하면 그때 AI를 생성합니다, 플레이어가 한명일 때만을 가정합니다
 	{
 		AAiCharacterController* AiController;
 		AiController = GetWorld()->SpawnActor<AAiCharacterController>(AIControllerClass);
@@ -38,8 +41,7 @@ void AAIIndividualGameMode::HandleMatchHasStarted()
 	for(const auto AiController : AiControllerArray)
 	{
 		RestartPlayer(AiController);
-	}
-	
+	}	
 }
 
 // void AAIIndividualGameMode::PostLogin(APlayerController* NewPlayer)
