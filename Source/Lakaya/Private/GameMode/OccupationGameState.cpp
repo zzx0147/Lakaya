@@ -32,7 +32,6 @@ AOccupationGameState::AOccupationGameState()
 
 void AOccupationGameState::BeginPlay()
 {
-	Super::BeginPlay();
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
 		if (TeamScoreWidgetClass)
