@@ -17,8 +17,8 @@ public:
 	
 protected:
 	// 함수에 대한 설명은 부모클래스에 설명되어 있음.
-	virtual void BeginPlay() override;
-	// virtual void PostLogin(APlayerController* NewPlayer) override;
+	//virtual void BeginPlay() override;
+	virtual void PostLogin(APlayerController* NewPlayer) override;
 	// virtual bool ReadyToStartMatch_Implementation() override;
 	// virtual bool ReadyToEndMatch_Implementation() override;
 	// virtual void HandleMatchIsSelectCharacter() override;

@@ -222,6 +222,11 @@ void ALakayaBaseGameState::SetCharacterSelectWidgetVisibility(const ESlateVisibi
 	}
 }
 
+void ALakayaBaseGameState::OnLocalPlayerControllerCreated(APlayerController* LocalPlayerController)
+{
+	CreateCharacterSelectWidget(LocalPlayerController);
+}
+
 //TODO: 다른 클래스에서 픽창 위젯의 비저빌리티를 체크하는 건 이상합니다.
 ESlateVisibility ALakayaBaseGameState::GetCharacterSelectWidgetVisibility() const
 {
