@@ -154,7 +154,10 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 	if (const auto PlayerController = GetWorld()->GetFirstPlayerController())
 		PlayerController->SetShowMouseCursor(true);
 
-	//TODO: 널체크 방어코드 추가 필요.
+	if (LoadingWidget == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LoadingWidget is null."));
+	}
 	LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
 	CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
 	

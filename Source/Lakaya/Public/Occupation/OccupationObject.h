@@ -13,7 +13,7 @@ class LAKAYA_API AOccupationObject : public AInteractable
 	GENERATED_BODY()
 
 public:
-	AOccupationObject();
+	explicit AOccupationObject(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void BeginPlay() override;

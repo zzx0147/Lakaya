@@ -51,17 +51,25 @@ protected:
 	bool ShouldInteract() const;
 	
 public:
-	// 상호작용을 시작합니다.
+	/**
+	 * @brief 상호작용을 요청합니다.
+	 */
 	void StartInteraction();
 
 	/**
-	 * @brief 상호작용을 중단됩니다.
+	 * @brief 상호작용 중단을 요청합니다.
 	 * @param NewState 상호작용이 중단되었을 때, 상호작용 성공 여부를 나타냅니다. 
 	 */
 	void StopInteraction(EInteractionState NewState);
 
 	// 상호작용이 끝남을 알려줍니다.
 	// 상호작용이 끝나게 되면 실행되는 함수입니다.
+	/**
+	 * @brief 상호작용이 끝남을 알려줍니다.
+	 * @param NewState 상호작용이 끝났을 시, 성공 여부입니다.
+	 * @param Time 상호작용이 끝난 시간입니다.
+	 * 
+	 */
 	UFUNCTION(Server, Reliable, WithValidation)
 	void FinishInteraction(EInteractionState NewState, float Time);
 	
@@ -91,6 +99,7 @@ private:
 	FInteractionInfo InteractionInfo;
 	
 	// 현재 본인의 상호작용 상태를 나타냅니다.
+	// TODO : 적용했을 시, 클라 측에서 버그가 발생함 (이유를 찾지못함)
 	UPROPERTY()
 	bool bInteractionRequested;
 	

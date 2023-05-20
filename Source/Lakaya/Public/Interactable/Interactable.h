@@ -10,11 +10,9 @@ class AInteractable : public AActor
 {
 	GENERATED_BODY()
 
-	// 생성자 : 트리거 지정
 public:
-	AInteractable();
+	explicit AInteractable(const FObjectInitializer& ObjectInitializer);
 	
-public:
 	/**
 	 * @brief 이 액터와 인터렉션을 시작합니다. 이 함수는 서버에서 호출됩니다.
 	 * @param Time 클라이언트에서 이 액터와 인터렉션을 시작한 시간입니다.

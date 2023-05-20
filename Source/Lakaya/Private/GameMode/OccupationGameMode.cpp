@@ -90,14 +90,6 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 	//TODO: 비교연산을 수행하는 두 변수 모두 OccupationGameState의 멤버변수이므로, OccupationGameState에 함수를 만들어서 플레이어 숫자가 가득 찼는지 여부를 조사하는 편이 좋을 것 같습니다. 
 	if (OccupationGameState->GetMaximumPlayers() == OccupationGameState->PlayerArray.Num())
 	{
-		//TODO: 이렇게 사용하면 더 간단히 표현할 수 있습니다.
-		// uint8 Count = 0;
-		// for (auto& LakayaBasePlayerState : OccupationGameState->PlayerArray)
-		// {
-		// 	++Count;
-		// 	if (!LakayaBasePlayerState) continue;
-		// 	
-		// }
 		for (int i = 0; i < OccupationGameState->GetMaximumPlayers(); i++)
 		{
 			if (OccupationGameState->PlayerArray.IsValidIndex(i))
@@ -110,100 +102,23 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 					return;
 				}
 
-				if (i % 2 == 0)
-				{
-					LakayaBasePlayerState->SetTeam(EPlayerTeam::A);
-					UE_LOG(LogTemp, Warning, TEXT("A팀에 배정 되었습니다."));
-				}
-				else
-				{
-					LakayaBasePlayerState->SetTeam(EPlayerTeam::B);
-					UE_LOG(LogTemp, Warning, TEXT("B팀에 배정 되었습니다."));
-				}
-				//TODO: 위의 분기문은 다음과 같이 축약 가능
-				// const auto Team = i % 2 == 0 ? EPlayerTeam::A : EPlayerTeam::B;
-				// LakayaBasePlayerState->SetTeam(Team);
-				// UE_LOG(LogNet, Log, TEXT("%d 팀에 배정 되었습니다."), Team);
+				const auto Team = i % 2 == 0 ? EPlayerTeam::A : EPlayerTeam::B;
+				LakayaBasePlayerState->SetTeam(Team);
+				UE_LOG(LogTemp, Warning, TEXT("%s"), i % 2 == 0 ? TEXT("A팀에 배정 되었습니다.") : TEXT("B팀에 배정 되었습니다."));
 			}
 		}
 	}
+}
+
+void AOccupationGameMode::RespawnPlayer(AController* KilledController)
+{
+	Super::RespawnPlayer(KilledController);
 }
 
 void AOccupationGameMode::UpdateTeamScoreTick()
 {
 	if (ATeamObjectCount > 0) OccupationGameState->AddTeamScore(EPlayerTeam::A, ATeamObjectCount * AdditiveScore);
 	if (BTeamObjectCount > 0) OccupationGameState->AddTeamScore(EPlayerTeam::B, BTeamObjectCount * AdditiveScore);
-}
-
-//TODO: 필요없는 함수 오버라이딩
-void AOccupationGameMode::RespawnPlayer(AController* KilledController)
-{
-	Super::RespawnPlayer(KilledController);
-	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnPlayer!!!!"));
-
-#pragma region 주석
-	//const auto* CollectorPlayerState = Cast<ALakayaBasePlayerState>(KilledController->PlayerState);
-	//if (CollectorPlayerState == nullptr)
-	//{
-	//	UE_LOG(LogTemp, Warning, TEXT("LakayaDefaultPlayGameMode_CollectorPlayerState is null."));
-	//	return;
-	//}
-
-	//FName SpawnTag;
-	//switch (CollectorPlayerState->GetTeam())
-	//{
-	//case EPlayerTeam::A:
-	//	SpawnTag = FName("ATeamSpawnZone");
-	//	break;
-	//case EPlayerTeam::B:
-	//	SpawnTag = FName("BTeamSpawnZone");
-	//	break;
-	//default:
-	//	UE_LOG(LogTemp, Warning, TEXT("Invalid player team state."));
-	//	return;
-	//}
-
-	//UE_LOG(LogTemp, Warning, TEXT("SpawnTag: %s"), *SpawnTag.ToString());
-
-	//TArray<AActor*> PlayerStartActors;
-	//UGameplayStatics::GetAllActorsWithTag(GetWorld(), SpawnTag, PlayerStartActors);
-
-	//UE_LOG(LogTemp, Warning, TEXT("PlayerStartActors.Num(): %d"), PlayerStartActors.Num());
-
-	//if (PlayerStartActors.Num() == 0)
-	//{
-	//	UE_LOG(LogTemp, Warning, TEXT("No Player Start Actors found."));
-	//	return;
-	//}
-
-	//const APlayerStart* PlayerStart = Cast<APlayerStart>(
-	//	PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
-	//APawn* KilledPawn = Cast<APawn>(KilledController->GetPawn());
-	//ACharacter* KilledCharacterActor = Cast<ACharacter>(KilledController->GetCharacter());
-
-	//if (KilledPawn != nullptr)
-	//{
-	//	KilledPawn->SetActorLocation(PlayerStart->GetActorLocation());
-	//}
-	//else if (KilledController != nullptr)
-	//{
-	//	KilledCharacterActor->SetActorLocation(PlayerStart->GetActorLocation());
-	//}
-	//else
-	//{
-	//	UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_KilledCharacter is not a pawn or an actor."));
-	//	return;
-	//}
-
-	// auto* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
-	// if (KilledDamageableCharacter == nullptr)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("KilledDamageableCharacter is null."));
-	// 	return;
-	// }
-	//
-	// KilledDamageableCharacter->Respawn();
-#pragma endregion
 }
 
 void AOccupationGameMode::AddOccupyObject(const EPlayerTeam& Team)
