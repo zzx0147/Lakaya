@@ -37,7 +37,9 @@ AOccupationObject::AOccupationObject()
 void AOccupationObject::BeginPlay()
 {
 	Super::BeginPlay();
-	FOnOccupationStateSignature.AddUObject(this, &AOccupationObject::SetTeam);
+	
+	// FOnOccupationStateSignature.AddUObject(this, &AOccupationObject::SetTeam);
+	OnOccupationStateSignature.AddUObject(this, &AOccupationObject::SetTeam);
 }
 
 void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -50,11 +52,14 @@ void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Start!"));
-	const auto OccupationPlayerState = Cast<ALakayaBasePlayerState>(Caller->GetController()->PlayerState);
-	//TODO: Caller에 접근하기 전에 혹시 Caller가 널은 아닌지 체크해보는 것이 좋습니다.
-	// auto* OccupationPlayerState = Cast<ALakayaBasePlayerState>(Caller->GetController()->PlayerState);
-	//TODO: 다음과 같이 더 간단하게 선언할 수 있습니다.
-	// auto* OccupationPlayerState = Caller->GetPlayerState<ALakayaBasePlayerState>();
+	
+	if (Caller == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OnInteractionStart_Caller is null."));
+		return;
+	}
+	
+	auto OccupationPlayerState = Caller->GetPlayerState<ALakayaBasePlayerState>();
 	if (OccupationPlayerState == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
@@ -62,32 +67,13 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	}
 
 	// 소유자 팀에서 상호작용 할 경우 막아두기
-	// TODO : IsSameTeam(), 오브젝트에는 PlayerState 없어요
-	const FString PlayerStateString = UEnum::GetValueAsString(OccupationPlayerState->GetTeam());
-	if (PlayerStateString.Equals("EPlayerTeam::A", ESearchCase::IgnoreCase))
+	if (OccupationPlayerState->IsSameTeam(ObjectTeam))
 	{
-		if (ObjectTeam == EPlayerTeam::A)
-		{
-			//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OccupationObject_이미 점령한 오브젝트 입니다."));
-			return;
-		}
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OccupationObject_이미 점령한 오브젝트 입니다."));
+		// Cast<AInteractableCharacter>(Caller)->FinishInteraction(EInteractionState::None, Time);
+		Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
+		return;
 	}
-	else if (PlayerStateString.Equals("EPlayerTeam::B", ESearchCase::IgnoreCase))
-	{
-		if (ObjectTeam == EPlayerTeam::B)
-		{
-			//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("OccupationObject_이미 점령한 오브젝트 입니다."));
-			return;
-		}
-	}
-	//TODO: 위의 코드는 점령한 팀과 점령을 시도하는 플레이어의 팀이 같다면 점령이 진행되지 않도록 합니다. 따라서 그냥 다음과 같이 간단하게 코드를 정리할 수 있습니다.
-	// if (OccupationPlayerState->IsSameTeam(ObjectTeam))
-	// {
-	// 	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OccupationObject_이미 점령한 오브젝트 입니다."));
-	// 	return;
-	// }
-	// 그런데 이렇게만 하면 점령을 시도한 플레이어가 점령을 시도했지만 점령이 취소되지 않았으므로 영원히 인터렉션이 끝나지 않게 됩니다. 따라서 캐릭터의 인터렉션 상태를 초기화시켜야 합니다.
-	// 인터렉션 초기화는 AInteractableCharacter::FinishInteraction 함수를 통해 이뤄집니다. UML을 참고해주세요.
 	
 	// 아무도 상호작용을 하지 않고 있는 경우
 	if (InteractingPawn == nullptr)
@@ -115,7 +101,6 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 			if (SecondCaller != nullptr && SecondCaller->GetController() == Caller->Controller)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("이미 누군가가 상호작용을 하고 있습니다."));
-				// TODO : 
 				return;
 			}
 		}
@@ -124,27 +109,25 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	// 시작 한 후 3초가 지나게 되면 자동으로 성공.
 	GetWorldTimerManager().SetTimer(InteractionTimerHandle, [this, Caller, Time]
 	{
-		// Caller->FinishInteraction
-		Cast<AInteractableCharacter>(Caller)->FinishInteraction(EInteractionState::Success, Time);
+		Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::Success);
 	}, MaxInteractionDuration, false);
 }
 
-void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller)
+void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller, EInteractionState NewState)
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Stop!"));
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Stop!"));
+	
 	if (Caller == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OnInteractionStop_Caller is null."));
 		return;
 	}
 
-	//TODO: 인터렉션 중단을 요청한 Caller가 기존에 인터렉션중이던 InteractingPawn이 맞는지 검사하는 로직이 필요합니다. 그렇지 않고 위의 코드처검 그냥 초기화되면 다른 플레이어어에 의해 인터렉션이 취소당하는 어이없는 일이 발생할 수 있습니다.
+	// 인터렉션 중단을 요청한 Caller가 가지고 있는 InteractingPawn과 일치한지 검사합니다.
+	if (Cast<AInteractableCharacter>(GetInteractingPawn()) != InteractingPawn) return;
+	
 	InteractingPawn = nullptr;
 	FirstCallerTime = 0;
-	
-	// 상호작용이 끝나게 되면, 상호작용 관련 부분을 초기화 해줍니다.
-	// OnInteractionFinish(Caller);
-	//TODO: 이 함수는 여기에서 호출되도록 기획하지 않았습니다. UML을 참고해주세요. OnInteractionFinish함수는 캐릭터가 호출해주는 함수입니다.
 	
 	// InteractionStop 기능에서 타이머가 이미 만료되었는지를 확인해줍니다.
 	// 그렇지 않은 경우 타이머를 취소.
@@ -153,7 +136,11 @@ void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller)
 		GetWorldTimerManager().ClearTimer(InteractionTimerHandle);
 	}
 
-	Cast<AInteractableCharacter>(Caller)->FinishInteraction(EInteractionState::None, Time);
+	// 상호작용이 중단됐을 때, 성공했는지, 실패했는지 여부를 전달해줍니다.
+	// if (NewState == EInteractionState::Success)
+	// 	OnInteractionFinish(Caller);
+	
+	Cast<AInteractableCharacter>(Caller)->FinishInteraction(NewState, Time);
 }
 
 void AOccupationObject::OnCharacterDead(APawn* Caller)
@@ -162,8 +149,7 @@ void AOccupationObject::OnCharacterDead(APawn* Caller)
 	// TODO : 구현해야 함.
 }
 
-// 상호작용에 성공했을 때, 실행되는 함수
-void AOccupationObject::OnInteractionFinish(const APawn* Caller)
+void AOccupationObject::OnInteractionFinish(APawn* Caller)
 {
 	const auto OccupationGameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
 	if (OccupationGameMode == nullptr)
@@ -181,8 +167,9 @@ void AOccupationObject::OnInteractionFinish(const APawn* Caller)
 			OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
 
 		SetTeamObject(EPlayerTeam::A);
+		OnOccupationStateSignature.Broadcast(ObjectTeam);
 		OccupationGameMode->AddOccupyObject(EPlayerTeam::A);
-		OnRep_BroadCastTeamObject();
+		// OnRep_BroadCastTeamObject();
 	}
 	else // 만약 성공한 플레이어 팀이 B팀 이라면
 	{
@@ -190,72 +177,17 @@ void AOccupationObject::OnInteractionFinish(const APawn* Caller)
 			OccupationGameMode->SubOccupyObject(EPlayerTeam::A);
 
 		SetTeamObject(EPlayerTeam::B);
+		OnOccupationStateSignature.Broadcast(ObjectTeam);
 		OccupationGameMode->AddOccupyObject(EPlayerTeam::B);
-		OnRep_BroadCastTeamObject();
+		// OnRep_BroadCastTeamObject();
 	}
-	// 상호작용이 끝나게 되면, 상호작용 관련 부분을 초기화 해줍니다.
-	// OnInteractionFinish(Caller);
-	
-	// 상호작용을 성공하고 1초 뒤에 State 상태는 Success에서 None 상태로 변경
-	// TODO :
-	// FTimerDelegate TimerDelegate;
-	// TimerDelegate.BindLambda([this, Caller]()
-	// {
-	// 	Cast<AInteractableCharacter>(Caller)->SetInteractionState(EInteractionState::None);
-	// });
 }
-
-// void AOccupationObject::InteractionSuccess(APawn* Caller)
-// {
-// 	auto* OccupationGameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
-// >>>>>>> HyunBin
-// 	if (OccupationGameMode == nullptr)
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("InteractionSuccess_OccupationGameMode is null."));
-// 		return;
-// 	}
-//
-// 	const auto CallerState = Cast<ALakayaBasePlayerState>(Caller->GetPlayerState());
-//
-// <<<<<<< HEAD
-// 	// 만약 성공한 플레이어 팀이 A라면
-// 	if (CallerState->IsSameTeam(EPlayerTeam::A))
-// =======
-// 	Cast<AInteractableCharacter>(Caller)->SetInteractionState(EInteractionState::Success);
-// 	
-// 	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Black, FString::Printf(TEXT("Interaction Successed !")));
-//
-// 	// 상호작용이 끝나게 되면, 상호작용 관련 부분을 초기화 해줍니다.
-// 	OnInteractionFinish(Caller);
-// 	
-// 	// 상호작용을 성공하고 1초 뒤에 State 상태는 Success에서 None 상태로 변경
-// 	// TODO :
-// 	FTimerDelegate TimerDelegate;
-// 	TimerDelegate.BindLambda([this, Caller]()
-// >>>>>>> HyunBin
-// 	{
-// 		if (ObjectTeam == EPlayerTeam::B)
-// 			OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
-//
-// 		SetTeamObject(EPlayerTeam::A);
-// 		OccupationGameMode->AddOccupyObject(EPlayerTeam::A);
-// 		OnRep_BroadCastTeamObject();
-// 	}
-// 	else // 만약 성공한 플레이어 팀이 B팀 이라면
-// 	{
-// 		if (ObjectTeam == EPlayerTeam::A)
-// 			OccupationGameMode->SubOccupyObject(EPlayerTeam::A);
-//
-// 		SetTeamObject(EPlayerTeam::B);
-// 		OccupationGameMode->AddOccupyObject(EPlayerTeam::B);
-// 		OnRep_BroadCastTeamObject();
-// 	}
-// }
 
 void AOccupationObject::OnRep_BroadCastTeamObject()
 {
 	SetTeamObject(ObjectTeam);
-	FOnOccupationStateSignature.Broadcast(ObjectTeam);
+	OnOccupationStateSignature.Broadcast(ObjectTeam);
+	// FOnOccupationStateSignature.Broadcast(ObjectTeam);
 }
 
 void AOccupationObject::SetTeamObject(const EPlayerTeam& Team)

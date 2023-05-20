@@ -43,12 +43,6 @@ void AInteractablePlayerController::SetupMappingContext(UEnhancedInputLocalPlaye
 	InputSubsystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
 
-//TODO: 불필요한 함수 오버라이딩
-void AInteractablePlayerController::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 void AInteractablePlayerController::OrderStartInteraction(const FInputActionValue& Value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StartInteraction."));
@@ -73,5 +67,5 @@ void AInteractablePlayerController::OrderStopInteraction(const FInputActionValue
 		return;
 	}
 
-	InteractableCharacter->StopInteraction();
+	InteractableCharacter->StopInteraction(EInteractionState::None);
 }

@@ -93,6 +93,8 @@ bool AInteractableCharacter::ShouldInteract() const
 
 void AInteractableCharacter::StartInteraction()
 {
+	UE_LOG(LogTemp, Warning, TEXT("StartInteraction."));
+	
 	if (!ShouldInteract())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("StartInteraction ShouldInteract()"));
@@ -101,14 +103,13 @@ void AInteractableCharacter::StartInteraction()
 
 	bInteractionRequested = true;
 
-	// GetCharacterMovement()->SetMovementMode(MOVE_None);
-	// UE_LOG(LogTemp, Warning, TEXT("Move_None"));
-	
 	RequestInteractionStart(GetServerTime(), InteractableActor.Get());
 }
 
-void AInteractableCharacter::StopInteraction()
+void AInteractableCharacter::StopInteraction(EInteractionState NewState)
 {
+	UE_LOG(LogTemp, Warning, TEXT("StopInteraction."));
+	
 	if (!bInteractionRequested)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("StopInteraction ShouldInteract()"));
@@ -117,50 +118,7 @@ void AInteractableCharacter::StopInteraction()
 
 	bInteractionRequested = false;
 
-	// GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	// UE_LOG(LogTemp, Warning, TEXT("Move_Walking"))
-	
-	RequestInteractionStop(GetServerTime(), InteractableActor.Get());
-}
-
-// 상호작용이 끝나게 되면 실행되는 함수입니다.
-void AInteractableCharacter::FinishInteraction(EInteractionState NewState, float Time)
-{
-	// 사용작용이 끝났을 때, 성공했다면 NewState = Success
-	// 실패했다면, NewState = None
-	
-	InteractionInfo.InteractionState = NewState;
-	OnInteractionStateChanged.Broadcast(InteractionInfo);
-
-	// 상호작용에 실패했을 때
-	if (InteractionInfo.InteractionState == EInteractionState::None)
-	{
-		InteractionInfo.InteractingActor = nullptr;
-		OnInteractingActorChanged.Broadcast(InteractionInfo.InteractingActor.Get());
-		return;
-	}
-
-	// 상호작용에 성공했을 때
-	Cast<AOccupationObject>(InteractionInfo.InteractingActor)->OnInteractionFinish(this);
-
-	InteractionInfo.InteractingActor = nullptr;
-	OnInteractingActorChanged.Broadcast(InteractionInfo.InteractingActor.Get());
-	
-	// 성공했다면 1초뒤에 None상태로 돌아옵니다.
-	if (InteractionInfo.InteractionState == EInteractionState::Success)
-	{
-		FTimerDelegate TimerDelegate;
-		TimerDelegate.BindLambda([this]()
-		{
-			InteractionInfo.InteractionState = EInteractionState::None;
-		});
-		GetWorldTimerManager().SetTimer(InteractionClearTimer, TimerDelegate, 1.0f, false);
-	}
-}
-
-void AInteractableCharacter::OnRep_InteractingActor() const
-{
-	OnInteractingActorChanged.Broadcast(InteractionInfo.InteractingActor.Get());
+	RequestInteractionStop(GetServerTime(), InteractableActor.Get(), NewState);
 }
 
 bool AInteractableCharacter::RequestInteractionStart_Validate(const float& Time, AActor* Actor)
@@ -184,10 +142,11 @@ void AInteractableCharacter::RequestInteractionStart_Implementation(const float&
 	InteractionInfo.InteractionState = EInteractionState::OnGoing;
 	OnInteractionStateChanged.Broadcast(InteractionInfo);
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
+	
 	Cast<AInteractable>(Actor)->OnInteractionStart(Time, this);
 }
 
-bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, AActor* Actor)
+bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, AActor* Actor, EInteractionState NewState)
 {
 	if (Actor && Actor->ActorHasTag("Interactable") && Time < GetServerTime() + 0.05f)
 	{
@@ -206,8 +165,53 @@ bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, 
 	}
 }
 
-void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor)
+void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor, EInteractionState NewState)
 {
+	if (!InteractionInfo.InteractingActor.IsValid() ||
+		InteractionInfo.InteractionState != EInteractionState::OnGoing) return;
+	
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	Cast<AInteractable>(Actor)->OnInteractionStop(GetServerTime(), this);
+	
+	Cast<AInteractable>(Actor)->OnInteractionStop(GetServerTime(), this, NewState);
+}
+
+bool AInteractableCharacter::FinishInteraction_Validate(EInteractionState NewState, float Time)
+{
+	return true;
+}
+
+void AInteractableCharacter::FinishInteraction_Implementation(EInteractionState NewState, float Time)
+{
+	if (InteractionInfo.InteractionState == EInteractionState::None)
+	{
+		InteractionInfo.InteractionState = NewState;
+		OnInteractionStateChanged.Broadcast(InteractionInfo);
+		InteractionInfo.InteractingActor = nullptr;
+		OnInteractingActorChanged.Broadcast(InteractionInfo.InteractingActor.Get());
+		return;
+	}
+	
+	Cast<AInteractable>(InteractionInfo.InteractingActor)->OnInteractionFinish(this);
+
+	InteractionInfo.InteractionState = NewState;
+	OnInteractionStateChanged.Broadcast(InteractionInfo);
+	InteractionInfo.InteractingActor = nullptr;
+	OnInteractingActorChanged.Broadcast(InteractionInfo.InteractingActor.Get());
+	
+	// 성공했다면 1초뒤에 None상태로 돌아옵니다.
+	if (InteractionInfo.InteractionState == EInteractionState::Success)
+	{
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindLambda([this]()
+		{
+			InteractionInfo.InteractionState = EInteractionState::None;
+			OnInteractionStateChanged.Broadcast(InteractionInfo);
+		});
+		GetWorldTimerManager().SetTimer(InteractionClearTimer, TimerDelegate, 1.0f, false);
+	}
+}
+
+void AInteractableCharacter::OnRep_InteractingActor() const
+{
+	OnInteractingActorChanged.Broadcast(InteractionInfo.InteractingActor.Get());
 }
