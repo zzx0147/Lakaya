@@ -7,6 +7,7 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "AiCharacterController.generated.h"
 
 /**
@@ -41,4 +42,8 @@ private:
 
 private:
 	TWeakObjectPtr<AArmedCharacter> ArmedCharacter;
+
+	USpringArmComponent* SpringArm;
+	FVector AISpringArmOffset;
+
 };
