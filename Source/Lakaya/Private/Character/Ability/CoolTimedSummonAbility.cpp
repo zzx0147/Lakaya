@@ -57,7 +57,7 @@ bool UCoolTimedSummonAbility::ShouldStartRemoteCall()
 void UCoolTimedSummonAbility::RemoteAbilityStart(const float& RequestTime)
 {
 	Super::RemoteAbilityStart(RequestTime);
-	if (EnableTime > GetServerTime()) return;
+	if (EnableTime > GetServerTime() || !CostResource(ResourceCost)) return;
 
 	if (const auto AbilityInstance = AbilityInstancePool.GetObject())
 	{

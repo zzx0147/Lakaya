@@ -58,6 +58,10 @@ protected:
 	UPROPERTY(EditAnywhere)
 	bool bWantsTransformSet;
 
+	// 어빌리티 인스턴스 소환시 소모할 자원들을 지정합니다.
+	UPROPERTY(EditAnywhere)
+	TArray<FResourceCostData> ResourceCost;
+
 private:
 	// 스킬이 사용가능해지는 시점을 의미합니다.
 	UPROPERTY(ReplicatedUsing=OnRep_EnableTime, Transient)

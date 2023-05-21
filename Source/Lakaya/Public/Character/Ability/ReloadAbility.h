@@ -23,6 +23,16 @@ protected:
 	virtual void RemoteAbilityStart(const float& RequestTime) override;
 	virtual bool ShouldStartRemoteCall() override;
 
+public:
+	// 현재 캐릭터가 재장전중인지를 나타냅니다.
+	UFUNCTION(BlueprintCallable)
+	const bool& IsReloading() const { return bRecentReloadState; }
+
+	// 재장전 완료까지 남은 시간을 반환합니다. 단순히 재장전 완료 예정 시간에 현재 시간을 빼서 반환하므로 음수가 나올 수 있습니다.
+	UFUNCTION(BlueprintCallable)
+	float GetRemainReloadingTime() const { return ReloadingTime - GetServerTime(); }
+
+protected:
 	virtual void ReloadTimerHandler();
 	virtual void SetReloadState(const bool& NewState);
 
