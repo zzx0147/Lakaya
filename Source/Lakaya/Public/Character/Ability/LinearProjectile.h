@@ -26,6 +26,9 @@ protected:
 	virtual void OnRep_SummonedTime();
 
 	UFUNCTION()
+	virtual void OnRep_SummonedLocation();
+
+	UFUNCTION()
 	virtual void OnRep_SummonedRotation();
 
 	UFUNCTION()
@@ -41,6 +44,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float BaseDamage;
 
+	UPROPERTY(EditAnywhere)
+	float DamageRange;
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* SceneComponent;
@@ -54,7 +60,7 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_SummonedTime, Transient)
 	float SummonedTime;
 
-	UPROPERTY(Replicated, Transient)
+	UPROPERTY(ReplicatedUsing=OnRep_SummonedLocation, Transient)
 	FVector SummonedLocation;
 
 	UPROPERTY(ReplicatedUsing=OnRep_SummonedRotation, Transient)

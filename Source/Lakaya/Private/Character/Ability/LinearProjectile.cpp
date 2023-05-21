@@ -19,6 +19,7 @@ ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer
 	PrimaryActorTick.bCanEverTick = true;
 	LinearVelocity = 1000.f;
 	BaseDamage = 20.f;
+	DamageRange = 100.f;
 
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(CollisionComponentName);
 	CollisionComponent->SetCollisionProfileName(TEXT("Trigger"));
@@ -78,6 +79,11 @@ void ALinearProjectile::OnRep_SummonedTime()
 	StaticMeshComponent->SetVisibility(ProjectileState);
 }
 
+void ALinearProjectile::OnRep_SummonedLocation()
+{
+	SetActorLocation(SummonedLocation);
+}
+
 void ALinearProjectile::OnRep_SummonedRotation()
 {
 	SetActorRotation(SummonedRotation);
@@ -88,11 +94,16 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
                                                          bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (!HasAuthority() || OtherActor == GetInstigator() || OtherActor == this) return;
-	UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, GetInstigator()->GetController(), GetInstigator(),
-	                              nullptr);
+	if (bFromSweep) SetActorLocation(SweepResult.Location);
+	UGameplayStatics::ApplyRadialDamage(GetWorld(), BaseDamage, GetActorLocation(), DamageRange, nullptr, {this},
+	                                    GetInstigator(), GetInstigator()->GetController());
+	DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRange, 10, FColor::Red, false, 3);
+	// UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, GetInstigator()->GetController(), GetInstigator(),
+	//                               nullptr);
 	SetActorTickEnabled(false);
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SummonedTime = 0.f;
+	SummonedLocation = GetActorLocation();
 	StaticMeshComponent->SetVisibility(false);
 	BroadcastOnAbilityEnded();
 }
