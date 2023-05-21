@@ -43,45 +43,15 @@ void AInteractablePlayerController::SetupMappingContext(UEnhancedInputLocalPlaye
 	InputSubsystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
 
+//TODO: 불필요한 함수 오버라이딩
 void AInteractablePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	// TraceQueryParams.AddIgnoredActor(this);
 }
-
-// void AInteractablePlayerController::NotifyActorBeginOverlap(AActor* OtherActor)
-// {
-// 	Super::NotifyActorBeginOverlap(OtherActor);
-//
-// 	if (!InputSubSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
-//
-// 	++InteractableCount;
-//
-// 	if (!InputSubSystem->HasMappingContext(InteractionContext))
-// 	{
-// 		InputSubSystem->AddMappingContext(InteractionContext, InteractionPriority);
-// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow, TEXT("Interaction context added"));
-// 	}
-// }
-//
-// void AInteractablePlayerController::NotifyActorEndOverlap(AActor* OtherActor)
-// {
-// 	Super::NotifyActorEndOverlap(OtherActor);
-//
-// 	if (!InputSubSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
-//
-// 	--InteractableCount;
-//
-// 	if (InteractableCount == 0)
-// 	{
-// 		InputSubSystem->RemoveMappingContext(InteractionContext);
-// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow, TEXT("Interaction context removed"));
-// 	}
-// }
 
 void AInteractablePlayerController::StartInteraction(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StartInteraction."));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StartInteraction."));
 	auto* InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
 	if (InteractableCharacter == nullptr)
 	{
@@ -94,7 +64,7 @@ void AInteractablePlayerController::StartInteraction(const FInputActionValue& Va
 
 void AInteractablePlayerController::StopInteraction(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StopInteraction."));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StopInteraction."));
 	auto* InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
 	if (InteractableCharacter == nullptr)
 	{

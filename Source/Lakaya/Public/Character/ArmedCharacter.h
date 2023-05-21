@@ -47,6 +47,10 @@ public:
 	virtual ELifetimeCondition
 	AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const override;
 
+protected:
+	virtual void SetAliveState_Implementation(bool IsAlive) override;
+
+public:
 	/**
 	 * @brief 캐릭터의 능력을 사용합니다. (키 누름)
 	 * @param Kind 사용할 능력을 특정합니다.
@@ -61,11 +65,39 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StopAbility(const EAbilityKind& Kind);
 
+	/**
+	 * @brief 서버에게 능력 사용을 요청합니다.
+	 * @param Kind 능력 사용이 요청된 능력의 종류입니다.
+	 * @param Time 클라이언트가 능력 사용을 요청한 시간입니다.
+	 */
+	UFUNCTION(Server, Reliable, WithValidation)
+	void RequestStartAbility(const EAbilityKind& Kind, const float& Time);
+
+	/**
+	 * @brief 서버에게 능력 중단을 요청합니다.
+	 * @param Kind 능력 중단이 요청된 능력의 종류입니다.
+	 * @param Time 클라이언트가 능력 중단을 요청한 시간입니다.
+	 */
+	UFUNCTION(Server, Reliable, WithValidation)
+	void RequestStopAbility(const EAbilityKind& Kind, const float& Time);
+
 	// 캐릭터의 능력들을 가져옵니다. 이렇게 가져온 배열은 EAbilityKind를 통해 특정할 수 있습니다.
 	UFUNCTION(BlueprintGetter)
 	const TArray<class UCharacterAbility*>& GetAbilities() const { return Abilities; }
 
 protected:
+	// 능력 사용을 시작할지 여부를 조사합니다.
+	virtual bool ShouldStartAbility(const EAbilityKind& Kind);
+
+	// 능력 사용을 중단할지 여부를 조사합니다.
+	virtual bool ShouldStopAbility(const EAbilityKind& Kind);
+
+	// 서버에서 능력 사용을 시작할지 여부를 조사합니다.
+	virtual bool ShouldStartAbilityOnServer(const EAbilityKind& Kind);
+
+	// 서버에서 능력 사용을 중단할지 여부를 조사합니다.
+	virtual bool ShouldStopAbilityOnServer(const EAbilityKind& Kind);
+
 	UPROPERTY(EditAnywhere, Replicated)
 	TArray<UCharacterAbility*> Abilities;
 };

@@ -3,26 +3,26 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "StopRemoteCallAbility.h"
+#include "CharacterAbility.h"
 #include "AutoFireAbility.generated.h"
 
 DECLARE_EVENT_OneParam(UAutoFireAbility, FIsFiringSignature, bool)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class LAKAYA_API UAutoFireAbility : public UStopRemoteCallAbility
+class LAKAYA_API UAutoFireAbility : public UCharacterAbility
 {
 	GENERATED_BODY()
 
 public:
 	UAutoFireAbility();
 
-	virtual void AbilityStart() override;
-	virtual void AbilityStop() override;
+	virtual void LocalAbilityStart() override;
+	virtual void LocalAbilityStop() override;
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void RequestStart_Implementation(const float& RequestTime) override;
-	virtual void RequestStop_Implementation(const float& RequestTime) override;
+	virtual void RemoteAbilityStart(const float& RequestTime) override;
+	virtual void RemoteAbilityStop(const float& RequestTime) override;
 
 public:
 	UFUNCTION(BlueprintGetter)
@@ -71,7 +71,7 @@ private:
 
 	bool bIsFireRequested;
 	FTimerHandle FireTimer;
-	TWeakObjectPtr<class UCameraComponent> CameraComponent;
+	TWeakObjectPtr<class UCameraComponent> Camera;
 	TWeakObjectPtr<USceneComponent> RootComponent;
 	FCollisionQueryParams CollisionQueryParams;
 };

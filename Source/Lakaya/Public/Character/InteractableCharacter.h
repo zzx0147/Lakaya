@@ -18,18 +18,19 @@ enum class EInteractionState : uint8
 	Canceled UMETA(DisPlayerName = "Canceled"),
 };
 
-// USTRUCT()
-// struct FInteractionInfo
-// {
-// 	GENERATED_BODY();
-//
-// 	// 현재 인터랙션 중인 액터입니다.
-// 	UPROPERTY(ReplicatedUsing = OnRep_InteractingActor)
-// 	TWeakObjectPtr<AActor> InteractingActor;
-//
-// 	UFUNCTION()
-// 	void OnRep_InteractingActor();
-// };
+USTRUCT()
+struct FInteractionInfo
+{
+	GENERATED_BODY();
+
+	// 현재 캐릭터의 인터렉션 상태를 나타냅니다.
+	UPROPERTY()
+	EInteractionState InteractionState;
+
+	// 현재 인터렉션 상태가 유지되는 목표 시간입니다.
+	UPROPERTY()
+	float EndingTime;
+};
 
 UCLASS(Config = Game)
 class LAKAYA_API AInteractableCharacter : public AArmedCharacter
@@ -44,11 +45,14 @@ protected:
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
 public:
+	void StartInteraction();
+	void StopInteraction();
+	
 	// 현재 인터렉션이 가능한지 판별합니다.
-	bool ShouldInteractStart();
+	virtual bool ShouldInteractStart();
 
 	// 현재 인터렉션을 중단할 수 있는지 판별합니다.
-	bool ShouldInteractStop();
+	virtual  bool ShouldInteractStop();
 	
 	// 인터렉션을 초기화합니다. 인터렉션이 끝나는 경우 호출됩니다.
 	void InitializeInteraction();
@@ -56,6 +60,7 @@ public:
 	FORCEINLINE const EInteractionState& GetInteractionState() const { return InteractionState; }
 
 	FORCEINLINE void SetInteractionState(const EInteractionState& NewState) { InteractionState = NewState; }	
+
 protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void RequestInteractionStart(const float& Time, AActor* Actor);

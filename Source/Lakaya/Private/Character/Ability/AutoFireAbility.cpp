@@ -11,6 +11,7 @@
 void UAutoFireAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
 	DOREPLIFETIME(UAutoFireAbility, bIsFiring);
 }
 
@@ -19,32 +20,33 @@ UAutoFireAbility::UAutoFireAbility()
 	InitDelay = FireDelay = 0.2f;
 	FireRange = 5000.f;
 	FireDamage = 20.f;
+	bCanEverStopRemoteCall = bCanEverStartRemoteCall = true;
 }
 
-void UAutoFireAbility::AbilityStart()
+void UAutoFireAbility::LocalAbilityStart()
 {
 	if (GetOwner()->HasAuthority())
 	{
-		Super::AbilityStart();
+		Super::LocalAbilityStart();
 		return;
 	}
 
 	if (bIsFireRequested) return;
 	bIsFireRequested = true;
-	Super::AbilityStart();
+	Super::LocalAbilityStart();
 }
 
-void UAutoFireAbility::AbilityStop()
+void UAutoFireAbility::LocalAbilityStop()
 {
 	if (GetOwner()->HasAuthority())
 	{
-		Super::AbilityStop();
+		Super::LocalAbilityStop();
 		return;
 	}
 
 	if (!bIsFireRequested) return;
 	bIsFireRequested = false;
-	Super::AbilityStop();
+	Super::LocalAbilityStop();
 }
 
 void UAutoFireAbility::BeginPlay()
@@ -52,8 +54,8 @@ void UAutoFireAbility::BeginPlay()
 	Super::BeginPlay();
 	if (const auto Character = GetOwner(); Character && Character->HasAuthority())
 	{
-		CameraComponent = Cast<UCameraComponent>(Character->FindComponentByClass(UCameraComponent::StaticClass()));
-		if (!CameraComponent.IsValid())
+		Camera = Cast<UCameraComponent>(Character->FindComponentByClass(UCameraComponent::StaticClass()));
+		if (!Camera.IsValid())
 			UE_LOG(LogInit, Error, TEXT("Fail to find CameraComponent in UAutoFireComponent!"));
 
 		RootComponent = Character->GetRootComponent();
@@ -63,22 +65,22 @@ void UAutoFireAbility::BeginPlay()
 	}
 }
 
-void UAutoFireAbility::RequestStart_Implementation(const float& RequestTime)
+void UAutoFireAbility::RemoteAbilityStart(const float& RequestTime)
 {
-	Super::RequestStart_Implementation(RequestTime);
+	Super::RemoteAbilityStart(RequestTime);
 	if (bIsFiring) return;
 	bIsFiring = true;
 	if (auto& TimerManager = GetWorld()->GetTimerManager(); !TimerManager.TimerExists(FireTimer))
 	{
 		TimerManager.SetTimer(FireTimer, this, &UAutoFireAbility::FireTick, FireDelay, true, InitDelay);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
 	}
 	OnFiringStateChanged.Broadcast(bIsFiring);
 }
 
-void UAutoFireAbility::RequestStop_Implementation(const float& RequestTime)
+void UAutoFireAbility::RemoteAbilityStop(const float& RequestTime)
 {
-	Super::RequestStop_Implementation(RequestTime);
+	Super::RemoteAbilityStop(RequestTime);
 	if (!bIsFiring) return;
 	bIsFiring = false;
 	OnFiringStateChanged.Broadcast(bIsFiring);
@@ -96,16 +98,16 @@ bool UAutoFireAbility::ShouldFire()
 
 void UAutoFireAbility::SingleFire()
 {
-	if (!CameraComponent.IsValid() || !RootComponent.IsValid()) return;
+	if (!Camera.IsValid() || !RootComponent.IsValid()) return;
 
-	const auto Forward = CameraComponent->GetForwardVector();
-	const auto Location = CameraComponent->GetComponentLocation();
+	const auto Forward = Camera->GetForwardVector();
+	const auto Location = Camera->GetComponentLocation();
 
 	// 캐릭터를 기준으로 정의된 사정거리를 카메라 기준으로 변환하는 수식입니다.
 	// (카메라의 전방 벡터에 카메라->캐릭터 벡터를 투영한 길이 + 사정거리) * 카메라 전방 벡터 + 카메라의 위치.
 	const auto Destination = Location +
 		(Forward.Dot(Location - RootComponent->GetComponentLocation()) + FireRange) * Forward;
-	DrawDebugLine(GetWorld(), Location, Destination, FColor::Red, false, 1.f);
+	// DrawDebugLine(GetWorld(), Location, Destination, FColor::Red, false, 1.f);
 
 	if (FHitResult Result;
 		GetWorld()->LineTraceSingleByChannel(Result, Location, Destination, ECC_Camera, CollisionQueryParams))
@@ -127,7 +129,7 @@ void UAutoFireAbility::FireTick()
 	if (!bIsFiring)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(FireTimer);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
 	}
 	else if (ShouldFire()) SingleFire();
 	else FailToFire();

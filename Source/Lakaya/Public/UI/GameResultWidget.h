@@ -12,13 +12,13 @@
  * 
  */
 UCLASS()
-class LAKAYA_API UGameResultWidget : public UMatchStateWidget
+class LAKAYA_API UGameResultWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
-	virtual bool OnMatchStart() override { return true; }
-	virtual bool OnMatchEnding() override;
+	// virtual bool OnMatchStart() override { return true; }
+	// virtual bool OnMatchEnding() override;
 
 protected:
 	virtual void NativeConstruct() override;

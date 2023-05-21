@@ -3,25 +3,26 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "StartRemoteCallAbility.h"
+#include "CharacterAbility.h"
 #include "ReloadAbility.generated.h"
 
 
 DECLARE_EVENT_OneParam(UReloadAbility, FIsReloadingSignature, bool)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class LAKAYA_API UReloadAbility : public UStartRemoteCallAbility
+class LAKAYA_API UReloadAbility : public UCharacterAbility
 {
 	GENERATED_BODY()
 
 public:
 	UReloadAbility();
 
-	virtual void AbilityStart() override;
+	virtual void LocalAbilityStart() override;
+	virtual void OnAliveStateChanged(const bool& AliveState) override;
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void RequestStart_Implementation(const float& RequestTime) override;
+	virtual void RemoteAbilityStart(const float& RequestTime) override;
 
 	UFUNCTION()
 	virtual void OnRep_IsReloading();

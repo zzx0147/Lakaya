@@ -4,15 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "NavigationSystem.h"
-#include "Perception/AIPerceptionComponent.h"
-#include "Perception/AISenseConfig_Sight.h"
-#include "Character/ArmedCharacter.h"
-#include "Character/InteractableCharacter.h"
-// #include "Character/OccupationCharacter.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "BehaviorTree/BehaviorTree.h"
-#include "BehaviorTree/BlackboardData.h"
 #include "AiCharacterController.generated.h"
 
 /**
@@ -27,15 +18,12 @@ public:
 	AAiCharacterController();
 
 private:
-	virtual void BeginPlay() override;
+	UFUNCTION(BlueprintCallable)
+	void AIFireStart(class AArmedCharacter* ArmCharacter);
 
-	// UFUNCTION(BlueprintCallable)
-	// void AiFireStart(AOccupationCharacter* OccuCharacter);
-	//
-	// UFUNCTION(BlueprintCallable)
-	// void AiFireStop(AOccupationCharacter* OccuCharacter);
+	UFUNCTION(BlueprintCallable)
+	void AIFireStop(AArmedCharacter* ArmCharacter);
 
 private:
-	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
-   
+	TWeakObjectPtr<AArmedCharacter> ArmedCharacter;
 };

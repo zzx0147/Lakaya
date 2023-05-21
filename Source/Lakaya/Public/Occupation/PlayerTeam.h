@@ -1,14 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "PlayerTeam.generated.h"
 
-/**
- * 
- */
-UENUM()
+UENUM(BlueprintType)
 enum class EPlayerTeam : uint8
 {
 	// 현재 팀 배정을 받지 못한 상태
@@ -21,5 +16,5 @@ enum class EPlayerTeam : uint8
 	B UMETA(DisplayerName = "B"),
 
 	// 개인전
-	Individual
+	Individual UMETA(DisplayerName = "Individual")
 };

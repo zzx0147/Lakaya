@@ -3,6 +3,7 @@
 
 #include "Character/LakayaBaseCharacter.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Character/ResourceComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -34,6 +35,11 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
+
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> ResurrectionFinder(
+		TEXT("/Script/Niagara.NiagaraSystem'/Game/Effects/M_VFX/Char_Common/VFX_Resurrection.VFX_Resurrection'"));
+
+	ResurrectionNiagaraSystem = ResurrectionFinder.Object;
 }
 
 ELifetimeCondition ALakayaBaseCharacter::AllowActorComponentToReplicate(
@@ -81,8 +87,8 @@ void ALakayaBaseCharacter::Tick(float DeltaSeconds)
 		// 이전 프레임에서 사용했던 회전값과 현재 시간을 기준으로 외삽된 Raw회전값을 구면보간하여 현재 프레임에서 사용한 회전값을 지정합니다. 
 		LatestUpdateRotation = FQuat::Slerp(LatestUpdateRotation, GetRawExtrapolatedRotator(GetServerTime()),
 		                                    PlayerRotationInterpolationAlpha);
-		DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + LatestUpdateRotation.Vector() * 100.f,
-		              FColor::Green, false, 0.3f);
+		//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + LatestUpdateRotation.Vector() * 100.f,
+		//              FColor::Green, false, 0.3f);
 	}
 }
 
@@ -91,6 +97,16 @@ FRotator ALakayaBaseCharacter::GetPlayerRotation() const
 	// 서버이거나 Autonomous인 경우 그냥 카메라 컴포넌트를 사용합니다.
 	if (HasAuthority() || GetLocalRole() == ROLE_AutonomousProxy) return GetCamera()->GetComponentRotation();
 	return LatestUpdateRotation.Rotator();
+}
+
+void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
+{
+	UE_LOG(LogTemp, Warning, TEXT("SetAliveState"));
+	ResourceComponent->OnAliveStateChanged(IsAlive);
+	if (IsAlive && ResurrectionNiagaraSystem)
+		UNiagaraFunctionLibrary::SpawnSystemAttached(ResurrectionNiagaraSystem, RootComponent, FName(),
+		                                             FVector(0.0f, 0.0f, -90.0f), FRotator::ZeroRotator,
+		                                             EAttachLocation::SnapToTarget, true);
 }
 
 float ALakayaBaseCharacter::GetServerTime() const

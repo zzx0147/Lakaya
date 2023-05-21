@@ -3,6 +3,12 @@
 
 #include "AnimInstance/CharAnimInstance.h"
 
+
+UCharAnimInstance::UCharAnimInstance()
+{
+	FireAnimDuration = 0.1f;
+}
+
 void UCharAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
@@ -10,13 +16,17 @@ void UCharAnimInstance::NativeBeginPlay()
 	if(const auto Character = Cast<AArmedCharacter>(TryGetPawnOwner()))
 	{
 		auto& Abilities = Character->GetAbilities();
+
 		if(Abilities.IsValidIndex(WeaponFire))
 		{
-			if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
+			if(const auto ResultNotifyFireAbility = Cast<UResultNotifyFireAbility>(Abilities[WeaponFire]))
 			{
-				FireAbility->OnFiringStateChanged.
-				AddLambda([this](const bool& FireState)
-					{bIsAutoFire = FireState;} );
+				ResultNotifyFireAbility->OnSingleFire.
+				AddLambda([this](const FVector& Start,const FVector&End, const FVector& Normal, const EFireResult& FireResult)
+				{
+					RecentFireTime = GetWorld()->TimeSeconds; 
+				} );
+				UE_LOG(LogTemp, Error, TEXT("Fire!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
 			}
 		}
 
@@ -30,18 +40,34 @@ void UCharAnimInstance::NativeBeginPlay()
 			}
 		}
 
-		// if(Abilities.IsValidIndex(WeaponAbility))
+		if (const auto InteractableCharacter = Cast<AInteractableCharacter>(TryGetPawnOwner()))
+		{
+			InteractableCharacter->OnInteractingActorChanged.
+			AddUObject(this, &UCharAnimInstance::OnInteractingActorChanged);
+		}
+	}
+}
+
+void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
+{
+	if (const auto InteractableCharacter =
+		Cast<AInteractableCharacter>(TryGetPawnOwner()))
+	{
+		bIsInteracting = NewInteractingActor != nullptr;
+
+		// if (NewInteractingActor)
 		// {
-		// 	if(const auto WeaponSkillAbility = Cast<UReloadAbility>(Abilities[WeaponAbility]))
-		// 	{
-		// 		WeaponSkillAbility->OnFiringStateChanged.
-		// 		AddLambda([this](const bool& WeaponSkillState)
-		// 			{bIsWeaponSkill = WeaponSkillState;} );
-		// 	}
+		// 	bIsInteracting = true;
+		// }
+		// else
+		// {
+		// 	bIsInteracting = false;
 		// }
 	}
+}
 
-	
-	// Cast<AFocusableCharacter>(TryGetPawnOwner())->GetFocusChangedEvent
-	// (EFocusContext::Simulated,EFocusSpace::MainHand).AddUObject(this,&UCharAnimInstance::SetState);
+void UCharAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
+{
+	Super::NativeUpdateAnimation(DeltaSeconds);
+	bIsAutoFire = RecentFireTime + FireAnimDuration > GetWorld()->TimeSeconds;
 }

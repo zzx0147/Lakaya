@@ -16,11 +16,18 @@ void UReloadAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 UReloadAbility::UReloadAbility()
 {
 	ReloadDelay = 5.f;
+	bCanEverStartRemoteCall = true;
 }
 
-void UReloadAbility::AbilityStart()
+void UReloadAbility::LocalAbilityStart()
 {
-	if (!bIsReloading) Super::AbilityStart();
+	if (!bIsReloading) Super::LocalAbilityStart();
+}
+
+void UReloadAbility::OnAliveStateChanged(const bool& AliveState)
+{
+	Super::OnAliveStateChanged(AliveState);
+	if (!AliveState && GetOwner()->HasAuthority()) bIsReloading = false;
 }
 
 void UReloadAbility::BeginPlay()
@@ -33,17 +40,17 @@ void UReloadAbility::BeginPlay()
 	}
 }
 
-void UReloadAbility::RequestStart_Implementation(const float& RequestTime)
+void UReloadAbility::RemoteAbilityStart(const float& RequestTime)
 {
-	Super::RequestStart_Implementation(RequestTime);
+	Super::RemoteAbilityStart(RequestTime);
 
-	// 재장전중이지 않고, BulletComponent가 존재하고, 탄창이 가득차있지 않는 경우에만 재장전을 시작합니다.
-	if (bIsReloading || !BulletComponent.IsValid() || BulletComponent->IsFull()) return;
+	// 재장전중이지 않고, BulletComponent가 존재하고, 탄창이 가득차있지 않고, 살아있는 경우에만 재장전을 시작합니다.
+	if (bIsReloading || !BulletComponent.IsValid() || BulletComponent->IsFull() || !GetAliveState()) return;
 
 	bIsReloading = true;
 	GetWorld()->GetTimerManager().SetTimer(OwnerTimer, this, &UReloadAbility::ReloadTimerHandler, ReloadDelay);
 	OnReloadStateChanged.Broadcast(bIsReloading);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ReloadTimerSetted!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ReloadTimerSetted!"));
 }
 
 void UReloadAbility::OnRep_IsReloading()
@@ -57,7 +64,7 @@ void UReloadAbility::ReloadTimerHandler()
 	if (BulletComponent.IsValid())
 	{
 		BulletComponent->Reload();
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Reloaded!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Reloaded!"));
 	}
 	else UE_LOG(LogActorComponent, Error, TEXT("BulletComponent is invalid!"));
 	OnReloadStateChanged.Broadcast(bIsReloading);

@@ -10,18 +10,6 @@ void ULoadingWidget::NativeConstruct()
 		UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_JoinedPlayerText is null."));
 		return;
 	}
-
-	//const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
-	//if (OccupationGameState == nullptr)
-	//{
-	//	UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_GameMode is null."));
-	//	return;
-	//}
-
-	//MaxPlayerCount = OccupationGameState->GetMaximumPlayers();
-	//OnChangeJoinedPlayers(OccupationGameState->GetNumPlayers());
-
-	//OccupationGameState->OnOccupationChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
 }
 
 void ULoadingWidget::SetPlayerNumber(const uint8& PlayerCount)
@@ -32,6 +20,7 @@ void ULoadingWidget::SetPlayerNumber(const uint8& PlayerCount)
 		return;
 	}
 
+	//TODO: 텍스트 포맷을 따로 저장해두면 더 높은 퍼포먼스를 기대할 수 있습니다.
 	LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), PlayerCount, MaxPlayerCount)));
 }
 

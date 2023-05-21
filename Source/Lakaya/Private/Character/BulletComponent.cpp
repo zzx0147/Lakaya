@@ -16,6 +16,12 @@ UBulletComponent::UBulletComponent()
 	if (WidgetFinder.Succeeded()) BulletWidgetClass = WidgetFinder.Class;
 }
 
+void UBulletComponent::OnAliveStateChanged(const bool& AliveState)
+{
+	Super::OnAliveStateChanged(AliveState);
+	if (AliveState && GetOwner()->HasAuthority()) Bullets = MaxBullets;
+}
+
 void UBulletComponent::OnRegister()
 {
 	Super::OnRegister();
@@ -27,7 +33,7 @@ void UBulletComponent::OnRegister()
 			LocalController && LocalController->IsLocalController())
 			SetupBulletWidget(LocalController);
 
-		Pawn->ReceiveControllerChangedDelegate.AddDynamic(this, &UBulletComponent::OnOwnerControllerChanged);
+		Pawn->ReceiveControllerChangedDelegate.AddUniqueDynamic(this, &UBulletComponent::OnOwnerControllerChanged);
 	}
 }
 

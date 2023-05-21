@@ -21,12 +21,12 @@ protected:
 
 public:
 	virtual void RegisterPlayer(APlayerState* PlayerState) override;
-protected:
-
+	
 private:
-
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UImageTextWidget> PlayerNameWidget;
+	TSubclassOf<class UImageTextWidget> PlayerNameWidgetClass;
 
 	TMap<FName,TObjectPtr<class UVerticalBox>> CharacterSelectedPlayerListBoxMap;
+
+	TArray<UImageTextWidget*> PlayerNameWidgetArray;
 };

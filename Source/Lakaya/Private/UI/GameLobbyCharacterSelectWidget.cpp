@@ -4,6 +4,16 @@
 
 UGameLobbyCharacterSelectWidget::UGameLobbyCharacterSelectWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> RenderTargetRenaFinder(TEXT("/Game/Characters/RenderTarget/MI_Rena"));
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> RenderTargetWaziFinder(TEXT("/Game/Characters/RenderTarget/MI_Wazi"));
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> RenderTargetMinamiFinder(TEXT("/Game/Characters/RenderTarget/MI_Minami"));
+
+	CharacterRenderTargetMaterialArray =
+	{
+		RenderTargetRenaFinder.Object,
+		RenderTargetWaziFinder.Object,
+		RenderTargetMinamiFinder.Object,
+	};
 }
 
 void UGameLobbyCharacterSelectWidget::NativeConstruct()
@@ -24,13 +34,6 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 
 	CharacterNameArray = { TEXT("Rena"), TEXT("Wazi"), TEXT("Minami") };
 
-	CharacterRenderTargetMaterialArray =
-	{
-		LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/RenderTarget/MI_Rena")),
-		LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/RenderTarget/MI_Wazi")),
-		LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Characters/RenderTarget/MI_Minami"))
-	};
-
 	check(SelectedCharacterImage != nullptr);
 	for (auto temp : CharacterButtonArray) { check(temp != nullptr) }
 	for (auto temp : CharacterRenderTargetMaterialArray) { check(temp != nullptr) }
@@ -47,6 +50,7 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 	OnClickedCharacter1Button();
 }
 
+//TODO: 불필요한 함수 오버라이딩
 void UGameLobbyCharacterSelectWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
@@ -76,7 +80,11 @@ void UGameLobbyCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum)
 	//OnCharacterSelectedCharater로 변경된 캐릭터 번호를 브로드캐스트
 	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("SelectCharacter %d"), CharacterNum));
 
-	SelectedCharacterImage->SetBrushFromMaterial(CharacterRenderTargetMaterialArray[CharacterNum]);
+	if (SelectedCharacterImage != nullptr && 
+		CharacterRenderTargetMaterialArray.IsValidIndex(CharacterNum) && 
+		CharacterRenderTargetMaterialArray[CharacterNum] != nullptr)
+		SelectedCharacterImage->SetBrushFromMaterial(CharacterRenderTargetMaterialArray[CharacterNum]);
+
 	PrevCharacterButton->SetIsEnabled(true);
 	PrevCharacterButton = CharacterButtonArray[CharacterNum];
 	PrevCharacterButton->SetIsEnabled(false);

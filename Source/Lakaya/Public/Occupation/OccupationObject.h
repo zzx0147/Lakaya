@@ -2,9 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "PlayerTeam.h"
-
 #include "Interactable/Interactable.h"
 #include "OccupationObject.generated.h"
+
+DECLARE_EVENT_OneParam(AOccupationObject, FOccupationStateSignature, EPlayerTeam);
 
 UCLASS()
 class LAKAYA_API AOccupationObject : public AInteractable
@@ -16,13 +17,11 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
-	virtual void Tick(float DeltaTime) override;
-
-	FORCEINLINE APawn* GetInteractingPawn() const { return InteractingPawn; }
+	FORCEINLINE APawn* const GetInteractingPawn() const { return InteractingPawn; }
+	FORCEINLINE EPlayerTeam const GetObjectTeam() const { return ObjectTeam; }
 	
 private:
 	virtual void OnInteractionStart(const float& Time, APawn* Caller) override;
@@ -43,6 +42,9 @@ private:
 public:
 	void SetTeamObject(const EPlayerTeam& Team);
 	
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetTeam(EPlayerTeam Team);
+	
 private:
 	UFUNCTION()
 	void OnRep_BroadCastTeamObject();
@@ -57,6 +59,8 @@ private:
 	float FirstCallerTime = 0;
 	const float MaxInteractionDuration = 3;
 
+	FOccupationStateSignature FOnOccupationStateSignature;
+	
 	FTimerHandle InteractionTimerHandle;
 	FTimerHandle InteractionStateHandle;
 };

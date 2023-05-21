@@ -17,10 +17,13 @@ class LAKAYA_API AGameLobbyPlayerController : public APlayerController
 
 public:
 	AGameLobbyPlayerController();
+	virtual void OnRep_PlayerState();
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
+
+	virtual void OnPossess(APawn* PawnToPossess) override;
 
 	/**
 	 * @brief 이 플레이어 컨트롤러가 빙의중인 폰이 변경될 때 호출됩니다. 서버에서든 클라이언트에서든 모두 호출됩니다.
