@@ -37,15 +37,6 @@ void UTeamScoreWidget::NativeConstruct()
 
 	// 점수가 바뀌게 되면, 점수를 최신화 해줍니다.
 	OccupationGameState->OnTeamScoreSignature.AddUObject(this, &UTeamScoreWidget::OnTeamScoreChanged);
-
-	// if (OccupationGameState->OnTeamScoreSignature.IsBound())
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("OnTeamScoreSignature is bound!"));
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("OnTeamScoreSignature is not bound!"));
-	// }
 }
 
 void UTeamScoreWidget::OnChangeATeamScore(const float& NewScore) const
@@ -66,5 +57,4 @@ void UTeamScoreWidget::OnTeamScoreChanged(const EPlayerTeam& Team, const float& 
 	if (Team == EPlayerTeam::A) OnChangeATeamScore(Score);
 	else if (Team == EPlayerTeam::B) OnChangeBTeamScore(Score);
 	else UE_LOG(LogScript, Warning, TEXT("Event broadcasted with invalid value! it was %d"), Team);
-	// UE_LOG(LogTemp, Warning, TEXT("OnTeamScoreChanged."));
 }
