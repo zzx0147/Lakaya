@@ -60,6 +60,12 @@ void AArmedCharacter::StopAbility(const EAbilityKind& Kind)
 	}
 }
 
+UCharacterAbility* AArmedCharacter::FindAbility(const EAbilityKind& Kind) const
+{
+	if (Abilities.IsValidIndex(Kind)) return Abilities[Kind];
+	return nullptr;
+}
+
 bool AArmedCharacter::ShouldStopAbilityOnServer_Implementation(EAbilityKind Kind)
 {
 	return true;

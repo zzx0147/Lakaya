@@ -39,6 +39,12 @@ protected:
 	virtual void RemoteAbilityStart(const float& RequestTime) override;
 	virtual void RemoteAbilityStop(const float& RequestTime) override;
 
+public:
+	// 현재 캐릭터의 사격의지를 가져옵니다.
+	UFUNCTION(BlueprintCallable)
+	const bool& IsWantsToFire() const { return bWantsToFire; }
+	
+protected:
 	UFUNCTION()
 	virtual void FireTick();
 	virtual bool ShouldFire();
