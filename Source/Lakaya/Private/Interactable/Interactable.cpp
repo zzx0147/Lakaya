@@ -1,9 +1,16 @@
 #include "Interactable/Interactable.h"
 
-AInteractable::AInteractable()
+AInteractable::AInteractable(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	Tags.Add("Interactable");
 
 	InteractingPawn = nullptr;
-	//TODO: Mesh와 Trigger 컴포넌트를 생성해야 합니다. 또 오브젝트 이니셜라이저를 받도록 하는 것이 좋아보입니다.
+	Trigger = CreateDefaultSubobject<USphereComponent>(TEXT("Trigger Sphere"));
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+
+	SetRootComponent(Trigger);
+	Mesh->SetupAttachment(RootComponent);
+
+	Trigger->InitSphereRadius(600.0f);
+	Trigger->SetRelativeLocation(FVector::ZeroVector);
 }

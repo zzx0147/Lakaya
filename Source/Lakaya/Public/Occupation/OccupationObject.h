@@ -13,20 +13,37 @@ class LAKAYA_API AOccupationObject : public AInteractable
 	GENERATED_BODY()
 
 public:
-	AOccupationObject();
+	explicit AOccupationObject(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
+	/**
+	 * @brief 오브젝트가 캐릭터 요청에 의해 상호작용을 시작합니다.
+	 * @param Time 캐릭터가 상호작용을 요청한 시간입니다.
+	 * @param Caller 상호작용을 요청한 캐릭터입니다.
+	 */
 	virtual void OnInteractionStart(const float& Time, APawn* Caller) override;
-	virtual void OnInteractionStop(const float& Time, APawn* Caller) override;
+
+	/**
+	 * @brief 오브젝트가 캐릭터 요청에 의해 상호작용을 중단합니다.
+	 * @param Time 캐릭터가 상호작용을 요청한 시간입니다.
+	 * @param Caller 상호작용을 요청한 캐릭터입니다.
+	 */
+	virtual void OnInteractionStop(const float& Time, APawn* Caller, EInteractionState NewState) override;
+
+	/**
+	 * @brief 상호작용을 성공했을 때 실행됩니다.
+	 * @param Caller 상호작용을 요청한 캐릭터입니다.
+	 */
+	virtual void OnInteractionFinish(APawn* Caller) override;
+
 	virtual void OnCharacterDead(APawn* Caller) override;
 
 public:
 	// 상호작용에 성공했을 때, 실행되는 함수입니다.
-	void OnInteractionFinish(const APawn* Caller);
 
 	FORCEINLINE APawn* GetInteractingPawn() const { return InteractingPawn.Get(); }
 	FORCEINLINE EPlayerTeam GetObjectTeam() const { return ObjectTeam; }
@@ -47,7 +64,7 @@ private:
 	float FirstCallerTime = 0;
 	const float MaxInteractionDuration = 3;
 
-	FOccupationStateSignature FOnOccupationStateSignature;
+	FOccupationStateSignature OnOccupationStateSignature;
 	
 	FTimerHandle InteractionTimerHandle;
 	FTimerHandle InteractionStateHandle;

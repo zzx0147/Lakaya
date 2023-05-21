@@ -15,9 +15,6 @@ public:
 
 	virtual void SetupEnhancedInputComponent(class UEnhancedInputComponent* const& EnhancedInputComponent) override;
 	virtual void SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem) override;
-
-protected:
-	virtual void BeginPlay() override;
 	
 private:
 	void OrderStartInteraction(const FInputActionValue& Value);

@@ -186,7 +186,6 @@ void ALakayaDefaultPlayGameMode::HandleMatchIsSelectCharacter()
 	//GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 10.0f, false);
 }
 
-//TODO: 사용되지 않는 오버라이딩 제거
 void ALakayaDefaultPlayGameMode::HandleMatchHasStarted()
 {
 	// 게임 시작 후, 서버 측 클라에게 UI바인딩.
