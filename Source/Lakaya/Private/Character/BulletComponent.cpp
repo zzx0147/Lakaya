@@ -3,6 +3,9 @@
 
 #include "Character/BulletComponent.h"
 
+#include "Character/LakayaBaseCharacter.h"
+#include "Character/LakayaBasePlayerState.h"
+#include "Character/Ability/CharacterAbility.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/GamePlayBulletWidget.h"
 
@@ -93,6 +96,24 @@ void UBulletComponent::SetupBulletWidget(APlayerController* LocalController)
 
 	OnMaxBulletsChanged.AddUObject(BulletWidget.Get(), &UGamePlayBulletWidget::SetMaxBullet);
 	OnBulletsChanged.AddUObject(BulletWidget.Get(), &UGamePlayBulletWidget::SetRemainBullet);
+
+	const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(LocalController->PlayerState);
+	if (LocalPlayerState != nullptr)
+	{
+		const FString CharacterName = LocalPlayerState->GetCharacterName().ToString();
+
+		if (CharacterName == "Rena")
+		{
+			// TODO : 레나 캐릭터 전용 UI
+			BulletWidget->RenaWeaponImage->SetVisibility(ESlateVisibility::Visible);
+		}
+
+		if (CharacterName == "Wazi")
+		{
+			// TODO : 와지 캐릭터 전용 UI
+			BulletWidget->WaziWeaponImage->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
 }
 
 void UBulletComponent::RemoveBulletWidget()

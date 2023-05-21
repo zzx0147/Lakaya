@@ -7,6 +7,7 @@
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/GameResultWidget.h"
 #include "UI/TeamScoreWidget.h"
+#include "UI/StartMessageWidget.h"
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -45,6 +46,17 @@ void AOccupationGameState::BeginPlay()
 			TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
 
+		if (StartMessageWidgetClass)
+		{
+			StartMessageWidget = CreateWidget<UStartMessageWidget>(LocalController, StartMessageWidgetClass);
+			if (StartMessageWidget == nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("StartMessageWidget is null."));
+			}
+			StartMessageWidget->AddToViewport();
+			StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+		
 		if (GameResultWidgetClass)
 		{
 			GameResultWidget = CreateWidget<UGameResultWidget>(LocalController, GameResultWidgetClass);
@@ -73,6 +85,18 @@ void AOccupationGameState::HandleMatchHasStarted()
 
 	if (IsValid(TeamScoreWidget))
 		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
+
+	if (StartMessageWidget.IsValid())
+		StartMessageWidget->SetVisibility(ESlateVisibility::Visible);
+
+	// StartMessage위젯을 띄우고 5초 뒤에 비활성화 해줍니다.
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindLambda([this]
+	{
+		StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
+	});
+	GetWorldTimerManager().SetTimer(TimerHandle_StartMessage, TimerDelegate, 5.0f, false);
+	
 }
 
 void AOccupationGameState::NotifyKillCharacter_Implementation(AController* KilledController, AActor* KilledActor,

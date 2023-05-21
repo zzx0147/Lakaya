@@ -6,6 +6,7 @@
 
 class UTextBlock;
 class UProgressBar;
+class UImage;
 
 //체력을 표기하는 클래스
 UCLASS()
@@ -33,4 +34,8 @@ private:
 
 	float MaximumHealth; //최대 체력 값
 	float Health; //체력 값
+
+public:
+	TObjectPtr<UImage> UserInfoCharImageRena;	// 캐릭터 정보창에 표기되는 레나 초상화
+	TObjectPtr<UImage> UserInfoCharImageWazi;	// 캐릭터 정보창에 표기되는 와지 초상화
 };

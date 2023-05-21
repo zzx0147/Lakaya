@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
+#include "UI/SkillWidget.h"
 #include "LakayaBaseGameState.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBaseGameState, OnChangePlayerNumberSignature, const uint8&)
@@ -95,13 +96,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameTimeWidget> CharacterSelectTimerWidgetClass;
 
+	// 게임중에 표시되는 크로스헤어 위젯을 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGamePlayCrosshairWidget> CrosshairWidgetClass;
 
+	// 게임중에 표시되는 도움말 위젯을 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UHelpWidget> HelpWidgetClass;
 
-	// 게임 종료 시 승리자를 띄우는 위젯 클래스를 지정합니다.
-	// UPROPERTY(EditDefaultsOnly)
-	// TSubclassOf<class UGameResultWidget> GameResultWidgetClass;
+	// 게임중에 표시되는 스킬 위젯을 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class USkillWidget> SkillWidgetClass;
 	
 	// 게임이 최대 몇초간 진행될지 정의합니다.
 	UPROPERTY(EditAnywhere)
@@ -112,7 +117,6 @@ protected:
 
 	TObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 
-protected:
 	UPROPERTY(EditDefaultsOnly)
 	uint8 MaximumPlayers;
 
@@ -133,5 +137,6 @@ protected:
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
 	TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;
-	// TWeakObjectPtr<UGameResultWidget> GameResultWidget;
+	TWeakObjectPtr<UHelpWidget> HelpWidget;
+	TWeakObjectPtr<USkillWidget> SkillWidget;
 };
