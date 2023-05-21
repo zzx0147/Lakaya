@@ -133,7 +133,7 @@ void AGameLobbyPlayerController::OnRep_PlayerState()
 		if (IsLocalPlayerController())//클라의 경우 PlayerState가 생겼을 때 캐릭터 선택 위젯을 생성
 			if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 			{
-				GameState->CreateCharacterSelectWidget(this);
+				GameState->OnLocalPlayerControllerCreated(this);
 			}
 	}
 }
@@ -151,7 +151,7 @@ void AGameLobbyPlayerController::BeginPlay()
 			//TODO: 불필요한 PlayerState 선언
 			if (const auto ThisPlayerState = GetPlayerState<APlayerState>())
 			{
-				GameState->CreateCharacterSelectWidget(this);
+				GameState->OnLocalPlayerControllerCreated(this);
 			}
 		}
 }

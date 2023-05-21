@@ -47,6 +47,8 @@ public:
 
 	virtual void SetCharacterSelectWidgetVisibility(const ESlateVisibility& IsVisible);
 
+	virtual void OnLocalPlayerControllerCreated(APlayerController* LocalPlayerController);
+
 	ESlateVisibility GetCharacterSelectWidgetVisibility() const;
 
 	UFUNCTION(NetMulticast, Reliable)
