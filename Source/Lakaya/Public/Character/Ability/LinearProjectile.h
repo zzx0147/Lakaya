@@ -44,6 +44,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float BaseDamage;
 
+	// 데미지 범위를 지정합니다. 0이거나 음수인 경우 단일피해로 적용됩니다.
 	UPROPERTY(EditAnywhere)
 	float DamageRange;
 

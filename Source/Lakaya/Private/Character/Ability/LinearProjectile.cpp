@@ -95,11 +95,17 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 {
 	if (!HasAuthority() || OtherActor == GetInstigator() || OtherActor == this) return;
 	if (bFromSweep) SetActorLocation(SweepResult.Location);
-	UGameplayStatics::ApplyRadialDamage(GetWorld(), BaseDamage, GetActorLocation(), DamageRange, nullptr, {this},
-	                                    GetInstigator(), GetInstigator()->GetController());
-	DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRange, 10, FColor::Red, false, 3);
-	// UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, GetInstigator()->GetController(), GetInstigator(),
-	//                               nullptr);
+	if (DamageRange > 0.f)
+	{
+		UGameplayStatics::ApplyRadialDamage(GetWorld(), BaseDamage, GetActorLocation(), DamageRange, nullptr, {this},
+		                                    GetInstigator(), GetInstigator()->GetController());
+		DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRange, 10, FColor::Red, false, 3);
+	}
+	else
+	{
+		UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, GetInstigator()->GetController(), GetInstigator(),
+		                              nullptr);
+	}
 	SetActorTickEnabled(false);
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SummonedTime = 0.f;
