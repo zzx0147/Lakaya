@@ -40,8 +40,6 @@ void AOccupationGameState::BeginPlay()
 			if (TeamScoreWidget == nullptr)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_TeamScoreWidget is null."));
-				//TODO: 리턴을 하면 다른 멀쩡한 위젯들이 생성되지 않고 넘어갈 수 있습니다.
-				return;
 			}
 			TeamScoreWidget->AddToViewport();
 			TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
