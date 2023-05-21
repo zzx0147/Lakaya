@@ -82,11 +82,13 @@ public:
 	void RequestStopAbility(const EAbilityKind& Kind, const float& Time);
 
 	// 캐릭터의 능력들을 가져옵니다. 이렇게 가져온 배열은 EAbilityKind를 통해 특정할 수 있습니다.
-	UFUNCTION(BlueprintGetter)
-	const TArray<class UCharacterAbility*>& GetAbilities() const { return Abilities; }
+	FORCEINLINE const TArray<class UCharacterAbility*>& GetAbilities() const { return Abilities; }
 
-	template <class T = UCharacterAbility>
-	T* FindAbility(const EAbilityKind& Kind) const;
+	UFUNCTION(BlueprintCallable)
+	UCharacterAbility* FindAbility(const EAbilityKind& Kind) const;
+
+	template <class T>
+	FORCEINLINE T* FindAbility(const EAbilityKind& Kind) const;
 
 protected:
 	// 능력 사용을 시작할지 여부를 조사합니다.

@@ -48,7 +48,7 @@ void UReloadAbility::RemoteAbilityStart(const float& RequestTime)
 bool UReloadAbility::ShouldStartRemoteCall()
 {
 	// 재장전 완료시점까지 남은 시간이 0.1초 미만인 경우 서버에 재장전 시작 요청을 할 수 있도록 합니다.
-	return ReloadingTime - GetServerTime() < 0.1f;
+	return GetRemainReloadingTime() < 0.1f;
 }
 
 void UReloadAbility::ReloadTimerHandler()
