@@ -157,6 +157,8 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 				SkillWidget->WaziESkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 				SkillWidget->WaziRButtonSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 				SkillWidget->WaziRSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+				ScoreBoard->RegisterPlayer(LocalPlayerState);
 			}
 		}
 	}
@@ -166,7 +168,7 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
-	
+
 	if (InGameTimeWidget.IsValid())
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	

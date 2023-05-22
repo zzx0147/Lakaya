@@ -18,7 +18,6 @@ public:
 	explicit UOccupationScoreBoard(const FObjectInitializer& ObjectInitializer);
 	
 	virtual void RegisterPlayer(APlayerState* PlayerState) override;
-
 protected:
 	virtual void NativeConstruct() override;
 

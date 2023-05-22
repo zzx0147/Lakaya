@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Image.h"
 #include "ScoreBoardElement.generated.h"
 
 class UTextBlock;
@@ -11,30 +12,39 @@ UCLASS()
 class LAKAYA_API UScoreBoardElement : public UUserWidget
 {
 	GENERATED_BODY()
-	
-public:
-	UE_DEPRECATED(5.1, "이 함수는 더이상 사용되지 않습니다. 대신 다른 setter를 사용하세요.")
-	void SetData(int8 Rank,const FText& PlayerName, int8 Score); // 정보를 받아서 UI를 업데이트
-
-	// 누적 킬 횟수를 업데이트합니다.
-	void SetKillCount(const uint16& KillCount);
-
-	// 누적 사망 횟수를 업데이트합니다.
-	void SetDeathCount(const uint16& DeathCount);
-
-	// 플레이어 이름을 설정합니다.
-	void SetPlayerName(const FText& PlayerName);
-	void SetPlayerName(const FString& PlayerName);
 
 protected:
 	virtual void NativeConstruct() override;
+	
+public:
+	UE_DEPRECATED(5.1, "이 함수는 더이상 사용되지 않습니다. 대신 다른 setter를 사용하세요.")
+	void SetData(int8 Rank,const FText& PlayerName, int8 Score) const; // 정보를 받아서 UI를 업데이트
 
+	// 플레이어 이름을 설정합니다.
+	void SetPlayerName(const FText& PlayerName) const;
+	void SetPlayerName(const FString& PlayerName) const;
+
+	// 누적 점수를 업데이트합니다.
+	void SetScoreCount(const uint32& ScoreCount) const;
+	
+	// 누적 킬 횟수를 업데이트합니다.
+	void SetKillCount(const uint16& KillCount) const;
+
+	// 누적 점령 성공 횟수를 업데이트합니다.
+	void SetCaptureCount(const uint16& CaptureCount) const;
+
+	// 누적 사망 횟수를 업데이트합니다.
+	void SetDeathCount(const uint16& DeathCount) const;
 private:
-	//TODO: 아래의 두 텍스트블럭은 변경되는 UI 기획서에서 여전히 사용되는지 여부를 확인해봐야 합니다.
-	UTextBlock* RankText; //랭킹
-	UTextBlock* ScoreText; //점수
+	TWeakObjectPtr<UTextBlock> PlayerNameText;	 // 플레이어 이름
+	TWeakObjectPtr<UTextBlock> ScoreText;	   	 // 점수
+	TWeakObjectPtr<UTextBlock> CaptureText;		 // 점령 성공
+	TWeakObjectPtr<UTextBlock> KillText;		 // 킬
+	TWeakObjectPtr<UTextBlock> DeathText;		 // 데스
 
-	TWeakObjectPtr<UTextBlock> PlayerNameText; //플레이어 이름
-	TWeakObjectPtr<UTextBlock> KillText;
-	TWeakObjectPtr<UTextBlock> DeathText;
+public:
+	TWeakObjectPtr<UImage> Anti_BackGround_Image;			// Anti_뒷배경
+	TWeakObjectPtr<UImage> Pro_BackGround_Image;			// Pro_뒷배경
+	TWeakObjectPtr<UImage> Character_Rena_Image;		// Anti_레나 초상화
+	TWeakObjectPtr<UImage> Character_Wazi_Image;		// Anti_와지 초상화
 };
