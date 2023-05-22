@@ -24,6 +24,8 @@ ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(CollisionComponentName);
 	CollisionComponent->SetCollisionProfileName(TEXT("Trigger"));
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	CollisionComponent->SetEnableGravity(true);
+	CollisionComponent->SetLinearDamping(0.f);
 	CollisionComponent->CanCharacterStepUpOn = ECB_No;
 	SetRootComponent(CollisionComponent);
 
@@ -57,19 +59,28 @@ float ALinearProjectile::GetServerTime() const
 void ALinearProjectile::OnSummoned()
 {
 	Super::OnSummoned();
-	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	CollisionComponent->SetSimulatePhysics(true);
+	CollisionComponent->SetPhysicsLinearVelocity(GetActorRotation().Vector() * LinearVelocity);
 	SummonedTime = GetServerTime();
 	SummonedLocation = GetActorLocation();
 	SummonedRotation = GetActorRotation();
 	StaticMeshComponent->SetVisibility(true);
-	SetActorTickEnabled(true);
 }
 
 void ALinearProjectile::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	SetActorLocation(SummonedLocation + GetActorForwardVector() * (LinearVelocity * (GetServerTime() - SummonedTime)),
-	                 HasAuthority());
+	static FPredictProjectilePathParams Params;
+	Params.StartLocation = SummonedLocation;
+	Params.LaunchVelocity = SummonedRotation.Vector() * LinearVelocity;
+	Params.bTraceWithCollision = false;
+	Params.bTraceWithChannel = false;
+	Params.MaxSimTime = GetServerTime() - SummonedTime;
+	if (!CollisionComponent->IsGravityEnabled()) Params.OverrideGravityZ = -1.f;
+	static FPredictProjectilePathResult Result;
+	UGameplayStatics::PredictProjectilePath(GetWorld(), Params, Result);
+	SetActorLocation(Result.LastTraceDestination.Location);
 }
 
 void ALinearProjectile::OnRep_SummonedTime()
@@ -93,23 +104,26 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
                                                          UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
                                                          bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!HasAuthority() || OtherActor == GetInstigator() || OtherActor == this) return;
+	auto DamageCauser = GetInstigator();
+	if (!HasAuthority() || OtherActor == DamageCauser || OtherActor == this) return;
 	if (bFromSweep) SetActorLocation(SweepResult.Location);
 	if (DamageRange > 0.f)
 	{
-		UGameplayStatics::ApplyRadialDamage(GetWorld(), BaseDamage, GetActorLocation(), DamageRange, nullptr, {this},
-		                                    GetInstigator(), GetInstigator()->GetController());
+		UGameplayStatics::ApplyRadialDamage(GetWorld(), BaseDamage, GetActorLocation(), DamageRange, nullptr,
+		                                    {this, DamageCauser}, DamageCauser,
+		                                    DamageCauser ? DamageCauser->GetController() : nullptr);
 		DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRange, 10, FColor::Red, false, 3);
 	}
 	else
 	{
-		UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, GetInstigator()->GetController(), GetInstigator(),
+		UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, DamageCauser ? DamageCauser->GetController() : nullptr,
+		                              DamageCauser,
 		                              nullptr);
 	}
-	SetActorTickEnabled(false);
+	CollisionComponent->SetSimulatePhysics(false);
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	StaticMeshComponent->SetVisibility(false);
 	SummonedTime = 0.f;
 	SummonedLocation = GetActorLocation();
-	StaticMeshComponent->SetVisibility(false);
 	BroadcastOnAbilityEnded();
 }
