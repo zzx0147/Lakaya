@@ -9,7 +9,7 @@
 DECLARE_EVENT_OneParam(ASummonAbilityInstance, FAbilityEndedSignature, class ASummonAbilityInstance* const&)
 
 // 소환된 스킬의 인스턴스입니다. 실질적인 스킬 처리는 이 클래스의 파생에서 이뤄집니다.
-UCLASS()
+UCLASS(Abstract)
 class LAKAYA_API ASummonAbilityInstance : public AActor
 {
 	GENERATED_BODY()

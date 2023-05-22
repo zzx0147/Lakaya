@@ -22,6 +22,8 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 protected:
+	virtual void BeginPlay() override;
+	
 	UFUNCTION()
 	virtual void OnRep_SummonedTime();
 
@@ -48,6 +50,14 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float DamageRange;
 
+	// 투사체의 트레일 나이아가라 시스템을 지정합니다.
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* TrailNiagaraSystem;
+
+	// 투사체가 어떤 물체에 충돌한 후 트리거 되는 나이아가라 시스템을 지정합니다.
+	UPROPERTY(EditAnywhere)
+	UNiagaraSystem* CollisionNiagaraSystem;
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* SceneComponent;
@@ -66,4 +76,6 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_SummonedRotation, Transient)
 	FRotator SummonedRotation;
+
+	TWeakObjectPtr<class UNiagaraComponent> TrailNiagara;
 };
