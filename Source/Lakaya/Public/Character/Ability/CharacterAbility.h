@@ -24,6 +24,8 @@ struct FResourceCostData
 	float Value;
 };
 
+DECLARE_EVENT_OneParam(UCharacterAbility, FEnableTimeSignature, const float&)
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UCharacterAbility : public UActorComponent
 {
@@ -98,7 +100,7 @@ protected:
 	FORCEINLINE const bool& GetAliveState() const { return bRecentAliveState; }
 
 	float GetServerTime() const;
-	
+
 	/**
 	 * @brief 캐릭터의 자원에 대해 소모를 시도합니다.
 	 * @param ResourceKind 소모할 자원의 종류입니다.
@@ -114,15 +116,39 @@ protected:
 	 */
 	bool CostResource(const TArray<FResourceCostData>& CostArray);
 
-	// true로 설정하면 서버에게 플레이어가 능력 사용을 시작했음을 알립니다.
+	UFUNCTION()
+	virtual void OnRep_EnableTime();
+
+	// 최종적으로 적용할 쿨타임을 가져옵니다.
+	virtual float GetCoolTime() { return BaseCoolTime; }
+
+	// 쿨타임을 적용합니다. 반드시 서버측에서 호출되어야 합니다.
+	virtual void ApplyCoolTime();
+
+	// EnableTime과 비교하여 스킬사용이 가능한 시간인지 체크합니다.
+	bool IsEnableTime(const float& Time) const { return EnableTime <= Time; }
+
+public:
+	// 스킬 사용가능 시점이 변경될 때 호출됩니다.
+	FEnableTimeSignature OnEnableTimeChanged;
+
+protected:
+	// true로 설정하면 ShouldStartRemoteCall()이 호출되며, 이 함수가 true를 반환할 때 서버에서 RemoteAbilityStart()가 호출됩니다.
 	UPROPERTY(EditAnywhere)
 	bool bCanEverStartRemoteCall;
 
-	// true로 설정하면 서버에게 플레이어가 능력 사용을 중단했음을 알립니다.
+	// true로 설정하면 ShouldStopRemoteCall()이 호출되며, 이 함수가 true를 반환할 때 서버에서 RemoteAbilityStop()가 호출됩니다.
 	UPROPERTY(EditAnywhere)
 	bool bCanEverStopRemoteCall;
 
+	// 아무런 효과가 없을 때 적용될 스킬의 기본 쿨타임입니다.
+	UPROPERTY(EditAnywhere)
+	float BaseCoolTime;
+
 private:
+	UPROPERTY(ReplicatedUsing=OnRep_EnableTime, Transient)
+	float EnableTime;
+
 	TWeakObjectPtr<UCameraComponent> CameraComponent;
 	TWeakObjectPtr<class UResourceComponent> ResourceComponent;
 	bool bRecentAliveState;

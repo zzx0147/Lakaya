@@ -138,8 +138,7 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 	else
 	{
 		UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, DamageCauser ? DamageCauser->GetController() : nullptr,
-		                              DamageCauser,
-		                              nullptr);
+		                              DamageCauser, nullptr);
 	}
 
 	if (TrailNiagara.IsValid()) TrailNiagara->Deactivate();
