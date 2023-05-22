@@ -93,6 +93,7 @@ void ALinearProjectile::Tick(float DeltaSeconds)
 void ALinearProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+	if (!HasAuthority()) return;
 	CollisionComponent->IgnoreActorWhenMoving(GetInstigator(), true);
 	GetInstigator()->MoveIgnoreActorAdd(this);
 }
@@ -103,9 +104,9 @@ void ALinearProjectile::OnRep_SummonedTime()
 	SetActorTickEnabled(ProjectileState);
 	StaticMeshComponent->SetVisibility(ProjectileState);
 	if (TrailNiagara.IsValid()) ProjectileState ? TrailNiagara->Activate() : TrailNiagara->Deactivate();
-	
+
 	if (!ProjectileState)
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), CollisionNiagaraSystem, GetActorLocation());
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), CollisionNiagaraSystem, SummonedLocation);
 }
 
 void ALinearProjectile::OnRep_SummonedLocation()
@@ -124,9 +125,9 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 {
 	auto DamageCauser = GetInstigator();
 	if (!HasAuthority() || OtherActor == DamageCauser || OtherActor == this) return;
-	
+
 	if (bFromSweep) SetActorLocation(SweepResult.Location);
-	
+
 	if (DamageRange > 0.f)
 	{
 		UGameplayStatics::ApplyRadialDamage(GetWorld(), BaseDamage, GetActorLocation(), DamageRange, nullptr,
@@ -142,10 +143,10 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 	}
 
 	if (TrailNiagara.IsValid()) TrailNiagara->Deactivate();
-	
+
 	if (CollisionNiagaraSystem)
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), CollisionNiagaraSystem, GetActorLocation());
-	
+
 	CollisionComponent->SetSimulatePhysics(false);
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	StaticMeshComponent->SetVisibility(false);
