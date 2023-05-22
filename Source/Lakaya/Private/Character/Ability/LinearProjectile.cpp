@@ -22,8 +22,7 @@ ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer
 	DamageRange = 100.f;
 
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(CollisionComponentName);
-	CollisionComponent->SetCollisionProfileName(TEXT("Trigger"));
-	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	CollisionComponent->SetCollisionProfileName(TEXT("DefaultProjectile"));
 	CollisionComponent->SetEnableGravity(true);
 	CollisionComponent->SetLinearDamping(0.f);
 	CollisionComponent->CanCharacterStepUpOn = ECB_No;
@@ -32,7 +31,6 @@ ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(StaticMeshComponentName);
 	StaticMeshComponent->SetupAttachment(CollisionComponent);
 	StaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	StaticMeshComponent->SetVisibility(true);
 	StaticMeshComponent->CanCharacterStepUpOn = ECB_No;
 }
 
@@ -81,6 +79,13 @@ void ALinearProjectile::Tick(float DeltaSeconds)
 	static FPredictProjectilePathResult Result;
 	UGameplayStatics::PredictProjectilePath(GetWorld(), Params, Result);
 	SetActorLocation(Result.LastTraceDestination.Location);
+}
+
+void ALinearProjectile::BeginPlay()
+{
+	Super::BeginPlay();
+	CollisionComponent->IgnoreActorWhenMoving(GetInstigator(), true);
+	GetInstigator()->MoveIgnoreActorAdd(this);
 }
 
 void ALinearProjectile::OnRep_SummonedTime()
