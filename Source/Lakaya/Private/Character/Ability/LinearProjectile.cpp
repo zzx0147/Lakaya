@@ -75,7 +75,7 @@ void ALinearProjectile::Tick(float DeltaSeconds)
 	Params.bTraceWithCollision = false;
 	Params.bTraceWithChannel = false;
 	Params.MaxSimTime = GetServerTime() - SummonedTime;
-	if (!CollisionComponent->IsGravityEnabled()) Params.OverrideGravityZ = -1.f;
+	Params.OverrideGravityZ = CollisionComponent->IsGravityEnabled() ? GetWorld()->GetGravityZ() : -1.f;
 	static FPredictProjectilePathResult Result;
 	UGameplayStatics::PredictProjectilePath(GetWorld(), Params, Result);
 	SetActorLocation(Result.LastTraceDestination.Location);
