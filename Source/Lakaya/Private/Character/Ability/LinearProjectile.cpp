@@ -103,6 +103,9 @@ void ALinearProjectile::OnRep_SummonedTime()
 	SetActorTickEnabled(ProjectileState);
 	StaticMeshComponent->SetVisibility(ProjectileState);
 	if (TrailNiagara.IsValid()) ProjectileState ? TrailNiagara->Activate() : TrailNiagara->Deactivate();
+	
+	if (!ProjectileState)
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), CollisionNiagaraSystem, GetActorLocation());
 }
 
 void ALinearProjectile::OnRep_SummonedLocation()
