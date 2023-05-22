@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/TextBlock.h"
 #include "UI/GameLobbyWeaponSelectWidget.h"
 #include "GameLobbyCharacterSelectWidget.generated.h"
 
@@ -46,12 +47,27 @@ private:
 	TArray<TObjectPtr<UMaterialInterface>> CharacterRenderTargetMaterialArray;
 	TArray<FName> CharacterNameArray;
 
-	UPROPERTY(EditAnywhere, Category=Content, meta=( MultiLine="true" ))
+	UPROPERTY(EditDefaultsOnly, meta=( MultiLine="true" ))
 	TMap<FName, FText> CharacterIntroductionMap;
-	
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FName, TObjectPtr<UTexture2D>> GunTextureMap;
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FName, uint32> MagazineMap;
+
+	TObjectPtr<UImage> GunImage;
+
 	TObjectPtr<UImage> SelectedCharacterImage;
 
 	TObjectPtr<UButton> PrevCharacterButton;
 
+	TObjectPtr<UTextBlock> MagazineInfoText;
+
+	FText MagazineTextFormat;
+
+	
 	TObjectPtr<class URichTextBlock> IntroductionText;
+
+	TObjectPtr<class UPlayerInfoWidget> PlayerInfoWidget;
 };
