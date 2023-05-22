@@ -59,7 +59,7 @@ float ALinearProjectile::GetServerTime() const
 void ALinearProjectile::OnSummoned()
 {
 	Super::OnSummoned();
-	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndProbe);
 	CollisionComponent->SetSimulatePhysics(true);
 	CollisionComponent->SetPhysicsLinearVelocity(GetActorRotation().Vector() * LinearVelocity);
 	SummonedTime = GetServerTime();
