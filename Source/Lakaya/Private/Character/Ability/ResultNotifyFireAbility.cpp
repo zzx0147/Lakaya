@@ -110,7 +110,8 @@ void UResultNotifyFireAbility::SingleFire()
 	{
 		End = Result.ImpactPoint;
 		const auto Pawn = GetOwner<APawn>();
-		UGameplayStatics::ApplyPointDamage(Result.GetActor(), FireDamage, LineStart, Result,
+
+		UGameplayStatics::ApplyPointDamage(Result.GetActor(), GetTerminalDamage(Result), LineStart, Result,
 		                                   Pawn ? Pawn->GetController() : nullptr, GetOwner(), nullptr);
 	}
 	InvokeFireNotify(Result);
@@ -127,6 +128,13 @@ void UResultNotifyFireAbility::ClearFireTimer()
 {
 	GetWorld()->GetTimerManager().ClearTimer(FireTimer);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
+}
+
+float UResultNotifyFireAbility::GetTerminalDamage(const FHitResult& HitResult)
+{
+	return FireDamage * (WeakPointMultiplier.Contains(HitResult.BoneName)
+		                     ? WeakPointMultiplier[HitResult.BoneName]
+		                     : 1.f);
 }
 
 void UResultNotifyFireAbility::InvokeFireNotify(const FHitResult& HitResult)

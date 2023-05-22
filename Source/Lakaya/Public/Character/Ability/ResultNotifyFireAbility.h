@@ -43,7 +43,7 @@ public:
 	// 현재 캐릭터의 사격의지를 가져옵니다.
 	UFUNCTION(BlueprintCallable)
 	const bool& IsWantsToFire() const { return bWantsToFire; }
-	
+
 protected:
 	UFUNCTION()
 	virtual void FireTick();
@@ -51,6 +51,7 @@ protected:
 	virtual void SingleFire();
 	virtual void FailToFire();
 	virtual void ClearFireTimer();
+	virtual float GetTerminalDamage(const FHitResult& HitResult);
 
 private:
 	/**
@@ -126,6 +127,10 @@ protected:
 	// 매 사격시에 소모될 자원들의 종류와 그 양을 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TArray<FResourceCostData> FireCost;
+
+	// 특정 부위 적중시 적용할 피해 배율을 정의합니다.
+	UPROPERTY(EditAnywhere)
+	TMap<FName, float> WeakPointMultiplier;
 
 private:
 	bool bWantsToFire;

@@ -3,6 +3,8 @@
 
 #include "Character/Ability/LinearProjectile.h"
 
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "Kismet/GameplayStatics.h"
@@ -22,8 +24,7 @@ ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer
 	DamageRange = 100.f;
 
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(CollisionComponentName);
-	CollisionComponent->SetCollisionProfileName(TEXT("Trigger"));
-	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	CollisionComponent->SetCollisionProfileName(TEXT("DefaultProjectile"));
 	CollisionComponent->SetEnableGravity(true);
 	CollisionComponent->SetLinearDamping(0.f);
 	CollisionComponent->CanCharacterStepUpOn = ECB_No;
@@ -32,7 +33,6 @@ ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(StaticMeshComponentName);
 	StaticMeshComponent->SetupAttachment(CollisionComponent);
 	StaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	StaticMeshComponent->SetVisibility(true);
 	StaticMeshComponent->CanCharacterStepUpOn = ECB_No;
 }
 
@@ -49,6 +49,12 @@ void ALinearProjectile::PostInitializeComponents()
 	Super::PostInitializeComponents();
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ALinearProjectile::OnCollisionComponentBeginOverlap);
 	StaticMeshComponent->SetVisibility(false);
+	if (TrailNiagaraSystem)
+	{
+		TrailNiagara = UNiagaraFunctionLibrary::SpawnSystemAttached(TrailNiagaraSystem, RootComponent, NAME_None,
+		                                                            FVector::ZeroVector, FRotator::ZeroRotator,
+		                                                            EAttachLocation::SnapToTarget, false, false);
+	}
 }
 
 float ALinearProjectile::GetServerTime() const
@@ -59,13 +65,14 @@ float ALinearProjectile::GetServerTime() const
 void ALinearProjectile::OnSummoned()
 {
 	Super::OnSummoned();
-	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndProbe);
 	CollisionComponent->SetSimulatePhysics(true);
 	CollisionComponent->SetPhysicsLinearVelocity(GetActorRotation().Vector() * LinearVelocity);
 	SummonedTime = GetServerTime();
 	SummonedLocation = GetActorLocation();
 	SummonedRotation = GetActorRotation();
 	StaticMeshComponent->SetVisibility(true);
+	if (TrailNiagara.IsValid()) TrailNiagara->Activate();
 }
 
 void ALinearProjectile::Tick(float DeltaSeconds)
@@ -77,10 +84,18 @@ void ALinearProjectile::Tick(float DeltaSeconds)
 	Params.bTraceWithCollision = false;
 	Params.bTraceWithChannel = false;
 	Params.MaxSimTime = GetServerTime() - SummonedTime;
-	if (!CollisionComponent->IsGravityEnabled()) Params.OverrideGravityZ = -1.f;
+	Params.OverrideGravityZ = CollisionComponent->IsGravityEnabled() ? GetWorld()->GetGravityZ() : -1.f;
 	static FPredictProjectilePathResult Result;
 	UGameplayStatics::PredictProjectilePath(GetWorld(), Params, Result);
 	SetActorLocation(Result.LastTraceDestination.Location);
+}
+
+void ALinearProjectile::BeginPlay()
+{
+	Super::BeginPlay();
+	if (!HasAuthority()) return;
+	CollisionComponent->IgnoreActorWhenMoving(GetInstigator(), true);
+	GetInstigator()->MoveIgnoreActorAdd(this);
 }
 
 void ALinearProjectile::OnRep_SummonedTime()
@@ -88,6 +103,10 @@ void ALinearProjectile::OnRep_SummonedTime()
 	const auto ProjectileState = SummonedTime > 0.f;
 	SetActorTickEnabled(ProjectileState);
 	StaticMeshComponent->SetVisibility(ProjectileState);
+	if (TrailNiagara.IsValid()) ProjectileState ? TrailNiagara->Activate() : TrailNiagara->Deactivate();
+
+	if (!ProjectileState)
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), CollisionNiagaraSystem, SummonedLocation);
 }
 
 void ALinearProjectile::OnRep_SummonedLocation()
@@ -106,7 +125,9 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 {
 	auto DamageCauser = GetInstigator();
 	if (!HasAuthority() || OtherActor == DamageCauser || OtherActor == this) return;
+
 	if (bFromSweep) SetActorLocation(SweepResult.Location);
+
 	if (DamageRange > 0.f)
 	{
 		UGameplayStatics::ApplyRadialDamage(GetWorld(), BaseDamage, GetActorLocation(), DamageRange, nullptr,
@@ -117,9 +138,14 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 	else
 	{
 		UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, DamageCauser ? DamageCauser->GetController() : nullptr,
-		                              DamageCauser,
-		                              nullptr);
+		                              DamageCauser, nullptr);
 	}
+
+	if (TrailNiagara.IsValid()) TrailNiagara->Deactivate();
+
+	if (CollisionNiagaraSystem)
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), CollisionNiagaraSystem, GetActorLocation());
+
 	CollisionComponent->SetSimulatePhysics(false);
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	StaticMeshComponent->SetVisibility(false);

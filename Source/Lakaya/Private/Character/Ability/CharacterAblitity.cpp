@@ -6,10 +6,17 @@
 #include "Character/ResourceComponent.h"
 #include "Character/Ability/CharacterAbility.h"
 #include "GameFramework/GameStateBase.h"
+#include "Net/UnrealNetwork.h"
 
 UCharacterAbility::UCharacterAbility()
 {
 	bWantsInitializeComponent = true;
+}
+
+void UCharacterAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UCharacterAbility, EnableTime);
 }
 
 void UCharacterAbility::InitializeComponent()
@@ -134,4 +141,15 @@ bool UCharacterAbility::CostResource(const TArray<FResourceCostData>& CostArray)
 		}
 	}
 	return true;
+}
+
+void UCharacterAbility::OnRep_EnableTime()
+{
+	OnEnableTimeChanged.Broadcast(EnableTime);
+}
+
+void UCharacterAbility::ApplyCoolTime()
+{
+	EnableTime = GetServerTime() + GetCoolTime();
+	OnEnableTimeChanged.Broadcast(EnableTime);
 }
