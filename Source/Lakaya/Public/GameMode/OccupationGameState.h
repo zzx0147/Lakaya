@@ -84,20 +84,28 @@ private:
 	EPlayerTeam ClientTeam;
 
 	FTimerHandle TimerHandle_GameTimeCheck;
-
+	FTimerHandle TimerHandle_StartMessage;
 private:
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UTeamScoreWidget> TeamScoreWidgetClass;
 	
-	// 팀스코어 위젯 입니다.
-	TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
-
 	// 게임 종료 시 승리자를 띄우는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameResultWidget> GameResultWidgetClass;
+
+	// 게임 시작 시 "라카야 제어기를 점령하세요" 메세지를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UStartMessageWidget> StartMessageWidgetClass;
 	
+	// 팀스코어 위젯 입니다.
+    TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
+	
+	// 게임결과창 위젯 입니다.
 	TWeakObjectPtr<UGameResultWidget> GameResultWidget;
+
+	// "라카야 제어기를 점령하세요" 위젯 입니다.
+	TWeakObjectPtr<UStartMessageWidget> StartMessageWidget;
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;

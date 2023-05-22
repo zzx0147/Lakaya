@@ -1,7 +1,10 @@
+#define DO_CHECK 1
+
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Image.h"
 #include "GamePlayBulletWidget.generated.h"
 
 class UTextBlock;
@@ -22,4 +25,8 @@ public:
 private:
 	TWeakObjectPtr<UTextBlock> RemainBulletsText; //남은 총알을 표기하는 텍스트
 	TWeakObjectPtr<UTextBlock> MagazineCapacityText; //최대 총알을 표기하는 텍스트
-};
+
+public:
+	TWeakObjectPtr<UImage> RenaWeaponImage;
+	TWeakObjectPtr<UImage> WaziWeaponImage;
+}; 

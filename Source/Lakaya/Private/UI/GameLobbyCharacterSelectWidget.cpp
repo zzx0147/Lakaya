@@ -1,6 +1,7 @@
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "Components/Image.h"
 #include "Components/Button.h"
+#include "Components/RichTextBlock.h"
 
 UGameLobbyCharacterSelectWidget::UGameLobbyCharacterSelectWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -14,6 +15,14 @@ UGameLobbyCharacterSelectWidget::UGameLobbyCharacterSelectWidget(const FObjectIn
 		RenderTargetWaziFinder.Object,
 		RenderTargetMinamiFinder.Object,
 	};
+
+	CharacterNameArray = { TEXT("Rena"), TEXT("Wazi"), TEXT("Minami") };
+	for (auto temp : CharacterRenderTargetMaterialArray) { check(temp != nullptr) }
+
+	
+	CharacterIntroductionMap.Emplace(FName(TEXT("Rena")),FText::GetEmpty());
+	CharacterIntroductionMap.Emplace(FName(TEXT("Wazi")),FText::GetEmpty());
+	CharacterIntroductionMap.Emplace(FName(TEXT("Minami")),FText::GetEmpty());
 }
 
 void UGameLobbyCharacterSelectWidget::NativeConstruct()
@@ -32,11 +41,11 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 		Cast<UButton>(GetWidgetFromName(FName(TEXT("Minami_Btn"))))
 	};
 
-	CharacterNameArray = { TEXT("Rena"), TEXT("Wazi"), TEXT("Minami") };
-
+	IntroductionText = Cast<URichTextBlock>(GetWidgetFromName(TEXT("Introduction_Text")));
+	
 	check(SelectedCharacterImage != nullptr);
 	for (auto temp : CharacterButtonArray) { check(temp != nullptr) }
-	for (auto temp : CharacterRenderTargetMaterialArray) { check(temp != nullptr) }
+
 
 #pragma endregion 
 
@@ -89,4 +98,9 @@ void UGameLobbyCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum)
 	PrevCharacterButton = CharacterButtonArray[CharacterNum];
 	PrevCharacterButton->SetIsEnabled(false);
 	OnChangeSelectedCharacter.Broadcast(CharacterNameArray[CharacterNum]);
+
+	if(IntroductionText != nullptr && CharacterIntroductionMap.Contains(CharacterNameArray[CharacterNum]))
+	{
+		IntroductionText->SetText(CharacterIntroductionMap[CharacterNameArray[CharacterNum]]);
+	}
 }

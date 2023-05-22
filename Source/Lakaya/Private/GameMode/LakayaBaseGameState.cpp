@@ -8,6 +8,8 @@
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
+#include "UI/HelpWidget.h"
+#include "UI/SkillWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
@@ -27,6 +29,7 @@ void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 void ALakayaBaseGameState::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
 		if (LoadingWidgetClass.Get() != nullptr)
@@ -72,16 +75,6 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 
-		// if (GameResultWidgetClass)
-		// {
-		// 	GameResultWidget = CreateWidget<UGameResultWidget>(LocalController, GameResultWidgetClass);
-		// 	if (GameResultWidget.IsValid())
-		// 	{
-		// 		GameResultWidget->AddToViewport();
-		// 		GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
-		// 	}
-		// }
-
 		if (CrosshairWidgetClass)
 		{
 			CrosshairWidget = CreateWidget<UGamePlayCrosshairWidget>(LocalController, CrosshairWidgetClass);
@@ -90,6 +83,26 @@ void ALakayaBaseGameState::BeginPlay()
 				CrosshairWidget->AddToViewport();
 				CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
+		}
+
+		if (HelpWidgetClass)
+		{
+			HelpWidget = CreateWidget<UHelpWidget>(LocalController, HelpWidgetClass);
+			if (HelpWidget.IsValid())
+			{
+				HelpWidget->AddToViewport();
+				HelpWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+
+		if (SkillWidgetClass)
+		{
+			SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
+			if (SkillWidget.IsValid())
+			{
+				SkillWidget->AddToViewport();
+				SkillWidget->SetVisibility(ESlateVisibility::Hidden);
+			}				
 		}
 	}
 }
@@ -113,6 +126,40 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
+
+	const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
+	if (LocalPlayerState != nullptr)
+	{
+		const FString CharacterName = LocalPlayerState->GetCharacterName().ToString();
+
+		if (CharacterName == "Rena")
+		{
+			// TODO : 레나 캐릭터 전용 UI
+			if (SkillWidget != nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("레나 캐릭터입니다."));
+				SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				SkillWidget->RenaQSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				SkillWidget->RenaESkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				SkillWidget->RenaRButtonSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				SkillWidget->RenaRSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			}
+		}
+
+		if (CharacterName == "Wazi")
+		{
+			// TODO : 와지 캐릭터 전용 UI
+			if (SkillWidget != nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("와지 캐릭터입니다."));
+				SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				SkillWidget->WaziQSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				SkillWidget->WaziESkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				SkillWidget->WaziRButtonSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				SkillWidget->WaziRSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			}
+		}
+	}
 	
 	if(CharacterSelectWidget != nullptr)
 		CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -125,6 +172,9 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	
 	if (CrosshairWidget != nullptr)
 		CrosshairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+	if (HelpWidget.IsValid())
+		HelpWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	
 	if (const auto PlayerController = GetWorld()->GetFirstPlayerController())
 		PlayerController->SetShowMouseCursor(false);

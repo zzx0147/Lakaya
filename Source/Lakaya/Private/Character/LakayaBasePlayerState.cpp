@@ -6,6 +6,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
 #include "Character/LakayaBaseCharacter.h"
+#include "Components/Image.h"
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/DirectionalDamageIndicator.h"
@@ -81,7 +82,7 @@ void ALakayaBasePlayerState::BeginPlay()
 		{
 			HealthWidget->AddToViewport();
 			HealthWidget->SetVisibility(ESlateVisibility::Hidden);
-
+			
 			OnHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetCurrentHealth);
 			OnMaxHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetMaximumHealth);
 
@@ -205,7 +206,17 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 	if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
 	{
 		if (Team != EPlayerTeam::None) Character->SetTeam(Team);
-		if (HealthWidget.IsValid()) HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		if (HealthWidget.IsValid())
+		{
+			HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			
+			if (GetCharacterName().ToString() == "Rena")
+				HealthWidget->UserInfoCharImageRena->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+			if (GetCharacterName().ToString() == "Wazi")
+				HealthWidget->UserInfoCharImageWazi->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		}
+		
 		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);
 	}
 	else
