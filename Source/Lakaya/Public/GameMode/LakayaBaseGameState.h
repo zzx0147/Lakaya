@@ -6,7 +6,7 @@
 #include "LakayaBaseGameState.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBaseGameState, OnChangePlayerNumberSignature, const uint8&)
-DECLARE_EVENT_ThreeParams(ALakayaBaseGameState, FOnPlayerKillNotifiedSignature, AController*, AController*, AActor*)
+DECLARE_EVENT_ThreeParams(ALakayaBaseGameState, FOnPlayerKillNotifiedSignature, APlayerState*, APlayerState*, AActor*)
 
 UCLASS()
 class LAKAYA_API ALakayaBaseGameState : public AGameState
@@ -53,7 +53,7 @@ public:
 	ESlateVisibility GetCharacterSelectWidgetVisibility() const;
 
 	UFUNCTION(NetMulticast, Reliable)
-	virtual void NotifyPlayerKilled(AController* VictimController,AController* InstigatorController, AActor* DamageCauser);
+	virtual void NotifyPlayerKilled(APlayerState* VictimController,APlayerState* InstigatorController, AActor* DamageCauser);
 
 protected:
 	UFUNCTION()
@@ -107,6 +107,9 @@ protected:
 	// 게임중에 표시되는 스킬 위젯을 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class USkillWidget> SkillWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGamePlayKillLogWidget> KillLogWidgetClass;
 	
 	// 게임이 최대 몇초간 진행될지 정의합니다.
 	UPROPERTY(EditAnywhere)
@@ -139,4 +142,5 @@ protected:
 	TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;
 	TWeakObjectPtr<UHelpWidget> HelpWidget;
 	TWeakObjectPtr<USkillWidget> SkillWidget;
+	TWeakObjectPtr<UGamePlayKillLogWidget> KillLogWidget;
 };
