@@ -138,4 +138,5 @@ private:
 	FCollisionQueryParams CollisionQueryParams;
 	TMap<EFireResult, TSimpleObjectPool<AActor>> DecalPool;
 	TWeakObjectPtr<class UArrowComponent> MuzzleComponent;
+	TWeakObjectPtr<class UNiagaraComponent> GunImpactNiagara;
 };
