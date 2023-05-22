@@ -4,7 +4,6 @@
 #include "Character/Ability/CoolTimedSummonAbility.h"
 
 #include "Character/Ability/SummonAbilityInstance.h"
-#include "Net/UnrealNetwork.h"
 
 UCoolTimedSummonAbility::UCoolTimedSummonAbility()
 {
@@ -12,15 +11,9 @@ UCoolTimedSummonAbility::UCoolTimedSummonAbility()
 	bWantsTransformSet = true;
 	bCanEverStartRemoteCall = true;
 	ObjectPoolSize = 1;
-	CoolTime = 5.f;
+	BaseCoolTime = 5.f;
 	SummonDistance = 50.f;
 	SearchFromActor = 5000.f;
-}
-
-void UCoolTimedSummonAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(UCoolTimedSummonAbility, EnableTime);
 }
 
 void UCoolTimedSummonAbility::InitializeComponent()
@@ -41,7 +34,6 @@ void UCoolTimedSummonAbility::InitializeComponent()
 			return nullptr;
 		}
 
-		AbilityInstance->SetReplicates(true);
 		AbilityInstance->OnAbilityEnded.AddUObject(this, &UCoolTimedSummonAbility::OnAbilityInstanceEnded);
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("AbilityInstance spawned"));
 		return AbilityInstance;
@@ -51,13 +43,13 @@ void UCoolTimedSummonAbility::InitializeComponent()
 bool UCoolTimedSummonAbility::ShouldStartRemoteCall()
 {
 	// 서버시간 예측의 오차와, 네트워크 딜레이를 감안하여 쿨타임이 돌기 조금 전부터 서버에 능력 사용요청을 할 수는 있도록 합니다.
-	return EnableTime - 0.1f <= GetServerTime();
+	return IsEnableTime(GetServerTime() + 0.1f);
 }
 
 void UCoolTimedSummonAbility::RemoteAbilityStart(const float& RequestTime)
 {
 	Super::RemoteAbilityStart(RequestTime);
-	if (EnableTime > GetServerTime() || !CostResource(ResourceCost)) return;
+	if (!IsEnableTime(GetServerTime()) || !CostResource(ResourceCost)) return;
 
 	if (const auto AbilityInstance = AbilityInstancePool.GetObject())
 	{
@@ -73,13 +65,7 @@ void UCoolTimedSummonAbility::RemoteAbilityStart(const float& RequestTime)
 		AbilityInstance->OnSummoned();
 	}
 
-	EnableTime = GetServerTime() + CoolTime;
-	OnEnableTimeChanged.Broadcast(EnableTime);
-}
-
-void UCoolTimedSummonAbility::OnRep_EnableTime()
-{
-	OnEnableTimeChanged.Broadcast(EnableTime);
+	ApplyCoolTime();
 }
 
 void UCoolTimedSummonAbility::OnAbilityInstanceEnded(ASummonAbilityInstance* const& AbilityInstance)

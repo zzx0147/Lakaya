@@ -5,10 +5,11 @@
 #include "Net/UnrealNetwork.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/GamePlayCrossHairWidget.h"
+#include "UI/GamePlayKillLogWidget.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
-#include "UI/LoadingWidget.h"
 #include "UI/HelpWidget.h"
+#include "UI/LoadingWidget.h"
 #include "UI/SkillWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
@@ -104,6 +105,17 @@ void ALakayaBaseGameState::BeginPlay()
 				SkillWidget->SetVisibility(ESlateVisibility::Hidden);
 			}				
 		}
+
+		if(KillLogWidgetClass)
+		{
+			KillLogWidget = CreateWidget<UGamePlayKillLogWidget>(LocalController, KillLogWidgetClass);
+			if (KillLogWidget.IsValid())
+			{
+				KillLogWidget->AddToViewport();
+				KillLogWidget->SetVisibility(ESlateVisibility::Visible);
+			}
+		}
+		
 	}
 }
 
@@ -291,11 +303,16 @@ ESlateVisibility ALakayaBaseGameState::GetCharacterSelectWidgetVisibility() cons
 	return ESlateVisibility::Hidden;
 }
 
-void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(AController* VictimController, AController* InstigatorController, AActor* DamageCauser)
+void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimController, APlayerState* InstigatorController, AActor* DamageCauser)
 {
 	//TODO : OnPlayerKillNofity.BroadCast();
 	OnPlayerKillNotified.Broadcast(VictimController, InstigatorController, DamageCauser);
-	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Player Killed!"));
+	if (KillLogWidget.IsValid())
+	{
+		KillLogWidget->OnKillCharacterNotify(VictimController,InstigatorController,DamageCauser);
+	}
+	
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OnPlayerKillNotified.Broadcast"));
 }
 
 void ALakayaBaseGameState::OnRep_MatchEndingTime()
