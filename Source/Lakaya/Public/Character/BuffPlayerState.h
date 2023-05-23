@@ -8,6 +8,8 @@
 
 DECLARE_EVENT_OneParam(ABuffPlayerState, FKillLevelSignature, const uint8&)
 
+DECLARE_EVENT_OneParam(ABuffPlayerState, FBuffSignature, const FName&)
+
 UCLASS()
 class LAKAYA_API ABuffPlayerState : public AStatPlayerState
 {
@@ -43,6 +45,12 @@ protected:
 public:
 	// 적용중인 연속처치 버프 레벨이 변경되면 호출됩니다.
 	FKillLevelSignature OnKillStreakBuffLevelChanged;
+
+	// 버프가 적용되면 호출됩니다.
+	FBuffSignature OnBuffApplied;
+
+	// 버프가 해제되면 호출됩니다.
+	FBuffSignature OnBuffExpired;
 
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_KillStreakBuffLevel, Transient)
