@@ -34,7 +34,7 @@ void UCoolTimedSummonAbility::InitializeComponent()
 			return nullptr;
 		}
 
-		AbilityInstance->OnAbilityEnded.AddUObject(this, &UCoolTimedSummonAbility::OnAbilityInstanceEnded);
+		AbilityInstance->SetOwningAbility(this);
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("AbilityInstance spawned"));
 		return AbilityInstance;
 	});
@@ -68,8 +68,14 @@ void UCoolTimedSummonAbility::RemoteAbilityStart(const float& RequestTime)
 	ApplyCoolTime();
 }
 
-void UCoolTimedSummonAbility::OnAbilityInstanceEnded(ASummonAbilityInstance* const& AbilityInstance)
+void UCoolTimedSummonAbility::NotifyAbilityInstanceSummoned(ASummonAbilityInstance* const& AbilityInstance)
+{
+	OnAbilityInstanceSummoned.Broadcast();
+}
+
+void UCoolTimedSummonAbility::NotifyAbilityInstanceEnded(ASummonAbilityInstance* const& AbilityInstance)
 {
 	AbilityInstancePool.ReturnObject(AbilityInstance);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Projectile returned!"));
+	OnAbilityInstanceEnded.Broadcast();
 }

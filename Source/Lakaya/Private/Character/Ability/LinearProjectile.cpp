@@ -73,6 +73,7 @@ void ALinearProjectile::OnSummoned()
 	SummonedRotation = GetActorRotation();
 	StaticMeshComponent->SetVisibility(true);
 	if (TrailNiagara.IsValid()) TrailNiagara->Activate();
+	NotifyAbilitySummoned();
 }
 
 void ALinearProjectile::Tick(float DeltaSeconds)
@@ -103,10 +104,18 @@ void ALinearProjectile::OnRep_SummonedTime()
 	const auto ProjectileState = SummonedTime > 0.f;
 	SetActorTickEnabled(ProjectileState);
 	StaticMeshComponent->SetVisibility(ProjectileState);
-	if (TrailNiagara.IsValid()) ProjectileState ? TrailNiagara->Activate() : TrailNiagara->Deactivate();
 
-	if (!ProjectileState)
+	if (ProjectileState)
+	{
+		if (TrailNiagara.IsValid()) TrailNiagara->Activate();
+		NotifyAbilitySummoned();
+	}
+	else
+	{
+		if (TrailNiagara.IsValid()) TrailNiagara->Deactivate();
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), CollisionNiagaraSystem, SummonedLocation);
+		NotifyAbilityEnded();
+	}
 }
 
 void ALinearProjectile::OnRep_SummonedLocation()
@@ -151,5 +160,5 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 	StaticMeshComponent->SetVisibility(false);
 	SummonedTime = 0.f;
 	SummonedLocation = GetActorLocation();
-	BroadcastOnAbilityEnded();
+	NotifyAbilityEnded();
 }

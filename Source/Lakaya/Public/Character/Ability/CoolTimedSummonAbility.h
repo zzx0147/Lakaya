@@ -7,6 +7,8 @@
 #include "SimpleObjectPool.h"
 #include "CoolTimedSummonAbility.generated.h"
 
+DECLARE_EVENT(UCoolTimedSummonAbility, FAbilityInstanceSignature)
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UCoolTimedSummonAbility : public UCharacterAbility
 {
@@ -20,12 +22,21 @@ protected:
 	virtual bool ShouldStartRemoteCall() override;
 	virtual void RemoteAbilityStart(const float& RequestTime) override;
 
-private:
-	UFUNCTION()
-	void OnAbilityInstanceEnded(class ASummonAbilityInstance* const& AbilityInstance);
+public:
+	// 어빌리티 인스턴스가 소환된 이후 호출됩니다. 클라이언트에서도 호출됩니다.
+	void NotifyAbilityInstanceSummoned(class ASummonAbilityInstance* const& AbilityInstance);
+
+	// 어빌리티 인스턴스의 역할이 끝난 이후 호출됩니다. 클라이언트에서도 호출됩니다.
+	void NotifyAbilityInstanceEnded(ASummonAbilityInstance* const& AbilityInstance);
+
+	// 어빌리티 인스턴스가 소환된 이후 호출됩니다.
+	FAbilityInstanceSignature OnAbilityInstanceSummoned;
+
+	// 어빌리티 인스턴스의 역할이 끝난 이후 호출됩니다.
+	FAbilityInstanceSignature OnAbilityInstanceEnded;
 
 protected:
-	// 소환될 스킬의 인스턴스입니다.
+	// 소환될 어빌리티 인스턴스의 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ASummonAbilityInstance> AbilityInstanceClass;
 

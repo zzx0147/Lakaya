@@ -3,6 +3,8 @@
 
 #include "AnimInstance/CharAnimInstance.h"
 
+#include "Character/Ability/CoolTimedSummonAbility.h"
+
 
 UCharAnimInstance::UCharAnimInstance()
 {
@@ -30,6 +32,12 @@ void UCharAnimInstance::NativeBeginPlay()
 			ReloadAbility->OnReloadStateChanged.
 			AddLambda([this](const bool& ReloadState)
 				{bIsReload = ReloadState;} );
+		}
+
+		if (const auto Ability = Character->FindAbility<UCoolTimedSummonAbility>(WeaponAbility))
+		{
+			Ability->OnAbilityInstanceSummoned.AddLambda(
+				[this] { RecentWeaponSkillTime = GetWorld()->TimeSeconds; });
 		}
 
 		if (const auto InteractableCharacter = Cast<AInteractableCharacter>(Character))
@@ -62,4 +70,5 @@ void UCharAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 	bIsAutoFire = RecentFireTime + FireAnimDuration > GetWorld()->TimeSeconds;
+	bIsWeaponSkill = RecentWeaponSkillTime + WeaponSkillAnimDuration > GetWorld()->TimeSeconds;
 }

@@ -6,13 +6,13 @@
 #include "GameFramework/Actor.h"
 #include "SummonAbilityInstance.generated.h"
 
-DECLARE_EVENT_OneParam(ASummonAbilityInstance, FAbilityEndedSignature, class ASummonAbilityInstance* const&)
-
 // 소환된 스킬의 인스턴스입니다. 실질적인 스킬 처리는 이 클래스의 파생에서 이뤄집니다.
 UCLASS(Abstract)
 class LAKAYA_API ASummonAbilityInstance : public AActor
 {
 	GENERATED_BODY()
+
+	friend class UCoolTimedSummonAbility;
 
 public:
 	explicit ASummonAbilityInstance(const FObjectInitializer& ObjectInitializer);
@@ -21,10 +21,16 @@ public:
 	virtual void OnSummoned();
 
 protected:
-	// OnAbilityEnded 이벤트를 브로드캐스트합니다.
-	void BroadcastOnAbilityEnded();
+	// OwningAbility에게 이 어빌리티가 소환되었음을 알립니다.
+	void NotifyAbilitySummoned();
+	
+	// OwningAbility에게 이 어빌리티의 역할이 끝났음을 알립니다.
+	void NotifyAbilityEnded();
 
-public:
-	// 스킬 시전이 종료되는 시점에 호출됩니다.
-	FAbilityEndedSignature OnAbilityEnded;
+private:
+	// 이 어빌리티 인스턴스를 소유하는 어빌리티를 설정합니다.
+	FORCEINLINE void SetOwningAbility(class UCoolTimedSummonAbility* const& Ability) { OwningAbility = Ability; }
+
+	UPROPERTY(Replicated, Transient)
+	TObjectPtr<UCoolTimedSummonAbility> OwningAbility;
 };

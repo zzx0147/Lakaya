@@ -30,14 +30,21 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	bool bIsWeaponSkill;
-	
+
+	// 무기 스킬의 애니메이션 지속시간을 지정합니다.
+	UPROPERTY(EditAnywhere)
+	float WeaponSkillAnimDuration;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	bool bIsReload;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interacting")
 	bool bIsInteracting;
-	
+
 	virtual void NativeBeginPlay() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	void OnInteractingActorChanged(AActor* NewInteractingActor);
+
+private:
+	float RecentWeaponSkillTime;
 };
