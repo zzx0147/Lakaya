@@ -17,7 +17,6 @@ void ASummonAbilityInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(ASummonAbilityInstance, OwningAbility)
 }
 
-
 void ASummonAbilityInstance::OnSummoned()
 {
 }
