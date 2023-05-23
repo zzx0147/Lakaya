@@ -3,7 +3,10 @@
 
 #include "Character/Ability/CoolTimedSummonAbility.h"
 
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Character/Ability/SummonAbilityInstance.h"
+#include "Components/ArrowComponent.h"
 
 UCoolTimedSummonAbility::UCoolTimedSummonAbility()
 {
@@ -19,6 +22,19 @@ UCoolTimedSummonAbility::UCoolTimedSummonAbility()
 void UCoolTimedSummonAbility::InitializeComponent()
 {
 	Super::InitializeComponent();
+
+	// 총구 컴포넌트 탐색
+	if (auto MuzzleComponents = GetOwner()->GetComponentsByTag(UArrowComponent::StaticClass(), FName("Muzzle"));
+		MuzzleComponents.IsValidIndex(0))
+		MuzzleComponent = Cast<UArrowComponent>(MuzzleComponents[0]);
+
+	if (MuzzleNiagaraSystem)
+	{
+		MuzzleNiagara =
+			UNiagaraFunctionLibrary::SpawnSystemAttached(MuzzleNiagaraSystem, MuzzleComponent.Get(), NAME_None,
+			                                             FVector::ZeroVector, FRotator::ZeroRotator,
+			                                             EAttachLocation::SnapToTarget, false, false);
+	}
 
 	// 서버에서는 오브젝트풀을 세팅합니다.
 	if (!GetOwner()->HasAuthority()) return;
@@ -71,11 +87,15 @@ void UCoolTimedSummonAbility::RemoteAbilityStart(const float& RequestTime)
 void UCoolTimedSummonAbility::NotifyAbilityInstanceSummoned(ASummonAbilityInstance* const& AbilityInstance)
 {
 	OnAbilityInstanceSummoned.Broadcast();
+	if (MuzzleNiagara.IsValid()) MuzzleNiagara->Activate(true);
 }
 
 void UCoolTimedSummonAbility::NotifyAbilityInstanceEnded(ASummonAbilityInstance* const& AbilityInstance)
 {
-	AbilityInstancePool.ReturnObject(AbilityInstance);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Projectile returned!"));
+	if (GetOwner()->HasAuthority())
+	{
+		AbilityInstancePool.ReturnObject(AbilityInstance);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Projectile returned!"));
+	}
 	OnAbilityInstanceEnded.Broadcast();
 }

@@ -60,7 +60,13 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TArray<FResourceCostData> ResourceCost;
 
+	// 어빌리티 인스턴스 소환시 총구에서 재생될 나이아가라 시스템을 지정합니다.
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* MuzzleNiagaraSystem;
+
 private:
 	FCollisionQueryParams CollisionQueryParams;
 	TSimpleObjectPool<ASummonAbilityInstance> AbilityInstancePool;
+	TWeakObjectPtr<class UArrowComponent> MuzzleComponent;
+	TWeakObjectPtr<class UNiagaraComponent> MuzzleNiagara;
 };
