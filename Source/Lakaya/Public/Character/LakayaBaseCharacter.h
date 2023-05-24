@@ -75,6 +75,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void SetAliveState(bool IsAlive);
 
+	void PlayHitScreen();
 protected:
 	virtual void SetTeam_Implementation(const EPlayerTeam& Team) { return; }
 	virtual void SetAliveState_Implementation(bool IsAlive);
@@ -108,6 +109,8 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* ResurrectionNiagaraSystem;
 
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* HitScreenEffect;
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	class UResourceComponent* ResourceComponent;

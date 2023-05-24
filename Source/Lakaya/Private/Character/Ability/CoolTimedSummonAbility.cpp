@@ -3,7 +3,10 @@
 
 #include "Character/Ability/CoolTimedSummonAbility.h"
 
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Character/Ability/SummonAbilityInstance.h"
+#include "Components/ArrowComponent.h"
 
 UCoolTimedSummonAbility::UCoolTimedSummonAbility()
 {
@@ -20,6 +23,19 @@ void UCoolTimedSummonAbility::InitializeComponent()
 {
 	Super::InitializeComponent();
 
+	// 총구 컴포넌트 탐색
+	if (auto MuzzleComponents = GetOwner()->GetComponentsByTag(UArrowComponent::StaticClass(), FName("Muzzle"));
+		MuzzleComponents.IsValidIndex(0))
+		MuzzleComponent = Cast<UArrowComponent>(MuzzleComponents[0]);
+
+	if (MuzzleNiagaraSystem)
+	{
+		MuzzleNiagara =
+			UNiagaraFunctionLibrary::SpawnSystemAttached(MuzzleNiagaraSystem, MuzzleComponent.Get(), NAME_None,
+			                                             FVector::ZeroVector, FRotator::ZeroRotator,
+			                                             EAttachLocation::SnapToTarget, false, false);
+	}
+
 	// 서버에서는 오브젝트풀을 세팅합니다.
 	if (!GetOwner()->HasAuthority()) return;
 	AbilityInstancePool.SetupObjectPool(ObjectPoolSize, [this]()-> ASummonAbilityInstance* {
@@ -34,7 +50,7 @@ void UCoolTimedSummonAbility::InitializeComponent()
 			return nullptr;
 		}
 
-		AbilityInstance->OnAbilityEnded.AddUObject(this, &UCoolTimedSummonAbility::OnAbilityInstanceEnded);
+		AbilityInstance->SetOwningAbility(this);
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("AbilityInstance spawned"));
 		return AbilityInstance;
 	});
@@ -68,8 +84,18 @@ void UCoolTimedSummonAbility::RemoteAbilityStart(const float& RequestTime)
 	ApplyCoolTime();
 }
 
-void UCoolTimedSummonAbility::OnAbilityInstanceEnded(ASummonAbilityInstance* const& AbilityInstance)
+void UCoolTimedSummonAbility::NotifyAbilityInstanceSummoned(ASummonAbilityInstance* const& AbilityInstance)
 {
-	AbilityInstancePool.ReturnObject(AbilityInstance);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Projectile returned!"));
+	OnAbilityInstanceSummoned.Broadcast();
+	if (MuzzleNiagara.IsValid()) MuzzleNiagara->Activate(true);
+}
+
+void UCoolTimedSummonAbility::NotifyAbilityInstanceEnded(ASummonAbilityInstance* const& AbilityInstance)
+{
+	if (GetOwner()->HasAuthority())
+	{
+		AbilityInstancePool.ReturnObject(AbilityInstance);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Projectile returned!"));
+	}
+	OnAbilityInstanceEnded.Broadcast();
 }
