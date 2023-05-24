@@ -42,18 +42,6 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 			// TODO : 실행되지 않는 코드입니다.
 			// ATeamBox->AddChildToVerticalBox(Element);
 			// Element->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			
-			// Element->Anti_BackGround_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			//
-			// if (LakayaState->GetCharacterName().ToString() == "Rena")
-			// {
-			// 	Element->Character_Rena_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			// }
-			//
-			// if (LakayaState->GetCharacterName().ToString() == "Wazi")
-			// {
-			// 	Element->Character_Wazi_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			// }
 		}
 		break;
 	case EPlayerTeam::B:
@@ -62,18 +50,6 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 			// TODO : 실행되지 않는 코드입니다.
 			// BTeamBox->AddChildToVerticalBox(Element);
 			// Element->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			
-			// Element->Pro_BackGround_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			//
-			// if (LakayaState->GetCharacterName().ToString() == "Rena")
-			// {
-			// 	Element->Character_Rena_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			// }
-			//
-			// if (LakayaState->GetCharacterName().ToString() == "Wazi")
-			// {
-			// 	Element->Character_Wazi_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			// }
 		}
 		break;
 	case EPlayerTeam::None:
@@ -113,11 +89,30 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 		}
 		else UE_LOG(LogScript, Error, TEXT("Invalid team value on OnTeamChanged lambda handler!"));
 	});
-	
-	LakayaState->OnDeathCountChanged.AddUObject(Element, &UScoreBoardElement::SetDeathCount);
-	LakayaState->OnKillCountChanged.AddUObject(Element, &UScoreBoardElement::SetKillCount);
-	LakayaState->OnPlayerNameChanged.AddUObject(Element, &UScoreBoardElement::SetPlayerName);
 
+	LakayaState->OnCharacterNameChanged.AddLambda([this, Element](const ALakayaBasePlayerState* LakayaState, const FName& PlayerCharacterName)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OnCharacterNameChanged."));
+		
+		if (LakayaState->GetCharacterName().ToString() == "Rena")
+		{
+			UE_LOG(LogTemp, Warning, TEXT("On_Rena"));
+			Element->Character_Rena_Image->SetVisibility(ESlateVisibility::HitTestInvisible);
+			Element->Character_Wazi_Image->SetVisibility(ESlateVisibility::Hidden);
+		}
+		if (LakayaState->GetCharacterName().ToString() == "Wazi")
+		{
+			UE_LOG(LogTemp, Warning, TEXT("On_Wazi"));
+			Element->Character_Wazi_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			Element->Character_Rena_Image->SetVisibility(ESlateVisibility::Hidden);
+		}
+	});
+	
+	LakayaState->OnPlayerNameChanged.AddUObject(Element, &UScoreBoardElement::SetPlayerName);
+	// LakayaState->OnScoreCountChanged.AddUObject(Element, &UScoreBoardElement::SetScoreCount);
+	LakayaState->OnKillCountChanged.AddUObject(Element, &UScoreBoardElement::SetKillCount);
+	LakayaState->OnDeathCountChanged.AddUObject(Element, &UScoreBoardElement::SetDeathCount);
+	
 	Element->SetPlayerName(LakayaState->GetPlayerName());
 	Element->SetDeathCount(LakayaState->GetDeathCount());
 	Element->SetKillCount(LakayaState->GetKillCount());
