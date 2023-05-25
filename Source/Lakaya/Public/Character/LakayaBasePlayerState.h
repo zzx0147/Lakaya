@@ -94,6 +94,8 @@ public:
 	// 플레이어의 연속처치 횟수를 가져옵니다.
 	const uint16& GetKillStreak() const { return KillStreak; }
 
+	// virtual void IncreaseScoreCount();
+	
 	// 플레이어의 누적 사망 횟수를 늘립니다.
 	virtual void IncreaseDeathCount();
 
@@ -151,6 +153,9 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_CharacterName();
 
+	// UFUNCTION()
+	// virtual void OnRep_ScoreCount();
+	
 	UFUNCTION()
 	virtual void OnRep_DeathCount();
 
@@ -200,6 +205,9 @@ public:
 	// 캐릭터 이름이 변경될 때 호출됩니다. 매개변수로 이 플레이어 스테이트와 변경된 캐릭터 이름을 받습니다.
 	FCharacterNameChangeSignature OnCharacterNameChanged;
 
+	// 플레이어의 누적 점수가 변경되는 경우 호출됩니다. 매개변수로 변경된 점수를 받습니다.
+	// FCountInfoSignature OnScoreCountChanged;
+
 	// 플레이어의 누적 사망 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 누적 사망 횟수를 받습니다.
 	FCountInfoSignature OnDeathCountChanged;
 
@@ -231,6 +239,9 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_CharacterName, Transient)
 	FName CharacterName;
 
+	// UPROPERTY(ReplicatedUsing=OnRep_ScoreCount, Transient)
+	// uint32 ScoreCount;
+	
 	UPROPERTY(ReplicatedUsing=OnRep_DeathCount, Transient)
 	uint16 DeathCount;
 
