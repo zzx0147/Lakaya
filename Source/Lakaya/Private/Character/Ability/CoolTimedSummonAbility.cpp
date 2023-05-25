@@ -16,6 +16,7 @@ UCoolTimedSummonAbility::UCoolTimedSummonAbility()
 	BaseCoolTime = 5.f;
 	SummonDistance = 50.f;
 	SearchFromActor = 5000.f;
+	SetIsReplicatedByDefault(true);
 }
 
 void UCoolTimedSummonAbility::InitializeComponent()

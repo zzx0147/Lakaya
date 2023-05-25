@@ -155,6 +155,12 @@ void ALinearProjectile::SimulateProjectilePhysics()
 {
 	static FVector Location;
 	static FRotator Rotator;
+	if (!GetOwningAbility())
+	{
+		UE_LOG(LogScript, Error, TEXT("Owning ability was nullptr!"));
+		return;
+	}
+	
 	GetOwningAbility()->GetSummonLocationAndRotation(Location, Rotator);
 	SetActorLocationAndRotation(Location, Rotator);
 
