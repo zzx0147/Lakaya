@@ -11,7 +11,6 @@
 UCoolTimedSummonAbility::UCoolTimedSummonAbility()
 {
 	bWantsInitializeComponent = true;
-	bWantsTransformSet = true;
 	bCanEverStartRemoteCall = true;
 	ObjectPoolSize = 1;
 	BaseCoolTime = 5.f;
@@ -51,6 +50,7 @@ void UCoolTimedSummonAbility::InitializeComponent()
 		}
 
 		AbilityInstance->SetOwningAbility(this);
+		AbilityInstance->SetTeam(GetPlayerTeam());
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("AbilityInstance spawned"));
 		return AbilityInstance;
 	});
@@ -68,34 +68,31 @@ void UCoolTimedSummonAbility::RemoteAbilityStart(const float& RequestTime)
 	if (!IsEnableTime(GetServerTime()) || !CostResource(ResourceCost)) return;
 
 	if (const auto AbilityInstance = AbilityInstancePool.GetObject())
-	{
-		if (bWantsTransformSet)
-		{
-			const auto Direction = GetNormalToCameraForwardTracePoint(SearchFromActor, CollisionQueryParams);
-			const auto ActorLocation = GetOwner()->GetActorLocation();
-			const auto SummonLocation = ActorLocation + Direction * SummonDistance;
-
-			AbilityInstance->SetActorLocationAndRotation(SummonLocation, Direction.Rotation());
-			DrawDebugLine(GetWorld(), ActorLocation, SummonLocation, FColor::Emerald, false, 3);
-		}
-		AbilityInstance->OnSummoned();
-	}
+		AbilityInstance->SetAbilityInstanceState(EAbilityInstanceState::Ready);
 
 	ApplyCoolTime();
 }
 
-void UCoolTimedSummonAbility::NotifyAbilityInstanceSummoned(ASummonAbilityInstance* const& AbilityInstance)
+void UCoolTimedSummonAbility::GetSummonLocationAndRotation(FVector& Location, FRotator& Rotator) const
 {
-	OnAbilityInstanceSummoned.Broadcast();
-	if (MuzzleNiagara.IsValid()) MuzzleNiagara->Activate(true);
+	const auto Direction = GetNormalToCameraForwardTracePoint(SearchFromActor, CollisionQueryParams);
+	Location = GetOwner()->GetActorLocation() + Direction * SummonDistance;
+	Rotator = Direction.Rotation();
 }
 
-void UCoolTimedSummonAbility::NotifyAbilityInstanceEnded(ASummonAbilityInstance* const& AbilityInstance)
+void UCoolTimedSummonAbility::NotifyPerformTime(const float& Time)
 {
-	if (GetOwner()->HasAuthority())
-	{
-		AbilityInstancePool.ReturnObject(AbilityInstance);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Projectile returned!"));
-	}
-	OnAbilityInstanceEnded.Broadcast();
+	OnPerformTimeNotified.Broadcast(Time);
+}
+
+void UCoolTimedSummonAbility::NotifyAbilityInstanceCollapsed(ASummonAbilityInstance* const& AbilityInstance)
+{
+	AbilityInstancePool.ReturnObject(AbilityInstance);
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object returned!"));
+}
+
+void UCoolTimedSummonAbility::SetTeam(const EPlayerTeam& Team)
+{
+	Super::SetTeam(Team);
+	AbilityInstancePool.ForEach([Team](ASummonAbilityInstance* Instance) { Instance->SetTeam(Team); });
 }

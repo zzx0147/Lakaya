@@ -5,9 +5,10 @@
 #include "CoreMinimal.h"
 #include "CharacterAbility.h"
 #include "SimpleObjectPool.h"
+#include "Occupation/PlayerTeam.h"
 #include "CoolTimedSummonAbility.generated.h"
 
-DECLARE_EVENT(UCoolTimedSummonAbility, FAbilityInstanceSignature)
+DECLARE_EVENT_OneParam(UCoolTimedSummonAbility, FPerformTimeSignature, const float&)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UCoolTimedSummonAbility : public UCharacterAbility
@@ -16,6 +17,7 @@ class LAKAYA_API UCoolTimedSummonAbility : public UCharacterAbility
 
 public:
 	UCoolTimedSummonAbility();
+	virtual void SetTeam(const EPlayerTeam& Team) override;
 
 protected:
 	virtual void InitializeComponent() override;
@@ -23,17 +25,12 @@ protected:
 	virtual void RemoteAbilityStart(const float& RequestTime) override;
 
 public:
-	// 어빌리티 인스턴스가 소환된 이후 호출됩니다. 클라이언트에서도 호출됩니다.
-	void NotifyAbilityInstanceSummoned(class ASummonAbilityInstance* const& AbilityInstance);
+	void GetSummonLocationAndRotation(FVector& Location, FRotator& Rotator) const;
+	void NotifyPerformTime(const float& Time);
+	void NotifyAbilityInstanceCollapsed(class ASummonAbilityInstance* const& AbilityInstance);
 
-	// 어빌리티 인스턴스의 역할이 끝난 이후 호출됩니다. 클라이언트에서도 호출됩니다.
-	void NotifyAbilityInstanceEnded(ASummonAbilityInstance* const& AbilityInstance);
-
-	// 어빌리티 인스턴스가 소환된 이후 호출됩니다.
-	FAbilityInstanceSignature OnAbilityInstanceSummoned;
-
-	// 어빌리티 인스턴스의 역할이 끝난 이후 호출됩니다.
-	FAbilityInstanceSignature OnAbilityInstanceEnded;
+	// 소환된 스킬이 실제로 언제 실행되는지 알려진 뒤에 호출됩니다. 매개변수로 스킬이 실행되는 시간을 받습니다.
+	FPerformTimeSignature OnPerformTimeNotified;
 
 protected:
 	// 소환될 어빌리티 인스턴스의 클래스를 지정합니다.
@@ -51,10 +48,6 @@ protected:
 	// 초기 생성할 오브젝트 풀 크기를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	uint8 ObjectPoolSize;
-
-	// 어빌리티 인스턴스가 플레이어가 바라보는 방향으로 로케이션, 로테이션이 셋업되도록 합니다.
-	UPROPERTY(EditAnywhere)
-	bool bWantsTransformSet;
 
 	// 어빌리티 인스턴스 소환시 소모할 자원들을 지정합니다.
 	UPROPERTY(EditAnywhere)

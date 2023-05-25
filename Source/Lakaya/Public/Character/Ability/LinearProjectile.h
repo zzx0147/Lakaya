@@ -18,28 +18,23 @@ public:
 
 	explicit ALinearProjectile(const FObjectInitializer& ObjectInitializer);
 	virtual void PostInitializeComponents() override;
-	virtual void OnSummoned() override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void SetTeam(const EPlayerTeam& Team) override;
 
 protected:
-	virtual void BeginPlay() override;
-	
-	UFUNCTION()
-	virtual void OnRep_SummonedTime();
-
-	UFUNCTION()
-	virtual void OnRep_SummonedLocation();
-
-	UFUNCTION()
-	virtual void OnRep_SummonedRotation();
+	virtual void PerformTimerHandler() override;
+	virtual void HandleAbilityInstancePerform() override;
+	virtual void HandleAbilityInstanceEnding() override;
 
 	UFUNCTION()
 	virtual void OnCollisionComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	                                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 	                                              const FHitResult& SweepResult);
 
-	float GetServerTime() const;
+private:
+	void SimulateProjectilePhysics();
 
+protected:
 	UPROPERTY(EditAnywhere)
 	float LinearVelocity;
 
@@ -58,24 +53,24 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UNiagaraSystem* CollisionNiagaraSystem;
 
-private:
-	UPROPERTY(VisibleAnywhere)
-	USceneComponent* SceneComponent;
+	UPROPERTY(EditAnywhere)
+	TEnumAsByte<ECollisionChannel> ATeamCollisionChannel;
 
+	UPROPERTY(EditAnywhere)
+	TEnumAsByte<ECollisionChannel> BTeamCollisionChannel;
+
+private:
 	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* CollisionComponent;
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* StaticMeshComponent;
 
-	UPROPERTY(ReplicatedUsing=OnRep_SummonedTime, Transient)
-	float SummonedTime;
+	UPROPERTY(Replicated, Transient)
+	FVector ProjectileLocation;
 
-	UPROPERTY(ReplicatedUsing=OnRep_SummonedLocation, Transient)
-	FVector SummonedLocation;
-
-	UPROPERTY(ReplicatedUsing=OnRep_SummonedRotation, Transient)
-	FRotator SummonedRotation;
+	UPROPERTY(Replicated, Transient)
+	FRotator ProjectileRotation;
 
 	TWeakObjectPtr<class UNiagaraComponent> TrailNiagara;
 };
