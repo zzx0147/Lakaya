@@ -65,6 +65,7 @@ void UClairvoyanceAbility::OnRep_AbilityStartTime()
 void UClairvoyanceAbility::RemoteAbilityStart(const float& RequestTime)
 {
 	Super::RemoteAbilityStart(RequestTime);
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Server ClairvoyancecAbilityStart!"));
 	AbilityStartTime = RequestTime + AbilityDelay;
 	OnRep_AbilityStartTime();
 }
@@ -87,4 +88,15 @@ TObjectPtr<AOutlineManager> UClairvoyanceAbility::GetOutlineManager()
 
 
 	return OutlineManager.Get();
+}
+
+bool UClairvoyanceAbility::ShouldStartRemoteCall()
+{
+	return true;
+}
+
+void UClairvoyanceAbility::LocalAbilityStart()
+{
+	Super::LocalAbilityStart();
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Client ClairvoyancecAbilityStart!"));
 }

@@ -24,7 +24,11 @@ public:
 
 protected:
 	TObjectPtr<class AOutlineManager> GetOutlineManager();
-	
+	virtual bool ShouldStartRemoteCall() override;
+
+public:
+	virtual void LocalAbilityStart() override;
+
 protected:
 	UPROPERTY(ReplicatedUsing=OnRep_AbilityStartTime, Transient)
 	float AbilityStartTime;
