@@ -79,7 +79,7 @@ float ASummonAbilityInstance::GetServerTime() const
 
 void ASummonAbilityInstance::PerformTimerHandler()
 {
-	SetAbilityInstanceState(EAbilityInstanceState::Perform);
+	if (HasAuthority()) SetAbilityInstanceState(EAbilityInstanceState::Perform);
 }
 
 void ASummonAbilityInstance::CollapseTimerHandler()

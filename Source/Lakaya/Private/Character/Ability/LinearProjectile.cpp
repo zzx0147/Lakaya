@@ -73,6 +73,8 @@ void ALinearProjectile::HandleAbilityInstancePerform()
 	else
 	{
 		SetActorTickEnabled(true);
+		StaticMeshComponent->SetVisibility(true);
+		if (TrailNiagara.IsValid()) TrailNiagara->Activate();
 		CollisionComponent->SetSimulatePhysics(false);
 		CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
