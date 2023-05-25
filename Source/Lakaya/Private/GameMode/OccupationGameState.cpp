@@ -1,6 +1,7 @@
 #include "GameMode/OccupationGameState.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
+#include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameMode.h"
 #include "Net/UnrealNetwork.h"
@@ -151,7 +152,7 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 	{
 		EPlayerTeam PlayerTeam = BasePlayerState->GetTeam();
 		//TODO: 이렇게 하기보다는 PlayersByTeamMap.Contains(PlayerTeam)을 사용하는 게 좋습니다.
-		if (PlayerTeam == EPlayerTeam::A || PlayerTeam == EPlayerTeam::B)//���� ������ �ٷ� �迭�� �߰�
+		if (PlayerTeam == EPlayerTeam::A || PlayerTeam == EPlayerTeam::B)
 		{
 			PlayersByTeamMap[PlayerTeam].Add(BasePlayerState);
 			//TODO: Emplace는 항상 Add보다 낫습니다.
@@ -163,7 +164,7 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 			}
 		}
 		//TODO: 팀이 없는 경우에만 람다를 등록하기보다는, 팀이 있더라도 게임도중 팀이 변경되는 경우를 상정하여 그냥 람다를 등록하는 것이 좋을 것 같습니다.
-		else//������ ���� ����Ǿ����� �߰�
+		else
 		{
 			BasePlayerState->OnTeamChanged.AddLambda([this, BasePlayerState](const EPlayerTeam& ArgTeam)
 				{
@@ -189,7 +190,7 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 					{
 						//TODO: Emplace는 항상 Add보다 낫습니다.
 						PlayersByTeamMap[ArgTeam].Add(BasePlayerState);
-						if (ClientTeam == ArgTeam)//Ŭ���̾�Ʈ ���� NONE �� �� ����
+						if (ClientTeam == ArgTeam)
 						{
 							CharacterSelectWidget->RegisterPlayer(BasePlayerState);
 						}
@@ -223,6 +224,12 @@ void AOccupationGameState::OnRep_OccupationWinner()
 	OnChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
 }
 
+void AOccupationGameState::SetClientTeam(const EPlayerTeam& NewTeam)
+{
+	ClientTeam = NewTeam;
+	if(SpawnOutlineManager()) OutlineManager->SetTeam(NewTeam);
+}
+
 void AOccupationGameState::CreateCharacterSelectWidget(APlayerController* LocalController)
 {
 	Super::CreateCharacterSelectWidget(LocalController);
@@ -245,11 +252,11 @@ void AOccupationGameState::CreateCharacterSelectWidget(APlayerController* LocalC
 		else
 		{
 			//TODO: 불필요한 캡쳐 : BasePlayerState
-			BasePlayerState->OnTeamChanged.AddLambda([this, BasePlayerState](const EPlayerTeam& ArgTeam)
+			BasePlayerState->OnTeamChanged.AddLambda([this](const EPlayerTeam& ArgTeam)
 				{
 					if (ArgTeam == EPlayerTeam::A || ArgTeam == EPlayerTeam::B)
 					{
-						ClientTeam = ArgTeam;
+						SetClientTeam(ArgTeam);
 						//TODO: 이렇게 하기보다는 PlayersByTeamMap.Contains(PlayerTeam)을 사용하는 게 좋습니다.
 						for (const auto temp : PlayersByTeamMap[ClientTeam])
 						{
