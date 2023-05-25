@@ -14,6 +14,11 @@ ASummonAbilityInstance::ASummonAbilityInstance(const FObjectInitializer& ObjectI
 	CollapseDelay = 0.2f;
 }
 
+void ASummonAbilityInstance::SetOwningAbility(UCoolTimedSummonAbility* const& Ability)
+{
+	OwningAbility = Ability;
+}
+
 void ASummonAbilityInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -57,7 +62,7 @@ void ASummonAbilityInstance::HandleAbilityInstanceReady()
 	if (HasAuthority()) AbilityTime = GetServerTime() + PerformDelay;
 	GetWorld()->GetTimerManager().SetTimer(PerformTimer, this, &ASummonAbilityInstance::PerformTimerHandler,
 	                                       AbilityTime - GetServerTime());
-	if (OwningAbility) OwningAbility->NotifyPerformTime(AbilityTime);
+	if (OwningAbility.IsValid()) OwningAbility->NotifyPerformTime(AbilityTime);
 }
 
 void ASummonAbilityInstance::HandleAbilityInstanceEnding()
@@ -69,7 +74,7 @@ void ASummonAbilityInstance::HandleAbilityInstanceEnding()
 
 void ASummonAbilityInstance::HandleAbilityInstanceCollapsed()
 {
-	if (HasAuthority() && OwningAbility) OwningAbility->NotifyAbilityInstanceCollapsed(this);
+	if (HasAuthority() && OwningAbility.IsValid()) OwningAbility->NotifyAbilityInstanceCollapsed(this);
 }
 
 float ASummonAbilityInstance::GetServerTime() const

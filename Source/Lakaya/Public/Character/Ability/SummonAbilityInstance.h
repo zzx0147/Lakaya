@@ -33,7 +33,7 @@ public:
 	explicit ASummonAbilityInstance(const FObjectInitializer& ObjectInitializer);
 
 	// 이 어빌리티 인스턴스를 소유하는 어빌리티를 설정합니다.
-	FORCEINLINE void SetOwningAbility(class UCoolTimedSummonAbility* const& Ability) { OwningAbility = Ability; }
+	void SetOwningAbility(class UCoolTimedSummonAbility* const& Ability);
 
 	virtual void SetAbilityInstanceState(const EAbilityInstanceState& DesireState);
 	FORCEINLINE const EAbilityInstanceState& GetInstanceState() const { return AbilityInstanceState; }
@@ -73,7 +73,7 @@ private:
 	float AbilityTime;
 
 	UPROPERTY(Replicated, Transient)
-	TObjectPtr<UCoolTimedSummonAbility> OwningAbility;
+	TWeakObjectPtr<UCoolTimedSummonAbility> OwningAbility;
 
 	FTimerHandle PerformTimer;
 	FTimerHandle CollapseTimer;
