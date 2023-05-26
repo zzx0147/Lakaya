@@ -149,10 +149,33 @@ void ALakayaBasePlayerState::MakeAlive()
 	SetAliveState(true);
 }
 
+const uint16& ALakayaBasePlayerState::SetScoreCount(const uint16& NewScore)
+{
+	ScoreCount = NewScore;
+	OnRep_ScoreCount();
+	return ScoreCount;
+}
+
 // void ALakayaBasePlayerState::IncreaseScoreCount()
 // {
-// 	OnScoreCountChanged.Broadcast(++ScoreCount);
+// 	// TODO :
+// 	OnScoreCountChanged.Broadcast(ScoreCount);
 // }
+
+void ALakayaBasePlayerState::IncreaseSuccessCaptureCount()
+{
+	OnSuccessCaptureCountChanged.Broadcast(++SuccessCaptureCount);
+}
+
+void ALakayaBasePlayerState::IncreaseCurrentCaptureCount()
+{
+	OnCurrentCaptureCountChanged.Broadcast(++CurrentCaptureCount);
+}
+
+void ALakayaBasePlayerState::DecreaseCurrentCaptureCount()
+{
+	OnCurrentCaptureCountChanged.Broadcast(--CurrentCaptureCount);
+}
 
 void ALakayaBasePlayerState::IncreaseDeathCount()
 {
@@ -278,10 +301,20 @@ void ALakayaBasePlayerState::OnRep_CharacterName()
 	OnCharacterNameChanged.Broadcast(this, CharacterName);
 }
 
-// void ALakayaBasePlayerState::OnRep_ScoreCount()
-// {
-// 	OnScoreCountChanged.Broadcast(ScoreCount);
-// }
+void ALakayaBasePlayerState::OnRep_ScoreCount()
+{
+	OnScoreCountChanged.Broadcast(ScoreCount);
+}
+
+void ALakayaBasePlayerState::OnRep_CurrentCaptureCount()
+{
+	OnCurrentCaptureCountChanged.Broadcast(CurrentCaptureCount);
+}
+
+void ALakayaBasePlayerState::OnRep_SuccessCaptureCount()
+{
+	OnSuccessCaptureCountChanged.Broadcast(SuccessCaptureCount);
+}
 
 void ALakayaBasePlayerState::OnRep_DeathCount()
 {

@@ -12,7 +12,7 @@ void UScoreBoardElement::NativeConstruct()
 
 	PlayerNameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("PlayerName_Text")));
 	ScoreText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Score_Text")));
-	CaptureText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Captrue_Text")));
+	CaptureText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Capture_Text")));
 	KillText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Kill_Text")));
 	DeathText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Death_Text")));
 

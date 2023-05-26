@@ -81,12 +81,24 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void RequestCharacterChange(const FName& Name);
 
-	// 현재 플레이어의 누적 사망 횟수를 가져옵니다.
-	const uint16& GetDeathCount() const { return DeathCount; }
+	// 현재 플레이어의 점수를 가져옵니다.
+	FORCEINLINE const uint16& GetScoreCount() const { return ScoreCount; }
 
+	// 현재 플레이어의 점수를 수정합니다.
+	const uint16& SetScoreCount(const uint16& NewScore);
+	
+	// 현재 플레이어의 누적 점령 성공 횟수를 가져옵니다.
+	FORCEINLINE const uint16& GetCurrentCaptureCount() const { return CurrentCaptureCount; }
+	
+	// 현재 플레이어의 점령한 오브젝트 갯수를 가져옵니다.
+	FORCEINLINE const uint16& GetSuccessCaptureCount() const { return SuccessCaptureCount; }
+	
 	// 현재 플레이어의 누적 킬 횟수를 가져옵니다.
 	const uint16& GetKillCount() const { return KillCount; }
-
+	
+	// 현재 플레이어의 누적 사망 횟수를 가져옵니다.
+	const uint16& GetDeathCount() const { return DeathCount; }
+	
 	// 플레이어가 선택한 캐릭터의 이름을 가져옵니다.
 	UFUNCTION(BlueprintGetter)
 	const FName& GetCharacterName() const { return CharacterName; }
@@ -94,7 +106,17 @@ public:
 	// 플레이어의 연속처치 횟수를 가져옵니다.
 	const uint16& GetKillStreak() const { return KillStreak; }
 
+	// 플레이어의 누적 점수를 늘립니다.
 	// virtual void IncreaseScoreCount();
+
+	// 플레이어의 누적 점령 성공 횟수를 늘립니다.
+	virtual void IncreaseSuccessCaptureCount();
+
+	// 플레이어의 현재 점령한 오브젝트 횟수를 늘립니다.
+	virtual void IncreaseCurrentCaptureCount();
+
+	// 플레이어의 현재 점령한 오브젝트 횟수를 줄입니다.
+	virtual void DecreaseCurrentCaptureCount();
 	
 	// 플레이어의 누적 사망 횟수를 늘립니다.
 	virtual void IncreaseDeathCount();
@@ -153,8 +175,14 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_CharacterName();
 
-	// UFUNCTION()
-	// virtual void OnRep_ScoreCount();
+	UFUNCTION()
+	virtual void OnRep_ScoreCount();
+
+	UFUNCTION()
+	virtual void OnRep_CurrentCaptureCount();
+
+	UFUNCTION()
+	virtual void OnRep_SuccessCaptureCount();
 	
 	UFUNCTION()
 	virtual void OnRep_DeathCount();
@@ -206,13 +234,19 @@ public:
 	FCharacterNameChangeSignature OnCharacterNameChanged;
 
 	// 플레이어의 누적 점수가 변경되는 경우 호출됩니다. 매개변수로 변경된 점수를 받습니다.
-	// FCountInfoSignature OnScoreCountChanged;
+	FCountInfoSignature OnScoreCountChanged;
 
-	// 플레이어의 누적 사망 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 누적 사망 횟수를 받습니다.
-	FCountInfoSignature OnDeathCountChanged;
-
+	// 플레이어 현재 점령한 오브젝트 갯수가 변경되는 경우 호출됩니다. 매개변수로 변경된 현재 점령한 오브젝트 갯수를 받습니다.
+	FCountInfoSignature OnCurrentCaptureCountChanged;
+	
+	// 플레이어 누적 점령 성공 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 점령 성공 횟수를 받습니다.
+	FCountInfoSignature OnSuccessCaptureCountChanged;
+	
 	// 플레이어의 누적 킬 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 킬 횟수를 받습니다.
 	FCountInfoSignature OnKillCountChanged;
+	
+	// 플레이어의 누적 사망 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 누적 사망 횟수를 받습니다.
+	FCountInfoSignature OnDeathCountChanged;
 
 	// 플레이어의 연속처치 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 연속처치 횟수를 받습니다.
 	FCountInfoSignature OnKillStreakChanged;
@@ -239,8 +273,17 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_CharacterName, Transient)
 	FName CharacterName;
 
-	// UPROPERTY(ReplicatedUsing=OnRep_ScoreCount, Transient)
-	// uint32 ScoreCount;
+	// 1Kill = 100 Score
+	// CaptureSuccess = 500 Score
+	// 1 Second = (CurrentCapturedObject * 50) Score
+	UPROPERTY(ReplicatedUsing=OnRep_ScoreCount, Transient)
+	uint16 ScoreCount;
+	
+	UPROPERTY(ReplicatedUsing=OnRep_CurrentCaptureCount, Transient)
+	uint16 CurrentCaptureCount;
+
+	UPROPERTY(ReplicatedUsing=OnRep_SuccessCaptureCount, Transient)
+	uint16 SuccessCaptureCount;
 	
 	UPROPERTY(ReplicatedUsing=OnRep_DeathCount, Transient)
 	uint16 DeathCount;
