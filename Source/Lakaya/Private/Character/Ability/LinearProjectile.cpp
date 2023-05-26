@@ -101,14 +101,14 @@ void ALinearProjectile::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	//TODO: 이거 최초 한번만 계산해두고, 현재 시간에 따라서 사용하는 방법이 있지 않을까?
-	static FPredictProjectilePathParams Params;
+	FPredictProjectilePathParams Params;
 	Params.StartLocation = ProjectileLocation;
 	Params.LaunchVelocity = ProjectileRotation.Vector() * LinearVelocity;
 	Params.bTraceWithCollision = false;
 	Params.bTraceWithChannel = false;
 	Params.MaxSimTime = GetServerTime() - GetAbilityTime();
 	Params.OverrideGravityZ = CollisionComponent->IsGravityEnabled() ? GetWorld()->GetGravityZ() : -1.f;
-	static FPredictProjectilePathResult Result;
+	FPredictProjectilePathResult Result;
 	UGameplayStatics::PredictProjectilePath(GetWorld(), Params, Result);
 	SetActorLocation(Result.LastTraceDestination.Location);
 }
