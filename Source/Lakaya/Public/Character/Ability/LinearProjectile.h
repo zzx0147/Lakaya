@@ -6,15 +6,32 @@
 #include "SummonAbilityInstance.h"
 #include "LinearProjectile.generated.h"
 
+USTRUCT()
+struct FTeamCollisionInfo
+{
+	GENERATED_BODY()
+
+	FTeamCollisionInfo(): ATeamCollision(false), BTeamCollision(false) { return; }
+
+	// 체크하면 A팀 캐릭터에게 충돌합니다.
+	UPROPERTY(EditAnywhere)
+	bool ATeamCollision;
+
+	// 체크하면 B팀 캐릭터에게 충돌합니다.
+	UPROPERTY(EditAnywhere)
+	bool BTeamCollision;
+};
+
 UCLASS()
 class LAKAYA_API ALinearProjectile : public ASummonAbilityInstance
 {
 	GENERATED_BODY()
 
 public:
-	static const FName SceneComponentName;
 	static const FName CollisionComponentName;
 	static const FName StaticMeshComponentName;
+	static const FName TrailNiagaraComponentName;
+	static const FName ExplodeNiagaraComponentName;
 
 	explicit ALinearProjectile(const FObjectInitializer& ObjectInitializer);
 	virtual void PostInitializeComponents() override;
@@ -22,9 +39,11 @@ public:
 	virtual void SetTeam(const EPlayerTeam& Team) override;
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void PerformTimerHandler() override;
 	virtual void HandleAbilityInstancePerform() override;
 	virtual void HandleAbilityInstanceEnding() override;
+	virtual void HandleAbilityInstanceCollapsed() override;
 
 	UFUNCTION()
 	virtual void OnCollisionComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -52,26 +71,23 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float LinearVelocity;
 
+	// 투사체가 폭발할 때의 최대 피해량을 지정합니다.
 	UPROPERTY(EditAnywhere)
 	float BaseDamage;
 
-	// 데미지 범위를 지정합니다. 0이거나 음수인 경우 단일피해로 적용됩니다.
+	// 폭발의 범위를 지정합니다. 0인 경우 최초 접촉한 물체에 대한 단일피해로 적용되며, 음수인 경우 피해를 적용하지 않습니다.
 	UPROPERTY(EditAnywhere)
 	float DamageRange;
-
-	// 투사체의 트레일 나이아가라 시스템을 지정합니다.
-	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* TrailNiagaraSystem;
-
-	// 투사체가 어떤 물체에 충돌한 후 트리거 되는 나이아가라 시스템을 지정합니다.
-	UPROPERTY(EditAnywhere)
-	UNiagaraSystem* CollisionNiagaraSystem;
 
 	UPROPERTY(EditAnywhere)
 	TEnumAsByte<ECollisionChannel> ATeamCollisionChannel;
 
 	UPROPERTY(EditAnywhere)
 	TEnumAsByte<ECollisionChannel> BTeamCollisionChannel;
+
+	// 이 투사체가 어느 팀일 때 어느 팀 캐릭터에 충돌할지 결정합니다. 지정되지 않은 경우 충돌하지 않습니다.
+	UPROPERTY(EditAnywhere)
+	TMap<EPlayerTeam, FTeamCollisionInfo> TeamCollisionMap;
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -80,11 +96,15 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* StaticMeshComponent;
 
+	UPROPERTY(VisibleAnywhere)
+	class UNiagaraComponent* TrailNiagaraComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	UNiagaraComponent* ExplodeNiagaraComponent;
+
 	UPROPERTY(Replicated, Transient)
 	FVector ProjectileLocation;
 
 	UPROPERTY(Replicated, Transient)
 	FRotator ProjectileRotation;
-
-	TWeakObjectPtr<class UNiagaraComponent> TrailNiagara;
 };
