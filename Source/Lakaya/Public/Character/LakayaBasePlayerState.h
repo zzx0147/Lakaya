@@ -82,10 +82,10 @@ public:
 	void RequestCharacterChange(const FName& Name);
 
 	// 현재 플레이어의 점수를 가져옵니다.
-	FORCEINLINE const uint16& GetScoreCount() const { return ScoreCount; }
+	FORCEINLINE const uint16& GetTotalScore() const { return TotalScore; }
 
 	// 현재 플레이어의 점수를 수정합니다.
-	const uint16& SetScoreCount(const uint16& NewScore);
+	const uint16& SetTotalScoreCount(const uint16& NewScore);
 	
 	// 현재 플레이어의 누적 점령 성공 횟수를 가져옵니다.
 	FORCEINLINE const uint16& GetCurrentCaptureCount() const { return CurrentCaptureCount; }
@@ -176,7 +176,7 @@ protected:
 	virtual void OnRep_CharacterName();
 
 	UFUNCTION()
-	virtual void OnRep_ScoreCount();
+	virtual void OnRep_TotalScore();
 
 	UFUNCTION()
 	virtual void OnRep_CurrentCaptureCount();
@@ -234,7 +234,7 @@ public:
 	FCharacterNameChangeSignature OnCharacterNameChanged;
 
 	// 플레이어의 누적 점수가 변경되는 경우 호출됩니다. 매개변수로 변경된 점수를 받습니다.
-	FCountInfoSignature OnScoreCountChanged;
+	FCountInfoSignature OnTotalScoreChanged;
 
 	// 플레이어 현재 점령한 오브젝트 갯수가 변경되는 경우 호출됩니다. 매개변수로 변경된 현재 점령한 오브젝트 갯수를 받습니다.
 	FCountInfoSignature OnCurrentCaptureCountChanged;
@@ -276,8 +276,8 @@ private:
 	// 1Kill = 100 Score
 	// CaptureSuccess = 500 Score
 	// 1 Second = (CurrentCapturedObject * 50) Score
-	UPROPERTY(ReplicatedUsing=OnRep_ScoreCount, Transient)
-	uint16 ScoreCount;
+	UPROPERTY(ReplicatedUsing=OnRep_TotalScore, Transient)
+	uint16 TotalScore;
 	
 	UPROPERTY(ReplicatedUsing=OnRep_CurrentCaptureCount, Transient)
 	uint16 CurrentCaptureCount;

@@ -20,7 +20,8 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(ALakayaBasePlayerState, Team);
 	DOREPLIFETIME(ALakayaBasePlayerState, RespawnTime);
 	DOREPLIFETIME(ALakayaBasePlayerState, CharacterName);
-	// DOREPLIFETIME(ALakayaBasePlayerState, ScoreCount);
+	DOREPLIFETIME(ALakayaBasePlayerState, TotalScore);
+	DOREPLIFETIME(ALakayaBasePlayerState, SuccessCaptureCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, DeathCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillStreak);
@@ -149,11 +150,11 @@ void ALakayaBasePlayerState::MakeAlive()
 	SetAliveState(true);
 }
 
-const uint16& ALakayaBasePlayerState::SetScoreCount(const uint16& NewScore)
+const uint16& ALakayaBasePlayerState::SetTotalScoreCount(const uint16& NewScore)
 {
-	ScoreCount = NewScore;
-	OnRep_ScoreCount();
-	return ScoreCount;
+	TotalScore += NewScore;
+	OnRep_TotalScore();
+	return TotalScore;
 }
 
 // void ALakayaBasePlayerState::IncreaseScoreCount()
@@ -301,9 +302,9 @@ void ALakayaBasePlayerState::OnRep_CharacterName()
 	OnCharacterNameChanged.Broadcast(this, CharacterName);
 }
 
-void ALakayaBasePlayerState::OnRep_ScoreCount()
+void ALakayaBasePlayerState::OnRep_TotalScore()
 {
-	OnScoreCountChanged.Broadcast(ScoreCount);
+	OnTotalScoreChanged.Broadcast(TotalScore);
 }
 
 void ALakayaBasePlayerState::OnRep_CurrentCaptureCount()

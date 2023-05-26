@@ -51,12 +51,12 @@ void UScoreBoardElement::SetPlayerName(const FString& PlayerName) const
 	SetPlayerName(FText::FromString(PlayerName));
 }
 
-// void UScoreBoardElement::SetScoreCount(const uint32& ScoreCount) const
-// {
-// 	if (ScoreText.IsValid()) ScoreText->SetText(FText::AsNumber(ScoreCount));
-// }
+void UScoreBoardElement::SetTotalScore(const uint16& ScoreCount) const
+{
+	if (ScoreText.IsValid()) ScoreText->SetText(FText::AsNumber(ScoreCount));
+}
 
-void UScoreBoardElement::SetCaptureCount(const uint16& CaptureCount) const
+void UScoreBoardElement::SetSuccessCaptureCount(const uint16& CaptureCount) const
 {
 	if (CaptureText.IsValid()) CaptureText->SetText(FText::AsNumber(CaptureCount));
 }

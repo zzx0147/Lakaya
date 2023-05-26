@@ -25,16 +25,17 @@ public:
 	void SetPlayerName(const FString& PlayerName) const;
 
 	// 누적 점수를 업데이트합니다.
-	void SetScoreCount(const uint32& ScoreCount) const;
+	void SetTotalScore(const uint16& ScoreCount) const;
 
 	// 누적 점령 성공 횟수를 업데이트합니다.
-	void SetCaptureCount(const uint16& CaptureCount) const;
+	void SetSuccessCaptureCount(const uint16& CaptureCount) const;
 	
 	// 누적 킬 횟수를 업데이트합니다.
 	void SetKillCount(const uint16& KillCount) const;
 
 	// 누적 사망 횟수를 업데이트합니다.
 	void SetDeathCount(const uint16& DeathCount) const;
+	
 private:
 	TWeakObjectPtr<UTextBlock> PlayerNameText;	 // 플레이어 이름
 	TWeakObjectPtr<UTextBlock> ScoreText;	   	 // 점수
