@@ -19,6 +19,7 @@ public:
 	AAIIndividualGameState();
 
 	void SetScoreBoardPlayerName(const TArray<FPlayerData>& PlayerDataArray);
+	void SetAIIndividualWinner();
 	
 	APlayerState* PlayerState;
 	
