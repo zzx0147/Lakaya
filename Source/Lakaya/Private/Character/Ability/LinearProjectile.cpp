@@ -63,30 +63,22 @@ void ALinearProjectile::PostInitializeComponents()
 void ALinearProjectile::PerformTimerHandler()
 {
 	Super::PerformTimerHandler();
-	if (GetInstanceState() == EAbilityInstanceState::Ready) SimulateProjectilePhysics();
+	// 타이머가 종료된 시점에 아직 Ready상태라면, 클라이언트를 의미하므로 투사체에 대해 물리 시뮬레이션을 시작합니다.
+	if (GetInstanceState() == EAbilityInstanceState::Ready)
+		SimulateProjectilePhysics(false, false);
 }
 
 void ALinearProjectile::HandleAbilityInstancePerform()
 {
 	Super::HandleAbilityInstancePerform();
-	if (HasAuthority()) SimulateProjectilePhysics();
-	else
-	{
-		SetActorTickEnabled(true);
-		StaticMeshComponent->SetVisibility(true);
-		if (TrailNiagara.IsValid()) TrailNiagara->Activate();
-		CollisionComponent->SetSimulatePhysics(false);
-		CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	}
+	// Perform 상태가 된 경우, 서버에서는 물리 엔진을 통해 투사체를 던지고, 클라이언트에서는 서버로부터 전달받은 정보를 바탕으로 투사체의 위치를 시뮬레이트합니다.
+	HasAuthority() ? SimulateProjectilePhysics(true, true) : SimulateProjectileMovement();
 }
 
 void ALinearProjectile::HandleAbilityInstanceEnding()
 {
 	Super::HandleAbilityInstanceEnding();
-	if (!HasAuthority()) SetActorTickEnabled(false);
-	CollisionComponent->SetSimulatePhysics(false);
-	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	if (TrailNiagara.IsValid()) TrailNiagara->Deactivate();
+	HasAuthority() ? DisableProjectilePhysics() : DisableProjectileSimulation();
 	if (CollisionNiagaraSystem)
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), CollisionNiagaraSystem, ProjectileLocation);
 }
@@ -94,6 +86,7 @@ void ALinearProjectile::HandleAbilityInstanceEnding()
 void ALinearProjectile::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	//TODO: 이거 최초 한번만 계산해두고, 현재 시간에 따라서 사용하는 방법이 있지 않을까?
 	static FPredictProjectilePathParams Params;
 	Params.StartLocation = ProjectileLocation;
 	Params.LaunchVelocity = ProjectileRotation.Vector() * LinearVelocity;
@@ -113,7 +106,7 @@ void ALinearProjectile::SetTeam(const EPlayerTeam& Team)
 	                                                  Team == EPlayerTeam::B || Team == EPlayerTeam::Individual
 		                                                  ? ECR_Overlap
 		                                                  : ECR_Ignore);
-	
+
 	CollisionComponent->SetCollisionResponseToChannel(BTeamCollisionChannel,
 	                                                  Team == EPlayerTeam::A || Team == EPlayerTeam::Individual
 		                                                  ? ECR_Overlap
@@ -130,16 +123,15 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
                                                          UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
                                                          bool bFromSweep, const FHitResult& SweepResult)
 {
-	auto DamageCauser = GetInstigator();
+	const auto DamageCauser = GetInstigator();
 	if (bFromSweep) SetActorLocation(SweepResult.Location);
 	ProjectileLocation = GetActorLocation();
 	ProjectileRotation = GetActorRotation();
 
 	if (DamageRange > 0.f)
 	{
-		UGameplayStatics::ApplyRadialDamage(GetWorld(), BaseDamage, GetActorLocation(), DamageRange, nullptr,
-		                                    {this, DamageCauser}, DamageCauser,
-		                                    DamageCauser ? DamageCauser->GetController() : nullptr);
+		UGameplayStatics::ApplyRadialDamage(GetWorld(), BaseDamage, GetActorLocation(), DamageRange, nullptr, {},
+		                                    DamageCauser, DamageCauser ? DamageCauser->GetController() : nullptr);
 		DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRange, 10, FColor::Red, false, 3);
 	}
 	else
@@ -151,29 +143,53 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 	SetAbilityInstanceState(EAbilityInstanceState::Ending);
 }
 
-void ALinearProjectile::SimulateProjectilePhysics()
+void ALinearProjectile::SimulateProjectilePhysics(const bool& CollisionQueryEnabled,
+                                                  const bool& UpdateProjectileTransform)
 {
-	static FVector Location;
-	static FRotator Rotator;
 	if (!GetOwningAbility())
 	{
 		UE_LOG(LogScript, Error, TEXT("Owning ability was nullptr!"));
 		return;
 	}
-	
+
+	static FVector Location;
+	static FRotator Rotator;
 	GetOwningAbility()->GetSummonLocationAndRotation(Location, Rotator);
 	SetActorLocationAndRotation(Location, Rotator);
-
-	if (HasAuthority())
+	if (UpdateProjectileTransform)
 	{
 		ProjectileLocation = Location;
 		ProjectileRotation = Rotator;
-		CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndProbe);
 	}
-	else CollisionComponent->SetCollisionEnabled(ECollisionEnabled::ProbeOnly);
 
+	CollisionComponent->SetCollisionEnabled(CollisionQueryEnabled
+		                                        ? ECollisionEnabled::QueryAndProbe
+		                                        : ECollisionEnabled::ProbeOnly);
 	CollisionComponent->SetSimulatePhysics(true);
 	CollisionComponent->SetPhysicsLinearVelocity(Rotator.Vector() * LinearVelocity);
 	StaticMeshComponent->SetVisibility(true);
 	if (TrailNiagara.IsValid()) TrailNiagara->Activate();
+}
+
+void ALinearProjectile::DisableProjectilePhysics()
+{
+	CollisionComponent->SetSimulatePhysics(false);
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	StaticMeshComponent->SetVisibility(false);
+	if (TrailNiagara.IsValid()) TrailNiagara->Deactivate();
+}
+
+void ALinearProjectile::SimulateProjectileMovement()
+{
+	DisableProjectilePhysics();
+	SetActorTickEnabled(true);
+	StaticMeshComponent->SetVisibility(true);
+	if (TrailNiagara.IsValid()) TrailNiagara->Activate();
+}
+
+void ALinearProjectile::DisableProjectileSimulation()
+{
+	SetActorTickEnabled(false);
+	StaticMeshComponent->SetVisibility(false);
+	if (TrailNiagara.IsValid()) TrailNiagara->Deactivate();
 }
