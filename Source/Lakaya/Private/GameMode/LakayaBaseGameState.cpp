@@ -220,12 +220,8 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 	if (const auto PlayerController = GetWorld()->GetFirstPlayerController())
 		PlayerController->SetShowMouseCursor(true);
 
-	if (LoadingWidget == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("LoadingWidget is null."));
-	}
-	LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
-	CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
+	if (LoadingWidget) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
+	if (CharacterSelectWidget) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
 	
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);

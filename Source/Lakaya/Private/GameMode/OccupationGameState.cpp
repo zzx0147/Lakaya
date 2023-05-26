@@ -94,7 +94,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindLambda([this]
 	{
-		StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
+		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessage, TimerDelegate, 5.0f, false);
 	
