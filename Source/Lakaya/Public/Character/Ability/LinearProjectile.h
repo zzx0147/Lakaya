@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SummonAbilityInstance.h"
+#include "Kismet/GameplayStatics.h"
 #include "LinearProjectile.generated.h"
 
 USTRUCT()
@@ -67,6 +68,9 @@ private:
 	// 투사체 위치 시뮬레이션을 종료합니다.
 	void DisableProjectileSimulation();
 
+	void CalculateProjectilePath(const FVector& Location, const FRotator& Rotator);
+	void RecalculateProjectilePath();
+
 protected:
 	UPROPERTY(EditAnywhere)
 	float LinearVelocity;
@@ -89,6 +93,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TMap<EPlayerTeam, FTeamCollisionInfo> TeamCollisionMap;
 
+	UPROPERTY(EditAnywhere)
+	FPredictProjectilePathParams ProjectilePathParams;
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* CollisionComponent;
@@ -107,4 +114,7 @@ private:
 
 	UPROPERTY(Replicated, Transient)
 	FRotator ProjectileRotation;
+
+	FPredictProjectilePathResult ProjectilePathResult;
+	float RecentPathCalculateTime;
 };

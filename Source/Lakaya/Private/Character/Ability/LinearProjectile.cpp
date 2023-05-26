@@ -6,7 +6,7 @@
 #include "NiagaraComponent.h"
 #include "Character/Ability/CoolTimedSummonAbility.h"
 #include "Components/SphereComponent.h"
-#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 
 const FName ALinearProjectile::CollisionComponentName = FName("CollisionComponent");
@@ -48,6 +48,8 @@ ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer
 	ExplodeNiagaraComponent->SetupAttachment(CollisionComponent);
 	ExplodeNiagaraComponent->SetAutoActivate(false);
 	ExplodeNiagaraComponent->SetAutoDestroy(false);
+
+	ProjectilePathParams.MaxSimTime = 5.f;
 }
 
 void ALinearProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -62,6 +64,7 @@ void ALinearProjectile::PostInitializeComponents()
 	Super::PostInitializeComponents();
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ALinearProjectile::OnCollisionComponentBeginOverlap);
 	StaticMeshComponent->SetVisibility(false);
+	if (!CollisionComponent->IsGravityEnabled()) ProjectilePathParams.OverrideGravityZ = -1.f;
 }
 
 void ALinearProjectile::PerformTimerHandler()
@@ -100,17 +103,37 @@ void ALinearProjectile::HandleAbilityInstanceCollapsed()
 void ALinearProjectile::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	//TODO: 이거 최초 한번만 계산해두고, 현재 시간에 따라서 사용하는 방법이 있지 않을까?
-	FPredictProjectilePathParams Params;
-	Params.StartLocation = ProjectileLocation;
-	Params.LaunchVelocity = ProjectileRotation.Vector() * LinearVelocity;
-	Params.bTraceWithCollision = false;
-	Params.bTraceWithChannel = false;
-	Params.MaxSimTime = GetServerTime() - GetAbilityTime();
-	Params.OverrideGravityZ = CollisionComponent->IsGravityEnabled() ? GetWorld()->GetGravityZ() : -1.f;
-	FPredictProjectilePathResult Result;
-	UGameplayStatics::PredictProjectilePath(GetWorld(), Params, Result);
-	SetActorLocation(Result.LastTraceDestination.Location);
+
+	const float CurrentTime = GetServerTime();
+
+	// 투사체의 최초 위치의 시간으로부터 얼마나 흘렀는지 구합니다.
+	float TimeDiff = CurrentTime - RecentPathCalculateTime;
+
+	// 계산되어있는 투사체 경로의 마지막 위치의 시간을 지났다면 추가적으로 경로를 계산합니다.
+	while (TimeDiff >= ProjectilePathResult.LastTraceDestination.Time)
+	{
+		RecalculateProjectilePath();
+		TimeDiff = CurrentTime - RecentPathCalculateTime;
+	}
+
+	// 가장 먼저 보이는 경과시간값보다 큰 데이터를 가져옵니다.
+	const auto FoundData = ProjectilePathResult.PathData.FindByPredicate([&TimeDiff](const auto& PointData)
+	{
+		return PointData.Time > TimeDiff;
+	});
+	if (!FoundData)
+	{
+		UE_LOG(LogScript, Error, TEXT("FoundData was nulltptr!"));
+		return;
+	}
+
+	// 이 데이터의 이전 데이터를 가져와서, 두 데이터를 보간하여 현재 시간에 맞는 위치로 이동시킵니다. 이전 데이터가 없다면 그냥 현재 데이터를 사용합니다.
+	if (const auto PrevData = FoundData - 1)
+	{
+		SetActorLocation(FMath::Lerp(PrevData->Location, FoundData->Location,
+		                             UKismetMathLibrary::NormalizeToRange(TimeDiff, PrevData->Time, FoundData->Time)));
+	}
+	else SetActorLocation(FoundData->Location);
 }
 
 void ALinearProjectile::SetTeam(const EPlayerTeam& Team)
@@ -162,6 +185,9 @@ void ALinearProjectile::SimulateProjectilePhysics(const bool& CollisionQueryEnab
 		return;
 	}
 
+	GEngine->AddOnScreenDebugMessage(-1, 3, HasAuthority() ? FColor::White : FColor::Green,
+	                                 TEXT("Start projectile physics"));
+
 	static FVector Location;
 	static FRotator Rotator;
 	GetOwningAbility()->GetSummonLocationAndRotation(Location, Rotator);
@@ -191,7 +217,10 @@ void ALinearProjectile::DisableProjectilePhysics()
 
 void ALinearProjectile::SimulateProjectileMovement()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 3, HasAuthority() ? FColor::White : FColor::Green,
+	                                 TEXT("Start projectile simulate"));
 	DisableProjectilePhysics();
+	CalculateProjectilePath(ProjectileLocation, ProjectileRotation);
 	SetActorTickEnabled(true);
 	StaticMeshComponent->SetVisibility(true);
 	TrailNiagaraComponent->Activate();
@@ -202,4 +231,28 @@ void ALinearProjectile::DisableProjectileSimulation()
 	SetActorTickEnabled(false);
 	StaticMeshComponent->SetVisibility(false);
 	TrailNiagaraComponent->Deactivate();
+}
+
+void ALinearProjectile::CalculateProjectilePath(const FVector& Location, const FRotator& Rotator)
+{
+	RecentPathCalculateTime = GetAbilityTime();
+	ProjectilePathParams.StartLocation = Location;
+	ProjectilePathParams.LaunchVelocity = Rotator.Vector() * LinearVelocity;
+	UGameplayStatics::PredictProjectilePath(GetWorld(), ProjectilePathParams, ProjectilePathResult);
+	ProjectilePathResult.PathData.Sort([](const auto& First, const auto& Second)
+	{
+		return First.Time < Second.Time;
+	});
+}
+
+void ALinearProjectile::RecalculateProjectilePath()
+{
+	RecentPathCalculateTime += ProjectilePathResult.LastTraceDestination.Time;
+	ProjectilePathParams.StartLocation = ProjectilePathResult.LastTraceDestination.Location;
+	ProjectilePathParams.LaunchVelocity = ProjectilePathResult.LastTraceDestination.Velocity;
+	UGameplayStatics::PredictProjectilePath(GetWorld(), ProjectilePathParams, ProjectilePathResult);
+	ProjectilePathResult.PathData.Sort([](const auto& First, const auto& Second)
+	{
+		return First.Time < Second.Time;
+	});
 }
