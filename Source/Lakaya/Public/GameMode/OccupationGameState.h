@@ -64,6 +64,8 @@ private:
 
 	UFUNCTION()
 	void OnRep_OccupationWinner();
+
+	void SetClientTeam(const EPlayerTeam& NewTeam);
 	
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)

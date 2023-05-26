@@ -51,10 +51,10 @@ void UScoreBoardElement::SetPlayerName(const FString& PlayerName) const
 	SetPlayerName(FText::FromString(PlayerName));
 }
 
-void UScoreBoardElement::SetScoreCount(const uint32& ScoreCount) const
-{
-	if (ScoreText.IsValid()) ScoreText->SetText(FText::AsNumber(ScoreCount));
-}
+// void UScoreBoardElement::SetScoreCount(const uint32& ScoreCount) const
+// {
+// 	if (ScoreText.IsValid()) ScoreText->SetText(FText::AsNumber(ScoreCount));
+// }
 
 void UScoreBoardElement::SetCaptureCount(const uint16& CaptureCount) const
 {

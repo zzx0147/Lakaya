@@ -62,6 +62,8 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_CharacterSelectEndingTime();
 
+	bool SpawnOutlineManager();
+
 private:
 	void SetupTimerWidget(FTimerHandle& TimerHandle,const float& Duration,float& EndingTime, std::function<void(void)> Callback, TWeakObjectPtr<class UGameTimeWidget> TimeWidget);
 
@@ -143,4 +145,8 @@ protected:
 	TWeakObjectPtr<UHelpWidget> HelpWidget;
 	TWeakObjectPtr<USkillWidget> SkillWidget;
 	TWeakObjectPtr<UGamePlayKillLogWidget> KillLogWidget;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class AOutlineManager> OutlineManagerClass;
+	TWeakObjectPtr<AOutlineManager> OutlineManager;
 };

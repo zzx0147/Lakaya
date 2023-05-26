@@ -20,6 +20,7 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(ALakayaBasePlayerState, Team);
 	DOREPLIFETIME(ALakayaBasePlayerState, RespawnTime);
 	DOREPLIFETIME(ALakayaBasePlayerState, CharacterName);
+	// DOREPLIFETIME(ALakayaBasePlayerState, ScoreCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, DeathCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillStreak);
@@ -112,6 +113,7 @@ void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
 		Other->Team = Team;
 		Other->RespawnTime = RespawnTime;
 		Other->CharacterName = CharacterName;
+		// Other->ScoreCount = ScoreCount;
 		Other->DeathCount = DeathCount;
 		Other->KillCount = KillCount;
 	}
@@ -147,6 +149,11 @@ void ALakayaBasePlayerState::MakeAlive()
 	RespawnTime = 0.f;
 	SetAliveState(true);
 }
+
+// void ALakayaBasePlayerState::IncreaseScoreCount()
+// {
+// 	OnScoreCountChanged.Broadcast(++ScoreCount);
+// }
 
 void ALakayaBasePlayerState::IncreaseDeathCount()
 {
@@ -271,6 +278,11 @@ void ALakayaBasePlayerState::OnRep_CharacterName()
 {
 	OnCharacterNameChanged.Broadcast(this, CharacterName);
 }
+
+// void ALakayaBasePlayerState::OnRep_ScoreCount()
+// {
+// 	OnScoreCountChanged.Broadcast(ScoreCount);
+// }
 
 void ALakayaBasePlayerState::OnRep_DeathCount()
 {
