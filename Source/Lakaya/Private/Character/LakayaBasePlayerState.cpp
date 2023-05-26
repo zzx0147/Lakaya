@@ -20,7 +20,8 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(ALakayaBasePlayerState, Team);
 	DOREPLIFETIME(ALakayaBasePlayerState, RespawnTime);
 	DOREPLIFETIME(ALakayaBasePlayerState, CharacterName);
-	// DOREPLIFETIME(ALakayaBasePlayerState, ScoreCount);
+	DOREPLIFETIME(ALakayaBasePlayerState, TotalScore);
+	DOREPLIFETIME(ALakayaBasePlayerState, SuccessCaptureCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, DeathCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillStreak);
@@ -149,10 +150,33 @@ void ALakayaBasePlayerState::MakeAlive()
 	SetAliveState(true);
 }
 
+const uint16& ALakayaBasePlayerState::SetTotalScoreCount(const uint16& NewScore)
+{
+	TotalScore += NewScore;
+	OnRep_TotalScore();
+	return TotalScore;
+}
+
 // void ALakayaBasePlayerState::IncreaseScoreCount()
 // {
-// 	OnScoreCountChanged.Broadcast(++ScoreCount);
+// 	// TODO :
+// 	OnScoreCountChanged.Broadcast(ScoreCount);
 // }
+
+void ALakayaBasePlayerState::IncreaseSuccessCaptureCount()
+{
+	OnSuccessCaptureCountChanged.Broadcast(++SuccessCaptureCount);
+}
+
+void ALakayaBasePlayerState::IncreaseCurrentCaptureCount()
+{
+	OnCurrentCaptureCountChanged.Broadcast(++CurrentCaptureCount);
+}
+
+void ALakayaBasePlayerState::DecreaseCurrentCaptureCount()
+{
+	OnCurrentCaptureCountChanged.Broadcast(--CurrentCaptureCount);
+}
 
 void ALakayaBasePlayerState::IncreaseDeathCount()
 {
@@ -278,10 +302,20 @@ void ALakayaBasePlayerState::OnRep_CharacterName()
 	OnCharacterNameChanged.Broadcast(this, CharacterName);
 }
 
-// void ALakayaBasePlayerState::OnRep_ScoreCount()
-// {
-// 	OnScoreCountChanged.Broadcast(ScoreCount);
-// }
+void ALakayaBasePlayerState::OnRep_TotalScore()
+{
+	OnTotalScoreChanged.Broadcast(TotalScore);
+}
+
+void ALakayaBasePlayerState::OnRep_CurrentCaptureCount()
+{
+	OnCurrentCaptureCountChanged.Broadcast(CurrentCaptureCount);
+}
+
+void ALakayaBasePlayerState::OnRep_SuccessCaptureCount()
+{
+	OnSuccessCaptureCountChanged.Broadcast(SuccessCaptureCount);
+}
 
 void ALakayaBasePlayerState::OnRep_DeathCount()
 {
