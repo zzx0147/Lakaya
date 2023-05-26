@@ -1,6 +1,7 @@
 #include "GameMode/LakayaBaseGameState.h"
 
 #include "Character/LakayaBasePlayerState.h"
+#include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
@@ -115,7 +116,8 @@ void ALakayaBaseGameState::BeginPlay()
 				KillLogWidget->SetVisibility(ESlateVisibility::Visible);
 			}
 		}
-		
+
+		SpawnOutlineManager();
 	}
 }
 
@@ -323,6 +325,20 @@ void ALakayaBaseGameState::OnRep_MatchEndingTime()
 void ALakayaBaseGameState::OnRep_CharacterSelectEndingTime()
 {
 	if (CharacterSelectTimeWidget.IsValid()) CharacterSelectTimeWidget->SetWidgetTimer(CharacterSelectEndingTime);
+}
+
+bool ALakayaBaseGameState::SpawnOutlineManager()
+{
+	if(OutlineManager.IsValid())
+		return true;
+	
+	if(OutlineManagerClass)
+	{
+		OutlineManager = GetWorld()->SpawnActor<AOutlineManager>(OutlineManagerClass);
+		if(OutlineManager.IsValid())
+			return true;
+	}
+	return false;
 }
 
 void ALakayaBaseGameState::SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime, std::function<void(void)> Callback, TWeakObjectPtr<UGameTimeWidget> TimeWidget)

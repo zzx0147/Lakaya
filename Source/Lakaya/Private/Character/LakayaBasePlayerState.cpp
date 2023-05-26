@@ -20,6 +20,7 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(ALakayaBasePlayerState, Team);
 	DOREPLIFETIME(ALakayaBasePlayerState, RespawnTime);
 	DOREPLIFETIME(ALakayaBasePlayerState, CharacterName);
+	// DOREPLIFETIME(ALakayaBasePlayerState, ScoreCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, DeathCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillStreak);
@@ -112,6 +113,7 @@ void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
 		Other->Team = Team;
 		Other->RespawnTime = RespawnTime;
 		Other->CharacterName = CharacterName;
+		// Other->ScoreCount = ScoreCount;
 		Other->DeathCount = DeathCount;
 		Other->KillCount = KillCount;
 	}
@@ -146,6 +148,11 @@ void ALakayaBasePlayerState::MakeAlive()
 	RespawnTime = 0.f;
 	SetAliveState(true);
 }
+
+// void ALakayaBasePlayerState::IncreaseScoreCount()
+// {
+// 	OnScoreCountChanged.Broadcast(++ScoreCount);
+// }
 
 void ALakayaBasePlayerState::IncreaseDeathCount()
 {
@@ -271,6 +278,11 @@ void ALakayaBasePlayerState::OnRep_CharacterName()
 	OnCharacterNameChanged.Broadcast(this, CharacterName);
 }
 
+// void ALakayaBasePlayerState::OnRep_ScoreCount()
+// {
+// 	OnScoreCountChanged.Broadcast(ScoreCount);
+// }
+
 void ALakayaBasePlayerState::OnRep_DeathCount()
 {
 	OnKillCountChanged.Broadcast(KillCount);
@@ -322,21 +334,7 @@ void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserN
 		//TODO: 위젯 nullptr 체크 필요, 매개변수 하드코딩 수정 필요
 		DirectionDamageIndicatorWidget->IndicateStart(CauserName.ToString(), CauserLocation, 3.0f);
 
-		//TODO: 애셋을 피격한 시점에 로드하면 프레임드랍이 발생할 수 있으므로 생성자에서 로드하도록 하는 것이 좋습니다. 나이아가라 시스템의 경우 간단히 블루프린트 클래스 디폴트에서 넣을 수 있습니다.
-		// ScreenEffect : 피격 당할 시 화면에 표기 되는 이펙트
-		FSoftObjectPath NiagaraPath;
-		NiagaraPath = (TEXT("/Game/Effects/M_VFX/VFX_Screeneffect.VFX_Screeneffect"));
-		UNiagaraSystem* NiagaraEffect = Cast<UNiagaraSystem>(NiagaraPath.TryLoad());
-
-		if (NiagaraEffect)
-		{
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect, FVector::ZeroVector);
-			UE_LOG(LogTemp, Warning, TEXT("아야."));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to load Niagara system!"));
-		}
+		Cast<ALakayaBaseCharacter>(PlayerController->GetCharacter())->PlayHitScreen();
 	}
 }
 

@@ -25,7 +25,7 @@ public:
 	void SetPlayerName(const FString& PlayerName) const;
 
 	// 누적 점수를 업데이트합니다.
-	void SetScoreCount(const uint32& ScoreCount) const;
+	// void SetScoreCount(const uint32& ScoreCount) const;
 	
 	// 누적 킬 횟수를 업데이트합니다.
 	void SetKillCount(const uint16& KillCount) const;

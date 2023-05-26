@@ -3,6 +3,7 @@
 
 #include "Character/LakayaBaseCharacter.h"
 
+#include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Character/ResourceComponent.h"
@@ -33,6 +34,9 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	Camera = CreateDefaultSubobject<UCameraComponent>(CameraComponentName);
 	Camera->SetupAttachment(SpringArm);
 
+	HitScreenEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Niagara"));
+	HitScreenEffect->SetupAttachment(Camera);
+	
 	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(ResourceComponentName);
 	ResourceComponent->SetIsReplicated(true);
 
@@ -100,6 +104,11 @@ FRotator ALakayaBaseCharacter::GetPlayerRotation() const
 	// 서버이거나 Autonomous인 경우 그냥 카메라 컴포넌트를 사용합니다.
 	if (HasAuthority() || GetLocalRole() == ROLE_AutonomousProxy) return GetCamera()->GetComponentRotation();
 	return LatestUpdateRotation.Rotator();
+}
+
+void ALakayaBaseCharacter::PlayHitScreen()
+{
+	HitScreenEffect->Activate(true);
 }
 
 void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)

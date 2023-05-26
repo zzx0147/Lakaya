@@ -25,7 +25,6 @@ void UCharAnimInstance::NativeBeginPlay()
 			{
 				RecentFireTime = GetWorld()->TimeSeconds; 
 			} );
-			UE_LOG(LogTemp, Error, TEXT("Fire!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
 		}
 
 		if(const auto ReloadAbility = Character->FindAbility<UReloadAbility>(WeaponReload))

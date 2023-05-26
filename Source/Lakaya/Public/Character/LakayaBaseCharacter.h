@@ -75,6 +75,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void SetAliveState(bool IsAlive);
 
+	void PlayHitScreen();
+
 protected:
 	virtual void SetTeam_Implementation(const EPlayerTeam& Team);
 	virtual void SetAliveState_Implementation(bool IsAlive);
@@ -107,6 +109,9 @@ protected:
 	// 캐릭터가 부활했을 때 재생할 나이아가라 시스템을 지정합니다.
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* ResurrectionNiagaraSystem;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* HitScreenEffect;
 
 	UPROPERTY(EditAnywhere)
 	TEnumAsByte<ECollisionChannel> ATeamObjectType;
