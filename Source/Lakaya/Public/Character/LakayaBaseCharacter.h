@@ -76,8 +76,9 @@ public:
 	void SetAliveState(bool IsAlive);
 
 	void PlayHitScreen();
+
 protected:
-	virtual void SetTeam_Implementation(const EPlayerTeam& Team) { return; }
+	virtual void SetTeam_Implementation(const EPlayerTeam& Team);
 	virtual void SetAliveState_Implementation(bool IsAlive);
 
 	// 현재 시점의 서버 시간을 가져옵니다.
@@ -111,6 +112,13 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	class UNiagaraComponent* HitScreenEffect;
+
+	UPROPERTY(EditAnywhere)
+	TEnumAsByte<ECollisionChannel> ATeamObjectType;
+
+	UPROPERTY(EditAnywhere)
+	TEnumAsByte<ECollisionChannel> BTeamObjectType;
+
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	class UResourceComponent* ResourceComponent;

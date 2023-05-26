@@ -34,6 +34,12 @@ ELifetimeCondition AArmedCharacter::AllowActorComponentToReplicate(const UActorC
 	return Super::AllowActorComponentToReplicate(ComponentToReplicate);
 }
 
+void AArmedCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
+{
+	Super::SetTeam_Implementation(Team);
+	for (const auto& Ability : Abilities) Ability->SetTeam(Team);
+}
+
 void AArmedCharacter::SetAliveState_Implementation(bool IsAlive)
 {
 	Super::SetAliveState_Implementation(IsAlive);
