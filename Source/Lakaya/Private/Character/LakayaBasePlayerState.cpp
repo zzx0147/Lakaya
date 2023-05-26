@@ -132,8 +132,7 @@ bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) con
 
 bool ALakayaBasePlayerState::IsSameTeam(const EPlayerTeam& Other) const
 {
-	// 현재 팀이 설정되지 않았거나 개인전 모드가 아니고, Team 값이 같은 경우 같은 팀으로 판별합니다.
-	return Team != EPlayerTeam::None && Team != EPlayerTeam::Individual && Other == Team;
+	return JudgeSameTeam(Team, Other);
 }
 
 void ALakayaBasePlayerState::SetTeam(const EPlayerTeam& DesireTeam)
