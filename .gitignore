@@ -52,7 +52,7 @@ Binaries/Win64/**
 !Binaries/Win64/UnrealEditor-Lakaya.dll
 Binaries/Mac/*
 Binaries/IOS/*
-Plugins/*/Binaries/*
+# Plugins/*/Binaries/*
 
 # Builds
 Build/*
