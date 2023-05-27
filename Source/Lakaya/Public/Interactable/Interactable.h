@@ -48,4 +48,5 @@ protected:
 	USphereComponent* Trigger;
 
 	TWeakObjectPtr<APawn> InteractingPawn;
+	TWeakObjectPtr<APawn> OwnerPlayer;
 };

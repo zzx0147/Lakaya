@@ -84,9 +84,6 @@ public:
 	// 현재 플레이어의 점수를 가져옵니다.
 	FORCEINLINE const uint16& GetTotalScore() const { return TotalScore; }
 
-	// 현재 플레이어의 점수를 수정합니다.
-	const uint16& SetTotalScoreCount(const uint16& NewScore);
-	
 	// 현재 플레이어의 누적 점령 성공 횟수를 가져옵니다.
 	FORCEINLINE const uint16& GetCurrentCaptureCount() const { return CurrentCaptureCount; }
 	
@@ -106,8 +103,11 @@ public:
 	// 플레이어의 연속처치 횟수를 가져옵니다.
 	const uint16& GetKillStreak() const { return KillStreak; }
 
-	// 플레이어의 누적 점수를 늘립니다.
-	// virtual void IncreaseScoreCount();
+	// 현재 점령한 오브젝트 1개이상 이라면, 1초마다 점수를 올려줍니다.
+	const uint16& IncreaseScoreCount(const uint16& NewScore);
+	
+	// 현재 플레이어의 점수를 올려줍니다.
+	const uint16& AddTotalScoreCount(const uint16& NewScore);
 
 	// 플레이어의 누적 점령 성공 횟수를 늘립니다.
 	virtual void IncreaseSuccessCaptureCount();
@@ -115,7 +115,7 @@ public:
 	// 플레이어의 현재 점령한 오브젝트 횟수를 늘립니다.
 	virtual void IncreaseCurrentCaptureCount();
 
-	// 플레이어의 현재 점령한 오브젝트 횟수를 줄입니다.
+	// 플레이어의 현재 점령한 오브젝트 갯수를 줄입니다.
 	virtual void DecreaseCurrentCaptureCount();
 	
 	// 플레이어의 누적 사망 횟수를 늘립니다.
@@ -129,6 +129,9 @@ public:
 
 	// 플레이어의 연속처치 횟수를 초기화합니다.
 	virtual void ResetKillStreak();
+
+	// 플레이어가 점령했을 때, 현재 점령한 오브제그 갯수를 체크를 합니다.
+	virtual void CheckCurrentCaptureCount();
 
 protected:
 	// 현재 서버의 시간을 가져옵니다.
@@ -256,6 +259,7 @@ public:
 
 	// 오너가 변경될 때 호출됩니다. 매개변수로 변경된 오너의 AActor 포인터를 받습니다.
 	FOwnerChangeSignature OnOwnerChanged;
+
 protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGamePlayHealthWidget> HealthWidgetClass;
@@ -295,10 +299,10 @@ private:
 	uint16 KillStreak;
 
 	FTimerHandle RespawnTimer;
+	FTimerHandle CurrentCaptureTimer;
 	bool bRecentAliveState;
 	TWeakObjectPtr<UGamePlayHealthWidget> HealthWidget;
 
-private:
 	// 게임중에 표시되는 피격 레이더 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UDirectionalDamageIndicator> DirectionDamageIndicatorClass;
