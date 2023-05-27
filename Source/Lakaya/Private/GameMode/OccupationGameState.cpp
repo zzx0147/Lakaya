@@ -9,6 +9,7 @@
 #include "UI/GameResultWidget.h"
 #include "UI/TeamScoreWidget.h"
 #include "UI/StartMessageWidget.h"
+#include "UI/MatchStartWaitWidget.h"
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -41,12 +42,23 @@ void AOccupationGameState::BeginPlay()
 			TeamScoreWidget = CreateWidget<UTeamScoreWidget>(LocalController, TeamScoreWidgetClass);
 			if (TeamScoreWidget == nullptr)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_TeamScoreWidget is null."));
+				UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidget is null."));
 			}
 			TeamScoreWidget->AddToViewport();
 			TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
 
+		if (MatchStartWaitWidgetClass)
+		{
+			MatchStartWaitWidget = CreateWidget<UMatchStartWaitWidget>(LocalController, MatchStartWaitWidgetClass);
+			if (MatchStartWaitWidget == nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("MatchStartWaitWidget is null."));
+			}
+			MatchStartWaitWidget->AddToViewport();
+			MatchStartWaitWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+		
 		if (StartMessageWidgetClass)
 		{
 			StartMessageWidget = CreateWidget<UStartMessageWidget>(LocalController, StartMessageWidgetClass);
@@ -57,7 +69,7 @@ void AOccupationGameState::BeginPlay()
 			StartMessageWidget->AddToViewport();
 			StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
-		
+
 		if (GameResultWidgetClass)
 		{
 			GameResultWidget = CreateWidget<UGameResultWidget>(LocalController, GameResultWidgetClass);
@@ -87,17 +99,33 @@ void AOccupationGameState::HandleMatchHasStarted()
 	if (IsValid(TeamScoreWidget))
 		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
 
-	if (StartMessageWidget.IsValid())
-		StartMessageWidget->SetVisibility(ESlateVisibility::Visible);
+	if (MatchStartWaitWidget.IsValid())
+		MatchStartWaitWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-	// StartMessage위젯을 띄우고 5초 뒤에 비활성화 해줍니다.
-	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindLambda([this]
+	// MatchStartWaitWidget위젯을 띄우고, 3초 뒤에 비활성화 해줍니다.
+	FTimerDelegate WaitTimerDelegate;
+	WaitTimerDelegate.BindLambda([this]
+	{
+		if (MatchStartWaitWidget.IsValid()) MatchStartWaitWidget->SetVisibility(ESlateVisibility::Hidden);
+		
+	});
+	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, WaitTimerDelegate, 3.0f, false);
+	
+	// 게임이 본격적으로 시작이 되면 StartMessage위젯을 띄워줍니다.
+	FTimerDelegate StartTimerDelegate;
+	StartTimerDelegate.BindLambda([this]
+	{
+		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	});
+	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageVisible, StartTimerDelegate, MatchWaitDuration, false);
+
+	// StartMessage위젯을 5초 뒤에 비활성화 해줍니다.
+	FTimerDelegate StartTimeDelegate;
+	StartTimeDelegate.BindLambda([this]
 	{
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
-	GetWorldTimerManager().SetTimer(TimerHandle_StartMessage, TimerDelegate, 5.0f, false);
-	
+	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, StartTimeDelegate, MatchWaitDuration + 5.0f, false);
 }
 
 void AOccupationGameState::NotifyKillCharacter_Implementation(AController* KilledController, AActor* KilledActor,
@@ -199,7 +227,6 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 		}
 	}
 }
-
 
 float AOccupationGameState::GetTeamScore(const EPlayerTeam& Team) const
 {
