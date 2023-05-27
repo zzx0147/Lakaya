@@ -99,6 +99,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	FPredictProjectilePathParams ProjectilePathParams;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AAttachableProjectile> AttachableClass;
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* CollisionComponent;
