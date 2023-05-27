@@ -86,12 +86,12 @@ void ALinearProjectile::HandleAbilityInstancePerform()
 void ALinearProjectile::HandleAbilityInstanceEnding()
 {
 	Super::HandleAbilityInstanceEnding();
-	if (HasAuthority()) DisableProjectilePhysics();
-	else
+	if (!HasAuthority())
 	{
-		DisableProjectileSimulation();
+		SetActorTickEnabled(false);
 		SetActorLocationAndRotation(ProjectileLocation, ProjectileRotation);
 	}
+	HideProjectile();
 	ExplodeNiagaraComponent->Activate();
 }
 
@@ -153,6 +153,7 @@ void ALinearProjectile::OnCollisionComponentHit(UPrimitiveComponent* HitComponen
                                                 UPrimitiveComponent* OtherComp, FVector NormalImpulse,
                                                 const FHitResult& Hit)
 {
+	DisableProjectilePhysics();
 	ProjectileLocation = GetActorLocation();
 	ProjectileRotation = GetActorRotation();
 
@@ -204,35 +205,35 @@ void ALinearProjectile::SimulateProjectilePhysics(const bool& UpdateProjectileTr
 	CollisionComponent->SetSimulatePhysics(true);
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::ProbeOnly);
 	CollisionComponent->SetPhysicsLinearVelocity(Rotator.Vector() * LinearVelocity);
-	StaticMeshComponent->SetVisibility(true);
-	TrailNiagaraComponent->Activate();
+	ShowProjectile();
 }
 
 void ALinearProjectile::DisableProjectilePhysics()
 {
 	CollisionComponent->SetSimulatePhysics(false);
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	StaticMeshComponent->SetVisibility(false);
-	TrailNiagaraComponent->Deactivate();
 }
 
 void ALinearProjectile::SimulateProjectileMovement()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, HasAuthority() ? FColor::White : FColor::Green,
 	                                 TEXT("Start projectile simulate"));
-	CollisionComponent->SetSimulatePhysics(false);
-	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	DisableProjectilePhysics();
 	CalculateProjectilePath(ProjectileLocation, ProjectileRotation);
 	ProjectilePathResult.PathData.Heapify(CustomPointDataPredicate);
 	RecentPointData = ProjectilePathResult.PathData.HeapTop();
 	SetActorTickEnabled(true);
+	ShowProjectile();
+}
+
+void ALinearProjectile::ShowProjectile()
+{
 	StaticMeshComponent->SetVisibility(true);
 	TrailNiagaraComponent->Activate();
 }
 
-void ALinearProjectile::DisableProjectileSimulation()
+void ALinearProjectile::HideProjectile()
 {
-	SetActorTickEnabled(false);
 	StaticMeshComponent->SetVisibility(false);
 	TrailNiagaraComponent->Deactivate();
 }
