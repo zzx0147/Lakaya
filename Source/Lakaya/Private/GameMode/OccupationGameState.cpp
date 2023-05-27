@@ -23,7 +23,9 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 AOccupationGameState::AOccupationGameState()
 {
 	MaxScore = 100.f;
-	MatchDuration = 10.f;
+	MatchDuration = 180.f;
+	MatchStartWaitWidgetLifeTime = 3.0f;
+	MatchStartWidgetLifeTime = 5.0f;
 	ClientTeam = EPlayerTeam::None;
 
 	PlayersByTeamMap.Add(EPlayerTeam::A, TArray<ALakayaBasePlayerState*>());
@@ -103,29 +105,27 @@ void AOccupationGameState::HandleMatchHasStarted()
 		MatchStartWaitWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 	// MatchStartWaitWidget위젯을 띄우고, 3초 뒤에 비활성화 해줍니다.
-	FTimerDelegate WaitTimerDelegate;
-	WaitTimerDelegate.BindLambda([this]
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindLambda([this]
 	{
 		if (MatchStartWaitWidget.IsValid()) MatchStartWaitWidget->SetVisibility(ESlateVisibility::Hidden);
 		
 	});
-	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, WaitTimerDelegate, 3.0f, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate, MatchStartWaitWidgetLifeTime, false);
 	
 	// 게임이 본격적으로 시작이 되면 StartMessage위젯을 띄워줍니다.
-	FTimerDelegate StartTimerDelegate;
-	StartTimerDelegate.BindLambda([this]
+	TimerDelegate.BindLambda([this]
 	{
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	});
-	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageVisible, StartTimerDelegate, MatchWaitDuration, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageVisible, TimerDelegate, MatchWaitDuration, false);
 
 	// StartMessage위젯을 5초 뒤에 비활성화 해줍니다.
-	FTimerDelegate StartTimeDelegate;
-	StartTimeDelegate.BindLambda([this]
+	TimerDelegate.BindLambda([this]
 	{
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
-	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, StartTimeDelegate, MatchWaitDuration + 5.0f, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, TimerDelegate, MatchWaitDuration + MatchStartWidgetLifeTime, false);
 }
 
 void AOccupationGameState::NotifyKillCharacter_Implementation(AController* KilledController, AActor* KilledActor,
@@ -149,7 +149,6 @@ void AOccupationGameState::EndTimeCheck()
       
 		GameMode->EndMatch();
 	}
-
 }
 
 void AOccupationGameState::SetOccupationWinner()

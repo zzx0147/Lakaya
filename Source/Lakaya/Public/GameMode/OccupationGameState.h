@@ -80,7 +80,12 @@ private:
 	UPROPERTY(EditAnywhere)
 	float MaxScore;
 
+	UPROPERTY(EditAnywhere)
+	float MatchStartWaitWidgetLifeTime;
 
+	UPROPERTY(EditAnywhere)
+	float MatchStartWidgetLifeTime;
+	
 	TMap<EPlayerTeam,TArray<class ALakayaBasePlayerState*>> PlayersByTeamMap;
 
 	EPlayerTeam ClientTeam;

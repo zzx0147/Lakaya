@@ -123,7 +123,6 @@ void ALakayaBaseGameState::BeginPlay()
 	}
 }
 
-
 void ALakayaBaseGameState::AddPlayerState(APlayerState* PlayerState)
 {
 	Super::AddPlayerState(PlayerState);
