@@ -20,7 +20,8 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(ALakayaBasePlayerState, Team);
 	DOREPLIFETIME(ALakayaBasePlayerState, RespawnTime);
 	DOREPLIFETIME(ALakayaBasePlayerState, CharacterName);
-	// DOREPLIFETIME(ALakayaBasePlayerState, ScoreCount);
+	DOREPLIFETIME(ALakayaBasePlayerState, TotalScore);
+	DOREPLIFETIME(ALakayaBasePlayerState, SuccessCaptureCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, DeathCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillStreak);
@@ -113,7 +114,7 @@ void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
 		Other->Team = Team;
 		Other->RespawnTime = RespawnTime;
 		Other->CharacterName = CharacterName;
-		// Other->ScoreCount = ScoreCount;
+		Other->TotalScore = TotalScore;
 		Other->DeathCount = DeathCount;
 		Other->KillCount = KillCount;
 	}
@@ -149,10 +150,36 @@ void ALakayaBasePlayerState::MakeAlive()
 	SetAliveState(true);
 }
 
-// void ALakayaBasePlayerState::IncreaseScoreCount()
-// {
-// 	OnScoreCountChanged.Broadcast(++ScoreCount);
-// }
+const uint16& ALakayaBasePlayerState::IncreaseScoreCount(const uint16& NewScore)
+{
+	TotalScore += NewScore;
+	OnRep_TotalScore();
+	return TotalScore;	
+}
+
+const uint16& ALakayaBasePlayerState::AddTotalScoreCount(const uint16& NewScore)
+{
+	TotalScore += NewScore;
+	OnRep_TotalScore();
+	return TotalScore;
+}
+
+void ALakayaBasePlayerState::IncreaseSuccessCaptureCount()
+{
+	OnSuccessCaptureCountChanged.Broadcast(++SuccessCaptureCount);
+}
+
+void ALakayaBasePlayerState::IncreaseCurrentCaptureCount()
+{
+	OnCurrentCaptureCountChanged.Broadcast(++CurrentCaptureCount);
+	CheckCurrentCaptureCount();
+}
+
+void ALakayaBasePlayerState::DecreaseCurrentCaptureCount()
+{
+	OnCurrentCaptureCountChanged.Broadcast(--CurrentCaptureCount);
+	CheckCurrentCaptureCount();
+}
 
 void ALakayaBasePlayerState::IncreaseDeathCount()
 {
@@ -175,6 +202,28 @@ void ALakayaBasePlayerState::ResetKillStreak()
 	if (KillStreak == 0) return;
 	KillStreak = 0;
 	OnKillStreakChanged.Broadcast(KillStreak);
+}
+
+void ALakayaBasePlayerState::CheckCurrentCaptureCount()
+{
+	if (CurrentCaptureCount == 0)
+	{
+		if (GetWorldTimerManager().IsTimerActive(CurrentCaptureTimer))
+		{
+			GetWorldTimerManager().ClearTimer(CurrentCaptureTimer);
+		}
+	}
+		
+	if (CurrentCaptureCount == 1)
+	{
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindLambda([this]
+		{
+			AddTotalScoreCount(CurrentCaptureCount * 50);
+		});
+
+		GetWorldTimerManager().SetTimer(CurrentCaptureTimer, TimerDelegate, 1.0f, true);
+	}
 }
 
 float ALakayaBasePlayerState::GetServerTime() const
@@ -278,10 +327,20 @@ void ALakayaBasePlayerState::OnRep_CharacterName()
 	OnCharacterNameChanged.Broadcast(this, CharacterName);
 }
 
-// void ALakayaBasePlayerState::OnRep_ScoreCount()
-// {
-// 	OnScoreCountChanged.Broadcast(ScoreCount);
-// }
+void ALakayaBasePlayerState::OnRep_TotalScore()
+{
+	OnTotalScoreChanged.Broadcast(TotalScore);
+}
+
+void ALakayaBasePlayerState::OnRep_CurrentCaptureCount()
+{
+	OnCurrentCaptureCountChanged.Broadcast(CurrentCaptureCount);
+}
+
+void ALakayaBasePlayerState::OnRep_SuccessCaptureCount()
+{
+	OnSuccessCaptureCountChanged.Broadcast(SuccessCaptureCount);
+}
 
 void ALakayaBasePlayerState::OnRep_DeathCount()
 {

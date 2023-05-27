@@ -81,12 +81,21 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void RequestCharacterChange(const FName& Name);
 
-	// 현재 플레이어의 누적 사망 횟수를 가져옵니다.
-	const uint16& GetDeathCount() const { return DeathCount; }
+	// 현재 플레이어의 점수를 가져옵니다.
+	FORCEINLINE const uint16& GetTotalScore() const { return TotalScore; }
 
+	// 현재 플레이어의 누적 점령 성공 횟수를 가져옵니다.
+	FORCEINLINE const uint16& GetCurrentCaptureCount() const { return CurrentCaptureCount; }
+	
+	// 현재 플레이어의 점령한 오브젝트 갯수를 가져옵니다.
+	FORCEINLINE const uint16& GetSuccessCaptureCount() const { return SuccessCaptureCount; }
+	
 	// 현재 플레이어의 누적 킬 횟수를 가져옵니다.
 	const uint16& GetKillCount() const { return KillCount; }
-
+	
+	// 현재 플레이어의 누적 사망 횟수를 가져옵니다.
+	const uint16& GetDeathCount() const { return DeathCount; }
+	
 	// 플레이어가 선택한 캐릭터의 이름을 가져옵니다.
 	UFUNCTION(BlueprintGetter)
 	const FName& GetCharacterName() const { return CharacterName; }
@@ -94,7 +103,20 @@ public:
 	// 플레이어의 연속처치 횟수를 가져옵니다.
 	const uint16& GetKillStreak() const { return KillStreak; }
 
-	// virtual void IncreaseScoreCount();
+	// 현재 점령한 오브젝트 1개이상 이라면, 1초마다 점수를 올려줍니다.
+	const uint16& IncreaseScoreCount(const uint16& NewScore);
+	
+	// 현재 플레이어의 점수를 올려줍니다.
+	const uint16& AddTotalScoreCount(const uint16& NewScore);
+
+	// 플레이어의 누적 점령 성공 횟수를 늘립니다.
+	virtual void IncreaseSuccessCaptureCount();
+
+	// 플레이어의 현재 점령한 오브젝트 횟수를 늘립니다.
+	virtual void IncreaseCurrentCaptureCount();
+
+	// 플레이어의 현재 점령한 오브젝트 갯수를 줄입니다.
+	virtual void DecreaseCurrentCaptureCount();
 	
 	// 플레이어의 누적 사망 횟수를 늘립니다.
 	virtual void IncreaseDeathCount();
@@ -107,6 +129,9 @@ public:
 
 	// 플레이어의 연속처치 횟수를 초기화합니다.
 	virtual void ResetKillStreak();
+
+	// 플레이어가 점령했을 때, 현재 점령한 오브제그 갯수를 체크를 합니다.
+	virtual void CheckCurrentCaptureCount();
 
 protected:
 	// 현재 서버의 시간을 가져옵니다.
@@ -153,8 +178,14 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_CharacterName();
 
-	// UFUNCTION()
-	// virtual void OnRep_ScoreCount();
+	UFUNCTION()
+	virtual void OnRep_TotalScore();
+
+	UFUNCTION()
+	virtual void OnRep_CurrentCaptureCount();
+
+	UFUNCTION()
+	virtual void OnRep_SuccessCaptureCount();
 	
 	UFUNCTION()
 	virtual void OnRep_DeathCount();
@@ -206,13 +237,19 @@ public:
 	FCharacterNameChangeSignature OnCharacterNameChanged;
 
 	// 플레이어의 누적 점수가 변경되는 경우 호출됩니다. 매개변수로 변경된 점수를 받습니다.
-	// FCountInfoSignature OnScoreCountChanged;
+	FCountInfoSignature OnTotalScoreChanged;
 
-	// 플레이어의 누적 사망 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 누적 사망 횟수를 받습니다.
-	FCountInfoSignature OnDeathCountChanged;
-
+	// 플레이어 현재 점령한 오브젝트 갯수가 변경되는 경우 호출됩니다. 매개변수로 변경된 현재 점령한 오브젝트 갯수를 받습니다.
+	FCountInfoSignature OnCurrentCaptureCountChanged;
+	
+	// 플레이어 누적 점령 성공 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 점령 성공 횟수를 받습니다.
+	FCountInfoSignature OnSuccessCaptureCountChanged;
+	
 	// 플레이어의 누적 킬 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 킬 횟수를 받습니다.
 	FCountInfoSignature OnKillCountChanged;
+	
+	// 플레이어의 누적 사망 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 누적 사망 횟수를 받습니다.
+	FCountInfoSignature OnDeathCountChanged;
 
 	// 플레이어의 연속처치 횟수가 변경되는 경우 호출됩니다. 매개변수로 변경된 연속처치 횟수를 받습니다.
 	FCountInfoSignature OnKillStreakChanged;
@@ -222,6 +259,7 @@ public:
 
 	// 오너가 변경될 때 호출됩니다. 매개변수로 변경된 오너의 AActor 포인터를 받습니다.
 	FOwnerChangeSignature OnOwnerChanged;
+
 protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGamePlayHealthWidget> HealthWidgetClass;
@@ -239,8 +277,17 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_CharacterName, Transient)
 	FName CharacterName;
 
-	// UPROPERTY(ReplicatedUsing=OnRep_ScoreCount, Transient)
-	// uint32 ScoreCount;
+	// 1Kill = 100 Score
+	// CaptureSuccess = 500 Score
+	// 1 Second = (CurrentCapturedObject * 50) Score
+	UPROPERTY(ReplicatedUsing=OnRep_TotalScore, Transient)
+	uint16 TotalScore;
+	
+	UPROPERTY(ReplicatedUsing=OnRep_CurrentCaptureCount, Transient)
+	uint16 CurrentCaptureCount;
+
+	UPROPERTY(ReplicatedUsing=OnRep_SuccessCaptureCount, Transient)
+	uint16 SuccessCaptureCount;
 	
 	UPROPERTY(ReplicatedUsing=OnRep_DeathCount, Transient)
 	uint16 DeathCount;
@@ -252,10 +299,10 @@ private:
 	uint16 KillStreak;
 
 	FTimerHandle RespawnTimer;
+	FTimerHandle CurrentCaptureTimer;
 	bool bRecentAliveState;
 	TWeakObjectPtr<UGamePlayHealthWidget> HealthWidget;
 
-private:
 	// 게임중에 표시되는 피격 레이더 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UDirectionalDamageIndicator> DirectionDamageIndicatorClass;

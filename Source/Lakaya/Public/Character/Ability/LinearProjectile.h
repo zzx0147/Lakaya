@@ -47,9 +47,8 @@ protected:
 	virtual void HandleAbilityInstanceCollapsed() override;
 
 	UFUNCTION()
-	virtual void OnCollisionComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	                                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-	                                              const FHitResult& SweepResult);
+	virtual void OnCollisionComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+	                                     UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
 	/**
@@ -57,7 +56,7 @@ private:
 	 * @param CollisionQueryEnabled 투사체가 충돌 이벤트를 생성할지 여부입니다.
 	 * @param UpdateProjectileTransform 투사체가 ProjectileLocation, ProjectileRotation을 업데이트할지 여부입니다.
 	 */
-	void SimulateProjectilePhysics(const bool& CollisionQueryEnabled, const bool& UpdateProjectileTransform);
+	void SimulateProjectilePhysics(const bool& UpdateProjectileTransform);
 
 	// 물리엔진을 통한 투사체 시뮬레이션을 종료합니다.
 	void DisableProjectilePhysics();
@@ -98,6 +97,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	FPredictProjectilePathParams ProjectilePathParams;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AAttachableProjectile> AttachableClass;
 
 private:
 	UPROPERTY(VisibleAnywhere)

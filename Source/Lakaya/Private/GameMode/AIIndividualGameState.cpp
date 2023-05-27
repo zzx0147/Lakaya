@@ -105,3 +105,7 @@ void AAIIndividualGameState::SetScoreBoardPlayerName(const TArray<FPlayerData>& 
 		AIIndividualScoreBoardWidget->SetScoreBoardPlayerName(PlayerDataArray);
 	}
 }
+
+void AAIIndividualGameState::SetAIIndividualWinner()
+{
+}
