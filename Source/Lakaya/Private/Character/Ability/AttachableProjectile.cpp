@@ -5,42 +5,39 @@
 
 #include "Net/UnrealNetwork.h"
 
-const FName AAttachableProjectile::StaticMeshComponentName = FName("StaticMeshComponent");
-
 void AAttachableProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AAttachableProjectile, bIsEnabled);
 	DOREPLIFETIME(AAttachableProjectile, TargetActor);
-	DOREPLIFETIME(AAttachableProjectile, InitializeLocation);
+	DOREPLIFETIME(AAttachableProjectile, RelativeLocation);
+	DOREPLIFETIME(AAttachableProjectile, RelativeRotator);
 	DOREPLIFETIME(AAttachableProjectile, AttachedBone);
 }
 
-AAttachableProjectile::AAttachableProjectile(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+AAttachableProjectile::AAttachableProjectile()
 {
 	bReplicates = true;
-	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(StaticMeshComponentName);
-	SetRootComponent(StaticMeshComponent);
 }
 
-void AAttachableProjectile::InitializeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-                                              const FHitResult& SweepResult)
+void AAttachableProjectile::InitializeHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+                                          UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	bIsEnabled = true;
 	TargetActor = OtherActor;
-	InitializeLocation = GetActorLocation();
-	AttachedBone = bFromSweep ? SweepResult.BoneName : NAME_None;
-	AttachToTargetComponent();
+	AttachedBone = Hit.BoneName;
+	SetActorLocationAndRotation(Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+	AttachToActor(TargetActor, FAttachmentTransformRules::KeepWorldTransform, AttachedBone);
+	RelativeLocation = GetRootComponent()->GetRelativeLocation();
+	RelativeRotator = GetRootComponent()->GetRelativeRotation();
 }
 
 void AAttachableProjectile::OnRep_IsEnabled()
 {
-	if (bIsEnabled) AttachToTargetComponent();
-}
-
-void AAttachableProjectile::AttachToTargetComponent()
-{
-	SetActorLocation(InitializeLocation);
-	AttachToActor(TargetActor, FAttachmentTransformRules::KeepWorldTransform, AttachedBone);
+	if (bIsEnabled)
+	{
+		AttachToActor(TargetActor, FAttachmentTransformRules::SnapToTargetNotIncludingScale, AttachedBone);
+		SetActorRelativeLocation(RelativeLocation);
+		SetActorRelativeRotation(RelativeRotator);
+	}
 }
