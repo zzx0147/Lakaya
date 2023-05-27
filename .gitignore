@@ -89,3 +89,6 @@ Plugins/Developer/RiderLink/*
 # Mac files
 .DS_Store
 Lakaya.uproject.DotSettings.user
+
+# kawaii physics plugin files
+!Plugins/KawaiiPhysics/Binaries/Win64/*
