@@ -153,7 +153,6 @@ void ALinearProjectile::OnCollisionComponentHit(UPrimitiveComponent* HitComponen
                                                 UPrimitiveComponent* OtherComp, FVector NormalImpulse,
                                                 const FHitResult& Hit)
 {
-	SetActorLocation(Hit.Location);
 	ProjectileLocation = GetActorLocation();
 	ProjectileRotation = GetActorRotation();
 

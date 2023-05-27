@@ -106,14 +106,6 @@ void AInteractableCharacter::StopInteraction(EInteractionState NewState)
 
 	if (InteractionInfo.InteractingActor == nullptr) return;
 
-	// if (bInteractionRequested == false)
-	// {
-	// 	UE_LOG(LogTemp, Error, TEXT("bInteractionRequested is False."));
-	// 	return;
-	// }
-	//
-	// bInteractionRequested = false;
-
 	RequestInteractionStop(GetServerTime(), InteractableActor.Get(), NewState);
 }
 
@@ -181,16 +173,17 @@ void AInteractableCharacter::FinishInteraction_Implementation(EInteractionState 
 		return;
 	}
 
+	// 성공했다면 오브젝트에서 OnInteractionFinish() 호출
 	Cast<AInteractable>(InteractionInfo.InteractingActor)->OnInteractionFinish(this);
 
 	InteractionInfo.InteractingActor = nullptr;
 	OnInteractingActorChanged.Broadcast(InteractionInfo.InteractingActor.Get());
 
-	// 성공했다면 1초뒤에 None상태로 돌아옵니다.
+	// 1초뒤에 None상태로 돌아옵니다.
 	if (InteractionInfo.InteractionState == EInteractionState::Success)
 	{
 		Cast<ALakayaBasePlayerState>(GetPlayerState())->IncreaseSuccessCaptureCount();
-		Cast<ALakayaBasePlayerState>(GetPlayerState())->SetTotalScoreCount(500);
+		Cast<ALakayaBasePlayerState>(GetPlayerState())->AddTotalScoreCount(500);
 		
 		FTimerDelegate TimerDelegate;
 		TimerDelegate.BindLambda([this]()

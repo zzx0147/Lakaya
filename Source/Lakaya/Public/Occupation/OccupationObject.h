@@ -47,6 +47,7 @@ public:
 
 	FORCEINLINE APawn* GetInteractingPawn() const { return InteractingPawn.Get(); }
 	FORCEINLINE EPlayerTeam GetObjectTeam() const { return ObjectTeam; }
+	FORCEINLINE APawn* GetOwnerPlayer() const { return OwnerPlayer.Get(); }
 	
 	void SetTeamObject(const EPlayerTeam& Team);
 	

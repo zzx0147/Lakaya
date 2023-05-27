@@ -230,7 +230,7 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 	if (const auto InstigatorPlayerState = InstigatorController->GetPlayerState<ALakayaBasePlayerState>())
 	{
 		InstigatorPlayerState->IncreaseKillCount();
-		InstigatorPlayerState->SetTotalScoreCount(100);
+		InstigatorPlayerState->AddTotalScoreCount(100);
 	}
 
 	const auto VictimPlayerState = VictimController->GetPlayerState<ALakayaBasePlayerState>();
