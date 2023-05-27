@@ -12,16 +12,16 @@ UAIIndividualScoreBoardWidget::UAIIndividualScoreBoardWidget(const FObjectInitia
 	// TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_AIIndividualScoreBoardWidget"));
 }
 
-void UAIIndividualScoreBoardWidget::SetScoreBoardPlayerName(const TArray<FPlayerData>& PlayerDataArray)
+void UAIIndividualScoreBoardWidget::SetScoreBoardPlayerName(const TArray<FPlayerAIData>& PlayerDataArray)
 {
-	TArray<FPlayerData> SortedPlayerDataArray = PlayerDataArray;
-	SortedPlayerDataArray.Sort([](const FPlayerData& A, const FPlayerData& B) {
+	TArray<FPlayerAIData> SortedPlayerDataArray = PlayerDataArray;
+	SortedPlayerDataArray.Sort([](const FPlayerAIData& A, const FPlayerAIData& B) {
 		return A.KillCount > B.KillCount;
 	});
 	
 	for (int32 i = 0; i < SortedPlayerDataArray.Num(); i++)
 	{
-		const FPlayerData& PlayerData = SortedPlayerDataArray[i];
+		const FPlayerAIData& PlayerData = SortedPlayerDataArray[i];
 
 		UTextBlock* NameTextBlock = nullptr;
 		UTextBlock* KillTextBlock = nullptr;

@@ -18,20 +18,20 @@ class LAKAYA_API AAIIndividualGameState : public ALakayaBaseGameState
 public:
 	AAIIndividualGameState();
 
-	void SetScoreBoardPlayerName(const TArray<FPlayerData>& PlayerDataArray);
+	void SetScoreBoardPlayerName(const TArray<FPlayerAIData>& PlayerDataArray);
 	void SetAIIndividualWinner();
 	
 	APlayerState* PlayerState;
 	
-	TArray<FPlayerData> FPlayerDataArray;
+	TArray<FPlayerAIData> FPlayerAIDataArray;
 
-	FPlayerData PlayerData;
-	FPlayerData Player1Data;
-	FPlayerData Player2Data;
-	FPlayerData Player3Data;
-	FPlayerData Player4Data;
-	FPlayerData Player5Data;
-	FPlayerData Player6Data;
+	FPlayerAIData PlayerAIData;
+	FPlayerAIData PlayerAI1Data;
+	FPlayerAIData PlayerAI2Data;
+	FPlayerAIData PlayerAI3Data;
+	FPlayerAIData PlayerAI4Data;
+	FPlayerAIData PlayerAI5Data;
+	FPlayerAIData PlayerAI6Data;
 
 protected:
 	virtual void BeginPlay() override;
