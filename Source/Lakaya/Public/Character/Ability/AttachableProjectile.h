@@ -12,23 +12,15 @@ class LAKAYA_API AAttachableProjectile : public AActor
 	GENERATED_BODY()
 
 public:
-	static const FName StaticMeshComponentName;
-
-	explicit AAttachableProjectile(const FObjectInitializer& ObjectInitializer);
-	virtual void InitializeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	                               UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-	                               const FHitResult& SweepResult);
+	AAttachableProjectile();
+	virtual void InitializeHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	                           FVector NormalImpulse, const FHitResult& Hit);
 
 protected:
 	UFUNCTION()
 	virtual void OnRep_IsEnabled();
 
 private:
-	void AttachToTargetComponent();
-
-	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* StaticMeshComponent;
-
 	UPROPERTY(ReplicatedUsing=OnRep_IsEnabled, Transient)
 	bool bIsEnabled;
 
@@ -36,7 +28,10 @@ private:
 	AActor* TargetActor;
 
 	UPROPERTY(Replicated, Transient)
-	FVector InitializeLocation;
+	FVector RelativeLocation;
+
+	UPROPERTY(Replicated, Transient)
+	FRotator RelativeRotator;
 
 	UPROPERTY(Replicated, Transient)
 	FName AttachedBone;
