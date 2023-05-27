@@ -66,7 +66,8 @@ private:
 	void OnRep_OccupationWinner();
 
 	void SetClientTeam(const EPlayerTeam& NewTeam);
-	
+
+	void DestroyTriggerBox();
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
 	EPlayerTeam CurrentOccupationWinner = EPlayerTeam::None;

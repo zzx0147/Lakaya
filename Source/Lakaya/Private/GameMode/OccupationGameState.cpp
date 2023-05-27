@@ -1,6 +1,9 @@
 #include "GameMode/OccupationGameState.h"
+
+#include "EngineUtils.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
+#include "Engine/TriggerBox.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameMode.h"
@@ -117,9 +120,10 @@ void AOccupationGameState::HandleMatchHasStarted()
 	TimerDelegate.BindLambda([this]
 	{
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		DestroyTriggerBox();
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageVisible, TimerDelegate, MatchWaitDuration, false);
-
+	
 	// StartMessage위젯을 5초 뒤에 비활성화 해줍니다.
 	TimerDelegate.BindLambda([this]
 	{
@@ -292,5 +296,31 @@ void AOccupationGameState::CreateCharacterSelectWidget(APlayerController* LocalC
 					}
 				});
 		}	
+	}
+}
+
+void AOccupationGameState::DestroyTriggerBox()
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		TArray<ATriggerBox*> TriggerBoxes;
+
+		for (TActorIterator<ATriggerBox> ActorIterator(World); ActorIterator; ++ActorIterator)
+		{
+			ATriggerBox* TriggerBox = *ActorIterator;
+			if (TriggerBox)
+			{
+				TriggerBoxes.Add(TriggerBox);
+			}
+		}
+
+		for (ATriggerBox* TriggerBox : TriggerBoxes)
+		{
+			if (TriggerBox)
+			{
+				TriggerBox->Destroy();
+			}
+		}
 	}
 }
