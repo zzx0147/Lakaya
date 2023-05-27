@@ -4,6 +4,7 @@
 #include "Character/Ability/LinearProjectile.h"
 
 #include "NiagaraComponent.h"
+#include "Character/Ability/AttachableProjectile.h"
 #include "Character/Ability/CoolTimedSummonAbility.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -165,6 +166,20 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 			DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRange, 10, FColor::Red, false, 3);
 		}
 		else UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, GetInstigatorController(), GetInstigator(), nullptr);
+	}
+
+	if (AttachableClass)
+	{
+		FActorSpawnParameters Params;
+		Params.Instigator = GetInstigator();
+		Params.Owner = GetOwner();
+		if (const auto SpawnedActor = GetWorld()->SpawnActor<AAttachableProjectile>(
+			AttachableClass, GetActorLocation(), GetActorRotation(), Params))
+		{
+			SpawnedActor->InitializeOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep,
+			                                SweepResult);
+		}
+		else UE_LOG(LogScript, Error, TEXT("Fail to AttachableActor!"));
 	}
 
 	SetAbilityInstanceState(EAbilityInstanceState::Ending);
