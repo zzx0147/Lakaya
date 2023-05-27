@@ -109,11 +109,14 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 	});
 	
 	LakayaState->OnPlayerNameChanged.AddUObject(Element, &UScoreBoardElement::SetPlayerName);
-	// LakayaState->OnScoreCountChanged.AddUObject(Element, &UScoreBoardElement::SetScoreCount);
+	LakayaState->OnTotalScoreChanged.AddUObject(Element, &UScoreBoardElement::SetTotalScore);
+	LakayaState->OnSuccessCaptureCountChanged.AddUObject(Element, &UScoreBoardElement::SetSuccessCaptureCount);
 	LakayaState->OnKillCountChanged.AddUObject(Element, &UScoreBoardElement::SetKillCount);
 	LakayaState->OnDeathCountChanged.AddUObject(Element, &UScoreBoardElement::SetDeathCount);
 	
 	Element->SetPlayerName(LakayaState->GetPlayerName());
+	Element->SetTotalScore(LakayaState->GetTotalScore());
+	Element->SetSuccessCaptureCount(LakayaState->GetSuccessCaptureCount());
 	Element->SetDeathCount(LakayaState->GetDeathCount());
 	Element->SetKillCount(LakayaState->GetKillCount());
 }

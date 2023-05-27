@@ -189,6 +189,9 @@ void AInteractableCharacter::FinishInteraction_Implementation(EInteractionState 
 	// 성공했다면 1초뒤에 None상태로 돌아옵니다.
 	if (InteractionInfo.InteractionState == EInteractionState::Success)
 	{
+		Cast<ALakayaBasePlayerState>(GetPlayerState())->IncreaseSuccessCaptureCount();
+		Cast<ALakayaBasePlayerState>(GetPlayerState())->SetTotalScoreCount(500);
+		
 		FTimerDelegate TimerDelegate;
 		TimerDelegate.BindLambda([this]()
 		{

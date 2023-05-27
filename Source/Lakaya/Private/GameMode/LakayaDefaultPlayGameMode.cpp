@@ -228,7 +228,10 @@ void ALakayaDefaultPlayGameMode::Logout(AController* Exiting)
 void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, AController* InstigatorController, AActor* DamageCauser)
 {
 	if (const auto InstigatorPlayerState = InstigatorController->GetPlayerState<ALakayaBasePlayerState>())
+	{
 		InstigatorPlayerState->IncreaseKillCount();
+		InstigatorPlayerState->SetTotalScoreCount(100);
+	}
 
 	const auto VictimPlayerState = VictimController->GetPlayerState<ALakayaBasePlayerState>();
 	if (VictimPlayerState != nullptr) VictimPlayerState->IncreaseDeathCount();
