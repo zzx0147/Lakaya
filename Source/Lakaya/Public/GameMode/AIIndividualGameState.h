@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameMode/LakayaBaseGameState.h"
-#include "UI/GameAIIndividualScoreBoardWidget.h"
+#include "UI/IndividualWidget/AIIndividualScoreBoardWidget.h"
 #include "AIIndividualGameState.generated.h"
 
 /**
@@ -39,9 +39,9 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UGameAIIndividualScoreBoardWidget> AIIndividualScoreBoardWidgettClass;
+	TSubclassOf<class UAIIndividualScoreBoardWidget> AIIndividualScoreBoardWidgettClass;
 
-	TWeakObjectPtr<UGameAIIndividualScoreBoardWidget> AIIndividualScoreBoardWidget;
+	TWeakObjectPtr<UAIIndividualScoreBoardWidget> AIIndividualScoreBoardWidget;
 
 	
 };

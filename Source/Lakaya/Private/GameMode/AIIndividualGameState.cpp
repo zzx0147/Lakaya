@@ -10,8 +10,8 @@ AAIIndividualGameState::AAIIndividualGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	
-	static ConstructorHelpers::FClassFinder<UGameAIIndividualScoreBoardWidget> AIIndividualScoreBoardFinder(
-	TEXT("/Game/Blueprints/UMG/WBP_GameAIIndividualScoreBoardWidget"));
+	static ConstructorHelpers::FClassFinder<UAIIndividualScoreBoardWidget> AIIndividualScoreBoardFinder(
+	TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_AIIndividualScoreBoardWidget"));
 
 	if (AIIndividualScoreBoardFinder.Succeeded()) AIIndividualScoreBoardWidgettClass = AIIndividualScoreBoardFinder.Class;
 }
@@ -22,7 +22,7 @@ void AAIIndividualGameState::BeginPlay()
 
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
-		AIIndividualScoreBoardWidget = CreateWidget<UGameAIIndividualScoreBoardWidget>(LocalController, AIIndividualScoreBoardWidgettClass);
+		AIIndividualScoreBoardWidget = CreateWidget<UAIIndividualScoreBoardWidget>(LocalController, AIIndividualScoreBoardWidgettClass);
 		
 		if (AIIndividualScoreBoardWidget.IsValid())
 		{

@@ -1,20 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/GameAIIndividualScoreBoardWidget.h"
+#include "UI/IndividualWidget/AIIndividualScoreBoardWidget.h"
 
-#include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "GameFramework/Character.h"
-#include "GameFramework/PlayerState.h"
 
-UGameAIIndividualScoreBoardWidget::UGameAIIndividualScoreBoardWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+UAIIndividualScoreBoardWidget::UAIIndividualScoreBoardWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	// static const ConstructorHelpers::FClassFinder<UGameAIIndividualScoreBoardWidget> ElementFinder(
-	// TEXT("/Game/Blueprints/UMG/WBP_GameAIIndividualScoreBoardWidget"));
+	// static const ConstructorHelpers::FClassFinder<UAIIndividualScoreBoardWidget> ElementFinder(
+	// TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_AIIndividualScoreBoardWidget"));
 }
 
-void UGameAIIndividualScoreBoardWidget::SetScoreBoardPlayerName(const TArray<FPlayerData>& PlayerDataArray)
+void UAIIndividualScoreBoardWidget::SetScoreBoardPlayerName(const TArray<FPlayerData>& PlayerDataArray)
 {
 	TArray<FPlayerData> SortedPlayerDataArray = PlayerDataArray;
 	SortedPlayerDataArray.Sort([](const FPlayerData& A, const FPlayerData& B) {

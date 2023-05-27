@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "GameAIIndividualScoreBoardWidget.generated.h"
+#include "AIIndividualScoreBoardWidget.generated.h"
 
 /**
  * 
@@ -29,12 +29,12 @@ struct FPlayerData
 class UTextBlock;
 
 UCLASS()
-class LAKAYA_API UGameAIIndividualScoreBoardWidget : public UUserWidget
+class LAKAYA_API UAIIndividualScoreBoardWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
-	explicit UGameAIIndividualScoreBoardWidget(const FObjectInitializer& ObjectInitializer);
+	explicit UAIIndividualScoreBoardWidget(const FObjectInitializer& ObjectInitializer);
 	
 	void SetScoreBoardPlayerName(const TArray<FPlayerData>& PlayerDataArray);
 
