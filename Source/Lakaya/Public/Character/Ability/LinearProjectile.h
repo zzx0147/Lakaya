@@ -53,7 +53,6 @@ protected:
 private:
 	/**
 	 * @brief 물리엔진을 사용하여 투사체를 시뮬레이트합니다.
-	 * @param CollisionQueryEnabled 투사체가 충돌 이벤트를 생성할지 여부입니다.
 	 * @param UpdateProjectileTransform 투사체가 ProjectileLocation, ProjectileRotation을 업데이트할지 여부입니다.
 	 */
 	void SimulateProjectilePhysics(const bool& UpdateProjectileTransform);
@@ -64,8 +63,8 @@ private:
 	// 투사체의 초기 위치, 방향, 속도를 바탕으로 현재 시간에 맞는 위치를 시뮬레이트합니다.
 	void SimulateProjectileMovement();
 
-	// 투사체 위치 시뮬레이션을 종료합니다.
-	void DisableProjectileSimulation();
+	void ShowProjectile();
+	void HideProjectile();
 
 	void CalculateProjectilePath(const FVector& Location, const FRotator& Rotator);
 	void RecalculateProjectilePath();
