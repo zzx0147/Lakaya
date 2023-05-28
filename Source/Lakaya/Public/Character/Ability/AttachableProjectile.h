@@ -20,6 +20,8 @@ public:
 
 	virtual void SetTeam(const EPlayerTeam& Team) { return; }
 
+	bool IsActivated() const;
+
 protected:
 	UFUNCTION()
 	virtual void OnRep_ActivationTime();

@@ -75,6 +75,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void SetAliveState(bool IsAlive);
 
+	bool IsSameTeam(const EPlayerTeam& Team) const;
+
 	void PlayHitScreen();
 
 protected:
@@ -135,4 +137,5 @@ private:
 	FPlayerRotationPacket PrevPlayerRotation;
 	FPlayerRotationPacket LatestPlayerRotation;
 	FQuat LatestUpdateRotation;
+	EPlayerTeam RecentTeam;
 };
