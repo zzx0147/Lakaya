@@ -3,6 +3,7 @@
 #include "EngineUtils.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
+#include "Commandlets/GenerateAssetManifestCommandlet.h"
 #include "Engine/TriggerBox.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
@@ -166,11 +167,13 @@ void AOccupationGameState::AddTeamScore(const EPlayerTeam& Team, const float& Ad
 	if (Team == EPlayerTeam::A)
 	{
 		ATeamScore += AdditiveScore;
+		// if (ATeamScore >= 100) ATeamScore = 100;
 		OnRep_ATeamScore();
 	}
 	else if (Team == EPlayerTeam::B)
 	{
 		BTeamScore += AdditiveScore;
+		// if (BTeamScore >= 100) BTeamScore = 100;
 		OnRep_BTeamScore();
 	}
 }

@@ -43,13 +43,13 @@ void UTeamScoreWidget::OnChangeATeamScore(const float& NewScore) const
 {
 	//TODO: 텍스트 포맷을 따로 저장해두면 더 빠른 퍼포먼스를 기대할 수 있습니다.
 	ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), NewScore)));
-	if (NewScore >= MaxScore) ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), 1.0f)));
+	if (NewScore >= MaxScore) ATeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), 100.0f)));
 }
 
 void UTeamScoreWidget::OnChangeBTeamScore(const float& NewScore) const
 {
 	BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), NewScore)));
-	if (NewScore >= MaxScore) BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), 1.0f)));
+	if (NewScore >= MaxScore) BTeamScoreText->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), 100.0f)));
 }
 
 void UTeamScoreWidget::OnTeamScoreChanged(const EPlayerTeam& Team, const float& Score) const
