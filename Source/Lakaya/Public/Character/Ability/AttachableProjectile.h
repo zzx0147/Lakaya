@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Occupation/PlayerTeam.h"
 #include "AttachableProjectile.generated.h"
 
 UCLASS()
@@ -16,6 +17,8 @@ public:
 	virtual void InitializeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	                               UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 	                               const FHitResult& SweepResult, const FVector& Velocity);
+
+	virtual void SetTeam(const EPlayerTeam& Team) { return; }
 
 protected:
 	UFUNCTION()

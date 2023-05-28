@@ -121,4 +121,5 @@ private:
 	FPredictProjectilePathResult ProjectilePathResult;
 	float RecentPathCalculateTime;
 	FPredictProjectilePathPointData RecentPointData;
+	EPlayerTeam RecentTeam;
 };
