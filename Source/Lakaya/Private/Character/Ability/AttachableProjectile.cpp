@@ -72,9 +72,14 @@ void AAttachableProjectile::InitializeOverlap(UPrimitiveComponent* OverlappedCom
 	SureActivation(ActivationDelay);
 }
 
+bool AAttachableProjectile::IsActivated() const
+{
+	return ActivationTime > 0.f;
+}
+
 void AAttachableProjectile::OnRep_ActivationTime()
 {
-	if (ActivationTime > 0.f)
+	if (IsActivated())
 	{
 		AttachToActor(TargetActor, FAttachmentTransformRules::SnapToTargetNotIncludingScale, AttachedBone);
 		SetActorRelativeLocation(RelativeLocation);
