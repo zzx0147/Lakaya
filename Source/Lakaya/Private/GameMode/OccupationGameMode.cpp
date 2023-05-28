@@ -27,8 +27,6 @@ void AOccupationGameMode::OnPlayerKilled(AController* VictimController, AControl
 void AOccupationGameMode::BeginPlay()
 {
 	OccupationGameState = GetGameState<AOccupationGameState>();
-
-
 }
 
 //TODO: 필요없는 함수 오버라이딩
@@ -64,10 +62,6 @@ bool AOccupationGameMode::ReadyToEndMatch_Implementation()
 void AOccupationGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-	// OccupationGameState->SetMatchTime();
-
-	// 플레이어 인원만큼 위치를 조정해줍니다. (각각의 팀 위치에서)
-	//PlayerInitializeSetLocation(OccupationGameState->PlayerArray.Num());
 
 	GetWorldTimerManager().SetTimer(UpdateScoreTimer, this, &AOccupationGameMode::UpdateTeamScoreTick, ScoreUpdateDelay,true);
 
@@ -81,7 +75,6 @@ void AOccupationGameMode::HandleMatchHasEnded()
 	OccupationGameState->SetOccupationWinner();
 	GetWorldTimerManager().SetTimer(TimerHandle_DelayedEnded, this, &AOccupationGameMode::DelayedEndedGame,
 	                                MatchEndDelay, false);
-	UE_LOG(LogTemp, Warning, TEXT("시발 HandleMatchHasEnded가 떳어요"));
 }
 
 void AOccupationGameMode::HandleMatchIsSelectCharacter()
@@ -98,8 +91,6 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 				if (LakayaBasePlayerState == nullptr)
 				{
 					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
-					//TODO: 리턴을 해버리면 다른 정상적인 플레이어 스테이트는 팀이 배정되지 않고 넘어갑니다. 차라리 Fatal 로그를 사용하여 게임을 튕겨버리도록 하거나, continue를 하는 편이 낫습니다.
-					return;
 				}
 
 				const auto Team = i % 2 == 0 ? EPlayerTeam::A : EPlayerTeam::B;

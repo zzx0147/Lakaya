@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "GameAIIndividualScoreBoardWidget.generated.h"
+#include "AIIndividualScoreBoardWidget.generated.h"
 
 /**
  * 
  */
 USTRUCT(BlueprintType)
-struct FPlayerData
+struct FPlayerAIData
 {
 	GENERATED_BODY()
 
@@ -20,7 +20,7 @@ struct FPlayerData
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	int32 KillCount;
 
-	bool operator<(const FPlayerData& Other) const
+	bool operator<(const FPlayerAIData& Other) const
 	{
 		return KillCount < Other.KillCount;
 	}
@@ -29,14 +29,14 @@ struct FPlayerData
 class UTextBlock;
 
 UCLASS()
-class LAKAYA_API UGameAIIndividualScoreBoardWidget : public UUserWidget
+class LAKAYA_API UAIIndividualScoreBoardWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
-	explicit UGameAIIndividualScoreBoardWidget(const FObjectInitializer& ObjectInitializer);
+	explicit UAIIndividualScoreBoardWidget(const FObjectInitializer& ObjectInitializer);
 	
-	void SetScoreBoardPlayerName(const TArray<FPlayerData>& PlayerDataArray);
+	void SetScoreBoardPlayerName(const TArray<FPlayerAIData>& PlayerDataArray);
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))

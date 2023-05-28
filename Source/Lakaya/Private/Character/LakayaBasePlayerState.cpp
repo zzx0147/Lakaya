@@ -114,7 +114,7 @@ void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
 		Other->Team = Team;
 		Other->RespawnTime = RespawnTime;
 		Other->CharacterName = CharacterName;
-		// Other->ScoreCount = ScoreCount;
+		Other->TotalScore = TotalScore;
 		Other->DeathCount = DeathCount;
 		Other->KillCount = KillCount;
 	}
@@ -150,18 +150,19 @@ void ALakayaBasePlayerState::MakeAlive()
 	SetAliveState(true);
 }
 
-const uint16& ALakayaBasePlayerState::SetTotalScoreCount(const uint16& NewScore)
+const uint16& ALakayaBasePlayerState::IncreaseScoreCount(const uint16& NewScore)
+{
+	TotalScore += NewScore;
+	OnRep_TotalScore();
+	return TotalScore;	
+}
+
+const uint16& ALakayaBasePlayerState::AddTotalScoreCount(const uint16& NewScore)
 {
 	TotalScore += NewScore;
 	OnRep_TotalScore();
 	return TotalScore;
 }
-
-// void ALakayaBasePlayerState::IncreaseScoreCount()
-// {
-// 	// TODO :
-// 	OnScoreCountChanged.Broadcast(ScoreCount);
-// }
 
 void ALakayaBasePlayerState::IncreaseSuccessCaptureCount()
 {
@@ -171,11 +172,13 @@ void ALakayaBasePlayerState::IncreaseSuccessCaptureCount()
 void ALakayaBasePlayerState::IncreaseCurrentCaptureCount()
 {
 	OnCurrentCaptureCountChanged.Broadcast(++CurrentCaptureCount);
+	CheckCurrentCaptureCount();
 }
 
 void ALakayaBasePlayerState::DecreaseCurrentCaptureCount()
 {
 	OnCurrentCaptureCountChanged.Broadcast(--CurrentCaptureCount);
+	CheckCurrentCaptureCount();
 }
 
 void ALakayaBasePlayerState::IncreaseDeathCount()
@@ -199,6 +202,28 @@ void ALakayaBasePlayerState::ResetKillStreak()
 	if (KillStreak == 0) return;
 	KillStreak = 0;
 	OnKillStreakChanged.Broadcast(KillStreak);
+}
+
+void ALakayaBasePlayerState::CheckCurrentCaptureCount()
+{
+	if (CurrentCaptureCount == 0)
+	{
+		if (GetWorldTimerManager().IsTimerActive(CurrentCaptureTimer))
+		{
+			GetWorldTimerManager().ClearTimer(CurrentCaptureTimer);
+		}
+	}
+		
+	if (CurrentCaptureCount == 1)
+	{
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindLambda([this]
+		{
+			AddTotalScoreCount(CurrentCaptureCount * 50);
+		});
+
+		GetWorldTimerManager().SetTimer(CurrentCaptureTimer, TimerDelegate, 1.0f, true);
+	}
 }
 
 float ALakayaBasePlayerState::GetServerTime() const
