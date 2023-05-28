@@ -40,7 +40,6 @@ public:
 	virtual void SetTeam(const EPlayerTeam& Team) override;
 
 protected:
-	virtual void BeginPlay() override;
 	virtual void PerformTimerHandler() override;
 	virtual void HandleAbilityInstancePerform() override;
 	virtual void HandleAbilityInstanceEnding() override;
@@ -51,11 +50,8 @@ protected:
 	                                     UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
-	/**
-	 * @brief 물리엔진을 사용하여 투사체를 시뮬레이트합니다.
-	 * @param UpdateProjectileTransform 투사체가 ProjectileLocation, ProjectileRotation을 업데이트할지 여부입니다.
-	 */
-	void SimulateProjectilePhysics(const bool& UpdateProjectileTransform);
+	// 물리엔진을 사용하여 투사체를 시뮬레이트합니다.
+	void SimulateProjectilePhysics();
 
 	// 물리엔진을 통한 투사체 시뮬레이션을 종료합니다.
 	void DisableProjectilePhysics();
@@ -65,6 +61,7 @@ private:
 
 	void ShowProjectile();
 	void HideProjectile();
+	void UpdateProjectileTransform();
 
 	void CalculateProjectilePath(const FVector& Location, const FRotator& Rotator);
 	void RecalculateProjectilePath();
@@ -122,4 +119,5 @@ private:
 	FPredictProjectilePathResult ProjectilePathResult;
 	float RecentPathCalculateTime;
 	FPredictProjectilePathPointData RecentPointData;
+	bool bCollisionCalled;
 };
