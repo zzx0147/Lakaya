@@ -62,6 +62,9 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_CharacterSelectEndingTime();
 
+	UFUNCTION()
+	virtual void OnRep_MatchWaitEndingTime();
+
 	bool SpawnOutlineManager();
 
 private:
@@ -120,6 +123,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float CharacterSelectDuration;
 
+	// 게임시작 후 몇초간 대기할 지 정의합니다.
+	UPROPERTY(EditAnywhere)
+	float MatchWaitDuration;
+	
 	TObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -130,18 +137,21 @@ protected:
 
 	UPROPERTY(ReplicatedUsing = OnRep_CharacterSelectEndingTime)
 	float CharacterSelectEndingTime;
+
+	UPROPERTY(ReplicatedUsing=OnRep_MatchWaitEndingTime)
+	float MatchWaitEndingTime;
 	
 	FTimerHandle EndingTimer;
-
 	FTimerHandle CharacterSelectTimer;
-
+	FTimerHandle MatchWaitToStartTimer;
+	
 	TObjectPtr<ULoadingWidget> LoadingWidget;
 
 	TObjectPtr<class UGamePlayCrosshairWidget> CrosshairWidget;
 	
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
-	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
 	TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;
+	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
 	TWeakObjectPtr<UHelpWidget> HelpWidget;
 	TWeakObjectPtr<USkillWidget> SkillWidget;
 	TWeakObjectPtr<UGamePlayKillLogWidget> KillLogWidget;

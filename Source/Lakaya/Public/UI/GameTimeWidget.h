@@ -35,4 +35,7 @@ private:
 	UTextBlock* GameTimeWidgetText;
 
 	float DestinationTime;
+	
+public:
+	bool MatchWaitToStart;
 };

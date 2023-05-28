@@ -66,7 +66,8 @@ private:
 	void OnRep_OccupationWinner();
 
 	void SetClientTeam(const EPlayerTeam& NewTeam);
-	
+
+	void DestroyTriggerBox();
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
 	EPlayerTeam CurrentOccupationWinner = EPlayerTeam::None;
@@ -80,13 +81,20 @@ private:
 	UPROPERTY(EditAnywhere)
 	float MaxScore;
 
+	UPROPERTY(EditAnywhere)
+	float MatchStartWaitWidgetLifeTime;
 
+	UPROPERTY(EditAnywhere)
+	float MatchStartWidgetLifeTime;
+	
 	TMap<EPlayerTeam,TArray<class ALakayaBasePlayerState*>> PlayersByTeamMap;
 
 	EPlayerTeam ClientTeam;
 
 	FTimerHandle TimerHandle_GameTimeCheck;
-	FTimerHandle TimerHandle_StartMessage;
+	FTimerHandle TimerHandle_StartMessageVisible;
+	FTimerHandle TimerHandle_StartMessageHidden;
+	FTimerHandle TimerHandle_WaitTimerHandle;
 private:
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
@@ -99,6 +107,10 @@ private:
 	// 게임 시작 시 "라카야 제어기를 점령하세요" 메세지를 띄우는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UStartMessageWidget> StartMessageWidgetClass;
+
+	// 게임 시작 시 "라운드 시작까지 10초 남았습니다" 메세지를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UMatchStartWaitWidget> MatchStartWaitWidgetClass;
 	
 	// 팀스코어 위젯 입니다.
     TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
@@ -108,6 +120,10 @@ private:
 
 	// "라카야 제어기를 점령하세요" 위젯 입니다.
 	TWeakObjectPtr<UStartMessageWidget> StartMessageWidget;
+
+	// "라운드 시작까지 10초 남았습니다" 위젯 입니다.
+	TWeakObjectPtr<UMatchStartWaitWidget> MatchStartWaitWidget;
+	
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;
