@@ -65,6 +65,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float FireDamage;
 
+protected:
+	FCollisionQueryParams CollisionQueryParams;
+	
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_IsFiring, Transient)
 	bool bIsFiring;
@@ -73,5 +76,5 @@ private:
 	FTimerHandle FireTimer;
 	TWeakObjectPtr<class UCameraComponent> Camera;
 	TWeakObjectPtr<USceneComponent> RootComponent;
-	FCollisionQueryParams CollisionQueryParams;
+
 };
