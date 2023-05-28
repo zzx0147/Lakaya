@@ -62,8 +62,8 @@ void ALinearProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 void ALinearProjectile::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	CollisionComponent->SetNotifyRigidBodyCollision(HasAuthority());
-	CollisionComponent->OnComponentHit.AddUniqueDynamic(this, &ALinearProjectile::OnCollisionComponentHit);
+	CollisionComponent->OnComponentBeginOverlap.AddUniqueDynamic(
+		this, &ALinearProjectile::OnCollisionComponentBeginOverlap);
 	StaticMeshComponent->SetVisibility(false);
 	if (!CollisionComponent->IsGravityEnabled()) ProjectilePathParams.OverrideGravityZ = -1.f;
 }
@@ -73,14 +73,19 @@ void ALinearProjectile::PerformTimerHandler()
 	Super::PerformTimerHandler();
 	// 타이머가 종료된 시점에 아직 Ready상태라면, 클라이언트를 의미하므로 투사체에 대해 물리 시뮬레이션을 시작합니다.
 	if (GetInstanceState() == EAbilityInstanceState::Ready)
-		SimulateProjectilePhysics(false);
+		SimulateProjectilePhysics();
 }
 
 void ALinearProjectile::HandleAbilityInstancePerform()
 {
 	Super::HandleAbilityInstancePerform();
 	// Perform 상태가 된 경우, 서버에서는 물리 엔진을 통해 투사체를 던지고, 클라이언트에서는 서버로부터 전달받은 정보를 바탕으로 투사체의 위치를 시뮬레이트합니다.
-	HasAuthority() ? SimulateProjectilePhysics(true) : SimulateProjectileMovement();
+	if (HasAuthority())
+	{
+		SimulateProjectilePhysics(true);
+		UpdateProjectileTransform();
+	}
+	else SimulateProjectileMovement();
 }
 
 void ALinearProjectile::HandleAbilityInstanceEnding()
@@ -136,8 +141,8 @@ void ALinearProjectile::SetTeam(const EPlayerTeam& Team)
 	Super::SetTeam(Team);
 	const auto& [ATeamCollision, BTeamCollision] =
 		TeamCollisionMap.Contains(Team) ? TeamCollisionMap[Team] : FTeamCollisionInfo();
-	CollisionComponent->SetCollisionResponseToChannel(ATeamCollisionChannel, ATeamCollision ? ECR_Block : ECR_Ignore);
-	CollisionComponent->SetCollisionResponseToChannel(BTeamCollisionChannel, BTeamCollision ? ECR_Block : ECR_Ignore);
+	CollisionComponent->SetCollisionResponseToChannel(ATeamCollisionChannel, ATeamCollision ? ECR_Overlap : ECR_Ignore);
+	CollisionComponent->SetCollisionResponseToChannel(BTeamCollisionChannel, BTeamCollision ? ECR_Overlap : ECR_Ignore);
 }
 
 void ALinearProjectile::BeginPlay()
@@ -149,13 +154,20 @@ void ALinearProjectile::BeginPlay()
 	GetInstigator()->MoveIgnoreActorAdd(this);
 }
 
-void ALinearProjectile::OnCollisionComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
-                                                UPrimitiveComponent* OtherComp, FVector NormalImpulse,
-                                                const FHitResult& Hit)
+void ALinearProjectile::UpdateProjectileTransform()
 {
-	DisableProjectilePhysics();
 	ProjectileLocation = GetActorLocation();
 	ProjectileRotation = GetActorRotation();
+}
+
+void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                                                         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+                                                         bool bFromSweep, const FHitResult& SweepResult)
+{
+	const auto Velocity = CollisionComponent->GetPhysicsLinearVelocity();
+	DisableProjectilePhysics();
+	if (bFromSweep) SetActorLocation(SweepResult.Location);
+	UpdateProjectileTransform();
 
 	if (BaseDamage != 0.f && DamageRange >= 0.f)
 	{
@@ -174,14 +186,17 @@ void ALinearProjectile::OnCollisionComponentHit(UPrimitiveComponent* HitComponen
 		Params.Instigator = GetInstigator();
 		Params.Owner = GetOwner();
 		if (const auto SpawnedActor = GetWorld()->SpawnActor<AAttachableProjectile>(AttachableClass, Params))
-			SpawnedActor->InitializeHit(HitComponent, OtherActor, OtherComp, NormalImpulse, Hit);
+		{
+			SpawnedActor->InitializeOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep,
+			                                SweepResult, Velocity);
+		}
 		else UE_LOG(LogScript, Error, TEXT("Fail to AttachableActor!"));
 	}
 
 	SetAbilityInstanceState(EAbilityInstanceState::Ending);
 }
 
-void ALinearProjectile::SimulateProjectilePhysics(const bool& UpdateProjectileTransform)
+void ALinearProjectile::SimulateProjectilePhysics(const bool& UsingQuery)
 {
 	if (!GetOwningAbility())
 	{
@@ -195,15 +210,10 @@ void ALinearProjectile::SimulateProjectilePhysics(const bool& UpdateProjectileTr
 	static FVector Location;
 	static FRotator Rotator;
 	GetOwningAbility()->GetSummonLocationAndRotation(Location, Rotator);
-	SetActorLocationAndRotation(Location, Rotator);
-	if (UpdateProjectileTransform)
-	{
-		ProjectileLocation = Location;
-		ProjectileRotation = Rotator;
-	}
-
+	CollisionComponent->SetWorldLocationAndRotationNoPhysics(Location, Rotator);
 	CollisionComponent->SetSimulatePhysics(true);
-	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::ProbeOnly);
+	CollisionComponent->SetCollisionEnabled(
+		UsingQuery ? ECollisionEnabled::QueryAndProbe : ECollisionEnabled::ProbeOnly);
 	CollisionComponent->SetPhysicsLinearVelocity(Rotator.Vector() * LinearVelocity);
 	ShowProjectile();
 }
