@@ -76,6 +76,7 @@ void AAIIndividualGameMode::HandleMatchHasEnded()
 	{
 		AiIndividualGameState->SetAIIndividualWinner();
 	}
+
 	GetWorldTimerManager().SetTimer(TimerHandle_DelayedEnded, this, &AAIIndividualGameMode::DelayedEndedGame,
 									MatchEndDelay, false);
 	

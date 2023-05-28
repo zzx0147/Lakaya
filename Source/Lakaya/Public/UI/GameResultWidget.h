@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "MatchStateWidget.h"
+#include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Occupation/PlayerTeam.h"
 #include "GameResultWidget.generated.h"
@@ -14,11 +15,12 @@ class LAKAYA_API UGameResultWidget : public UUserWidget
 protected:
 	virtual void NativeConstruct() override;
 
-private:
-	void OnChangeWinner(const EPlayerTeam& NewWinner);
+// private:
+// 	void OnChangeWinner(const EPlayerTeam& NewWinner);
 
-	UPROPERTY(meta =(BindWidget))
-	UTextBlock* GameResultWidgetText;
-
-	class AOccupationGameState* OccupationGameState;
+public:
+	TWeakObjectPtr<UImage> VictoryImage;
+	TWeakObjectPtr<UImage> DefeatImage;
+	TWeakObjectPtr<UTextBlock> AntiScore;
+	TWeakObjectPtr<UTextBlock> ProScore;
 };
