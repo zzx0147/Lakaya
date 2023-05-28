@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "IndividualResultBaseWidget.h"
+#include "UI/IndividualWidget/IndividualBaseWidget.h"
 #include "IndividualResultInfoBarElement.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API UIndividualResultInfoBarElement : public UIndividualResultBaseWidget
+class LAKAYA_API UIndividualResultInfoBarElement : public UIndividualBaseWidget
 {
 	GENERATED_BODY()
 	

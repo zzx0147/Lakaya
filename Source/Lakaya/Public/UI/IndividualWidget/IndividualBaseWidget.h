@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "IndividualResultBaseWidget.generated.h"
+#include "IndividualBaseWidget.generated.h"
 
 /**
  * 
@@ -38,7 +38,7 @@ struct FPlayerData
 };
 
 UCLASS()
-class LAKAYA_API UIndividualResultBaseWidget : public UUserWidget
+class LAKAYA_API UIndividualBaseWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
