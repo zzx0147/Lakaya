@@ -1,6 +1,9 @@
 #include "GameMode/OccupationGameState.h"
+
+#include "EngineUtils.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
+#include "Engine/TriggerBox.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameMode.h"
@@ -9,6 +12,7 @@
 #include "UI/GameResultWidget.h"
 #include "UI/TeamScoreWidget.h"
 #include "UI/StartMessageWidget.h"
+#include "UI/MatchStartWaitWidget.h"
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -22,7 +26,9 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 AOccupationGameState::AOccupationGameState()
 {
 	MaxScore = 100.f;
-	MatchDuration = 10.f;
+	MatchDuration = 180.f;
+	MatchStartWaitWidgetLifeTime = 3.0f;
+	MatchStartWidgetLifeTime = 5.0f;
 	ClientTeam = EPlayerTeam::None;
 
 	PlayersByTeamMap.Add(EPlayerTeam::A, TArray<ALakayaBasePlayerState*>());
@@ -41,12 +47,23 @@ void AOccupationGameState::BeginPlay()
 			TeamScoreWidget = CreateWidget<UTeamScoreWidget>(LocalController, TeamScoreWidgetClass);
 			if (TeamScoreWidget == nullptr)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_TeamScoreWidget is null."));
+				UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidget is null."));
 			}
 			TeamScoreWidget->AddToViewport();
 			TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
 
+		if (MatchStartWaitWidgetClass)
+		{
+			MatchStartWaitWidget = CreateWidget<UMatchStartWaitWidget>(LocalController, MatchStartWaitWidgetClass);
+			if (MatchStartWaitWidget == nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("MatchStartWaitWidget is null."));
+			}
+			MatchStartWaitWidget->AddToViewport();
+			MatchStartWaitWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+		
 		if (StartMessageWidgetClass)
 		{
 			StartMessageWidget = CreateWidget<UStartMessageWidget>(LocalController, StartMessageWidgetClass);
@@ -57,7 +74,7 @@ void AOccupationGameState::BeginPlay()
 			StartMessageWidget->AddToViewport();
 			StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
-		
+
 		if (GameResultWidgetClass)
 		{
 			GameResultWidget = CreateWidget<UGameResultWidget>(LocalController, GameResultWidgetClass);
@@ -87,17 +104,32 @@ void AOccupationGameState::HandleMatchHasStarted()
 	if (IsValid(TeamScoreWidget))
 		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
 
-	if (StartMessageWidget.IsValid())
-		StartMessageWidget->SetVisibility(ESlateVisibility::Visible);
+	if (MatchStartWaitWidget.IsValid())
+		MatchStartWaitWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-	// StartMessage위젯을 띄우고 5초 뒤에 비활성화 해줍니다.
+	// MatchStartWaitWidget위젯을 띄우고, 3초 뒤에 비활성화 해줍니다.
 	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindLambda([this]
+	{
+		if (MatchStartWaitWidget.IsValid()) MatchStartWaitWidget->SetVisibility(ESlateVisibility::Hidden);
+		
+	});
+	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate, MatchStartWaitWidgetLifeTime, false);
+	
+	// 게임이 본격적으로 시작이 되면 StartMessage위젯을 띄워줍니다.
+	TimerDelegate.BindLambda([this]
+	{
+		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		DestroyTriggerBox();
+	});
+	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageVisible, TimerDelegate, MatchWaitDuration, false);
+	
+	// StartMessage위젯을 5초 뒤에 비활성화 해줍니다.
 	TimerDelegate.BindLambda([this]
 	{
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
-	GetWorldTimerManager().SetTimer(TimerHandle_StartMessage, TimerDelegate, 5.0f, false);
-	
+	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, TimerDelegate, MatchWaitDuration + MatchStartWidgetLifeTime, false);
 }
 
 void AOccupationGameState::NotifyKillCharacter_Implementation(AController* KilledController, AActor* KilledActor,
@@ -121,7 +153,6 @@ void AOccupationGameState::EndTimeCheck()
       
 		GameMode->EndMatch();
 	}
-
 }
 
 void AOccupationGameState::SetOccupationWinner()
@@ -200,7 +231,6 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 	}
 }
 
-
 float AOccupationGameState::GetTeamScore(const EPlayerTeam& Team) const
 {
 	if (Team == EPlayerTeam::A) return ATeamScore;
@@ -266,5 +296,31 @@ void AOccupationGameState::CreateCharacterSelectWidget(APlayerController* LocalC
 					}
 				});
 		}	
+	}
+}
+
+void AOccupationGameState::DestroyTriggerBox()
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		TArray<ATriggerBox*> TriggerBoxes;
+
+		for (TActorIterator<ATriggerBox> ActorIterator(World); ActorIterator; ++ActorIterator)
+		{
+			ATriggerBox* TriggerBox = *ActorIterator;
+			if (TriggerBox)
+			{
+				TriggerBoxes.Add(TriggerBox);
+			}
+		}
+
+		for (ATriggerBox* TriggerBox : TriggerBoxes)
+		{
+			if (TriggerBox)
+			{
+				TriggerBox->Destroy();
+			}
+		}
 	}
 }

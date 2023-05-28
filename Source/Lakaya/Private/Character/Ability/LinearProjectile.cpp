@@ -73,25 +73,31 @@ void ALinearProjectile::PerformTimerHandler()
 	Super::PerformTimerHandler();
 	// 타이머가 종료된 시점에 아직 Ready상태라면, 클라이언트를 의미하므로 투사체에 대해 물리 시뮬레이션을 시작합니다.
 	if (GetInstanceState() == EAbilityInstanceState::Ready)
-		SimulateProjectilePhysics(false);
+		SimulateProjectilePhysics();
 }
 
 void ALinearProjectile::HandleAbilityInstancePerform()
 {
 	Super::HandleAbilityInstancePerform();
 	// Perform 상태가 된 경우, 서버에서는 물리 엔진을 통해 투사체를 던지고, 클라이언트에서는 서버로부터 전달받은 정보를 바탕으로 투사체의 위치를 시뮬레이트합니다.
-	HasAuthority() ? SimulateProjectilePhysics(true) : SimulateProjectileMovement();
+	if (HasAuthority())
+	{
+		SimulateProjectilePhysics();
+		UpdateProjectileTransform();
+		bCollisionCalled = false;
+	}
+	else SimulateProjectileMovement();
 }
 
 void ALinearProjectile::HandleAbilityInstanceEnding()
 {
 	Super::HandleAbilityInstanceEnding();
-	if (HasAuthority()) DisableProjectilePhysics();
-	else
+	if (!HasAuthority())
 	{
-		DisableProjectileSimulation();
+		SetActorTickEnabled(false);
 		SetActorLocationAndRotation(ProjectileLocation, ProjectileRotation);
 	}
+	HideProjectile();
 	ExplodeNiagaraComponent->Activate();
 }
 
@@ -140,21 +146,20 @@ void ALinearProjectile::SetTeam(const EPlayerTeam& Team)
 	CollisionComponent->SetCollisionResponseToChannel(BTeamCollisionChannel, BTeamCollision ? ECR_Block : ECR_Ignore);
 }
 
-void ALinearProjectile::BeginPlay()
+void ALinearProjectile::UpdateProjectileTransform()
 {
-	Super::BeginPlay();
-	if (!HasAuthority()) return;
-	// 이 액터를 소환한 캐릭터와는 충돌하지 않도록 합니다.
-	CollisionComponent->IgnoreActorWhenMoving(GetInstigator(), true);
-	GetInstigator()->MoveIgnoreActorAdd(this);
+	ProjectileLocation = GetActorLocation();
+	ProjectileRotation = GetActorRotation();
 }
 
 void ALinearProjectile::OnCollisionComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
                                                 UPrimitiveComponent* OtherComp, FVector NormalImpulse,
                                                 const FHitResult& Hit)
 {
-	ProjectileLocation = GetActorLocation();
-	ProjectileRotation = GetActorRotation();
+	if (bCollisionCalled) return;
+	bCollisionCalled = true;
+	DisableProjectilePhysics();
+	UpdateProjectileTransform();
 
 	if (BaseDamage != 0.f && DamageRange >= 0.f)
 	{
@@ -180,7 +185,7 @@ void ALinearProjectile::OnCollisionComponentHit(UPrimitiveComponent* HitComponen
 	SetAbilityInstanceState(EAbilityInstanceState::Ending);
 }
 
-void ALinearProjectile::SimulateProjectilePhysics(const bool& UpdateProjectileTransform)
+void ALinearProjectile::SimulateProjectilePhysics()
 {
 	if (!GetOwningAbility())
 	{
@@ -195,44 +200,39 @@ void ALinearProjectile::SimulateProjectilePhysics(const bool& UpdateProjectileTr
 	static FRotator Rotator;
 	GetOwningAbility()->GetSummonLocationAndRotation(Location, Rotator);
 	SetActorLocationAndRotation(Location, Rotator);
-	if (UpdateProjectileTransform)
-	{
-		ProjectileLocation = Location;
-		ProjectileRotation = Rotator;
-	}
 
 	CollisionComponent->SetSimulatePhysics(true);
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::ProbeOnly);
 	CollisionComponent->SetPhysicsLinearVelocity(Rotator.Vector() * LinearVelocity);
-	StaticMeshComponent->SetVisibility(true);
-	TrailNiagaraComponent->Activate();
+	ShowProjectile();
 }
 
 void ALinearProjectile::DisableProjectilePhysics()
 {
 	CollisionComponent->SetSimulatePhysics(false);
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	StaticMeshComponent->SetVisibility(false);
-	TrailNiagaraComponent->Deactivate();
 }
 
 void ALinearProjectile::SimulateProjectileMovement()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, HasAuthority() ? FColor::White : FColor::Green,
 	                                 TEXT("Start projectile simulate"));
-	CollisionComponent->SetSimulatePhysics(false);
-	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	DisableProjectilePhysics();
 	CalculateProjectilePath(ProjectileLocation, ProjectileRotation);
 	ProjectilePathResult.PathData.Heapify(CustomPointDataPredicate);
 	RecentPointData = ProjectilePathResult.PathData.HeapTop();
 	SetActorTickEnabled(true);
+	ShowProjectile();
+}
+
+void ALinearProjectile::ShowProjectile()
+{
 	StaticMeshComponent->SetVisibility(true);
 	TrailNiagaraComponent->Activate();
 }
 
-void ALinearProjectile::DisableProjectileSimulation()
+void ALinearProjectile::HideProjectile()
 {
-	SetActorTickEnabled(false);
 	StaticMeshComponent->SetVisibility(false);
 	TrailNiagaraComponent->Deactivate();
 }
