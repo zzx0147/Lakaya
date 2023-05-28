@@ -10,7 +10,10 @@
 #include "GameMode/OccupationGameMode.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
+#include "UI/GamePlayCrossHairWidget.h"
 #include "UI/GameResultWidget.h"
+#include "UI/GameTimeWidget.h"
+#include "UI/HelpWidget.h"
 #include "UI/TeamScoreWidget.h"
 #include "UI/StartMessageWidget.h"
 #include "UI/MatchStartWaitWidget.h"
@@ -83,6 +86,26 @@ void AOccupationGameState::BeginPlay()
 			{
 				GameResultWidget->AddToViewport();
 				GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+
+		if (GradeResultWidgetClass)
+		{
+			GradeResultWidget = CreateWidget<UGradeResultWidget>(LocalController, GradeResultWidgetClass);
+			if (GradeResultWidget.IsValid())
+			{
+				GradeResultWidget->AddToViewport(1);
+				GradeResultWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+
+		if (DetailResultWidgetClass)
+		{
+			DetailResultWidget = CreateWidget<UDetailResultWidget>(LocalController, DetailResultWidgetClass);
+			if (DetailResultWidget.IsValid())
+			{
+				DetailResultWidget->AddToViewport(1);
+				DetailResultWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
 	}
@@ -158,9 +181,34 @@ void AOccupationGameState::HandleMatchHasEnded()
 		
 		GameResultWidget->AntiScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), ATeamScore)));
 		GameResultWidget->ProScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), BTeamScore)));
+
+		// 게임 결과를 띄우고 5초뒤에 비활성화 해주고, GradeResultWidget을 띄웁니다.
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindLambda([this, LakayaPlayerState, LocalController]
+		{
+			GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
+			GradeResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+			if (LakayaPlayerState->GetTeam() == EPlayerTeam::A)
+				GradeResultWidget->AntiTextBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			if (LakayaPlayerState->GetTeam() == EPlayerTeam::B)
+				GradeResultWidget->ProTextBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+			if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
+				GradeResultWidget->VictoryImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			else GradeResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+			LocalController->SetShowMouseCursor(true);
+			
+			// 기존에 활성화 되어 있는 Widget들을 모두 꺼줍니다.
+			// HelpWidget->SetVisibility(ESlateVisibility::Hidden);
+			// InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
+			// SkillWidget->SetVisibility(ESlateVisibility::Hidden);
+			// CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
+			
+		});
+		GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
 	}
-		
-	UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_HandleMatchHasEnded"));
 }
 
 void AOccupationGameState::NotifyKillCharacter_Implementation(AController* KilledController, AActor* KilledActor,
