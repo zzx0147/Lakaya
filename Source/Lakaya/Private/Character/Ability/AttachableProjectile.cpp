@@ -20,13 +20,34 @@ AAttachableProjectile::AAttachableProjectile()
 	bReplicates = true;
 }
 
-void AAttachableProjectile::InitializeHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
-                                          UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AAttachableProjectile::InitializeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+                                              const FHitResult& SweepResult, const FVector& Velocity)
 {
 	bIsEnabled = true;
 	TargetActor = OtherActor;
-	AttachedBone = Hit.BoneName;
-	SetActorLocationAndRotation(Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+	if (bFromSweep)
+	{
+		AttachedBone = SweepResult.BoneName;
+		SetActorLocationAndRotation(SweepResult.ImpactPoint, SweepResult.ImpactNormal.Rotation());
+	}
+	else
+	{
+		const auto Start = OverlappedComponent->GetComponentLocation();
+		if (FHitResult HitResult;
+			OtherComp->SweepComponent(HitResult, Start, Start + Velocity * 100.f,
+			                          OverlappedComponent->GetComponentRotation().Quaternion(),
+			                          OverlappedComponent->GetCollisionShape(), true))
+		{
+			AttachedBone = HitResult.BoneName;
+			SetActorLocationAndRotation(HitResult.ImpactPoint, HitResult.ImpactNormal.Rotation());
+		}
+		else
+		{
+			AttachedBone = NAME_None;
+			SetActorLocationAndRotation(Start, (-Velocity).Rotation());
+		}
+	}
 	AttachToActor(TargetActor, FAttachmentTransformRules::KeepWorldTransform, AttachedBone);
 	RelativeLocation = GetRootComponent()->GetRelativeLocation();
 	RelativeRotator = GetRootComponent()->GetRelativeRotation();

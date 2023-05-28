@@ -40,18 +40,20 @@ public:
 	virtual void SetTeam(const EPlayerTeam& Team) override;
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void PerformTimerHandler() override;
 	virtual void HandleAbilityInstancePerform() override;
 	virtual void HandleAbilityInstanceEnding() override;
 	virtual void HandleAbilityInstanceCollapsed() override;
 
 	UFUNCTION()
-	virtual void OnCollisionComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
-	                                     UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	virtual void OnCollisionComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	                                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+	                                              const FHitResult& SweepResult);
 
 private:
 	// 물리엔진을 사용하여 투사체를 시뮬레이트합니다.
-	void SimulateProjectilePhysics();
+	void SimulateProjectilePhysics(const bool& UsingQuery = false);
 
 	// 물리엔진을 통한 투사체 시뮬레이션을 종료합니다.
 	void DisableProjectilePhysics();
@@ -119,5 +121,4 @@ private:
 	FPredictProjectilePathResult ProjectilePathResult;
 	float RecentPathCalculateTime;
 	FPredictProjectilePathPointData RecentPointData;
-	bool bCollisionCalled;
 };
