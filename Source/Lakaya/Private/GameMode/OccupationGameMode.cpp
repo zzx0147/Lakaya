@@ -27,8 +27,6 @@ void AOccupationGameMode::OnPlayerKilled(AController* VictimController, AControl
 void AOccupationGameMode::BeginPlay()
 {
 	OccupationGameState = GetGameState<AOccupationGameState>();
-
-
 }
 
 //TODO: 필요없는 함수 오버라이딩
@@ -66,9 +64,6 @@ void AOccupationGameMode::HandleMatchHasStarted()
 	Super::HandleMatchHasStarted();
 	// OccupationGameState->SetMatchTime();
 
-	// 플레이어 인원만큼 위치를 조정해줍니다. (각각의 팀 위치에서)
-	//PlayerInitializeSetLocation(OccupationGameState->PlayerArray.Num());
-
 	GetWorldTimerManager().SetTimer(UpdateScoreTimer, this, &AOccupationGameMode::UpdateTeamScoreTick, ScoreUpdateDelay,true);
 
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasStarted"));
@@ -81,7 +76,6 @@ void AOccupationGameMode::HandleMatchHasEnded()
 	OccupationGameState->SetOccupationWinner();
 	GetWorldTimerManager().SetTimer(TimerHandle_DelayedEnded, this, &AOccupationGameMode::DelayedEndedGame,
 	                                MatchEndDelay, false);
-	UE_LOG(LogTemp, Warning, TEXT("시발 HandleMatchHasEnded가 떳어요"));
 }
 
 void AOccupationGameMode::HandleMatchIsSelectCharacter()

@@ -10,8 +10,8 @@ AAIIndividualGameState::AAIIndividualGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	
-	static ConstructorHelpers::FClassFinder<UGameAIIndividualScoreBoardWidget> AIIndividualScoreBoardFinder(
-	TEXT("/Game/Blueprints/UMG/WBP_GameAIIndividualScoreBoardWidget"));
+	static ConstructorHelpers::FClassFinder<UAIIndividualScoreBoardWidget> AIIndividualScoreBoardFinder(
+	TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_AIIndividualScoreBoardWidget"));
 
 	if (AIIndividualScoreBoardFinder.Succeeded()) AIIndividualScoreBoardWidgettClass = AIIndividualScoreBoardFinder.Class;
 }
@@ -22,7 +22,7 @@ void AAIIndividualGameState::BeginPlay()
 
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
-		AIIndividualScoreBoardWidget = CreateWidget<UGameAIIndividualScoreBoardWidget>(LocalController, AIIndividualScoreBoardWidgettClass);
+		AIIndividualScoreBoardWidget = CreateWidget<UAIIndividualScoreBoardWidget>(LocalController, AIIndividualScoreBoardWidgettClass);
 		
 		if (AIIndividualScoreBoardWidget.IsValid())
 		{
@@ -31,31 +31,31 @@ void AAIIndividualGameState::BeginPlay()
 			
 			if (const auto Other = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 			{
-				Player1Data.PlayerName = Other->GetDebugName(LocalController);
-				Player2Data.PlayerName = Other->GetDebugName(LocalController);
-				Player3Data.PlayerName = Other->GetDebugName(LocalController);
-				Player4Data.PlayerName = Other->GetDebugName(LocalController);
-				Player5Data.PlayerName = Other->GetDebugName(LocalController);
-				Player6Data.PlayerName = Other->GetDebugName(LocalController);
-			
-				Player1Data.KillCount = Other->GetKillCount();
-				Player2Data.KillCount = Other->GetKillCount();
-				Player3Data.KillCount = Other->GetKillCount();
-				Player4Data.KillCount = Other->GetKillCount();
-				Player5Data.KillCount = Other->GetKillCount();
-				Player6Data.KillCount = Other->GetKillCount();
+				PlayerAI1Data.PlayerName = Other->GetDebugName(LocalController);
+				PlayerAI2Data.PlayerName = Other->GetDebugName(LocalController);
+				PlayerAI3Data.PlayerName = Other->GetDebugName(LocalController);
+				PlayerAI4Data.PlayerName = Other->GetDebugName(LocalController);
+				PlayerAI5Data.PlayerName = Other->GetDebugName(LocalController);
+				PlayerAI6Data.PlayerName = Other->GetDebugName(LocalController);
+			          
+				PlayerAI1Data.KillCount = Other->GetKillCount();
+				PlayerAI2Data.KillCount = Other->GetKillCount();
+				PlayerAI3Data.KillCount = Other->GetKillCount();
+				PlayerAI4Data.KillCount = Other->GetKillCount();
+				PlayerAI5Data.KillCount = Other->GetKillCount();
+				PlayerAI6Data.KillCount = Other->GetKillCount();
 				
 				UE_LOG(LogTemp, Warning, TEXT("Set All PlayerData In AIIndividualScoreBoardWidget"));
 			}
 			
-			FPlayerDataArray.Add(Player1Data);
-			FPlayerDataArray.Add(Player2Data);
-			FPlayerDataArray.Add(Player3Data);
-			FPlayerDataArray.Add(Player4Data);
-			FPlayerDataArray.Add(Player5Data);
-			FPlayerDataArray.Add(Player6Data);
+			FPlayerAIDataArray.Add(PlayerAI1Data);
+			FPlayerAIDataArray.Add(PlayerAI2Data);
+			FPlayerAIDataArray.Add(PlayerAI3Data);
+			FPlayerAIDataArray.Add(PlayerAI4Data);
+			FPlayerAIDataArray.Add(PlayerAI5Data);
+			FPlayerAIDataArray.Add(PlayerAI6Data);
 			
-			SetScoreBoardPlayerName(FPlayerDataArray);
+			SetScoreBoardPlayerName(FPlayerAIDataArray);
 		}
 	}
 }
@@ -66,7 +66,7 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 
 	if (AIIndividualScoreBoardWidget.IsValid())
 	{
-		FPlayerDataArray.Empty();
+		FPlayerAIDataArray.Empty();
 
 		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 		{
@@ -77,9 +77,9 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 				if (PlayerStateObj)
 				{
 					// 점수판에 표시되는 이름 현제 컨트롤러 이름으로 표시중입니다.
-					PlayerData.PlayerName = PlayerStateObj->GetDebugName(PlayerController);
-					PlayerData.KillCount = PlayerStateObj->GetKillCount();
-					FPlayerDataArray.Add(PlayerData);
+					PlayerAIData.PlayerName = PlayerStateObj->GetDebugName(PlayerController);
+					PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
+					FPlayerAIDataArray.Add(PlayerAIData);
 					
 					// PlayerStateObj->OnKillCountChanged.AddLambda([this, PlayerStateObj]
 					// 	(const uint16& NewKillCount)
@@ -94,11 +94,11 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 			}
 		}
 		
-		SetScoreBoardPlayerName(FPlayerDataArray);
+		SetScoreBoardPlayerName(FPlayerAIDataArray);
 	}
 }
 
-void AAIIndividualGameState::SetScoreBoardPlayerName(const TArray<FPlayerData>& PlayerDataArray)
+void AAIIndividualGameState::SetScoreBoardPlayerName(const TArray<FPlayerAIData>& PlayerDataArray)
 {
 	if (AIIndividualScoreBoardWidget.IsValid())
 	{
