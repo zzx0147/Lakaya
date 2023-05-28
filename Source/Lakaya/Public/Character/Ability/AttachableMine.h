@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "AttachableProjectile.h"
-#include "MineProjectile.generated.h"
+#include "AttachableMine.generated.h"
 
 UCLASS()
-class LAKAYA_API AMineProjectile : public AAttachableProjectile
+class LAKAYA_API AAttachableMine : public AAttachableProjectile
 {
 	GENERATED_BODY()
 };
