@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "GameMode/LakayaBaseGameState.h"
 #include "Occupation/PlayerTeam.h"
+#include "UI/DetailResultWidget.h"
+#include "UI/GradeResultWidget.h"
 #include "OccupationGameState.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeOccupationWinner, const EPlayerTeam&)
@@ -98,6 +100,7 @@ private:
 	FTimerHandle TimerHandle_StartMessageVisible;
 	FTimerHandle TimerHandle_StartMessageHidden;
 	FTimerHandle TimerHandle_WaitTimerHandle;
+	FTimerHandle TimerHandle_GameResultHandle;
 private:
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
@@ -114,6 +117,14 @@ private:
 	// 게임 종료 시 "승리", "패배" 및 팀별 점수를 띄우는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameResultWidget> GameResultWidgetClass;
+
+	// 게임 종료 시 게임 팀내 등수 결과를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGradeResultWidget> GradeResultWidgetClass;
+
+	// 게임 종료 시 게임 디테일 결과를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UDetailResultWidget> DetailResultWidgetClass;
 	
 	// 팀스코어 위젯 입니다.
     TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
@@ -126,6 +137,12 @@ private:
 	
 	// 게임 승패 위젯 입니다.
 	TWeakObjectPtr<UGameResultWidget> GameResultWidget;
+
+	// 게임 팀내 등수 결과 위젯입니다.
+	TWeakObjectPtr<UGradeResultWidget> GradeResultWidget;
+
+	// 게임 디테일 결과 위젯입니다.
+	TWeakObjectPtr<UDetailResultWidget> DetailResultWidget;
 	
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;

@@ -4,7 +4,6 @@
 #include "MatchStateWidget.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
-#include "Occupation/PlayerTeam.h"
 #include "GameResultWidget.generated.h"
 
 UCLASS()
@@ -14,9 +13,6 @@ class LAKAYA_API UGameResultWidget : public UUserWidget
 
 protected:
 	virtual void NativeConstruct() override;
-
-// private:
-// 	void OnChangeWinner(const EPlayerTeam& NewWinner);
 
 public:
 	TWeakObjectPtr<UImage> VictoryImage;
