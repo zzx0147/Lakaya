@@ -73,8 +73,10 @@ void AOccupationGameMode::HandleMatchHasEnded()
 	Super::HandleMatchHasEnded();
 	GetWorldTimerManager().ClearTimer(UpdateScoreTimer);
 	OccupationGameState->SetOccupationWinner();
-	GetWorldTimerManager().SetTimer(TimerHandle_DelayedEnded, this, &AOccupationGameMode::DelayedEndedGame,
-	                                MatchEndDelay, false);
+
+	// TODO : 이제는 게임이 끝나게 되면 자동으로 로비창으로 이동하는 것이 아닌, 플레이어의 입력에 따라 로비창으로 이동합니다.
+	// GetWorldTimerManager().SetTimer(TimerHandle_DelayedEnded, this, &AOccupationGameMode::DelayedEndedGame,
+	//                                 MatchEndDelay, false);
 }
 
 void AOccupationGameMode::HandleMatchIsSelectCharacter()

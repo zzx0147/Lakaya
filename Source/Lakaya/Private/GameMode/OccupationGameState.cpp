@@ -89,7 +89,6 @@ void AOccupationGameState::BeginPlay()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_LocalPlayerController is null."));
-		return;
 	}
 
 	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this,
@@ -133,6 +132,37 @@ void AOccupationGameState::HandleMatchHasStarted()
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, TimerDelegate, MatchWaitDuration + MatchStartWidgetLifeTime, false);
 }
 
+void AOccupationGameState::HandleMatchHasEnded()
+{
+	Super::HandleMatchHasEnded();
+
+	if (GameResultWidget.IsValid())
+		GameResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+	{
+		const ALakayaBasePlayerState* LakayaPlayerState = Cast<ALakayaBasePlayerState>(LocalController->GetPlayerState<ALakayaBasePlayerState>());
+		if (LakayaPlayerState == nullptr)
+			UE_LOG(LogTemp, Warning, TEXT("LakayaPlayerState is null."));
+
+		if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
+		{
+			// 승리했다면 "승리" 이미지를 띄워줍니다.
+			GameResultWidget->VictoryImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		}
+		else
+		{
+			// 패배했다면 "패배" 이미지를 띄워줍니다.
+			GameResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		}
+		
+		GameResultWidget->AntiScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), ATeamScore)));
+		GameResultWidget->ProScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), BTeamScore)));
+	}
+		
+	UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_HandleMatchHasEnded"));
+}
+
 void AOccupationGameState::NotifyKillCharacter_Implementation(AController* KilledController, AActor* KilledActor,
                                                               AController* EventInstigator, AActor* Causer)
 {
@@ -167,13 +197,11 @@ void AOccupationGameState::AddTeamScore(const EPlayerTeam& Team, const float& Ad
 	if (Team == EPlayerTeam::A)
 	{
 		ATeamScore += AdditiveScore;
-		// if (ATeamScore >= 100) ATeamScore = 100;
 		OnRep_ATeamScore();
 	}
 	else if (Team == EPlayerTeam::B)
 	{
 		BTeamScore += AdditiveScore;
-		// if (BTeamScore >= 100) BTeamScore = 100;
 		OnRep_BTeamScore();
 	}
 }
