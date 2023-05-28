@@ -23,7 +23,9 @@ protected:
 	// virtual bool ReadyToEndMatch_Implementation() override;
 	// virtual void HandleMatchIsSelectCharacter() override;
 	virtual void HandleMatchHasStarted() override;
-	// virtual void HandleMatchHasEnded() override;
+	virtual void HandleMatchHasEnded() override;
+	void EndGame(AController* WinningCharController);
+	
 
 	// TODO : 캐릭터 사망, 리스폰 리펙토링 후 작업진행
 	// virtual void RespawnPlayer(AController* KilledController) override;
@@ -40,6 +42,11 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly)
 	int32 NumberOfAi;
+	
+	UPROPERTY(EditDefaultsOnly)
+	int32 TargetKills;
+	
+	FTimerHandle UpdateScoreTimer;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class AAiCharacterController> AIControllerClass;

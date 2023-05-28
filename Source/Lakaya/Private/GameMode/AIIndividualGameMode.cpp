@@ -18,6 +18,7 @@ AAIIndividualGameMode::AAIIndividualGameMode()
 	// GameStateClass = AAIIndividualGameState::StaticClass();
 
 	NumberOfAi = 5;
+	TargetKills = 5;
 }
 
 void AAIIndividualGameMode::PostLogin(APlayerController* NewPlayer)
@@ -42,6 +43,70 @@ void AAIIndividualGameMode::HandleMatchHasStarted()
 	{
 		RestartPlayer(AiController);
 	}	
+}
+
+void AAIIndividualGameMode::HandleMatchHasEnded()
+{
+	Super::HandleMatchHasEnded();
+
+	// TODO : 1등 플레이어 (AI) 지정
+
+	bool TargetKillsAchieved = false;
+	AController* WinningCharController = nullptr;
+
+	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
+	{
+		AController* PlayerController = It->Get();
+		if (PlayerController)
+		{
+			ALakayaBasePlayerState* PlayerAIState = Cast<ALakayaBasePlayerState>(PlayerController->PlayerState);
+			if (PlayerAIState && PlayerAIState->GetKillCount() >= TargetKills)
+			{
+				TargetKillsAchieved = true;
+				WinningCharController = PlayerController;
+				UE_LOG(LogTemp, Warning, TEXT("최고 킬 달성"));
+				break;
+			}
+		}
+	}
+	// for (const auto AiController : AiControllerArray)
+	// {
+	// 	ALakayaBasePlayerState* BasePlayerAIState = Cast<ALakayaBasePlayerState>(AiController->PlayerState);
+	// 	if (BasePlayerAIState && BasePlayerAIState->GetKillCount() >= TargetKills)
+	// 	{
+	// 		TargetKillsAchieved = true;
+	// 		WinningCharController = AiController;
+	// 		UE_LOG(LogTemp, Warning, TEXT("최고 킬 달성"));
+	// 		break;
+	// 	}
+	// }
+
+	if (TargetKillsAchieved)
+	{
+		// TODO : 최고점수를 기록한 플레이어나 AI 를 넣어줘야합니다.
+		EndGame(WinningCharController);
+		UE_LOG(LogTemp, Warning, TEXT("Ended called"));
+	}
+	else
+	{
+		// GetWorldTimerManager().ClearTimer(UpdateScoreTimer);
+		AAIIndividualGameState* AiIndividualGameState = GetGameState<AAIIndividualGameState>();
+		if (AiIndividualGameState)
+		{
+			AiIndividualGameState->SetAIIndividualWinner();
+		}
+		GetWorldTimerManager().SetTimer(TimerHandle_DelayedEnded, this, &AAIIndividualGameMode::DelayedEndedGame,
+										MatchEndDelay, false);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("AI HandleMatchHasEnded was called"));
+}
+
+void AAIIndividualGameMode::EndGame(AController* WinningCharController)
+{
+	// TODO : 이긴 플레이어나 AI를 가져와 게임 종료시 점수판에 보여주고 메인화면으로 돌아가는 함수.
+	
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("MainLobbyLevel"));
 }
 
 // void AAIIndividualGameMode::PostLogin(APlayerController* NewPlayer)
@@ -104,16 +169,6 @@ void AAIIndividualGameMode::HandleMatchHasStarted()
 // 	// 	UE_LOG(LogTemp, Warning, TEXT("AIIndividualGameMode_AIIndividualGameMode is null."));
 // 	// 	return;
 // 	// }
-// }
-//
-// void AAIIndividualGameMode::HandleMatchHasEnded()
-// {
-// 	Super::HandleMatchHasEnded();
-//
-// 	// TODO : 1등 플레이어 (AI) 지정
-// 	//
-// 	GetWorldTimerManager().SetTimer(TimerHandle_DelayedEnded, this, &AAIIndividualGameMode::DelayedEndedGame,
-// 		MatchEndDelay, false);
 // }
 //
 // void AAIIndividualGameMode::RespawnPlayer(AController* KilledController)

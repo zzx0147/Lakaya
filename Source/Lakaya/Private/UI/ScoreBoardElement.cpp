@@ -12,7 +12,7 @@ void UScoreBoardElement::NativeConstruct()
 
 	PlayerNameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("PlayerName_Text")));
 	ScoreText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Score_Text")));
-	CaptureText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Captrue_Text")));
+	CaptureText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Capture_Text")));
 	KillText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Kill_Text")));
 	DeathText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Death_Text")));
 
@@ -51,12 +51,12 @@ void UScoreBoardElement::SetPlayerName(const FString& PlayerName) const
 	SetPlayerName(FText::FromString(PlayerName));
 }
 
-// void UScoreBoardElement::SetScoreCount(const uint32& ScoreCount) const
-// {
-// 	if (ScoreText.IsValid()) ScoreText->SetText(FText::AsNumber(ScoreCount));
-// }
+void UScoreBoardElement::SetTotalScore(const uint16& ScoreCount) const
+{
+	if (ScoreText.IsValid()) ScoreText->SetText(FText::AsNumber(ScoreCount));
+}
 
-void UScoreBoardElement::SetCaptureCount(const uint16& CaptureCount) const
+void UScoreBoardElement::SetSuccessCaptureCount(const uint16& CaptureCount) const
 {
 	if (CaptureText.IsValid()) CaptureText->SetText(FText::AsNumber(CaptureCount));
 }
