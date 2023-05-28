@@ -3,6 +3,7 @@
 
 #include "GameMode/AIIndividualGameState.h"
 
+#include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -10,10 +11,10 @@ AAIIndividualGameState::AAIIndividualGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	
-	static ConstructorHelpers::FClassFinder<UAIIndividualScoreBoardWidget> AIIndividualScoreBoardFinder(
+	static ConstructorHelpers::FClassFinder<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardFinder(
 	TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_AIIndividualScoreBoardWidget"));
 
-	if (AIIndividualScoreBoardFinder.Succeeded()) AIIndividualScoreBoardWidgettClass = AIIndividualScoreBoardFinder.Class;
+	if (AIIndividualLiveScoreBoardFinder.Succeeded()) AIIndividualLiveScoreBoardWidgettClass = AIIndividualLiveScoreBoardFinder.Class;
 }
 
 void AAIIndividualGameState::BeginPlay()
@@ -22,12 +23,12 @@ void AAIIndividualGameState::BeginPlay()
 
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
-		AIIndividualScoreBoardWidget = CreateWidget<UAIIndividualScoreBoardWidget>(LocalController, AIIndividualScoreBoardWidgettClass);
+		AIIndividualLiveScoreBoardWidget = CreateWidget<UIndividualLiveScoreBoardWidget>(LocalController, AIIndividualLiveScoreBoardWidgettClass);
 		
-		if (AIIndividualScoreBoardWidget.IsValid())
+		if (AIIndividualLiveScoreBoardWidget.IsValid())
 		{
-			AIIndividualScoreBoardWidget->AddToViewport();
-			AIIndividualScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
+			AIIndividualLiveScoreBoardWidget->AddToViewport();
+			AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
 			
 			if (const auto Other = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 			{
@@ -45,7 +46,7 @@ void AAIIndividualGameState::BeginPlay()
 				PlayerAI5Data.KillCount = Other->GetKillCount();
 				PlayerAI6Data.KillCount = Other->GetKillCount();
 				
-				UE_LOG(LogTemp, Warning, TEXT("Set All PlayerData In AIIndividualScoreBoardWidget"));
+				UE_LOG(LogTemp, Warning, TEXT("Set All PlayerData In AIIndividualLiveScoreBoardWidget"));
 			}
 			
 			FPlayerAIDataArray.Add(PlayerAI1Data);
@@ -55,7 +56,7 @@ void AAIIndividualGameState::BeginPlay()
 			FPlayerAIDataArray.Add(PlayerAI5Data);
 			FPlayerAIDataArray.Add(PlayerAI6Data);
 			
-			SetScoreBoardPlayerName(FPlayerAIDataArray);
+			SetScoreBoardPlayerAIName(FPlayerAIDataArray);
 		}
 	}
 }
@@ -64,7 +65,7 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (AIIndividualScoreBoardWidget.IsValid())
+	if (AIIndividualLiveScoreBoardWidget.IsValid())
 	{
 		FPlayerAIDataArray.Empty();
 
@@ -94,15 +95,15 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 			}
 		}
 		
-		SetScoreBoardPlayerName(FPlayerAIDataArray);
+		SetScoreBoardPlayerAIName(FPlayerAIDataArray);
 	}
 }
 
-void AAIIndividualGameState::SetScoreBoardPlayerName(const TArray<FPlayerAIData>& PlayerDataArray)
+void AAIIndividualGameState::SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray)
 {
-	if (AIIndividualScoreBoardWidget.IsValid())
+	if (AIIndividualLiveScoreBoardWidget.IsValid())
 	{
-		AIIndividualScoreBoardWidget->SetScoreBoardPlayerName(PlayerDataArray);
+		AIIndividualLiveScoreBoardWidget->SetScoreBoardPlayerAIName(PlayerAIDataArray);
 	}
 }
 

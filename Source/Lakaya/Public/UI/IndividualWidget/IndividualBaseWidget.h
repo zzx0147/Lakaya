@@ -37,6 +37,23 @@ struct FPlayerData
 	}
 };
 
+USTRUCT(BlueprintType)
+struct FPlayerAIData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FString PlayerName;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int32 KillCount;
+
+	bool operator<(const FPlayerAIData& Other) const
+	{
+		return KillCount < Other.KillCount;
+	}
+};
+
 UCLASS()
 class LAKAYA_API UIndividualBaseWidget : public UUserWidget
 {

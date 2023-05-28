@@ -3,42 +3,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
-#include "AIIndividualScoreBoardWidget.generated.h"
+#include "UI/IndividualWidget/IndividualBaseWidget.h"
+#include "IndividualLiveScoreBoardWidget.generated.h"
 
 /**
  * 
  */
-// USTRUCT(BlueprintType)
-// struct FPlayerAIData
-// {
-// 	GENERATED_BODY()
-//
-// 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-// 	FString PlayerName;
-//
-// 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-// 	int32 KillCount;
-//
-// 	bool operator<(const FPlayerAIData& Other) const
-// 	{
-// 		return KillCount < Other.KillCount;
-// 	}
-// };
-
 class UTextBlock;
 
 UCLASS()
-class LAKAYA_API UAIIndividualScoreBoardWidget : public UUserWidget
+class LAKAYA_API UIndividualLiveScoreBoardWidget : public UIndividualBaseWidget
 {
 	GENERATED_BODY()
-
-public:
-	explicit UAIIndividualScoreBoardWidget(const FObjectInitializer& ObjectInitializer);
 	
-	// void SetScoreBoardPlayerName(const TArray<FPlayerAIData>& PlayerDataArray);
-
 public:
+	void SetScoreBoardPlayerName(const TArray<FPlayerData>& PlayerDataArray);
+	void SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerDataArray);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* Score1stNameTextBlock;
 
