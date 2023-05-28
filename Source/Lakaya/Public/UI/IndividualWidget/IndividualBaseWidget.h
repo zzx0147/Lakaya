@@ -34,6 +34,7 @@ struct FPlayerData
 			return KillCount < Other.KillCount;
 		else if (DeathCount != Other.DeathCount)
 			return DeathCount < Other.DeathCount;
+		else return false;
 	}
 };
 

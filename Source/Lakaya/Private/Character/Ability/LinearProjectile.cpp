@@ -139,6 +139,8 @@ void ALinearProjectile::Tick(float DeltaSeconds)
 void ALinearProjectile::SetTeam(const EPlayerTeam& Team)
 {
 	Super::SetTeam(Team);
+	if (RecentTeam == Team) return;
+	RecentTeam = Team;
 	const auto& [ATeamCollision, BTeamCollision] =
 		TeamCollisionMap.Contains(Team) ? TeamCollisionMap[Team] : FTeamCollisionInfo();
 	CollisionComponent->SetCollisionResponseToChannel(ATeamCollisionChannel, ATeamCollision ? ECR_Overlap : ECR_Ignore);
@@ -189,6 +191,7 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 		{
 			SpawnedActor->InitializeOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep,
 			                                SweepResult, Velocity);
+			SpawnedActor->SetTeam(RecentTeam);
 		}
 		else UE_LOG(LogScript, Error, TEXT("Fail to AttachableActor!"));
 	}
