@@ -26,12 +26,6 @@ public:
 	TArray<FPlayerAIData> FPlayerAIDataArray;
 
 	FPlayerAIData PlayerAIData;
-	FPlayerAIData PlayerAI1Data;
-	FPlayerAIData PlayerAI2Data;
-	FPlayerAIData PlayerAI3Data;
-	FPlayerAIData PlayerAI4Data;
-	FPlayerAIData PlayerAI5Data;
-	FPlayerAIData PlayerAI6Data;
 
 protected:
 	virtual void BeginPlay() override;
@@ -41,8 +35,6 @@ protected:
 	
 private:
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardWidgettClass;
-
-
+	TSubclassOf<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardWidgetClass;
 	
 };

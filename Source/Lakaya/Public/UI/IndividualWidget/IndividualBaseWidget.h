@@ -15,6 +15,9 @@ struct FPlayerData
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int32 Rank;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FString PlayerName;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
@@ -28,7 +31,9 @@ struct FPlayerData
 
 	bool operator<(const FPlayerData& Other) const
 	{
-		if (ScoreCount != Other.ScoreCount)
+		if (Rank != Other.Rank)
+			return Rank < Other.Rank;
+		else if (ScoreCount != Other.ScoreCount)
 			return ScoreCount < Other.ScoreCount;
 		else if (KillCount != Other.KillCount)
 			return KillCount < Other.KillCount;
@@ -67,7 +72,12 @@ protected:
 	
 	
 private:
-	
+	template <class T>
+	void InitializeWidgetPtr(TWeakObjectPtr<T>& Ptr, const FName& WidgetName)
+	{
+		Ptr = Cast<T>(GetWidgetFromName(WidgetName));
+		if (Ptr.IsStale()) UE_LOG(LogInit, Error, TEXT("Fail to find %s!"), *WidgetName.ToString());
+	}
 	
 	
 };

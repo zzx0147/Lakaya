@@ -4,10 +4,11 @@
 #include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
 
 #include "Components/TextBlock.h"
+#include "Components/VerticalBox.h"
+#include "UI/IndividualWidget/IndividualLiveScoreElement.h"
 
 void UIndividualLiveScoreBoardWidget::SetScoreBoardPlayerName(const TArray<FPlayerData>& PlayerDataArray)
 {
-	
 }
 
 void UIndividualLiveScoreBoardWidget::SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray)
@@ -22,40 +23,29 @@ void UIndividualLiveScoreBoardWidget::SetScoreBoardPlayerAIName(const TArray<FPl
 		const FPlayerAIData& PlayerAIData = SortedPlayerAIDataArray[i];
 
 		UTextBlock* NameTextBlock = nullptr;
-		UTextBlock* KillTextBlock = nullptr;
-		
 		switch (i)
 		{
 		case 0:
 			NameTextBlock = Score1stNameTextBlock;
-			KillTextBlock = Score1stKillCountTextBlock;
 			break;
 		case 1:
 			NameTextBlock = Score2ndNameTextBlock;
-			KillTextBlock = Score2ndKillCountTextBlock;
 			break;
 		case 2:
 			NameTextBlock = Score3rdNameTextBlock;
-			KillTextBlock = Score3rdKillCountTextBlock;
 			break;
 		case 3:
 			NameTextBlock = Score4thNameTextBlock;
-			KillTextBlock = Score4thKillCountTextBlock;
 			break;
 		case 4:
 			NameTextBlock = Score5thNameTextBlock;
-			KillTextBlock = Score5thKillCountTextBlock;
 			break;
 		case 5:
 			NameTextBlock = Score6thNameTextBlock;
-			KillTextBlock = Score6thKillCountTextBlock;
 			break;
 		}
 
 		if (NameTextBlock)
-		{
 			NameTextBlock->SetText(FText::FromString(PlayerAIData.PlayerName));
-			KillTextBlock->SetText(FText::AsNumber(PlayerAIData.KillCount));
-		}
 	}
 }

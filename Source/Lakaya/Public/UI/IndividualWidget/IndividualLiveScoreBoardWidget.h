@@ -39,21 +39,4 @@ public:
 	UTextBlock* Score6thNameTextBlock;
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UTextBlock* Score1stKillCountTextBlock;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UTextBlock* Score2ndKillCountTextBlock;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UTextBlock* Score3rdKillCountTextBlock;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UTextBlock* Score4thKillCountTextBlock;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UTextBlock* Score5thKillCountTextBlock;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UTextBlock* Score6thKillCountTextBlock;
 };
