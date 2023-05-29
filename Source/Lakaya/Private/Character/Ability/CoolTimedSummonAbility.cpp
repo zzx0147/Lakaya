@@ -82,15 +82,27 @@ void UCoolTimedSummonAbility::GetSummonLocationAndRotation(FVector& Location, FR
 	Rotator = Direction.Rotation();
 }
 
-void UCoolTimedSummonAbility::NotifyPerformTime(const float& Time)
+void UCoolTimedSummonAbility::NotifyAbilityInstanceStateChanged(const EAbilityInstanceState& InstanceState,
+                                                                ASummonAbilityInstance* const& AbilityInstance)
 {
-	OnPerformTimeNotified.Broadcast(Time);
-}
-
-void UCoolTimedSummonAbility::NotifyAbilityInstanceCollapsed(ASummonAbilityInstance* const& AbilityInstance)
-{
-	AbilityInstancePool.ReturnObject(AbilityInstance);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object returned!"));
+	switch (InstanceState)
+	{
+	case EAbilityInstanceState::Collapsed:
+		if (AbilityInstance->HasAuthority())
+		{
+			AbilityInstancePool.ReturnObject(AbilityInstance);
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object returned!"));
+		}
+		break;
+	case EAbilityInstanceState::Ready:
+		OnPerformTimeNotified.Broadcast(AbilityInstance->GetAbilityTime());
+		break;
+	case EAbilityInstanceState::Perform: break;
+	case EAbilityInstanceState::ReadyForAction: break;
+	case EAbilityInstanceState::Action: break;
+	case EAbilityInstanceState::Ending: break;
+	default: ;
+	}
 }
 
 void UCoolTimedSummonAbility::SetTeam(const EPlayerTeam& Team)
