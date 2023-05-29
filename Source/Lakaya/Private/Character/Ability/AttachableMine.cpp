@@ -3,25 +3,23 @@
 
 #include "Character/Ability/AttachableMine.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 const FName AAttachableMine::TriggerComponentName = FName(TEXT("TriggerComponent"));
-const FName AAttachableMine::StaticMeshComponentName = FName(TEXT("StaticMeshComponent"));
 
-AAttachableMine::AAttachableMine()
+AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	BaseHealth = 30.f;
-	DamageRange = 250.f;
-	BaseDamage = 100.f;
+	ExplodeRange = 250.f;
+	ExplodeDamage = 100.f;
 
 	TriggerComponent = CreateDefaultSubobject<USphereComponent>(TriggerComponentName);
-	SetRootComponent(TriggerComponent);
-
-	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(StaticMeshComponentName);
-	StaticMeshComponent->SetupAttachment(TriggerComponent);
+	TriggerComponent->SetupAttachment(RootComponent);
+	TriggerComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 }
 
 float AAttachableMine::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
@@ -30,14 +28,19 @@ float AAttachableMine::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 	if (!ShouldTakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser)) return 0.f;
 	const auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	Health -= Damage;
-	if (Health <= 0.f) Deactivate();
+	if (Health <= 0.f) SetAbilityInstanceState(EAbilityInstanceState::Ending);
 	return Damage;
 }
 
 void AAttachableMine::SetTeam(const EPlayerTeam& Team)
 {
+	if (GetTeam() == Team) return;
 	Super::SetTeam(Team);
-	RecentTeam = Team;
+	if (!HasAuthority()) return;
+	const auto& [ATeamCollision, BTeamCollision] =
+		TeamCollisionMap.Contains(Team) ? TeamCollisionMap[Team] : FTeamCollisionInfo();
+	TriggerComponent->SetCollisionResponseToChannel(ATeamCollisionChannel, ATeamCollision ? ECR_Overlap : ECR_Ignore);
+	TriggerComponent->SetCollisionResponseToChannel(BTeamCollisionChannel, BTeamCollision ? ECR_Overlap : ECR_Ignore);
 }
 
 void AAttachableMine::PostInitializeComponents()
@@ -46,29 +49,29 @@ void AAttachableMine::PostInitializeComponents()
 	TriggerComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &AAttachableMine::OnTriggerComponentBeginOverlap);
 }
 
-void AAttachableMine::OnActivation()
+void AAttachableMine::HandleAbilityInstanceAction()
 {
-	Super::OnActivation();
-	if (HasAuthority()) TriggerComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	Super::HandleAbilityInstanceAction();
+	if (!HasAuthority()) return;
+	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	Health = BaseHealth;
 }
 
-void AAttachableMine::OnDeactivation()
+void AAttachableMine::HandleAbilityInstanceEnding()
 {
-	Super::OnDeactivation();
+	Super::HandleAbilityInstanceEnding();
 	if (HasAuthority()) TriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	Destroy();
 }
 
 bool AAttachableMine::ShouldTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
                                        AController* EventInstigator, AActor* DamageCauser)
 {
-	if (!IsActivated()) return false;
+	if (GetInstanceState() != EAbilityInstanceState::Action || !HasAuthority()) return false;
 	if (!EventInstigator) return true;
 
 	// 같은 팀이면 피해를 받지 않도록 합니다.
 	if (const auto PlayerState = EventInstigator->GetPlayerState<ALakayaBasePlayerState>())
-		return !PlayerState->IsSameTeam(RecentTeam);
+		return !PlayerState->IsSameTeam(GetTeam());
 
 	return true;
 }
@@ -77,12 +80,13 @@ void AAttachableMine::OnTriggerComponentBeginOverlap(UPrimitiveComponent* Overla
                                                      UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
                                                      bool bFromSweep, const FHitResult& SweepResult)
 {
-	// 다른 팀 캐릭터가 범위내에 들어오면 폭발합니다.
-	if (const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(OtherActor);
-		LakayaCharacter && !LakayaCharacter->IsSameTeam(RecentTeam))
-	{
-		UGameplayStatics::ApplyRadialDamage(GetWorld(), BaseDamage, GetActorLocation(), DamageRange, nullptr, {}, this,
-		                                    GetInstigatorController());
-		Deactivate();
-	}
+	UGameplayStatics::ApplyRadialDamage(GetWorld(), ExplodeDamage, GetActorLocation(), ExplodeRange, nullptr, {}, this,
+	                                    GetInstigatorController());
+	NotifyExplosion(GetActorLocation());
+	SetAbilityInstanceState(EAbilityInstanceState::Ending);
+}
+
+void AAttachableMine::NotifyExplosion_Implementation(const FVector& Location)
+{
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionNiagara, Location);
 }

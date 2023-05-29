@@ -4,7 +4,7 @@
 #include "Character/Ability/LinearProjectile.h"
 
 #include "NiagaraComponent.h"
-#include "Character/Ability/AttachableProjectile.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Character/Ability/CoolTimedSummonAbility.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -13,7 +13,6 @@
 const FName ALinearProjectile::CollisionComponentName = FName("CollisionComponent");
 const FName ALinearProjectile::StaticMeshComponentName = FName("StaticMeshComponent");
 const FName ALinearProjectile::TrailNiagaraComponentName = FName("TrailNiagaraComponent");
-const FName ALinearProjectile::ExplodeNiagaraComponentName = FName("ExplodeNiagaraComponentName");
 
 ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -27,6 +26,7 @@ ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer
 	CollapseDelay = 0.1f;
 	ATeamCollisionChannel = ECC_GameTraceChannel5;
 	BTeamCollisionChannel = ECC_GameTraceChannel6;
+	bHideMeshOnEnding = bAutoEnding = true;
 
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(CollisionComponentName);
 	CollisionComponent->SetCollisionProfileName(TEXT("DefaultProjectile"));
@@ -40,14 +40,9 @@ ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer
 	StaticMeshComponent->CanCharacterStepUpOn = ECB_No;
 
 	TrailNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TrailNiagaraComponentName);
-	TrailNiagaraComponent->SetupAttachment(CollisionComponent);
+	TrailNiagaraComponent->SetupAttachment(StaticMeshComponent);
 	TrailNiagaraComponent->SetAutoActivate(false);
 	TrailNiagaraComponent->SetAutoDestroy(false);
-
-	ExplodeNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(ExplodeNiagaraComponentName);
-	ExplodeNiagaraComponent->SetupAttachment(CollisionComponent);
-	ExplodeNiagaraComponent->SetAutoActivate(false);
-	ExplodeNiagaraComponent->SetAutoDestroy(false);
 
 	ProjectilePathParams.MaxSimTime = 5.f;
 }
@@ -71,9 +66,16 @@ void ALinearProjectile::PostInitializeComponents()
 void ALinearProjectile::PerformTimerHandler()
 {
 	Super::PerformTimerHandler();
-	// 타이머가 종료된 시점에 아직 Ready상태라면, 클라이언트를 의미하므로 투사체에 대해 물리 시뮬레이션을 시작합니다.
-	if (GetInstanceState() == EAbilityInstanceState::Ready)
-		SimulateProjectilePhysics();
+	// 타이머가 종료된 시점에 아직 Ready상태라면 투사체에 대해 물리 시뮬레이션을 시작합니다.
+	if (GetInstanceState() == EAbilityInstanceState::Ready) SimulateProjectilePhysics();
+}
+
+void ALinearProjectile::HandleAbilityInstanceReady()
+{
+	Super::HandleAbilityInstanceReady();
+	DisableProjectileSimulation();
+	DisableProjectilePhysics();
+	StaticMeshComponent->SetVisibility(false);
 }
 
 void ALinearProjectile::HandleAbilityInstancePerform()
@@ -88,22 +90,44 @@ void ALinearProjectile::HandleAbilityInstancePerform()
 	else SimulateProjectileMovement();
 }
 
+void ALinearProjectile::DisableProjectileSimulation()
+{
+	TrailNiagaraComponent->Deactivate();
+	SetActorTickEnabled(false);
+}
+
 void ALinearProjectile::HandleAbilityInstanceEnding()
 {
 	Super::HandleAbilityInstanceEnding();
-	if (!HasAuthority())
+	DisableProjectileSimulation();
+	DisableProjectilePhysics();
+	if (bAutoEnding)
 	{
-		SetActorTickEnabled(false);
-		SetActorLocationAndRotation(ProjectileLocation, ProjectileRotation);
+		if (!HasAuthority()) SetActorLocationAndRotation(ProjectileLocation, ProjectileRotation);
+		if (bHideMeshOnEnding) StaticMeshComponent->SetVisibility(false);
 	}
-	HideProjectile();
-	ExplodeNiagaraComponent->Activate();
+}
+
+void ALinearProjectile::HandleAbilityInstanceReadyForAction()
+{
+	Super::HandleAbilityInstanceReadyForAction();
+	DisableProjectileSimulation();
+	DisableProjectilePhysics();
+}
+
+void ALinearProjectile::HandleAbilityInstanceAction()
+{
+	Super::HandleAbilityInstanceAction();
+	DisableProjectileSimulation();
+	DisableProjectilePhysics();
 }
 
 void ALinearProjectile::HandleAbilityInstanceCollapsed()
 {
 	Super::HandleAbilityInstanceCollapsed();
-	ExplodeNiagaraComponent->Deactivate();
+	DisableProjectileSimulation();
+	DisableProjectilePhysics();
+	StaticMeshComponent->SetVisibility(false);
 }
 
 void ALinearProjectile::Tick(float DeltaSeconds)
@@ -138,9 +162,9 @@ void ALinearProjectile::Tick(float DeltaSeconds)
 
 void ALinearProjectile::SetTeam(const EPlayerTeam& Team)
 {
+	if (GetTeam() == Team) return;
 	Super::SetTeam(Team);
-	if (RecentTeam == Team) return;
-	RecentTeam = Team;
+	if (!HasAuthority()) return;
 	const auto& [ATeamCollision, BTeamCollision] =
 		TeamCollisionMap.Contains(Team) ? TeamCollisionMap[Team] : FTeamCollisionInfo();
 	CollisionComponent->SetCollisionResponseToChannel(ATeamCollisionChannel, ATeamCollision ? ECR_Overlap : ECR_Ignore);
@@ -167,11 +191,9 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
                                                          bool bFromSweep, const FHitResult& SweepResult)
 {
 	const auto Velocity = CollisionComponent->GetPhysicsLinearVelocity();
-	DisableProjectilePhysics();
-	if (bFromSweep) SetActorLocation(SweepResult.Location);
-	UpdateProjectileTransform();
+	if (bAutoEnding) DisableProjectilePhysics();
 
-	if (BaseDamage != 0.f && DamageRange >= 0.f)
+	if (BaseDamage != 0.f)
 	{
 		if (DamageRange > 0.f)
 		{
@@ -179,24 +201,17 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 			                                    GetInstigator(), GetInstigatorController());
 			DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRange, 10, FColor::Red, false, 3);
 		}
-		else UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, GetInstigatorController(), GetInstigator(), nullptr);
+		else if (DamageRange == 0.f)
+			UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, GetInstigatorController(), GetInstigator(), nullptr);
 	}
 
-	if (AttachableClass)
+	if (CollisionNiagara) NotifyCollision(GetActorLocation(), Velocity);
+
+	if (bAutoEnding)
 	{
-		FActorSpawnParameters Params;
-		Params.Instigator = GetInstigator();
-		Params.Owner = GetOwner();
-		if (const auto SpawnedActor = GetWorld()->SpawnActor<AAttachableProjectile>(AttachableClass, Params))
-		{
-			SpawnedActor->InitializeOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep,
-			                                SweepResult, Velocity);
-			SpawnedActor->SetTeam(RecentTeam);
-		}
-		else UE_LOG(LogScript, Error, TEXT("Fail to AttachableActor!"));
+		UpdateProjectileTransform();
+		SetAbilityInstanceState(EAbilityInstanceState::Ending);
 	}
-
-	SetAbilityInstanceState(EAbilityInstanceState::Ending);
 }
 
 void ALinearProjectile::SimulateProjectilePhysics(const bool& UsingQuery)
@@ -245,12 +260,6 @@ void ALinearProjectile::ShowProjectile()
 	TrailNiagaraComponent->Activate();
 }
 
-void ALinearProjectile::HideProjectile()
-{
-	StaticMeshComponent->SetVisibility(false);
-	TrailNiagaraComponent->Deactivate();
-}
-
 void ALinearProjectile::CalculateProjectilePath(const FVector& Location, const FRotator& Rotator)
 {
 	RecentPathCalculateTime = GetAbilityTime();
@@ -272,4 +281,9 @@ bool ALinearProjectile::CustomPointDataPredicate(const FPredictProjectilePathPoi
                                                  const FPredictProjectilePathPointData& Second)
 {
 	return First.Time < Second.Time;
+}
+
+void ALinearProjectile::NotifyCollision_Implementation(const FVector& Location, const FVector& Direction)
+{
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), CollisionNiagara, Location, (-Direction).Rotation());
 }

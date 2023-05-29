@@ -51,7 +51,8 @@ public:
 	FORCEINLINE const EAbilityInstanceState& GetInstanceState() const { return AbilityInstanceState; }
 
 	// 어빌리티 인스턴스에게 팀 정보를 셋업합니다.
-	virtual void SetTeam(const EPlayerTeam& Team) { return; }
+	virtual void SetTeam(const EPlayerTeam& Team);
+	FORCEINLINE const EPlayerTeam& GetTeam() const { return RecentTeam; }
 
 	/**
 	 * @brief 어빌리티 인스턴스의 시간값을 가져옵니다. 이 시간값은 어빌리티 인스턴스의 상태에 따라 여러가지 용도로 쓰입니다.
@@ -72,7 +73,7 @@ protected:
 
 	virtual void HandleAbilityInstanceReady();
 	virtual void HandleAbilityInstancePerform() { return; }
-	virtual void HandleAbilityInstanceReadyForAction() { return; }
+	virtual void HandleAbilityInstanceReadyForAction();
 	virtual void HandleAbilityInstanceAction() { return; }
 	virtual void HandleAbilityInstanceEnding();
 	virtual void HandleAbilityInstanceCollapsed() { return; }
@@ -82,7 +83,6 @@ protected:
 	 * 서버와 클라이언트 모두에서 동시에 호출되도록 만들어졌지만, 네트워크 환경이 열악한 환경에서는 클라이언트에서 이 함수가 제대로 호출되지 않을 수 있습니다.
 	 */
 	virtual void PerformTimerHandler();
-	virtual void CollapseTimerHandler();
 
 	float GetServerTime() const;
 
@@ -99,6 +99,10 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float CollapseDelay;
 
+	// ReadyForAction에서 몇 초 뒤에 Action으로 진입할지 지정합니다. 0이거나 음수면 수동으로 Ready로 바꿔야 합니다.
+	UPROPERTY(EditAnywhere)
+	float ActionDelay;
+
 	UPROPERTY(Replicated, Transient)
 	float AbilityTime;
 
@@ -109,6 +113,6 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_OwningAbility, Transient)
 	TWeakObjectPtr<UCoolTimedSummonAbility> OwningAbility;
 
-	FTimerHandle PerformTimer;
-	FTimerHandle CollapseTimer;
+	FTimerHandle StateTimer;
+	EPlayerTeam RecentTeam;
 };
