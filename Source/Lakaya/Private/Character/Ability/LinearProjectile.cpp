@@ -195,14 +195,11 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 			UGameplayStatics::ApplyRadialDamage(GetWorld(), BaseDamage, GetActorLocation(), DamageRange, nullptr, {},
 			                                    GetInstigator(), GetInstigatorController());
 			DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRange, 10, FColor::Red, false, 3);
-			NotifyExplosion(GetActorLocation(), Velocity);
 		}
 		else if (DamageRange == 0.f)
-		{
 			UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, GetInstigatorController(), GetInstigator(), nullptr);
-			NotifyExplosion(GetActorLocation(), Velocity);
-		}
 	}
+	NotifyCollision(GetActorLocation(), Velocity);
 
 	if (bAutoEnding)
 	{
@@ -280,7 +277,7 @@ bool ALinearProjectile::CustomPointDataPredicate(const FPredictProjectilePathPoi
 	return First.Time < Second.Time;
 }
 
-void ALinearProjectile::NotifyExplosion_Implementation(const FVector& Location, const FVector& Direction)
+void ALinearProjectile::NotifyCollision_Implementation(const FVector& Location, const FVector& Direction)
 {
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionNiagara, Location, (-Direction).Rotation());
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), CollisionNiagara, Location, (-Direction).Rotation());
 }

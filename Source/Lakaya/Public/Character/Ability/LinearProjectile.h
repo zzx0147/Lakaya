@@ -76,7 +76,7 @@ private:
 	                                     const FPredictProjectilePathPointData& Second);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void NotifyExplosion(const FVector& Location, const FVector& Direction);
+	void NotifyCollision(const FVector& Location, const FVector& Direction);
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -112,7 +112,7 @@ protected:
 	bool bHideMeshOnEnding;
 
 	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* ExplosionNiagara;
+	class UNiagaraSystem* CollisionNiagara;
 
 private:
 	UPROPERTY(VisibleAnywhere)
