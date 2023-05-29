@@ -114,6 +114,12 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* CollisionNiagara;
 
+	UPROPERTY(Replicated, Transient)
+	FVector ProjectileLocation;
+
+	UPROPERTY(Replicated, Transient)
+	FRotator ProjectileRotation;
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* CollisionComponent;
@@ -123,12 +129,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	class UNiagaraComponent* TrailNiagaraComponent;
-
-	UPROPERTY(Replicated, Transient)
-	FVector ProjectileLocation;
-
-	UPROPERTY(Replicated, Transient)
-	FRotator ProjectileRotation;
 
 	FPredictProjectilePathResult ProjectilePathResult;
 	float RecentPathCalculateTime;
