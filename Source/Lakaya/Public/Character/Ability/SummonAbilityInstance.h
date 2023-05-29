@@ -99,12 +99,12 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float CollapseDelay;
 
+	UPROPERTY(Replicated, Transient)
+	float AbilityTime;
+
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_AbilityInstanceState, Transient)
 	EAbilityInstanceState AbilityInstanceState;
-
-	UPROPERTY(Replicated, Transient)
-	float AbilityTime;
 
 	UPROPERTY(ReplicatedUsing=OnRep_OwningAbility, Transient)
 	TWeakObjectPtr<UCoolTimedSummonAbility> OwningAbility;
