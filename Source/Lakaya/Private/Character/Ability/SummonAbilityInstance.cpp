@@ -38,6 +38,11 @@ void ASummonAbilityInstance::SetAbilityInstanceState(const EAbilityInstanceState
 	OnRep_AbilityInstanceState();
 }
 
+void ASummonAbilityInstance::SetTeam(const EPlayerTeam& Team)
+{
+	RecentTeam = Team;
+}
+
 void ASummonAbilityInstance::OnRep_AbilityInstanceState()
 {
 	switch (AbilityInstanceState)
@@ -74,15 +79,23 @@ void ASummonAbilityInstance::HandleAbilityInstanceReady()
 {
 	if (PerformDelay <= 0.f) return;
 	if (HasAuthority()) AbilityTime = GetServerTime() + PerformDelay;
-	GetWorld()->GetTimerManager().SetTimer(PerformTimer, this, &ASummonAbilityInstance::PerformTimerHandler,
+	GetWorld()->GetTimerManager().SetTimer(StateTimer, this, &ASummonAbilityInstance::PerformTimerHandler,
 	                                       AbilityTime - GetServerTime());
+}
+
+void ASummonAbilityInstance::HandleAbilityInstanceReadyForAction()
+{
+	if (ActionDelay <= 0.f || !HasAuthority()) return;
+	AbilityTime = GetServerTime() + ActionDelay;
+	GetWorld()->GetTimerManager().SetTimer(
+		StateTimer, [this] { SetAbilityInstanceState(EAbilityInstanceState::Action); }, ActionDelay, false);
 }
 
 void ASummonAbilityInstance::HandleAbilityInstanceEnding()
 {
 	if (CollapseDelay <= 0.f || !HasAuthority()) return;
-	GetWorld()->GetTimerManager().SetTimer(CollapseTimer, this, &ASummonAbilityInstance::CollapseTimerHandler,
-	                                       CollapseDelay);
+	GetWorld()->GetTimerManager().SetTimer(
+		StateTimer, [this] { SetAbilityInstanceState(EAbilityInstanceState::Collapsed); }, CollapseDelay, false);
 }
 
 float ASummonAbilityInstance::GetServerTime() const
@@ -93,9 +106,4 @@ float ASummonAbilityInstance::GetServerTime() const
 void ASummonAbilityInstance::PerformTimerHandler()
 {
 	if (HasAuthority()) SetAbilityInstanceState(EAbilityInstanceState::Perform);
-}
-
-void ASummonAbilityInstance::CollapseTimerHandler()
-{
-	SetAbilityInstanceState(EAbilityInstanceState::Collapsed);
 }

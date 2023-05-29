@@ -32,7 +32,6 @@ public:
 	static const FName CollisionComponentName;
 	static const FName StaticMeshComponentName;
 	static const FName TrailNiagaraComponentName;
-	static const FName ExplodeNiagaraComponentName;
 
 	explicit ALinearProjectile(const FObjectInitializer& ObjectInitializer);
 	virtual void PostInitializeComponents() override;
@@ -54,6 +53,8 @@ protected:
 	                                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 	                                              const FHitResult& SweepResult);
 
+	void UpdateProjectileTransform();
+
 private:
 	// 물리엔진을 사용하여 투사체를 시뮬레이트합니다.
 	void SimulateProjectilePhysics(const bool& UsingQuery = false);
@@ -65,13 +66,11 @@ private:
 	void SimulateProjectileMovement();
 	void DisableProjectileSimulation();
 
-	void ShowProjectile();
-
-	void UpdateProjectileTransform();
 
 	void CalculateProjectilePath(const FVector& Location, const FRotator& Rotator);
 	void RecalculateProjectilePath();
 
+	void ShowProjectile();
 	static bool CustomPointDataPredicate(const FPredictProjectilePathPointData& First,
 	                                     const FPredictProjectilePathPointData& Second);
 
@@ -133,5 +132,4 @@ private:
 	FPredictProjectilePathResult ProjectilePathResult;
 	float RecentPathCalculateTime;
 	FPredictProjectilePathPointData RecentPointData;
-	EPlayerTeam RecentTeam;
 };

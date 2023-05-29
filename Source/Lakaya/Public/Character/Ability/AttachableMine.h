@@ -13,17 +13,16 @@ class LAKAYA_API AAttachableMine : public AAttachableProjectile
 
 public:
 	static const FName TriggerComponentName;
-	static const FName StaticMeshComponentName;
 
-	AAttachableMine();
+	explicit AAttachableMine(const FObjectInitializer& ObjectInitializer);
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 	virtual void SetTeam(const EPlayerTeam& Team) override;
 	virtual void PostInitializeComponents() override;
 
 protected:
-	virtual void OnActivation() override;
-	virtual void OnDeactivation() override;
+	virtual void HandleAbilityInstanceAction() override;
+	virtual void HandleAbilityInstanceEnding() override;
 
 	virtual bool ShouldTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                              AActor* DamageCauser);
@@ -33,22 +32,26 @@ protected:
 	                                            UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 	                                            const FHitResult& SweepResult);
 
+private:
+	UFUNCTION(NetMulticast, Reliable)
+	void NotifyExplosion(const FVector& Location);
+
+protected:
 	UPROPERTY(EditAnywhere)
 	float BaseHealth;
 
 	UPROPERTY(EditAnywhere)
-	float DamageRange;
+	float ExplodeRange;
 
 	UPROPERTY(EditAnywhere)
-	float BaseDamage;
+	float ExplodeDamage;
+
+	UPROPERTY(EditAnywhere)
+	UNiagaraSystem* ExplosionNiagara;
 
 private:
 	UPROPERTY(VisibleAnywhere)
-	class USphereComponent* TriggerComponent;
-
-	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* StaticMeshComponent;
+	USphereComponent* TriggerComponent;
 
 	float Health;
-	EPlayerTeam RecentTeam;
 };

@@ -74,6 +74,7 @@ void ALinearProjectile::HandleAbilityInstanceReady()
 {
 	Super::HandleAbilityInstanceReady();
 	DisableProjectileSimulation();
+	DisableProjectilePhysics();
 	StaticMeshComponent->SetVisibility(false);
 }
 
@@ -99,6 +100,7 @@ void ALinearProjectile::HandleAbilityInstanceEnding()
 {
 	Super::HandleAbilityInstanceEnding();
 	DisableProjectileSimulation();
+	DisableProjectilePhysics();
 	if (bAutoEnding)
 	{
 		if (!HasAuthority()) SetActorLocationAndRotation(ProjectileLocation, ProjectileRotation);
@@ -110,18 +112,21 @@ void ALinearProjectile::HandleAbilityInstanceReadyForAction()
 {
 	Super::HandleAbilityInstanceReadyForAction();
 	DisableProjectileSimulation();
+	DisableProjectilePhysics();
 }
 
 void ALinearProjectile::HandleAbilityInstanceAction()
 {
 	Super::HandleAbilityInstanceAction();
 	DisableProjectileSimulation();
+	DisableProjectilePhysics();
 }
 
 void ALinearProjectile::HandleAbilityInstanceCollapsed()
 {
 	Super::HandleAbilityInstanceCollapsed();
 	DisableProjectileSimulation();
+	DisableProjectilePhysics();
 	StaticMeshComponent->SetVisibility(false);
 }
 
@@ -157,9 +162,9 @@ void ALinearProjectile::Tick(float DeltaSeconds)
 
 void ALinearProjectile::SetTeam(const EPlayerTeam& Team)
 {
+	if (GetTeam() == Team) return;
 	Super::SetTeam(Team);
-	if (RecentTeam == Team) return;
-	RecentTeam = Team;
+	if (!HasAuthority()) return;
 	const auto& [ATeamCollision, BTeamCollision] =
 		TeamCollisionMap.Contains(Team) ? TeamCollisionMap[Team] : FTeamCollisionInfo();
 	CollisionComponent->SetCollisionResponseToChannel(ATeamCollisionChannel, ATeamCollision ? ECR_Overlap : ECR_Ignore);
@@ -199,7 +204,8 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 		else if (DamageRange == 0.f)
 			UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, GetInstigatorController(), GetInstigator(), nullptr);
 	}
-	NotifyCollision(GetActorLocation(), Velocity);
+
+	if (CollisionNiagara) NotifyCollision(GetActorLocation(), Velocity);
 
 	if (bAutoEnding)
 	{
