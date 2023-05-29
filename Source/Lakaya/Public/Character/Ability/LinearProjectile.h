@@ -55,12 +55,15 @@ protected:
 
 	void UpdateProjectileTransform();
 
+	FORCEINLINE UStaticMeshComponent* GetStaticMeshComponent() const { return StaticMeshComponent; }
+
+	// 물리엔진을 통한 투사체 시뮬레이션을 종료합니다.
+	void DisableProjectilePhysics();
+
 private:
 	// 물리엔진을 사용하여 투사체를 시뮬레이트합니다.
 	void SimulateProjectilePhysics(const bool& UsingQuery = false);
 
-	// 물리엔진을 통한 투사체 시뮬레이션을 종료합니다.
-	void DisableProjectilePhysics();
 
 	// 투사체의 초기 위치, 방향, 속도를 바탕으로 현재 시간에 맞는 위치를 시뮬레이트합니다.
 	void SimulateProjectileMovement();
