@@ -8,6 +8,8 @@
 #include "Occupation/PlayerTeam.h"
 #include "CoolTimedSummonAbility.generated.h"
 
+enum class EAbilityInstanceState;
+
 DECLARE_EVENT_OneParam(UCoolTimedSummonAbility, FPerformTimeSignature, const float&)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -26,8 +28,8 @@ protected:
 
 public:
 	void GetSummonLocationAndRotation(FVector& Location, FRotator& Rotator) const;
-	void NotifyPerformTime(const float& Time);
-	void NotifyAbilityInstanceCollapsed(class ASummonAbilityInstance* const& AbilityInstance);
+	void NotifyAbilityInstanceStateChanged(const EAbilityInstanceState& InstanceState,
+	                                       class ASummonAbilityInstance* const& AbilityInstance);
 
 	// 소환된 스킬이 실제로 언제 실행되는지 알려진 뒤에 호출됩니다. 매개변수로 스킬이 실행되는 시간을 받습니다.
 	FPerformTimeSignature OnPerformTimeNotified;
