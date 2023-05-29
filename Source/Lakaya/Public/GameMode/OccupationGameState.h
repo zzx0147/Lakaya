@@ -94,6 +94,12 @@ private:
 	
 	TMap<EPlayerTeam,TArray<class ALakayaBasePlayerState*>> PlayersByTeamMap;
 
+	// Anti팀의 배열입니다.
+	TArray<TObjectPtr<ALakayaBasePlayerState>> AntiTeamArray;
+
+	// Pro팀의 배열입니다.
+	TArray<TObjectPtr<ALakayaBasePlayerState>> ProTeamArray;
+
 	EPlayerTeam ClientTeam;
 
 	FTimerHandle TimerHandle_GameTimeCheck;

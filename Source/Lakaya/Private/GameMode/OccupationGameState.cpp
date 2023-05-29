@@ -153,6 +153,20 @@ void AOccupationGameState::HandleMatchHasStarted()
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, TimerDelegate, MatchWaitDuration + MatchStartWidgetLifeTime, false);
+
+	// 현재 접속한 플레이어의 인원들 모두 각 팀마다 TArray배열에 넣어줍니다.
+	for (const auto& PlayerState : PlayerArray)
+	{
+		ALakayaBasePlayerState* BasePlayerState = Cast<ALakayaBasePlayerState>(PlayerState);
+		if (BasePlayerState->GetTeam() == EPlayerTeam::A)
+		{
+			AntiTeamArray.Emplace(BasePlayerState);
+		}
+		if (BasePlayerState->GetTeam() == EPlayerTeam::B)
+		{
+			ProTeamArray.Emplace(BasePlayerState);
+		}
+	}
 }
 
 void AOccupationGameState::HandleMatchHasEnded()
@@ -162,11 +176,20 @@ void AOccupationGameState::HandleMatchHasEnded()
 	if (GameResultWidget.IsValid())
 		GameResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
+	// 게임이 끝나게 되면 Anti팀 배열을 내림차순으로 정렬합니다.
+	AntiTeamArray.Sort([](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B) {
+		return A.GetTotalScore() > B.GetTotalScore();
+	});
+
+	// 게임이 끝나게 되면 Pro팀 배열을 내림차순으로 정렬합합니다.
+	ProTeamArray.Sort([](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B) {
+		return A.GetTotalScore() > B.GetTotalScore();
+	});
+
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
 		const ALakayaBasePlayerState* LakayaPlayerState = Cast<ALakayaBasePlayerState>(LocalController->GetPlayerState<ALakayaBasePlayerState>());
-		if (LakayaPlayerState == nullptr)
-			UE_LOG(LogTemp, Warning, TEXT("LakayaPlayerState is null."));
+		if (LakayaPlayerState == nullptr) UE_LOG(LogTemp, Warning, TEXT("LakayaPlayerState is null."));
 
 		if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
 		{

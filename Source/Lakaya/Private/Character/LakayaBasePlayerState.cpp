@@ -209,9 +209,7 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 	if (CurrentCaptureCount == 0)
 	{
 		if (GetWorldTimerManager().IsTimerActive(CurrentCaptureTimer))
-		{
 			GetWorldTimerManager().ClearTimer(CurrentCaptureTimer);
-		}
 	}
 		
 	if (CurrentCaptureCount == 1)
