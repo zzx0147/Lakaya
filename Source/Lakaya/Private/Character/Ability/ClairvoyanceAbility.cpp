@@ -3,8 +3,6 @@
 
 #include "Character/Ability/ClairvoyanceAbility.h"
 
-#include "Character/LakayaBaseCharacter.h"
-#include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
