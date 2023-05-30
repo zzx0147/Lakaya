@@ -13,7 +13,8 @@
 const FName AAttachableMine::TriggerComponentName = FName(TEXT("TriggerComponent"));
 const FName AAttachableMine::ActivationNiagaraComponentName = FName(TEXT("ActivationNiagaraComponent"));
 
-AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : Super(
+	ObjectInitializer.SetDefaultSubobjectClass(MeshComponentName, USkeletalMeshComponent::StaticClass()))
 {
 	BaseHealth = 30.f;
 	ExplodeRange = 250.f;
@@ -25,7 +26,7 @@ AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : 
 	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	ActivationNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(ActivationNiagaraComponentName);
-	ActivationNiagaraComponent->SetupAttachment(GetStaticMeshComponent());
+	ActivationNiagaraComponent->SetupAttachment(GetMeshComponent());
 	ActivationNiagaraComponent->SetAutoActivate(false);
 	ActivationNiagaraComponent->SetAutoDestroy(false);
 }

@@ -30,7 +30,7 @@ class LAKAYA_API ALinearProjectile : public ASummonAbilityInstance
 
 public:
 	static const FName CollisionComponentName;
-	static const FName StaticMeshComponentName;
+	static const FName MeshComponentName;
 	static const FName TrailNiagaraComponentName;
 
 	explicit ALinearProjectile(const FObjectInitializer& ObjectInitializer);
@@ -55,7 +55,7 @@ protected:
 
 	void UpdateProjectileTransform();
 
-	FORCEINLINE UStaticMeshComponent* GetStaticMeshComponent() const { return StaticMeshComponent; }
+	FORCEINLINE UMeshComponent* GetMeshComponent() const { return MeshComponent; }
 
 	// 물리엔진을 통한 투사체 시뮬레이션을 종료합니다.
 	void DisableProjectilePhysics();
@@ -127,7 +127,7 @@ private:
 	class USphereComponent* CollisionComponent;
 
 	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* StaticMeshComponent;
+	UMeshComponent* MeshComponent;
 
 	UPROPERTY(VisibleAnywhere)
 	class UNiagaraComponent* TrailNiagaraComponent;
