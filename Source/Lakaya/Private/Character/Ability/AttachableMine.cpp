@@ -19,6 +19,10 @@ AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : 
 	ExplodeRange = 250.f;
 	ExplodeDamage = 100.f;
 
+	GetMeshComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	GetMeshComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	GetMeshComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
 	TriggerComponent = CreateDefaultSubobject<USphereComponent>(TriggerComponentName);
 	TriggerComponent->SetupAttachment(RootComponent);
 	TriggerComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
