@@ -84,10 +84,10 @@ public:
 	// 현재 플레이어의 점수를 가져옵니다.
 	FORCEINLINE const uint16& GetTotalScore() const { return TotalScore; }
 
-	// 현재 플레이어의 누적 점령 성공 횟수를 가져옵니다.
-	FORCEINLINE const uint16& GetCurrentCaptureCount() const { return CurrentCaptureCount; }
-	
 	// 현재 플레이어의 점령한 오브젝트 갯수를 가져옵니다.
+	FORCEINLINE const uint16& GetCurrentCaptureCount() const { return CurrentCaptureCount; }
+
+	// 현재 플레이어의 누적 점령 성공 횟수를 가져옵니다.
 	FORCEINLINE const uint16& GetSuccessCaptureCount() const { return SuccessCaptureCount; }
 	
 	// 현재 플레이어의 누적 킬 횟수를 가져옵니다.

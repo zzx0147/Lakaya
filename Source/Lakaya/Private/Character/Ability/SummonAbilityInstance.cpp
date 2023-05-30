@@ -17,6 +17,7 @@ ASummonAbilityInstance::ASummonAbilityInstance(const FObjectInitializer& ObjectI
 void ASummonAbilityInstance::SetOwningAbility(UCoolTimedSummonAbility* const& Ability)
 {
 	OwningAbility = Ability;
+	OnRep_OwningAbility();
 }
 
 void ASummonAbilityInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -29,9 +30,17 @@ void ASummonAbilityInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 
 void ASummonAbilityInstance::SetAbilityInstanceState(const EAbilityInstanceState& DesireState)
 {
-	if (AbilityInstanceState == DesireState) return;
+	// 같은 스테이트로의 전환 시도이거나, 부적절한 스테이트로의 전환 시도인 경우 넘깁니다.
+	if (AbilityInstanceState == DesireState || DesireState < EAbilityInstanceState::Collapsed
+		|| DesireState > EAbilityInstanceState::Ending)
+		return;
 	AbilityInstanceState = DesireState;
 	OnRep_AbilityInstanceState();
+}
+
+void ASummonAbilityInstance::SetTeam(const EPlayerTeam& Team)
+{
+	RecentTeam = Team;
 }
 
 void ASummonAbilityInstance::OnRep_AbilityInstanceState()
@@ -47,34 +56,46 @@ void ASummonAbilityInstance::OnRep_AbilityInstanceState()
 	case EAbilityInstanceState::Perform:
 		HandleAbilityInstancePerform();
 		break;
+	case EAbilityInstanceState::ReadyForAction:
+		HandleAbilityInstanceReadyForAction();
+		break;
+	case EAbilityInstanceState::Action:
+		HandleAbilityInstanceAction();
+		break;
 	case EAbilityInstanceState::Ending:
 		HandleAbilityInstanceEnding();
 		break;
-	default:
-		UE_LOG(LogScript, Error, TEXT("AbilityInstanceState was invalid state! it was %d"), AbilityInstanceState);
-		break;
 	}
+	OnAbilityInstanceStateChanged.Broadcast(AbilityInstanceState, this);
+}
+
+void ASummonAbilityInstance::OnRep_OwningAbility()
+{
+	OnAbilityInstanceStateChanged.AddUObject(OwningAbility.Get(),
+	                                         &UCoolTimedSummonAbility::NotifyAbilityInstanceStateChanged);
 }
 
 void ASummonAbilityInstance::HandleAbilityInstanceReady()
 {
 	if (PerformDelay <= 0.f) return;
 	if (HasAuthority()) AbilityTime = GetServerTime() + PerformDelay;
-	GetWorld()->GetTimerManager().SetTimer(PerformTimer, this, &ASummonAbilityInstance::PerformTimerHandler,
+	GetWorld()->GetTimerManager().SetTimer(StateTimer, this, &ASummonAbilityInstance::PerformTimerHandler,
 	                                       AbilityTime - GetServerTime());
-	if (OwningAbility.IsValid()) OwningAbility->NotifyPerformTime(AbilityTime);
+}
+
+void ASummonAbilityInstance::HandleAbilityInstanceReadyForAction()
+{
+	if (ActionDelay <= 0.f || !HasAuthority()) return;
+	AbilityTime = GetServerTime() + ActionDelay;
+	GetWorld()->GetTimerManager().SetTimer(
+		StateTimer, [this] { SetAbilityInstanceState(EAbilityInstanceState::Action); }, ActionDelay, false);
 }
 
 void ASummonAbilityInstance::HandleAbilityInstanceEnding()
 {
-	if (PerformDelay <= 0.f || !HasAuthority()) return;
-	GetWorld()->GetTimerManager().SetTimer(CollapseTimer, this, &ASummonAbilityInstance::CollapseTimerHandler,
-	                                       CollapseDelay);
-}
-
-void ASummonAbilityInstance::HandleAbilityInstanceCollapsed()
-{
-	if (HasAuthority() && OwningAbility.IsValid()) OwningAbility->NotifyAbilityInstanceCollapsed(this);
+	if (CollapseDelay <= 0.f || !HasAuthority()) return;
+	GetWorld()->GetTimerManager().SetTimer(
+		StateTimer, [this] { SetAbilityInstanceState(EAbilityInstanceState::Collapsed); }, CollapseDelay, false);
 }
 
 float ASummonAbilityInstance::GetServerTime() const
@@ -85,9 +106,4 @@ float ASummonAbilityInstance::GetServerTime() const
 void ASummonAbilityInstance::PerformTimerHandler()
 {
 	if (HasAuthority()) SetAbilityInstanceState(EAbilityInstanceState::Perform);
-}
-
-void ASummonAbilityInstance::CollapseTimerHandler()
-{
-	SetAbilityInstanceState(EAbilityInstanceState::Collapsed);
 }

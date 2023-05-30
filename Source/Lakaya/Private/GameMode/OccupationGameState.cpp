@@ -3,13 +3,17 @@
 #include "EngineUtils.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
+#include "Commandlets/GenerateAssetManifestCommandlet.h"
 #include "Engine/TriggerBox.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameMode.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
+#include "UI/GamePlayCrossHairWidget.h"
 #include "UI/GameResultWidget.h"
+#include "UI/GameTimeWidget.h"
+#include "UI/HelpWidget.h"
 #include "UI/TeamScoreWidget.h"
 #include "UI/StartMessageWidget.h"
 #include "UI/MatchStartWaitWidget.h"
@@ -84,11 +88,30 @@ void AOccupationGameState::BeginPlay()
 				GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
+
+		if (GradeResultWidgetClass)
+		{
+			GradeResultWidget = CreateWidget<UGradeResultWidget>(LocalController, GradeResultWidgetClass);
+			if (GradeResultWidget.IsValid())
+			{
+				GradeResultWidget->AddToViewport(1);
+				GradeResultWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+
+		if (DetailResultWidgetClass)
+		{
+			DetailResultWidget = CreateWidget<UDetailResultWidget>(LocalController, DetailResultWidgetClass);
+			if (DetailResultWidget.IsValid())
+			{
+				DetailResultWidget->AddToViewport(1);
+				DetailResultWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_LocalPlayerController is null."));
-		return;
 	}
 
 	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this,
@@ -130,6 +153,85 @@ void AOccupationGameState::HandleMatchHasStarted()
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, TimerDelegate, MatchWaitDuration + MatchStartWidgetLifeTime, false);
+
+	// 현재 접속한 플레이어의 인원들 모두 각 팀마다 TArray배열에 넣어줍니다.
+	for (const auto& PlayerState : PlayerArray)
+	{
+		ALakayaBasePlayerState* BasePlayerState = Cast<ALakayaBasePlayerState>(PlayerState);
+		if (BasePlayerState->GetTeam() == EPlayerTeam::A)
+		{
+			AntiTeamArray.Emplace(BasePlayerState);
+		}
+		if (BasePlayerState->GetTeam() == EPlayerTeam::B)
+		{
+			ProTeamArray.Emplace(BasePlayerState);
+		}
+	}
+}
+
+void AOccupationGameState::HandleMatchHasEnded()
+{
+	Super::HandleMatchHasEnded();
+
+	if (GameResultWidget.IsValid())
+		GameResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+	// 게임이 끝나게 되면 Anti팀 배열을 내림차순으로 정렬합니다.
+	AntiTeamArray.Sort([](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B) {
+		return A.GetTotalScore() > B.GetTotalScore();
+	});
+
+	// 게임이 끝나게 되면 Pro팀 배열을 내림차순으로 정렬합합니다.
+	ProTeamArray.Sort([](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B) {
+		return A.GetTotalScore() > B.GetTotalScore();
+	});
+
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+	{
+		const ALakayaBasePlayerState* LakayaPlayerState = Cast<ALakayaBasePlayerState>(LocalController->GetPlayerState<ALakayaBasePlayerState>());
+		if (LakayaPlayerState == nullptr) UE_LOG(LogTemp, Warning, TEXT("LakayaPlayerState is null."));
+
+		if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
+		{
+			// 승리했다면 "승리" 이미지를 띄워줍니다.
+			GameResultWidget->VictoryImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		}
+		else
+		{
+			// 패배했다면 "패배" 이미지를 띄워줍니다.
+			GameResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		}
+		
+		GameResultWidget->AntiScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), ATeamScore)));
+		GameResultWidget->ProScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), BTeamScore)));
+
+		// 게임 결과를 띄우고 5초뒤에 비활성화 해주고, GradeResultWidget을 띄웁니다.
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindLambda([this, LakayaPlayerState, LocalController]
+		{
+			GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
+			GradeResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+			if (LakayaPlayerState->GetTeam() == EPlayerTeam::A)
+				GradeResultWidget->AntiTextBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			if (LakayaPlayerState->GetTeam() == EPlayerTeam::B)
+				GradeResultWidget->ProTextBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+			if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
+				GradeResultWidget->VictoryImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			else GradeResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+			LocalController->SetShowMouseCursor(true);
+			
+			// 기존에 활성화 되어 있는 Widget들을 모두 꺼줍니다.
+			// HelpWidget->SetVisibility(ESlateVisibility::Hidden);
+			// InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
+			// SkillWidget->SetVisibility(ESlateVisibility::Hidden);
+			// CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
+			
+		});
+		GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
+	}
 }
 
 void AOccupationGameState::NotifyKillCharacter_Implementation(AController* KilledController, AActor* KilledActor,

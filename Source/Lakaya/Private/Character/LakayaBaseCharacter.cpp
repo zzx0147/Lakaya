@@ -36,7 +36,7 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 
 	HitScreenEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Niagara"));
 	HitScreenEffect->SetupAttachment(Camera);
-	
+
 	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(ResourceComponentName);
 	ResourceComponent->SetIsReplicated(true);
 
@@ -106,6 +106,11 @@ FRotator ALakayaBaseCharacter::GetPlayerRotation() const
 	return LatestUpdateRotation.Rotator();
 }
 
+bool ALakayaBaseCharacter::IsSameTeam(const EPlayerTeam& Team) const
+{
+	return JudgeSameTeam(RecentTeam, Team);
+}
+
 void ALakayaBaseCharacter::PlayHitScreen()
 {
 	HitScreenEffect->Activate(true);
@@ -113,6 +118,7 @@ void ALakayaBaseCharacter::PlayHitScreen()
 
 void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
 {
+	RecentTeam = Team;
 	if (Team == EPlayerTeam::A) GetCapsuleComponent()->SetCollisionObjectType(ATeamObjectType);
 	else if (Team == EPlayerTeam::B) GetCapsuleComponent()->SetCollisionObjectType(BTeamObjectType);
 }

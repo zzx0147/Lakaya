@@ -9,22 +9,22 @@
 /**
  * 
  */
-USTRUCT(BlueprintType)
-struct FPlayerAIData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FString PlayerName;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	int32 KillCount;
-
-	bool operator<(const FPlayerAIData& Other) const
-	{
-		return KillCount < Other.KillCount;
-	}
-};
+// USTRUCT(BlueprintType)
+// struct FPlayerAIData
+// {
+// 	GENERATED_BODY()
+//
+// 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+// 	FString PlayerName;
+//
+// 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+// 	int32 KillCount;
+//
+// 	bool operator<(const FPlayerAIData& Other) const
+// 	{
+// 		return KillCount < Other.KillCount;
+// 	}
+// };
 
 class UTextBlock;
 
@@ -36,7 +36,7 @@ class LAKAYA_API UAIIndividualScoreBoardWidget : public UUserWidget
 public:
 	explicit UAIIndividualScoreBoardWidget(const FObjectInitializer& ObjectInitializer);
 	
-	void SetScoreBoardPlayerName(const TArray<FPlayerAIData>& PlayerDataArray);
+	// void SetScoreBoardPlayerName(const TArray<FPlayerAIData>& PlayerDataArray);
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
