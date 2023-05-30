@@ -13,8 +13,7 @@
 const FName AAttachableMine::TriggerComponentName = FName(TEXT("TriggerComponent"));
 const FName AAttachableMine::ActivationNiagaraComponentName = FName(TEXT("ActivationNiagaraComponent"));
 
-AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : Super(
-	ObjectInitializer.SetDefaultSubobjectClass(MeshComponentName, USkeletalMeshComponent::StaticClass()))
+AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	BaseHealth = 30.f;
 	ExplodeRange = 250.f;
