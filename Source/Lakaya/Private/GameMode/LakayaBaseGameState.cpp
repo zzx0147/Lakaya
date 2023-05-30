@@ -18,6 +18,7 @@ ALakayaBaseGameState::ALakayaBaseGameState()
 	PrimaryActorTick.bCanEverTick = false;
 	MaximumPlayers = 6;
 	MatchDuration = 180.f;
+	MatchWaitDuration = 10.0f;
 }
 
 void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -26,6 +27,7 @@ void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	
 	DOREPLIFETIME(ALakayaBaseGameState, MatchEndingTime);
 	DOREPLIFETIME(ALakayaBaseGameState, CharacterSelectEndingTime);
+	DOREPLIFETIME(ALakayaBaseGameState, MatchWaitEndingTime);
 }
 
 void ALakayaBaseGameState::BeginPlay()
@@ -121,7 +123,6 @@ void ALakayaBaseGameState::BeginPlay()
 	}
 }
 
-
 void ALakayaBaseGameState::AddPlayerState(APlayerState* PlayerState)
 {
 	Super::AddPlayerState(PlayerState);
@@ -195,10 +196,15 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	if (const auto PlayerController = GetWorld()->GetFirstPlayerController())
 		PlayerController->SetShowMouseCursor(false);
 
-	SetupTimerWidget(EndingTimer, MatchDuration, MatchEndingTime, [this] {
-		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->EndMatch(); }
-	, InGameTimeWidget);
-
+	SetupTimerWidget(MatchWaitToStartTimer, MatchWaitDuration, MatchWaitEndingTime, [this]
+	{
+		
+		SetupTimerWidget(EndingTimer, MatchDuration, MatchEndingTime, [this] {
+		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->EndMatch();
+		}, InGameTimeWidget);
+		
+	}, InGameTimeWidget);
+	
 	if (HasAuthority())
 	{
 		GetWorldTimerManager().SetTimer(EndingTimer, [this]
@@ -227,10 +233,9 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]() {
-		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->StartMatch(); }
-	, CharacterSelectTimeWidget);
-
-
+		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->StartMatch();
+	}, CharacterSelectTimeWidget);
+	
 	//if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	//	CreateCharacterSelectWidget(LocalController);//위젯이 아직 없으면 생성함
 }
@@ -321,6 +326,11 @@ void ALakayaBaseGameState::OnRep_MatchEndingTime()
 void ALakayaBaseGameState::OnRep_CharacterSelectEndingTime()
 {
 	if (CharacterSelectTimeWidget.IsValid()) CharacterSelectTimeWidget->SetWidgetTimer(CharacterSelectEndingTime);
+}
+
+void ALakayaBaseGameState::OnRep_MatchWaitEndingTime()
+{
+	if (InGameTimeWidget.IsValid()) InGameTimeWidget->SetWidgetTimer(MatchWaitEndingTime);
 }
 
 bool ALakayaBaseGameState::SpawnOutlineManager()
