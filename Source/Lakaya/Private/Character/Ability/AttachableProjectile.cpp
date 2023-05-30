@@ -26,6 +26,7 @@ void AAttachableProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent
 {
 	const auto Start = OverlappedComponent->GetComponentLocation();
 	const auto Velocity = OverlappedComponent->GetPhysicsLinearVelocity();
+	DisableProjectilePhysics();
 	Super::OnCollisionComponentBeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep,
 	                                        SweepResult);
 	TargetActor = OtherActor;

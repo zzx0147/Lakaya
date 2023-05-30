@@ -3,6 +3,7 @@
 
 #include "Character/Ability/AttachableMine.h"
 
+#include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
@@ -10,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 
 const FName AAttachableMine::TriggerComponentName = FName(TEXT("TriggerComponent"));
+const FName AAttachableMine::ActivationNiagaraComponentName = FName(TEXT("ActivationNiagaraComponent"));
 
 AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -20,6 +22,12 @@ AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : 
 	TriggerComponent = CreateDefaultSubobject<USphereComponent>(TriggerComponentName);
 	TriggerComponent->SetupAttachment(RootComponent);
 	TriggerComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	ActivationNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(ActivationNiagaraComponentName);
+	ActivationNiagaraComponent->SetupAttachment(GetStaticMeshComponent());
+	ActivationNiagaraComponent->SetAutoActivate(false);
+	ActivationNiagaraComponent->SetAutoDestroy(false);
 }
 
 float AAttachableMine::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
@@ -52,6 +60,7 @@ void AAttachableMine::PostInitializeComponents()
 void AAttachableMine::HandleAbilityInstanceAction()
 {
 	Super::HandleAbilityInstanceAction();
+	ActivationNiagaraComponent->Activate();
 	if (!HasAuthority()) return;
 	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	Health = BaseHealth;
@@ -60,6 +69,7 @@ void AAttachableMine::HandleAbilityInstanceAction()
 void AAttachableMine::HandleAbilityInstanceEnding()
 {
 	Super::HandleAbilityInstanceEnding();
+	ActivationNiagaraComponent->Deactivate();
 	if (HasAuthority()) TriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
