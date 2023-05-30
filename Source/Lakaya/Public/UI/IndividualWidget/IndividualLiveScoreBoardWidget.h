@@ -20,21 +20,21 @@ public:
 	void SetScoreBoardPlayerName(const TArray<FPlayerData>& PlayerDataArray);
 	void SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerDataArray);
 
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	// UTextBlock* Score1stNameTextBlock;
-	//
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	// UTextBlock* Score2ndNameTextBlock;
-	//
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	// UTextBlock* Score3rdNameTextBlock;
-	//
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	// UTextBlock* Score4thNameTextBlock;
-	//
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	// UTextBlock* Score5thNameTextBlock;
-	//
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	// UTextBlock* Score6thNameTextBlock;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UTextBlock* Score1stNameTextBlock;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UTextBlock* Score2ndNameTextBlock;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UTextBlock* Score3rdNameTextBlock;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UTextBlock* Score4thNameTextBlock;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UTextBlock* Score5thNameTextBlock;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UTextBlock* Score6thNameTextBlock;
 };
