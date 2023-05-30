@@ -19,13 +19,16 @@ AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : 
 	ExplodeRange = 250.f;
 	ExplodeDamage = 100.f;
 
+	GetMeshComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	GetMeshComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+
 	TriggerComponent = CreateDefaultSubobject<USphereComponent>(TriggerComponentName);
 	TriggerComponent->SetupAttachment(RootComponent);
 	TriggerComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	ActivationNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(ActivationNiagaraComponentName);
-	ActivationNiagaraComponent->SetupAttachment(GetStaticMeshComponent());
+	ActivationNiagaraComponent->SetupAttachment(GetMeshComponent());
 	ActivationNiagaraComponent->SetAutoActivate(false);
 	ActivationNiagaraComponent->SetAutoDestroy(false);
 }
@@ -63,6 +66,7 @@ void AAttachableMine::HandleAbilityInstanceAction()
 	ActivationNiagaraComponent->Activate();
 	if (!HasAuthority()) return;
 	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	GetMeshComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	Health = BaseHealth;
 }
 
@@ -70,7 +74,9 @@ void AAttachableMine::HandleAbilityInstanceEnding()
 {
 	Super::HandleAbilityInstanceEnding();
 	ActivationNiagaraComponent->Deactivate();
-	if (HasAuthority()) TriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	if (!HasAuthority()) return;
+	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 bool AAttachableMine::ShouldTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
