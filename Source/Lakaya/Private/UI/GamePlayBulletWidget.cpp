@@ -1,5 +1,3 @@
-#define DO_CHECK 1
-
 #include "UI/GamePlayBulletWidget.h"
 
 #include "Components/TextBlock.h"
@@ -14,9 +12,13 @@ void UGamePlayBulletWidget::NativeConstruct()
 	RemainBulletsText = Cast<UTextBlock>(GetWidgetFromName(TEXT("RemainBullets_Text")));
 	MagazineCapacityText = Cast<UTextBlock>(GetWidgetFromName(TEXT("MagazineCapacity_Text")));
 
+	RenaWeaponImage = Cast<UImage>(GetWidgetFromName("Rena_Weapon_Image"));
+	WaziWeaponImage = Cast<UImage>(GetWidgetFromName("Wazi_Weapon_Image"));
+	
 	check(RemainBulletsText != nullptr);
 	check(MagazineCapacityText != nullptr);
-
+	check(RenaWeaponImage != nullptr);
+	check(WaziWeaponImage != nullptr);
 #pragma endregion
 }
 

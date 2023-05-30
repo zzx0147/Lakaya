@@ -50,7 +50,7 @@ protected:
 	virtual void HandleMatchIsWaitingToStart() override;
 	virtual bool ReadyToStartMatch_Implementation() override;
 
-	//캐릭터 선택 스테이스로 넘어갈 때 호출되는 함수
+	// 캐릭터 선택 스테이스로 넘어갈 때 호출되는 함수
 	virtual void HandleMatchIsSelectCharacter();
 
 	// InProgress (진행중)
@@ -69,7 +69,6 @@ protected:
 	// 일반적인 흐름의 마지막 상태.
 	virtual void HandleLeavingMap() override;
 
-
 public:
 	virtual void OnPlayerKilled(AController* VictimController, AController* InstigatorController, AActor* DamageCauser);
 	virtual void StartSelectCharacter();
@@ -79,7 +78,7 @@ protected:
 	virtual void PlayerInitializeSetLocation(uint8 PlayersNum);
 	virtual void RespawnPlayer(AController* KilledController);
 	virtual bool ShouldRespawn();
-
+	virtual void RegisterPlayer(AController* NewPlayer);//플레이어 혹은 AI 접속시 이벤트 바인딩 및 초기화 등을 실행합니다
 	virtual void DelayedEndedGame();
 	
 public:

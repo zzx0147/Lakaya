@@ -11,6 +11,7 @@
 ULockstepFireAbility::ULockstepFireAbility()
 {
 	bWantsInitializeComponent = true;
+	bCanEverStopRemoteCall = bCanEverStartRemoteCall = true;
 	LockstepDelay = 0.1f;
 	FirstFireDelay = 0.f;
 	FireDelay = 0.2f;
@@ -27,23 +28,23 @@ void ULockstepFireAbility::InitializeComponent()
 	if (!Camera.IsValid()) UE_LOG(LogInit, Error, TEXT("Camera was nullptr on ULockstepFireAbility::OnRegister"));
 }
 
-void ULockstepFireAbility::AbilityStart()
+void ULockstepFireAbility::LocalAbilityStart()
 {
 	if (!ShouldAbilityStart()) return;
 	if (!GetOwner()->HasAuthority()) SetWantsToFire(true);
-	Super::AbilityStart();
+	Super::LocalAbilityStart();
 }
 
-void ULockstepFireAbility::AbilityStop()
+void ULockstepFireAbility::LocalAbilityStop()
 {
 	if (!bWantsToFire) return;
 	if (!GetOwner()->HasAuthority()) SetWantsToFire(false);
-	Super::AbilityStop();
+	Super::LocalAbilityStop();
 }
 
-void ULockstepFireAbility::RequestStart_Implementation(const float& RequestTime)
+void ULockstepFireAbility::RemoteAbilityStart(const float& RequestTime)
 {
-	Super::RequestStart_Implementation(RequestTime);
+	Super::RemoteAbilityStart(RequestTime);
 	if (bWantsToFire) return;
 	SetWantsToFire(true);
 
@@ -55,9 +56,9 @@ void ULockstepFireAbility::RequestStart_Implementation(const float& RequestTime)
 	}
 }
 
-void ULockstepFireAbility::RequestStop_Implementation(const float& RequestTime)
+void ULockstepFireAbility::RemoteAbilityStop(const float& RequestTime)
 {
-	Super::RequestStop_Implementation(RequestTime);
+	Super::RemoteAbilityStop(RequestTime);
 	if (bWantsToFire) SetWantsToFire(false);
 }
 

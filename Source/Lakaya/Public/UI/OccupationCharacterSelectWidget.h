@@ -24,9 +24,7 @@ public:
 	
 private:
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UImageTextWidget> PlayerNameWidgetClass;
+	TSubclassOf<class UPlayerInfoWidget> PlayerInfoWidgetClass;
 
-	TMap<FName,TObjectPtr<class UVerticalBox>> CharacterSelectedPlayerListBoxMap;
-
-	TArray<UImageTextWidget*> PlayerNameWidgetArray;
+	TObjectPtr<class UVerticalBox> PlayerInfoVerticalBox;
 };

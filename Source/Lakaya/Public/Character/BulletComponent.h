@@ -32,6 +32,9 @@ public:
 	// 탄창이 가득차있는지 여부를 조사합니다.
 	bool IsFull() const { return GetBullets() == GetMaxBullets(); }
 
+	// 제시된 값이 소모될 수 있을만큼 총알이 충분한지 질의합니다.
+	bool IsEnough(const uint16& Value) const { return Bullets >= Value; }
+
 	/**
 	 * @brief 총알을 차감하고, 그에 따른 함수를 실행합니다.
 	 * @param Value 총알을 차감할 양입니다.

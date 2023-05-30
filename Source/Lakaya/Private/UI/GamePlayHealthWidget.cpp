@@ -2,6 +2,7 @@
 
 #include "UI/GamePlayHealthWidget.h"
 
+#include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 
@@ -14,11 +15,16 @@ void UGamePlayHealthWidget::NativeConstruct()
 	HealthProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("HPBar_Prb")));
 	HealthText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Health_Text")));
 	MaximumHealthText = Cast<UTextBlock>(GetWidgetFromName(TEXT("MaximumHealth_Text")));
+
+	UserInfoCharImageRena = Cast<UImage>(GetWidgetFromName("UserInfo_CharImage_Rena"));
+	UserInfoCharImageWazi = Cast<UImage>(GetWidgetFromName("UserInfo_CharImage_Wazi"));
 	
 	check(HealthText != nullptr);
 	check(MaximumHealthText != nullptr);
 	check(HealthProgressBar != nullptr);
 
+	check(UserInfoCharImageRena != nullptr);
+	check(UserInfoCharImageWazi != nullptr);
 #pragma endregion
 }
 

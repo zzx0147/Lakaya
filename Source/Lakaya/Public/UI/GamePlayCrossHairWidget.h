@@ -6,7 +6,6 @@
 
 class UImage;
 
-//TODO: 아무 기능이 없는데 굳이 있어야 하는 클래스인가 싶습니다
 //크로스헤어 표기 클래스
 UCLASS()
 class LAKAYA_API UGamePlayCrosshairWidget : public UCharacterBindableWidget

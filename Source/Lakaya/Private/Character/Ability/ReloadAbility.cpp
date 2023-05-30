@@ -10,61 +10,73 @@
 void UReloadAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(UReloadAbility, bIsReloading);
+	DOREPLIFETIME(UReloadAbility, ReloadingTime);
 }
 
 UReloadAbility::UReloadAbility()
 {
-	ReloadDelay = 5.f;
-}
-
-void UReloadAbility::AbilityStart()
-{
-	if (!bIsReloading) Super::AbilityStart();
+	ReloadDelay = 2.3f;
+	bCanEverStartRemoteCall = true;
 }
 
 void UReloadAbility::OnAliveStateChanged(const bool& AliveState)
 {
 	Super::OnAliveStateChanged(AliveState);
-	if (!AliveState && GetOwner()->HasAuthority()) bIsReloading = false;
-}
-
-void UReloadAbility::BeginPlay()
-{
-	Super::BeginPlay();
-	if (const auto Actor = GetOwner(); Actor && Actor->HasAuthority())
+	if (!AliveState && GetOwner()->HasAuthority())
 	{
-		BulletComponent = Actor->FindComponentByClass<UBulletComponent>();
-		if (!BulletComponent.IsValid()) UE_LOG(LogInit, Error, TEXT("Fail to find BulletComponent!"));
+		ReloadingTime = 0.f;
+		GetWorld()->GetTimerManager().ClearTimer(ReloadTimer);
+		SetReloadState(false);
 	}
 }
 
-void UReloadAbility::RequestStart_Implementation(const float& RequestTime)
+void UReloadAbility::RemoteAbilityStart(const float& RequestTime)
 {
-	Super::RequestStart_Implementation(RequestTime);
+	Super::RemoteAbilityStart(RequestTime);
 
 	// 재장전중이지 않고, BulletComponent가 존재하고, 탄창이 가득차있지 않고, 살아있는 경우에만 재장전을 시작합니다.
-	if (bIsReloading || !BulletComponent.IsValid() || BulletComponent->IsFull() || !GetAliveState()) return;
+	if (const auto BulletComponent = GetResourceComponent<UBulletComponent>();
+		bRecentReloadState || !BulletComponent || BulletComponent->IsFull() || !GetAliveState())
+		return;
 
-	bIsReloading = true;
-	GetWorld()->GetTimerManager().SetTimer(OwnerTimer, this, &UReloadAbility::ReloadTimerHandler, ReloadDelay);
-	OnReloadStateChanged.Broadcast(bIsReloading);
-	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ReloadTimerSetted!"));
+	ReloadingTime = GetServerTime() + ReloadDelay;
+	SetReloadState(true);
+	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &UReloadAbility::ReloadTimerHandler, ReloadDelay);
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ReloadTimerSetted!"));
 }
 
-void UReloadAbility::OnRep_IsReloading()
+bool UReloadAbility::ShouldStartRemoteCall()
 {
-	OnReloadStateChanged.Broadcast(bIsReloading);
+	// 재장전 완료시점까지 남은 시간이 0.1초 미만인 경우 서버에 재장전 시작 요청을 할 수 있도록 합니다.
+	return GetRemainReloadingTime() < 0.1f;
 }
 
 void UReloadAbility::ReloadTimerHandler()
 {
-	bIsReloading = false;
-	if (BulletComponent.IsValid())
+	if (GetOwner()->HasAuthority())
 	{
-		BulletComponent->Reload();
-		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Reloaded!"));
+		GetResourceComponent<UBulletComponent>()->Reload();
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Reloaded!"));
 	}
-	else UE_LOG(LogActorComponent, Error, TEXT("BulletComponent is invalid!"));
-	OnReloadStateChanged.Broadcast(bIsReloading);
+	SetReloadState(false);
+}
+
+void UReloadAbility::OnRep_ReloadingTime()
+{
+	const auto CurrentTime = GetServerTime();
+	UpdateReloadStateWithTime(CurrentTime);
+	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &UReloadAbility::ReloadTimerHandler,
+	                                       ReloadingTime - CurrentTime);
+}
+
+void UReloadAbility::SetReloadState(const bool& NewState)
+{
+	if (NewState == bRecentReloadState) return;
+	bRecentReloadState = NewState;
+	OnReloadStateChanged.Broadcast(bRecentReloadState);
+}
+
+void UReloadAbility::UpdateReloadStateWithTime(const float& CurrentTime)
+{
+	SetReloadState(ReloadingTime > CurrentTime);
 }

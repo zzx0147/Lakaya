@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "StopRemoteCallAbility.h"
+#include "CharacterAbility.h"
 #include "LockstepFireAbility.generated.h"
 
 DECLARE_EVENT_OneParam(ULockstepFireAbility, FWantsToFireStateChangedSignature, bool)
@@ -54,19 +54,19 @@ struct FLockstepFireInfo
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class LAKAYA_API ULockstepFireAbility : public UStopRemoteCallAbility
+class LAKAYA_API ULockstepFireAbility : public UCharacterAbility
 {
 	GENERATED_BODY()
 
 public:
 	ULockstepFireAbility();
 	virtual void InitializeComponent() override;
-	virtual void AbilityStart() override;
-	virtual void AbilityStop() override;
+	virtual void LocalAbilityStart() override;
+	virtual void LocalAbilityStop() override;
 
 protected:
-	virtual void RequestStart_Implementation(const float& RequestTime) override;
-	virtual void RequestStop_Implementation(const float& RequestTime) override;
+	virtual void RemoteAbilityStart(const float& RequestTime) override;
+	virtual void RemoteAbilityStop(const float& RequestTime) override;
 
 	// 격발타이머의 핸들러입니다.
 	virtual void FireTick();

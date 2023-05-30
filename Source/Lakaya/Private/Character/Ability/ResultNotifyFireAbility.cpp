@@ -5,7 +5,6 @@
 
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
-#include "Character/BulletComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/ArrowComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -19,21 +18,21 @@ UResultNotifyFireAbility::UResultNotifyFireAbility()
 	bShouldFireSmoothing = false;
 	PoolCount = 20;
 	DecalShowingTime = 10.f;
-	BulletCost = 1;
+	bCanEverStopRemoteCall = bCanEverStartRemoteCall = true;
 }
 
-void UResultNotifyFireAbility::AbilityStart()
+bool UResultNotifyFireAbility::ShouldStartRemoteCall()
 {
-	if (bWantsToFire) return;
+	if (bWantsToFire) return false;
 	if (!GetOwner()->HasAuthority()) bWantsToFire = true;
-	Super::AbilityStart();
+	return true;
 }
 
-void UResultNotifyFireAbility::AbilityStop()
+bool UResultNotifyFireAbility::ShouldStopRemoteCall()
 {
-	if (!bWantsToFire) return;
+	if (!bWantsToFire) return false;
 	if (!GetOwner()->HasAuthority()) bWantsToFire = false;
-	Super::AbilityStop();
+	return true;
 }
 
 void UResultNotifyFireAbility::OnAliveStateChanged(const bool& AliveState)
@@ -49,11 +48,21 @@ void UResultNotifyFireAbility::OnAliveStateChanged(const bool& AliveState)
 void UResultNotifyFireAbility::InitializeComponent()
 {
 	Super::InitializeComponent();
-	BulletComponent = GetOwner()->FindComponentByClass<UBulletComponent>();
+	CollisionQueryParams.AddIgnoredActor(GetOwner());
+
+	// 총구 컴포넌트 탐색
 	if (auto MuzzleComponents = GetOwner()->GetComponentsByTag(UArrowComponent::StaticClass(), FName("Muzzle"));
 		MuzzleComponents.IsValidIndex(0))
 		MuzzleComponent = Cast<UArrowComponent>(MuzzleComponents[0]);
-	CollisionQueryParams.AddIgnoredActor(GetOwner());
+
+	// 총구 이펙트 생성
+	if (GunImpactSystem)
+	{
+		GunImpactNiagara =
+			UNiagaraFunctionLibrary::SpawnSystemAttached(GunImpactSystem, MuzzleComponent.Get(), NAME_None,
+			                                             FVector::ZeroVector, FRotator::ZeroRotator,
+			                                             EAttachLocation::SnapToTarget, false, false);
+	}
 
 	// 데칼 오브젝트 풀 생성
 	for (const auto& Pair : DecalClasses)
@@ -68,22 +77,22 @@ void UResultNotifyFireAbility::InitializeComponent()
 	}
 }
 
-void UResultNotifyFireAbility::RequestStart_Implementation(const float& RequestTime)
+void UResultNotifyFireAbility::RemoteAbilityStart(const float& RequestTime)
 {
-	Super::RequestStart_Implementation(RequestTime);
+	Super::RemoteAbilityStart(RequestTime);
 	if (bWantsToFire || !GetAliveState()) return;
 	bWantsToFire = true;
-	
+
 	if (auto& TimerManager = GetWorld()->GetTimerManager(); !TimerManager.TimerExists(FireTimer))
 	{
 		TimerManager.SetTimer(FireTimer, this, &UResultNotifyFireAbility::FireTick, FireDelay, true, FirstFireDelay);
-		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
 	}
 }
 
-void UResultNotifyFireAbility::RequestStop_Implementation(const float& RequestTime)
+void UResultNotifyFireAbility::RemoteAbilityStop(const float& RequestTime)
 {
-	Super::RequestStop_Implementation(RequestTime);
+	Super::RemoteAbilityStop(RequestTime);
 	if (!bWantsToFire || !GetAliveState()) return;
 	bWantsToFire = false;
 }
@@ -97,8 +106,7 @@ void UResultNotifyFireAbility::FireTick()
 
 bool UResultNotifyFireAbility::ShouldFire()
 {
-	// BulletComponent가 존재하는 경우 CostBullet에 실패하면 false를 반환합니다. 
-	return !BulletComponent.IsValid() || BulletComponent->CostBullet(BulletCost);
+	return CostResource(FireCost);
 }
 
 void UResultNotifyFireAbility::SingleFire()
@@ -113,7 +121,8 @@ void UResultNotifyFireAbility::SingleFire()
 	{
 		End = Result.ImpactPoint;
 		const auto Pawn = GetOwner<APawn>();
-		UGameplayStatics::ApplyPointDamage(Result.GetActor(), FireDamage, LineStart, Result,
+
+		UGameplayStatics::ApplyPointDamage(Result.GetActor(), GetTerminalDamage(Result), LineStart, Result,
 		                                   Pawn ? Pawn->GetController() : nullptr, GetOwner(), nullptr);
 	}
 	InvokeFireNotify(Result);
@@ -129,7 +138,14 @@ void UResultNotifyFireAbility::FailToFire()
 void UResultNotifyFireAbility::ClearFireTimer()
 {
 	GetWorld()->GetTimerManager().ClearTimer(FireTimer);
-	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
+}
+
+float UResultNotifyFireAbility::GetTerminalDamage(const FHitResult& HitResult)
+{
+	return FireDamage * (WeakPointMultiplier.Contains(HitResult.BoneName)
+		                     ? WeakPointMultiplier[HitResult.BoneName]
+		                     : 1.f);
 }
 
 void UResultNotifyFireAbility::InvokeFireNotify(const FHitResult& HitResult)
@@ -170,10 +186,6 @@ void UResultNotifyFireAbility::DrawTrail(const FVector& Start, const FVector& En
 	if (!TrailNiagaraSystem) return;
 	if (const auto Niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TrailNiagaraSystem, Start))
 		Niagara->SetNiagaraVariableVec3(TEXT("BeamEnd"), End - Start);
-
-	// TODO : GunImpact
-	if (!GunImpactSystem) return;
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), GunImpactSystem, Start);
 }
 
 void UResultNotifyFireAbility::DrawImpact(const FVector& Location, const FVector& Normal, const EFireResult& Kind)
@@ -188,6 +200,7 @@ void UResultNotifyFireAbility::NotifySingleFire_Implementation(const FVector& St
 	DrawTrail(Start, End);
 	DrawDecal(End, Normal, FireResult);
 	DrawImpact(End, Normal, FireResult);
+	if (GunImpactNiagara.IsValid()) GunImpactNiagara->Activate(true);
 	OnSingleFire.Broadcast(Start, End, Normal, FireResult);
 	// DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.f);
 }
@@ -201,6 +214,7 @@ void UResultNotifyFireAbility::NotifyFireResult_Implementation(const FVector& Hi
 	DrawTrail(Start, HitPoint);
 	DrawDecal(HitPoint, Normal, FireResult);
 	DrawImpact(HitPoint, Normal, FireResult);
+	if (GunImpactNiagara.IsValid()) GunImpactNiagara->Activate(true);
 	OnSingleFire.Broadcast(Start, HitPoint, Normal, FireResult);
 	//DrawDebugLine(GetWorld(), Start, HitPoint, FColor::Green, false, 2.f);
 }

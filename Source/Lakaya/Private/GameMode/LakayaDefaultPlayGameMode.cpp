@@ -2,17 +2,14 @@
 
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 
-//TODO: 불필요한 헤더 선언
-#include "Character/ArmedCharacter.h"
-//TODO: 불필요한 헤더 선언
+#include "EngineUtils.h"
 #include "Character/InteractableCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
-#include "GameFramework/PlayerStart.h"
-#include "Kismet/GameplayStatics.h"
-#include "GameMode/LakayaBaseGameState.h"
-#include "EngineUtils.h"
 #include "Components/CapsuleComponent.h"
 #include "EOS/EOSGameInstance.h"
+#include "GameFramework/PlayerStart.h"
+#include "GameMode/LakayaBaseGameState.h"
+#include "Kismet/GameplayStatics.h"
 
 namespace MatchState
 {
@@ -139,7 +136,6 @@ AActor* ALakayaDefaultPlayGameMode::FindPlayerStart_Implementation(AController* 
 void ALakayaDefaultPlayGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	//TODO: ATeam, BTeam에 대응하는 플레이어 스타트를 불러와서 부활할 때마다 태그 비교 연산을 할 필요 없도록 합니다.
 }
 
 //TODO: 사용되지 않는 오버라이딩 제거
@@ -155,45 +151,7 @@ void ALakayaDefaultPlayGameMode::PostLogin(APlayerController* NewPlayer)
 	UE_LOG(LogTemp, Warning, TEXT("The Player has entered the game."));
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), GetNumPlayers());
 
-	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("플레이어가 입장했습니다."));
-
-	if (const auto BasePlayerState = NewPlayer->GetPlayerState<ALakayaBasePlayerState>())
-	{
-		//TODO: NewPlayer를 캡쳐할 필요 없이 ArgBasePlayerState를 사용하면 됩니다.
-		BasePlayerState->OnCharacterNameChanged.AddLambda(
-			[this, NewPlayer](ALakayaBasePlayerState* ArgBasePlayerState, const FName& ArgCharacterName){
-
-				//TODO: 매치스테이트는 게임모드에도 있습니다. IsMatchInProgress()를 사용하면 됩니다.
-				if (GetGameState<ALakayaBaseGameState>()->GetMatchState() == MatchState::InProgress)
-				{
-					//TODO: 사망한 상태에서 캐릭터를 변경하는 경우 즉시 부활하는 버그를 유발합니다.
-					if (auto PlayerPawn = NewPlayer->GetPawn())
-					{
-						NewPlayer->UnPossess();
-						PlayerPawn->Destroy();
-						RestartPlayer(NewPlayer);
-					}
-				}
-			});
-
-		BasePlayerState->OnPlayerKilled.AddUObject(this, &ALakayaDefaultPlayGameMode::OnPlayerKilled);
-	}
-
-	const auto BaseGameState = GetWorld()->GetGameState<ALakayaBaseGameState>();
-	if (BaseGameState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_OccupationGameState is null."));
-		return;
-	}
-
-	const int32 CurrentPlayerNum = BaseGameState->PlayerArray.Num();
-	// OccupationGameState->SetNumPlayers(CurrentPlayerNum);
-
-	if (CurrentPlayerNum == BaseGameState->GetMaximumPlayers())
-	{
-		GetWorldTimerManager().SetTimer(TimerHandle_DelayedCharacterSelectStart, this, &ALakayaDefaultPlayGameMode::StartSelectCharacter,
-			CharacterSelectStartDelay, false);
-	}
+	RegisterPlayer(NewPlayer);
 }
 
 void ALakayaDefaultPlayGameMode::OnMatchStateSet()
@@ -223,7 +181,6 @@ void ALakayaDefaultPlayGameMode::HandleMatchIsSelectCharacter()
 	//GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 10.0f, false);
 }
 
-//TODO: 사용되지 않는 오버라이딩 제거
 void ALakayaDefaultPlayGameMode::HandleMatchHasStarted()
 {
 	// 게임 시작 후, 서버 측 클라에게 UI바인딩.
@@ -237,13 +194,9 @@ void ALakayaDefaultPlayGameMode::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
 
-	//TODO: GetGameInstance<>() 함수를 사용하세요.
-	if (const auto GameInstance = GetGameInstance())
+	if (const auto GameInstance = GetGameInstance<UEOSGameInstance>())
 	{
-		if (const auto EOSGameInstance = Cast<UEOSGameInstance>(GameInstance))
-		{
-			EOSGameInstance->EndSession();
-		}
+		GameInstance->EndSession();
 	}
 
 	// TODO
@@ -270,25 +223,26 @@ void ALakayaDefaultPlayGameMode::Logout(AController* Exiting)
 void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, AController* InstigatorController, AActor* DamageCauser)
 {
 	if (const auto InstigatorPlayerState = InstigatorController->GetPlayerState<ALakayaBasePlayerState>())
+	{
 		InstigatorPlayerState->IncreaseKillCount();
+		InstigatorPlayerState->AddTotalScoreCount(100);
+	}
 
-	//TODO: 위의 코드처럼 분기문 내에 선언 및 널 체크를 동시에 할 수 있습니다.
 	const auto VictimPlayerState = VictimController->GetPlayerState<ALakayaBasePlayerState>();
 	if (VictimPlayerState != nullptr) VictimPlayerState->IncreaseDeathCount();
 
 	if (const auto BaseGameState = GetGameState<ALakayaBaseGameState>())
-		BaseGameState->NotifyPlayerKilled(VictimController, InstigatorController, DamageCauser);
+		BaseGameState->NotifyPlayerKilled(VictimController->GetPlayerState<APlayerState>(), InstigatorController->GetPlayerState<APlayerState>(), DamageCauser);
 
 	//TODO: ShouldRespawn 함수는 사망한 플레이어가 부활할 수 있는지 여부를 검사하기 위해 기획되었습니다. 따라서 매개변수로 플레이어 스테이트나 컨트롤러를 받아야 합니다.
 	if (ShouldRespawn())
 	{
 		VictimPlayerState->SetRespawnTimer(GetGameState<AGameState>()->GetServerWorldTimeSeconds() + MinRespawnDelay, this, &ALakayaDefaultPlayGameMode::RespawnPlayer);
-		//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnTimerSetted!!!"));
+		// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnTimerSetted!!!"));
 	}
 	else
 	{
-		//TODO: this도 안넘겨도 됩니다.
-		VictimPlayerState->SetRespawnTimer(-1.0f, this);
+		VictimPlayerState->SetRespawnTimer(-1.0f);
 	}
 } 
 
@@ -378,4 +332,44 @@ void ALakayaDefaultPlayGameMode::RespawnPlayer(AController* KilledController)
 bool ALakayaDefaultPlayGameMode::ShouldRespawn()
 {
 	return true;
+}
+
+void ALakayaDefaultPlayGameMode::RegisterPlayer(AController* NewPlayer)
+{
+	if (const auto BasePlayerState = NewPlayer->GetPlayerState<ALakayaBasePlayerState>())
+	{
+		//TODO: NewPlayer를 캡쳐할 필요 없이 ArgBasePlayerState를 사용하면 됩니다.
+		BasePlayerState->OnCharacterNameChanged.AddLambda(
+			[this, NewPlayer](ALakayaBasePlayerState* ArgBasePlayerState, const FName& ArgCharacterName){
+
+				//TODO: 매치스테이트는 게임모드에도 있습니다. IsMatchInProgress()를 사용하면 됩니다.
+				if (GetGameState<ALakayaBaseGameState>()->GetMatchState() == MatchState::InProgress)
+				{
+					//TODO: 사망한 상태에서 캐릭터를 변경하는 경우 즉시 부활하는 버그를 유발합니다.
+					if (auto PlayerPawn = NewPlayer->GetPawn())
+					{
+						NewPlayer->UnPossess();
+						PlayerPawn->Destroy();
+						RestartPlayer(NewPlayer);
+					}
+				}
+			});
+
+		BasePlayerState->OnPlayerKilled.AddUObject(this, &ALakayaDefaultPlayGameMode::OnPlayerKilled);
+	}
+
+	const auto BaseGameState = GetWorld()->GetGameState<ALakayaBaseGameState>();
+	if (BaseGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_OccupationGameState is null."));
+		return;
+	}
+
+	const int32 CurrentPlayerNum = BaseGameState->PlayerArray.Num();
+
+	if (CurrentPlayerNum == BaseGameState->GetMaximumPlayers())
+	{
+		GetWorldTimerManager().SetTimer(TimerHandle_DelayedCharacterSelectStart, this, &ALakayaDefaultPlayGameMode::StartSelectCharacter,
+			CharacterSelectStartDelay, false);
+	}
 }
