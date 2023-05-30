@@ -23,7 +23,10 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void RemoteAbilityStart(const float& RequestTime) override;
 	virtual void RemoteAbilityStop(const float& RequestTime) override;
-
+	
+	UFUNCTION()
+	virtual void OnRep_AbilityStartTime();
+	
 public:
 	UFUNCTION(BlueprintGetter)
 	const bool& IsFiring() const { return bIsFiring; }
@@ -65,6 +68,10 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float FireDamage;
 
+	//사격 요청이 오고 실제로 사격이 시작되는 시간입니다. 음수일 경우 사격 중지를 의미합니다
+	UPROPERTY(ReplicatedUsing = OnRep_AbilityStartTime, Transient)
+	float AbilityStartTime;
+	
 protected:
 	FCollisionQueryParams CollisionQueryParams;
 	
