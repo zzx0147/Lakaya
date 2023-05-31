@@ -136,7 +136,6 @@ AActor* ALakayaDefaultPlayGameMode::FindPlayerStart_Implementation(AController* 
 void ALakayaDefaultPlayGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	//TODO: ATeam, BTeam에 대응하는 플레이어 스타트를 불러와서 부활할 때마다 태그 비교 연산을 할 필요 없도록 합니다.
 }
 
 //TODO: 사용되지 않는 오버라이딩 제거
@@ -153,10 +152,6 @@ void ALakayaDefaultPlayGameMode::PostLogin(APlayerController* NewPlayer)
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), GetNumPlayers());
 
 	RegisterPlayer(NewPlayer);
-	
-	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("플레이어가 입장했습니다."));
-
-
 }
 
 void ALakayaDefaultPlayGameMode::OnMatchStateSet()
@@ -228,7 +223,10 @@ void ALakayaDefaultPlayGameMode::Logout(AController* Exiting)
 void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, AController* InstigatorController, AActor* DamageCauser)
 {
 	if (const auto InstigatorPlayerState = InstigatorController->GetPlayerState<ALakayaBasePlayerState>())
+	{
 		InstigatorPlayerState->IncreaseKillCount();
+		InstigatorPlayerState->AddTotalScoreCount(100);
+	}
 
 	const auto VictimPlayerState = VictimController->GetPlayerState<ALakayaBasePlayerState>();
 	if (VictimPlayerState != nullptr) VictimPlayerState->IncreaseDeathCount();
@@ -368,7 +366,6 @@ void ALakayaDefaultPlayGameMode::RegisterPlayer(AController* NewPlayer)
 	}
 
 	const int32 CurrentPlayerNum = BaseGameState->PlayerArray.Num();
-	// OccupationGameState->SetNumPlayers(CurrentPlayerNum);
 
 	if (CurrentPlayerNum == BaseGameState->GetMaximumPlayers())
 	{

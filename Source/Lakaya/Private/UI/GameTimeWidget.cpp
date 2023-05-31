@@ -4,10 +4,13 @@
 #include "UI/GameTimeWidget.h"
 
 #include "GameFramework/GameStateBase.h"
+#include "GameMode/LakayaDefaultPlayGameMode.h"
 
 UGameTimeWidget::UGameTimeWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	TimeTextFormat = FText::FromString(TEXT("{0}:{1}"));
+
+	MatchWaitToStart = true;
 }
 
 void UGameTimeWidget::NativeConstruct()

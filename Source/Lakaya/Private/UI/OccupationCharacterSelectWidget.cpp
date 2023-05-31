@@ -10,9 +10,7 @@
 UOccupationCharacterSelectWidget::UOccupationCharacterSelectWidget(const FObjectInitializer& ObjectInitializer) : Super(
 	ObjectInitializer)
 {
-	static ConstructorHelpers::FClassFinder<UImageTextWidget> PlayerNameWidgetClassFinder(
-		TEXT("/Game/Blueprints/UMG/WBP_PlayerNameWidget.WBP_PlayerNameWidget_C"));
-	PlayerInfoWidgetClass = PlayerNameWidgetClassFinder.Class;
+
 }
 
 void UOccupationCharacterSelectWidget::NativeConstruct()

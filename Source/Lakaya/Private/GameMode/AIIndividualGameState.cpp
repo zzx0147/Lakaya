@@ -3,6 +3,7 @@
 
 #include "GameMode/AIIndividualGameState.h"
 
+#include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -10,52 +11,39 @@ AAIIndividualGameState::AAIIndividualGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	
-	static ConstructorHelpers::FClassFinder<UGameAIIndividualScoreBoardWidget> AIIndividualScoreBoardFinder(
-	TEXT("/Game/Blueprints/UMG/WBP_GameAIIndividualScoreBoardWidget"));
+	static ConstructorHelpers::FClassFinder<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardFinder(
+	TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_IndividualLiveScoreBoardWidget"));
 
-	if (AIIndividualScoreBoardFinder.Succeeded()) AIIndividualScoreBoardWidgettClass = AIIndividualScoreBoardFinder.Class;
+	if (AIIndividualLiveScoreBoardFinder.Succeeded()) AIIndividualLiveScoreBoardWidgetClass = AIIndividualLiveScoreBoardFinder.Class;
 }
 
 void AAIIndividualGameState::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+		AIIndividualLiveScoreBoardWidget = CreateWidget<UIndividualLiveScoreBoardWidget>(LocalController, AIIndividualLiveScoreBoardWidgetClass);
+
+	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
-		AIIndividualScoreBoardWidget = CreateWidget<UGameAIIndividualScoreBoardWidget>(LocalController, AIIndividualScoreBoardWidgettClass);
-		
-		if (AIIndividualScoreBoardWidget.IsValid())
+		AController* PlayerController = It->Get();
+
+		if (PlayerController && AIIndividualLiveScoreBoardWidget.IsValid())
 		{
-			AIIndividualScoreBoardWidget->AddToViewport();
-			AIIndividualScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
+			AIIndividualLiveScoreBoardWidget->AddToViewport();
+			AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
 			
-			if (const auto Other = LocalController->GetPlayerState<ALakayaBasePlayerState>())
+			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(PlayerController->PlayerState);
+			if (PlayerStateObj)
 			{
-				Player1Data.PlayerName = Other->GetDebugName(LocalController);
-				Player2Data.PlayerName = Other->GetDebugName(LocalController);
-				Player3Data.PlayerName = Other->GetDebugName(LocalController);
-				Player4Data.PlayerName = Other->GetDebugName(LocalController);
-				Player5Data.PlayerName = Other->GetDebugName(LocalController);
-				Player6Data.PlayerName = Other->GetDebugName(LocalController);
-			
-				Player1Data.KillCount = Other->GetKillCount();
-				Player2Data.KillCount = Other->GetKillCount();
-				Player3Data.KillCount = Other->GetKillCount();
-				Player4Data.KillCount = Other->GetKillCount();
-				Player5Data.KillCount = Other->GetKillCount();
-				Player6Data.KillCount = Other->GetKillCount();
+				PlayerAIData.PlayerName = PlayerStateObj->GetDebugName(PlayerController);
+				PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
+				FPlayerAIDataArray.Add(PlayerAIData);
 				
-				UE_LOG(LogTemp, Warning, TEXT("Set All PlayerData In AIIndividualScoreBoardWidget"));
+				UE_LOG(LogTemp, Warning, TEXT("Set All PlayerData In AIIndividualLiveScoreBoardWidget"));
 			}
 			
-			FPlayerDataArray.Add(Player1Data);
-			FPlayerDataArray.Add(Player2Data);
-			FPlayerDataArray.Add(Player3Data);
-			FPlayerDataArray.Add(Player4Data);
-			FPlayerDataArray.Add(Player5Data);
-			FPlayerDataArray.Add(Player6Data);
-			
-			SetScoreBoardPlayerName(FPlayerDataArray);
+			SetScoreBoardPlayerAIName(FPlayerAIDataArray);
 		}
 	}
 }
@@ -64,9 +52,9 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (AIIndividualScoreBoardWidget.IsValid())
+	if (AIIndividualLiveScoreBoardWidget.IsValid())
 	{
-		FPlayerDataArray.Empty();
+		FPlayerAIDataArray.Empty();
 
 		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 		{
@@ -77,31 +65,25 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 				if (PlayerStateObj)
 				{
 					// 점수판에 표시되는 이름 현제 컨트롤러 이름으로 표시중입니다.
-					PlayerData.PlayerName = PlayerStateObj->GetDebugName(PlayerController);
-					PlayerData.KillCount = PlayerStateObj->GetKillCount();
-					FPlayerDataArray.Add(PlayerData);
-					
-					// PlayerStateObj->OnKillCountChanged.AddLambda([this, PlayerStateObj]
-					// 	(const uint16& NewKillCount)
-					// {
-					// 	PlayerData.PlayerName = PlayerStateObj->GetCharacterName();
-					// 	PlayerData.KillCount = NewKillCount;
-					// 	FPlayerDataArray.Add(PlayerData);
-					//
-					// 	UE_LOG(LogTemp, Warning, TEXT("킬 적립!"));
-					// });
+					PlayerAIData.PlayerName = PlayerStateObj->GetDebugName(PlayerController);
+					PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
+					FPlayerAIDataArray.Add(PlayerAIData);
 				}
 			}
 		}
 		
-		SetScoreBoardPlayerName(FPlayerDataArray);
+		SetScoreBoardPlayerAIName(FPlayerAIDataArray);
 	}
 }
 
-void AAIIndividualGameState::SetScoreBoardPlayerName(const TArray<FPlayerData>& PlayerDataArray)
+void AAIIndividualGameState::SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray)
 {
-	if (AIIndividualScoreBoardWidget.IsValid())
+	if (AIIndividualLiveScoreBoardWidget.IsValid())
 	{
-		AIIndividualScoreBoardWidget->SetScoreBoardPlayerName(PlayerDataArray);
+		AIIndividualLiveScoreBoardWidget->SetScoreBoardPlayerAIName(PlayerAIDataArray);
 	}
+}
+
+void AAIIndividualGameState::SetAIIndividualWinner()
+{
 }

@@ -1,6 +1,7 @@
 #include "GameMode/LakayaBaseGameState.h"
 
 #include "Character/LakayaBasePlayerState.h"
+#include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
@@ -17,6 +18,7 @@ ALakayaBaseGameState::ALakayaBaseGameState()
 	PrimaryActorTick.bCanEverTick = false;
 	MaximumPlayers = 6;
 	MatchDuration = 180.f;
+	MatchWaitDuration = 10.0f;
 }
 
 void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -25,6 +27,7 @@ void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	
 	DOREPLIFETIME(ALakayaBaseGameState, MatchEndingTime);
 	DOREPLIFETIME(ALakayaBaseGameState, CharacterSelectEndingTime);
+	DOREPLIFETIME(ALakayaBaseGameState, MatchWaitEndingTime);
 }
 
 void ALakayaBaseGameState::BeginPlay()
@@ -115,10 +118,10 @@ void ALakayaBaseGameState::BeginPlay()
 				KillLogWidget->SetVisibility(ESlateVisibility::Visible);
 			}
 		}
-		
+
+		SpawnOutlineManager();
 	}
 }
-
 
 void ALakayaBaseGameState::AddPlayerState(APlayerState* PlayerState)
 {
@@ -193,10 +196,15 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	if (const auto PlayerController = GetWorld()->GetFirstPlayerController())
 		PlayerController->SetShowMouseCursor(false);
 
-	SetupTimerWidget(EndingTimer, MatchDuration, MatchEndingTime, [this] {
-		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->EndMatch(); }
-	, InGameTimeWidget);
-
+	SetupTimerWidget(MatchWaitToStartTimer, MatchWaitDuration, MatchWaitEndingTime, [this]
+	{
+		
+		SetupTimerWidget(EndingTimer, MatchDuration, MatchEndingTime, [this] {
+		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->EndMatch();
+		}, InGameTimeWidget);
+		
+	}, InGameTimeWidget);
+	
 	if (HasAuthority())
 	{
 		GetWorldTimerManager().SetTimer(EndingTimer, [this]
@@ -218,21 +226,16 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 	if (const auto PlayerController = GetWorld()->GetFirstPlayerController())
 		PlayerController->SetShowMouseCursor(true);
 
-	if (LoadingWidget == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("LoadingWidget is null."));
-	}
-	LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
-	CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
+	if (LoadingWidget) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
+	if (CharacterSelectWidget) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
 	
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]() {
-		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->StartMatch(); }
-	, CharacterSelectTimeWidget);
-
-
+		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->StartMatch();
+	}, CharacterSelectTimeWidget);
+	
 	//if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	//	CreateCharacterSelectWidget(LocalController);//위젯이 아직 없으면 생성함
 }
@@ -323,6 +326,25 @@ void ALakayaBaseGameState::OnRep_MatchEndingTime()
 void ALakayaBaseGameState::OnRep_CharacterSelectEndingTime()
 {
 	if (CharacterSelectTimeWidget.IsValid()) CharacterSelectTimeWidget->SetWidgetTimer(CharacterSelectEndingTime);
+}
+
+void ALakayaBaseGameState::OnRep_MatchWaitEndingTime()
+{
+	if (InGameTimeWidget.IsValid()) InGameTimeWidget->SetWidgetTimer(MatchWaitEndingTime);
+}
+
+bool ALakayaBaseGameState::SpawnOutlineManager()
+{
+	if(OutlineManager.IsValid())
+		return true;
+	
+	if(OutlineManagerClass)
+	{
+		OutlineManager = GetWorld()->SpawnActor<AOutlineManager>(OutlineManagerClass);
+		if(OutlineManager.IsValid())
+			return true;
+	}
+	return false;
 }
 
 void ALakayaBaseGameState::SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime, std::function<void(void)> Callback, TWeakObjectPtr<UGameTimeWidget> TimeWidget)

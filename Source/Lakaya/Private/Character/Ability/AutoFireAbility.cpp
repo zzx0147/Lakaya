@@ -13,6 +13,7 @@ void UAutoFireAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
 	DOREPLIFETIME(UAutoFireAbility, bIsFiring);
+	DOREPLIFETIME(UAutoFireAbility, AbilityStartTime);
 }
 
 UAutoFireAbility::UAutoFireAbility()
@@ -70,12 +71,19 @@ void UAutoFireAbility::RemoteAbilityStart(const float& RequestTime)
 	Super::RemoteAbilityStart(RequestTime);
 	if (bIsFiring) return;
 	bIsFiring = true;
+	AbilityStartTime = RequestTime + InitDelay;
+	OnRep_AbilityStartTime();
+
+	float RemainDelay = AbilityStartTime - GetServerTime();
+	if (RemainDelay < 0.0f) RemainDelay = 0.0f;
+	OnFiringStateChanged.Broadcast(bIsFiring);
+
 	if (auto& TimerManager = GetWorld()->GetTimerManager(); !TimerManager.TimerExists(FireTimer))
 	{
-		TimerManager.SetTimer(FireTimer, this, &UAutoFireAbility::FireTick, FireDelay, true, InitDelay);
+		TimerManager.SetTimer(FireTimer, this, &UAutoFireAbility::FireTick, FireDelay, true, RemainDelay);
 		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
 	}
-	OnFiringStateChanged.Broadcast(bIsFiring);
+	
 }
 
 void UAutoFireAbility::RemoteAbilityStop(const float& RequestTime)
@@ -83,7 +91,13 @@ void UAutoFireAbility::RemoteAbilityStop(const float& RequestTime)
 	Super::RemoteAbilityStop(RequestTime);
 	if (!bIsFiring) return;
 	bIsFiring = false;
+	AbilityStartTime = -1.0f;
+	OnRep_AbilityStartTime();
 	OnFiringStateChanged.Broadcast(bIsFiring);
+}
+
+void UAutoFireAbility::OnRep_AbilityStartTime()
+{
 }
 
 void UAutoFireAbility::OnRep_IsFiring()
@@ -121,6 +135,7 @@ void UAutoFireAbility::SingleFire()
 void UAutoFireAbility::FailToFire()
 {
 	bIsFiring = false;
+	AbilityStartTime = -1.0f;
 	OnFiringStateChanged.Broadcast(bIsFiring);
 }
 

@@ -4,6 +4,7 @@
 #include "AnimInstance/CharAnimInstance.h"
 
 #include "Character/Ability/CoolTimedSummonAbility.h"
+#include "GameFramework/GameStateBase.h"
 
 
 UCharAnimInstance::UCharAnimInstance()
@@ -24,7 +25,6 @@ void UCharAnimInstance::NativeBeginPlay()
 			{
 				RecentFireTime = GetWorld()->TimeSeconds; 
 			} );
-			UE_LOG(LogTemp, Error, TEXT("Fire!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
 		}
 
 		if(const auto ReloadAbility = Character->FindAbility<UReloadAbility>(WeaponReload))
@@ -36,8 +36,10 @@ void UCharAnimInstance::NativeBeginPlay()
 
 		if (const auto Ability = Character->FindAbility<UCoolTimedSummonAbility>(WeaponAbility))
 		{
-			Ability->OnAbilityInstanceSummoned.AddLambda(
-				[this] { RecentWeaponSkillTime = GetWorld()->TimeSeconds; });
+			Ability->OnPerformTimeNotified.AddLambda([this](const float& ActualFireTime)
+			{
+				RecentWeaponSkillTime = ActualFireTime;
+			});
 		}
 
 		if (const auto InteractableCharacter = Cast<AInteractableCharacter>(Character))
@@ -70,5 +72,9 @@ void UCharAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 	bIsAutoFire = RecentFireTime + FireAnimDuration > GetWorld()->TimeSeconds;
-	bIsWeaponSkill = RecentWeaponSkillTime + WeaponSkillAnimDuration > GetWorld()->TimeSeconds;
+
+	const auto GameStateBase = GetWorld()->GetGameState();
+	const float CurrentTime = GameStateBase ? GameStateBase->GetServerWorldTimeSeconds() : GetWorld()->TimeSeconds;
+	bIsWeaponSkill = RecentWeaponSkillTime <= CurrentTime
+		&& RecentWeaponSkillTime + WeaponSkillAnimDuration > CurrentTime;
 }
