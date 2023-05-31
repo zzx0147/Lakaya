@@ -125,12 +125,14 @@ void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
 
 void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 {
-	UE_LOG(LogTemp, Warning, TEXT("SetAliveState"));
 	ResourceComponent->OnAliveStateChanged(IsAlive);
 	if (IsAlive && ResurrectionNiagaraSystem)
+	{
 		UNiagaraFunctionLibrary::SpawnSystemAttached(ResurrectionNiagaraSystem, RootComponent, FName(),
 		                                             FVector(0.0f, 0.0f, -90.0f), FRotator::ZeroRotator,
 		                                             EAttachLocation::SnapToTarget, true);
+	}
+	if (HasAuthority()) GetCharacterMovement()->SetMovementMode(IsAlive ? MOVE_Walking : MOVE_None);
 }
 
 float ALakayaBaseCharacter::GetServerTime() const
