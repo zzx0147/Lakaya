@@ -186,7 +186,7 @@ void AOccupationGameState::HandleMatchHasEnded()
 		const ALakayaBasePlayerState* LakayaPlayerState = Cast<ALakayaBasePlayerState>(LocalController->GetPlayerState<ALakayaBasePlayerState>());
 		if (LakayaPlayerState == nullptr) UE_LOG(LogTemp, Warning, TEXT("LakayaPlayerState is null."));
 
-		for (auto& Player : PlayersByTeamMap[LakayaPlayerState->GetTeam()]) GradeResultWidget->RegisterPlayer(Player);
+		// for (auto& Player : PlayersByTeamMap[LakayaPlayerState->GetTeam()]) GradeResultWidget->RegisterPlayer(Player);
 		
 		if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
 		{
