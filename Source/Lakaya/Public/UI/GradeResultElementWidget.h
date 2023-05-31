@@ -15,14 +15,15 @@ public:
 	virtual void NativeConstruct() override;
 
 public:
-	TWeakObjectPtr<UImage> AntiWaziImage;
-	TWeakObjectPtr<UImage> AntiRenaImage;
-	TWeakObjectPtr<UImage> ProWaziImage;
-	TWeakObjectPtr<UImage> ProRenaImage;
-	TWeakObjectPtr<UImage> AntiRankBoardImage;
-	TWeakObjectPtr<UImage> ProRankBoardImage;
-
-	TWeakObjectPtr<UTextBlock> RankText;
-	TWeakObjectPtr<UTextBlock> NameText;
-	TWeakObjectPtr<UTextBlock> TotalScoreText;
+	TWeakObjectPtr<UImage> F_AntiWaziImage;
+	TWeakObjectPtr<UImage> F_AntiRenaImage;
+	TWeakObjectPtr<UImage> F_ProWaziImage;
+	TWeakObjectPtr<UImage> F_ProRenaImage;
+	TWeakObjectPtr<UImage> F_AntiRankBoardImage;
+	TWeakObjectPtr<UImage> F_ProRankBoardImage;
+	TWeakObjectPtr<UImage> F_ScoreBoardIconImage;
+	
+	TWeakObjectPtr<UTextBlock> F_RankText;
+	TWeakObjectPtr<UTextBlock> F_NameText;
+	TWeakObjectPtr<UTextBlock> F_TotalScoreText;
 };
