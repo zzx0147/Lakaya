@@ -35,7 +35,7 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 	virtual void OnRep_PlayerName() override;
-	virtual void SetOwner(AActor* NewOwner);
+	virtual void SetOwner(AActor* NewOwner) override;
 
 protected:
 	virtual void BeginPlay() override;
