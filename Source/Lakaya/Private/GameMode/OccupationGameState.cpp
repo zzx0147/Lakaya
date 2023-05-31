@@ -173,16 +173,12 @@ void AOccupationGameState::HandleMatchHasEnded()
 	if (GameResultWidget.IsValid())
 		GameResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
+	// Anti팀의 배열과, Pro팀의 배열을 내림차순으로 정렬합니다.
 	for(auto& Element : PlayersByTeamMap)
 	{
 		Element.Value.Sort([](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B){
 			return A.GetTotalScore() > B.GetTotalScore();
 		});
-		
-		for (const auto& PlayerState : Element.Value)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("%d"), PlayerState->GetTotalScore());	
-		}
 	}
 	
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
@@ -190,6 +186,8 @@ void AOccupationGameState::HandleMatchHasEnded()
 		const ALakayaBasePlayerState* LakayaPlayerState = Cast<ALakayaBasePlayerState>(LocalController->GetPlayerState<ALakayaBasePlayerState>());
 		if (LakayaPlayerState == nullptr) UE_LOG(LogTemp, Warning, TEXT("LakayaPlayerState is null."));
 
+		for (auto& Player : PlayersByTeamMap[LakayaPlayerState->GetTeam()]) GradeResultWidget->RegisterPlayer(Player);
+		
 		if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
 		{
 			// 승리했다면 "승리" 이미지를 띄워줍니다.
