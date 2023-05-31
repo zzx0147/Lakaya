@@ -21,14 +21,16 @@ protected:
 	virtual bool ShouldStartRemoteCall() override;
 	virtual void RemoteAbilityStart(const float& RequestTime) override;
 	virtual void RemoteAbilityStop(const float& RequestTime) override;
-
-private:
-	void OnChangeIsFiring(bool bIsFiringArg);
+	
 
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+protected:
+	virtual void OnRep_AbilityStartTime() override;
+
 private:
+
 	
 	TWeakObjectPtr<class UNiagaraComponent> LaserEffect;
 	
