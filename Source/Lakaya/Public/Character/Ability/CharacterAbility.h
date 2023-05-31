@@ -97,7 +97,8 @@ protected:
 	FVector GetCameraForwardPointFromActor(const float& FromActor) const;
 
 	FVector GetNormalToCameraForwardTracePoint(const float& FromActor,
-	                                           const FCollisionQueryParams& CollisionQueryParams) const;
+	                                           const FCollisionQueryParams& CollisionQueryParams,
+	                                           const USceneComponent* BasisComponent = nullptr) const;
 
 	// 가장 최근 업데이트된 캐릭터의 생존 상태를 가져옵니다.
 	FORCEINLINE const bool& GetAliveState() const { return bRecentAliveState; }

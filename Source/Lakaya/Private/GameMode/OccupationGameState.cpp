@@ -35,11 +35,8 @@ AOccupationGameState::AOccupationGameState()
 	MatchStartWidgetLifeTime = 5.0f;
 	ClientTeam = EPlayerTeam::None;
 
-	PlayersByTeamMap.Add(EPlayerTeam::A, TArray<ALakayaBasePlayerState*>());
-	PlayersByTeamMap.Add(EPlayerTeam::B, TArray<ALakayaBasePlayerState*>());
-	//TODO: Emplace는 항상 Add와 같은 속도를 보여주거나 더 빠릅니다. 또 키값만 지정해도 값형식의 밸류는 알아서 기본생성됩니다.
-	// PlayersByTeamMap.Emplace(EPlayerTeam::A);
-	// PlayersByTeamMap.Emplace(EPlayerTeam::B);
+	PlayersByTeamMap.Emplace(EPlayerTeam::A);
+	PlayersByTeamMap.Emplace(EPlayerTeam::B);
 }
 
 void AOccupationGameState::BeginPlay()
@@ -176,21 +173,21 @@ void AOccupationGameState::HandleMatchHasEnded()
 	if (GameResultWidget.IsValid())
 		GameResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-	// 게임이 끝나게 되면 Anti팀 배열을 내림차순으로 정렬합니다.
-	AntiTeamArray.Sort([](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B) {
-		return A.GetTotalScore() > B.GetTotalScore();
-	});
-
-	// 게임이 끝나게 되면 Pro팀 배열을 내림차순으로 정렬합합니다.
-	ProTeamArray.Sort([](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B) {
-		return A.GetTotalScore() > B.GetTotalScore();
-	});
-
+	// Anti팀의 배열과, Pro팀의 배열을 내림차순으로 정렬합니다.
+	for(auto& Element : PlayersByTeamMap)
+	{
+		Element.Value.Sort([](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B){
+			return A.GetTotalScore() > B.GetTotalScore();
+		});
+	}
+	
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
 		const ALakayaBasePlayerState* LakayaPlayerState = Cast<ALakayaBasePlayerState>(LocalController->GetPlayerState<ALakayaBasePlayerState>());
 		if (LakayaPlayerState == nullptr) UE_LOG(LogTemp, Warning, TEXT("LakayaPlayerState is null."));
 
+		// for (auto& Player : PlayersByTeamMap[LakayaPlayerState->GetTeam()]) GradeResultWidget->RegisterPlayer(Player);
+		
 		if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
 		{
 			// 승리했다면 "승리" 이미지를 띄워줍니다.
