@@ -44,6 +44,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	const bool& IsWantsToFire() const { return bWantsToFire; }
 
+	UFUNCTION(BlueprintSetter)
+	void SetBasisComponent(USceneComponent* NewComponent);
+
 protected:
 	UFUNCTION()
 	virtual void FireTick();
@@ -133,10 +136,12 @@ protected:
 	TMap<FName, float> WeakPointMultiplier;
 
 private:
+	UPROPERTY(BlueprintSetter=SetBasisComponent)
+	TObjectPtr<USceneComponent> BasisComponent;
+	
 	bool bWantsToFire;
 	FTimerHandle FireTimer;
 	FCollisionQueryParams CollisionQueryParams;
 	TMap<EFireResult, TSimpleObjectPool<AActor>> DecalPool;
-	TWeakObjectPtr<class UArrowComponent> MuzzleComponent;
 	TWeakObjectPtr<class UNiagaraComponent> GunImpactNiagara;
 };
