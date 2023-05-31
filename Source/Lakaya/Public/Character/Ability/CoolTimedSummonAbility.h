@@ -31,6 +31,9 @@ public:
 	void NotifyAbilityInstanceStateChanged(const EAbilityInstanceState& InstanceState,
 	                                       class ASummonAbilityInstance* const& AbilityInstance);
 
+	// 어빌리티 인스턴스 소환 시, 소환의 기준 위치를 선정할 때 사용되는 씬 컴포넌트를 지정합니다.
+	void SetBasisComponent(USceneComponent* BasisComponent);
+
 	// 소환된 스킬이 실제로 언제 실행되는지 알려진 뒤에 호출됩니다. 매개변수로 스킬이 실행되는 시간을 받습니다.
 	FPerformTimeSignature OnPerformTimeNotified;
 
@@ -60,6 +63,9 @@ protected:
 	class UNiagaraSystem* MuzzleNiagaraSystem;
 
 private:
+	UPROPERTY()
+	TWeakObjectPtr<USceneComponent> SceneComponent;
+	
 	FCollisionQueryParams CollisionQueryParams;
 	TSimpleObjectPool<ASummonAbilityInstance> AbilityInstancePool;
 	TWeakObjectPtr<class UArrowComponent> MuzzleComponent;
