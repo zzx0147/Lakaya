@@ -56,7 +56,7 @@ void UDeathRayAbility::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 	if (LaserEffect.IsValid() && MuzzleComponent.IsValid())
 	{
-		if(GetOwner()->HasAuthority()) GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, *FString::Printf(TEXT("%f"),AbilityStartTime));
+		//if(GetOwner()->HasAuthority()) GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, *FString::Printf(TEXT("%f"),AbilityStartTime));
 		FVector result = MuzzleComponent->GetComponentTransform().InverseTransformPosition(EndPoint);
 		LaserEffect->SetNiagaraVariableVec3(TEXT("BeamEnd"), result);
 	}
