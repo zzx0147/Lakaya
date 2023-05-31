@@ -26,4 +26,28 @@ public:
 	TWeakObjectPtr<UTextBlock> F_RankText;
 	TWeakObjectPtr<UTextBlock> F_NameText;
 	TWeakObjectPtr<UTextBlock> F_TotalScoreText;
+
+	TWeakObjectPtr<UImage> S_AntiWaziImage;
+	TWeakObjectPtr<UImage> S_AntiRenaImage;
+	TWeakObjectPtr<UImage> S_ProWaziImage;
+	TWeakObjectPtr<UImage> S_ProRenaImage;
+	TWeakObjectPtr<UImage> S_AntiRankBoardImage;
+	TWeakObjectPtr<UImage> S_ProRankBoardImage;
+	TWeakObjectPtr<UImage> S_ScoreBoardIconImage;
+	
+	TWeakObjectPtr<UTextBlock> S_RankText;
+	TWeakObjectPtr<UTextBlock> S_NameText;
+	TWeakObjectPtr<UTextBlock> S_TotalScoreText;
+
+	TWeakObjectPtr<UImage> T_AntiWaziImage;
+	TWeakObjectPtr<UImage> T_AntiRenaImage;
+	TWeakObjectPtr<UImage> T_ProWaziImage;
+	TWeakObjectPtr<UImage> T_ProRenaImage;
+	TWeakObjectPtr<UImage> T_AntiRankBoardImage;
+	TWeakObjectPtr<UImage> T_ProRankBoardImage;
+	TWeakObjectPtr<UImage> T_ScoreBoardIconImage;
+	
+	TWeakObjectPtr<UTextBlock> T_RankText;
+	TWeakObjectPtr<UTextBlock> T_NameText;
+	TWeakObjectPtr<UTextBlock> T_TotalScoreText;
 };

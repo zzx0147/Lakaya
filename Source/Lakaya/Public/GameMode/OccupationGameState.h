@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Character/LakayaBasePlayerState.h"
 #include "GameMode/LakayaBaseGameState.h"
 #include "Occupation/PlayerTeam.h"
 #include "UI/DetailResultWidget.h"
@@ -71,6 +72,20 @@ private:
 	void SetClientTeam(const EPlayerTeam& NewTeam);
 
 	void DestroyTriggerBox();
+
+	// 게임 승패여부를 띄워줍니다.
+	void ShowEndResultWidget();
+
+	// 게임결과 배경위젯를 띄워줍니다.
+	void ShowGradeResultWidget(ALakayaBasePlayerState* PlayerState, APlayerController* Controller);
+
+	// 게임결과 등수 위젯을 띄워줍니다.
+	void ShowGradeResultElementWidget(const ALakayaBasePlayerState* PlayerState);
+
+	// 본인의 팀에 따라 보여지는 게임결과 등수 위젯을 띄워줍니다.
+	void ShowAntiTeamGradeResultElementWidget();
+	void ShowProTeamGradeResultElementWidget();
+	
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
 	EPlayerTeam CurrentOccupationWinner = EPlayerTeam::None;
@@ -124,10 +139,14 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameResultWidget> GameResultWidgetClass;
 
-	// 게임 종료 시 게임 팀내 등수 결과를 띄우는 위젯 클래스를 지정합니다.
+	// 게임 종료 후 배경 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGradeResultWidget> GradeResultWidgetClass;
 
+	// 게임 종료 후 게임 팀내 등수 결과를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGradeResultElementWidget> GradeResultElementWidgetClass;
+	
 	// 게임 종료 시 게임 디테일 결과를 띄우는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UDetailResultWidget> DetailResultWidgetClass;
@@ -144,9 +163,12 @@ private:
 	// 게임 승패 위젯 입니다.
 	TWeakObjectPtr<UGameResultWidget> GameResultWidget;
 
-	// 게임 팀내 등수 결과 위젯입니다.
+	// 게임 팀종료 후 배경 위젯입니다.
 	TWeakObjectPtr<UGradeResultWidget> GradeResultWidget;
 
+	// 게임 팀내 등수 결과 위젯입니다.
+	TWeakObjectPtr<UGradeResultElementWidget> GradeResultElementWidget;
+	
 	// 게임 디테일 결과 위젯입니다.
 	TWeakObjectPtr<UDetailResultWidget> DetailResultWidget;
 	
