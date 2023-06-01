@@ -3,42 +3,43 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CharacterAbility.h"
 #include "SimpleObjectPool.h"
-#include "StartRemoteCallAbility.h"
+#include "Occupation/PlayerTeam.h"
 #include "CoolTimedSummonAbility.generated.h"
 
-DECLARE_EVENT_OneParam(UCoolTimedSummonAbility, FEnableTimeSignature, const float&)
+enum class EAbilityInstanceState;
+
+DECLARE_EVENT_OneParam(UCoolTimedSummonAbility, FPerformTimeSignature, const float&)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class LAKAYA_API UCoolTimedSummonAbility : public UStartRemoteCallAbility
+class LAKAYA_API UCoolTimedSummonAbility : public UCharacterAbility
 {
 	GENERATED_BODY()
 
 public:
 	UCoolTimedSummonAbility();
-	virtual void AbilityStart() override;
+	virtual void SetTeam(const EPlayerTeam& Team) override;
 
 protected:
 	virtual void InitializeComponent() override;
-	virtual void RequestStart_Implementation(const float& RequestTime) override;
-
-	UFUNCTION()
-	virtual void OnRep_EnableTime();
-
-private:
-	UFUNCTION()
-	void OnAbilityInstanceEnded(class ASummonAbilityInstance* const& AbilityInstance);
+	virtual bool ShouldStartRemoteCall() override;
+	virtual void RemoteAbilityStart(const float& RequestTime) override;
 
 public:
-	// 스킬 사용가능시점이 변경된 경우 호출됩니다.
-	FEnableTimeSignature OnEnableTimeChanged;
+	void GetSummonLocationAndRotation(FVector& Location, FRotator& Rotator) const;
+	void NotifyAbilityInstanceStateChanged(const EAbilityInstanceState& InstanceState,
+	                                       class ASummonAbilityInstance* const& AbilityInstance);
+
+	// 어빌리티 인스턴스 소환 시, 소환의 기준 위치를 선정할 때 사용되는 씬 컴포넌트를 지정합니다.
+	UFUNCTION(BlueprintCallable)
+	void SetBasisComponent(USceneComponent* BasisComponent);
+
+	// 소환된 스킬이 실제로 언제 실행되는지 알려진 뒤에 호출됩니다. 매개변수로 스킬이 실행되는 시간을 받습니다.
+	FPerformTimeSignature OnPerformTimeNotified;
 
 protected:
-	// 스킬의 기본 쿨타임을 지정합니다.
-	UPROPERTY(EditAnywhere)
-	float CoolTime;
-
-	// 소환될 스킬의 인스턴스입니다.
+	// 소환될 어빌리티 인스턴스의 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ASummonAbilityInstance> AbilityInstanceClass;
 
@@ -54,15 +55,20 @@ protected:
 	UPROPERTY(EditAnywhere)
 	uint8 ObjectPoolSize;
 
-	// 어빌리티 인스턴스가 플레이어가 바라보는 방향으로 로케이션, 로테이션이 셋업되도록 합니다.
+	// 어빌리티 인스턴스 소환시 소모할 자원들을 지정합니다.
 	UPROPERTY(EditAnywhere)
-	bool bWantsTransformSet;
+	TArray<FResourceCostData> ResourceCost;
+
+	// 어빌리티 인스턴스 소환시 총구에서 재생될 나이아가라 시스템을 지정합니다.
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* MuzzleNiagaraSystem;
 
 private:
-	// 스킬이 사용가능해지는 시점을 의미합니다.
-	UPROPERTY(ReplicatedUsing=OnRep_EnableTime, Transient)
-	float EnableTime;
-
+	UPROPERTY()
+	TWeakObjectPtr<USceneComponent> SceneComponent;
+	
 	FCollisionQueryParams CollisionQueryParams;
 	TSimpleObjectPool<ASummonAbilityInstance> AbilityInstancePool;
+	TWeakObjectPtr<class UArrowComponent> MuzzleComponent;
+	TWeakObjectPtr<class UNiagaraComponent> MuzzleNiagara;
 };

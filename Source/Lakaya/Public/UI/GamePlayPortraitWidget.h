@@ -24,5 +24,6 @@ protected:
 
 private:
 	TObjectPtr<UImage> CharacterPortraitImage;//캐릭터 초상화를 표기하는 Image 위젯
+	//TODO: UPROPERTY(EditAnywhere)로 선언하면 에디터에서도 간단히 초상화를 추가할 수 있습니다.
 	TMap<FName,TObjectPtr<UTexture2D>> CharacterPortraitTextureMap;//표기될 초상화 텍스쳐 맵
 };

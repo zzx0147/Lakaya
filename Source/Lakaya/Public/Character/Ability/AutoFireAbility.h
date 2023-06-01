@@ -3,27 +3,30 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "StopRemoteCallAbility.h"
+#include "CharacterAbility.h"
 #include "AutoFireAbility.generated.h"
 
 DECLARE_EVENT_OneParam(UAutoFireAbility, FIsFiringSignature, bool)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class LAKAYA_API UAutoFireAbility : public UStopRemoteCallAbility
+class LAKAYA_API UAutoFireAbility : public UCharacterAbility
 {
 	GENERATED_BODY()
 
 public:
 	UAutoFireAbility();
 
-	virtual void AbilityStart() override;
-	virtual void AbilityStop() override;
+	virtual void LocalAbilityStart() override;
+	virtual void LocalAbilityStop() override;
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void RequestStart_Implementation(const float& RequestTime) override;
-	virtual void RequestStop_Implementation(const float& RequestTime) override;
-
+	virtual void RemoteAbilityStart(const float& RequestTime) override;
+	virtual void RemoteAbilityStop(const float& RequestTime) override;
+	
+	UFUNCTION()
+	virtual void OnRep_AbilityStartTime();
+	
 public:
 	UFUNCTION(BlueprintGetter)
 	const bool& IsFiring() const { return bIsFiring; }
@@ -65,6 +68,13 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float FireDamage;
 
+	//사격 요청이 오고 실제로 사격이 시작되는 시간입니다. 음수일 경우 사격 중지를 의미합니다
+	UPROPERTY(ReplicatedUsing = OnRep_AbilityStartTime, Transient)
+	float AbilityStartTime;
+	
+protected:
+	FCollisionQueryParams CollisionQueryParams;
+	
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_IsFiring, Transient)
 	bool bIsFiring;
@@ -73,5 +83,5 @@ private:
 	FTimerHandle FireTimer;
 	TWeakObjectPtr<class UCameraComponent> Camera;
 	TWeakObjectPtr<USceneComponent> RootComponent;
-	FCollisionQueryParams CollisionQueryParams;
+
 };

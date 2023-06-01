@@ -11,6 +11,7 @@
 ULockstepFireAbility::ULockstepFireAbility()
 {
 	bWantsInitializeComponent = true;
+	bCanEverStopRemoteCall = bCanEverStartRemoteCall = true;
 	LockstepDelay = 0.1f;
 	FirstFireDelay = 0.f;
 	FireDelay = 0.2f;
@@ -27,23 +28,23 @@ void ULockstepFireAbility::InitializeComponent()
 	if (!Camera.IsValid()) UE_LOG(LogInit, Error, TEXT("Camera was nullptr on ULockstepFireAbility::OnRegister"));
 }
 
-void ULockstepFireAbility::AbilityStart()
+void ULockstepFireAbility::LocalAbilityStart()
 {
 	if (!ShouldAbilityStart()) return;
 	if (!GetOwner()->HasAuthority()) SetWantsToFire(true);
-	Super::AbilityStart();
+	Super::LocalAbilityStart();
 }
 
-void ULockstepFireAbility::AbilityStop()
+void ULockstepFireAbility::LocalAbilityStop()
 {
 	if (!bWantsToFire) return;
 	if (!GetOwner()->HasAuthority()) SetWantsToFire(false);
-	Super::AbilityStop();
+	Super::LocalAbilityStop();
 }
 
-void ULockstepFireAbility::RequestStart_Implementation(const float& RequestTime)
+void ULockstepFireAbility::RemoteAbilityStart(const float& RequestTime)
 {
-	Super::RequestStart_Implementation(RequestTime);
+	Super::RemoteAbilityStart(RequestTime);
 	if (bWantsToFire) return;
 	SetWantsToFire(true);
 
@@ -51,13 +52,13 @@ void ULockstepFireAbility::RequestStart_Implementation(const float& RequestTime)
 	if (auto& TimerManager = GetWorld()->GetTimerManager(); !TimerManager.TimerExists(FireTimer))
 	{
 		TimerManager.SetTimer(FireTimer, this, &ULockstepFireAbility::FireTick, FireDelay, true, FirstFireDelay);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
 	}
 }
 
-void ULockstepFireAbility::RequestStop_Implementation(const float& RequestTime)
+void ULockstepFireAbility::RemoteAbilityStop(const float& RequestTime)
 {
-	Super::RequestStop_Implementation(RequestTime);
+	Super::RemoteAbilityStop(RequestTime);
 	if (bWantsToFire) SetWantsToFire(false);
 }
 
@@ -85,7 +86,7 @@ void ULockstepFireAbility::SingleFire(const FLockstepFireInfo& FireInfo)
 	if (FHitResult Result;
 		GetWorld()->LineTraceSingleByChannel(Result, Start, End, ECC_Visibility, CollisionQueryParams))
 		End = Result.ImpactPoint;
-	DrawDebugLine(GetWorld(), Start, End, FColor::Cyan, false, 2.f);
+	// DrawDebugLine(GetWorld(), Start, End, FColor::Cyan, false, 2.f);
 
 	// 액터로부터 End까지 트레이스하여 실질적인 사격 판정을 수행합니다.
 	if (FHitResult Result;
@@ -97,7 +98,7 @@ void ULockstepFireAbility::SingleFire(const FLockstepFireInfo& FireInfo)
 			UGameplayStatics::ApplyPointDamage(Result.GetActor(), BaseDamage, FireInfo.ActorLocation, Result,
 			                                   Owner ? Owner->GetController() : nullptr, GetOwner(), nullptr);
 	}
-	DrawDebugLine(GetWorld(), FireInfo.ActorLocation, End, FColor::Red, false, 2.f);
+	// DrawDebugLine(GetWorld(), FireInfo.ActorLocation, End, FColor::Red, false, 2.f);
 }
 
 void ULockstepFireAbility::FailToFire()
@@ -115,7 +116,7 @@ void ULockstepFireAbility::SetWantsToFire(const bool& FireState)
 void ULockstepFireAbility::ClearFireTimer()
 {
 	GetWorld()->GetTimerManager().ClearTimer(FireTimer);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
 }
 
 bool ULockstepFireAbility::ShouldAbilityStart()

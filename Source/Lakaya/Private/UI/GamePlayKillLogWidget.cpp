@@ -40,12 +40,12 @@ void UGamePlayKillLogWidget::NativeConstruct()
 		return Result;
 	});
 
-	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
-		GameState->OnPlayerKillNotified.AddUObject(this, &UGamePlayKillLogWidget::OnKillCharacterNotify);
+	// if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+		// GameState->OnPlayerKillNotified.AddUObject(this, &UGamePlayKillLogWidget::OnKillCharacterNotify);
 }
 
-void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController,
-                                                   AController* Instigator, AActor* Causer)
+void UGamePlayKillLogWidget::OnKillCharacterNotify(APlayerState* KilledController,
+                                                   APlayerState* Instigator, AActor* Causer)
 {
 	UKillLogElement* Element;
 	if (ShownElementCount < MaxElementCount)
@@ -55,6 +55,12 @@ void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController
 	}
 	else Element = Cast<UKillLogElement>(KillLogBox->GetChildAt(InitialChildCount));
 
-	KillLogBox->ShiftChild(KillLogBox->GetChildrenCount(), Element);
-	// Element->SetKillLog(Cast<ADamageableCharacter>(Causer), Cast<ACharacter>(KilledActor));
+
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("KilllogWidget!!! SetKillLog!!"));
+	//KillLogBox->ShiftChild(KillLogBox->GetChildrenCount(), Element);
+
+	 if(Element != nullptr)
+		Element->SetKillLog(Instigator, KilledController);
+		
+	
 }

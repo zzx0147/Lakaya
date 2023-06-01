@@ -6,6 +6,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
 #include "Character/LakayaBaseCharacter.h"
+#include "Components/Image.h"
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/DirectionalDamageIndicator.h"
@@ -19,6 +20,8 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(ALakayaBasePlayerState, Team);
 	DOREPLIFETIME(ALakayaBasePlayerState, RespawnTime);
 	DOREPLIFETIME(ALakayaBasePlayerState, CharacterName);
+	DOREPLIFETIME(ALakayaBasePlayerState, TotalScore);
+	DOREPLIFETIME(ALakayaBasePlayerState, SuccessCaptureCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, DeathCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillStreak);
@@ -33,7 +36,7 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
 	static ConstructorHelpers::FClassFinder<UDirectionalDamageIndicator> DirectionDamageFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_DirectionalDamageIndicator"));
-	
+
 	if (HealthFinder.Succeeded()) HealthWidgetClass = HealthFinder.Class;
 	if (DirectionDamageFinder.Succeeded()) DirectionDamageIndicatorClass = DirectionDamageFinder.Class;
 }
@@ -81,7 +84,7 @@ void ALakayaBasePlayerState::BeginPlay()
 		{
 			HealthWidget->AddToViewport();
 			HealthWidget->SetVisibility(ESlateVisibility::Hidden);
-
+			
 			OnHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetCurrentHealth);
 			OnMaxHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetMaximumHealth);
 
@@ -89,13 +92,15 @@ void ALakayaBasePlayerState::BeginPlay()
 			HealthWidget->SetCurrentHealth(Health);
 		}
 
-		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(LocalController, DirectionDamageIndicatorClass);
+		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(
+			LocalController, DirectionDamageIndicatorClass);
 		if (DirectionDamageIndicatorWidget == nullptr)
 		{
-				UE_LOG(LogTemp, Warning, TEXT("LakayaBasePlayerState_PreInitializeComponents DirectionDamageIndicatorWidget is null."));
-				return;
+			UE_LOG(LogTemp, Warning,
+			       TEXT("LakayaBasePlayerState_PreInitializeComponents DirectionDamageIndicatorWidget is null."));
+			return;
 		}
-		
+
 		DirectionDamageIndicatorWidget->AddToViewport();
 	}
 }
@@ -109,6 +114,7 @@ void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
 		Other->Team = Team;
 		Other->RespawnTime = RespawnTime;
 		Other->CharacterName = CharacterName;
+		Other->TotalScore = TotalScore;
 		Other->DeathCount = DeathCount;
 		Other->KillCount = KillCount;
 	}
@@ -127,12 +133,12 @@ bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) con
 
 bool ALakayaBasePlayerState::IsSameTeam(const EPlayerTeam& Other) const
 {
-	// 두 플레이어가 개인전상태가 아니고, Team 값이 같은 경우 같은 팀으로 판별합니다.
-	return Other != EPlayerTeam::Individual && Team != EPlayerTeam::Individual && Other == Team;
+	return JudgeSameTeam(Team, Other);
 }
 
 void ALakayaBasePlayerState::SetTeam(const EPlayerTeam& DesireTeam)
 {
+	if (Team == DesireTeam) return;
 	Team = DesireTeam;
 	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->SetTeam(Team);
 	OnTeamChanged.Broadcast(Team);
@@ -142,6 +148,37 @@ void ALakayaBasePlayerState::MakeAlive()
 {
 	RespawnTime = 0.f;
 	SetAliveState(true);
+}
+
+const uint16& ALakayaBasePlayerState::IncreaseScoreCount(const uint16& NewScore)
+{
+	TotalScore += NewScore;
+	OnRep_TotalScore();
+	return TotalScore;	
+}
+
+const uint16& ALakayaBasePlayerState::AddTotalScoreCount(const uint16& NewScore)
+{
+	TotalScore += NewScore;
+	OnRep_TotalScore();
+	return TotalScore;
+}
+
+void ALakayaBasePlayerState::IncreaseSuccessCaptureCount()
+{
+	OnSuccessCaptureCountChanged.Broadcast(++SuccessCaptureCount);
+}
+
+void ALakayaBasePlayerState::IncreaseCurrentCaptureCount()
+{
+	OnCurrentCaptureCountChanged.Broadcast(++CurrentCaptureCount);
+	CheckCurrentCaptureCount();
+}
+
+void ALakayaBasePlayerState::DecreaseCurrentCaptureCount()
+{
+	OnCurrentCaptureCountChanged.Broadcast(--CurrentCaptureCount);
+	CheckCurrentCaptureCount();
 }
 
 void ALakayaBasePlayerState::IncreaseDeathCount()
@@ -167,6 +204,26 @@ void ALakayaBasePlayerState::ResetKillStreak()
 	OnKillStreakChanged.Broadcast(KillStreak);
 }
 
+void ALakayaBasePlayerState::CheckCurrentCaptureCount()
+{
+	if (CurrentCaptureCount == 0)
+	{
+		if (GetWorldTimerManager().IsTimerActive(CurrentCaptureTimer))
+			GetWorldTimerManager().ClearTimer(CurrentCaptureTimer);
+	}
+		
+	if (CurrentCaptureCount == 1)
+	{
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindLambda([this]
+		{
+			AddTotalScoreCount(CurrentCaptureCount * 50);
+		});
+
+		GetWorldTimerManager().SetTimer(CurrentCaptureTimer, TimerDelegate, 1.0f, true);
+	}
+}
+
 float ALakayaBasePlayerState::GetServerTime() const
 {
 	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
@@ -180,9 +237,15 @@ void ALakayaBasePlayerState::BroadcastMaxHealthChanged() const
 bool ALakayaBasePlayerState::ShouldTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
                                               AController* EventInstigator, AActor* DamageCauser)
 {
-	// 플레이어가 생존해있고, 데미지가 공격이 아닌 회복인 경우나 EventInstigator가 nullptr인 경우, 같은 팀이 아닌 경우 피해를 받도록 합니다.
-	return IsAlive() && (DamageAmount < 0.f || !EventInstigator
-		|| !IsSameTeam(EventInstigator->GetPlayerState<ALakayaBasePlayerState>()));
+	// 플레이어가 이미 사망한 상태인 경우 데미지를 받지 않습니다.
+	if (!IsAlive()) return false;
+
+	// EventInstigator가 nullptr인 경우 글로벌 데미지이거나 어떤 정의할 수 없는 데미지이지만 일단 받아야하는 데미지라고 판단합니다.
+	if (!EventInstigator) return true;
+
+	// 데미지가 피해인 경우 다른 팀인 경우에만 받고, 데미지가 힐인 경우 같은 팀인 경우에만 받습니다.
+	const auto Other = EventInstigator->GetPlayerState<ALakayaBasePlayerState>();
+	return (DamageAmount > 0.f && !IsSameTeam(Other)) || (DamageAmount < 0.f && IsSameTeam(Other));
 }
 
 void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
@@ -192,11 +255,21 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		OldCharacter->SetTeam(EPlayerTeam::None);
 		OnAliveStateChanged.RemoveAll(OldCharacter);
 	}
-	
+
 	if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
 	{
 		if (Team != EPlayerTeam::None) Character->SetTeam(Team);
-		if (HealthWidget.IsValid()) HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		if (HealthWidget.IsValid())
+		{
+			HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			
+			if (GetCharacterName().ToString() == "Rena")
+				HealthWidget->UserInfoCharImageRena->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+			if (GetCharacterName().ToString() == "Wazi")
+				HealthWidget->UserInfoCharImageWazi->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		}
+		
 		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);
 	}
 	else
@@ -252,6 +325,21 @@ void ALakayaBasePlayerState::OnRep_CharacterName()
 	OnCharacterNameChanged.Broadcast(this, CharacterName);
 }
 
+void ALakayaBasePlayerState::OnRep_TotalScore()
+{
+	OnTotalScoreChanged.Broadcast(TotalScore);
+}
+
+void ALakayaBasePlayerState::OnRep_CurrentCaptureCount()
+{
+	OnCurrentCaptureCountChanged.Broadcast(CurrentCaptureCount);
+}
+
+void ALakayaBasePlayerState::OnRep_SuccessCaptureCount()
+{
+	OnSuccessCaptureCountChanged.Broadcast(SuccessCaptureCount);
+}
+
 void ALakayaBasePlayerState::OnRep_DeathCount()
 {
 	OnKillCountChanged.Broadcast(KillCount);
@@ -295,26 +383,15 @@ bool ALakayaBasePlayerState::RequestCharacterChange_Validate(const FName& Name)
 void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserName, const FVector& CauserLocation,
                                                             const float& Damage)
 {
-	// TODO : 피격 레이더를 업데이트 합니다.
-	if(GetPlayerController()->IsLocalPlayerController())
+	const auto PlayerController = GetPlayerController();
+	if(!PlayerController) return;
+	
+	if (PlayerController->IsLocalPlayerController())
 	{
+		//TODO: 위젯 nullptr 체크 필요, 매개변수 하드코딩 수정 필요
 		DirectionDamageIndicatorWidget->IndicateStart(CauserName.ToString(), CauserLocation, 3.0f);
-		
-		// ScreenEffect : 피격 당할 시 화면에 표기 되는 이펙트
-		FSoftObjectPath NiagaraPath;
-		NiagaraPath = (TEXT("/Game/Effects/M_VFX/VFX_Screeneffect.VFX_Screeneffect"));
-		UNiagaraSystem* NiagaraEffect = Cast<UNiagaraSystem>(NiagaraPath.TryLoad());
-      
-		if (NiagaraEffect)
-		{
-			UNiagaraComponent* NiagaraComponent =
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraEffect,
-			FVector(0.0f, 0.0f, 0.0f));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to load Niagara system!"));
-		}
+
+		Cast<ALakayaBaseCharacter>(PlayerController->GetCharacter())->PlayHitScreen();
 	}
 }
 

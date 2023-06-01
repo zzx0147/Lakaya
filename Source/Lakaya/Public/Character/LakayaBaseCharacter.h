@@ -75,8 +75,12 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void SetAliveState(bool IsAlive);
 
+	bool IsSameTeam(const EPlayerTeam& Team) const;
+
+	void PlayHitScreen();
+
 protected:
-	virtual void SetTeam_Implementation(const EPlayerTeam& Team) { return; }
+	virtual void SetTeam_Implementation(const EPlayerTeam& Team);
 	virtual void SetAliveState_Implementation(bool IsAlive);
 
 	// 현재 시점의 서버 시간을 가져옵니다.
@@ -104,6 +108,19 @@ protected:
 	UPROPERTY(EditAnywhere, meta=(ClampMin = 0.1f, ClampMax = 1.0f))
 	float PlayerRotationInterpolationAlpha;
 
+	// 캐릭터가 부활했을 때 재생할 나이아가라 시스템을 지정합니다.
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* ResurrectionNiagaraSystem;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* HitScreenEffect;
+
+	UPROPERTY(EditAnywhere)
+	TEnumAsByte<ECollisionChannel> ATeamObjectType;
+
+	UPROPERTY(EditAnywhere)
+	TEnumAsByte<ECollisionChannel> BTeamObjectType;
+
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	class UResourceComponent* ResourceComponent;
@@ -120,4 +137,5 @@ private:
 	FPlayerRotationPacket PrevPlayerRotation;
 	FPlayerRotationPacket LatestPlayerRotation;
 	FQuat LatestUpdateRotation;
+	EPlayerTeam RecentTeam;
 };

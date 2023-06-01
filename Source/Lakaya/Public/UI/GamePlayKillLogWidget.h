@@ -19,11 +19,12 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 
-private:
+public:
 	// ADamageableCharacter::OnKillCharacterNotify 이벤트에 등록된 콜백함수
-	void OnKillCharacterNotify(AController* KilledController, AController* Instigator,
-	                           AActor* Causer);
-
+	void OnKillCharacterNotify(APlayerState* KilledController, APlayerState* Instigator,
+							   AActor* Causer);
+private:
+	
 	// 킬 로그 엘리먼트 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UKillLogElement> KillLogClass;

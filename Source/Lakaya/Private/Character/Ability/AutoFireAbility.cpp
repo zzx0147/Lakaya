@@ -11,7 +11,9 @@
 void UAutoFireAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
 	DOREPLIFETIME(UAutoFireAbility, bIsFiring);
+	DOREPLIFETIME(UAutoFireAbility, AbilityStartTime);
 }
 
 UAutoFireAbility::UAutoFireAbility()
@@ -19,32 +21,33 @@ UAutoFireAbility::UAutoFireAbility()
 	InitDelay = FireDelay = 0.2f;
 	FireRange = 5000.f;
 	FireDamage = 20.f;
+	bCanEverStopRemoteCall = bCanEverStartRemoteCall = true;
 }
 
-void UAutoFireAbility::AbilityStart()
+void UAutoFireAbility::LocalAbilityStart()
 {
 	if (GetOwner()->HasAuthority())
 	{
-		Super::AbilityStart();
+		Super::LocalAbilityStart();
 		return;
 	}
 
 	if (bIsFireRequested) return;
 	bIsFireRequested = true;
-	Super::AbilityStart();
+	Super::LocalAbilityStart();
 }
 
-void UAutoFireAbility::AbilityStop()
+void UAutoFireAbility::LocalAbilityStop()
 {
 	if (GetOwner()->HasAuthority())
 	{
-		Super::AbilityStop();
+		Super::LocalAbilityStop();
 		return;
 	}
 
 	if (!bIsFireRequested) return;
 	bIsFireRequested = false;
-	Super::AbilityStop();
+	Super::LocalAbilityStop();
 }
 
 void UAutoFireAbility::BeginPlay()
@@ -63,25 +66,38 @@ void UAutoFireAbility::BeginPlay()
 	}
 }
 
-void UAutoFireAbility::RequestStart_Implementation(const float& RequestTime)
+void UAutoFireAbility::RemoteAbilityStart(const float& RequestTime)
 {
-	Super::RequestStart_Implementation(RequestTime);
+	Super::RemoteAbilityStart(RequestTime);
 	if (bIsFiring) return;
 	bIsFiring = true;
+	AbilityStartTime = RequestTime + InitDelay;
+	OnRep_AbilityStartTime();
+
+	float RemainDelay = AbilityStartTime - GetServerTime();
+	if (RemainDelay < 0.0f) RemainDelay = 0.0f;
+	OnFiringStateChanged.Broadcast(bIsFiring);
+
 	if (auto& TimerManager = GetWorld()->GetTimerManager(); !TimerManager.TimerExists(FireTimer))
 	{
-		TimerManager.SetTimer(FireTimer, this, &UAutoFireAbility::FireTick, FireDelay, true, InitDelay);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
+		TimerManager.SetTimer(FireTimer, this, &UAutoFireAbility::FireTick, FireDelay, true, RemainDelay);
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerSetted!"));
 	}
+	
+}
+
+void UAutoFireAbility::RemoteAbilityStop(const float& RequestTime)
+{
+	Super::RemoteAbilityStop(RequestTime);
+	if (!bIsFiring) return;
+	bIsFiring = false;
+	AbilityStartTime = -1.0f;
+	OnRep_AbilityStartTime();
 	OnFiringStateChanged.Broadcast(bIsFiring);
 }
 
-void UAutoFireAbility::RequestStop_Implementation(const float& RequestTime)
+void UAutoFireAbility::OnRep_AbilityStartTime()
 {
-	Super::RequestStop_Implementation(RequestTime);
-	if (!bIsFiring) return;
-	bIsFiring = false;
-	OnFiringStateChanged.Broadcast(bIsFiring);
 }
 
 void UAutoFireAbility::OnRep_IsFiring()
@@ -105,7 +121,7 @@ void UAutoFireAbility::SingleFire()
 	// (카메라의 전방 벡터에 카메라->캐릭터 벡터를 투영한 길이 + 사정거리) * 카메라 전방 벡터 + 카메라의 위치.
 	const auto Destination = Location +
 		(Forward.Dot(Location - RootComponent->GetComponentLocation()) + FireRange) * Forward;
-	DrawDebugLine(GetWorld(), Location, Destination, FColor::Red, false, 1.f);
+	// DrawDebugLine(GetWorld(), Location, Destination, FColor::Red, false, 1.f);
 
 	if (FHitResult Result;
 		GetWorld()->LineTraceSingleByChannel(Result, Location, Destination, ECC_Camera, CollisionQueryParams))
@@ -119,6 +135,7 @@ void UAutoFireAbility::SingleFire()
 void UAutoFireAbility::FailToFire()
 {
 	bIsFiring = false;
+	AbilityStartTime = -1.0f;
 	OnFiringStateChanged.Broadcast(bIsFiring);
 }
 
@@ -127,7 +144,7 @@ void UAutoFireAbility::FireTick()
 	if (!bIsFiring)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(FireTimer);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("FireTimerClear!"));
 	}
 	else if (ShouldFire()) SingleFire();
 	else FailToFire();

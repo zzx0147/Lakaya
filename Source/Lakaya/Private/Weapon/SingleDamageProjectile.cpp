@@ -43,7 +43,7 @@ void ASingleDamageProjectile::NotifyActorBeginOverlap(AActor* OtherActor)
 	Super::NotifyActorBeginOverlap(OtherActor);
 	if (!HasAuthority()) return;
 	UGameplayStatics::ApplyDamage(OtherActor, Damage, GetInstigator()->GetController(), GetInstigator(), nullptr);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Projectile Apply Damage!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Projectile Apply Damage!"));
 	OnAttackEnded.Broadcast(this);
 }
 

@@ -1,18 +1,17 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Occupation/PlayerTeam.h"
 #include "KillLogElement.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class LAKAYA_API UKillLogElement : public UUserWidget
 {
 	GENERATED_BODY()
+
+public:
+	UKillLogElement(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void NativeConstruct() override;
@@ -25,7 +24,7 @@ public:
 	 * @param Attacker Victim을 처치한 캐릭터입니다.
 	 * @param Victim 처치당한 캐릭터입니다.
 	 */
-	void SetKillLog(ACharacter* Attacker, class ACharacter* Victim);
+	void SetKillLog(APlayerState* Attacker, APlayerState* Victim);
 
 	// 킬 로그를 즉시 만료시켜 비활성화 합니다.
 	void ExpireInstant();
@@ -43,8 +42,22 @@ private:
 	TWeakObjectPtr<class UTextBlock> VictimTextBlock;
 	TWeakObjectPtr<UTextBlock> AttackerTextBlock;
 	TWeakObjectPtr<class UImage> WeaponImage;
+	TWeakObjectPtr<UImage> AttackerImage;
+	TWeakObjectPtr<UImage> VictimImage;
+	TWeakObjectPtr<UImage> BackgroundImage;
+
+	
 	FTimerHandle ShowTimer;
 	std::function<void(UKillLogElement*)> Return;
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FName, TObjectPtr<class UTexture2D>> WeaponImageMap;
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FName, TObjectPtr<class UTexture2D>> CharacterImageMap;
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<EPlayerTeam, TObjectPtr<class UTexture2D>> BackgroundImageMap;
 
 	UPROPERTY(EditAnywhere)
 	float ShowingTime;

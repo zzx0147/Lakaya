@@ -20,6 +20,7 @@ void ULoadingWidget::SetPlayerNumber(const uint8& PlayerCount)
 		return;
 	}
 
+	//TODO: 텍스트 포맷을 따로 저장해두면 더 높은 퍼포먼스를 기대할 수 있습니다.
 	LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), PlayerCount, MaxPlayerCount)));
 }
 

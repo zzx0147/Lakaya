@@ -2,66 +2,44 @@
 
 
 #include "AI/AiCharacterController.h"
-#include "AI/AiCharacter.h"
-#include "Character/Ability/AutoFireAbility.h"
-#include "GameMode/OccupationGameMode.h"
-#include "GameMode/OccupationGameState.h"
+
+#include "Character/ArmedCharacter.h"
 
 AAiCharacterController::AAiCharacterController() // 생성자
 {
 	bWantsPlayerState = true;
+
+	// 블랙보드와 비헤이비어 트리 컴포넌트 생성
+	BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComp"));
+	BehaviorTreeComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComp"));
+
+	// AI의 SpringArm SocketOffset 설정을 위한 변수
+	AISpringArmOffset = FVector(0,0,-54);
 }
 
-void AAiCharacterController::BeginPlay()
+void AAiCharacterController::OnPossess(APawn* InPawn)
 {
-	Super::BeginPlay();
+	Super::OnPossess(InPawn);
 
-	AOccupationGameMode* OccupationGameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
-	if (OccupationGameMode == nullptr)
+	// OnPossess 되었을때 비헤이비어 트리 에셋 할당해주면 컴포넌트에 있는 블랙보드와 비헤이비어 트리를 시작시켜줌
+	if (BehaviorTreeAsset)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AiCharacterController_GameMode is null."));
-		return;
-	}
-	
-	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-	if (OccupationGameState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_GameState is null."));
-		return;
+		BlackboardComp->InitializeBlackboard(*(BehaviorTreeAsset->BlackboardAsset));
+		BehaviorTreeComp->StartTree(*(BehaviorTreeAsset));
 	}
 
-	// OccupationGameState->AddMaxPlayer();
-	// OccupationGameState->AddPlayerState(GetCharacter()->GetController()->PlayerState);
-	// OccupationGameMode->NumPlayers++;
-	// int32 CurrentPlayerNum = OccupationGameState->PlayerArray.Num();
-	// OccupationGameState->SetNumPlayers(CurrentPlayerNum);
-	// UE_LOG(LogTemp, Warning, TEXT("AiController BeginPlay."));
+	// 카메라와 총구의 사잇값에서 총알이나가는 문제때문에 AI가 총알을 휘게쏴서 0으로 맞춰줌!
+	SpringArm = GetPawn()->FindComponentByClass<USpringArmComponent>();
+	if (SpringArm)
+		SpringArm->SocketOffset = AISpringArmOffset;
 }
 
 void AAiCharacterController::AIFireStart(AArmedCharacter* ArmCharacter)
 {
-	ArmCharacter = Cast<AArmedCharacter>(GetCharacter());
-	
-	auto& Abilities = ArmCharacter->GetAbilities();
-	if(Abilities.IsValidIndex(WeaponFire))
-	{
-		if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
-		{
-			FireAbility->AbilityStart();
-		}
-	}	
+	if (ArmCharacter) ArmCharacter->StartAbility(WeaponFire);
 }
 
 void AAiCharacterController::AIFireStop(AArmedCharacter* ArmCharacter)
 {
-	ArmCharacter = Cast<AArmedCharacter>(GetCharacter());
-	
-	auto& Abilities = ArmCharacter->GetAbilities();
-	if(Abilities.IsValidIndex(WeaponFire))
-	{
-		if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
-		{
-			FireAbility->AbilityStop();
-		}
-	}
+	if (ArmCharacter) ArmCharacter->StopAbility(WeaponFire);
 }
