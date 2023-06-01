@@ -85,10 +85,11 @@ FVector UCharacterAbility::GetCameraForwardPointFromActor(const float& FromActor
 }
 
 FVector UCharacterAbility::GetNormalToCameraForwardTracePoint(const float& FromActor,
-                                                              const FCollisionQueryParams& CollisionQueryParams) const
+                                                              const FCollisionQueryParams& CollisionQueryParams,
+                                                              const USceneComponent* BasisComponent) const
 {
-	return (GetCameraForwardTracePoint(FromActor, CollisionQueryParams) - GetOwner()->GetActorLocation()).
-		GetUnsafeNormal();
+	const auto BasisLocation = BasisComponent ? BasisComponent->GetComponentLocation() : GetOwner()->GetActorLocation();
+	return (GetCameraForwardTracePoint(FromActor, CollisionQueryParams) - BasisLocation).GetUnsafeNormal();
 }
 
 float UCharacterAbility::GetServerTime() const

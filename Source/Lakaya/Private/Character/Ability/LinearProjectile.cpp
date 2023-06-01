@@ -11,7 +11,7 @@
 #include "Net/UnrealNetwork.h"
 
 const FName ALinearProjectile::CollisionComponentName = FName("CollisionComponent");
-const FName ALinearProjectile::StaticMeshComponentName = FName("StaticMeshComponent");
+const FName ALinearProjectile::MeshComponentName = FName("MeshComponent");
 const FName ALinearProjectile::TrailNiagaraComponentName = FName("TrailNiagaraComponent");
 
 ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -34,13 +34,13 @@ ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer
 	CollisionComponent->CanCharacterStepUpOn = ECB_No;
 	SetRootComponent(CollisionComponent);
 
-	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(StaticMeshComponentName);
-	StaticMeshComponent->SetupAttachment(CollisionComponent);
-	StaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	StaticMeshComponent->CanCharacterStepUpOn = ECB_No;
+	MeshComponent = CreateDefaultSubobject<UMeshComponent, UStaticMeshComponent>(MeshComponentName);
+	MeshComponent->SetupAttachment(CollisionComponent);
+	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshComponent->CanCharacterStepUpOn = ECB_No;
 
 	TrailNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TrailNiagaraComponentName);
-	TrailNiagaraComponent->SetupAttachment(StaticMeshComponent);
+	TrailNiagaraComponent->SetupAttachment(MeshComponent);
 	TrailNiagaraComponent->SetAutoActivate(false);
 	TrailNiagaraComponent->SetAutoDestroy(false);
 
@@ -59,7 +59,7 @@ void ALinearProjectile::PostInitializeComponents()
 	Super::PostInitializeComponents();
 	CollisionComponent->OnComponentBeginOverlap.AddUniqueDynamic(
 		this, &ALinearProjectile::OnCollisionComponentBeginOverlap);
-	StaticMeshComponent->SetVisibility(false);
+	MeshComponent->SetVisibility(false);
 	if (!CollisionComponent->IsGravityEnabled()) ProjectilePathParams.OverrideGravityZ = -1.f;
 }
 
@@ -75,7 +75,7 @@ void ALinearProjectile::HandleAbilityInstanceReady()
 	Super::HandleAbilityInstanceReady();
 	DisableProjectileSimulation();
 	DisableProjectilePhysics();
-	StaticMeshComponent->SetVisibility(false);
+	MeshComponent->SetVisibility(false);
 }
 
 void ALinearProjectile::HandleAbilityInstancePerform()
@@ -104,7 +104,7 @@ void ALinearProjectile::HandleAbilityInstanceEnding()
 	if (bAutoEnding)
 	{
 		if (!HasAuthority()) SetActorLocationAndRotation(ProjectileLocation, ProjectileRotation);
-		if (bHideMeshOnEnding) StaticMeshComponent->SetVisibility(false);
+		if (bHideMeshOnEnding) MeshComponent->SetVisibility(false);
 	}
 }
 
@@ -127,7 +127,7 @@ void ALinearProjectile::HandleAbilityInstanceCollapsed()
 	Super::HandleAbilityInstanceCollapsed();
 	DisableProjectileSimulation();
 	DisableProjectilePhysics();
-	StaticMeshComponent->SetVisibility(false);
+	MeshComponent->SetVisibility(false);
 }
 
 void ALinearProjectile::Tick(float DeltaSeconds)
@@ -256,7 +256,7 @@ void ALinearProjectile::SimulateProjectileMovement()
 
 void ALinearProjectile::ShowProjectile()
 {
-	StaticMeshComponent->SetVisibility(true);
+	MeshComponent->SetVisibility(true);
 	TrailNiagaraComponent->Activate();
 }
 

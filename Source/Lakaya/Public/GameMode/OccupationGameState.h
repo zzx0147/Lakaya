@@ -92,7 +92,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	float MatchStartWidgetLifeTime;
 	
-	TMap<EPlayerTeam,TArray<class ALakayaBasePlayerState*>> PlayersByTeamMap;
+	TMap<EPlayerTeam,TArray<TObjectPtr<class ALakayaBasePlayerState>>> PlayersByTeamMap;
 
 	// Anti팀의 배열입니다.
 	TArray<TObjectPtr<ALakayaBasePlayerState>> AntiTeamArray;

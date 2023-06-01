@@ -6,7 +6,6 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Character/LakayaBaseCharacter.h"
-#include "Components/ArrowComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 UResultNotifyFireAbility::UResultNotifyFireAbility()
@@ -50,16 +49,11 @@ void UResultNotifyFireAbility::InitializeComponent()
 	Super::InitializeComponent();
 	CollisionQueryParams.AddIgnoredActor(GetOwner());
 
-	// 총구 컴포넌트 탐색
-	if (auto MuzzleComponents = GetOwner()->GetComponentsByTag(UArrowComponent::StaticClass(), FName("Muzzle"));
-		MuzzleComponents.IsValidIndex(0))
-		MuzzleComponent = Cast<UArrowComponent>(MuzzleComponents[0]);
-
 	// 총구 이펙트 생성
-	if (GunImpactSystem)
+	if (GunImpactSystem && BasisComponent)
 	{
 		GunImpactNiagara =
-			UNiagaraFunctionLibrary::SpawnSystemAttached(GunImpactSystem, MuzzleComponent.Get(), NAME_None,
+			UNiagaraFunctionLibrary::SpawnSystemAttached(GunImpactSystem, BasisComponent.Get(), NAME_None,
 			                                             FVector::ZeroVector, FRotator::ZeroRotator,
 			                                             EAttachLocation::SnapToTarget, false, false);
 	}
@@ -97,6 +91,11 @@ void UResultNotifyFireAbility::RemoteAbilityStop(const float& RequestTime)
 	bWantsToFire = false;
 }
 
+void UResultNotifyFireAbility::SetBasisComponent(USceneComponent* NewComponent)
+{
+	BasisComponent = NewComponent;
+}
+
 void UResultNotifyFireAbility::FireTick()
 {
 	if (!bWantsToFire) ClearFireTimer();
@@ -111,9 +110,7 @@ bool UResultNotifyFireAbility::ShouldFire()
 
 void UResultNotifyFireAbility::SingleFire()
 {
-	const auto LineStart = MuzzleComponent.IsValid()
-		                       ? MuzzleComponent->GetComponentLocation()
-		                       : GetOwner()->GetActorLocation();
+	const auto LineStart = BasisComponent ? BasisComponent->GetComponentLocation() : GetOwner()->GetActorLocation();
 	auto End = GetCameraForwardTracePoint(FireRange, CollisionQueryParams);
 
 	FHitResult Result;
@@ -208,9 +205,7 @@ void UResultNotifyFireAbility::NotifySingleFire_Implementation(const FVector& St
 void UResultNotifyFireAbility::NotifyFireResult_Implementation(const FVector& HitPoint, const FVector& Normal,
                                                                const EFireResult& FireResult)
 {
-	const FVector Start = MuzzleComponent.IsValid()
-		                      ? MuzzleComponent->GetComponentLocation()
-		                      : GetOwner()->GetActorLocation();
+	const FVector Start = BasisComponent ? BasisComponent->GetComponentLocation() : GetOwner()->GetActorLocation();
 	DrawTrail(Start, HitPoint);
 	DrawDecal(HitPoint, Normal, FireResult);
 	DrawImpact(HitPoint, Normal, FireResult);
