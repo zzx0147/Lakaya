@@ -77,20 +77,39 @@ void UCoolTimedSummonAbility::RemoteAbilityStart(const float& RequestTime)
 void UCoolTimedSummonAbility::GetSummonLocationAndRotation(FVector& Location, FRotator& Rotator) const
 {
 	//TODO: 클라이언트에서는 카메라 컴포넌트를 신뢰할 수 없으므로, 의도하지 않았던 곳에서 소환이 이뤄질 수 있습니다.
-	const auto Direction = GetNormalToCameraForwardTracePoint(SearchFromActor, CollisionQueryParams);
-	Location = GetOwner()->GetActorLocation() + Direction * SummonDistance;
+	const auto Direction = GetNormalToCameraForwardTracePoint(SearchFromActor, CollisionQueryParams,
+	                                                          BasisComponent.Get());
+	Location = (BasisComponent ? BasisComponent->GetComponentLocation() : GetOwner()->GetActorLocation()) +
+		Direction * SummonDistance;
 	Rotator = Direction.Rotation();
 }
 
-void UCoolTimedSummonAbility::NotifyPerformTime(const float& Time)
+void UCoolTimedSummonAbility::NotifyAbilityInstanceStateChanged(const EAbilityInstanceState& InstanceState,
+                                                                ASummonAbilityInstance* const& AbilityInstance)
 {
-	OnPerformTimeNotified.Broadcast(Time);
+	switch (InstanceState)
+	{
+	case EAbilityInstanceState::Collapsed:
+		if (AbilityInstance->HasAuthority())
+		{
+			AbilityInstancePool.ReturnObject(AbilityInstance);
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object returned!"));
+		}
+		break;
+	case EAbilityInstanceState::Ready:
+		OnPerformTimeNotified.Broadcast(AbilityInstance->GetAbilityTime());
+		break;
+	case EAbilityInstanceState::Perform: break;
+	case EAbilityInstanceState::ReadyForAction: break;
+	case EAbilityInstanceState::Action: break;
+	case EAbilityInstanceState::Ending: break;
+	default: ;
+	}
 }
 
-void UCoolTimedSummonAbility::NotifyAbilityInstanceCollapsed(ASummonAbilityInstance* const& AbilityInstance)
+void UCoolTimedSummonAbility::SetBasisComponent(USceneComponent* NewComponent)
 {
-	AbilityInstancePool.ReturnObject(AbilityInstance);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object returned!"));
+	BasisComponent = NewComponent;
 }
 
 void UCoolTimedSummonAbility::SetTeam(const EPlayerTeam& Team)

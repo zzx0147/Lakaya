@@ -3,15 +3,14 @@
 
 #include "Character/Ability/ClairvoyanceAbility.h"
 
-#include "Character/LakayaBaseCharacter.h"
-#include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 UClairvoyanceAbility::UClairvoyanceAbility() : Super()
 {
-	AbilityDuration = 1.0f;
+	AbilityDuration = 10.0f;
+	bIsClairvoyanceOn = false;
 }
 
 void UClairvoyanceAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -22,44 +21,11 @@ void UClairvoyanceAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 void UClairvoyanceAbility::OnRep_AbilityStartTime()
 {
-	if(AbilityStartTime > GetServerTime())
-	{
-		GetWorld()->GetTimerManager().SetTimer(AbilityStartHandle,[this]
-		{
-		
-			const auto OutlineManagerRef = GetOutlineManager();
-			if(const auto Character = Cast<ALakayaBaseCharacter>(GetOwner()))
-			{
-				if(const auto BasePlayerState = Character->GetPlayerState<ALakayaBasePlayerState>())
-				{
-					OutlineManagerRef->RegisterClairvoyance(GetUniqueID(),BasePlayerState->GetTeam());
-
-				
-					GetWorld()->GetTimerManager().SetTimer(AbilityEndHandle,[this,OutlineManagerRef,BasePlayerState]
-					{
-						OutlineManagerRef->UnRegisterClairvoyance(GetUniqueID(),BasePlayerState->GetTeam());
-					},AbilityStartTime + AbilityDuration - GetServerTime() ,false);
-				}
-			}
-		},AbilityStartTime - GetServerTime(),false);	
-	}
+	bIsClairvoyanceOn = true;
+	if (AbilityStartTime > GetServerTime())
+		GetWorld()->GetTimerManager().SetTimer(AbilityStartHandle, this, &UClairvoyanceAbility::AbilityStart,AbilityStartTime - GetServerTime(), false);
 	else
-	{
-		const auto OutlineManagerRef = GetOutlineManager();
-		if(const auto Character = Cast<ALakayaBaseCharacter>(GetOwner()))
-		{
-			if(const auto BasePlayerState = Character->GetPlayerState<ALakayaBasePlayerState>())
-			{
-				OutlineManagerRef->RegisterClairvoyance(GetUniqueID(),BasePlayerState->GetTeam());
-
-				
-				GetWorld()->GetTimerManager().SetTimer(AbilityEndHandle,[this,OutlineManagerRef,BasePlayerState]
-				{
-					OutlineManagerRef->UnRegisterClairvoyance(GetUniqueID(),BasePlayerState->GetTeam());
-				},AbilityStartTime + AbilityDuration - GetServerTime() ,false);
-			}
-		}
-	}
+		AbilityStart();
 }
 
 void UClairvoyanceAbility::RemoteAbilityStart(const float& RequestTime)
@@ -73,6 +39,11 @@ void UClairvoyanceAbility::RemoteAbilityStart(const float& RequestTime)
 void UClairvoyanceAbility::OnAliveStateChanged(const bool& AliveState)
 {
 	Super::OnAliveStateChanged(AliveState);
+	if(!AliveState && bIsClairvoyanceOn)
+	{
+		AbilityEnd();
+		GetWorld()->GetTimerManager().ClearTimer(AbilityStartHandle);
+	}
 }
 
 void UClairvoyanceAbility::InitializeComponent()
@@ -82,9 +53,9 @@ void UClairvoyanceAbility::InitializeComponent()
 
 TObjectPtr<AOutlineManager> UClairvoyanceAbility::GetOutlineManager()
 {
-	if(OutlineManager.IsValid()) return OutlineManager.Get();
-	
-	OutlineManager = Cast<AOutlineManager>(UGameplayStatics::GetActorOfClass(this,AOutlineManager::StaticClass()));
+	if (OutlineManager.IsValid()) return OutlineManager.Get();
+
+	OutlineManager = Cast<AOutlineManager>(UGameplayStatics::GetActorOfClass(this, AOutlineManager::StaticClass()));
 
 
 	return OutlineManager.Get();
@@ -92,7 +63,23 @@ TObjectPtr<AOutlineManager> UClairvoyanceAbility::GetOutlineManager()
 
 bool UClairvoyanceAbility::ShouldStartRemoteCall()
 {
-	return true;
+	if (bIsClairvoyanceOn) return false;
+
+	return IsEnableTime(GetServerTime() + 0.1f);;
+}
+
+void UClairvoyanceAbility::AbilityStart()
+{
+	GetOutlineManager()->RegisterClairvoyance(GetUniqueID(), GetPlayerTeam());
+	GetWorld()->GetTimerManager().SetTimer(AbilityEndHandle, this, &UClairvoyanceAbility::AbilityEnd,
+	                                       AbilityStartTime + AbilityDuration - GetServerTime(), false);
+}
+
+void UClairvoyanceAbility::AbilityEnd()
+{
+	if (GetOwner()->HasAuthority()) ApplyCoolTime();
+	GetOutlineManager()->UnRegisterClairvoyance(GetUniqueID(), GetPlayerTeam());
+	bIsClairvoyanceOn = false;
 }
 
 void UClairvoyanceAbility::LocalAbilityStart()

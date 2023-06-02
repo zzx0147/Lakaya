@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameMode/LakayaBaseGameState.h"
-#include "UI/GameAIIndividualScoreBoardWidget.h"
+#include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
 #include "AIIndividualGameState.generated.h"
 
 /**
@@ -18,30 +18,23 @@ class LAKAYA_API AAIIndividualGameState : public ALakayaBaseGameState
 public:
 	AAIIndividualGameState();
 
-	void SetScoreBoardPlayerName(const TArray<FPlayerData>& PlayerDataArray);
+	void SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray);
 	void SetAIIndividualWinner();
 	
 	APlayerState* PlayerState;
 	
-	TArray<FPlayerData> FPlayerDataArray;
+	TArray<FPlayerAIData> FPlayerAIDataArray;
 
-	FPlayerData PlayerData;
-	FPlayerData Player1Data;
-	FPlayerData Player2Data;
-	FPlayerData Player3Data;
-	FPlayerData Player4Data;
-	FPlayerData Player5Data;
-	FPlayerData Player6Data;
+	FPlayerAIData PlayerAIData;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
+	TWeakObjectPtr<class UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardWidget;
+	
 private:
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UGameAIIndividualScoreBoardWidget> AIIndividualScoreBoardWidgettClass;
-
-	TWeakObjectPtr<UGameAIIndividualScoreBoardWidget> AIIndividualScoreBoardWidget;
-
+	TSubclassOf<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardWidgetClass;
 	
 };
