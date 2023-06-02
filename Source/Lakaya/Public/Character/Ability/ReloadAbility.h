@@ -6,6 +6,7 @@
 #include "CharacterAbility.h"
 #include "ReloadAbility.generated.h"
 
+DECLARE_EVENT_OneParam(UReloadAbility, FReloadCompleteTimeSignature, const float&)
 
 DECLARE_EVENT_OneParam(UReloadAbility, FIsReloadingSignature, bool)
 
@@ -43,6 +44,9 @@ private:
 	void UpdateReloadStateWithTime(const float& CurrentTime);
 
 public:
+	// 재장전이 완료되는 시간이 확정되면 호출됩니다.
+	FReloadCompleteTimeSignature OnReloadCompleteTimeNotified;
+
 	// 재장전 상태가 변경되면 호출됩니다.
 	FIsReloadingSignature OnReloadStateChanged;
 

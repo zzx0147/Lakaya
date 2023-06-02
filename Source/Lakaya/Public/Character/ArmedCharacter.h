@@ -46,9 +46,9 @@ public:
 
 	virtual ELifetimeCondition
 	AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const override;
-	virtual void SetTeam_Implementation(const EPlayerTeam& Team) override;
 
 protected:
+	virtual void SetTeam_Implementation(const EPlayerTeam& Team) override;
 	virtual void SetAliveState_Implementation(bool IsAlive) override;
 
 public:
