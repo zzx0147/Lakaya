@@ -78,8 +78,8 @@ void UCoolTimedSummonAbility::GetSummonLocationAndRotation(FVector& Location, FR
 {
 	//TODO: 클라이언트에서는 카메라 컴포넌트를 신뢰할 수 없으므로, 의도하지 않았던 곳에서 소환이 이뤄질 수 있습니다.
 	const auto Direction = GetNormalToCameraForwardTracePoint(SearchFromActor, CollisionQueryParams,
-	                                                          SceneComponent.Get());
-	Location = (SceneComponent.IsValid() ? SceneComponent->GetComponentLocation() : GetOwner()->GetActorLocation()) +
+	                                                          BasisComponent.Get());
+	Location = (BasisComponent ? BasisComponent->GetComponentLocation() : GetOwner()->GetActorLocation()) +
 		Direction * SummonDistance;
 	Rotator = Direction.Rotation();
 }
@@ -107,9 +107,9 @@ void UCoolTimedSummonAbility::NotifyAbilityInstanceStateChanged(const EAbilityIn
 	}
 }
 
-void UCoolTimedSummonAbility::SetBasisComponent(USceneComponent* BasisComponent)
+void UCoolTimedSummonAbility::SetBasisComponent(USceneComponent* NewComponent)
 {
-	SceneComponent = BasisComponent;
+	BasisComponent = NewComponent;
 }
 
 void UCoolTimedSummonAbility::SetTeam(const EPlayerTeam& Team)
