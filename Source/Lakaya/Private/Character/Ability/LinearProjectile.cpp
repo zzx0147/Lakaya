@@ -115,25 +115,19 @@ void ALinearProjectile::Tick(float DeltaSeconds)
 		RecalculateProjectilePath();
 		TimeDiff = CurrentTime - RecentPathCalculateTime;
 	}
+	ProjectilePathResult.PathData.Heapify(CustomPointDataPredicate);
 
-	// 가장 먼저 보이는 경과시간값보다 큰 데이터를 가져옵니다.
-	const auto FoundData = ProjectilePathResult.PathData.FindByPredicate([&TimeDiff](const auto& PointData)
+	// 가장 먼저 보이는 경과시간값보다 큰 데이터를 찾고, 그 이전 데이터는 저장해둡니다.
+	auto TopData = &ProjectilePathResult.PathData.HeapTop();
+	while (TopData->Time <= TimeDiff)
 	{
-		return PointData.Time > TimeDiff;
-	});
-	if (!FoundData)
-	{
-		UE_LOG(LogScript, Error, TEXT("FoundData was nulltptr!"));
-		return;
+		ProjectilePathResult.PathData.HeapPop(RecentPointData, CustomPointDataPredicate, false);
+		TopData = &ProjectilePathResult.PathData.HeapTop();
 	}
 
-	// 이 데이터의 이전 데이터를 가져와서, 두 데이터를 보간하여 현재 시간에 맞는 위치로 이동시킵니다. 이전 데이터가 없다면 그냥 현재 데이터를 사용합니다.
-	if (const auto PrevData = FoundData - 1)
-	{
-		SetActorLocation(FMath::Lerp(PrevData->Location, FoundData->Location,
-		                             UKismetMathLibrary::NormalizeToRange(TimeDiff, PrevData->Time, FoundData->Time)));
-	}
-	else SetActorLocation(FoundData->Location);
+	// 두 데이터를 보간하여 현재 시간에 맞는 위치로 이동시킵니다.
+	SetActorLocation(FMath::Lerp(RecentPointData.Location, TopData->Location,
+	                             UKismetMathLibrary::NormalizeToRange(TimeDiff, RecentPointData.Time, TopData->Time)));
 }
 
 void ALinearProjectile::SetTeam(const EPlayerTeam& Team)
@@ -221,6 +215,8 @@ void ALinearProjectile::SimulateProjectileMovement()
 	                                 TEXT("Start projectile simulate"));
 	DisableProjectilePhysics();
 	CalculateProjectilePath(ProjectileLocation, ProjectileRotation);
+	ProjectilePathResult.PathData.Heapify(CustomPointDataPredicate);
+	RecentPointData = ProjectilePathResult.PathData.HeapTop();
 	SetActorTickEnabled(true);
 	StaticMeshComponent->SetVisibility(true);
 	TrailNiagaraComponent->Activate();
@@ -239,20 +235,19 @@ void ALinearProjectile::CalculateProjectilePath(const FVector& Location, const F
 	ProjectilePathParams.StartLocation = Location;
 	ProjectilePathParams.LaunchVelocity = Rotator.Vector() * LinearVelocity;
 	UGameplayStatics::PredictProjectilePath(GetWorld(), ProjectilePathParams, ProjectilePathResult);
-	ProjectilePathResult.PathData.Sort([](const auto& First, const auto& Second)
-	{
-		return First.Time < Second.Time;
-	});
 }
 
 void ALinearProjectile::RecalculateProjectilePath()
 {
 	RecentPathCalculateTime += ProjectilePathResult.LastTraceDestination.Time;
-	ProjectilePathParams.StartLocation = ProjectilePathResult.LastTraceDestination.Location;
-	ProjectilePathParams.LaunchVelocity = ProjectilePathResult.LastTraceDestination.Velocity;
+	RecentPointData = ProjectilePathResult.LastTraceDestination;
+	ProjectilePathParams.StartLocation = RecentPointData.Location;
+	ProjectilePathParams.LaunchVelocity = RecentPointData.Velocity;
 	UGameplayStatics::PredictProjectilePath(GetWorld(), ProjectilePathParams, ProjectilePathResult);
-	ProjectilePathResult.PathData.Sort([](const auto& First, const auto& Second)
-	{
-		return First.Time < Second.Time;
-	});
+}
+
+bool ALinearProjectile::CustomPointDataPredicate(const FPredictProjectilePathPointData& First,
+                                                 const FPredictProjectilePathPointData& Second)
+{
+	return First.Time < Second.Time;
 }

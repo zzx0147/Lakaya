@@ -71,6 +71,9 @@ private:
 	void CalculateProjectilePath(const FVector& Location, const FRotator& Rotator);
 	void RecalculateProjectilePath();
 
+	static bool CustomPointDataPredicate(const FPredictProjectilePathPointData& First,
+	                                     const FPredictProjectilePathPointData& Second);
+
 protected:
 	UPROPERTY(EditAnywhere)
 	float LinearVelocity;
@@ -117,4 +120,5 @@ private:
 
 	FPredictProjectilePathResult ProjectilePathResult;
 	float RecentPathCalculateTime;
+	FPredictProjectilePathPointData RecentPointData;
 };
