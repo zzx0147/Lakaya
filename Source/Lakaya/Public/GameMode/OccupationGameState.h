@@ -164,7 +164,7 @@ private:
 	// 게임 승패 위젯 입니다.
 	TWeakObjectPtr<UGameResultWidget> GameResultWidget;
 
-	// 게임 팀종료 후 배경 위젯입니다.
+	// 게임 종료 후 배경 위젯입니다.
 	TWeakObjectPtr<UGradeResultWidget> GradeResultWidget;
 
 	// 게임 팀내 등수 결과 위젯입니다.
