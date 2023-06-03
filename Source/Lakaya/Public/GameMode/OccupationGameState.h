@@ -1,8 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Character/LakayaBasePlayerState.h"
 #include "GameMode/LakayaBaseGameState.h"
 #include "Occupation/PlayerTeam.h"
+#include "UI/DetailResultWidget.h"
+#include "UI/GradeResultWidget.h"
 #include "OccupationGameState.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeOccupationWinner, const EPlayerTeam&)
@@ -19,6 +22,7 @@ public:
 private:
 	virtual void BeginPlay() override;
 	virtual void HandleMatchHasStarted() override;
+	virtual void HandleMatchHasEnded() override;
 	
 public:
 	UFUNCTION(NetMulticast, Reliable)
@@ -66,48 +70,108 @@ private:
 	void OnRep_OccupationWinner();
 
 	void SetClientTeam(const EPlayerTeam& NewTeam);
+
+	void DestroyTriggerBox();
+
+	// 게임 승패여부를 띄워줍니다.
+	void ShowEndResultWidget();
+
+	// 게임결과 배경위젯를 띄워줍니다.
+	void ShowGradeResultWidget(ALakayaBasePlayerState* PlayerState, APlayerController* Controller);
+
+	// 게임결과 등수 위젯을 띄워줍니다.
+	void ShowGradeResultElementWidget(const ALakayaBasePlayerState* PlayerState);
+
+	// 본인의 팀에 따라 보여지는 게임결과 등수 위젯을 띄워줍니다.
+	void ShowAntiTeamGradeResultElementWidget();
+	void ShowProTeamGradeResultElementWidget();
 	
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
 	EPlayerTeam CurrentOccupationWinner = EPlayerTeam::None;
 
+	// Anti
 	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore)
 	float ATeamScore = 0;
 
+	// Pro
 	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore)
 	float BTeamScore = 0;
 
 	UPROPERTY(EditAnywhere)
 	float MaxScore;
 
+	UPROPERTY(EditAnywhere)
+	float MatchStartWaitWidgetLifeTime;
 
-	TMap<EPlayerTeam,TArray<class ALakayaBasePlayerState*>> PlayersByTeamMap;
+	UPROPERTY(EditAnywhere)
+	float MatchStartWidgetLifeTime;
+	
+	TMap<EPlayerTeam,TArray<TObjectPtr<class ALakayaBasePlayerState>>> PlayersByTeamMap;
+
+	// Anti팀의 배열입니다.
+	TArray<TObjectPtr<ALakayaBasePlayerState>> AntiTeamArray;
+
+	// Pro팀의 배열입니다.
+	TArray<TObjectPtr<ALakayaBasePlayerState>> ProTeamArray;
 
 	EPlayerTeam ClientTeam;
 
 	FTimerHandle TimerHandle_GameTimeCheck;
-	FTimerHandle TimerHandle_StartMessage;
+	FTimerHandle TimerHandle_StartMessageVisible;
+	FTimerHandle TimerHandle_StartMessageHidden;
+	FTimerHandle TimerHandle_WaitTimerHandle;
+	FTimerHandle TimerHandle_GameResultHandle;
 private:
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UTeamScoreWidget> TeamScoreWidgetClass;
 	
-	// 게임 종료 시 승리자를 띄우는 위젯 클래스를 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UGameResultWidget> GameResultWidgetClass;
-
 	// 게임 시작 시 "라카야 제어기를 점령하세요" 메세지를 띄우는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UStartMessageWidget> StartMessageWidgetClass;
+
+	// 게임 시작 시 "라운드 시작까지 10초 남았습니다" 메세지를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UMatchStartWaitWidget> MatchStartWaitWidgetClass;
+
+	// 게임 종료 시 "승리", "패배" 및 팀별 점수를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGameResultWidget> GameResultWidgetClass;
+
+	// 게임 종료 후 배경 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGradeResultWidget> GradeResultWidgetClass;
+
+	// 게임 종료 후 게임 팀내 등수 결과를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGradeResultElementWidget> GradeResultElementWidgetClass;
+	
+	// 게임 종료 시 게임 디테일 결과를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UDetailResultWidget> DetailResultWidgetClass;
 	
 	// 팀스코어 위젯 입니다.
     TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
-	
-	// 게임결과창 위젯 입니다.
-	TWeakObjectPtr<UGameResultWidget> GameResultWidget;
+
+	// "라운드 시작까지 10초 남았습니다" 위젯 입니다.
+	TWeakObjectPtr<UMatchStartWaitWidget> MatchStartWaitWidget;
 
 	// "라카야 제어기를 점령하세요" 위젯 입니다.
 	TWeakObjectPtr<UStartMessageWidget> StartMessageWidget;
+	
+	// 게임 승패 위젯 입니다.
+	TWeakObjectPtr<UGameResultWidget> GameResultWidget;
+
+	// 게임 팀종료 후 배경 위젯입니다.
+	TWeakObjectPtr<UGradeResultWidget> GradeResultWidget;
+
+	// 게임 팀내 등수 결과 위젯입니다.
+	TWeakObjectPtr<UGradeResultElementWidget> GradeResultElementWidget;
+	
+	// 게임 디테일 결과 위젯입니다.
+	TWeakObjectPtr<UDetailResultWidget> DetailResultWidget;
+	
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;

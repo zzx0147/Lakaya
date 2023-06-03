@@ -7,6 +7,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Character/ResourceComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
@@ -23,6 +24,9 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	MaxHealth = 100.f;
 	PrimaryActorTick.bCanEverTick = true;
 	PlayerRotationInterpolationAlpha = 0.65f;
+	ATeamObjectType = ECC_GameTraceChannel5;
+	BTeamObjectType = ECC_GameTraceChannel6;
+	bIsAlive = true;
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(SpringArmComponentName);
 	SpringArm->SetupAttachment(RootComponent);
@@ -33,7 +37,7 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 
 	HitScreenEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Niagara"));
 	HitScreenEffect->SetupAttachment(Camera);
-	
+
 	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(ResourceComponentName);
 	ResourceComponent->SetIsReplicated(true);
 
@@ -96,6 +100,21 @@ void ALakayaBaseCharacter::Tick(float DeltaSeconds)
 	}
 }
 
+void ALakayaBaseCharacter::NotifyControllerChanged()
+{
+	Super::NotifyControllerChanged();
+	GetMesh()->SetRenderCustomDepth(!IsLocallyControlled());
+}
+
+void ALakayaBaseCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	MeshCollisionProfile = GetMesh()->GetCollisionProfileName();
+	MeshRelativeLocation = GetMesh()->GetRelativeLocation();
+	MeshRelativeRotation = GetMesh()->GetRelativeRotation();
+	GetMesh()->SetRenderCustomDepth(!IsLocallyControlled());
+}
+
 FRotator ALakayaBaseCharacter::GetPlayerRotation() const
 {
 	// 서버이거나 Autonomous인 경우 그냥 카메라 컴포넌트를 사용합니다.
@@ -103,19 +122,46 @@ FRotator ALakayaBaseCharacter::GetPlayerRotation() const
 	return LatestUpdateRotation.Rotator();
 }
 
+bool ALakayaBaseCharacter::IsSameTeam(const EPlayerTeam& Team) const
+{
+	return JudgeSameTeam(RecentTeam, Team);
+}
+
 void ALakayaBaseCharacter::PlayHitScreen()
 {
 	HitScreenEffect->Activate(true);
 }
 
+void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
+{
+	RecentTeam = Team;
+	if (Team == EPlayerTeam::A) GetCapsuleComponent()->SetCollisionObjectType(ATeamObjectType);
+	else if (Team == EPlayerTeam::B) GetCapsuleComponent()->SetCollisionObjectType(BTeamObjectType);
+}
+
 void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 {
-	UE_LOG(LogTemp, Warning, TEXT("SetAliveState"));
+	bIsAlive = IsAlive;
 	ResourceComponent->OnAliveStateChanged(IsAlive);
-	if (IsAlive && ResurrectionNiagaraSystem)
-		UNiagaraFunctionLibrary::SpawnSystemAttached(ResurrectionNiagaraSystem, RootComponent, FName(),
-		                                             FVector(0.0f, 0.0f, -90.0f), FRotator::ZeroRotator,
-		                                             EAttachLocation::SnapToTarget, true);
+	if (IsAlive)
+	{
+		GetMesh()->SetAllBodiesSimulatePhysics(false);
+		GetMesh()->SetCollisionProfileName(MeshCollisionProfile);
+		GetMesh()->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		GetMesh()->SetRelativeLocationAndRotation(MeshRelativeLocation, MeshRelativeRotation);
+		if (ResurrectionNiagaraSystem)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAttached(ResurrectionNiagaraSystem, RootComponent, FName(),
+			                                             FVector(0.0f, 0.0f, -90.0f), FRotator::ZeroRotator,
+			                                             EAttachLocation::SnapToTarget, true);
+		}
+	}
+	else
+	{
+		GetMesh()->SetCollisionProfileName(TEXT("RagDoll"));
+		GetMesh()->SetAllBodiesSimulatePhysics(true);
+	}
+	if (HasAuthority()) GetCharacterMovement()->SetMovementMode(IsAlive ? MOVE_Walking : MOVE_None);
 }
 
 float ALakayaBaseCharacter::GetServerTime() const

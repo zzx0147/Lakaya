@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Occupation/PlayerTeam.h"
 #include "CharacterAbility.generated.h"
 
 UENUM()
@@ -56,6 +57,8 @@ public:
 	// 캐릭터의 생존 상태가 업데이트될 때 호출됩니다. 서버, 클라이언트 모두에서 호출됩니다.
 	virtual void OnAliveStateChanged(const bool& AliveState);
 
+	virtual void SetTeam(const EPlayerTeam& Team) { RecentTeam = Team; }
+
 	bool CanStartRemoteCall();
 	bool CanStopRemoteCall();
 
@@ -94,10 +97,13 @@ protected:
 	FVector GetCameraForwardPointFromActor(const float& FromActor) const;
 
 	FVector GetNormalToCameraForwardTracePoint(const float& FromActor,
-	                                           const FCollisionQueryParams& CollisionQueryParams) const;
+	                                           const FCollisionQueryParams& CollisionQueryParams,
+	                                           const USceneComponent* BasisComponent = nullptr) const;
 
 	// 가장 최근 업데이트된 캐릭터의 생존 상태를 가져옵니다.
 	FORCEINLINE const bool& GetAliveState() const { return bRecentAliveState; }
+
+	FORCEINLINE const EPlayerTeam& GetPlayerTeam() const { return RecentTeam; }
 
 	float GetServerTime() const;
 
@@ -152,4 +158,5 @@ private:
 	TWeakObjectPtr<UCameraComponent> CameraComponent;
 	TWeakObjectPtr<class UResourceComponent> ResourceComponent;
 	bool bRecentAliveState;
+	EPlayerTeam RecentTeam;
 };
