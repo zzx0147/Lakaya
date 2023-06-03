@@ -38,6 +38,39 @@ void ASummonAbilityInstance::SetAbilityInstanceState(const EAbilityInstanceState
 	OnRep_AbilityInstanceState();
 }
 
+void ASummonAbilityInstance::SetStateTimer(void (ASummonAbilityInstance::*TimerHandler)(), const float& Delay)
+{
+	const auto Time = GetServerTime();
+	if (HasAuthority()) AbilityTime = Time + Delay;
+	GetWorld()->GetTimerManager().SetTimer(StateTimer, this, TimerHandler, AbilityTime - Time);
+}
+
+void ASummonAbilityInstance::SetStateTimer(const EAbilityInstanceState& HandlerKey, const float& Delay)
+{
+	switch (HandlerKey)
+	{
+	case EAbilityInstanceState::Collapsed:
+		SetStateTimer(&ASummonAbilityInstance::CollapseTimerHandler, Delay);
+		break;
+	case EAbilityInstanceState::Ready:
+		SetStateTimer(&ASummonAbilityInstance::ReadyTimerHandler, Delay);
+		break;
+	case EAbilityInstanceState::Perform:
+		SetStateTimer(&ASummonAbilityInstance::PerformTimerHandler, Delay);
+		break;
+	case EAbilityInstanceState::ReadyForAction:
+		SetStateTimer(&ASummonAbilityInstance::ReadyForActionTimerHandler, Delay);
+		break;
+	case EAbilityInstanceState::Action:
+		SetStateTimer(&ASummonAbilityInstance::ActionTimerHandler, Delay);
+		break;
+	case EAbilityInstanceState::Ending:
+		SetStateTimer(&ASummonAbilityInstance::EndingTimerHandler, Delay);
+		break;
+	default: ;
+	}
+}
+
 void ASummonAbilityInstance::SetTeam(const EPlayerTeam& Team)
 {
 	RecentTeam = Team;
@@ -45,6 +78,28 @@ void ASummonAbilityInstance::SetTeam(const EPlayerTeam& Team)
 
 void ASummonAbilityInstance::OnRep_AbilityInstanceState()
 {
+	switch (RecentInstanceState)
+	{
+	case EAbilityInstanceState::Collapsed:
+		HandleCollapsedStateExit();
+		break;
+	case EAbilityInstanceState::Ready:
+		HandleReadyStateExit();
+		break;
+	case EAbilityInstanceState::Perform:
+		HandlePerformStateExit();
+		break;
+	case EAbilityInstanceState::ReadyForAction:
+		HandleReadyForActionStateExit();
+		break;
+	case EAbilityInstanceState::Action:
+		HandleActionStateExit();
+		break;
+	case EAbilityInstanceState::Ending:
+		HandleEndingStateExit();
+		break;
+	}
+	RecentInstanceState = AbilityInstanceState;
 	switch (AbilityInstanceState)
 	{
 	case EAbilityInstanceState::Collapsed:
@@ -77,25 +132,17 @@ void ASummonAbilityInstance::OnRep_OwningAbility()
 
 void ASummonAbilityInstance::HandleAbilityInstanceReady()
 {
-	if (PerformDelay <= 0.f) return;
-	if (HasAuthority()) AbilityTime = GetServerTime() + PerformDelay;
-	GetWorld()->GetTimerManager().SetTimer(StateTimer, this, &ASummonAbilityInstance::PerformTimerHandler,
-	                                       AbilityTime - GetServerTime());
+	if (PerformDelay > 0.f) SetStateTimer(&ASummonAbilityInstance::PerformTimerHandler, PerformDelay);
 }
 
 void ASummonAbilityInstance::HandleAbilityInstanceReadyForAction()
 {
-	if (ActionDelay <= 0.f || !HasAuthority()) return;
-	AbilityTime = GetServerTime() + ActionDelay;
-	GetWorld()->GetTimerManager().SetTimer(
-		StateTimer, [this] { SetAbilityInstanceState(EAbilityInstanceState::Action); }, ActionDelay, false);
+	if (ActionDelay > 0.f) SetStateTimer(&ASummonAbilityInstance::ActionTimerHandler, ActionDelay);
 }
 
 void ASummonAbilityInstance::HandleAbilityInstanceEnding()
 {
-	if (CollapseDelay <= 0.f || !HasAuthority()) return;
-	GetWorld()->GetTimerManager().SetTimer(
-		StateTimer, [this] { SetAbilityInstanceState(EAbilityInstanceState::Collapsed); }, CollapseDelay, false);
+	if (CollapseDelay > 0.f) SetStateTimer(&ASummonAbilityInstance::CollapseTimerHandler, CollapseDelay);
 }
 
 float ASummonAbilityInstance::GetServerTime() const
@@ -103,7 +150,32 @@ float ASummonAbilityInstance::GetServerTime() const
 	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 }
 
+void ASummonAbilityInstance::ReadyTimerHandler()
+{
+	if (HasAuthority()) SetAbilityInstanceState(EAbilityInstanceState::Ready);
+}
+
 void ASummonAbilityInstance::PerformTimerHandler()
 {
 	if (HasAuthority()) SetAbilityInstanceState(EAbilityInstanceState::Perform);
+}
+
+void ASummonAbilityInstance::ReadyForActionTimerHandler()
+{
+	if (HasAuthority()) SetAbilityInstanceState(EAbilityInstanceState::ReadyForAction);
+}
+
+void ASummonAbilityInstance::ActionTimerHandler()
+{
+	if (HasAuthority()) SetAbilityInstanceState(EAbilityInstanceState::Action);
+}
+
+void ASummonAbilityInstance::EndingTimerHandler()
+{
+	if (HasAuthority()) SetAbilityInstanceState(EAbilityInstanceState::Ending);
+}
+
+void ASummonAbilityInstance::CollapseTimerHandler()
+{
+	if (HasAuthority()) SetAbilityInstanceState(EAbilityInstanceState::Collapsed);
 }
