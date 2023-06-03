@@ -40,9 +40,9 @@ void UGradeResultElementWidget::NativeConstruct()
 	T_ProRankBoardImage = Cast<UImage>(GetWidgetFromName("Third_Pro_RankBoard_Image"));
 	T_ScoreBoardIconImage = Cast<UImage>(GetWidgetFromName("Third_Scoreboard_Icon_Image"));
 
-	T_RankText = Cast<UTextBlock>(GetWidgetFromName("First_Rank_Text"));
-	T_NameText = Cast<UTextBlock>(GetWidgetFromName("First_Name_Text"));
-	T_TotalScoreText = Cast<UTextBlock>(GetWidgetFromName("First_TotalScore_Text"));
+	T_RankText = Cast<UTextBlock>(GetWidgetFromName("Third_Rank_Text"));
+	T_NameText = Cast<UTextBlock>(GetWidgetFromName("Third_Name_Text"));
+	T_TotalScoreText = Cast<UTextBlock>(GetWidgetFromName("Third_TotalScore_Text"));
 #pragma endregion
 
 #pragma region Null Check
