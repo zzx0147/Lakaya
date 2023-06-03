@@ -32,6 +32,9 @@ void UDetailResultWidget::NativeConstruct()
 	PortraitRenaImage = Cast<UImage>(GetWidgetFromName(TEXT("Portrait_Rena_Image")));
 	PortraitWaziImage = Cast<UImage>(GetWidgetFromName(TEXT("Portrait_Wazi_Image")));
 
+	AntiTotalBoxImage = Cast<UImage>(GetWidgetFromName(TEXT("TotalBox_Anti_Image")));
+	ProTotalBoxImage = Cast<UImage>(GetWidgetFromName(TEXT("TotalBox_Pro_Image")));
+	
 	UserBoxCharacterNameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("UserBox_CharacterName_Text")));
 
 	UserBoxNameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Player_Name_Text")));
@@ -65,6 +68,9 @@ void UDetailResultWidget::NativeConstruct()
 	
 	if (PortraitRenaImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("PortraitRenaImage is null"));
 	if (PortraitWaziImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("PortraitWaziImage is null"));
+
+	if (AntiTotalBoxImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("AntiTotalBoxImage is null."));
+	if (ProTotalBoxImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("ProTotalBoxImage is null."));
 	
 	if (UserBoxCharacterNameText == nullptr) UE_LOG(LogTemp, Warning, TEXT("UserBoxCharacterNameText is null"));
 	

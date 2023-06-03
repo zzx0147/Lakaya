@@ -19,7 +19,8 @@ public:
 
 private:
 	virtual void NativeConstruct() override;
-	
+
+public:
 	// DetailWidget에 각각의 플레이어 정보를 표시하는 엘리먼트의 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UDetailResultElementWidget> ElementClass;
@@ -45,6 +46,9 @@ private:
 	TWeakObjectPtr<UImage> PortraitRenaImage;
 	TWeakObjectPtr<UImage> PortraitWaziImage;
 
+	TWeakObjectPtr<UImage> AntiTotalBoxImage;
+	TWeakObjectPtr<UImage> ProTotalBoxImage;
+	
 	TWeakObjectPtr<UTextBlock> UserBoxCharacterNameText;
 
 	TWeakObjectPtr<UTextBlock> UserBoxNameText;
