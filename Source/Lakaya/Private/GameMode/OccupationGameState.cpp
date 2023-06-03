@@ -430,29 +430,40 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 		else GradeResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 		Controller->SetShowMouseCursor(true);
-		ShowGradeResultElementWidget();
+		
+		ShowGradeResultElementWidget(PlayerState);
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
 }
 
-void AOccupationGameState::ShowGradeResultElementWidget() const
+void AOccupationGameState::ShowGradeResultElementWidget(ALakayaBasePlayerState* NewPlayerState) const
 {
 	GradeResultElementWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
-	{
-		const auto LakayaPlayerState = Cast<ALakayaBasePlayerState>(LocalController->GetPlayerState<ALakayaBasePlayerState>());
+	// if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+	// {
+		// const auto LakayaPlayerState = Cast<ALakayaBasePlayerState>(LocalController->GetPlayerState<ALakayaBasePlayerState>());
 
 		// 팀별로 팀 GradeResultWidget을 띄워줍니다.
-		if (LakayaPlayerState->GetTeam() == EPlayerTeam::A)
-		{
-			ShowAntiTeamGradeResultElementWidget();
-		}
+		// if (LakayaPlayerState->GetTeam() == EPlayerTeam::A)
+		// {
+		// 	ShowAntiTeamGradeResultElementWidget();
+		// }
+		//
+		// if (LakayaPlayerState->GetTeam() == EPlayerTeam::B)
+		// {
+		// 	ShowProTeamGradeResultElementWidget();
+		// }
+	// }
+
+	if (NewPlayerState->GetTeam() == EPlayerTeam::A)
+	{
+		ShowAntiTeamGradeResultElementWidget();
+	}
 	
-		if (LakayaPlayerState->GetTeam() == EPlayerTeam::B)
-		{
-			ShowProTeamGradeResultElementWidget();
-		}
+	if (NewPlayerState->GetTeam() == EPlayerTeam::B)
+	{
+		ShowProTeamGradeResultElementWidget();
 	}
 }
 

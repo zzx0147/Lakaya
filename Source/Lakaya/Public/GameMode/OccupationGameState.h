@@ -80,7 +80,7 @@ private:
 	void ShowGradeResultWidget(ALakayaBasePlayerState* PlayerState, APlayerController* Controller);
 
 	// 게임결과 등수 위젯을 띄워줍니다.
-	void ShowGradeResultElementWidget() const;
+	void ShowGradeResultElementWidget(ALakayaBasePlayerState* NewPlayerState) const;
 
 	// 본인의 팀에 따라 보여지는 게임결과 등수 위젯을 띄워줍니다.
 	void ShowAntiTeamGradeResultElementWidget() const;
@@ -164,7 +164,7 @@ private:
 	// 게임 승패 위젯 입니다.
 	TWeakObjectPtr<UGameResultWidget> GameResultWidget;
 
-	// 게임 팀종료 후 배경 위젯입니다.
+	// 게임 종료 후 배경 위젯입니다.
 	TWeakObjectPtr<UGradeResultWidget> GradeResultWidget;
 
 	// 게임 팀내 등수 결과 위젯입니다.
