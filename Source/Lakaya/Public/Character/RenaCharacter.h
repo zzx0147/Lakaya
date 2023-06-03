@@ -18,9 +18,9 @@ protected:
 	virtual bool ShouldStartAbility_Implementation(EAbilityKind Kind) override;
 	virtual bool ShouldStartAbilityOnServer_Implementation(EAbilityKind Kind) override;
 
-	virtual void OnPrimaryPerformTimeNotified(const float& Time);
+	virtual void OnMinePerformTimeNotified(const float& Time);
 	virtual void OnWantsToFireChanged(bool FireState);
-	virtual void OnWeaponAbilityPerformTimeNotified(const float& Time);
+	virtual void OnBombPerformTimeNotified(const float& Time);
 	virtual void OnReloadCompleteTimeNotified(const float& Time);
 	virtual void OnReloadStateChanged(bool ReloadState);
 
@@ -33,9 +33,9 @@ protected:
 	float BombLateDelay;
 
 private:
-	float PrimaryEndingTime;
-	bool WantsToFire;
-	float WeaponAbilityEndingTime;
+	float MineEndingTime;
+	bool bWantsToFire;
+	float BombEndingTime;
 	float ReloadCompleteTime;
 	bool bIsReloading;
 };
