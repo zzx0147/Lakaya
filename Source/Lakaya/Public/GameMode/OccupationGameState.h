@@ -80,11 +80,11 @@ private:
 	void ShowGradeResultWidget(ALakayaBasePlayerState* PlayerState, APlayerController* Controller);
 
 	// 게임결과 등수 위젯을 띄워줍니다.
-	void ShowGradeResultElementWidget(const ALakayaBasePlayerState* PlayerState);
+	void ShowGradeResultElementWidget(ALakayaBasePlayerState* NewPlayerState) const;
 
 	// 본인의 팀에 따라 보여지는 게임결과 등수 위젯을 띄워줍니다.
-	void ShowAntiTeamGradeResultElementWidget();
-	void ShowProTeamGradeResultElementWidget();
+	void ShowAntiTeamGradeResultElementWidget() const;
+	void ShowProTeamGradeResultElementWidget() const;
 	
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
@@ -122,6 +122,7 @@ private:
 	FTimerHandle TimerHandle_StartMessageHidden;
 	FTimerHandle TimerHandle_WaitTimerHandle;
 	FTimerHandle TimerHandle_GameResultHandle;
+	FTimerHandle TimerHandle_ShowGradeResultElementHandle;
 private:
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
