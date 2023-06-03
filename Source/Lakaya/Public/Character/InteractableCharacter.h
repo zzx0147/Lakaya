@@ -72,6 +72,9 @@ public:
 	 */
 	UFUNCTION(Server, Reliable, WithValidation)
 	void FinishInteraction(EInteractionState NewState, float Time);
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE AActor* GetInteractingActor() const { return InteractionInfo.InteractingActor.Get(); }
 	
 	FORCEINLINE const EInteractionState& GetInteractionState() const { return InteractionInfo.InteractionState; }
 

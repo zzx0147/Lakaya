@@ -36,8 +36,10 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void NotifyControllerChanged() override;
 
 protected:
+	virtual void BeginPlay() override;
 	virtual float InternalTakeRadialDamage(float Damage, FRadialDamageEvent const& RadialDamageEvent,
 	                                       AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -62,6 +64,9 @@ public:
 	// 연속처치시 적용될 버프 목록을 가져옵니다.
 	UFUNCTION(BlueprintGetter)
 	const TArray<FName>& GetKillStreakBuffs() const { return KillStreakBuffs; }
+
+	UFUNCTION(BlueprintGetter)
+	const bool& GetAliveState() const { return bIsAlive; }
 
 	// 현재 플레이어가 바라보는 방향 정보를 가져옵니다.
 	UFUNCTION(BlueprintGetter)
@@ -134,8 +139,14 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_PlayerRotation, Transient)
 	FPlayerRotationPacket PlayerRotation;
 
+	UPROPERTY(BlueprintGetter=GetAliveState)
+	bool bIsAlive;
+
 	FPlayerRotationPacket PrevPlayerRotation;
 	FPlayerRotationPacket LatestPlayerRotation;
 	FQuat LatestUpdateRotation;
 	EPlayerTeam RecentTeam;
+	FVector MeshRelativeLocation;
+	FRotator MeshRelativeRotation;
+	FName MeshCollisionProfile;
 };

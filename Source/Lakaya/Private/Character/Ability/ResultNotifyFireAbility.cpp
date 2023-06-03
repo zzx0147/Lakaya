@@ -23,14 +23,14 @@ UResultNotifyFireAbility::UResultNotifyFireAbility()
 bool UResultNotifyFireAbility::ShouldStartRemoteCall()
 {
 	if (bWantsToFire) return false;
-	if (!GetOwner()->HasAuthority()) bWantsToFire = true;
+	if (!GetOwner()->HasAuthority()) SetWantsToFire(true);
 	return true;
 }
 
 bool UResultNotifyFireAbility::ShouldStopRemoteCall()
 {
 	if (!bWantsToFire) return false;
-	if (!GetOwner()->HasAuthority()) bWantsToFire = false;
+	if (!GetOwner()->HasAuthority()) SetWantsToFire(false);
 	return true;
 }
 
@@ -39,7 +39,7 @@ void UResultNotifyFireAbility::OnAliveStateChanged(const bool& AliveState)
 	Super::OnAliveStateChanged(AliveState);
 	if (!AliveState && GetOwner()->HasAuthority())
 	{
-		bWantsToFire = false;
+		SetWantsToFire(false);
 		ClearFireTimer();
 	}
 }
@@ -75,7 +75,7 @@ void UResultNotifyFireAbility::RemoteAbilityStart(const float& RequestTime)
 {
 	Super::RemoteAbilityStart(RequestTime);
 	if (bWantsToFire || !GetAliveState()) return;
-	bWantsToFire = true;
+	SetWantsToFire(true);
 
 	if (auto& TimerManager = GetWorld()->GetTimerManager(); !TimerManager.TimerExists(FireTimer))
 	{
@@ -88,7 +88,7 @@ void UResultNotifyFireAbility::RemoteAbilityStop(const float& RequestTime)
 {
 	Super::RemoteAbilityStop(RequestTime);
 	if (!bWantsToFire || !GetAliveState()) return;
-	bWantsToFire = false;
+	SetWantsToFire(false);
 }
 
 void UResultNotifyFireAbility::SetBasisComponent(USceneComponent* NewComponent)
@@ -128,7 +128,7 @@ void UResultNotifyFireAbility::SingleFire()
 
 void UResultNotifyFireAbility::FailToFire()
 {
-	bWantsToFire = false;
+	SetWantsToFire(false);
 	ClearFireTimer();
 }
 
@@ -189,6 +189,12 @@ void UResultNotifyFireAbility::DrawImpact(const FVector& Location, const FVector
 {
 	if (!ImpactNiagaraSystems.Contains(Kind)) return;
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactNiagaraSystems[Kind], Location, Normal.Rotation());
+}
+
+void UResultNotifyFireAbility::SetWantsToFire(const bool& FireState)
+{
+	bWantsToFire = FireState;
+	OnWantsToFireChanged.Broadcast(bWantsToFire);
 }
 
 void UResultNotifyFireAbility::NotifySingleFire_Implementation(const FVector& Start, const FVector& End,
