@@ -47,6 +47,7 @@ public:
 	// 어빌리티 인스턴스의 상태를 변경합니다.
 	virtual void SetAbilityInstanceState(const EAbilityInstanceState& DesireState);
 
+
 	// 어빌리티 인스턴스의 현재 상태를 가져옵니다.
 	FORCEINLINE const EAbilityInstanceState& GetInstanceState() const { return AbilityInstanceState; }
 
@@ -71,6 +72,8 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_OwningAbility();
 
+
+	// 해당 스테이트로 진입할때 호출되는 이벤트 함수들입니다.
 	virtual void HandleAbilityInstanceReady();
 	virtual void HandleAbilityInstancePerform() { return; }
 	virtual void HandleAbilityInstanceReadyForAction();
@@ -78,13 +81,32 @@ protected:
 	virtual void HandleAbilityInstanceEnding();
 	virtual void HandleAbilityInstanceCollapsed() { return; }
 
+	// 해당 스테이트에서 다른 스테이트로 변경되기 전에 호출되는 이벤트함수들입니다.
+	virtual void HandleReadyStateExit() { return; }
+	virtual void HandlePerformStateExit() { return; }
+	virtual void HandleReadyForActionStateExit() { return; }
+	virtual void HandleActionStateExit() { return; }
+	virtual void HandleEndingStateExit() { return; }
+	virtual void HandleCollapsedStateExit() { return; }
+
 	/**
-	 * @brief AbilityTime을 통해 Perform 상태로 변경되는 시점을 유추하여 Perform으로 넘어가는 시점에 호출되는 함수입니다.
+	 * @brief AbilityTime을 통해 다음 상태로 변경되는 시점을 유추하여 다음 상태로 넘어가는 시점에 호출되는 함수들입니다.
 	 * 서버와 클라이언트 모두에서 동시에 호출되도록 만들어졌지만, 네트워크 환경이 열악한 환경에서는 클라이언트에서 이 함수가 제대로 호출되지 않을 수 있습니다.
 	 */
+	virtual void ReadyTimerHandler();
 	virtual void PerformTimerHandler();
+	virtual void ReadyForActionTimerHandler();
+	virtual void ActionTimerHandler();
+	virtual void EndingTimerHandler();
+	virtual void CollapseTimerHandler();
+
+	// 클라이언트와 서버에서 동시에 TimerHandler가 호출될 수 있도록 합니다. HandleAbilityInstanceState 이벤트 함수들에서 사용되는 것을 추천합니다.
+	void SetStateTimer(const EAbilityInstanceState& HandlerKey, const float& Delay);
 
 	float GetServerTime() const;
+
+private:
+	void SetStateTimer(void (ASummonAbilityInstance::*TimerHandler)(), const float& Delay);
 
 public:
 	// 어빌리티 인스턴스의 상태가 변경되면 호출됩니다. 매개변수로 변경된 어빌리티 인스턴스의 상태와 이 어빌리티 인스턴스의 포인터를 받습니다.
@@ -115,4 +137,5 @@ private:
 
 	FTimerHandle StateTimer;
 	EPlayerTeam RecentTeam;
+	EAbilityInstanceState RecentInstanceState;
 };
