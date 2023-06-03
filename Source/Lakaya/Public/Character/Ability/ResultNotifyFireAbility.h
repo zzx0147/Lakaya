@@ -20,6 +20,8 @@ enum class EFireResult
 	Creature
 };
 
+DECLARE_EVENT_OneParam(UResultNotifyFireAbility, FWantsToFireSignature, bool);
+
 DECLARE_EVENT_FourParams(UResultNotifyFireAbility, FSingleFireSignature, const FVector&, const FVector&, const FVector&,
                          const EFireResult&)
 
@@ -82,7 +84,12 @@ private:
 	void DrawTrail(const FVector& Start, const FVector& End);
 	void DrawImpact(const FVector& Location, const FVector& Normal, const EFireResult& Kind);
 
+	void SetWantsToFire(const bool& FireState);
+
 public:
+	// 플레이어의 사격 의지가 변경된 경우 호출됩니다. 오너 클라이언트와 서버에서만 호출됩니다.
+	FWantsToFireSignature OnWantsToFireChanged;
+
 	// 캐릭터가 사격을 실행한 후 호출됩니다. 매개변수로 사격 궤적 시작위치, 끝 위치, 충돌한 지점의 노멀벡터, 충돌한 물체의 종류를 받습니다.
 	FSingleFireSignature OnSingleFire;
 
@@ -138,7 +145,7 @@ protected:
 private:
 	UPROPERTY(BlueprintSetter=SetBasisComponent)
 	TObjectPtr<USceneComponent> BasisComponent;
-	
+
 	bool bWantsToFire;
 	FTimerHandle FireTimer;
 	FCollisionQueryParams CollisionQueryParams;
