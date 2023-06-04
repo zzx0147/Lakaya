@@ -2,8 +2,15 @@
 
 
 #include "AnimInstance/CharAnimInstance.h"
-#include "Character/InteractableCharacter.h"
-#include "Occupation/OccupationObject.h"
+
+#include "Character/Ability/CoolTimedSummonAbility.h"
+#include "GameFramework/GameStateBase.h"
+
+
+UCharAnimInstance::UCharAnimInstance()
+{
+	FireAnimDuration = 0.1f;
+}
 
 void UCharAnimInstance::NativeBeginPlay()
 {
@@ -11,28 +18,31 @@ void UCharAnimInstance::NativeBeginPlay()
 
 	if(const auto Character = Cast<AArmedCharacter>(TryGetPawnOwner()))
 	{
-		auto& Abilities = Character->GetAbilities();
-		if(Abilities.IsValidIndex(WeaponFire))
+		if(const auto ResultNotifyFireAbility = Character->FindAbility<UResultNotifyFireAbility>(WeaponFire))
 		{
-			if(const auto FireAbility = Cast<UAutoFireAbility>(Abilities[WeaponFire]))
+			ResultNotifyFireAbility->OnSingleFire.
+			AddLambda([this](const FVector&,const FVector&, const FVector&, const EFireResult&)
 			{
-				FireAbility->OnFiringStateChanged.
-				AddLambda([this](const bool& FireState)
-					{bIsAutoFire = FireState;} );
-			}
+				RecentFireTime = GetWorld()->TimeSeconds; 
+			} );
 		}
 
-		if(Abilities.IsValidIndex(WeaponReload))
+		if(const auto ReloadAbility = Character->FindAbility<UReloadAbility>(WeaponReload))
 		{
-			if(const auto ReloadAbility = Cast<UReloadAbility>(Abilities[WeaponReload]))
-			{
-				ReloadAbility->OnReloadStateChanged.
-				AddLambda([this](const bool& ReloadState)
-					{bIsReload = ReloadState;} );
-			}
+			ReloadAbility->OnReloadStateChanged.
+			AddLambda([this](const bool& ReloadState)
+				{bIsReload = ReloadState;} );
 		}
 
-		if (const auto InteractableCharacter = Cast<AInteractableCharacter>(TryGetPawnOwner()))
+		if (const auto Ability = Character->FindAbility<UCoolTimedSummonAbility>(WeaponAbility))
+		{
+			Ability->OnPerformTimeNotified.AddLambda([this](const float& ActualFireTime)
+			{
+				RecentWeaponSkillTime = ActualFireTime;
+			});
+		}
+
+		if (const auto InteractableCharacter = Cast<AInteractableCharacter>(Character))
 		{
 			InteractableCharacter->OnInteractingActorChanged.
 			AddUObject(this, &UCharAnimInstance::OnInteractingActorChanged);
@@ -45,41 +55,26 @@ void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
 	if (const auto InteractableCharacter =
 		Cast<AInteractableCharacter>(TryGetPawnOwner()))
 	{
-		if (NewInteractingActor)
-		{
-			bIsInteracting = true;
-		}
-		else
-		{
-			bIsInteracting = false;
-		}
+		bIsInteracting = NewInteractingActor != nullptr;
+
+		// if (NewInteractingActor)
+		// {
+		// 	bIsInteracting = true;
+		// }
+		// else
+		// {
+		// 	bIsInteracting = false;
+		// }
 	}
 }
 
-// void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
-// {
-// 	if (const auto InteractableCharacter =
-// 		Cast<AInteractableCharacter>(TryGetPawnOwner()))
-// 	{
-// 		const EInteractionState InteractionState =
-// 			InteractableCharacter->GetInteractionState();
-// 		switch (InteractionState)
-// 		{
-// 		case EInteractionState::OnGoing:
-// 			bIsInteracting = true;
-// 			break;
-// 		case EInteractionState::Success:
-// 			bIsInteracting = false;
-// 			break;
-// 		case EInteractionState::Stopped:
-// 			bIsInteracting = false;
-// 			break;
-// 		case EInteractionState::Canceled:
-// 			bIsInteracting = false;
-// 			break;
-// 		default:
-// 			bIsInteracting = false;
-// 			break;
-// 		}
-// 	}
-// }
+void UCharAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
+{
+	Super::NativeUpdateAnimation(DeltaSeconds);
+	bIsAutoFire = RecentFireTime + FireAnimDuration > GetWorld()->TimeSeconds;
+
+	const auto GameStateBase = GetWorld()->GetGameState();
+	const float CurrentTime = GameStateBase ? GameStateBase->GetServerWorldTimeSeconds() : GetWorld()->TimeSeconds;
+	bIsWeaponSkill = RecentWeaponSkillTime <= CurrentTime
+		&& RecentWeaponSkillTime + WeaponSkillAnimDuration > CurrentTime;
+}

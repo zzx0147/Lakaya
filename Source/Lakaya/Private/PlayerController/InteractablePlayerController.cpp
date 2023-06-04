@@ -31,9 +31,9 @@ void AInteractablePlayerController::SetupEnhancedInputComponent(UEnhancedInputCo
 	Super::SetupEnhancedInputComponent(EnhancedInputComponent);
 
 	EnhancedInputComponent->BindAction(InteractionStartAction, ETriggerEvent::Triggered, this,
-		&AInteractablePlayerController::StartInteraction);
+		&AInteractablePlayerController::OrderStartInteraction);
 	EnhancedInputComponent->BindAction(InteractionStopAction, ETriggerEvent::Triggered, this,
-		&AInteractablePlayerController::StopInteraction);
+		&AInteractablePlayerController::OrderStopInteraction);
 }
 
 void AInteractablePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
@@ -43,33 +43,29 @@ void AInteractablePlayerController::SetupMappingContext(UEnhancedInputLocalPlaye
 	InputSubsystem->AddMappingContext(InteractionContext, InteractionPriority);
 }
 
-void AInteractablePlayerController::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-void AInteractablePlayerController::StartInteraction(const FInputActionValue& Value)
+void AInteractablePlayerController::OrderStartInteraction(const FInputActionValue& Value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StartInteraction."));
-	auto* InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
+	const auto InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
+
 	if (InteractableCharacter == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("InteractablePlayerController_InteractableCharacter is null."));
 		return;
 	}
 
-	if (!InteractableCharacter->ShouldInteractStart()) return;
+	InteractableCharacter->StartInteraction();
 }
 
-void AInteractablePlayerController::StopInteraction(const FInputActionValue& Value)
+void AInteractablePlayerController::OrderStopInteraction(const FInputActionValue& Value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StopInteraction."));
-	auto* InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
+	const auto InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
 	if (InteractableCharacter == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("InteractablePlayerController_InteractableCharacter is null."));
 		return;
 	}
 
-	if (!InteractableCharacter->ShouldInteractStop()) return;	
+	InteractableCharacter->StopInteraction(EInteractionState::None);
 }

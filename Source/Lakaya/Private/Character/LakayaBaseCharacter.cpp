@@ -3,8 +3,11 @@
 
 #include "Character/LakayaBaseCharacter.h"
 
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Character/ResourceComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
@@ -21,6 +24,8 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	MaxHealth = 100.f;
 	PrimaryActorTick.bCanEverTick = true;
 	PlayerRotationInterpolationAlpha = 0.65f;
+	ATeamObjectType = ECC_GameTraceChannel5;
+	BTeamObjectType = ECC_GameTraceChannel6;
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(SpringArmComponentName);
 	SpringArm->SetupAttachment(RootComponent);
@@ -29,11 +34,19 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	Camera = CreateDefaultSubobject<UCameraComponent>(CameraComponentName);
 	Camera->SetupAttachment(SpringArm);
 
+	HitScreenEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Niagara"));
+	HitScreenEffect->SetupAttachment(Camera);
+
 	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(ResourceComponentName);
 	ResourceComponent->SetIsReplicated(true);
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
+
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> ResurrectionFinder(
+		TEXT("/Script/Niagara.NiagaraSystem'/Game/Effects/M_VFX/Char_Common/VFX_Resurrection.VFX_Resurrection'"));
+
+	ResurrectionNiagaraSystem = ResurrectionFinder.Object;
 }
 
 ELifetimeCondition ALakayaBaseCharacter::AllowActorComponentToReplicate(
@@ -81,8 +94,8 @@ void ALakayaBaseCharacter::Tick(float DeltaSeconds)
 		// 이전 프레임에서 사용했던 회전값과 현재 시간을 기준으로 외삽된 Raw회전값을 구면보간하여 현재 프레임에서 사용한 회전값을 지정합니다. 
 		LatestUpdateRotation = FQuat::Slerp(LatestUpdateRotation, GetRawExtrapolatedRotator(GetServerTime()),
 		                                    PlayerRotationInterpolationAlpha);
-		DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + LatestUpdateRotation.Vector() * 100.f,
-		              FColor::Green, false, 0.3f);
+		//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + LatestUpdateRotation.Vector() * 100.f,
+		//              FColor::Green, false, 0.3f);
 	}
 }
 
@@ -93,9 +106,33 @@ FRotator ALakayaBaseCharacter::GetPlayerRotation() const
 	return LatestUpdateRotation.Rotator();
 }
 
+bool ALakayaBaseCharacter::IsSameTeam(const EPlayerTeam& Team) const
+{
+	return JudgeSameTeam(RecentTeam, Team);
+}
+
+void ALakayaBaseCharacter::PlayHitScreen()
+{
+	HitScreenEffect->Activate(true);
+}
+
+void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
+{
+	RecentTeam = Team;
+	if (Team == EPlayerTeam::A) GetCapsuleComponent()->SetCollisionObjectType(ATeamObjectType);
+	else if (Team == EPlayerTeam::B) GetCapsuleComponent()->SetCollisionObjectType(BTeamObjectType);
+}
+
 void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 {
 	ResourceComponent->OnAliveStateChanged(IsAlive);
+	if (IsAlive && ResurrectionNiagaraSystem)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAttached(ResurrectionNiagaraSystem, RootComponent, FName(),
+		                                             FVector(0.0f, 0.0f, -90.0f), FRotator::ZeroRotator,
+		                                             EAttachLocation::SnapToTarget, true);
+	}
+	if (HasAuthority()) GetCharacterMovement()->SetMovementMode(IsAlive ? MOVE_Walking : MOVE_None);
 }
 
 float ALakayaBaseCharacter::GetServerTime() const

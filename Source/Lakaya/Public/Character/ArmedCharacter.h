@@ -6,7 +6,7 @@
 #include "MovableCharacter.h"
 #include "ArmedCharacter.generated.h"
 
-UENUM()
+UENUM(BlueprintType)
 enum EAbilityKind
 {
 	// 캐릭터의 첫번째 능력입니다.
@@ -46,6 +46,7 @@ public:
 
 	virtual ELifetimeCondition
 	AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const override;
+	virtual void SetTeam_Implementation(const EPlayerTeam& Team) override;
 
 protected:
 	virtual void SetAliveState_Implementation(bool IsAlive) override;
@@ -65,11 +66,55 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StopAbility(const EAbilityKind& Kind);
 
+	/**
+	 * @brief 서버에게 능력 사용을 요청합니다.
+	 * @param Kind 능력 사용이 요청된 능력의 종류입니다.
+	 * @param Time 클라이언트가 능력 사용을 요청한 시간입니다.
+	 */
+	UFUNCTION(Server, Reliable, WithValidation)
+	void RequestStartAbility(const EAbilityKind& Kind, const float& Time);
+
+	/**
+	 * @brief 서버에게 능력 중단을 요청합니다.
+	 * @param Kind 능력 중단이 요청된 능력의 종류입니다.
+	 * @param Time 클라이언트가 능력 중단을 요청한 시간입니다.
+	 */
+	UFUNCTION(Server, Reliable, WithValidation)
+	void RequestStopAbility(const EAbilityKind& Kind, const float& Time);
+
 	// 캐릭터의 능력들을 가져옵니다. 이렇게 가져온 배열은 EAbilityKind를 통해 특정할 수 있습니다.
-	UFUNCTION(BlueprintGetter)
-	const TArray<class UCharacterAbility*>& GetAbilities() const { return Abilities; }
+	FORCEINLINE const TArray<class UCharacterAbility*>& GetAbilities() const { return Abilities; }
+
+	UFUNCTION(BlueprintCallable)
+	UCharacterAbility* FindAbility(const EAbilityKind& Kind) const;
+
+	template <class T>
+	FORCEINLINE T* FindAbility(const EAbilityKind& Kind) const;
 
 protected:
+	// 능력 사용을 시작할지 여부를 조사합니다.
+	UFUNCTION(BlueprintNativeEvent)
+	bool ShouldStartAbility(EAbilityKind Kind);
+
+	// 능력 사용을 중단할지 여부를 조사합니다.
+	UFUNCTION(BlueprintNativeEvent)
+	bool ShouldStopAbility(EAbilityKind Kind);
+
+	// 서버에서 능력 사용을 시작할지 여부를 조사합니다.
+	UFUNCTION(BlueprintNativeEvent)
+	bool ShouldStartAbilityOnServer(EAbilityKind Kind);
+
+	// 서버에서 능력 사용을 중단할지 여부를 조사합니다.
+	UFUNCTION(BlueprintNativeEvent)
+	bool ShouldStopAbilityOnServer(EAbilityKind Kind);
+
 	UPROPERTY(EditAnywhere, Replicated)
 	TArray<UCharacterAbility*> Abilities;
 };
+
+template <class T>
+T* AArmedCharacter::FindAbility(const EAbilityKind& Kind) const
+{
+	if (Abilities.IsValidIndex(Kind)) return Cast<T>(Abilities[Kind]);
+	return nullptr;
+}

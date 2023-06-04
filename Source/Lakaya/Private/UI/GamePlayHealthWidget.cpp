@@ -2,6 +2,7 @@
 
 #include "UI/GamePlayHealthWidget.h"
 
+#include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 
@@ -14,11 +15,16 @@ void UGamePlayHealthWidget::NativeConstruct()
 	HealthProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("HPBar_Prb")));
 	HealthText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Health_Text")));
 	MaximumHealthText = Cast<UTextBlock>(GetWidgetFromName(TEXT("MaximumHealth_Text")));
+
+	UserInfoCharImageRena = Cast<UImage>(GetWidgetFromName("UserInfo_CharImage_Rena"));
+	UserInfoCharImageWazi = Cast<UImage>(GetWidgetFromName("UserInfo_CharImage_Wazi"));
 	
 	check(HealthText != nullptr);
 	check(MaximumHealthText != nullptr);
 	check(HealthProgressBar != nullptr);
 
+	check(UserInfoCharImageRena != nullptr);
+	check(UserInfoCharImageWazi != nullptr);
 #pragma endregion
 }
 
@@ -36,7 +42,8 @@ void UGamePlayHealthWidget::SetMaximumHealth(const float& NewMaximumHealth)
 {
 	//업데이트된 최대 체력을 저장하고 소수점을 버린뒤 텍스트로 표기(맨 앞에 /를 붙여서 표기)
 	MaximumHealth = NewMaximumHealth;
-	MaximumHealthText->SetText(FText::FromString(FString::Printf(TEXT("/%f"), MaximumHealth)));
+	//TODO: 체력 표시 포맷을 저장해두면 퍼포먼스가 높아집니다.
+	MaximumHealthText->SetText(FText::FromString(FString::Printf(TEXT("/%.0f"), MaximumHealth)));
 	
 	//체력바 업데이트
 	UpdateHealthProgressBar();

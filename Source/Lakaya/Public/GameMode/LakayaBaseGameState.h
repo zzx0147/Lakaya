@@ -2,10 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
+#include "UI/SkillWidget.h"
 #include "LakayaBaseGameState.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBaseGameState, OnChangePlayerNumberSignature, const uint8&)
-DECLARE_EVENT_ThreeParams(ALakayaBaseGameState, FOnPlayerKillNotifiedSignature, AController*, AController*, AActor*)
+DECLARE_EVENT_ThreeParams(ALakayaBaseGameState, FOnPlayerKillNotifiedSignature, APlayerState*, APlayerState*, AActor*)
 
 UCLASS()
 class LAKAYA_API ALakayaBaseGameState : public AGameState
@@ -47,10 +48,12 @@ public:
 
 	virtual void SetCharacterSelectWidgetVisibility(const ESlateVisibility& IsVisible);
 
+	virtual void OnLocalPlayerControllerCreated(APlayerController* LocalPlayerController);
+
 	ESlateVisibility GetCharacterSelectWidgetVisibility() const;
 
 	UFUNCTION(NetMulticast, Reliable)
-	virtual void NotifyPlayerKilled(AController* VictimController,AController* InstigatorController, AActor* DamageCauser);
+	virtual void NotifyPlayerKilled(APlayerState* VictimController,APlayerState* InstigatorController, AActor* DamageCauser);
 
 protected:
 	UFUNCTION()
@@ -58,6 +61,11 @@ protected:
 
 	UFUNCTION()
 	virtual void OnRep_CharacterSelectEndingTime();
+
+	UFUNCTION()
+	virtual void OnRep_MatchWaitEndingTime();
+
+	bool SpawnOutlineManager();
 
 private:
 	void SetupTimerWidget(FTimerHandle& TimerHandle,const float& Duration,float& EndingTime, std::function<void(void)> Callback, TWeakObjectPtr<class UGameTimeWidget> TimeWidget);
@@ -93,6 +101,21 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameTimeWidget> CharacterSelectTimerWidgetClass;
 
+	// 게임중에 표시되는 크로스헤어 위젯을 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGamePlayCrosshairWidget> CrosshairWidgetClass;
+
+	// 게임중에 표시되는 도움말 위젯을 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UHelpWidget> HelpWidgetClass;
+
+	// 게임중에 표시되는 스킬 위젯을 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class USkillWidget> SkillWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGamePlayKillLogWidget> KillLogWidgetClass;
+	
 	// 게임이 최대 몇초간 진행될지 정의합니다.
 	UPROPERTY(EditAnywhere)
 	float MatchDuration;
@@ -100,9 +123,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float CharacterSelectDuration;
 
+	// 게임시작 후 몇초간 대기할 지 정의합니다.
+	UPROPERTY(EditAnywhere)
+	float MatchWaitDuration;
+	
 	TObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 
-protected:
 	UPROPERTY(EditDefaultsOnly)
 	uint8 MaximumPlayers;
 
@@ -112,16 +138,25 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_CharacterSelectEndingTime)
 	float CharacterSelectEndingTime;
 
-
+	UPROPERTY(ReplicatedUsing=OnRep_MatchWaitEndingTime)
+	float MatchWaitEndingTime;
+	
 	FTimerHandle EndingTimer;
-
 	FTimerHandle CharacterSelectTimer;
-
-	// 로딩 위젯 입니다.
+	FTimerHandle MatchWaitToStartTimer;
+	
 	TObjectPtr<ULoadingWidget> LoadingWidget;
+
+	TObjectPtr<class UGamePlayCrosshairWidget> CrosshairWidget;
 	
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
-	
-	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
 	TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;
+	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
+	TWeakObjectPtr<UHelpWidget> HelpWidget;
+	TWeakObjectPtr<USkillWidget> SkillWidget;
+	TWeakObjectPtr<UGamePlayKillLogWidget> KillLogWidget;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class AOutlineManager> OutlineManagerClass;
+	TWeakObjectPtr<AOutlineManager> OutlineManager;
 };
