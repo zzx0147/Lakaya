@@ -99,7 +99,6 @@ void ASummonAbilityInstance::OnRep_AbilityInstanceState()
 		HandleEndingStateExit();
 		break;
 	}
-	RecentInstanceState = AbilityInstanceState;
 	switch (AbilityInstanceState)
 	{
 	case EAbilityInstanceState::Collapsed:
@@ -121,6 +120,7 @@ void ASummonAbilityInstance::OnRep_AbilityInstanceState()
 		HandleAbilityInstanceEnding();
 		break;
 	}
+	RecentInstanceState = AbilityInstanceState;
 	OnAbilityInstanceStateChanged.Broadcast(AbilityInstanceState, this);
 }
 

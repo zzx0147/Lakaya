@@ -44,9 +44,11 @@ protected:
 	virtual void HandleAbilityInstanceReady() override;
 	virtual void HandleAbilityInstancePerform() override;
 	virtual void HandleAbilityInstanceEnding() override;
-	virtual void HandleAbilityInstanceReadyForAction() override;
-	virtual void HandleAbilityInstanceAction() override;
 	virtual void HandleAbilityInstanceCollapsed() override;
+	virtual void HandleReadyStateExit() override;
+	virtual void HandlePerformStateExit() override;
+	virtual void HandleEndingStateExit() override;
+	virtual void HandleCollapsedStateExit() override;
 
 	UFUNCTION()
 	virtual void OnCollisionComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -64,16 +66,12 @@ private:
 	// 물리엔진을 사용하여 투사체를 시뮬레이트합니다.
 	void SimulateProjectilePhysics(const bool& UsingQuery = false);
 
-
 	// 투사체의 초기 위치, 방향, 속도를 바탕으로 현재 시간에 맞는 위치를 시뮬레이트합니다.
 	void SimulateProjectileMovement();
-	void DisableProjectileSimulation();
-
 
 	void CalculateProjectilePath(const FVector& Location, const FRotator& Rotator);
 	void RecalculateProjectilePath();
 
-	void ShowProjectile();
 	static bool CustomPointDataPredicate(const FPredictProjectilePathPointData& First,
 	                                     const FPredictProjectilePathPointData& Second);
 
@@ -102,10 +100,22 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TMap<EPlayerTeam, FTeamCollisionInfo> TeamCollisionMap;
 
+	// 이 투사체를 소환한 캐릭터와 충돌하도록 할지 결정합니다.
+	UPROPERTY(EditAnywhere)
+	bool bInstigatorCollision;
+
+	// 아군 캐릭터와 충돌하도록 할지 결정합니다.
+	UPROPERTY(EditAnywhere)
+	bool bAllyCollision;
+
+	// 적 캐릭터와 충돌하도록 할지 결정합니다.
+	UPROPERTY(EditAnywhere)
+	bool bEnemyCollision;
+
 	UPROPERTY(EditAnywhere)
 	FPredictProjectilePathParams ProjectilePathParams;
 
-	// 최초로 충돌한 직후 자동으로 Ending으로 넘어가도록 할지 지정합니다.
+	// 최초로 충돌한 직후 자동으로 충돌 위치에 정지하고 Ending으로 넘어가도록 할지 지정합니다.
 	UPROPERTY(EditAnywhere)
 	bool bAutoEnding;
 

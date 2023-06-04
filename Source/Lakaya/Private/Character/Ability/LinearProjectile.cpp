@@ -26,12 +26,16 @@ ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer
 	CollapseDelay = 0.1f;
 	ATeamCollisionChannel = ECC_GameTraceChannel5;
 	BTeamCollisionChannel = ECC_GameTraceChannel6;
+	bInstigatorCollision = bAllyCollision = false;
+	bEnemyCollision = true;
 	bHideMeshOnEnding = bAutoEnding = true;
 
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(CollisionComponentName);
 	CollisionComponent->SetCollisionProfileName(TEXT("DefaultProjectile"));
 	CollisionComponent->SetLinearDamping(0.f);
 	CollisionComponent->CanCharacterStepUpOn = ECB_No;
+	CollisionComponent->OnComponentBeginOverlap.AddUniqueDynamic(
+		this, &ALinearProjectile::OnCollisionComponentBeginOverlap);
 	SetRootComponent(CollisionComponent);
 
 	MeshComponent = CreateDefaultSubobject<UMeshComponent, UStaticMeshComponent>(MeshComponentName);
@@ -57,24 +61,22 @@ void ALinearProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 void ALinearProjectile::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	CollisionComponent->OnComponentBeginOverlap.AddUniqueDynamic(
-		this, &ALinearProjectile::OnCollisionComponentBeginOverlap);
-	MeshComponent->SetVisibility(false);
-	if (!CollisionComponent->IsGravityEnabled()) ProjectilePathParams.OverrideGravityZ = -1.f;
+	ProjectilePathParams.OverrideGravityZ = CollisionComponent->IsGravityEnabled() ? GetWorld()->GetGravityZ() : -1.f;
 }
 
 void ALinearProjectile::PerformTimerHandler()
 {
 	Super::PerformTimerHandler();
 	// 타이머가 종료된 시점에 아직 Ready상태라면 투사체에 대해 물리 시뮬레이션을 시작합니다.
-	if (GetInstanceState() == EAbilityInstanceState::Ready) SimulateProjectilePhysics();
+	if (GetInstanceState() != EAbilityInstanceState::Ready) return;
+	SimulateProjectilePhysics();
+	MeshComponent->SetVisibility(true);
+	TrailNiagaraComponent->Activate(true);
 }
 
 void ALinearProjectile::HandleAbilityInstanceReady()
 {
 	Super::HandleAbilityInstanceReady();
-	DisableProjectileSimulation();
-	DisableProjectilePhysics();
 	MeshComponent->SetVisibility(false);
 }
 
@@ -88,46 +90,47 @@ void ALinearProjectile::HandleAbilityInstancePerform()
 		UpdateProjectileTransform();
 	}
 	else SimulateProjectileMovement();
-}
-
-void ALinearProjectile::DisableProjectileSimulation()
-{
-	TrailNiagaraComponent->Deactivate();
-	SetActorTickEnabled(false);
+	TrailNiagaraComponent->Activate();
 }
 
 void ALinearProjectile::HandleAbilityInstanceEnding()
 {
 	Super::HandleAbilityInstanceEnding();
-	DisableProjectileSimulation();
-	DisableProjectilePhysics();
-	if (bAutoEnding)
-	{
-		if (!HasAuthority()) SetActorLocationAndRotation(ProjectileLocation, ProjectileRotation);
-		if (bHideMeshOnEnding) MeshComponent->SetVisibility(false);
-	}
-}
-
-void ALinearProjectile::HandleAbilityInstanceReadyForAction()
-{
-	Super::HandleAbilityInstanceReadyForAction();
-	DisableProjectileSimulation();
-	DisableProjectilePhysics();
-}
-
-void ALinearProjectile::HandleAbilityInstanceAction()
-{
-	Super::HandleAbilityInstanceAction();
-	DisableProjectileSimulation();
-	DisableProjectilePhysics();
+	if (bAutoEnding && !HasAuthority()) SetActorLocationAndRotation(ProjectileLocation, ProjectileRotation);
+	if (bHideMeshOnEnding) MeshComponent->SetVisibility(false);
 }
 
 void ALinearProjectile::HandleAbilityInstanceCollapsed()
 {
 	Super::HandleAbilityInstanceCollapsed();
-	DisableProjectileSimulation();
-	DisableProjectilePhysics();
 	MeshComponent->SetVisibility(false);
+}
+
+void ALinearProjectile::HandleReadyStateExit()
+{
+	Super::HandleReadyStateExit();
+	if (!HasAuthority()) DisableProjectilePhysics();
+	if (GetInstanceState() != EAbilityInstanceState::Perform) TrailNiagaraComponent->Deactivate();
+	MeshComponent->SetVisibility(true);
+}
+
+void ALinearProjectile::HandlePerformStateExit()
+{
+	Super::HandlePerformStateExit();
+	HasAuthority() ? DisableProjectilePhysics() : SetActorTickEnabled(false);
+	TrailNiagaraComponent->Deactivate();
+}
+
+void ALinearProjectile::HandleCollapsedStateExit()
+{
+	Super::HandleCollapsedStateExit();
+	MeshComponent->SetVisibility(true);
+}
+
+void ALinearProjectile::HandleEndingStateExit()
+{
+	Super::HandleEndingStateExit();
+	MeshComponent->SetVisibility(true);
 }
 
 void ALinearProjectile::Tick(float DeltaSeconds)
@@ -162,7 +165,6 @@ void ALinearProjectile::Tick(float DeltaSeconds)
 
 void ALinearProjectile::SetTeam(const EPlayerTeam& Team)
 {
-	if (GetTeam() == Team) return;
 	Super::SetTeam(Team);
 	if (!HasAuthority()) return;
 	const auto& [ATeamCollision, BTeamCollision] =
@@ -233,7 +235,6 @@ void ALinearProjectile::SimulateProjectilePhysics(const bool& UsingQuery)
 	CollisionComponent->SetCollisionEnabled(
 		UsingQuery ? ECollisionEnabled::QueryAndProbe : ECollisionEnabled::ProbeOnly);
 	CollisionComponent->SetPhysicsLinearVelocity(Rotator.Vector() * LinearVelocity);
-	ShowProjectile();
 }
 
 void ALinearProjectile::DisableProjectilePhysics()
@@ -251,13 +252,6 @@ void ALinearProjectile::SimulateProjectileMovement()
 	ProjectilePathResult.PathData.Heapify(CustomPointDataPredicate);
 	RecentPointData = ProjectilePathResult.PathData.HeapTop();
 	SetActorTickEnabled(true);
-	ShowProjectile();
-}
-
-void ALinearProjectile::ShowProjectile()
-{
-	MeshComponent->SetVisibility(true);
-	TrailNiagaraComponent->Activate();
 }
 
 void ALinearProjectile::CalculateProjectilePath(const FVector& Location, const FRotator& Rotator)
