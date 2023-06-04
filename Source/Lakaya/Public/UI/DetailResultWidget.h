@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Character/LakayaBasePlayerState.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
@@ -15,8 +16,7 @@ class LAKAYA_API UDetailResultWidget : public UUserWidget
 public:
 	explicit UDetailResultWidget(const FObjectInitializer& ObjectInitializer);
 	
-	void RegisterPlayer(APlayerState* PlayerState);
-
+	void RegisterPlayer(const ALakayaBasePlayerState* PlayerState);
 private:
 	virtual void NativeConstruct() override;
 

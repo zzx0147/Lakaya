@@ -184,14 +184,27 @@ void AGameLobbyPlayerController::LoadoutHandler(const FInputActionValue& Value)
 
 void AGameLobbyPlayerController::ShowScoreBoard(const FInputActionValue& Value)
 {
+	// if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+	// {
+	// 	if (GameState->GetMatchState() == MatchState::WaitingPostMatch)
+	// 	{
+	// 		if (const auto NewGameState = Cast<AOccupationGameState>(GameState))
+	// 			NewGameState->ChangeResultWidget();
+	// 		
+	// 		return;
+	// 	}
+	// 	
+	// 	GameState->SetScoreBoardVisibility(true);
+	// }
+
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 	{
-		if (GameState->GetMatchState() == MatchState::WaitingPostMatch)
+		if (const auto NewGameState = Cast<AOccupationGameState>(GameState))
 		{
-			if (const auto NewGameState = Cast<AOccupationGameState>(GameState))
+			if (!NewGameState->TapBool) return;
+
+			if (GameState->GetMatchState() == MatchState::WaitingPostMatch)
 				NewGameState->ChangeResultWidget();
-			
-			return;
 		}
 		
 		GameState->SetScoreBoardVisibility(true);

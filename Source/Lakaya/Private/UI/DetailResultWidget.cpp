@@ -1,5 +1,6 @@
 #include "UI/DetailResultWidget.h"
 
+#include "Character/LakayaBasePlayerState.h"
 #include "UI/DetailResultElementWidget.h"
 
 UDetailResultWidget::UDetailResultWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -10,6 +11,8 @@ UDetailResultWidget::UDetailResultWidget(const FObjectInitializer& ObjectInitial
 void UDetailResultWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	if (ElementClass == nullptr) UE_LOG(LogTemp, Warning, TEXT("ElementClass is null."));
 
 	AntiTextBoxImage = Cast<UImage>(GetWidgetFromName(TEXT("Anti_TextBox_Image")));
 	ProTextBoxImage = Cast<UImage>(GetWidgetFromName(TEXT("Pro_TextBox_Image")));
@@ -86,7 +89,38 @@ void UDetailResultWidget::NativeConstruct()
 #pragma endregion
 }
 
-void UDetailResultWidget::RegisterPlayer(APlayerState* PlayerState)
+void UDetailResultWidget::RegisterPlayer(const ALakayaBasePlayerState* PlayerState)
 {
+	const auto DetailElement = CreateWidget<UDetailResultElementWidget>(this, ElementClass);
+	if (DetailElement == nullptr) UE_LOG(LogTemp, Warning, TEXT("Element is null."));
+	const FString FormattedName = FString::Printf(TEXT("%s"), *PlayerState->GetName());
+
+	DetailElement->AddToViewport();
+	DetailElement->SetVisibility(ESlateVisibility::Collapsed);
+
+	if (PlayerState->GetTeam() == EPlayerTeam::A)
+		AntiVerticalBox->AddChildToVerticalBox(DetailElement);
+
+	if (PlayerState->GetTeam() == EPlayerTeam::B)
+		ProVerticalBox->AddChildToVerticalBox(DetailElement);
 	
+	// Anti팀
+	if (PlayerState->GetTeam() == EPlayerTeam::A)
+		DetailElement->SetAntiTotalBoxElementImage();
+
+	// // Pro팀
+	if (PlayerState->GetTeam() == EPlayerTeam::B)
+		DetailElement->SetProTotalBoxElementImage();
+
+	if (PlayerState->GetCharacterName() == "Rena")
+		DetailElement->SetPortraitRenaImage();
+
+	if (PlayerState->GetCharacterName() == "Wazi")
+		DetailElement->SetPortraitWaziImage();
+
+	DetailElement->SetPlayerName(*PlayerState->GetName());
+	DetailElement->SetTotalScore(PlayerState->GetTotalScore());
+	DetailElement->SetSuccessCaptureCount(PlayerState->GetSuccessCaptureCount());
+	DetailElement->SetKillCount(PlayerState->GetKillCount());
+	DetailElement->SetDeathCount(PlayerState->GetDeathCount());
 }
