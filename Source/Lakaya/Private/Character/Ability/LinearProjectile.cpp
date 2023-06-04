@@ -24,6 +24,7 @@ ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer
 	DamageRange = 100.f;
 	PerformDelay = 0.2f;
 	CollapseDelay = 0.1f;
+	IndividualCollisionChannel = ECC_Pawn;
 	ATeamCollisionChannel = ECC_GameTraceChannel5;
 	BTeamCollisionChannel = ECC_GameTraceChannel6;
 	bInstigatorCollision = bAllyCollision = false;
@@ -69,9 +70,9 @@ void ALinearProjectile::PerformTimerHandler()
 	Super::PerformTimerHandler();
 	// 타이머가 종료된 시점에 아직 Ready상태라면 투사체에 대해 물리 시뮬레이션을 시작합니다.
 	if (GetInstanceState() != EAbilityInstanceState::Ready) return;
-	SimulateProjectilePhysics();
 	MeshComponent->SetVisibility(true);
-	TrailNiagaraComponent->Activate(true);
+	TrailNiagaraComponent->Activate();
+	SimulateProjectilePhysics();
 }
 
 void ALinearProjectile::HandleAbilityInstanceReady()
@@ -84,20 +85,15 @@ void ALinearProjectile::HandleAbilityInstancePerform()
 {
 	Super::HandleAbilityInstancePerform();
 	// Perform 상태가 된 경우, 서버에서는 물리 엔진을 통해 투사체를 던지고, 클라이언트에서는 서버로부터 전달받은 정보를 바탕으로 투사체의 위치를 시뮬레이트합니다.
-	if (HasAuthority())
-	{
-		SimulateProjectilePhysics(true);
-		UpdateProjectileTransform();
-	}
-	else SimulateProjectileMovement();
 	TrailNiagaraComponent->Activate();
+	HasAuthority() ? SimulateProjectilePhysics(true, true) : SimulateProjectileMovement();
 }
 
 void ALinearProjectile::HandleAbilityInstanceEnding()
 {
 	Super::HandleAbilityInstanceEnding();
-	if (bAutoEnding && !HasAuthority()) SetActorLocationAndRotation(ProjectileLocation, ProjectileRotation);
 	if (bHideMeshOnEnding) MeshComponent->SetVisibility(false);
+	if (bAutoEnding && !HasAuthority()) SetActorLocationAndRotation(ProjectileLocation, ProjectileRotation);
 }
 
 void ALinearProjectile::HandleAbilityInstanceCollapsed()
@@ -109,16 +105,16 @@ void ALinearProjectile::HandleAbilityInstanceCollapsed()
 void ALinearProjectile::HandleReadyStateExit()
 {
 	Super::HandleReadyStateExit();
-	if (!HasAuthority()) DisableProjectilePhysics();
-	if (GetInstanceState() != EAbilityInstanceState::Perform) TrailNiagaraComponent->Deactivate();
+	if (GetInstanceState() != EAbilityInstanceState::Perform) TrailNiagaraComponent->DeactivateImmediate();
 	MeshComponent->SetVisibility(true);
+	if (!HasAuthority()) DisableProjectilePhysics();
 }
 
 void ALinearProjectile::HandlePerformStateExit()
 {
 	Super::HandlePerformStateExit();
+	TrailNiagaraComponent->DeactivateImmediate();
 	HasAuthority() ? DisableProjectilePhysics() : SetActorTickEnabled(false);
-	TrailNiagaraComponent->Deactivate();
 }
 
 void ALinearProjectile::HandleCollapsedStateExit()
@@ -166,20 +162,13 @@ void ALinearProjectile::Tick(float DeltaSeconds)
 void ALinearProjectile::SetTeam(const EPlayerTeam& Team)
 {
 	Super::SetTeam(Team);
-	if (!HasAuthority()) return;
-	const auto& [ATeamCollision, BTeamCollision] =
-		TeamCollisionMap.Contains(Team) ? TeamCollisionMap[Team] : FTeamCollisionInfo();
-	CollisionComponent->SetCollisionResponseToChannel(ATeamCollisionChannel, ATeamCollision ? ECR_Overlap : ECR_Ignore);
-	CollisionComponent->SetCollisionResponseToChannel(BTeamCollisionChannel, BTeamCollision ? ECR_Overlap : ECR_Ignore);
+	if (HasAuthority()) SetTeamCollisionResponse(CollisionComponent, Team, bAllyCollision, bEnemyCollision);
 }
 
 void ALinearProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	if (!HasAuthority()) return;
-	// 이 액터를 소환한 캐릭터와는 충돌하지 않도록 합니다.
-	CollisionComponent->IgnoreActorWhenMoving(GetInstigator(), true);
-	GetInstigator()->MoveIgnoreActorAdd(this);
+	if (HasAuthority() && !bInstigatorCollision) SetIgnoreInstigator(CollisionComponent);
 }
 
 void ALinearProjectile::UpdateProjectileTransform()
@@ -216,7 +205,7 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 	}
 }
 
-void ALinearProjectile::SimulateProjectilePhysics(const bool& UsingQuery)
+void ALinearProjectile::SimulateProjectilePhysics(const bool& UsingQuery, const bool& UpdateProjectile)
 {
 	if (!GetOwningAbility())
 	{
@@ -231,6 +220,7 @@ void ALinearProjectile::SimulateProjectilePhysics(const bool& UsingQuery)
 	static FRotator Rotator;
 	GetOwningAbility()->GetSummonLocationAndRotation(Location, Rotator);
 	CollisionComponent->SetWorldLocationAndRotationNoPhysics(Location, Rotator);
+	if (UpdateProjectile) UpdateProjectileTransform();
 	CollisionComponent->SetSimulatePhysics(true);
 	CollisionComponent->SetCollisionEnabled(
 		UsingQuery ? ECollisionEnabled::QueryAndProbe : ECollisionEnabled::ProbeOnly);
@@ -241,6 +231,32 @@ void ALinearProjectile::DisableProjectilePhysics()
 {
 	CollisionComponent->SetSimulatePhysics(false);
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ALinearProjectile::SetTeamCollisionResponse(UPrimitiveComponent* PrimitiveComponent, const EPlayerTeam& Team,
+                                                 const bool& WithAlly, const bool& WithEnemy) const
+{
+	// 개인전이고 적에 대한 충돌이 허용되는 경우에만 Overlap을 설정합니다.
+	PrimitiveComponent->SetCollisionResponseToChannel(
+		IndividualCollisionChannel, Team == EPlayerTeam::Individual && WithEnemy ? ECR_Overlap : ECR_Ignore);
+
+	// A팀이고 같은 팀에 대한 충돌이 허용된 경우나 B팀이고 적에 대한 충돌이 허용된 경우에만 ATeamCharacter에 대해 Overlap을 설정합니다.
+	PrimitiveComponent->SetCollisionResponseToChannel(
+		ATeamCollisionChannel, (Team == EPlayerTeam::A && WithAlly) || (Team == EPlayerTeam::B && WithEnemy)
+			                       ? ECR_Overlap
+			                       : ECR_Ignore);
+
+	// A팀이고 적에 대한 충돌이 허용된 경우나 B팀이고 같은 팀에 대한 충돌이 허용된 경우에만 ATeamCharacter에 대해 Overlap을 설정합니다.
+	PrimitiveComponent->SetCollisionResponseToChannel(
+		BTeamCollisionChannel, (Team == EPlayerTeam::A && WithEnemy) || (Team == EPlayerTeam::B && WithAlly)
+			                       ? ECR_Overlap
+			                       : ECR_Ignore);
+}
+
+void ALinearProjectile::SetIgnoreInstigator(UPrimitiveComponent* PrimitiveComponent)
+{
+	PrimitiveComponent->IgnoreActorWhenMoving(GetInstigator(), true);
+	GetInstigator()->MoveIgnoreActorAdd(this);
 }
 
 void ALinearProjectile::SimulateProjectileMovement()

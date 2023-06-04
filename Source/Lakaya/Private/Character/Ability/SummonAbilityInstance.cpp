@@ -78,7 +78,9 @@ void ASummonAbilityInstance::SetTeam(const EPlayerTeam& Team)
 
 void ASummonAbilityInstance::OnRep_AbilityInstanceState()
 {
-	switch (RecentInstanceState)
+	const auto PrevInstanceState = RecentInstanceState;
+	RecentInstanceState = AbilityInstanceState;
+	switch (PrevInstanceState)
 	{
 	case EAbilityInstanceState::Collapsed:
 		HandleCollapsedStateExit();
@@ -120,7 +122,6 @@ void ASummonAbilityInstance::OnRep_AbilityInstanceState()
 		HandleAbilityInstanceEnding();
 		break;
 	}
-	RecentInstanceState = AbilityInstanceState;
 	OnAbilityInstanceStateChanged.Broadcast(AbilityInstanceState, this);
 }
 

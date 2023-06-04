@@ -7,6 +7,8 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "GameMode/LakayaBaseGameState.h"
+#include "GameMode/LakayaDefaultPlayGameMode.h"
+#include "GameMode/OccupationGameState.h"
 #include "Interfaces/NetworkPredictionInterface.h"
 
 
@@ -183,11 +185,25 @@ void AGameLobbyPlayerController::LoadoutHandler(const FInputActionValue& Value)
 void AGameLobbyPlayerController::ShowScoreBoard(const FInputActionValue& Value)
 {
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+	{
+		if (GameState->GetMatchState() == MatchState::WaitingPostMatch)
+		{
+			if (const auto NewGameState = Cast<AOccupationGameState>(GameState))
+				NewGameState->ChangeResultWidget();
+			
+			return;
+		}
+		
 		GameState->SetScoreBoardVisibility(true);
+	}
 }
 
 void AGameLobbyPlayerController::HideScoreBoard(const FInputActionValue& Value)
 {
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+	{
+		if (GameState->GetMatchState() == MatchState::WaitingPostMatch) return;
+	
 		GameState->SetScoreBoardVisibility(false);
+	}
 }
