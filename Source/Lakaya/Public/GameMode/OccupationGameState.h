@@ -58,6 +58,8 @@ public:
 	virtual void CreateCharacterSelectWidget(APlayerController* LocalController) override;
 
 	void EndTimeCheck();
+
+	void ChangeResultWidget();
 	
 private:
 	UFUNCTION()
@@ -85,6 +87,8 @@ private:
 	// 본인의 팀에 따라 보여지는 게임결과 등수 위젯을 띄워줍니다.
 	void ShowAntiTeamGradeResultElementWidget() const;
 	void ShowProTeamGradeResultElementWidget() const;
+
+	void BindDetailResultWidget();
 	
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
@@ -106,6 +110,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float MatchStartWidgetLifeTime;
+
+	bool ResultBool = false;
 	
 	TMap<EPlayerTeam,TArray<TObjectPtr<class ALakayaBasePlayerState>>> PlayersByTeamMap;
 

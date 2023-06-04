@@ -191,6 +191,7 @@ void AOccupationGameState::HandleMatchHasEnded()
 	}
 	
 	ShowEndResultWidget();
+	BindDetailResultWidget();
 }
 
 void AOccupationGameState::NotifyKillCharacter_Implementation(AController* KilledController, AActor* KilledActor,
@@ -214,6 +215,17 @@ void AOccupationGameState::EndTimeCheck()
       
 		GameMode->EndMatch();
 	}
+}
+
+void AOccupationGameState::ChangeResultWidget()
+{
+	ESlateVisibility gradeVisibility = ResultBool ? ESlateVisibility::Hidden : ESlateVisibility::SelfHitTestInvisible;
+	ESlateVisibility detailVisibility = ResultBool ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden;
+  
+	GradeResultWidget->SetVisibility(gradeVisibility);
+	DetailResultWidget->SetVisibility(detailVisibility);
+
+	ResultBool = !ResultBool;
 }
 
 void AOccupationGameState::SetOccupationWinner()
@@ -440,22 +452,6 @@ void AOccupationGameState::ShowGradeResultElementWidget(ALakayaBasePlayerState* 
 {
 	GradeResultElementWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 
-	// if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
-	// {
-		// const auto LakayaPlayerState = Cast<ALakayaBasePlayerState>(LocalController->GetPlayerState<ALakayaBasePlayerState>());
-
-		// 팀별로 팀 GradeResultWidget을 띄워줍니다.
-		// if (LakayaPlayerState->GetTeam() == EPlayerTeam::A)
-		// {
-		// 	ShowAntiTeamGradeResultElementWidget();
-		// }
-		//
-		// if (LakayaPlayerState->GetTeam() == EPlayerTeam::B)
-		// {
-		// 	ShowProTeamGradeResultElementWidget();
-		// }
-	// }
-
 	if (NewPlayerState->GetTeam() == EPlayerTeam::A)
 	{
 		ShowAntiTeamGradeResultElementWidget();
@@ -638,53 +634,77 @@ void AOccupationGameState::ShowProTeamGradeResultElementWidget() const
 	}
 }
 
-// void SetElementProperties(int index, const TArray<TObjectPtr<ALakayaBasePlayerState>>& PlayerArray, UGradeResultElementWidget* Widget)
-// {
-// 	FString prefix;
-// 	switch (index) {
-// 	case 0:
-// 		prefix = "F_";
-// 		break;
-// 	case 1:
-// 		prefix = "S_";
-// 		break;
-// 	case 2:
-// 		prefix = "T_";
-// 		break;
-// 	default:
-// 		UE_LOG(LogTemp, Warning, TEXT("존재하지 않은 Index 입니다."));
-// 		return;
-// 	}
-//
-// 	FString formattedName = FString::Printf(TEXT("%s"), *PlayerArray[index]->GetName());
-// 	int totalScore = PlayerArray[index]->GetTotalScore();
-// 	FString characterName = PlayerArray[index]->GetCharacterName();
-//
-// 	Widget->SetWidgetProperties(prefix, characterName, formattedName, totalScore);
-// }
-//
-// void AOccupationGameState::ShowAntiTeamGradeResultElementWidget() const
-// {
-// 	TArray<TObjectPtr<ALakayaBasePlayerState>> AntiPlayerArray;
-// 	int index = 0;
-//
-// 	for (const auto& RegisterPlayerState : PlayersByTeamMap[EPlayerTeam::A])
-// 	{
-// 		AntiPlayerArray.Add(RegisterPlayerState);
-// 		SetElementProperties(index, AntiPlayerArray, GradeResultElementWidget);
-// 		++index;
-// 	}
-// }
-//
-// void AOccupationGameState::ShowProTeamGradeResultElementWidget() const
-// {
-// 	TArray<TObjectPtr<ALakayaBasePlayerState>> ProPlayerArray;
-// 	int index = 0;
-//
-// 	for (const auto& RegisterPlayerState : PlayersByTeamMap[EPlayerTeam::B])
-// 	{
-// 		ProPlayerArray.Add(RegisterPlayerState);
-// 		SetElementProperties(index, ProPlayerArray, GradeResultElementWidget);
-// 		++index;
-// 	}
-// }
+void AOccupationGameState::BindDetailResultWidget()
+{
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+	{
+		const ALakayaBasePlayerState* PlayerState = Cast<ALakayaBasePlayerState>(LocalController->PlayerState);
+
+		// Anti
+		if (PlayerState->GetTeam() == EPlayerTeam::A)
+		{
+			DetailResultWidget->AntiTextBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			DetailResultWidget->AntiUserBoxNameImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			DetailResultWidget->AntiUserBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			DetailResultWidget->AntiTotalBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			
+			if (PlayerState->GetCharacterName() == "Rena")
+			{
+				DetailResultWidget->AntiRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				DetailResultWidget->PortraitRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				DetailResultWidget->UserBoxCharacterNameText->SetText(FText::FromString(TEXT("RENA")));
+			}
+
+			if (PlayerState->GetCharacterName() == "Wazi")
+			{
+				DetailResultWidget->AntiWaziImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				DetailResultWidget->PortraitRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				DetailResultWidget->UserBoxCharacterNameText->SetText(FText::FromString(TEXT("WAZI")));
+			}
+		}
+
+		// Pro
+		if (PlayerState->GetTeam() == EPlayerTeam::B)
+		{
+			DetailResultWidget->ProTextBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			DetailResultWidget->ProUserBoxNameImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			DetailResultWidget->ProUserBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			DetailResultWidget->ProTotalBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			
+			if (PlayerState->GetCharacterName() == "Rena")
+			{
+				DetailResultWidget->ProRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				DetailResultWidget->PortraitRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				DetailResultWidget->UserBoxCharacterNameText->SetText(FText::FromString(TEXT("RENA")));
+			}
+
+			if (PlayerState->GetCharacterName() == "Wazi")
+			{
+				DetailResultWidget->ProWaziImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				DetailResultWidget->PortraitWaziImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				DetailResultWidget->UserBoxCharacterNameText->SetText(FText::FromString(TEXT("WAZI")));
+			}
+		}
+
+		// 승리
+		if (PlayerState->IsSameTeam(GetOccupationWinner()))
+		{
+			DetailResultWidget->VictoryImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		}
+		
+		// 패배
+		if (PlayerState->IsSameTeam(GetOccupationWinner()))
+		{
+			DetailResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		}
+
+		FString FormattedName;
+		FormattedName = FString::Printf(TEXT("%s"), *PlayerState->GetName());
+		DetailResultWidget->UserBoxNameText->SetText(FText::FromString(FormattedName));
+
+		DetailResultWidget->InfoBoxScoreText->SetText(FText::FromString(FString::Printf(TEXT("%d"), PlayerState->GetTotalScore())));
+		DetailResultWidget->InfoBoxOccupationText->SetText(FText::FromString(FString::Printf(TEXT("%d"), PlayerState->GetSuccessCaptureCount())));
+		DetailResultWidget->InfoBoxKillText->SetText(FText::FromString(FString::Printf(TEXT("%d"), PlayerState->GetKillCount())));
+		DetailResultWidget->InfoBoxDeathText->SetText(FText::FromString(FString::Printf(TEXT("%d"), PlayerState->GetDeathCount())));
+	}
+}
