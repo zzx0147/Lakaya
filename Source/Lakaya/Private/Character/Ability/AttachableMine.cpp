@@ -18,6 +18,8 @@ AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : 
 	BaseHealth = 30.f;
 	ExplodeRange = 250.f;
 	ExplodeDamage = 100.f;
+	bInstigatorExplode = bAllyExplode = false;
+	bEnemyExplode = true;
 
 	GetMeshComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
 	GetMeshComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
@@ -26,6 +28,7 @@ AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : 
 	TriggerComponent->SetupAttachment(RootComponent);
 	TriggerComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	TriggerComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &AAttachableMine::OnTriggerComponentBeginOverlap);
 
 	ActivationNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(ActivationNiagaraComponentName);
 	ActivationNiagaraComponent->SetupAttachment(GetMeshComponent());
@@ -45,19 +48,14 @@ float AAttachableMine::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 
 void AAttachableMine::SetTeam(const EPlayerTeam& Team)
 {
-	if (GetTeam() == Team) return;
 	Super::SetTeam(Team);
-	if (!HasAuthority()) return;
-	const auto& [ATeamCollision, BTeamCollision] =
-		TeamCollisionMap.Contains(Team) ? TeamCollisionMap[Team] : FTeamCollisionInfo();
-	TriggerComponent->SetCollisionResponseToChannel(ATeamCollisionChannel, ATeamCollision ? ECR_Overlap : ECR_Ignore);
-	TriggerComponent->SetCollisionResponseToChannel(BTeamCollisionChannel, BTeamCollision ? ECR_Overlap : ECR_Ignore);
+	if (HasAuthority()) SetTeamCollisionResponse(TriggerComponent, Team, bAllyExplode, bEnemyExplode);
 }
 
-void AAttachableMine::PostInitializeComponents()
+void AAttachableMine::BeginPlay()
 {
-	Super::PostInitializeComponents();
-	TriggerComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &AAttachableMine::OnTriggerComponentBeginOverlap);
+	Super::BeginPlay();
+	if (HasAuthority() && !bInstigatorExplode) SetIgnoreInstigator(TriggerComponent);
 }
 
 void AAttachableMine::HandleAbilityInstanceAction()
@@ -70,9 +68,9 @@ void AAttachableMine::HandleAbilityInstanceAction()
 	Health = BaseHealth;
 }
 
-void AAttachableMine::HandleAbilityInstanceEnding()
+void AAttachableMine::HandleActionStateExit()
 {
-	Super::HandleAbilityInstanceEnding();
+	Super::HandleActionStateExit();
 	ActivationNiagaraComponent->Deactivate();
 	if (!HasAuthority()) return;
 	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);

@@ -66,18 +66,16 @@ void AAttachableProjectile::HandleAbilityInstanceReadyForAction()
 	if (HasAuthority()) return;
 	// ALinearProjectile에서 ProjectileLocation은 월드좌표계였지만, 여기서는 부모 액터가 계속 움직이고 있을 수 있으므로 상대좌표계를 사용합니다.
 	AttachToActor(TargetActor, FAttachmentTransformRules::SnapToTargetNotIncludingScale, AttachedBone);
-	SetActorRelativeLocation(ProjectileLocation);
-	SetActorRelativeRotation(ProjectileRotation);
+	GetRootComponent()->SetRelativeLocationAndRotation(ProjectileLocation, ProjectileRotation);
 }
 
 void AAttachableProjectile::HandleAbilityInstanceAction()
 {
 	Super::HandleAbilityInstanceAction();
-	if (HasAuthority()) return;
+	if (HasAuthority() || GetParentActor() == TargetActor) return;
 	// ALinearProjectile에서 ProjectileLocation은 월드좌표계였지만, 여기서는 부모 액터가 계속 움직이고 있을 수 있으므로 상대좌표계를 사용합니다.
 	AttachToActor(TargetActor, FAttachmentTransformRules::SnapToTargetNotIncludingScale, AttachedBone);
-	SetActorRelativeLocation(ProjectileLocation);
-	SetActorRelativeRotation(ProjectileRotation);
+	GetRootComponent()->SetRelativeLocationAndRotation(ProjectileLocation, ProjectileRotation);
 }
 
 void AAttachableProjectile::HandleAbilityInstanceCollapsed()
