@@ -19,11 +19,11 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 	virtual void SetTeam(const EPlayerTeam& Team) override;
-	virtual void PostInitializeComponents() override;
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void HandleAbilityInstanceAction() override;
-	virtual void HandleAbilityInstanceEnding() override;
+	virtual void HandleActionStateExit() override;
 
 	virtual bool ShouldTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                              AActor* DamageCauser);
@@ -46,6 +46,18 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float ExplodeDamage;
+
+	// 지뢰를 소환한 캐릭터가 지뢰의 범위내에 진입했을 때 폭발할지 여부를 지정합니다.
+	UPROPERTY(EditAnywhere)
+	bool bInstigatorExplode;
+
+	// 아군 캐릭터가 지뢰의 범위내에 진입했을 때 폭발할지 여부를 지정합니다.
+	UPROPERTY(EditAnywhere)
+	bool bAllyExplode;
+
+	// 적 캐릭터가 지뢰의 범위내에 진입했을 때 폭발할지 여부를 지정합니다.
+	UPROPERTY(EditAnywhere)
+	bool bEnemyExplode;
 
 	UPROPERTY(EditAnywhere)
 	UNiagaraSystem* ExplosionNiagara;
