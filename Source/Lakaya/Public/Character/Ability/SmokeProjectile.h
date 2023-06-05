@@ -14,8 +14,10 @@ class LAKAYA_API ASmokeProjectile : public ALinearProjectile
 public:
 	static const FName TriggerComponentName;
 	static const FName SmokeNiagaraComponentName;
+	static const FName SmokeMeshComponentName;
 
 	explicit ASmokeProjectile(const FObjectInitializer& ObjectInitializer);
+	virtual void PostInitializeComponents() override;
 
 protected:
 	virtual void OnCollisionComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -52,5 +54,6 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UNiagaraComponent* SmokeNiagaraComponent;
 
-	FTimerHandle EndingTimer;
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* SmokeMeshComponent;
 };
