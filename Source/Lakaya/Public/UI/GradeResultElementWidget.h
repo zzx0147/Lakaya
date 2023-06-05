@@ -11,7 +11,7 @@ class LAKAYA_API UGradeResultElementWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-public:
+private:
 	virtual void NativeConstruct() override;
 
 public:

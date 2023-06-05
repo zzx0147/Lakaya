@@ -191,7 +191,7 @@ void AOccupationGameState::HandleMatchHasEnded()
 	}
 	
 	ShowEndResultWidget();
-	BindDetailResultWidget();
+	TapBool = false;
 }
 
 void AOccupationGameState::NotifyKillCharacter_Implementation(AController* KilledController, AActor* KilledActor,
@@ -442,8 +442,10 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 		else GradeResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 		Controller->SetShowMouseCursor(true);
-		
+
+		TapBool = true;
 		ShowGradeResultElementWidget(PlayerState);
+		BindDetailResultWidget();
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
 }
@@ -693,7 +695,7 @@ void AOccupationGameState::BindDetailResultWidget()
 		}
 		
 		// 패배
-		if (PlayerState->IsSameTeam(GetOccupationWinner()))
+		if (!PlayerState->IsSameTeam(GetOccupationWinner()))
 		{
 			DetailResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
@@ -706,5 +708,15 @@ void AOccupationGameState::BindDetailResultWidget()
 		DetailResultWidget->InfoBoxOccupationText->SetText(FText::FromString(FString::Printf(TEXT("%d"), PlayerState->GetSuccessCaptureCount())));
 		DetailResultWidget->InfoBoxKillText->SetText(FText::FromString(FString::Printf(TEXT("%d"), PlayerState->GetKillCount())));
 		DetailResultWidget->InfoBoxDeathText->SetText(FText::FromString(FString::Printf(TEXT("%d"), PlayerState->GetDeathCount())));
+	}
+	
+	for (auto& Element : PlayersByTeamMap[EPlayerTeam::A])
+	{
+		DetailResultWidget->RegisterPlayer(Element);
+	}
+
+	for (auto& Element : PlayersByTeamMap[EPlayerTeam::B])
+	{
+		DetailResultWidget->RegisterPlayer(Element);
 	}
 }

@@ -182,5 +182,7 @@ private:
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;
-};
 
+	// 게임 승패여부가 공지됐을 때는, 점수스코어판을 띄울 수 있는지 여부를 결정합니다.
+	bool TapBool = true;
+};
