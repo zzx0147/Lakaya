@@ -308,7 +308,6 @@ ESlateVisibility ALakayaBaseGameState::GetCharacterSelectWidgetVisibility() cons
 
 void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimController, APlayerState* InstigatorController, AActor* DamageCauser)
 {
-	//TODO : OnPlayerKillNofity.BroadCast();
 	OnPlayerKillNotified.Broadcast(VictimController, InstigatorController, DamageCauser);
 	if (KillLogWidget.IsValid())
 	{
