@@ -100,6 +100,8 @@ private:
 		return PlayersByTeamMap[ClientTeam == EPlayerTeam::A ? EPlayerTeam::B : EPlayerTeam::A];
 	}
 
+	void RegisterPlayerByTeam(const EPlayerTeam& Team, ALakayaBasePlayerState* PlayerState);
+
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
 	EPlayerTeam CurrentOccupationWinner;

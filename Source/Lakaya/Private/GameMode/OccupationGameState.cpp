@@ -243,15 +243,8 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 
 	if (const auto BasePlayerState = Cast<ALakayaBasePlayerState>(PlayerState))
 	{
-		auto SetupPlayerTeam = [this](const EPlayerTeam& Team, ALakayaBasePlayerState* InPlayerState)
-		{
-			if (!PlayersByTeamMap.Contains(Team)) return;
-			PlayersByTeamMap[Team].Emplace(InPlayerState);
-			if (ClientTeam == Team) CharacterSelectWidget->RegisterPlayer(InPlayerState);
-		};
-		
-		SetupPlayerTeam(BasePlayerState->GetTeam(), BasePlayerState);
-		BasePlayerState->OnTeamChanged.AddLambda(SetupPlayerTeam, BasePlayerState);
+		RegisterPlayerByTeam(BasePlayerState->GetTeam(), BasePlayerState);
+		BasePlayerState->OnTeamChanged.AddUObject(this, &AOccupationGameState::RegisterPlayerByTeam, BasePlayerState);
 	}
 }
 
@@ -675,4 +668,11 @@ void AOccupationGameState::BindDetailResultWidget()
 	{
 		DetailResultWidget->RegisterPlayer(Element);
 	}
+}
+
+void AOccupationGameState::RegisterPlayerByTeam(const EPlayerTeam& Team, ALakayaBasePlayerState* PlayerState)
+{
+	if (!PlayersByTeamMap.Contains(Team)) return;
+	PlayersByTeamMap[Team].Emplace(PlayerState);
+	if (ClientTeam == Team) CharacterSelectWidget->RegisterPlayer(PlayerState);
 }
