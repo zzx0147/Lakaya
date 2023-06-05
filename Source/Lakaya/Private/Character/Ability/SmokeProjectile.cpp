@@ -96,7 +96,8 @@ void ASmokeProjectile::OnTriggerComponentBeginOverlap(UPrimitiveComponent* Overl
 {
 	if (const auto Character = Cast<ALakayaBaseCharacter>(OtherActor))
 	{
-		//TODO: 캐릭터의 강제 투시 컴포넌트를 켭니다.
+		Character->EnableClairvoyance();
+		GEngine->AddOnScreenDebugMessage(-1,3,FColor::White,TEXT("Smoke enter"));
 	}
 }
 
@@ -105,7 +106,8 @@ void ASmokeProjectile::OnTriggerComponentEndOverlap(UPrimitiveComponent* Overlap
 {
 	if (const auto Character = Cast<ALakayaBaseCharacter>(OtherActor))
 	{
-		//TODO: 캐릭터의 강제 투시 컴포넌트를 끕니다.
+		Character->DisableClairvoyance();
+		GEngine->AddOnScreenDebugMessage(-1,3,FColor::White,TEXT("Smoke exit"));
 	}
 }
 
