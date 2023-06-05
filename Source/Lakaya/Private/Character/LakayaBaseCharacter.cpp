@@ -18,6 +18,7 @@
 const FName ALakayaBaseCharacter::SpringArmComponentName = FName(TEXT("SpringArm"));
 const FName ALakayaBaseCharacter::CameraComponentName = FName(TEXT("Camera"));
 const FName ALakayaBaseCharacter::ResourceComponentName = FName(TEXT("ResourceComponent"));
+const FName ALakayaBaseCharacter::ClairvoyanceMeshComponentName = FName(TEXT("ClairvoyanceMesh"));
 
 ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -40,6 +41,16 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 
 	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(ResourceComponentName);
 	ResourceComponent->SetIsReplicated(true);
+
+	ClairvoyanceMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(ClairvoyanceMeshComponentName);
+	ClairvoyanceMeshComponent->SetupAttachment(GetMesh());
+	ClairvoyanceMeshComponent->SetRenderCustomDepth(true);
+	ClairvoyanceMeshComponent->SetCustomDepthStencilValue(255);
+	ClairvoyanceMeshComponent->SetCustomDepthStencilWriteMask(ERendererStencilMask::ERSM_128);
+	ClairvoyanceMeshComponent->SetCollisionEnabled(ECollisionEnabled::ProbeOnly);
+	ClairvoyanceMeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	ClairvoyanceMeshComponent->SetCollisionResponseToChannel(ECC_Camera, ECR_Block);
+	ClairvoyanceMeshComponent->SetVisibility(false);
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
@@ -130,6 +141,16 @@ bool ALakayaBaseCharacter::IsSameTeam(const EPlayerTeam& Team) const
 void ALakayaBaseCharacter::PlayHitScreen()
 {
 	HitScreenEffect->Activate(true);
+}
+
+void ALakayaBaseCharacter::EnableClairvoyance()
+{
+	ClairvoyanceMeshComponent->SetVisibility(true);
+}
+
+void ALakayaBaseCharacter::DisableClairvoyance()
+{
+	ClairvoyanceMeshComponent->SetVisibility(false);
 }
 
 void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
