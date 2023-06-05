@@ -7,9 +7,7 @@ void UScoreBoardElement::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	//초기화 후 널체크
 #pragma region InitAndNullCheck
-
 	PlayerNameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("PlayerName_Text")));
 	ScoreText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Score_Text")));
 	CaptureText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Capture_Text")));
@@ -30,15 +28,7 @@ void UScoreBoardElement::NativeConstruct()
 	check(Pro_BackGround_Image != nullptr);
 	check(Character_Rena_Image != nullptr);
 	check(Character_Wazi_Image != nullptr);
-	
 #pragma endregion
-}
-
-void UScoreBoardElement::SetData(int8 Rank, const FText& PlayerName, int8 Score) const
-{
-	// RankText->SetText(FText::AsNumber(Rank));
-	// ScoreText->SetText(FText::AsNumber(Score));
-	PlayerNameText->SetText(PlayerName);
 }
 
 void UScoreBoardElement::SetPlayerName(const FText& PlayerName) const

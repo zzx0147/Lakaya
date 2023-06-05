@@ -133,6 +133,9 @@ public:
 	// 플레이어가 점령했을 때, 현재 점령한 오브제그 갯수를 체크를 합니다.
 	virtual void CheckCurrentCaptureCount();
 
+	// 이 플레이어가 사용할 고유한 스텐실 마스크 값을 설정합니다.
+	virtual void SetUniqueStencilMask(const ERendererStencilMask& StencilMask);
+
 protected:
 	// 현재 서버의 시간을 가져옵니다.
 	float GetServerTime() const;
@@ -216,6 +219,8 @@ private:
 	 */
 	UFUNCTION(Client, Reliable)
 	void NoticePlayerHit(const FName& CauserName, const FVector& CauserLocation, const float& Damage);
+
+	void SetUniqueStencilMaskToMesh(UMeshComponent* MeshComponent);
 
 public:
 	// 현재 체력이 변경되는 경우 호출됩니다. 매개변수로 변경된 현재 체력을 받습니다.
@@ -309,6 +314,8 @@ private:
 	
 	// 팀스코어 위젯 입니다.
 	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;
+
+	ERendererStencilMask UniqueRenderMask;
 };
 
 template <class T>

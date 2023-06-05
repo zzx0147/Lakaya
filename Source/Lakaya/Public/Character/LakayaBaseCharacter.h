@@ -28,6 +28,7 @@ public:
 	const static FName SpringArmComponentName;
 	const static FName CameraComponentName;
 	const static FName ResourceComponentName;
+	const static FName ClairvoyanceMeshComponentName;
 
 	explicit ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
@@ -84,6 +85,12 @@ public:
 
 	void PlayHitScreen();
 
+	// 이 캐릭터에게 강제로 투시를 활성화합니다. 가려지는 부분만 투시가 되는 것이 아니라 가려지든 말든 투시효과를 그리게 되므로 유의하여 활성화해야 합니다.
+	void EnableClairvoyance();
+
+	// 투시효과를 비활성화합니다.
+	void DisableClairvoyance();
+
 protected:
 	virtual void SetTeam_Implementation(const EPlayerTeam& Team);
 	virtual void SetAliveState_Implementation(bool IsAlive);
@@ -135,6 +142,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	UCameraComponent* Camera;
+
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* ClairvoyanceMeshComponent;
 
 	UPROPERTY(ReplicatedUsing=OnRep_PlayerRotation, Transient)
 	FPlayerRotationPacket PlayerRotation;

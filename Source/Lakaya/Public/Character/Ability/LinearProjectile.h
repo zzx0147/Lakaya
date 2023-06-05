@@ -7,22 +7,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "LinearProjectile.generated.h"
 
-USTRUCT()
-struct FTeamCollisionInfo
-{
-	GENERATED_BODY()
-
-	FTeamCollisionInfo(): ATeamCollision(false), BTeamCollision(false) { return; }
-
-	// 체크하면 A팀 캐릭터에게 충돌합니다.
-	UPROPERTY(EditAnywhere)
-	bool ATeamCollision;
-
-	// 체크하면 B팀 캐릭터에게 충돌합니다.
-	UPROPERTY(EditAnywhere)
-	bool BTeamCollision;
-};
-
 UCLASS()
 class LAKAYA_API ALinearProjectile : public ASummonAbilityInstance
 {
@@ -44,9 +28,11 @@ protected:
 	virtual void HandleAbilityInstanceReady() override;
 	virtual void HandleAbilityInstancePerform() override;
 	virtual void HandleAbilityInstanceEnding() override;
-	virtual void HandleAbilityInstanceReadyForAction() override;
-	virtual void HandleAbilityInstanceAction() override;
 	virtual void HandleAbilityInstanceCollapsed() override;
+	virtual void HandleReadyStateExit() override;
+	virtual void HandlePerformStateExit() override;
+	virtual void HandleEndingStateExit() override;
+	virtual void HandleCollapsedStateExit() override;
 
 	UFUNCTION()
 	virtual void OnCollisionComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -60,20 +46,28 @@ protected:
 	// 물리엔진을 통한 투사체 시뮬레이션을 종료합니다.
 	void DisableProjectilePhysics();
 
+	/**
+	 * @brief Team에 따라 컴포넌트의 충돌 반응을 결정합니다.
+	 * @param PrimitiveComponent 대상 컴포넌트입니다.
+	 * @param Team 기준 팀입니다.
+	 * @param WithAlly 아군과 충돌할지 여부를 결정합니다.
+	 * @param WithEnemy 적과 충돌할지 여부를 결정합니다.
+	 */
+	void SetTeamCollisionResponse(UPrimitiveComponent* PrimitiveComponent, const EPlayerTeam& Team,
+	                              const bool& WithAlly, const bool& WithEnemy) const;
+
+	void SetIgnoreInstigator(UPrimitiveComponent* PrimitiveComponent);
+
 private:
 	// 물리엔진을 사용하여 투사체를 시뮬레이트합니다.
-	void SimulateProjectilePhysics(const bool& UsingQuery = false);
-
+	void SimulateProjectilePhysics(const bool& UsingQuery = false, const bool& UpdateProjectile = false);
 
 	// 투사체의 초기 위치, 방향, 속도를 바탕으로 현재 시간에 맞는 위치를 시뮬레이트합니다.
 	void SimulateProjectileMovement();
-	void DisableProjectileSimulation();
-
 
 	void CalculateProjectilePath(const FVector& Location, const FRotator& Rotator);
 	void RecalculateProjectilePath();
 
-	void ShowProjectile();
 	static bool CustomPointDataPredicate(const FPredictProjectilePathPointData& First,
 	                                     const FPredictProjectilePathPointData& Second);
 
@@ -93,19 +87,30 @@ protected:
 	float DamageRange;
 
 	UPROPERTY(EditAnywhere)
+	TEnumAsByte<ECollisionChannel> IndividualCollisionChannel;
+
+	UPROPERTY(EditAnywhere)
 	TEnumAsByte<ECollisionChannel> ATeamCollisionChannel;
 
 	UPROPERTY(EditAnywhere)
 	TEnumAsByte<ECollisionChannel> BTeamCollisionChannel;
 
-	// 이 투사체가 어느 팀일 때 어느 팀 캐릭터에 충돌할지 결정합니다. 지정되지 않은 경우 충돌하지 않습니다.
+	// 이 투사체를 소환한 캐릭터와 충돌하도록 할지 결정합니다.
 	UPROPERTY(EditAnywhere)
-	TMap<EPlayerTeam, FTeamCollisionInfo> TeamCollisionMap;
+	bool bInstigatorCollision;
+
+	// 아군 캐릭터와 충돌하도록 할지 결정합니다. 개인전에서는 사용되지 않습니다.
+	UPROPERTY(EditAnywhere)
+	bool bAllyCollision;
+
+	// 적 캐릭터와 충돌하도록 할지 결정합니다.
+	UPROPERTY(EditAnywhere)
+	bool bEnemyCollision;
 
 	UPROPERTY(EditAnywhere)
 	FPredictProjectilePathParams ProjectilePathParams;
 
-	// 최초로 충돌한 직후 자동으로 Ending으로 넘어가도록 할지 지정합니다.
+	// 최초로 충돌한 직후 자동으로 충돌 위치에 정지하고 Ending으로 넘어가도록 할지 지정합니다.
 	UPROPERTY(EditAnywhere)
 	bool bAutoEnding;
 
