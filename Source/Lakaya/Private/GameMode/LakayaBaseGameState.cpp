@@ -292,7 +292,7 @@ void ALakayaBaseGameState::SetCharacterSelectWidgetVisibility(const ESlateVisibi
 	}
 }
 
-void ALakayaBaseGameState::OnLocalPlayerControllerCreated(APlayerController* LocalPlayerController)
+void ALakayaBaseGameState::OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController)
 {
 	CreateCharacterSelectWidget(LocalPlayerController);
 }

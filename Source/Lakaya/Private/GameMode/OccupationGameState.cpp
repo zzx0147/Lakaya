@@ -656,5 +656,5 @@ void AOccupationGameState::UpdateCharacterSelectWidget(const EPlayerTeam& Team)
 
 	//현재까지 등록된 플레이어 스테이트들을 위젯에 등록한다
 	if (!PlayersByTeamMap.Contains(ClientTeam)) return;
-	for (const auto& Temp : PlayersByTeamMap[ClientTeam]) CharacterSelectWidget->RegisterPlayer(Temp);
+	for (const auto& Temp : GetAllyArray()) CharacterSelectWidget->RegisterPlayer(Temp);
 }

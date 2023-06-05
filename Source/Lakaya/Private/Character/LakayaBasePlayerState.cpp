@@ -381,6 +381,7 @@ void ALakayaBasePlayerState::SetAliveState(const bool& AliveState)
 void ALakayaBasePlayerState::SetUniqueStencilMaskToMesh(UMeshComponent* MeshComponent)
 {
 	if (!MeshComponent) return;
+	MeshComponent->SetRenderCustomDepth(true);
 	MeshComponent->SetCustomDepthStencilValue(255);
 	MeshComponent->SetCustomDepthStencilWriteMask(UniqueRenderMask);
 }
