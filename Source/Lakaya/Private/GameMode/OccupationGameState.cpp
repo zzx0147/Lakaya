@@ -283,36 +283,8 @@ void AOccupationGameState::CreateCharacterSelectWidget(APlayerController* LocalC
 
 	if (const auto BasePlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 	{
-		const auto NewTeam = BasePlayerState->GetTeam();
-		if (NewTeam == EPlayerTeam::A || NewTeam == EPlayerTeam::B)
-		{
-			ClientTeam = NewTeam; //로컬 컨트롤러의 팀을 저장한다.(로컬 컨트롤러의 팀에 따라 표기할 팀이 달라짐)
-
-			//TODO: 이렇게 하기보다는 PlayersByTeamMap.Contains(PlayerTeam)을 사용하는 게 좋습니다.
-			for (const auto temp : PlayersByTeamMap[ClientTeam])
-			{
-				CharacterSelectWidget->RegisterPlayer(temp);
-				//현재까지 등록된 플레이어 스테이트들을 위젯에 등록한다
-			}
-		}
-		//TODO: 팀이 없는 경우에만 람다를 등록하기보다는, 팀이 있더라도 게임도중 팀이 변경되는 경우를 상정하여 그냥 람다를 등록하는 것이 좋을 것 같습니다.
-		else
-		{
-			//TODO: 불필요한 캡쳐 : BasePlayerState
-			BasePlayerState->OnTeamChanged.AddLambda([this](const EPlayerTeam& ArgTeam)
-			{
-				if (ArgTeam == EPlayerTeam::A || ArgTeam == EPlayerTeam::B)
-				{
-					SetClientTeam(ArgTeam);
-					//TODO: 이렇게 하기보다는 PlayersByTeamMap.Contains(PlayerTeam)을 사용하는 게 좋습니다.
-					for (const auto temp : PlayersByTeamMap[ClientTeam])
-					{
-						CharacterSelectWidget->RegisterPlayer(temp);
-						//현재까지 등록된 플레이어 스테이트들을 위젯에 등록한다
-					}
-				}
-			});
-		}
+		UpdateCharacterSelectWidget(BasePlayerState->GetTeam());
+		BasePlayerState->OnTeamChanged.AddUObject(this, &AOccupationGameState::UpdateCharacterSelectWidget);
 	}
 }
 
@@ -674,5 +646,15 @@ void AOccupationGameState::RegisterPlayerByTeam(const EPlayerTeam& Team, ALakaya
 {
 	if (!PlayersByTeamMap.Contains(Team)) return;
 	PlayersByTeamMap[Team].Emplace(PlayerState);
-	if (ClientTeam == Team) CharacterSelectWidget->RegisterPlayer(PlayerState);
+	if (ClientTeam == Team && CharacterSelectWidget) CharacterSelectWidget->RegisterPlayer(PlayerState);
+}
+
+void AOccupationGameState::UpdateCharacterSelectWidget(const EPlayerTeam& Team)
+{
+	//로컬 컨트롤러의 팀을 저장한다.(로컬 컨트롤러의 팀에 따라 표기할 팀이 달라짐)
+	SetClientTeam(Team);
+
+	//현재까지 등록된 플레이어 스테이트들을 위젯에 등록한다
+	if (!PlayersByTeamMap.Contains(ClientTeam)) return;
+	for (const auto& Temp : PlayersByTeamMap[ClientTeam]) CharacterSelectWidget->RegisterPlayer(Temp);
 }

@@ -101,6 +101,7 @@ private:
 	}
 
 	void RegisterPlayerByTeam(const EPlayerTeam& Team, ALakayaBasePlayerState* PlayerState);
+	void UpdateCharacterSelectWidget(const EPlayerTeam& Team);
 
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
