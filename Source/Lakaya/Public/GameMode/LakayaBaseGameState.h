@@ -48,7 +48,8 @@ public:
 
 	virtual void SetCharacterSelectWidgetVisibility(const ESlateVisibility& IsVisible);
 
-	virtual void OnLocalPlayerControllerCreated(APlayerController* LocalPlayerController);
+	// 로컬 플레이어 컨트롤러의 플레이어 스테이트가 변경되면 호출됩니다.
+	virtual void OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController);
 
 	ESlateVisibility GetCharacterSelectWidgetVisibility() const;
 

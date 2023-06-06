@@ -37,7 +37,7 @@ void AGameLobbyPlayerController::OnPossess(APawn* PawnToPossess)
 			UnPossess();
 		}
 
-		if (PawnToPossess->Controller != NULL && PawnToPossess->Controller != this)//이 컨트롤러가 나랑 같으면 하면 안됨 조건 추가
+		if (PawnToPossess->Controller != NULL && PawnToPossess->Controller != this) //이 컨트롤러가 나랑 같으면 하면 안됨 조건 추가
 		{
 			PawnToPossess->Controller->UnPossess();
 		}
@@ -55,7 +55,8 @@ void AGameLobbyPlayerController::OnPossess(APawn* PawnToPossess)
 			GetPawn()->SetActorTickEnabled(true);
 		}
 
-		INetworkPredictionInterface* NetworkPredictionInterface = GetPawn() ? Cast<INetworkPredictionInterface>(GetPawn()->GetMovementComponent()) : NULL;
+		INetworkPredictionInterface* NetworkPredictionInterface =
+			GetPawn() ? Cast<INetworkPredictionInterface>(GetPawn()->GetMovementComponent()) : NULL;
 		if (NetworkPredictionInterface)
 		{
 			NetworkPredictionInterface->ResetPredictionData_Server();
@@ -98,8 +99,15 @@ void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSu
 	InputSubsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 }
 
+void AGameLobbyPlayerController::NotifyLocalPlayerStateUpdated()
+{
+	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+		GameState->OnLocalPlayerControllerPlayerStateUpdated(this);
+}
+
 AGameLobbyPlayerController::AGameLobbyPlayerController()
 {
+	OnPossessedPawnChanged.AddUniqueDynamic(this, &AGameLobbyPlayerController::OnPossessedPawnChangedCallback);
 	if (IsRunningDedicatedServer()) return;
 
 	InterfaceContextPriority = 100;
@@ -129,33 +137,15 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 void AGameLobbyPlayerController::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
-	//TODO: 중첩 분기문 줄이기
-	if (PlayerState != nullptr)
-	{
-		if (IsLocalPlayerController())//클라의 경우 PlayerState가 생겼을 때 캐릭터 선택 위젯을 생성
-			if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
-			{
-				GameState->OnLocalPlayerControllerCreated(this);
-			}
-	}
+	//클라의 경우 PlayerState가 생겼을 때 캐릭터 선택 위젯을 생성
+	if (IsLocalController()) NotifyLocalPlayerStateUpdated();
 }
 
 void AGameLobbyPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	OnPossessedPawnChanged.AddUniqueDynamic(this, &AGameLobbyPlayerController::OnPossessedPawnChangedCallback);
-
-
-
-	if (IsLocalPlayerController())//서버의 경우에만 BeginPlay에서 캐릭터 선택 위젯을 생성
-		if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
-		{
-			//TODO: 불필요한 PlayerState 선언
-			if (const auto ThisPlayerState = GetPlayerState<APlayerState>())
-			{
-				GameState->OnLocalPlayerControllerCreated(this);
-			}
-		}
+	//서버의 경우에만 BeginPlay에서 캐릭터 선택 위젯을 생성
+	if (IsLocalController()) NotifyLocalPlayerStateUpdated();
 }
 
 void AGameLobbyPlayerController::MenuHandler(const FInputActionValue& Value)
@@ -169,7 +159,7 @@ void AGameLobbyPlayerController::LoadoutHandler(const FInputActionValue& Value)
 	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("WeaponLoadout"));
 	if (PlayerState != nullptr)
 	{
-		if (IsLocalPlayerController())//클라의 경우 PlayerState가 생겼을 때 캐릭터 선택 위젯을 생성
+		if (IsLocalPlayerController()) //클라의 경우 PlayerState가 생겼을 때 캐릭터 선택 위젯을 생성
 			if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 			{
 				//if(GameState->SetCharacterSelectWidgetVisibility)
@@ -206,7 +196,7 @@ void AGameLobbyPlayerController::ShowScoreBoard(const FInputActionValue& Value)
 			if (GameState->GetMatchState() == MatchState::WaitingPostMatch)
 				NewGameState->ChangeResultWidget();
 		}
-		
+
 		GameState->SetScoreBoardVisibility(true);
 	}
 }
@@ -216,7 +206,7 @@ void AGameLobbyPlayerController::HideScoreBoard(const FInputActionValue& Value)
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 	{
 		if (GameState->GetMatchState() == MatchState::WaitingPostMatch) return;
-	
+
 		GameState->SetScoreBoardVisibility(false);
 	}
 }
