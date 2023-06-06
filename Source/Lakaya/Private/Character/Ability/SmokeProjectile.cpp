@@ -9,6 +9,7 @@
 
 const FName ASmokeProjectile::TriggerComponentName = FName(TEXT("TriggerComponent"));
 const FName ASmokeProjectile::SmokeNiagaraComponentName = FName(TEXT("SmokeNiagaraComponent"));
+const FName ASmokeProjectile::SmokeMeshComponentName = FName(TEXT("SmokeMeshComponent"));
 
 ASmokeProjectile::ASmokeProjectile(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -19,14 +20,31 @@ ASmokeProjectile::ASmokeProjectile(const FObjectInitializer& ObjectInitializer) 
 	TriggerComponent = CreateDefaultSubobject<USphereComponent>(TriggerComponentName);
 	TriggerComponent->SetupAttachment(GetMeshComponent());
 	TriggerComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
-	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	TriggerComponent->SetCollisionResponseToChannel(IndividualCollisionChannel, ECR_Overlap);
+	TriggerComponent->SetCollisionResponseToChannel(ATeamCollisionChannel, ECR_Overlap);
+	TriggerComponent->SetCollisionResponseToChannel(BTeamCollisionChannel, ECR_Overlap);
 	TriggerComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &ASmokeProjectile::OnTriggerComponentBeginOverlap);
 	TriggerComponent->OnComponentEndOverlap.AddUniqueDynamic(this, &ASmokeProjectile::OnTriggerComponentEndOverlap);
 
+	SmokeMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(SmokeMeshComponentName);
+	SmokeMeshComponent->SetupAttachment(TriggerComponent);
+	SmokeMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SmokeMeshComponent->SetRenderCustomDepth(true);
+	SmokeMeshComponent->SetCustomDepthStencilValue(255);
+	SmokeMeshComponent->SetCustomDepthStencilWriteMask(ERendererStencilMask::ERSM_128);
+
 	SmokeNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(SmokeNiagaraComponentName);
-	SmokeNiagaraComponent->SetupAttachment(GetMeshComponent());
+	SmokeNiagaraComponent->SetupAttachment(SmokeMeshComponent);
 	SmokeNiagaraComponent->SetAutoActivate(false);
 	SmokeNiagaraComponent->SetAutoDestroy(false);
+}
+
+void ASmokeProjectile::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	SmokeNiagaraComponent->Deactivate();
+	SmokeMeshComponent->SetVisibility(false);
+	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ASmokeProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -78,8 +96,8 @@ void ASmokeProjectile::OnTriggerComponentBeginOverlap(UPrimitiveComponent* Overl
 {
 	if (const auto Character = Cast<ALakayaBaseCharacter>(OtherActor))
 	{
-		//TODO: 로컬캐릭터가 연막탄 내에 존재하는 경우 모든 캐릭터의 아웃라인을 끕니다.
-		//TODO: 로컬캐릭터는 연막탄 내에 없고, 다른 캐릭터들만 연막탄 내에 존재하는 경우 그 캐릭터들만 아웃라인을 끕니다.
+		Character->EnableClairvoyance();
+		GEngine->AddOnScreenDebugMessage(-1,3,FColor::White,TEXT("Smoke enter"));
 	}
 }
 
@@ -88,20 +106,23 @@ void ASmokeProjectile::OnTriggerComponentEndOverlap(UPrimitiveComponent* Overlap
 {
 	if (const auto Character = Cast<ALakayaBaseCharacter>(OtherActor))
 	{
-		//TODO: 캐릭터의 아웃라인을 켭니다.
+		Character->DisableClairvoyance();
+		GEngine->AddOnScreenDebugMessage(-1,3,FColor::White,TEXT("Smoke exit"));
 	}
 }
 
 void ASmokeProjectile::ActivateSmoke()
 {
 	if (TriggerComponent->GetCollisionEnabled() == ECollisionEnabled::QueryOnly) return;
+	SmokeNiagaraComponent->Activate();
+	SmokeMeshComponent->SetVisibility(true);
 	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	SmokeNiagaraComponent->Activate(true);
 }
 
 void ASmokeProjectile::DeactivateSmoke()
 {
 	if (TriggerComponent->GetCollisionEnabled() == ECollisionEnabled::NoCollision) return;
-	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SmokeNiagaraComponent->Deactivate();
+	SmokeMeshComponent->SetVisibility(false);
+	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }

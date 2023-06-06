@@ -1,11 +1,8 @@
 #include "UI/DetailResultWidget.h"
 
+#include "Character/LakayaBasePlayerState.h"
+#include "GameMode/OccupationGameState.h"
 #include "UI/DetailResultElementWidget.h"
-
-UDetailResultWidget::UDetailResultWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
-{
-	ElementClass = UDetailResultElementWidget::StaticClass();
-}
 
 void UDetailResultWidget::NativeConstruct()
 {
@@ -44,9 +41,6 @@ void UDetailResultWidget::NativeConstruct()
 	InfoBoxKillText = Cast<UTextBlock>(GetWidgetFromName(TEXT("InfoBox_Kill_Text")));
 	InfoBoxDeathText = Cast<UTextBlock>(GetWidgetFromName(TEXT("InfoBox_Death_Text")));
 
-	AntiVerticalBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("Anti_VerticalBox")));
-	ProVerticalBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("Pro_VerticalBox")));
-
 #pragma region Null Check
 	if (AntiTextBoxImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("AntiTextBoxImage is null"));
 	if (ProTextBoxImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("ProTextBoxImage is null"));
@@ -80,13 +74,5 @@ void UDetailResultWidget::NativeConstruct()
 	if (InfoBoxOccupationText == nullptr) UE_LOG(LogTemp, Warning, TEXT("InfoBoxOccupationText is null"));
 	if (InfoBoxKillText == nullptr) UE_LOG(LogTemp, Warning, TEXT("InfoBoxKillText is null"));
 	if (InfoBoxDeathText == nullptr) UE_LOG(LogTemp, Warning, TEXT("InfoBoxDeathText is null"));
-	
-	if (AntiVerticalBox == nullptr) UE_LOG(LogTemp, Warning, TEXT("AntiVerticalBox is null"));
-	if (ProVerticalBox == nullptr) UE_LOG(LogTemp, Warning, TEXT("ProVerticalBox is null"));
 #pragma endregion
-}
-
-void UDetailResultWidget::RegisterPlayer(APlayerState* PlayerState)
-{
-	
 }

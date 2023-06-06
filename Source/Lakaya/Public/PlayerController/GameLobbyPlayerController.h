@@ -17,7 +17,7 @@ class LAKAYA_API AGameLobbyPlayerController : public APlayerController
 
 public:
 	AGameLobbyPlayerController();
-	virtual void OnRep_PlayerState();
+	virtual void OnRep_PlayerState() override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -44,6 +44,9 @@ protected:
 	 * @param InputSubsystem 인풋 로컬 서브시스템 객체입니다. 이를 통해 인풋 맵핑 컨텍스트를 추가할 수 있습니다.
 	 */
 	virtual void SetupMappingContext(class UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem);
+
+	// 로컬컨트롤러의 플레이어 스테이트가 변경되면 호출됩니다.
+	virtual void NotifyLocalPlayerStateUpdated();
 
 private:
 	void MenuHandler(const FInputActionValue& Value);
