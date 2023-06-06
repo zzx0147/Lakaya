@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Character/LakayaBasePlayerState.h"
 #include "Components/TextBlock.h"
 #include "UI/GameLobbyWeaponSelectWidget.h"
 #include "GameLobbyCharacterSelectWidget.generated.h"
@@ -21,10 +22,10 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 public:
 	virtual void RegisterPlayer(APlayerState* PlayerState) { return; };
+	virtual void SetLocalPlayerName(const FString& Name);
 
 protected:
 	//버튼에 바인딩되는 함수들은 UFUNTION을 사용해야함
@@ -70,4 +71,5 @@ private:
 	TObjectPtr<class URichTextBlock> IntroductionText;
 
 	TObjectPtr<class UPlayerInfoWidget> PlayerInfoWidget;
+	FString LocalPlayerName;
 };

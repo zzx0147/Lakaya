@@ -15,11 +15,13 @@ class LAKAYA_API AOccupationGameState : public ALakayaBaseGameState
 
 public:
 	AOccupationGameState();
+	virtual void OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController) override;
 
-private:
+protected:
 	virtual void BeginPlay() override;
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
+	virtual void AddPlayerState(APlayerState* PlayerState) override;
 
 public:
 	UFUNCTION(NetMulticast, Reliable)
@@ -36,10 +38,6 @@ public:
 	 */
 	void AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore);
 
-protected:
-	virtual void AddPlayerState(APlayerState* PlayerState) override;
-
-public:
 	// 해당 팀의 점수를 받아옵니다.
 	float GetTeamScore(const EPlayerTeam& Team) const;
 
@@ -55,11 +53,12 @@ public:
 		return ATeamScore >= MaxScore || BTeamScore >= MaxScore;
 	}
 
-	virtual void CreateCharacterSelectWidget(APlayerController* LocalController) override;
-
 	void EndTimeCheck();
 
 	void ChangeResultWidget();
+
+protected:
+	virtual void SetClientTeam(const EPlayerTeam& NewTeam);
 
 private:
 	UFUNCTION()
@@ -70,8 +69,6 @@ private:
 
 	UFUNCTION()
 	void OnRep_OccupationWinner();
-
-	void SetClientTeam(const EPlayerTeam& NewTeam);
 
 	void DestroyTriggerBox();
 
@@ -101,7 +98,13 @@ private:
 	}
 
 	void RegisterPlayerByTeam(const EPlayerTeam& Team, ALakayaBasePlayerState* PlayerState);
-	void UpdateCharacterSelectWidget(const EPlayerTeam& Team);
+
+public:
+	FOnChangeOccupationWinner OnChangeOccupationWinner;
+	FTeamScoreSignature OnTeamScoreSignature;
+
+	// 게임 승패여부가 공지됐을 때는, 점수스코어판을 띄울 수 있는지 여부를 결정합니다.
+	bool TapBool = true;
 
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
@@ -137,7 +140,6 @@ private:
 	FTimerHandle TimerHandle_GameResultHandle;
 	FTimerHandle TimerHandle_ShowGradeResultElementHandle;
 
-private:
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UTeamScoreWidget> TeamScoreWidgetClass;
@@ -186,11 +188,4 @@ private:
 
 	// 게임 디테일 결과 위젯입니다.
 	TWeakObjectPtr<UDetailResultWidget> DetailResultWidget;
-
-public:
-	FOnChangeOccupationWinner OnChangeOccupationWinner;
-	FTeamScoreSignature OnTeamScoreSignature;
-
-	// 게임 승패여부가 공지됐을 때는, 점수스코어판을 띄울 수 있는지 여부를 결정합니다.
-	bool TapBool = true;
 };

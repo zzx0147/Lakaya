@@ -6,6 +6,7 @@
 #include "LakayaBaseGameState.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBaseGameState, OnChangePlayerNumberSignature, const uint8&)
+
 DECLARE_EVENT_ThreeParams(ALakayaBaseGameState, FOnPlayerKillNotifiedSignature, APlayerState*, APlayerState*, AActor*)
 
 UCLASS()
@@ -44,8 +45,6 @@ public:
 	// 점수판의 표시 여부를 결정합니다. true를 넘기면 점수판이 표시됩니다.
 	void SetScoreBoardVisibility(const bool& Visible);
 
-	virtual void CreateCharacterSelectWidget(APlayerController* LocalController);
-
 	virtual void SetCharacterSelectWidgetVisibility(const ESlateVisibility& IsVisible);
 
 	// 로컬 플레이어 컨트롤러의 플레이어 스테이트가 변경되면 호출됩니다.
@@ -54,9 +53,11 @@ public:
 	ESlateVisibility GetCharacterSelectWidgetVisibility() const;
 
 	UFUNCTION(NetMulticast, Reliable)
-	virtual void NotifyPlayerKilled(APlayerState* VictimController,APlayerState* InstigatorController, AActor* DamageCauser);
+	void NotifyPlayerKilled(APlayerState* VictimController, APlayerState* InstigatorController, AActor* DamageCauser);
 
 protected:
+	virtual void UpdateCharacterSelectWidget(APlayerController* LocalController);
+
 	UFUNCTION()
 	virtual void OnRep_MatchEndingTime();
 
@@ -69,15 +70,15 @@ protected:
 	bool SpawnOutlineManager();
 
 private:
-	void SetupTimerWidget(FTimerHandle& TimerHandle,const float& Duration,float& EndingTime, std::function<void(void)> Callback, TWeakObjectPtr<class UGameTimeWidget> TimeWidget);
+	void SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,
+	                      std::function<void()> Callback, TWeakObjectPtr<class UGameTimeWidget> TimeWidget);
 
-private:
 	void InternalSetScoreBoardVisibility(const bool& Visible);
 
 public:
 	// 현재 접속중인 플레이어 인원이 변경되면 호출됩니다. 매개변수로 변경된 플레이어 인원을 받습니다.
 	OnChangePlayerNumberSignature OnChangePlayerNumber;
-	
+
 	//플레이어가 죽은 것이 전달되었을 때 호출됩니다 매개변수로 죽은 플레이어의 컨트롤러, 죽인 플레이어 컨트롤러, 데미지 커서를 받습니다 
 	FOnPlayerKillNotifiedSignature OnPlayerKillNotified;
 
@@ -96,11 +97,11 @@ protected:
 
 	// 게임중에 표시되는 타이머 위젯 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UGameTimeWidget> InGameTimerWidgetClass;
+	TSubclassOf<UGameTimeWidget> InGameTimerWidgetClass;
 
 	// 캐릭터 선택 중에 표시되는 타이머 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UGameTimeWidget> CharacterSelectTimerWidgetClass;
+	TSubclassOf<UGameTimeWidget> CharacterSelectTimerWidgetClass;
 
 	// 게임중에 표시되는 크로스헤어 위젯을 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
@@ -112,11 +113,11 @@ protected:
 
 	// 게임중에 표시되는 스킬 위젯을 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class USkillWidget> SkillWidgetClass;
+	TSubclassOf<USkillWidget> SkillWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGamePlayKillLogWidget> KillLogWidgetClass;
-	
+
 	// 게임이 최대 몇초간 진행될지 정의합니다.
 	UPROPERTY(EditAnywhere)
 	float MatchDuration;
@@ -127,7 +128,7 @@ protected:
 	// 게임시작 후 몇초간 대기할 지 정의합니다.
 	UPROPERTY(EditAnywhere)
 	float MatchWaitDuration;
-	
+
 	TObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -141,15 +142,15 @@ protected:
 
 	UPROPERTY(ReplicatedUsing=OnRep_MatchWaitEndingTime)
 	float MatchWaitEndingTime;
-	
+
 	FTimerHandle EndingTimer;
 	FTimerHandle CharacterSelectTimer;
 	FTimerHandle MatchWaitToStartTimer;
-	
+
 	TObjectPtr<ULoadingWidget> LoadingWidget;
 
-	TObjectPtr<class UGamePlayCrosshairWidget> CrosshairWidget;
-	
+	TObjectPtr<UGamePlayCrosshairWidget> CrosshairWidget;
+
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
 	TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;

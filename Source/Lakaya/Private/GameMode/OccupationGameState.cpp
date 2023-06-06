@@ -38,6 +38,17 @@ AOccupationGameState::AOccupationGameState()
 	PlayersByTeamMap.Emplace(EPlayerTeam::B);
 }
 
+void AOccupationGameState::OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController)
+{
+	Super::OnLocalPlayerControllerPlayerStateUpdated(LocalPlayerController);
+	if (!LocalPlayerController) return;
+	if (const auto PlayerState = LocalPlayerController->GetPlayerState<ALakayaBasePlayerState>())
+	{
+		SetClientTeam(PlayerState->GetTeam());
+		PlayerState->OnTeamChanged.AddUObject(this, &AOccupationGameState::SetClientTeam);
+	}
+}
+
 void AOccupationGameState::BeginPlay()
 {
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
@@ -275,17 +286,10 @@ void AOccupationGameState::SetClientTeam(const EPlayerTeam& NewTeam)
 {
 	ClientTeam = NewTeam;
 	if (SpawnOutlineManager()) OutlineManager->SetTeam(NewTeam);
-}
 
-void AOccupationGameState::CreateCharacterSelectWidget(APlayerController* LocalController)
-{
-	Super::CreateCharacterSelectWidget(LocalController);
-
-	if (const auto BasePlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
-	{
-		UpdateCharacterSelectWidget(BasePlayerState->GetTeam());
-		BasePlayerState->OnTeamChanged.AddUObject(this, &AOccupationGameState::UpdateCharacterSelectWidget);
-	}
+	//현재까지 등록된 플레이어 스테이트들을 위젯에 등록한다
+	if (!PlayersByTeamMap.Contains(ClientTeam)) return;
+	for (const auto& Temp : PlayersByTeamMap[ClientTeam]) CharacterSelectWidget->RegisterPlayer(Temp);
 }
 
 void AOccupationGameState::DestroyTriggerBox()
@@ -647,14 +651,4 @@ void AOccupationGameState::RegisterPlayerByTeam(const EPlayerTeam& Team, ALakaya
 	if (!PlayersByTeamMap.Contains(Team)) return;
 	PlayersByTeamMap[Team].Emplace(PlayerState);
 	if (ClientTeam == Team && CharacterSelectWidget) CharacterSelectWidget->RegisterPlayer(PlayerState);
-}
-
-void AOccupationGameState::UpdateCharacterSelectWidget(const EPlayerTeam& Team)
-{
-	//로컬 컨트롤러의 팀을 저장한다.(로컬 컨트롤러의 팀에 따라 표기할 팀이 달라짐)
-	SetClientTeam(Team);
-
-	//현재까지 등록된 플레이어 스테이트들을 위젯에 등록한다
-	if (!PlayersByTeamMap.Contains(ClientTeam)) return;
-	for (const auto& Temp : GetAllyArray()) CharacterSelectWidget->RegisterPlayer(Temp);
 }
