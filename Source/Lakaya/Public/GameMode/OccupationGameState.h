@@ -84,12 +84,18 @@ private:
 	// 게임결과 등수 위젯을 띄워줍니다.
 	void ShowGradeResultElementWidget(ALakayaBasePlayerState* NewPlayerState) const;
 
+	void GradeResultTeamInfo(TArray<TObjectPtr<ALakayaBasePlayerState>>& PlayerArray, uint8 NewIndex) const;
+	
 	// 본인의 팀에 따라 보여지는 게임결과 등수 위젯을 띄워줍니다.
 	void ShowAntiTeamGradeResultElementWidget() const;
 	void ShowProTeamGradeResultElementWidget() const;
 
+	// DetailResultWidget에서 본인의 정보를 바인딩합니다.
 	void BindDetailResultWidget();
 
+	// 모든 인원들의 정보를 담은 위젯을 바인딩합니다.
+	void BindDetailResultElementWidget();
+	
 	FORCEINLINE TArray<TObjectPtr<ALakayaBasePlayerState>>& GetAllyArray()
 	{
 		return PlayersByTeamMap[ClientTeam];
@@ -165,6 +171,10 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UDetailResultWidget> DetailResultWidgetClass;
 
+	// 게임 종료 시 게임 디테일 결과에서 플레이어들의 정보를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UDetailResultElementWidget> DetailResultElementWidgetClass;
+	
 	// 팀스코어 위젯 입니다.
 	TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
 
@@ -185,6 +195,9 @@ private:
 
 	// 게임 디테일 결과 위젯입니다.
 	TWeakObjectPtr<UDetailResultWidget> DetailResultWidget;
+
+	// 게임 디테일 Element 결과 위젯입니다.
+	TWeakObjectPtr<UDetailResultElementWidget> DetailResultElementWidget;
 
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
