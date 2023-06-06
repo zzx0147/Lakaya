@@ -16,6 +16,7 @@
 #include "UI/MatchStartWaitWidget.h"
 #include "UI/StartMessageWidget.h"
 #include "UI/TeamScoreWidget.h"
+#include "UI/DetailResultElementWidget.h"
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -127,6 +128,16 @@ void AOccupationGameState::BeginPlay()
 				DetailResultWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
+
+		if (DetailResultElementWidgetClass)
+		{
+			DetailResultElementWidget = CreateWidget<UDetailResultElementWidget>(LocalController, DetailResultElementWidgetClass);
+			if (DetailResultElementWidget.IsValid())
+			{
+				DetailResultElementWidget->AddToViewport(1);
+				DetailResultElementWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
 	}
 	else
 	{
@@ -191,6 +202,8 @@ void AOccupationGameState::HandleMatchHasEnded()
 	}
 
 	ShowEndResultWidget();
+	BindDetailResultWidget();
+	BindDetailResultElementWidget();
 	TapBool = false;
 }
 
@@ -224,7 +237,8 @@ void AOccupationGameState::ChangeResultWidget()
 
 	GradeResultWidget->SetVisibility(gradeVisibility);
 	DetailResultWidget->SetVisibility(detailVisibility);
-
+	DetailResultElementWidget->SetVisibility(detailVisibility);
+	
 	ResultBool = !ResultBool;
 }
 
@@ -366,7 +380,6 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 
 		TapBool = true;
 		ShowGradeResultElementWidget(PlayerState);
-		BindDetailResultWidget();
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
 }
@@ -386,173 +399,74 @@ void AOccupationGameState::ShowGradeResultElementWidget(ALakayaBasePlayerState* 
 	}
 }
 
+void AOccupationGameState::GradeResultTeamInfo(TArray<TObjectPtr<ALakayaBasePlayerState>>& NewPlayerArray,
+	uint8 NewIndex) const
+{
+	FString CharacterName;
+	if (NewPlayerArray[NewIndex]->GetCharacterName() == "Rena")
+		CharacterName.Append("Rena");
+	if (NewPlayerArray[NewIndex]->GetCharacterName() == "Wazi")
+		CharacterName.Append("Wazi");
+
+	FString RankLetter;
+	switch (NewIndex)
+	{
+	case 0:
+		RankLetter = "First";
+		break;
+	case 1:
+		RankLetter = "Second";
+		break;
+	case 2:
+		RankLetter = "Third";
+		break;
+	default:
+		UE_LOG(LogTemp, Warning, TEXT("존재하는 않은 Index입니다."));
+		break;
+	}
+
+	FString TeamLetter;
+	if (NewPlayerArray[NewIndex]->GetTeam() == EPlayerTeam::A)
+		TeamLetter = "Anti";
+	if (NewPlayerArray[NewIndex]->GetTeam() == EPlayerTeam::B)
+		TeamLetter = "Pro";
+	
+	GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_%s_%s_Image"), *RankLetter, *TeamLetter, *CharacterName))->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_%s_RankBoard_Image"), *RankLetter, *TeamLetter))->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+	FString FormattedName = FString::Printf(TEXT("%s"), *PlayerArray[NewIndex]->GetName());
+	UTextBlock* NameText = Cast<UTextBlock>(GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_Name_Text"), *RankLetter)));
+	NameText->SetText(FText::FromString(FormattedName));
+	NameText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+	UTextBlock* TotalScoreText = Cast<UTextBlock>(GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_TotalScore_Text"), *RankLetter)));
+	TotalScoreText->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayerArray[NewIndex]->GetTotalScore())));
+	TotalScoreText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+	GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_Rank_Text"), *RankLetter))->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_ScoreBoard_Icon_Image"), *RankLetter))->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+}
+
 void AOccupationGameState::ShowAntiTeamGradeResultElementWidget() const
 {
-	int index = 0;
 	TArray<TObjectPtr<ALakayaBasePlayerState>> AntiPlayerArray;
-
-	FString F_FormattedName;
-	FString S_FormattedName;
-	FString T_FormattedName;
-
-	// 등록된 인원 만큼 정보 가져오기
+	int index = 0;
 	for (auto RegisterPlayerState : PlayersByTeamMap[EPlayerTeam::A])
 	{
-		// Anti팀 index번째의 정보를 AntiPlayerArray에 넣어줍니다.
 		AntiPlayerArray.Add(RegisterPlayerState);
-
-		switch (index)
-		{
-		// Anti팀 1등의 정보를 바인딩합니다.
-		case 0:
-			if (AntiPlayerArray[index]->GetCharacterName() == "Rena")
-				GradeResultElementWidget->F_AntiRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			if (AntiPlayerArray[index]->GetCharacterName() == "Wazi")
-				GradeResultElementWidget->F_AntiWaziImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->F_AntiRankBoardImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			F_FormattedName = FString::Printf(TEXT("%s"), *AntiPlayerArray[index]->GetName());
-			GradeResultElementWidget->F_NameText->SetText(FText::FromString(F_FormattedName));
-			GradeResultElementWidget->F_NameText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->F_TotalScoreText->SetText(FText::FromString(FString::Printf(TEXT("%d"),
-				AntiPlayerArray[index]->GetTotalScore())));
-			GradeResultElementWidget->F_TotalScoreText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->F_RankText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			GradeResultElementWidget->F_ScoreBoardIconImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			break;
-		// Anti팀 2등의 정보를 바인딩합니다.
-		case 1:
-			if (AntiPlayerArray[index]->GetCharacterName() == "Rena")
-				GradeResultElementWidget->S_AntiRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			if (AntiPlayerArray[index]->GetCharacterName() == "Wazi")
-				GradeResultElementWidget->S_AntiWaziImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->S_AntiRankBoardImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			S_FormattedName = FString::Printf(TEXT("%s"), *AntiPlayerArray[index]->GetName());
-			GradeResultElementWidget->S_NameText->SetText(FText::FromString(S_FormattedName));
-			GradeResultElementWidget->S_NameText->SetVisibility(ESlateVisibility::HitTestInvisible);
-
-			GradeResultElementWidget->S_TotalScoreText->SetText(FText::FromString(FString::Printf(TEXT("%d"),
-				AntiPlayerArray[index]->GetTotalScore())));
-			GradeResultElementWidget->S_TotalScoreText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->S_RankText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			GradeResultElementWidget->S_ScoreBoardIconImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			break;
-		// Anti팀 3등의 정보를 바인딩합니다.
-		case 2:
-			if (AntiPlayerArray[index]->GetCharacterName() == "Rena")
-				GradeResultElementWidget->T_AntiRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			if (AntiPlayerArray[index]->GetCharacterName() == "Wazi")
-				GradeResultElementWidget->T_AntiWaziImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->T_AntiRankBoardImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			T_FormattedName = FString::Printf(TEXT("%s"), *AntiPlayerArray[index]->GetName());
-			GradeResultElementWidget->T_NameText->SetText(FText::FromString(T_FormattedName));
-			GradeResultElementWidget->T_NameText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->T_TotalScoreText->SetText(FText::FromString(FString::Printf(TEXT("%d"),
-				AntiPlayerArray[index]->GetTotalScore())));
-			GradeResultElementWidget->T_TotalScoreText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->T_RankText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			GradeResultElementWidget->T_ScoreBoardIconImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			break;
-		default:
-			UE_LOG(LogTemp, Warning, TEXT("존재하지 않은 Index 입니다."));
-			break;
-		}
+		GradeResultTeamInfo(AntiPlayerArray, index);
 		++index;
 	}
 }
 
 void AOccupationGameState::ShowProTeamGradeResultElementWidget() const
 {
-	int index = 0;
 	TArray<TObjectPtr<ALakayaBasePlayerState>> ProPlayerArray;
-
-	FString F_FormattedName;
-	FString S_FormattedName;
-	FString T_FormattedName;
-
-	// 등록된 인원 만큼 정보 가져오기
+	int index = 0;
 	for (auto RegisterPlayerState : PlayersByTeamMap[EPlayerTeam::B])
 	{
-		// Anti팀 index번째의 정보를 AntiPlayerArray에 넣어줍니다.
 		ProPlayerArray.Add(RegisterPlayerState);
-
-		switch (index)
-		{
-		// Anti팀 1등의 정보를 바인딩합니다.
-		case 0:
-			if (ProPlayerArray[index]->GetCharacterName() == "Rena")
-				GradeResultElementWidget->F_ProRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			if (ProPlayerArray[index]->GetCharacterName() == "Wazi")
-				GradeResultElementWidget->F_ProWaziImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->F_ProRankBoardImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			F_FormattedName = FString::Printf(TEXT("%s"), *ProPlayerArray[index]->GetName());
-			GradeResultElementWidget->F_NameText->SetText(FText::FromString(F_FormattedName));
-			GradeResultElementWidget->F_NameText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->F_TotalScoreText->SetText(FText::FromString(FString::Printf(TEXT("%d"),
-				ProPlayerArray[index]->GetTotalScore())));
-			GradeResultElementWidget->F_TotalScoreText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->F_RankText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			GradeResultElementWidget->F_ScoreBoardIconImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			break;
-		// Anti팀 2등의 정보를 바인딩합니다.
-		case 1:
-			if (ProPlayerArray[index]->GetCharacterName() == "Rena")
-				GradeResultElementWidget->S_ProRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			if (ProPlayerArray[index]->GetCharacterName() == "Wazi")
-				GradeResultElementWidget->S_ProWaziImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->S_ProRankBoardImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			S_FormattedName = FString::Printf(TEXT("%s"), *ProPlayerArray[index]->GetName());
-			GradeResultElementWidget->S_NameText->SetText(FText::FromString(S_FormattedName));
-			GradeResultElementWidget->S_NameText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->S_TotalScoreText->SetText(FText::FromString(FString::Printf(TEXT("%d"),
-				ProPlayerArray[index]->GetTotalScore())));
-			GradeResultElementWidget->S_TotalScoreText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->S_RankText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			GradeResultElementWidget->S_ScoreBoardIconImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			break;
-		// Anti팀 3등의 정보를 바인딩합니다.
-		case 2:
-			if (ProPlayerArray[index]->GetCharacterName() == "Rena")
-				GradeResultElementWidget->T_ProRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			if (ProPlayerArray[index]->GetCharacterName() == "Wazi")
-				GradeResultElementWidget->T_ProWaziImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->T_ProRankBoardImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			T_FormattedName = FString::Printf(TEXT("%s"), *ProPlayerArray[index]->GetName());
-			GradeResultElementWidget->T_NameText->SetText(FText::FromString(T_FormattedName));
-			GradeResultElementWidget->T_NameText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->T_TotalScoreText->SetText(FText::FromString(FString::Printf(TEXT("%d"),
-				ProPlayerArray[index]->GetTotalScore())));
-			GradeResultElementWidget->T_TotalScoreText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			GradeResultElementWidget->T_RankText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			GradeResultElementWidget->T_ScoreBoardIconImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			break;
-		default:
-			UE_LOG(LogTemp, Warning, TEXT("존재하지 않은 Index 입니다."));
-			break;
-		}
-
+		GradeResultTeamInfo(ProPlayerArray, index);
 		++index;
 	}
 }
@@ -634,15 +548,23 @@ void AOccupationGameState::BindDetailResultWidget()
 		DetailResultWidget->InfoBoxDeathText->SetText(
 			FText::FromString(FString::Printf(TEXT("%d"), PlayerState->GetDeathCount())));
 	}
+}
 
-	for (auto& Element : PlayersByTeamMap[EPlayerTeam::A])
+void AOccupationGameState::BindDetailResultElementWidget()
+{
+	uint8 AntiIndex = 0;
+	uint8 ProIndex = 0;
+	
+	for (auto& ElementPlayerState : PlayersByTeamMap[EPlayerTeam::A])
 	{
-		DetailResultWidget->RegisterPlayer(Element);
+		DetailResultElementWidget->SetElementWidget(ElementPlayerState, AntiIndex);
+		++AntiIndex;
 	}
 
-	for (auto& Element : PlayersByTeamMap[EPlayerTeam::B])
+	for (auto& ElementPlayerState : PlayersByTeamMap[EPlayerTeam::B])
 	{
-		DetailResultWidget->RegisterPlayer(Element);
+		DetailResultElementWidget->SetElementWidget(ElementPlayerState, ProIndex);
+		++ProIndex;
 	}
 }
 
