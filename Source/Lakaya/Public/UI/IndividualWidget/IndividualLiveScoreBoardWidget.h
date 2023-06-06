@@ -10,6 +10,7 @@
  * 
  */
 class UTextBlock;
+class UImage;
 
 UCLASS()
 class LAKAYA_API UIndividualLiveScoreBoardWidget : public UIndividualBaseWidget
@@ -37,4 +38,20 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* Score6thNameTextBlock;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UImage* Slot_2nd;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UImage* Slot_3rd;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UImage* Slot_4th;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UImage* Slot_5th;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UImage* Slot_6th;
 };
