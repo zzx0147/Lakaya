@@ -37,7 +37,6 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 	virtual void Tick(float DeltaSeconds) override;
-	virtual void NotifyControllerChanged() override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -90,6 +89,9 @@ public:
 
 	// 투시효과를 비활성화합니다.
 	void DisableClairvoyance();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void SetStencilMask(const ERendererStencilMask& StencilMask);
 
 protected:
 	virtual void SetTeam_Implementation(const EPlayerTeam& Team);
