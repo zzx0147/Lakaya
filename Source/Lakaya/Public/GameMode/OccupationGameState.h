@@ -104,6 +104,7 @@ private:
 	}
 
 	void RegisterPlayerByTeam(const EPlayerTeam& Team, ALakayaBasePlayerState* PlayerState);
+	ERendererStencilMask GetUniqueStencilMaskByTeamAndIndex(const EPlayerTeam& Team, const uint8& Count) const;
 
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
