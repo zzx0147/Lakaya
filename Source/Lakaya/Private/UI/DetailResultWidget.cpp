@@ -1,12 +1,18 @@
 #include "UI/DetailResultWidget.h"
 
 #include "Character/LakayaBasePlayerState.h"
-#include "GameMode/OccupationGameState.h"
 #include "UI/DetailResultElementWidget.h"
+
+UDetailResultWidget::UDetailResultWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	ElementClass = UDetailResultElementWidget::StaticClass();
+}
 
 void UDetailResultWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	if (ElementClass == nullptr) UE_LOG(LogTemp, Warning, TEXT("ElementClass is null."));
 
 	AntiTextBoxImage = Cast<UImage>(GetWidgetFromName(TEXT("Anti_TextBox_Image")));
 	ProTextBoxImage = Cast<UImage>(GetWidgetFromName(TEXT("Pro_TextBox_Image")));
@@ -41,6 +47,9 @@ void UDetailResultWidget::NativeConstruct()
 	InfoBoxKillText = Cast<UTextBlock>(GetWidgetFromName(TEXT("InfoBox_Kill_Text")));
 	InfoBoxDeathText = Cast<UTextBlock>(GetWidgetFromName(TEXT("InfoBox_Death_Text")));
 
+	AntiVerticalBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("Anti_VerticalBox")));
+	ProVerticalBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("Pro_VerticalBox")));
+
 #pragma region Null Check
 	if (AntiTextBoxImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("AntiTextBoxImage is null"));
 	if (ProTextBoxImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("ProTextBoxImage is null"));
@@ -74,5 +83,44 @@ void UDetailResultWidget::NativeConstruct()
 	if (InfoBoxOccupationText == nullptr) UE_LOG(LogTemp, Warning, TEXT("InfoBoxOccupationText is null"));
 	if (InfoBoxKillText == nullptr) UE_LOG(LogTemp, Warning, TEXT("InfoBoxKillText is null"));
 	if (InfoBoxDeathText == nullptr) UE_LOG(LogTemp, Warning, TEXT("InfoBoxDeathText is null"));
+	
+	if (AntiVerticalBox == nullptr) UE_LOG(LogTemp, Warning, TEXT("AntiVerticalBox is null"));
+	if (ProVerticalBox == nullptr) UE_LOG(LogTemp, Warning, TEXT("ProVerticalBox is null"));
 #pragma endregion
+}
+
+void UDetailResultWidget::RegisterPlayer(const ALakayaBasePlayerState* PlayerState)
+{
+	const auto DetailElement = CreateWidget<UDetailResultElementWidget>(this, ElementClass);
+	if (DetailElement == nullptr) UE_LOG(LogTemp, Warning, TEXT("Element is null."));
+	const FString FormattedName = FString::Printf(TEXT("%s"), *PlayerState->GetName());
+
+	DetailElement->AddToViewport();
+	DetailElement->SetVisibility(ESlateVisibility::Collapsed);
+
+	if (PlayerState->GetTeam() == EPlayerTeam::A)
+		AntiVerticalBox->AddChildToVerticalBox(DetailElement);
+
+	if (PlayerState->GetTeam() == EPlayerTeam::B)
+		ProVerticalBox->AddChildToVerticalBox(DetailElement);
+	
+	// Anti팀
+	if (PlayerState->GetTeam() == EPlayerTeam::A)
+		DetailElement->SetAntiTotalBoxElementImage();
+
+	// // Pro팀
+	if (PlayerState->GetTeam() == EPlayerTeam::B)
+		DetailElement->SetProTotalBoxElementImage();
+
+	if (PlayerState->GetCharacterName() == "Rena")
+		DetailElement->SetPortraitRenaImage();
+
+	if (PlayerState->GetCharacterName() == "Wazi")
+		DetailElement->SetPortraitWaziImage();
+
+	DetailElement->SetPlayerName(*PlayerState->GetName());
+	DetailElement->SetTotalScore(PlayerState->GetTotalScore());
+	DetailElement->SetSuccessCaptureCount(PlayerState->GetSuccessCaptureCount());
+	DetailElement->SetKillCount(PlayerState->GetKillCount());
+	DetailElement->SetDeathCount(PlayerState->GetDeathCount());
 }
