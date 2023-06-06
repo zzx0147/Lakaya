@@ -121,114 +121,63 @@ void UDetailResultElementWidget::NativeConstruct()
 
 void UDetailResultElementWidget::SetElementWidget(const ALakayaBasePlayerState* NewPlayerState, const uint8 Index)
 {
-	if (NewPlayerState->GetTeam() == EPlayerTeam::A)
+	ESlateVisibility VisibilityType = ESlateVisibility::SelfHitTestInvisible;
+	bool bIsTeamA = (NewPlayerState->GetTeam() == EPlayerTeam::A);
+	bool bIsTeamB = (NewPlayerState->GetTeam() == EPlayerTeam::B);
+	bool bIsRena = (NewPlayerState->GetCharacterName() == "Rena");
+	bool bIsWazi = (NewPlayerState->GetCharacterName() == "Wazi");
+
+	TArray<TWeakObjectPtr<class UCanvasPanel>> Panels;
+	TArray<TWeakObjectPtr<class UImage>> Portrait_Rena_Images;
+	TArray<TWeakObjectPtr<class UImage>> Portrait_Wazi_Images;
+	TArray<TWeakObjectPtr<class UTextBlock>> PlayerName_Texts;
+	TArray<TWeakObjectPtr<class UTextBlock>> Score_Texts;
+	TArray<TWeakObjectPtr<class UTextBlock>> Occupation_Texts;
+	TArray<TWeakObjectPtr<class UTextBlock>> Kill_Texts;
+	TArray<TWeakObjectPtr<class UTextBlock>> Death_Texts;
+
+	if (bIsTeamA)
 	{
-		switch (Index)
-		{
-		case 0:
-			AF_Panel->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (NewPlayerState->GetCharacterName() == "Rena")
-				AF_Portrait_Rena_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (NewPlayerState->GetCharacterName() == "Wazi")
-				AF_Portrait_Wazi_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			SetPlayerName(AF_PlayerName_Text.Get(), *NewPlayerState->GetName());
-			SetTotalScore(AF_Score_Text.Get(), NewPlayerState->GetTotalScore());
-			SetSuccessCaptureCount(AF_Occupation_Text.Get(), NewPlayerState->GetSuccessCaptureCount());
-			SetKillCount(AF_Kill_Text.Get(), NewPlayerState->GetKillCount());
-			SetDeathCount(AF_Death_Text.Get(), NewPlayerState->GetDeathCount());
-			break;
-		case 1:
-			AS_Panel->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (NewPlayerState->GetCharacterName() == "Rena")
-				AS_Portrait_Rena_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (NewPlayerState->GetCharacterName() == "Wazi")
-				AS_Portrait_Wazi_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			SetPlayerName(AS_PlayerName_Text.Get(), *NewPlayerState->GetName());
-			SetTotalScore(AS_Score_Text.Get(), NewPlayerState->GetTotalScore());
-			SetSuccessCaptureCount(AS_Occupation_Text.Get(), NewPlayerState->GetSuccessCaptureCount());
-			SetKillCount(AS_Kill_Text.Get(), NewPlayerState->GetKillCount());
-			SetDeathCount(AS_Death_Text.Get(), NewPlayerState->GetDeathCount());
-			break;
-		case 2:
-			AT_Panel->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (NewPlayerState->GetCharacterName() == "Rena")
-				AT_Portrait_Rena_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (NewPlayerState->GetCharacterName() == "Wazi")
-				AT_Portrait_Wazi_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			SetPlayerName(AT_PlayerName_Text.Get(), *NewPlayerState->GetName());
-			SetTotalScore(AT_Score_Text.Get(), NewPlayerState->GetTotalScore());
-			SetSuccessCaptureCount(AT_Occupation_Text.Get(), NewPlayerState->GetSuccessCaptureCount());
-			SetKillCount(AT_Kill_Text.Get(), NewPlayerState->GetKillCount());
-			SetDeathCount(AT_Death_Text.Get(), NewPlayerState->GetDeathCount());
-			break;
-		default:
-			UE_LOG(LogTemp, Warning, TEXT("Anti_Switch_Default"));
-			break;
-		}
+		Panels = {AF_Panel, AS_Panel, AT_Panel};
+		Portrait_Rena_Images = {AF_Portrait_Rena_Image, AS_Portrait_Rena_Image, AT_Portrait_Rena_Image};
+		Portrait_Wazi_Images = {AF_Portrait_Wazi_Image, AS_Portrait_Wazi_Image, AT_Portrait_Wazi_Image};
+		PlayerName_Texts = {AF_PlayerName_Text, AS_PlayerName_Text, AT_PlayerName_Text};
+		Score_Texts = {AF_Score_Text, AS_Score_Text, AT_Score_Text};
+		Occupation_Texts = {AF_Occupation_Text, AS_Occupation_Text, AT_Occupation_Text};
+		Kill_Texts = {AF_Kill_Text, AS_Kill_Text, AT_Kill_Text};
+		Death_Texts = {AF_Death_Text, AS_Death_Text, AT_Death_Text};
+	}
+	else if (bIsTeamB)
+	{
+		Panels = {PF_Panel, PS_Panel, PT_Panel};
+		Portrait_Rena_Images = {PF_Portrait_Rena_Image, PS_Portrait_Rena_Image, PT_Portrait_Rena_Image};
+		Portrait_Wazi_Images = {PF_Portrait_Wazi_Image, PS_Portrait_Wazi_Image, PT_Portrait_Wazi_Image};
+		PlayerName_Texts = {PF_PlayerName_Text, PS_PlayerName_Text, PT_PlayerName_Text};
+		Score_Texts = {PF_Score_Text, PS_Score_Text, PT_Score_Text};
+		Occupation_Texts = {PF_Occupation_Text, PS_Occupation_Text, PT_Occupation_Text};
+		Kill_Texts = {PF_Kill_Text, PS_Kill_Text, PT_Kill_Text};
+		Death_Texts = {PF_Death_Text, PS_Death_Text, PT_Death_Text};
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Invalid Team"));
+		return;
 	}
 
-	if (NewPlayerState->GetTeam() == EPlayerTeam::B)
+	if (Index < Panels.Num())
 	{
-		switch (Index)
-		{
-			case 0:
-			PF_Panel->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (NewPlayerState->GetCharacterName() == "Rena")
-				PF_Portrait_Rena_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (NewPlayerState->GetCharacterName() == "Wazi")
-				PF_Portrait_Wazi_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			SetPlayerName(PF_PlayerName_Text.Get(), *NewPlayerState->GetName());
-			SetTotalScore(PF_Score_Text.Get(), NewPlayerState->GetTotalScore());
-			SetSuccessCaptureCount(PF_Occupation_Text.Get(), NewPlayerState->GetSuccessCaptureCount());
-			SetKillCount(PF_Kill_Text.Get(), NewPlayerState->GetKillCount());
-			SetDeathCount(PF_Death_Text.Get(), NewPlayerState->GetDeathCount());
-			break;
-		case 1:
-			PS_Panel->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (NewPlayerState->GetCharacterName() == "Rena")
-				PS_Portrait_Rena_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (NewPlayerState->GetCharacterName() == "Wazi")
-				PS_Portrait_Wazi_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			SetPlayerName(PS_PlayerName_Text.Get(), *NewPlayerState->GetName());
-			SetTotalScore(PS_Score_Text.Get(), NewPlayerState->GetTotalScore());
-			SetSuccessCaptureCount(PS_Occupation_Text.Get(), NewPlayerState->GetSuccessCaptureCount());
-			SetKillCount(PS_Kill_Text.Get(), NewPlayerState->GetKillCount());
-			SetDeathCount(PS_Death_Text.Get(), NewPlayerState->GetDeathCount());
-			break;
-		case 2:
-			PT_Panel->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (NewPlayerState->GetCharacterName() == "Rena")
-				PT_Portrait_Rena_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (NewPlayerState->GetCharacterName() == "Wazi")
-				PT_Portrait_Wazi_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			SetPlayerName(PT_PlayerName_Text.Get(), *NewPlayerState->GetName());
-			SetTotalScore(PT_Score_Text.Get(), NewPlayerState->GetTotalScore());
-			SetSuccessCaptureCount(PT_Occupation_Text.Get(), NewPlayerState->GetSuccessCaptureCount());
-			SetKillCount(PT_Kill_Text.Get(), NewPlayerState->GetKillCount());
-			SetDeathCount(PT_Death_Text.Get(), NewPlayerState->GetDeathCount());
-			break;
-		default:
-			UE_LOG(LogTemp, Warning, TEXT("Pro_Switch_Default"));
-			break;
-		}
+		Panels[Index]->SetVisibility(VisibilityType);
+		Portrait_Rena_Images[Index]->SetVisibility(bIsRena ? VisibilityType : ESlateVisibility::Collapsed);
+		Portrait_Wazi_Images[Index]->SetVisibility(bIsWazi ? VisibilityType : ESlateVisibility::Collapsed);
+		SetPlayerName(PlayerName_Texts[Index].Get(), *NewPlayerState->GetName());
+		SetTotalScore(Score_Texts[Index].Get(), NewPlayerState->GetTotalScore());
+		SetSuccessCaptureCount(Occupation_Texts[Index].Get(), NewPlayerState->GetSuccessCaptureCount());
+		SetKillCount(Kill_Texts[Index].Get(), NewPlayerState->GetKillCount());
+		SetDeathCount(Death_Texts[Index].Get(), NewPlayerState->GetDeathCount());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Index Out Of Range"));
 	}
 }
 
