@@ -131,7 +131,8 @@ void AOccupationGameState::BeginPlay()
 
 		if (DetailResultElementWidgetClass)
 		{
-			DetailResultElementWidget = CreateWidget<UDetailResultElementWidget>(LocalController, DetailResultElementWidgetClass);
+			DetailResultElementWidget = CreateWidget<UDetailResultElementWidget>(
+				LocalController, DetailResultElementWidgetClass);
 			if (DetailResultElementWidget.IsValid())
 			{
 				DetailResultElementWidget->AddToViewport(1);
@@ -238,7 +239,7 @@ void AOccupationGameState::ChangeResultWidget()
 	GradeResultWidget->SetVisibility(gradeVisibility);
 	DetailResultWidget->SetVisibility(detailVisibility);
 	DetailResultElementWidget->SetVisibility(detailVisibility);
-	
+
 	ResultBool = !ResultBool;
 }
 
@@ -400,7 +401,7 @@ void AOccupationGameState::ShowGradeResultElementWidget(ALakayaBasePlayerState* 
 }
 
 void AOccupationGameState::GradeResultTeamInfo(TArray<TObjectPtr<ALakayaBasePlayerState>>& NewPlayerArray,
-	uint8 NewIndex) const
+                                               uint8 NewIndex) const
 {
 	FString CharacterName;
 	if (NewPlayerArray[NewIndex]->GetCharacterName() == "Rena")
@@ -430,21 +431,29 @@ void AOccupationGameState::GradeResultTeamInfo(TArray<TObjectPtr<ALakayaBasePlay
 		TeamLetter = "Anti";
 	if (NewPlayerArray[NewIndex]->GetTeam() == EPlayerTeam::B)
 		TeamLetter = "Pro";
-	
-	GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_%s_%s_Image"), *RankLetter, *TeamLetter, *CharacterName))->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_%s_RankBoard_Image"), *RankLetter, *TeamLetter))->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+	GradeResultElementWidget->GetWidgetFromName(
+		*FString::Printf(TEXT("%s_%s_%s_Image"), *RankLetter, *TeamLetter, *CharacterName))->SetVisibility(
+		ESlateVisibility::SelfHitTestInvisible);
+	GradeResultElementWidget->GetWidgetFromName(
+		*FString::Printf(TEXT("%s_%s_RankBoard_Image"), *RankLetter, *TeamLetter))->SetVisibility(
+		ESlateVisibility::SelfHitTestInvisible);
 
 	FString FormattedName = FString::Printf(TEXT("%s"), *PlayerArray[NewIndex]->GetName());
-	UTextBlock* NameText = Cast<UTextBlock>(GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_Name_Text"), *RankLetter)));
+	UTextBlock* NameText = Cast<UTextBlock>(
+		GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_Name_Text"), *RankLetter)));
 	NameText->SetText(FText::FromString(FormattedName));
 	NameText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-	UTextBlock* TotalScoreText = Cast<UTextBlock>(GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_TotalScore_Text"), *RankLetter)));
+	UTextBlock* TotalScoreText = Cast<UTextBlock>(
+		GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_TotalScore_Text"), *RankLetter)));
 	TotalScoreText->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayerArray[NewIndex]->GetTotalScore())));
 	TotalScoreText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-	GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_Rank_Text"), *RankLetter))->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_ScoreBoard_Icon_Image"), *RankLetter))->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_Rank_Text"), *RankLetter))->SetVisibility(
+		ESlateVisibility::SelfHitTestInvisible);
+	GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_ScoreBoard_Icon_Image"), *RankLetter))->
+	                          SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 }
 
 void AOccupationGameState::ShowAntiTeamGradeResultElementWidget() const
@@ -554,7 +563,7 @@ void AOccupationGameState::BindDetailResultElementWidget()
 {
 	uint8 AntiIndex = 0;
 	uint8 ProIndex = 0;
-	
+
 	for (auto& ElementPlayerState : PlayersByTeamMap[EPlayerTeam::A])
 	{
 		DetailResultElementWidget->SetElementWidget(ElementPlayerState, AntiIndex);
@@ -571,6 +580,20 @@ void AOccupationGameState::BindDetailResultElementWidget()
 void AOccupationGameState::RegisterPlayerByTeam(const EPlayerTeam& Team, ALakayaBasePlayerState* PlayerState)
 {
 	if (!PlayersByTeamMap.Contains(Team)) return;
-	PlayersByTeamMap[Team].Emplace(PlayerState);
+	auto& PlayerStates = PlayersByTeamMap[Team];
+	PlayerStates.Emplace(PlayerState);
+	PlayerState->SetUniqueStencilMask(GetUniqueStencilMaskByTeamAndIndex(Team, PlayerStates.Num()));
 	if (ClientTeam == Team && CharacterSelectWidget) CharacterSelectWidget->RegisterPlayer(PlayerState);
+}
+
+ERendererStencilMask AOccupationGameState::GetUniqueStencilMaskByTeamAndIndex(const EPlayerTeam& Team,
+                                                                              const uint8& Count) const
+{
+	switch (Count)
+	{
+	case 1: return ClientTeam == Team ? ERendererStencilMask::ERSM_1 : ERendererStencilMask::ERSM_8;
+	case 2: return ClientTeam == Team ? ERendererStencilMask::ERSM_2 : ERendererStencilMask::ERSM_16;
+	case 3: return ClientTeam == Team ? ERendererStencilMask::ERSM_4 : ERendererStencilMask::ERSM_32;
+	default: return ERendererStencilMask::ERSM_Default;
+	}
 }
