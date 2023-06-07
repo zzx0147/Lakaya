@@ -15,11 +15,10 @@ class LAKAYA_API AOutlineManager : public AActor
 public:
 	// Sets default values for this actor's properties
 	AOutlineManager();
+	virtual void PostInitializeComponents() override;
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-	void SetClairvoyance(const bool& bIsClairvoyance) const;
+	void SetClairvoyance(const bool& bIsClairvoyance);
 
 public:
 	void SetTeam(const EPlayerTeam& NewTeam) { ClientTeam = NewTeam; }
@@ -30,10 +29,16 @@ private:
 	EPlayerTeam ClientTeam;
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UBoxComponent> BoxComponent;
+
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<class UPostProcessComponent> OutlinePostProcessComponent;
+	TObjectPtr<class UPostProcessComponent> ClairvoyancePostProcessComponent;
+
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UPostProcessComponent> ClairvoyancePostProcessComponent;
+	TObjectPtr<UMaterialInterface> ClairvoyanceMaterial;
+
+	UPROPERTY(EditAnywhere)
+	FName EnemyRenderingParameterName;
 
 	TSet<uint32> ActivatedClairvoyanceSet;
+	TWeakObjectPtr<UMaterialInstanceDynamic> ClairvoyanceDynamic;
 };
