@@ -153,6 +153,19 @@ void ALakayaBaseCharacter::SetStencilMask_Implementation(const ERendererStencilM
 	GetMesh()->SetRenderCustomDepth(true);
 }
 
+void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
+{
+	if (!CharacterOverlayMaterial.IsValid())
+	{
+		CharacterOverlayMaterial = UMaterialInstanceDynamic::Create(GetMesh()->GetOverlayMaterial(), this);
+		if (!CharacterOverlayMaterial.IsValid()) return;
+		GetMesh()->SetOverlayMaterial(CharacterOverlayMaterial.Get());
+	}
+
+	// CharacterOverlayMaterial->SetScalarParameterValue(TEXT("bIsAlly"), IsAlly ? 1.0 : 0.0);
+	CharacterOverlayMaterial->SetVectorParameterValue(TEXT("Color"), IsAlly ? FLinearColor::Blue : FLinearColor::Red);
+}
+
 void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
 {
 	RecentTeam = Team;

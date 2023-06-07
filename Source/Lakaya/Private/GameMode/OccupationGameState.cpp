@@ -583,6 +583,7 @@ void AOccupationGameState::RegisterPlayerByTeam(const EPlayerTeam& Team, ALakaya
 	auto& PlayerStates = PlayersByTeamMap[Team];
 	PlayerStates.Emplace(PlayerState);
 	PlayerState->SetUniqueStencilMask(GetUniqueStencilMaskByTeamAndIndex(Team, PlayerStates.Num()));
+	PlayerState->SetAlly(ClientTeam == Team);
 	if (ClientTeam == Team && CharacterSelectWidget) CharacterSelectWidget->RegisterPlayer(PlayerState);
 }
 
