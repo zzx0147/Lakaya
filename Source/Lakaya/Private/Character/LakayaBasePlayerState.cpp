@@ -234,6 +234,12 @@ void ALakayaBasePlayerState::SetUniqueStencilMask(const ERendererStencilMask& St
 	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->SetStencilMask(UniqueRenderMask);
 }
 
+void ALakayaBasePlayerState::SetAlly(const bool& Ally)
+{
+	bIsAlly = Ally;
+	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->SetAlly(bIsAlly);
+}
+
 float ALakayaBasePlayerState::GetServerTime() const
 {
 	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
@@ -282,6 +288,7 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 
 		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);
 		Character->SetStencilMask(UniqueRenderMask);
+		Character->SetAlly(bIsAlly);
 	}
 	else
 	{

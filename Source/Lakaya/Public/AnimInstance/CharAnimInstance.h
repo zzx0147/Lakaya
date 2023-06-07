@@ -31,9 +31,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	bool bIsWeaponSkill;
 
-	// 무기 스킬의 애니메이션 지속시간을 지정합니다.
+	// 무기 능력 어빌리티의 선딜레이 애니메이션 시간을 지정합니다.
 	UPROPERTY(EditAnywhere)
-	float WeaponSkillAnimDuration;
+	float WeaponAbilityPerformDelayAnimDuration;
+
+	// 선딜레이 이후 무기 능력 어빌리티의 애니메이션 시간을 지정합니다.
+	UPROPERTY(EditAnywhere)
+	float WeaponAbilityLateAnimDuration;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	bool bIsReload;
@@ -41,10 +45,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interacting")
 	bool bIsInteracting;
 
+	// 무기 능력 어빌리티의 애니메이션 배속을 나타냅니다.
+	UPROPERTY(BlueprintReadOnly)
+	float WeaponSkillAnimSpeed;
+
 	virtual void NativeBeginPlay() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	void OnInteractingActorChanged(AActor* NewInteractingActor);
 
 private:
-	float RecentWeaponSkillTime;
+	void OnWeaponAbilityPerformTimeNotified(const float& Time);
+
+	// 무기 능력으로 소환된 투사체가 실제로 투척이 시작되는 시간을 나타냅니다.
+	float WeaponAbilityPerformTime;
+	FTimerHandle WeaponAbilityAnimTimer;
 };
