@@ -111,19 +111,12 @@ void ALakayaBaseCharacter::Tick(float DeltaSeconds)
 	}
 }
 
-void ALakayaBaseCharacter::NotifyControllerChanged()
-{
-	Super::NotifyControllerChanged();
-	GetMesh()->SetRenderCustomDepth(!IsLocallyControlled());
-}
-
 void ALakayaBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	MeshCollisionProfile = GetMesh()->GetCollisionProfileName();
 	MeshRelativeLocation = GetMesh()->GetRelativeLocation();
 	MeshRelativeRotation = GetMesh()->GetRelativeRotation();
-	GetMesh()->SetRenderCustomDepth(!IsLocallyControlled());
 }
 
 FRotator ALakayaBaseCharacter::GetPlayerRotation() const
@@ -151,6 +144,13 @@ void ALakayaBaseCharacter::EnableClairvoyance()
 void ALakayaBaseCharacter::DisableClairvoyance()
 {
 	ClairvoyanceMeshComponent->SetVisibility(false);
+}
+
+void ALakayaBaseCharacter::SetStencilMask_Implementation(const ERendererStencilMask& StencilMask)
+{
+	GetMesh()->SetCustomDepthStencilWriteMask(StencilMask);
+	GetMesh()->SetCustomDepthStencilValue(255);
+	GetMesh()->SetRenderCustomDepth(true);
 }
 
 void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)

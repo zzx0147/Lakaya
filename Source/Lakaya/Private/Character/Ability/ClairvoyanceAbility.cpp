@@ -73,6 +73,7 @@ void UClairvoyanceAbility::AbilityStart()
 	GetOutlineManager()->RegisterClairvoyance(GetUniqueID(), GetPlayerTeam());
 	GetWorld()->GetTimerManager().SetTimer(AbilityEndHandle, this, &UClairvoyanceAbility::AbilityEnd,
 	                                       AbilityStartTime + AbilityDuration - GetServerTime(), false);
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ClairvoyancecAbilityStart!"));
 }
 
 void UClairvoyanceAbility::AbilityEnd()
@@ -80,6 +81,7 @@ void UClairvoyanceAbility::AbilityEnd()
 	if (GetOwner()->HasAuthority()) ApplyCoolTime();
 	GetOutlineManager()->UnRegisterClairvoyance(GetUniqueID(), GetPlayerTeam());
 	bIsClairvoyanceOn = false;
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ClairvoyancecAbilityStop!"));
 }
 
 void UClairvoyanceAbility::LocalAbilityStart()
