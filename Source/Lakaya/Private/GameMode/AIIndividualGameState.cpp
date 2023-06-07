@@ -6,6 +6,7 @@
 #include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Kismet/GameplayStatics.h"
+#include "PlayerController/InteractablePlayerController.h"
 
 AAIIndividualGameState::AAIIndividualGameState()
 {
@@ -59,14 +60,27 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 		{
 			AController* PlayerController = It->Get();
-			if (PlayerController)
+			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(PlayerController->PlayerState);
+			
+			if(PlayerController && PlayerController->IsA<AInteractablePlayerController>())
 			{
-				ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(PlayerController->PlayerState);
 				if (PlayerStateObj)
 				{
-					// 점수판에 표시되는 이름 현제 컨트롤러 이름으로 표시중입니다.
+					// 점수판에 표시되는 플레이어의 이름을 표시합니다.
+					PlayerAIData.PlayerName = PlayerStateObj->GetPlayerName();
+					PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
+					PlayerAIData.bIsPlayerCheck = true;
+					FPlayerAIDataArray.Add(PlayerAIData);
+				}
+			}
+			if (PlayerController && !PlayerController->IsA<AInteractablePlayerController>())
+			{
+				if (PlayerStateObj)
+				{
+					// 점수판에 표시되는 이름 현재 컨트롤러 이름으로 표시중입니다.
 					PlayerAIData.PlayerName = PlayerStateObj->GetDebugName(PlayerController);
 					PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
+					PlayerAIData.bIsPlayerCheck = false;
 					FPlayerAIDataArray.Add(PlayerAIData);
 				}
 			}

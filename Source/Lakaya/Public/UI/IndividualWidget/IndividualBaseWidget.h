@@ -54,6 +54,9 @@ struct FPlayerAIData
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	int32 KillCount;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	bool bIsPlayerCheck;
+
 	bool operator<(const FPlayerAIData& Other) const
 	{
 		return KillCount < Other.KillCount;
