@@ -36,10 +36,7 @@ void UCharAnimInstance::NativeBeginPlay()
 
 		if (const auto Ability = Character->FindAbility<UCoolTimedSummonAbility>(WeaponAbility))
 		{
-			Ability->OnPerformTimeNotified.AddLambda([this](const float& ActualFireTime)
-			{
-				RecentWeaponSkillTime = ActualFireTime;
-			});
+			Ability->OnPerformTimeNotified.AddUObject(this, &UCharAnimInstance::OnWeaponAbilityPerformTimeNotified);
 		}
 
 		if (const auto InteractableCharacter = Cast<AInteractableCharacter>(Character))
@@ -68,6 +65,43 @@ void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
 	}
 }
 
+void UCharAnimInstance::OnWeaponAbilityPerformTimeNotified(const float& Time)
+{
+	WeaponAbilityPerformTime = Time;
+	auto RemainTime = WeaponAbilityPerformTime - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+	
+	// 아직 투사체 투척 시간이 도래하지 않은 경우 선딜레이 애니메이션 재생시간동안 배속을 걸어 재생하고, 이후에는 1배속으로 재생합니다.
+	if (RemainTime > 0.f)
+	{
+		WeaponSkillAnimSpeed = WeaponAbilityPerformDelayAnimDuration / RemainTime;
+		bIsWeaponSkill = true;
+
+		GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, [this]
+		{
+			// 선딜레이 애니메이션이 종료되는 시점부터는 1배속으로 재생합니다.
+			WeaponSkillAnimSpeed = 1.f;
+			
+			// 전체 애니메이션이 종료되는 시간에 bIsWeaponSkill을 false로 바꿔줍니다.
+			GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, [this]
+			{
+				bIsWeaponSkill = false;
+			}, WeaponAbilityLateAnimDuration, false);
+		}, RemainTime, false);
+	}
+	// 투사체 투척 시간을 이미 지나버렸지만 아직 전체 애니메이션 시간을 지나지는 않은 경우 애니메이션을 빨리 재생시킵니다.
+	else if (-RemainTime < WeaponAbilityLateAnimDuration)
+	{
+		// 이제 RemainTime은 전체 애니메이션이 종료되는 시점까지 남은 시간입니다.
+		RemainTime += WeaponAbilityLateAnimDuration;
+
+		// 전체 애니메이션 시간 / 남은시간을 통해 애니메이션 배속을 특정합니다.
+		WeaponSkillAnimSpeed = (WeaponAbilityPerformDelayAnimDuration + WeaponAbilityLateAnimDuration) / RemainTime;
+		bIsWeaponSkill = true;
+		GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, [this] { bIsWeaponSkill = false; },
+		                                       RemainTime, false);
+	}
+}
+
 void UCharAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
@@ -75,6 +109,4 @@ void UCharAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	const auto GameStateBase = GetWorld()->GetGameState();
 	const float CurrentTime = GameStateBase ? GameStateBase->GetServerWorldTimeSeconds() : GetWorld()->TimeSeconds;
-	bIsWeaponSkill = RecentWeaponSkillTime <= CurrentTime
-		&& RecentWeaponSkillTime + WeaponSkillAnimDuration > CurrentTime;
 }
