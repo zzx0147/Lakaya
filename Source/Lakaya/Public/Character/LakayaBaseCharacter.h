@@ -93,6 +93,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void SetStencilMask(const ERendererStencilMask& StencilMask);
 
+	void SetAlly(const bool& IsAlly);
 protected:
 	virtual void SetTeam_Implementation(const EPlayerTeam& Team);
 	virtual void SetAliveState_Implementation(bool IsAlive);
@@ -161,4 +162,5 @@ private:
 	FVector MeshRelativeLocation;
 	FRotator MeshRelativeRotation;
 	FName MeshCollisionProfile;
+	TWeakObjectPtr<UMaterialInstanceDynamic> CharacterOverlayMaterial;
 };
