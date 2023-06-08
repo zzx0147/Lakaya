@@ -276,12 +276,7 @@ void ALakayaBaseGameState::UpdateCharacterSelectWidget(APlayerController* LocalC
 	if (const auto BasePlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 	{
 		CharacterSelectWidget->OnChangeSelectedCharacter.AddUObject(
-			BasePlayerState, &ALakayaBasePlayerState::RequestCharacterChange);
-		CharacterSelectWidget->OnChangeSelectedCharacter.AddLambda([this](const FName& Name)
-		{
-			if (MatchState == MatchState::InProgress)
-				ToggleCharacterSelectWidget();
-		});
+			this, &ALakayaBaseGameState::OnPlayerCharacterNameChanged, BasePlayerState);
 
 		CharacterSelectWidget->SetLocalPlayerName(BasePlayerState->GetPlayerName());
 		BasePlayerState->OnPlayerNameChanged.AddUObject(CharacterSelectWidget,
@@ -291,16 +286,8 @@ void ALakayaBaseGameState::UpdateCharacterSelectWidget(APlayerController* LocalC
 
 void ALakayaBaseGameState::ToggleCharacterSelectWidget()
 {
-	// 토글은 게임 진행중에만 가능하게 합니다.
-	if (CharacterSelectWidget == nullptr || MatchState != MatchState::InProgress) return;
-
 	// 캐릭터 선택위젯이 숨겨져있었다면 보여주고, 보여지고 있었다면 숨깁니다.
-	const auto IsHidden = CharacterSelectWidget->GetVisibility() == ESlateVisibility::Hidden;
-	CharacterSelectWidget->SetVisibility(IsHidden ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-
-	// 캐릭터 선택 위젯이 숨겨져있었다면 커서를 보여주고, 보여지고 있었다면 숨깁니다.
-	if (const auto PlayerController = GetWorld()->GetFirstPlayerController())
-		PlayerController->SetShowMouseCursor(IsHidden);
+	InternalSetCharacterSelectWidgetVisibility(CharacterSelectWidget->GetVisibility() == ESlateVisibility::Hidden);
 }
 
 void ALakayaBaseGameState::OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController)
@@ -366,4 +353,21 @@ void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible)
 {
 	if (!ScoreBoard.IsValid()) return;
 	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
+}
+
+void ALakayaBaseGameState::OnPlayerCharacterNameChanged(const FName& NewCharacterName, ALakayaBasePlayerState* PlayerState)
+{
+	PlayerState->RequestCharacterChange(NewCharacterName);
+	InternalSetCharacterSelectWidgetVisibility(false);
+}
+
+void ALakayaBaseGameState::InternalSetCharacterSelectWidgetVisibility(const bool& Visible)
+{
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController();
+		LocalController && LocalController->IsLocalController() && CharacterSelectWidget
+		&& MatchState == MatchState::InProgress)
+	{
+		LocalController->SetShowMouseCursor(Visible);
+		CharacterSelectWidget->SetVisibility(Visible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
 }
