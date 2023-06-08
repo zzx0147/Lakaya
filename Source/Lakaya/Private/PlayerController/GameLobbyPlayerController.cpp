@@ -145,7 +145,7 @@ void AGameLobbyPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 	//서버의 경우에만 BeginPlay에서 캐릭터 선택 위젯을 생성
-	if (IsLocalController()) NotifyLocalPlayerStateUpdated();
+	if (HasAuthority() && IsLocalController()) NotifyLocalPlayerStateUpdated();
 }
 
 void AGameLobbyPlayerController::MenuHandler(const FInputActionValue& Value)
@@ -156,20 +156,8 @@ void AGameLobbyPlayerController::MenuHandler(const FInputActionValue& Value)
 
 void AGameLobbyPlayerController::LoadoutHandler(const FInputActionValue& Value)
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("WeaponLoadout"));
-	if (PlayerState != nullptr)
-	{
-		if (IsLocalPlayerController()) //클라의 경우 PlayerState가 생겼을 때 캐릭터 선택 위젯을 생성
-			if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
-			{
-				//if(GameState->SetCharacterSelectWidgetVisibility)
-
-				//TODO: 이렇게 하기보다는 캐릭터 픽창을 닫는 입력을 따로 추가하도록 해서 패턴매칭을 하는 것이 좋을 것 같습니다.
-				if (GameState->GetCharacterSelectWidgetVisibility() == ESlateVisibility::Visible)
-					GameState->SetCharacterSelectWidgetVisibility(ESlateVisibility::Hidden);
-				else GameState->SetCharacterSelectWidgetVisibility(ESlateVisibility::Visible);
-			}
-	}
+	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+		GameState->ToggleCharacterSelectWidget();
 }
 
 void AGameLobbyPlayerController::ShowScoreBoard(const FInputActionValue& Value)
