@@ -38,23 +38,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	float WeaponAbilityLateAnimDuration;
 
-	// Q 어빌리티의 선딜레이 애니메이션 시간을 지정합니다.
-	UPROPERTY(EditAnywhere, Category = "Skill")
-	float PrimaryAbilityPerformDelayAnimDuration;
-
-	// 선딜레이 이후 Q 어빌리티의 애니메이션 시간을 지정합니다.
-	UPROPERTY(EditAnywhere, Category = "Skill")
-	float PrimaryAbilityLateAnimDuration;
-
 private:
 	void OnWeaponAbilityPerformTimeNotified(const float& Time);
-	void OnPrimaryAbilityPerformTimeNotified(const float& Time);
 
 	// 무기 능력으로 소환된 투사체가 실제로 투척이 시작되는 시간을 나타냅니다.
 	float WeaponAbilityPerformTime;
 	FTimerHandle WeaponAbilityAnimTimer;
-
-	float PrimaryAbilityPerformTime;
-	FTimerHandle PrimaryAbilityAnimTimer;
 	
 };

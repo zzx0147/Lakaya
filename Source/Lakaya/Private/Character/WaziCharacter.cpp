@@ -3,17 +3,20 @@
 
 #include "Character/WaziCharacter.h"
 
+#include "Character/Ability/OverdriveAbility.h"
 #include "Character/Ability/ClairvoyanceAbility.h"
 #include "Character/Ability/CoolTimedSummonAbility.h"
 #include "Character/Ability/ReloadAbility.h"
 #include "Character/Ability/ResultNotifyFireAbility.h"
 
 AWaziCharacter::AWaziCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer.
+	SetDefaultSubobjectClass(AbilityComponentNames[Primary], UOverdriveAbility::StaticClass()).
 	SetDefaultSubobjectClass(AbilityComponentNames[Secondary], UClairvoyanceAbility::StaticClass()).
 	SetDefaultSubobjectClass(AbilityComponentNames[WeaponFire], UResultNotifyFireAbility::StaticClass()).
 	SetDefaultSubobjectClass(AbilityComponentNames[WeaponAbility], UCoolTimedSummonAbility::StaticClass()).
 	SetDefaultSubobjectClass(AbilityComponentNames[WeaponReload], UReloadAbility::StaticClass()))
 {
+	const auto OverdriveAbility = FindAbility<UOverdriveAbility>(Primary);
 	const auto ClairvoyanceAbility = FindAbility<UClairvoyanceAbility>(Secondary);
 	const auto FireAbility = FindAbility<UResultNotifyFireAbility>(WeaponFire);
 	const auto SmokeAbility = FindAbility<UCoolTimedSummonAbility>(WeaponAbility);

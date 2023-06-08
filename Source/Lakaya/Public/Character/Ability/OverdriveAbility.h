@@ -4,6 +4,8 @@
 #include "Character/Ability/CharacterAbility.h"
 #include "OverdriveAbility.generated.h"
 
+DECLARE_EVENT_OneParam(UOverdriveAbility, FOverdriveSignature, bool)
+
 UCLASS()
 class LAKAYA_API UOverdriveAbility : public UCharacterAbility
 {
@@ -19,12 +21,17 @@ protected:
 	virtual void OnDelayedAbilityStartTimeChanged(const float& NewDelayedAbilityStartTime) override;
 	virtual void StartDelayedAbility() override;
 	virtual void StopDelayedAbility() override;
+	virtual void SetOverdriveState(const bool& NewState);
 
 public:
 	virtual void OnAliveStateChanged(const bool& AliveState) override;
 
+	FOverdriveSignature OnOverdriveChanged;
+
 protected:
 	virtual bool ShouldStartRemoteCall() override;
+	
+	bool bIsOverdriveOn;
 
 private:
 	void ApplyBuff();
