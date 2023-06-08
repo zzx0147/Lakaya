@@ -19,7 +19,7 @@ AWaziCharacter::AWaziCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	const auto SmokeAbility = FindAbility<UCoolTimedSummonAbility>(WeaponAbility);
 	const auto ReloadAbility = FindAbility<UReloadAbility>(WeaponReload);
 
-	ClairvoyanceAbility->OnClairvoyanceChanged.AddUObject(this, &AWaziCharacter::OnClairvoyanceChanged);
+	//TODO: 투시 능력의 선딜레이, 후딜레이 시간동안 행동할 수 없도록 해야 합니다.
 	FireAbility->OnWantsToFireChanged.AddUObject(this, &AWaziCharacter::OnWantsToFireChanged);
 	SmokeAbility->OnPerformTimeNotified.AddUObject(this, &AWaziCharacter::OnSmokePerformTimeNotified);
 	ReloadAbility->OnReloadStateChanged.AddUObject(this, &AWaziCharacter::OnReloadStateChanged);
@@ -39,11 +39,6 @@ bool AWaziCharacter::ShouldStartAbilityOnServer_Implementation(EAbilityKind Kind
 {
 	// 생존하고 있고, 연막 투척 스킬이 종료된 시점이고, 재장전중이지 않고 사격중이지 않을 때에 스킬을 사용할 수 있게 합니다.
 	return GetAliveState() && SmokeEndingTime <= GetServerTime() && !bIsReloading && !bWantsToFire;
-}
-
-void AWaziCharacter::OnClairvoyanceChanged(bool ClairvoyanceState)
-{
-	bClairvoyance = ClairvoyanceState;
 }
 
 void AWaziCharacter::OnWantsToFireChanged(bool FireState)
