@@ -42,6 +42,15 @@ void UCharacterAbility::RemoteAbilityStart(const float& RequestTime)
 	}
 }
 
+void UCharacterAbility::RemoteAbilityStop(const float& RequestTime)
+{
+	if (bUseDelayedAbility && DelayedAbilityStartTime > 0.0f)
+	{
+		DelayedAbilityStartTime = -1.0f;
+		OnAbilityStartTimeNotified.Broadcast(DelayedAbilityStartTime);
+	}
+}
+
 void UCharacterAbility::OnAliveStateChanged(const bool& AliveState)
 {
 	bRecentAliveState = AliveState;
@@ -180,8 +189,7 @@ void UCharacterAbility::OnDelayedAbilityStartTimeChanged(const float& NewDelayed
 	if(NewDelayedAbilityStartTime < 0)//값이 음수라면 능력 강제 종료 신호
 	{
 		if(IsDelayedAbilityRunning()) StopDelayedAbility();
-		GetWorld()->GetTimerManager().ClearTimer(AbilityStartTimerHandle);
-		GetWorld()->GetTimerManager().ClearTimer(AbilityStopTimerHandle);
+		return;
 	}
 
 	const float Now = GetServerTime();
@@ -210,4 +218,6 @@ void UCharacterAbility::StartDelayedAbility()
 void UCharacterAbility::StopDelayedAbility()
 {
 	bIsDelayedAbilityIsRunning = false;
+	GetWorld()->GetTimerManager().ClearTimer(AbilityStopTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(AbilityStartTimerHandle);
 }
