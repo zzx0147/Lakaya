@@ -87,17 +87,18 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 		else UE_LOG(LogScript, Error, TEXT("Invalid team value on OnTeamChanged lambda handler!"));
 	});
 
-	LakayaState->OnCharacterNameChanged.AddLambda([this, Element](const ALakayaBasePlayerState* LakayaState, const FName& PlayerCharacterName)
+	LakayaState->OnCharacterNameChanged.AddLambda([Element](const ALakayaBasePlayerState* LakayaState, const FName& PlayerCharacterName)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OnCharacterNameChanged."));
-		
-		if (LakayaState->GetCharacterName().ToString() == "Rena")
+
+		if (PlayerCharacterName == TEXT("Rena"))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("On_Rena"));
+			//TODO: 캐릭터 변경시 여기에서 Element또는 이미지에 대한 nullptr 참조 에러가 남
 			Element->Character_Rena_Image->SetVisibility(ESlateVisibility::HitTestInvisible);
 			Element->Character_Wazi_Image->SetVisibility(ESlateVisibility::Hidden);
 		}
-		if (LakayaState->GetCharacterName().ToString() == "Wazi")
+		if (PlayerCharacterName == TEXT("Wazi"))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("On_Wazi"));
 			Element->Character_Wazi_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
