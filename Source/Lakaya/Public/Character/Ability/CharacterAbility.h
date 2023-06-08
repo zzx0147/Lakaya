@@ -26,6 +26,7 @@ struct FResourceCostData
 };
 
 DECLARE_EVENT_OneParam(UCharacterAbility, FEnableTimeSignature, const float&)
+DECLARE_EVENT_OneParam(UCharacterAbility, FAbiltiyStartTimeNotifiedSignature, const float&)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UCharacterAbility : public UActorComponent
@@ -46,7 +47,7 @@ public:
 	 * @brief 서버로 클라이언트의 능력 사용요청 신호가 수신되면 호출됩니다.
 	 * @param RequestTime 클라이언트가 능력 사용요청을 시도한 시간입니다.
 	 */
-	virtual void RemoteAbilityStart(const float& RequestTime) { return; }
+	virtual void RemoteAbilityStart(const float& RequestTime);
 
 	/**
 	 * @brief 서버로부터 클라이언트의 능력 중단요청 신호가 수신되면 호출됩니다.
@@ -124,6 +125,9 @@ protected:
 
 	UFUNCTION()
 	virtual void OnRep_EnableTime();
+	
+	UFUNCTION()
+	void OnRep_AbilityStartTime_New();
 
 	// 최종적으로 적용할 쿨타임을 가져옵니다.
 	virtual float GetCoolTime() { return BaseCoolTime; }
@@ -134,10 +138,20 @@ protected:
 	// EnableTime과 비교하여 스킬사용이 가능한 시간인지 체크합니다.
 	bool IsEnableTime(const float& Time) const { return EnableTime <= Time; }
 
+	// bUseDelayedStart = true일때만 호출됩니다. OnAbilityStartTimeNotified 이벤트에 등록되어 호출됩니다.
+	virtual void OnAbilityStartTimeChanged(const float& NewAbilityStartTime);
+
+	//AbilityStartTime이 도래했을 때 호출됩니다
+	virtual void StartDelayedAbility();
+	//AbilityEndTime이 도래했을 때 호출됩니다.
+	virtual void StopDelayedAbility();
+
 public:
 	// 스킬 사용가능 시점이 변경될 때 호출됩니다.
 	FEnableTimeSignature OnEnableTimeChanged;
 
+	// bUseDelayedStart = true일때만 호출됩니다. 스킬이 시작되는 시작이 변경되었을 때 호출됩니다.
+	FAbiltiyStartTimeNotifiedSignature OnAbilityStartTimeNotified;
 protected:
 	// true로 설정하면 ShouldStartRemoteCall()이 호출되며, 이 함수가 true를 반환할 때 서버에서 RemoteAbilityStart()가 호출됩니다.
 	UPROPERTY(EditAnywhere)
@@ -147,6 +161,20 @@ protected:
 	UPROPERTY(EditAnywhere)
 	bool bCanEverStopRemoteCall;
 
+	// true로 설정하면 DelayedAbility가 사용됩니다
+	UPROPERTY(EditAnywhere)
+	bool bUseDelayedAbility;
+
+	// DelayedAbility를 사용할 때 RequestTime으로부터 AbilityStartTime이 얼마나 지연될지를 결정하는 값입니다.
+	UPROPERTY(EditAnywhere)
+	float InitialDelay;
+
+	UPROPERTY(EditAnywhere)
+	float AbilityDuration_New;
+
+	FTimerHandle AbilityStartTimerHandle;
+	FTimerHandle AbilityStopTimerHandle;
+	
 	// 아무런 효과가 없을 때 적용될 스킬의 기본 쿨타임입니다.
 	UPROPERTY(EditAnywhere)
 	float BaseCoolTime;
@@ -154,6 +182,10 @@ protected:
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_EnableTime, Transient)
 	float EnableTime;
+
+	//bUseDelayedStart = true일때만 리플리케이트 됩니다. 능력이 시작되는 시간입니다. 음수면 스킬이 종료되었다는 뜻입니다
+	UPROPERTY(ReplicatedUsing=OnRep_AbilityStartTime_New, Transient)
+	float AbilityStartTime_New;
 
 	TWeakObjectPtr<UCameraComponent> CameraComponent;
 	TWeakObjectPtr<class UResourceComponent> ResourceComponent;

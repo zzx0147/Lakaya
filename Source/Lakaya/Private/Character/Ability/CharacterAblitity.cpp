@@ -11,12 +11,17 @@
 UCharacterAbility::UCharacterAbility()
 {
 	bWantsInitializeComponent = true;
+	bUseDelayedAbility = false;
+	OnAbilityStartTimeNotified.AddUObject(this, &UCharacterAbility::OnAbilityStartTimeChanged);
+	InitialDelay = 0.5f;
+	AbilityDuration_New = 1.0f;
 }
 
 void UCharacterAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(UCharacterAbility, EnableTime);
+	if (bUseDelayedAbility) DOREPLIFETIME(UCharacterAbility, AbilityStartTime_New);
 }
 
 void UCharacterAbility::InitializeComponent()
@@ -25,6 +30,15 @@ void UCharacterAbility::InitializeComponent()
 	CameraComponent = GetOwner()->FindComponentByClass<UCameraComponent>();
 	ResourceComponent = GetOwner()->FindComponentByClass<UResourceComponent>();
 	bRecentAliveState = true;
+}
+
+void UCharacterAbility::RemoteAbilityStart(const float& RequestTime)
+{
+	if (bUseDelayedAbility)
+	{
+		AbilityStartTime_New = RequestTime + InitialDelay;
+		OnAbilityStartTimeNotified.Broadcast(AbilityStartTime_New);
+	}
 }
 
 void UCharacterAbility::OnAliveStateChanged(const bool& AliveState)
@@ -149,8 +163,42 @@ void UCharacterAbility::OnRep_EnableTime()
 	OnEnableTimeChanged.Broadcast(EnableTime);
 }
 
+void UCharacterAbility::OnRep_AbilityStartTime_New()
+{
+	OnAbilityStartTimeNotified.Broadcast(AbilityStartTime_New);
+}
+
 void UCharacterAbility::ApplyCoolTime()
 {
 	EnableTime = GetServerTime() + GetCoolTime();
 	OnEnableTimeChanged.Broadcast(EnableTime);
+}
+
+void UCharacterAbility::OnAbilityStartTimeChanged(const float& NewAbilityStartTime)
+{
+	const float Now = GetServerTime();
+	const float AbilityEndTime = NewAbilityStartTime + AbilityDuration_New;
+
+	if (Now > AbilityEndTime) return; //어빌리티가 이미 종료된 시점이라면 아무것도 안함
+
+	if (NewAbilityStartTime > Now) // 아직 능력 시작 시간이 도래하지 않았다면 타이머를 건다.
+	{
+		GetWorld()->GetTimerManager().SetTimer(AbilityStartTimerHandle,this,&UCharacterAbility::StartDelayedAbility,NewAbilityStartTime - Now,false);
+	}
+	else//이미 능력이 시작됐다면 바로 시작한다.
+	{
+		StartDelayedAbility();
+	}
+
+	//어빌리티 종료 시간 타이머를 건다
+	GetWorld()->GetTimerManager().SetTimer(AbilityStopTimerHandle,this,&UCharacterAbility::StopDelayedAbility,AbilityEndTime - Now,false);
+	
+}
+
+void UCharacterAbility::StartDelayedAbility()
+{
+}
+
+void UCharacterAbility::StopDelayedAbility()
+{
 }
