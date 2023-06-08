@@ -127,15 +127,6 @@ void UDetailResultElementWidget::SetElementWidget(const ALakayaBasePlayerState* 
 	bool bIsRena = (NewPlayerState->GetCharacterName() == "Rena");
 	bool bIsWazi = (NewPlayerState->GetCharacterName() == "Wazi");
 
-	TArray<TWeakObjectPtr<UCanvasPanel>> Panels;
-	TArray<TWeakObjectPtr<UImage>> Portrait_Rena_Images;
-	TArray<TWeakObjectPtr<UImage>> Portrait_Wazi_Images;
-	TArray<TWeakObjectPtr<UTextBlock>> PlayerName_Texts;
-	TArray<TWeakObjectPtr<UTextBlock>> Score_Texts;
-	TArray<TWeakObjectPtr<UTextBlock>> Occupation_Texts;
-	TArray<TWeakObjectPtr<UTextBlock>> Kill_Texts;
-	TArray<TWeakObjectPtr<UTextBlock>> Death_Texts;
-
 	if (bIsTeamA)
 	{
 		Panels = {AF_Panel, AS_Panel, AT_Panel};
