@@ -12,7 +12,7 @@ UCharacterAbility::UCharacterAbility()
 {
 	bWantsInitializeComponent = true;
 	bUseDelayedAbility = false;
-	OnAbilityStartTimeNotified.AddUObject(this, &UCharacterAbility::OnAbilityStartTimeChanged);
+	OnAbilityStartTimeNotified.AddUObject(this, &UCharacterAbility::OnDelayedAbilityStartTimeChanged);
 	InitialDelay = 0.5f;
 	AbilityDuration_New = 1.0f;
 }
@@ -21,7 +21,7 @@ void UCharacterAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(UCharacterAbility, EnableTime);
-	if (bUseDelayedAbility) DOREPLIFETIME(UCharacterAbility, AbilityStartTime_New);
+	if (bUseDelayedAbility) DOREPLIFETIME(UCharacterAbility, DelayedAbilityStartTime);
 }
 
 void UCharacterAbility::InitializeComponent()
@@ -36,8 +36,8 @@ void UCharacterAbility::RemoteAbilityStart(const float& RequestTime)
 {
 	if (bUseDelayedAbility)
 	{
-		AbilityStartTime_New = RequestTime + InitialDelay;
-		OnAbilityStartTimeNotified.Broadcast(AbilityStartTime_New);
+		DelayedAbilityStartTime = RequestTime + InitialDelay;
+		OnAbilityStartTimeNotified.Broadcast(DelayedAbilityStartTime);
 	}
 }
 
@@ -163,9 +163,9 @@ void UCharacterAbility::OnRep_EnableTime()
 	OnEnableTimeChanged.Broadcast(EnableTime);
 }
 
-void UCharacterAbility::OnRep_AbilityStartTime_New()
+void UCharacterAbility::OnRep_DelayedAbilityStartTime()
 {
-	OnAbilityStartTimeNotified.Broadcast(AbilityStartTime_New);
+	OnAbilityStartTimeNotified.Broadcast(DelayedAbilityStartTime);
 }
 
 void UCharacterAbility::ApplyCoolTime()
@@ -174,16 +174,16 @@ void UCharacterAbility::ApplyCoolTime()
 	OnEnableTimeChanged.Broadcast(EnableTime);
 }
 
-void UCharacterAbility::OnAbilityStartTimeChanged(const float& NewAbilityStartTime)
+void UCharacterAbility::OnDelayedAbilityStartTimeChanged(const float& NewDelayedAbilityStartTime)
 {
 	const float Now = GetServerTime();
-	const float AbilityEndTime = NewAbilityStartTime + AbilityDuration_New;
+	const float AbilityEndTime = NewDelayedAbilityStartTime + AbilityDuration_New;
 
 	if (Now > AbilityEndTime) return; //어빌리티가 이미 종료된 시점이라면 아무것도 안함
 
-	if (NewAbilityStartTime > Now) // 아직 능력 시작 시간이 도래하지 않았다면 타이머를 건다.
+	if (NewDelayedAbilityStartTime > Now) // 아직 능력 시작 시간이 도래하지 않았다면 타이머를 건다.
 	{
-		GetWorld()->GetTimerManager().SetTimer(AbilityStartTimerHandle,this,&UCharacterAbility::StartDelayedAbility,NewAbilityStartTime - Now,false);
+		GetWorld()->GetTimerManager().SetTimer(AbilityStartTimerHandle,this,&UCharacterAbility::StartDelayedAbility,NewDelayedAbilityStartTime - Now,false);
 	}
 	else//이미 능력이 시작됐다면 바로 시작한다.
 	{
@@ -192,7 +192,6 @@ void UCharacterAbility::OnAbilityStartTimeChanged(const float& NewAbilityStartTi
 
 	//어빌리티 종료 시간 타이머를 건다
 	GetWorld()->GetTimerManager().SetTimer(AbilityStopTimerHandle,this,&UCharacterAbility::StopDelayedAbility,AbilityEndTime - Now,false);
-	
 }
 
 void UCharacterAbility::StartDelayedAbility()

@@ -127,7 +127,7 @@ protected:
 	virtual void OnRep_EnableTime();
 	
 	UFUNCTION()
-	void OnRep_AbilityStartTime_New();
+	void OnRep_DelayedAbilityStartTime();
 
 	// 최종적으로 적용할 쿨타임을 가져옵니다.
 	virtual float GetCoolTime() { return BaseCoolTime; }
@@ -139,7 +139,7 @@ protected:
 	bool IsEnableTime(const float& Time) const { return EnableTime <= Time; }
 
 	// bUseDelayedStart = true일때만 호출됩니다. OnAbilityStartTimeNotified 이벤트에 등록되어 호출됩니다.
-	virtual void OnAbilityStartTimeChanged(const float& NewAbilityStartTime);
+	virtual void OnDelayedAbilityStartTimeChanged(const float& NewDelayedAbilityStartTime);
 
 	//AbilityStartTime이 도래했을 때 호출됩니다
 	virtual void StartDelayedAbility();
@@ -184,8 +184,8 @@ private:
 	float EnableTime;
 
 	//bUseDelayedStart = true일때만 리플리케이트 됩니다. 능력이 시작되는 시간입니다. 음수면 스킬이 종료되었다는 뜻입니다
-	UPROPERTY(ReplicatedUsing=OnRep_AbilityStartTime_New, Transient)
-	float AbilityStartTime_New;
+	UPROPERTY(ReplicatedUsing=OnRep_DelayedAbilityStartTime, Transient)
+	float DelayedAbilityStartTime;
 
 	TWeakObjectPtr<UCameraComponent> CameraComponent;
 	TWeakObjectPtr<class UResourceComponent> ResourceComponent;
