@@ -14,10 +14,12 @@ AWaziCharacter::AWaziCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	SetDefaultSubobjectClass(AbilityComponentNames[WeaponAbility], UCoolTimedSummonAbility::StaticClass()).
 	SetDefaultSubobjectClass(AbilityComponentNames[WeaponReload], UReloadAbility::StaticClass()))
 {
+	const auto ClairvoyanceAbility = FindAbility<UClairvoyanceAbility>(Secondary);
 	const auto FireAbility = FindAbility<UResultNotifyFireAbility>(WeaponFire);
 	const auto SmokeAbility = FindAbility<UCoolTimedSummonAbility>(WeaponAbility);
 	const auto ReloadAbility = FindAbility<UReloadAbility>(WeaponReload);
 
+	//TODO: 투시 능력의 선딜레이, 후딜레이 시간동안 행동할 수 없도록 해야 합니다.
 	FireAbility->OnWantsToFireChanged.AddUObject(this, &AWaziCharacter::OnWantsToFireChanged);
 	SmokeAbility->OnPerformTimeNotified.AddUObject(this, &AWaziCharacter::OnSmokePerformTimeNotified);
 	ReloadAbility->OnReloadStateChanged.AddUObject(this, &AWaziCharacter::OnReloadStateChanged);

@@ -9,5 +9,5 @@ class LAKAYA_API UModeSelectWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-		
+	
 };

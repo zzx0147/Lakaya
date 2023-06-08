@@ -280,7 +280,7 @@ void ALakayaBaseGameState::UpdateCharacterSelectWidget(APlayerController* LocalC
 		CharacterSelectWidget->OnChangeSelectedCharacter.AddLambda([this](const FName& Name)
 		{
 			if (MatchState == MatchState::InProgress)
-				SetCharacterSelectWidgetVisibility(ESlateVisibility::Hidden);
+				ToggleCharacterSelectWidget();
 		});
 
 		CharacterSelectWidget->SetLocalPlayerName(BasePlayerState->GetPlayerName());
@@ -289,30 +289,23 @@ void ALakayaBaseGameState::UpdateCharacterSelectWidget(APlayerController* LocalC
 	}
 }
 
-void ALakayaBaseGameState::SetCharacterSelectWidgetVisibility(const ESlateVisibility& IsVisible)
+void ALakayaBaseGameState::ToggleCharacterSelectWidget()
 {
-	if (CharacterSelectWidget != nullptr && MatchState == MatchState::InProgress)
-	{
-		CharacterSelectWidget->SetVisibility(IsVisible);
-		if (const auto PlayerController = GetWorld()->GetFirstPlayerController<APlayerController>())
-		{
-			PlayerController->SetShowMouseCursor(IsVisible == ESlateVisibility::SelfHitTestInvisible);
-		}
-	}
+	// 토글은 게임 진행중에만 가능하게 합니다.
+	if (CharacterSelectWidget == nullptr || MatchState != MatchState::InProgress) return;
+
+	// 캐릭터 선택위젯이 숨겨져있었다면 보여주고, 보여지고 있었다면 숨깁니다.
+	const auto IsHidden = CharacterSelectWidget->GetVisibility() == ESlateVisibility::Hidden;
+	CharacterSelectWidget->SetVisibility(IsHidden ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+
+	// 캐릭터 선택 위젯이 숨겨져있었다면 커서를 보여주고, 보여지고 있었다면 숨깁니다.
+	if (const auto PlayerController = GetWorld()->GetFirstPlayerController())
+		PlayerController->SetShowMouseCursor(IsHidden);
 }
 
 void ALakayaBaseGameState::OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController)
 {
 	UpdateCharacterSelectWidget(LocalPlayerController);
-}
-
-//TODO: 다른 클래스에서 픽창 위젯의 비저빌리티를 체크하는 건 이상합니다.
-ESlateVisibility ALakayaBaseGameState::GetCharacterSelectWidgetVisibility() const
-{
-	if (CharacterSelectWidget != nullptr)
-		return CharacterSelectWidget->GetVisibility();
-
-	return ESlateVisibility::Hidden;
 }
 
 void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimController,

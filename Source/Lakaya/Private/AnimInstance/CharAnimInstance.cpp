@@ -3,7 +3,6 @@
 
 #include "AnimInstance/CharAnimInstance.h"
 
-#include "Character/Ability/CoolTimedSummonAbility.h"
 #include "GameFramework/GameStateBase.h"
 
 
@@ -34,14 +33,6 @@ void UCharAnimInstance::NativeBeginPlay()
 				{bIsReload = ReloadState;} );
 		}
 
-		if (const auto Ability = Character->FindAbility<UCoolTimedSummonAbility>(WeaponAbility))
-		{
-			Ability->OnPerformTimeNotified.AddLambda([this](const float& ActualFireTime)
-			{
-				RecentWeaponSkillTime = ActualFireTime;
-			});
-		}
-
 		if (const auto InteractableCharacter = Cast<AInteractableCharacter>(Character))
 		{
 			InteractableCharacter->OnInteractingActorChanged.
@@ -56,15 +47,6 @@ void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
 		Cast<AInteractableCharacter>(TryGetPawnOwner()))
 	{
 		bIsInteracting = NewInteractingActor != nullptr;
-
-		// if (NewInteractingActor)
-		// {
-		// 	bIsInteracting = true;
-		// }
-		// else
-		// {
-		// 	bIsInteracting = false;
-		// }
 	}
 }
 
@@ -75,6 +57,4 @@ void UCharAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	const auto GameStateBase = GetWorld()->GetGameState();
 	const float CurrentTime = GameStateBase ? GameStateBase->GetServerWorldTimeSeconds() : GetWorld()->TimeSeconds;
-	bIsWeaponSkill = RecentWeaponSkillTime <= CurrentTime
-		&& RecentWeaponSkillTime + WeaponSkillAnimDuration > CurrentTime;
 }

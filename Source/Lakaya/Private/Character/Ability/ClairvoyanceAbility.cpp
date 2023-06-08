@@ -11,6 +11,7 @@ UClairvoyanceAbility::UClairvoyanceAbility() : Super()
 {
 	AbilityDuration = 10.0f;
 	bIsClairvoyanceOn = false;
+	SetClairvoyanceState(bIsClairvoyanceOn);
 }
 
 void UClairvoyanceAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -21,7 +22,8 @@ void UClairvoyanceAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 void UClairvoyanceAbility::OnRep_AbilityStartTime()
 {
-	bIsClairvoyanceOn = true;
+	// bIsClairvoyanceOn = true;
+	SetClairvoyanceState(true);
 	if (AbilityStartTime > GetServerTime())
 		GetWorld()->GetTimerManager().SetTimer(AbilityStartHandle, this, &UClairvoyanceAbility::AbilityStart,AbilityStartTime - GetServerTime(), false);
 	else
@@ -39,10 +41,16 @@ void UClairvoyanceAbility::RemoteAbilityStart(const float& RequestTime)
 void UClairvoyanceAbility::OnAliveStateChanged(const bool& AliveState)
 {
 	Super::OnAliveStateChanged(AliveState);
-	if(!AliveState && bIsClairvoyanceOn)
+	// if(!AliveState && bIsClairvoyanceOn)
+	// {
+	// 	AbilityEnd();
+	// 	GetWorld()->GetTimerManager().ClearTimer(AbilityStartHandle);
+	// }
+	if (!AliveState && GetOwner()->HasAuthority())
 	{
 		AbilityEnd();
 		GetWorld()->GetTimerManager().ClearTimer(AbilityStartHandle);
+		SetClairvoyanceState(false);
 	}
 }
 
@@ -68,6 +76,13 @@ bool UClairvoyanceAbility::ShouldStartRemoteCall()
 	return IsEnableTime(GetServerTime() + 0.1f);;
 }
 
+void UClairvoyanceAbility::SetClairvoyanceState(const bool& NewState)
+{
+	if (NewState == bIsClairvoyanceOn) return;
+	bIsClairvoyanceOn = NewState;
+	OnClairvoyanceChanged.Broadcast(bIsClairvoyanceOn);
+}
+
 void UClairvoyanceAbility::AbilityStart()
 {
 	GetOutlineManager()->RegisterClairvoyance(GetUniqueID(), GetPlayerTeam());
@@ -80,7 +95,8 @@ void UClairvoyanceAbility::AbilityEnd()
 {
 	if (GetOwner()->HasAuthority()) ApplyCoolTime();
 	GetOutlineManager()->UnRegisterClairvoyance(GetUniqueID(), GetPlayerTeam());
-	bIsClairvoyanceOn = false;
+	// bIsClairvoyanceOn = false;
+	SetClairvoyanceState(false);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ClairvoyancecAbilityStop!"));
 }
 

@@ -29,6 +29,7 @@ public:
 	const static FName CameraComponentName;
 	const static FName ResourceComponentName;
 	const static FName ClairvoyanceMeshComponentName;
+	const static FName DamageImmuneMeshComponentName;
 
 	explicit ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
@@ -93,6 +94,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void SetStencilMask(const ERendererStencilMask& StencilMask);
 
+	void SetAlly(const bool& IsAlly);
+
 protected:
 	virtual void SetTeam_Implementation(const EPlayerTeam& Team);
 	virtual void SetAliveState_Implementation(bool IsAlive);
@@ -103,9 +106,14 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_PlayerRotation();
 
+	UFUNCTION()
+	virtual void OnRep_DamageImmuneEndingTime();
+
 private:
 	// 단순히 이전 주기의 플레이어 회전과 최신 주기의 플레이어 회전을 선형 외삽한 값을 반환합니다.
 	FQuat GetRawExtrapolatedRotator(const float& CurrentTime) const;
+
+	void DamageImmuneTimerCallback();
 
 protected:
 	// 이 캐릭터의 고유한 최대 체력을 나타냅니다.
@@ -135,6 +143,14 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TEnumAsByte<ECollisionChannel> BTeamObjectType;
 
+	// 부활시 적용되는 무적시간을 지정합니다.
+	UPROPERTY(EditAnywhere)
+	float ResurrectionDamageImmuneTime;
+
+	// 로컬 캐릭터에 대한 아웃라인을 활성화할지 여부를 선택합니다.
+	UPROPERTY(EditAnywhere)
+	bool bEnableLocalOutline;
+
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	class UResourceComponent* ResourceComponent;
@@ -148,11 +164,17 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* ClairvoyanceMeshComponent;
 
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* DamageImmuneMeshComponent;
+
 	UPROPERTY(ReplicatedUsing=OnRep_PlayerRotation, Transient)
 	FPlayerRotationPacket PlayerRotation;
 
 	UPROPERTY(BlueprintGetter=GetAliveState)
 	bool bIsAlive;
+
+	UPROPERTY(ReplicatedUsing=OnRep_DamageImmuneEndingTime, Transient)
+	float DamageImmuneEndingTime;
 
 	FPlayerRotationPacket PrevPlayerRotation;
 	FPlayerRotationPacket LatestPlayerRotation;
@@ -161,4 +183,6 @@ private:
 	FVector MeshRelativeLocation;
 	FRotator MeshRelativeRotation;
 	FName MeshCollisionProfile;
+	TWeakObjectPtr<UMaterialInstanceDynamic> CharacterOverlayMaterial;
+	FTimerHandle DamageImmuneTimer;
 };

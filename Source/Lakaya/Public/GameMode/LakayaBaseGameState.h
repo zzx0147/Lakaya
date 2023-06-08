@@ -45,12 +45,10 @@ public:
 	// 점수판의 표시 여부를 결정합니다. true를 넘기면 점수판이 표시됩니다.
 	void SetScoreBoardVisibility(const bool& Visible);
 
-	virtual void SetCharacterSelectWidgetVisibility(const ESlateVisibility& IsVisible);
+	virtual void ToggleCharacterSelectWidget();
 
 	// 로컬 플레이어 컨트롤러의 플레이어 스테이트가 변경되면 호출됩니다.
 	virtual void OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController);
-
-	ESlateVisibility GetCharacterSelectWidgetVisibility() const;
 
 	UFUNCTION(NetMulticast, Reliable)
 	void NotifyPlayerKilled(APlayerState* VictimController, APlayerState* InstigatorController, AActor* DamageCauser);
