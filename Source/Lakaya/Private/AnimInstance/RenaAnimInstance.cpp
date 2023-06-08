@@ -9,6 +9,12 @@
 
 URenaAnimInstance::URenaAnimInstance()
 {
+	bIsWeaponSkill = false;
+	bIsPrimarySkill = false;
+	bIsSecondarySkill = false;
+	WeaponAbilityPerformTime = 0.f;
+	PrimaryAbilityPerformTime = 0.f;
+	SecondaryAbilityPerformTime = 0.f;
 }
 
 void URenaAnimInstance::NativeBeginPlay()
@@ -21,13 +27,13 @@ void URenaAnimInstance::NativeBeginPlay()
 		{
 			Ability->OnPerformTimeNotified.AddUObject(this, &URenaAnimInstance::OnWeaponAbilityPerformTimeNotified);
 		}
-		if (const auto Ability = Character->FindAbility<UCoolTimedSummonAbility>(Primary))
+		if (const auto PrimaryAbility = Character->FindAbility<UCoolTimedSummonAbility>(Primary))
 		{
-			Ability->OnPerformTimeNotified.AddUObject(this, &URenaAnimInstance::OnPrimaryAbilityPerformTimeNotified);
+			PrimaryAbility->OnPerformTimeNotified.AddUObject(this, &URenaAnimInstance::OnPrimaryAbilityPerformTimeNotified);
 		}
-		if (const auto Ability = Character->FindAbility<UDeathRayAbility>(Secondary))
+		if (const auto SecondaryAbility = Character->FindAbility<UDeathRayAbility>(Secondary))
 		{
-			Ability->OnDeathRayPerformTimeNotified.AddUObject(this, &URenaAnimInstance::OnSecondaryAbilityPerformTimeNotified);
+			SecondaryAbility->OnDeathRayPerformTimeNotified.AddUObject(this, &URenaAnimInstance::OnSecondaryAbilityPerformTimeNotified);
 		}
 	}
 }
