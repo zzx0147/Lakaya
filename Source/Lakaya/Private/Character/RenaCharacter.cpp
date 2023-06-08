@@ -21,7 +21,9 @@ ARenaCharacter::ARenaCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	MineLateDelay = 0.3f;
 	BombLateDelay = 0.3f;
 
+	//TODO: 죽음의 광선 스킬의 선딜레이, 사용중, 후딜레이동안 스킬을 사용할 수 없도록 처리해야 합니다.
 	const auto MineAbility = FindAbility<UCoolTimedSummonAbility>(Primary);
+	const auto RayAbility = FindAbility<UDeathRayAbility>(Secondary);
 	const auto FireAbility = FindAbility<UResultNotifyFireAbility>(WeaponFire);
 	const auto BombAbility = FindAbility<UCoolTimedSummonAbility>(WeaponAbility);
 	const auto ReloadAbility = FindAbility<UReloadAbility>(WeaponReload);
