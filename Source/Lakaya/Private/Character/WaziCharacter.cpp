@@ -14,10 +14,12 @@ AWaziCharacter::AWaziCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	SetDefaultSubobjectClass(AbilityComponentNames[WeaponAbility], UCoolTimedSummonAbility::StaticClass()).
 	SetDefaultSubobjectClass(AbilityComponentNames[WeaponReload], UReloadAbility::StaticClass()))
 {
+	const auto ClairvoyanceAbility = FindAbility<UClairvoyanceAbility>(Secondary);
 	const auto FireAbility = FindAbility<UResultNotifyFireAbility>(WeaponFire);
 	const auto SmokeAbility = FindAbility<UCoolTimedSummonAbility>(WeaponAbility);
 	const auto ReloadAbility = FindAbility<UReloadAbility>(WeaponReload);
 
+	ClairvoyanceAbility->OnClairvoyanceChanged.AddUObject(this, &AWaziCharacter::OnClairvoyanceChanged);
 	FireAbility->OnWantsToFireChanged.AddUObject(this, &AWaziCharacter::OnWantsToFireChanged);
 	SmokeAbility->OnPerformTimeNotified.AddUObject(this, &AWaziCharacter::OnSmokePerformTimeNotified);
 	ReloadAbility->OnReloadStateChanged.AddUObject(this, &AWaziCharacter::OnReloadStateChanged);
@@ -37,6 +39,11 @@ bool AWaziCharacter::ShouldStartAbilityOnServer_Implementation(EAbilityKind Kind
 {
 	// 생존하고 있고, 연막 투척 스킬이 종료된 시점이고, 재장전중이지 않고 사격중이지 않을 때에 스킬을 사용할 수 있게 합니다.
 	return GetAliveState() && SmokeEndingTime <= GetServerTime() && !bIsReloading && !bWantsToFire;
+}
+
+void AWaziCharacter::OnClairvoyanceChanged(bool ClairvoyanceState)
+{
+	bClairvoyance = ClairvoyanceState;
 }
 
 void AWaziCharacter::OnWantsToFireChanged(bool FireState)

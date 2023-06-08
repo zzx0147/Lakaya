@@ -46,18 +46,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	float PrimaryAbilityLateAnimDuration;
 
-	// E 어빌리티의 선딜레이 애니메이션 시간을 지정합니다.
-	UPROPERTY(EditAnywhere, Category = "Skill")
-	float SecondaryAbilityPerformDelayAnimDuration;
-
-	// 선딜레이 이후 E 어빌리티의 애니메이션 시간을 지정합니다.
-	UPROPERTY(EditAnywhere, Category = "Skill")
-	float SecondaryAbilityLateAnimDuration;
-
 private:
 	void OnWeaponAbilityPerformTimeNotified(const float& Time);
 	void OnPrimaryAbilityPerformTimeNotified(const float& Time);
-	void OnSecondaryAbilityPerformTimeNotified(const float& Time);
 
 	// 무기 능력으로 소환된 투사체가 실제로 투척이 시작되는 시간을 나타냅니다.
 	float WeaponAbilityPerformTime;
@@ -65,8 +56,5 @@ private:
 
 	float PrimaryAbilityPerformTime;
 	FTimerHandle PrimaryAbilityAnimTimer;
-	
-	float SecondaryAbilityPerformTime;
-	FTimerHandle SecondaryAbilityAnimTimer;
 	
 };

@@ -18,6 +18,7 @@ protected:
 	virtual bool ShouldStartAbility_Implementation(EAbilityKind Kind) override;
 	virtual bool ShouldStartAbilityOnServer_Implementation(EAbilityKind Kind) override;
 
+	virtual void OnClairvoyanceChanged(bool ClairvoyanceState);
 	virtual void OnWantsToFireChanged(bool FireState);
 	virtual void OnSmokePerformTimeNotified(const float& Time);
 	virtual void OnReloadStateChanged(bool ReloadState);
@@ -28,6 +29,7 @@ protected:
 	float SmokeLateDelay;
 
 private:
+	bool bClairvoyance;
 	bool bWantsToFire;
 	float SmokeEndingTime;
 	bool bIsReloading;

@@ -4,6 +4,7 @@
 #include "AnimInstance/RenaAnimInstance.h"
 
 #include "Character/Ability/CoolTimedSummonAbility.h"
+#include "Character/Ability/DeathRayAbility.h"
 #include "GameFramework/GameStateBase.h"
 
 URenaAnimInstance::URenaAnimInstance()
@@ -24,7 +25,7 @@ void URenaAnimInstance::NativeBeginPlay()
 		{
 			Ability->OnPerformTimeNotified.AddUObject(this, &URenaAnimInstance::OnPrimaryAbilityPerformTimeNotified);
 		}
-		if (const auto Ability = Character->FindAbility<UCoolTimedSummonAbility>(Secondary))
+		if (const auto Ability = Character->FindAbility<UDeathRayAbility>(Secondary))
 		{
 			Ability->OnPerformTimeNotified.AddUObject(this, &URenaAnimInstance::OnSecondaryAbilityPerformTimeNotified);
 		}

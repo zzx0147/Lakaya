@@ -4,6 +4,7 @@
 #include "Character/Ability/CharacterAbility.h"
 #include "ClairvoyanceAbility.generated.h"
 
+DECLARE_EVENT_OneParam(UClairvoyanceAbility, FClairvoyanceSignature, bool)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UClairvoyanceAbility : public UCharacterAbility
@@ -23,9 +24,12 @@ public:
 	virtual void InitializeComponent() override;
 	virtual void LocalAbilityStart() override;
 
+	FClairvoyanceSignature OnClairvoyanceChanged;
+
 protected:
 	TObjectPtr<class AOutlineManager> GetOutlineManager();
 	virtual bool ShouldStartRemoteCall() override;
+	virtual void SetClairvoyanceState(const bool& NewState);
 
 private:
 	void AbilityStart();
