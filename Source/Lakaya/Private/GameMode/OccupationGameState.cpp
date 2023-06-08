@@ -7,7 +7,9 @@
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameMode.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Occupation/ShieldWallObject.h"
 #include "UI/DetailResultWidget.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/GameResultWidget.h"
@@ -131,8 +133,7 @@ void AOccupationGameState::BeginPlay()
 
 		if (DetailResultElementWidgetClass)
 		{
-			DetailResultElementWidget = CreateWidget<UDetailResultElementWidget>(
-				LocalController, DetailResultElementWidgetClass);
+			DetailResultElementWidget = CreateWidget<UDetailResultElementWidget>(LocalController, DetailResultElementWidgetClass);
 			if (DetailResultElementWidget.IsValid())
 			{
 				DetailResultElementWidget->AddToViewport(1);
@@ -173,7 +174,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 	TimerDelegate.BindLambda([this]
 	{
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		DestroyTriggerBox();
+		DestroyShieldWallObject();
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageVisible, TimerDelegate, MatchWaitDuration, false);
 
@@ -307,35 +308,16 @@ void AOccupationGameState::SetClientTeam(const EPlayerTeam& NewTeam)
 	for (const auto& Temp : PlayersByTeamMap[ClientTeam]) CharacterSelectWidget->RegisterPlayer(Temp);
 }
 
-void AOccupationGameState::DestroyTriggerBox()
+void AOccupationGameState::DestroyShieldWallObject()
 {
 	UWorld* World = GetWorld();
-	if (!World) return;
+	if (World == nullptr) return;
 
-	// for (TActorIterator<>)
-	
-	// UWorld* World = GetWorld();
-	// if (World)
-	// {
-	// 	TArray<ATriggerBox*> TriggerBoxes;
-	//
-	// 	for (TActorIterator<ATriggerBox> ActorIterator(World); ActorIterator; ++ActorIterator)
-	// 	{
-	// 		ATriggerBox* TriggerBox = *ActorIterator;
-	// 		if (TriggerBox)
-	// 		{
-	// 			TriggerBoxes.Add(TriggerBox);
-	// 		}
-	// 	}
-	//
-	// 	for (ATriggerBox* TriggerBox : TriggerBoxes)
-	// 	{
-	// 		if (TriggerBox)
-	// 		{
-	// 			TriggerBox->Destroy();
-	// 		}
-	// 	}
-	// }
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(World, AShieldWallObject::StaticClass(), FoundActors);
+
+	for (AActor* ShieldActor : FoundActors)
+		ShieldActor->Destroy();
 }
 
 void AOccupationGameState::ShowEndResultWidget()
