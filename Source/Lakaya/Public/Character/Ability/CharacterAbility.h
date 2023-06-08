@@ -173,7 +173,7 @@ protected:
 	float InitialDelay;
 
 	UPROPERTY(EditAnywhere)
-	float AbilityDuration_New;
+	float DelayedAbilityDuration;
 
 	FTimerHandle AbilityStartTimerHandle;
 	FTimerHandle AbilityStopTimerHandle;

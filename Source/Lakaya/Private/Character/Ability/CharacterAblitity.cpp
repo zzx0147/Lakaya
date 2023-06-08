@@ -14,7 +14,7 @@ UCharacterAbility::UCharacterAbility()
 	bUseDelayedAbility = false;
 	OnAbilityStartTimeNotified.AddUObject(this, &UCharacterAbility::OnDelayedAbilityStartTimeChanged);
 	InitialDelay = 0.5f;
-	AbilityDuration_New = 1.0f;
+	DelayedAbilityDuration = 1.0f;
 	bIsDelayedAbilityIsRunning = false;
 }
 
@@ -185,7 +185,7 @@ void UCharacterAbility::OnDelayedAbilityStartTimeChanged(const float& NewDelayed
 	}
 
 	const float Now = GetServerTime();
-	const float AbilityEndTime = NewDelayedAbilityStartTime + AbilityDuration_New;
+	const float AbilityEndTime = NewDelayedAbilityStartTime + DelayedAbilityDuration;
 
 	if (Now > AbilityEndTime) return; //어빌리티가 이미 종료된 시점이라면 아무것도 안함
 
