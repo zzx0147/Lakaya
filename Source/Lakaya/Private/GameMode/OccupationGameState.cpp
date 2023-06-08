@@ -310,27 +310,32 @@ void AOccupationGameState::SetClientTeam(const EPlayerTeam& NewTeam)
 void AOccupationGameState::DestroyTriggerBox()
 {
 	UWorld* World = GetWorld();
-	if (World)
-	{
-		TArray<ATriggerBox*> TriggerBoxes;
+	if (!World) return;
 
-		for (TActorIterator<ATriggerBox> ActorIterator(World); ActorIterator; ++ActorIterator)
-		{
-			ATriggerBox* TriggerBox = *ActorIterator;
-			if (TriggerBox)
-			{
-				TriggerBoxes.Add(TriggerBox);
-			}
-		}
-
-		for (ATriggerBox* TriggerBox : TriggerBoxes)
-		{
-			if (TriggerBox)
-			{
-				TriggerBox->Destroy();
-			}
-		}
-	}
+	// for (TActorIterator<>)
+	
+	// UWorld* World = GetWorld();
+	// if (World)
+	// {
+	// 	TArray<ATriggerBox*> TriggerBoxes;
+	//
+	// 	for (TActorIterator<ATriggerBox> ActorIterator(World); ActorIterator; ++ActorIterator)
+	// 	{
+	// 		ATriggerBox* TriggerBox = *ActorIterator;
+	// 		if (TriggerBox)
+	// 		{
+	// 			TriggerBoxes.Add(TriggerBox);
+	// 		}
+	// 	}
+	//
+	// 	for (ATriggerBox* TriggerBox : TriggerBoxes)
+	// 	{
+	// 		if (TriggerBox)
+	// 		{
+	// 			TriggerBox->Destroy();
+	// 		}
+	// 	}
+	// }
 }
 
 void AOccupationGameState::ShowEndResultWidget()
@@ -583,6 +588,7 @@ void AOccupationGameState::RegisterPlayerByTeam(const EPlayerTeam& Team, ALakaya
 	auto& PlayerStates = PlayersByTeamMap[Team];
 	PlayerStates.Emplace(PlayerState);
 	PlayerState->SetUniqueStencilMask(GetUniqueStencilMaskByTeamAndIndex(Team, PlayerStates.Num()));
+	PlayerState->SetAlly(ClientTeam == Team);
 	if (ClientTeam == Team && CharacterSelectWidget) CharacterSelectWidget->RegisterPlayer(PlayerState);
 }
 

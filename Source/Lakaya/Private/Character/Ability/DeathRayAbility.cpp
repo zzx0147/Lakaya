@@ -68,6 +68,8 @@ void UDeathRayAbility::OnRep_AbilityStartTime()
 
 	if(!LaserEffect.IsValid()) return;
 	
+	OnDeathRayPerformTimeNotified.Broadcast(AbilityStartTime);
+
 	if(AbilityStartTime < 0.0f) LaserEffect->Deactivate();//AbilityStartTime이 음수면 스킬이 Off이므로 Deactivate
 
 	if(AbilityStartTime > GetServerTime())//AbilityStartTime이 현재 시간보다 뒤면 해당 시간까지 기다렸다가 Activate

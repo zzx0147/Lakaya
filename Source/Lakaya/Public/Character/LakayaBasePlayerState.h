@@ -137,6 +137,8 @@ public:
 	// 이 플레이어가 사용할 고유한 스텐실 마스크 값을 설정합니다.
 	virtual void SetUniqueStencilMask(const ERendererStencilMask& StencilMask);
 
+	void SetAlly(const bool& Ally);
+
 protected:
 	// 현재 서버의 시간을 가져옵니다.
 	float GetServerTime() const;
@@ -315,6 +317,9 @@ private:
 	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;
 
 	ERendererStencilMask UniqueRenderMask;
+
+	// 로컬 플레이어와 같은 팀인지 여부를 나타냅니다.
+	bool bIsAlly;
 };
 
 template <class T>

@@ -3,21 +3,26 @@
 
 #include "Character/WaziCharacter.h"
 
+#include "Character/Ability/OverdriveAbility.h"
 #include "Character/Ability/ClairvoyanceAbility.h"
 #include "Character/Ability/CoolTimedSummonAbility.h"
 #include "Character/Ability/ReloadAbility.h"
 #include "Character/Ability/ResultNotifyFireAbility.h"
 
 AWaziCharacter::AWaziCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer.
+	SetDefaultSubobjectClass(AbilityComponentNames[Primary], UOverdriveAbility::StaticClass()).
 	SetDefaultSubobjectClass(AbilityComponentNames[Secondary], UClairvoyanceAbility::StaticClass()).
 	SetDefaultSubobjectClass(AbilityComponentNames[WeaponFire], UResultNotifyFireAbility::StaticClass()).
 	SetDefaultSubobjectClass(AbilityComponentNames[WeaponAbility], UCoolTimedSummonAbility::StaticClass()).
 	SetDefaultSubobjectClass(AbilityComponentNames[WeaponReload], UReloadAbility::StaticClass()))
 {
+	const auto OverdriveAbility = FindAbility<UOverdriveAbility>(Primary);
+	const auto ClairvoyanceAbility = FindAbility<UClairvoyanceAbility>(Secondary);
 	const auto FireAbility = FindAbility<UResultNotifyFireAbility>(WeaponFire);
 	const auto SmokeAbility = FindAbility<UCoolTimedSummonAbility>(WeaponAbility);
 	const auto ReloadAbility = FindAbility<UReloadAbility>(WeaponReload);
 
+	//TODO: 투시 능력의 선딜레이, 후딜레이 시간동안 행동할 수 없도록 해야 합니다.
 	FireAbility->OnWantsToFireChanged.AddUObject(this, &AWaziCharacter::OnWantsToFireChanged);
 	SmokeAbility->OnPerformTimeNotified.AddUObject(this, &AWaziCharacter::OnSmokePerformTimeNotified);
 	ReloadAbility->OnReloadStateChanged.AddUObject(this, &AWaziCharacter::OnReloadStateChanged);

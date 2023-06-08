@@ -10,7 +10,7 @@ UCLASS()
 class LAKAYA_API AWaziCharacter : public AInteractableCharacter
 {
 	GENERATED_BODY()
-	
+
 public:
 	explicit AWaziCharacter(const FObjectInitializer& ObjectInitializer);
 
