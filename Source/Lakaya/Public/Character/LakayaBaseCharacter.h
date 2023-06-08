@@ -30,6 +30,7 @@ public:
 	const static FName ResourceComponentName;
 	const static FName ClairvoyanceMeshComponentName;
 	const static FName DamageImmuneMeshComponentName;
+	const static FName ResurrectionNiagaraName;
 
 	explicit ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
@@ -130,10 +131,6 @@ protected:
 	UPROPERTY(EditAnywhere, meta=(ClampMin = 0.1f, ClampMax = 1.0f))
 	float PlayerRotationInterpolationAlpha;
 
-	// 캐릭터가 부활했을 때 재생할 나이아가라 시스템을 지정합니다.
-	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* ResurrectionNiagaraSystem;
-
 	UPROPERTY(EditAnywhere)
 	class UNiagaraComponent* HitScreenEffect;
 
@@ -166,6 +163,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* DamageImmuneMeshComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	UNiagaraComponent* ResurrectionNiagara;
 
 	UPROPERTY(ReplicatedUsing=OnRep_PlayerRotation, Transient)
 	FPlayerRotationPacket PlayerRotation;
