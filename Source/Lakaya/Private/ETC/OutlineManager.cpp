@@ -9,47 +9,40 @@
 // Sets default values
 AOutlineManager::AOutlineManager()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Box"));
 	SetRootComponent(BoxComponent);
-	OutlinePostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("OutlinePostProcessComponent"));
-	ClairvoyancePostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("ClairvoyancePostProcessComponent"));
-	OutlinePostProcessComponent->bEnabled = true;
-	ClairvoyancePostProcessComponent->bEnabled = false;
+	ClairvoyancePostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(
+		TEXT("ClairvoyancePostProcessComponent"));
+	ClairvoyancePostProcessComponent->bEnabled = true;
+	EnemyRenderingParameterName = FName(TEXT("bIsRenderEnemy"));
 }
 
-// Called when the game starts or when spawned
-void AOutlineManager::BeginPlay()
+void AOutlineManager::PostInitializeComponents()
 {
-	Super::BeginPlay();
+	Super::PostInitializeComponents();
+	ClairvoyanceDynamic = UMaterialInstanceDynamic::Create(ClairvoyanceMaterial, this);
+	if (ClairvoyanceDynamic.IsValid())
+		ClairvoyancePostProcessComponent->AddOrUpdateBlendable(ClairvoyanceDynamic.Get());
 }
 
-void AOutlineManager::SetClairvoyance(const bool& bIsClairvoyance) const
+void AOutlineManager::SetClairvoyance(const bool& bIsClairvoyance)
 {
-	OutlinePostProcessComponent->bEnabled = !bIsClairvoyance;
-	ClairvoyancePostProcessComponent->bEnabled = bIsClairvoyance;
+	if (ClairvoyanceDynamic.IsValid())
+		ClairvoyanceDynamic->SetScalarParameterValue(EnemyRenderingParameterName, bIsClairvoyance ? 1.f : 0.f);
 }
 
 void AOutlineManager::RegisterClairvoyance(const uint32& UniqueId, const EPlayerTeam& PlayerTeam)
 {
-	if(ClientTeam != PlayerTeam) return;
-	if(!ActivatedClairvoyanceSet.Contains(UniqueId))
-	{
-		ActivatedClairvoyanceSet.Emplace(UniqueId);
-		if(!ActivatedClairvoyanceSet.IsEmpty())
-			SetClairvoyance(true);
-	}
+	if (ClientTeam != PlayerTeam || ActivatedClairvoyanceSet.Contains(UniqueId)) return;
+	ActivatedClairvoyanceSet.Emplace(UniqueId);
+	if (!ActivatedClairvoyanceSet.IsEmpty()) SetClairvoyance(true);
 }
 
 void AOutlineManager::UnRegisterClairvoyance(const uint32& UniqueId, const EPlayerTeam& PlayerTeam)
 {
-	if(ClientTeam != PlayerTeam) return;
-	if(ActivatedClairvoyanceSet.Contains(UniqueId))
-	{
-		ActivatedClairvoyanceSet.Remove(UniqueId);
-		if(ActivatedClairvoyanceSet.IsEmpty())
-			SetClairvoyance(false);
-	}
+	if (ClientTeam != PlayerTeam || !ActivatedClairvoyanceSet.Contains(UniqueId)) return;
+	ActivatedClairvoyanceSet.Remove(UniqueId);
+	if (ActivatedClairvoyanceSet.IsEmpty()) SetClairvoyance(false);
 }
-

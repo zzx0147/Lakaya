@@ -24,7 +24,7 @@ ALakayaBaseGameState::ALakayaBaseGameState()
 void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
+
 	DOREPLIFETIME(ALakayaBaseGameState, MatchEndingTime);
 	DOREPLIFETIME(ALakayaBaseGameState, CharacterSelectEndingTime);
 	DOREPLIFETIME(ALakayaBaseGameState, MatchWaitEndingTime);
@@ -33,7 +33,7 @@ void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 void ALakayaBaseGameState::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
 		if (LoadingWidgetClass.Get() != nullptr)
@@ -106,16 +106,16 @@ void ALakayaBaseGameState::BeginPlay()
 			{
 				SkillWidget->AddToViewport();
 				SkillWidget->SetVisibility(ESlateVisibility::Hidden);
-			}				
+			}
 		}
 
-		if(KillLogWidgetClass)
+		if (KillLogWidgetClass)
 		{
 			KillLogWidget = CreateWidget<UGamePlayKillLogWidget>(LocalController, KillLogWidgetClass);
 			if (KillLogWidget.IsValid())
 			{
 				KillLogWidget->AddToViewport();
-				KillLogWidget->SetVisibility(ESlateVisibility::Visible);
+				KillLogWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 			}
 		}
 
@@ -177,34 +177,33 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 			}
 		}
 	}
-	
-	if(CharacterSelectWidget != nullptr)
+
+	if (CharacterSelectWidget != nullptr)
 		CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
-	
+
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 
 	if (InGameTimeWidget.IsValid())
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	
+
 	if (CrosshairWidget != nullptr)
 		CrosshairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 	if (HelpWidget.IsValid())
 		HelpWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	
+
 	if (const auto PlayerController = GetWorld()->GetFirstPlayerController())
 		PlayerController->SetShowMouseCursor(false);
 
 	SetupTimerWidget(MatchWaitToStartTimer, MatchWaitDuration, MatchWaitEndingTime, [this]
 	{
-		
-		SetupTimerWidget(EndingTimer, MatchDuration, MatchEndingTime, [this] {
-		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->EndMatch();
+		SetupTimerWidget(EndingTimer, MatchDuration, MatchEndingTime, [this]
+		{
+			if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->EndMatch();
 		}, InGameTimeWidget);
-		
 	}, InGameTimeWidget);
-	
+
 	if (HasAuthority())
 	{
 		GetWorldTimerManager().SetTimer(EndingTimer, [this]
@@ -228,14 +227,15 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 
 	if (LoadingWidget) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
 	if (CharacterSelectWidget) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
-	
+
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]() {
+	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]()
+	{
 		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->StartMatch();
 	}, CharacterSelectTimeWidget);
-	
+
 	//if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	//	CreateCharacterSelectWidget(LocalController);//위젯이 아직 없으면 생성함
 }
@@ -255,28 +255,37 @@ void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
 		ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
 }
 
-void ALakayaBaseGameState::CreateCharacterSelectWidget(APlayerController* LocalController)
+void ALakayaBaseGameState::UpdateCharacterSelectWidget(APlayerController* LocalController)
 {
-	//로컬 컨트롤러와 PlayerState는 존재함이 보장됨, 서버의 경우 BeginPlay애서 클라이언트의 경우 OnRep_PlayerState에서 호출해줌
-	if (CharacterSelectWidget != nullptr) return;
+	//로컬 컨트롤러는 존재함이 보장됨, 서버의 경우 BeginPlay애서 클라이언트의 경우 OnRep_PlayerState에서 호출해줌
 
-	//TODO: 중첩 분기문 들여쓰기를 줄입시다. 바로 위의 if문에 합칠 수 있을 것 같아요.
-	if (CharacterSelectWidgetClass.Get() != nullptr)
+	// 위젯 클래스가 없는 경우 아무것도 하지 않습니다.
+	if (CharacterSelectWidgetClass.Get() == nullptr) return;
+
+	// 캐릭터 위젯이 존재하지 않는 경우 생성합니다. 생성되지 않는 경우 리턴합니다.
+	if (!CharacterSelectWidget)
 	{
-		CharacterSelectWidget = CreateWidget<UGameLobbyCharacterSelectWidget>(LocalController, CharacterSelectWidgetClass);
-		if (CharacterSelectWidget != nullptr)
-		{
-			CharacterSelectWidget->AddToViewport();
-			CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
+		CharacterSelectWidget = CreateWidget<UGameLobbyCharacterSelectWidget>(
+			LocalController, CharacterSelectWidgetClass);
+		if (CharacterSelectWidget == nullptr) return;
+		CharacterSelectWidget->AddToViewport();
+		CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
+	}
 
-			if (const auto BasePlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
-			{
-				CharacterSelectWidget->OnChangeSelectedCharacter.AddUObject(BasePlayerState, &ALakayaBasePlayerState::RequestCharacterChange);
-				CharacterSelectWidget->OnChangeSelectedCharacter.AddLambda([this](const FName& Name) {
-					if (MatchState == MatchState::InProgress) SetCharacterSelectWidgetVisibility(ESlateVisibility::Hidden);
-					});
-			}
-		}
+	// 캐릭터 선택창에 대한 이벤트 바인딩을 진행합니다.
+	if (const auto BasePlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
+	{
+		CharacterSelectWidget->OnChangeSelectedCharacter.AddUObject(
+			BasePlayerState, &ALakayaBasePlayerState::RequestCharacterChange);
+		CharacterSelectWidget->OnChangeSelectedCharacter.AddLambda([this](const FName& Name)
+		{
+			if (MatchState == MatchState::InProgress)
+				SetCharacterSelectWidgetVisibility(ESlateVisibility::Hidden);
+		});
+
+		CharacterSelectWidget->SetLocalPlayerName(BasePlayerState->GetPlayerName());
+		BasePlayerState->OnPlayerNameChanged.AddUObject(CharacterSelectWidget,
+		                                                &UGameLobbyCharacterSelectWidget::SetLocalPlayerName);
 	}
 }
 
@@ -287,14 +296,14 @@ void ALakayaBaseGameState::SetCharacterSelectWidgetVisibility(const ESlateVisibi
 		CharacterSelectWidget->SetVisibility(IsVisible);
 		if (const auto PlayerController = GetWorld()->GetFirstPlayerController<APlayerController>())
 		{
-			PlayerController->SetShowMouseCursor(IsVisible == ESlateVisibility::Visible);
+			PlayerController->SetShowMouseCursor(IsVisible == ESlateVisibility::SelfHitTestInvisible);
 		}
 	}
 }
 
-void ALakayaBaseGameState::OnLocalPlayerControllerCreated(APlayerController* LocalPlayerController)
+void ALakayaBaseGameState::OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController)
 {
-	CreateCharacterSelectWidget(LocalPlayerController);
+	UpdateCharacterSelectWidget(LocalPlayerController);
 }
 
 //TODO: 다른 클래스에서 픽창 위젯의 비저빌리티를 체크하는 건 이상합니다.
@@ -306,14 +315,15 @@ ESlateVisibility ALakayaBaseGameState::GetCharacterSelectWidgetVisibility() cons
 	return ESlateVisibility::Hidden;
 }
 
-void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimController, APlayerState* InstigatorController, AActor* DamageCauser)
+void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimController,
+                                                             APlayerState* InstigatorController, AActor* DamageCauser)
 {
 	OnPlayerKillNotified.Broadcast(VictimController, InstigatorController, DamageCauser);
 	if (KillLogWidget.IsValid())
 	{
-		KillLogWidget->OnKillCharacterNotify(VictimController,InstigatorController,DamageCauser);
+		KillLogWidget->OnKillCharacterNotify(VictimController, InstigatorController, DamageCauser);
 	}
-	
+
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OnPlayerKillNotified.Broadcast"));
 }
 
@@ -334,19 +344,21 @@ void ALakayaBaseGameState::OnRep_MatchWaitEndingTime()
 
 bool ALakayaBaseGameState::SpawnOutlineManager()
 {
-	if(OutlineManager.IsValid())
+	if (OutlineManager.IsValid())
 		return true;
-	
-	if(OutlineManagerClass)
+
+	if (OutlineManagerClass)
 	{
 		OutlineManager = GetWorld()->SpawnActor<AOutlineManager>(OutlineManagerClass);
-		if(OutlineManager.IsValid())
+		if (OutlineManager.IsValid())
 			return true;
 	}
 	return false;
 }
 
-void ALakayaBaseGameState::SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime, std::function<void(void)> Callback, TWeakObjectPtr<UGameTimeWidget> TimeWidget)
+void ALakayaBaseGameState::SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,
+                                            std::function<void(void)> Callback,
+                                            TWeakObjectPtr<UGameTimeWidget> TimeWidget)
 {
 	if (HasAuthority())
 	{

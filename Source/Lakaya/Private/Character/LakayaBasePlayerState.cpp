@@ -86,7 +86,7 @@ void ALakayaBasePlayerState::BeginPlay()
 		{
 			HealthWidget->AddToViewport();
 			HealthWidget->SetVisibility(ESlateVisibility::Hidden);
-			
+
 			OnHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetCurrentHealth);
 			OnMaxHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetMaximumHealth);
 
@@ -156,7 +156,7 @@ const uint16& ALakayaBasePlayerState::IncreaseScoreCount(const uint16& NewScore)
 {
 	TotalScore += NewScore;
 	OnRep_TotalScore();
-	return TotalScore;	
+	return TotalScore;
 }
 
 const uint16& ALakayaBasePlayerState::AddTotalScoreCount(const uint16& NewScore)
@@ -213,7 +213,7 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 		if (GetWorldTimerManager().IsTimerActive(CurrentCaptureTimer))
 			GetWorldTimerManager().ClearTimer(CurrentCaptureTimer);
 	}
-		
+
 	if (CurrentCaptureCount == 1)
 	{
 		FTimerDelegate TimerDelegate;
@@ -231,7 +231,7 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 void ALakayaBasePlayerState::SetUniqueStencilMask(const ERendererStencilMask& StencilMask)
 {
 	UniqueRenderMask = StencilMask;
-	if (const auto Character = GetPawn<ACharacter>()) SetUniqueStencilMaskToMesh(Character->GetMesh());
+	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->SetStencilMask(UniqueRenderMask);
 }
 
 float ALakayaBasePlayerState::GetServerTime() const
@@ -272,16 +272,16 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		if (HealthWidget.IsValid())
 		{
 			HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			
+
 			if (GetCharacterName().ToString() == "Rena")
 				HealthWidget->UserInfoCharImageRena->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 			if (GetCharacterName().ToString() == "Wazi")
 				HealthWidget->UserInfoCharImageWazi->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
-		
+
 		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);
-		SetUniqueStencilMaskToMesh(Character->GetMesh());
+		Character->SetStencilMask(UniqueRenderMask);
 	}
 	else
 	{
@@ -378,13 +378,6 @@ void ALakayaBasePlayerState::SetAliveState(const bool& AliveState)
 	OnAliveStateChanged.Broadcast(AliveState);
 }
 
-void ALakayaBasePlayerState::SetUniqueStencilMaskToMesh(UMeshComponent* MeshComponent)
-{
-	if (!MeshComponent) return;
-	MeshComponent->SetCustomDepthStencilValue(255);
-	MeshComponent->SetCustomDepthStencilWriteMask(UniqueRenderMask);
-}
-
 void ALakayaBasePlayerState::RequestCharacterChange_Implementation(const FName& Name)
 {
 	if (!ShouldChangeCharacterName(Name)) return;
@@ -402,8 +395,8 @@ void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserN
                                                             const float& Damage)
 {
 	const auto PlayerController = GetPlayerController();
-	if(!PlayerController) return;
-	
+	if (!PlayerController) return;
+
 	if (PlayerController->IsLocalPlayerController())
 	{
 		//TODO: 위젯 nullptr 체크 필요, 매개변수 하드코딩 수정 필요
