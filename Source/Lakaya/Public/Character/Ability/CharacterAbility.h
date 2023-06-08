@@ -26,6 +26,7 @@ struct FResourceCostData
 };
 
 DECLARE_EVENT_OneParam(UCharacterAbility, FEnableTimeSignature, const float&)
+
 DECLARE_EVENT_OneParam(UCharacterAbility, FAbiltiyStartTimeNotifiedSignature, const float&)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -125,7 +126,7 @@ protected:
 
 	UFUNCTION()
 	virtual void OnRep_EnableTime();
-	
+
 	UFUNCTION()
 	void OnRep_DelayedAbilityStartTime();
 
@@ -138,6 +139,7 @@ protected:
 	// EnableTime과 비교하여 스킬사용이 가능한 시간인지 체크합니다.
 	bool IsEnableTime(const float& Time) const { return EnableTime <= Time; }
 
+	bool IsDelayedAbilityRunning() const { return bIsDelayedAbilityIsRunning; }
 	// bUseDelayedStart = true일때만 호출됩니다. OnAbilityStartTimeNotified 이벤트에 등록되어 호출됩니다.
 	virtual void OnDelayedAbilityStartTimeChanged(const float& NewDelayedAbilityStartTime);
 
@@ -152,6 +154,7 @@ public:
 
 	// bUseDelayedStart = true일때만 호출됩니다. 스킬이 시작되는 시작이 변경되었을 때 호출됩니다.
 	FAbiltiyStartTimeNotifiedSignature OnAbilityStartTimeNotified;
+
 protected:
 	// true로 설정하면 ShouldStartRemoteCall()이 호출되며, 이 함수가 true를 반환할 때 서버에서 RemoteAbilityStart()가 호출됩니다.
 	UPROPERTY(EditAnywhere)
@@ -174,7 +177,7 @@ protected:
 
 	FTimerHandle AbilityStartTimerHandle;
 	FTimerHandle AbilityStopTimerHandle;
-	
+
 	// 아무런 효과가 없을 때 적용될 스킬의 기본 쿨타임입니다.
 	UPROPERTY(EditAnywhere)
 	float BaseCoolTime;
@@ -191,4 +194,7 @@ private:
 	TWeakObjectPtr<class UResourceComponent> ResourceComponent;
 	bool bRecentAliveState;
 	EPlayerTeam RecentTeam;
+
+	//DelayedAbilityStart가 호출되면 true DelayedAbilityStop이 호출되면 false, 능력이 실제로 돌아가는 중에 true
+	bool bIsDelayedAbilityIsRunning;
 };

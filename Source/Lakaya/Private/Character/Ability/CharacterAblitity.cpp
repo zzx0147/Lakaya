@@ -15,6 +15,7 @@ UCharacterAbility::UCharacterAbility()
 	OnAbilityStartTimeNotified.AddUObject(this, &UCharacterAbility::OnDelayedAbilityStartTimeChanged);
 	InitialDelay = 0.5f;
 	AbilityDuration_New = 1.0f;
+	bIsDelayedAbilityIsRunning = false;
 }
 
 void UCharacterAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -176,6 +177,13 @@ void UCharacterAbility::ApplyCoolTime()
 
 void UCharacterAbility::OnDelayedAbilityStartTimeChanged(const float& NewDelayedAbilityStartTime)
 {
+	if(NewDelayedAbilityStartTime < 0)//값이 음수라면 능력 강제 종료 신호
+	{
+		if(IsDelayedAbilityRunning()) StopDelayedAbility();
+		GetWorld()->GetTimerManager().ClearTimer(AbilityStartTimerHandle);
+		GetWorld()->GetTimerManager().ClearTimer(AbilityStopTimerHandle);
+	}
+
 	const float Now = GetServerTime();
 	const float AbilityEndTime = NewDelayedAbilityStartTime + AbilityDuration_New;
 
@@ -196,8 +204,10 @@ void UCharacterAbility::OnDelayedAbilityStartTimeChanged(const float& NewDelayed
 
 void UCharacterAbility::StartDelayedAbility()
 {
+	bIsDelayedAbilityIsRunning = true;
 }
 
 void UCharacterAbility::StopDelayedAbility()
 {
+	bIsDelayedAbilityIsRunning = false;
 }
