@@ -162,7 +162,6 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 		GetMesh()->SetOverlayMaterial(CharacterOverlayMaterial.Get());
 	}
 
-	// CharacterOverlayMaterial->SetScalarParameterValue(TEXT("bIsAlly"), IsAlly ? 1.0 : 0.0);
 	CharacterOverlayMaterial->SetVectorParameterValue(TEXT("Color"), IsAlly ? FLinearColor::Blue : FLinearColor::Red);
 }
 
