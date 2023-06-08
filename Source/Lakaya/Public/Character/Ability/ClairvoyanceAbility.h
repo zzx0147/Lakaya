@@ -13,42 +13,24 @@ class LAKAYA_API UClairvoyanceAbility : public UCharacterAbility
 
 public:
 	UClairvoyanceAbility();
-	
-protected:
-	UFUNCTION()
-	void OnRep_AbilityStartTime();
-
-public:
-	virtual void RemoteAbilityStart(const float& RequestTime) override;
-	virtual void OnAliveStateChanged(const bool& AliveState) override;
-	virtual void InitializeComponent() override;
-	virtual void LocalAbilityStart() override;
 
 	FClairvoyanceSignature OnClairvoyanceChanged;
 
 protected:
-	TObjectPtr<class AOutlineManager> GetOutlineManager();
-	virtual bool ShouldStartRemoteCall() override;
+
 	virtual void SetClairvoyanceState(const bool& NewState);
 
-private:
-	void AbilityStart();
-	void AbilityEnd();
+public:
+	virtual void OnAliveStateChanged(const bool& AliveState) override;
 
 protected:
-	UPROPERTY(ReplicatedUsing=OnRep_AbilityStartTime, Transient)
-	float AbilityStartTime;
+	TObjectPtr<class AOutlineManager> GetOutlineManager();
+	virtual bool ShouldStartRemoteCall() override;
+	virtual void StartDelayedAbility() override;
+	virtual void StopDelayedAbility() override;
+	virtual void OnDelayedAbilityStartTimeChanged(const float& NewDelayedAbilityStartTime) override;
 
-	UPROPERTY(EditAnywhere)
-	float AbilityDuration;
-
-	UPROPERTY(EditAnywhere)
-	float AbilityDelay;
-	
 	TWeakObjectPtr<AOutlineManager> OutlineManager;
-
 	bool bIsClairvoyanceOn;
-private:
-	FTimerHandle AbilityStartHandle;
-	FTimerHandle AbilityEndHandle;
+
 };

@@ -182,6 +182,7 @@ void UCharacterAbility::OnDelayedAbilityStartTimeChanged(const float& NewDelayed
 		if(IsDelayedAbilityRunning()) StopDelayedAbility();
 		GetWorld()->GetTimerManager().ClearTimer(AbilityStartTimerHandle);
 		GetWorld()->GetTimerManager().ClearTimer(AbilityStopTimerHandle);
+		return;
 	}
 
 	const float Now = GetServerTime();
@@ -210,4 +211,6 @@ void UCharacterAbility::StartDelayedAbility()
 void UCharacterAbility::StopDelayedAbility()
 {
 	bIsDelayedAbilityIsRunning = false;
+	GetWorld()->GetTimerManager().ClearTimer(AbilityStopTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(AbilityStartTimerHandle);
 }

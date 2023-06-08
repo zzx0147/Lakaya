@@ -22,7 +22,7 @@ void UOverdriveAbility::SetEffectMaterial(UMaterialInstanceDynamic* NewEffectMat
 void UOverdriveAbility::OnDelayedAbilityStartTimeChanged(const float& NewDelayedAbilityStartTime)
 {
 	Super::OnDelayedAbilityStartTimeChanged(NewDelayedAbilityStartTime);
-
+	if(NewDelayedAbilityStartTime < 0) return;
 	SetOverdriveState(true);
 }
 
@@ -40,7 +40,6 @@ void UOverdriveAbility::StopDelayedAbility()
 {
 	Super::StopDelayedAbility();
 	if (EffectMaterial.IsValid()) EffectMaterial->SetScalarParameterValue("EffectOpacity", 0.0f);
-
 	ApplyCoolTime();
 }
 
@@ -54,7 +53,7 @@ void UOverdriveAbility::SetOverdriveState(const bool& NewState)
 void UOverdriveAbility::OnAliveStateChanged(const bool& AliveState)
 {
 	Super::OnAliveStateChanged(AliveState);
-	StopDelayedAbility();
+	if(!AliveState) StopDelayedAbility();
 }
 
 bool UOverdriveAbility::ShouldStartRemoteCall()
