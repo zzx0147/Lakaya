@@ -11,6 +11,7 @@ UOverdriveAbility::UOverdriveAbility()
 {
 	bUseDelayedAbility = true;
 	bCanEverStartRemoteCall = true;
+	bIsOverdriveOn = false;
 }
 
 void UOverdriveAbility::SetEffectMaterial(UMaterialInstanceDynamic* NewEffectMaterial)
@@ -21,12 +22,17 @@ void UOverdriveAbility::SetEffectMaterial(UMaterialInstanceDynamic* NewEffectMat
 void UOverdriveAbility::OnDelayedAbilityStartTimeChanged(const float& NewDelayedAbilityStartTime)
 {
 	Super::OnDelayedAbilityStartTimeChanged(NewDelayedAbilityStartTime);
+
+	SetOverdriveState(true);
 }
 
 void UOverdriveAbility::StartDelayedAbility()
 {
 	Super::StartDelayedAbility();
 	if (EffectMaterial.IsValid()) EffectMaterial->SetScalarParameterValue("EffectOpacity", 0.2f);
+
+	SetOverdriveState(false);
+
 	ApplyBuff();
 }
 
@@ -36,6 +42,13 @@ void UOverdriveAbility::StopDelayedAbility()
 	if (EffectMaterial.IsValid()) EffectMaterial->SetScalarParameterValue("EffectOpacity", 0.0f);
 
 	ApplyCoolTime();
+}
+
+void UOverdriveAbility::SetOverdriveState(const bool& NewState)
+{
+	if (NewState == bIsOverdriveOn) return;
+	bIsOverdriveOn = NewState;
+	OnOverdriveChanged.Broadcast(bIsOverdriveOn);
 }
 
 void UOverdriveAbility::OnAliveStateChanged(const bool& AliveState)
