@@ -29,6 +29,7 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	ATeamObjectType = ECC_GameTraceChannel5;
 	BTeamObjectType = ECC_GameTraceChannel6;
 	bIsAlive = true;
+	bEnableLocalOutline = true;
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(SpringArmComponentName);
 	SpringArm->SetupAttachment(RootComponent);
@@ -164,6 +165,13 @@ void ALakayaBaseCharacter::SetStencilMask_Implementation(const ERendererStencilM
 
 void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 {
+	// 로컬 캐릭터에 대한 아웃라인이 비활성화되어있다면 아무것도 하지 않습니다.
+	if (!bEnableLocalOutline && IsLocallyControlled())
+	{
+		GetMesh()->SetOverlayMaterial(nullptr);
+		return;
+	}
+
 	if (!CharacterOverlayMaterial.IsValid())
 	{
 		CharacterOverlayMaterial = UMaterialInstanceDynamic::Create(GetMesh()->GetOverlayMaterial(), this);

@@ -147,6 +147,10 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float ResurrectionDamageImmuneTime;
 
+	// 로컬 캐릭터에 대한 아웃라인을 활성화할지 여부를 선택합니다.
+	UPROPERTY(EditAnywhere)
+	bool bEnableLocalOutline;
+
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	class UResourceComponent* ResourceComponent;
