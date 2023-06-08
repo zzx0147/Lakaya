@@ -6,6 +6,8 @@
 #include "Character/Ability/AutoFireAbility.h"
 #include "DeathRayAbility.generated.h"
 
+DECLARE_EVENT_OneParam(UDeathRayAbility, FDeathRayPerformTimeSignature, const float&)
+
 UCLASS()
 class LAKAYA_API UDeathRayAbility : public UAutoFireAbility
 {
@@ -25,6 +27,8 @@ protected:
 
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	FDeathRayPerformTimeSignature OnDeathRayPerformTimeNotified;
 
 protected:
 	virtual void OnRep_AbilityStartTime() override;

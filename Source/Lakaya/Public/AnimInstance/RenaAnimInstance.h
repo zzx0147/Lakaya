@@ -30,6 +30,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	bool bIsSecondarySkill;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	bool bIsSecondarySkillAnimLoopCheck;
+
 	// 무기 능력 어빌리티의 선딜레이 애니메이션 시간을 지정합니다.
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	float WeaponAbilityPerformDelayAnimDuration;
@@ -50,7 +53,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	float SecondaryAbilityPerformDelayAnimDuration;
 
-	// 선딜레이 이후 E 어빌리티의 애니메이션 시간을 지정합니다.
+	// 선딜레이 이후 E 어빌리티의 루프 애니메이션 시간을 지정합니다.
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	float SecondaryAbilityLoopAnimDuration;
+
+	// 루프 이후 E 어빌리티의 종료 애니메이션 시간을 지정합니다.
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	float SecondaryAbilityLateAnimDuration;
 
