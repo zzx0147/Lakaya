@@ -8,7 +8,8 @@
 UCoolTimedSummonAbility::UCoolTimedSummonAbility()
 {
 	bWantsInitializeComponent = true;
-	bCanEverStartRemoteCall = true;
+	bCanEverStartRemoteCall = bUpdateStartTimeOnStart = true;
+	AbilityStartDelay = 0.2f;
 	ObjectPoolSize = 1;
 	BaseCoolTime = 5.f;
 	SummonDistance = 50.f;
