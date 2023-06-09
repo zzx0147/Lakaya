@@ -3,7 +3,6 @@
 #include "EngineUtils.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
-#include "Engine/TriggerBox.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameMode.h"
@@ -311,8 +310,12 @@ void AOccupationGameState::SetClientTeam(const EPlayerTeam& NewTeam)
 void AOccupationGameState::DestroyShieldWallObject()
 {
 	UWorld* World = GetWorld();
-	if (World == nullptr) return;
-
+	if (World == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("World is null."));
+		return;
+	}
+	
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(World, AShieldWallObject::StaticClass(), FoundActors);
 
@@ -426,7 +429,7 @@ void AOccupationGameState::GradeResultTeamInfo(TArray<TObjectPtr<ALakayaBasePlay
 		*FString::Printf(TEXT("%s_%s_RankBoard_Image"), *RankLetter, *TeamLetter))->SetVisibility(
 		ESlateVisibility::SelfHitTestInvisible);
 
-	FString FormattedName = FString::Printf(TEXT("%s"), *PlayerArray[NewIndex]->GetName());
+	FString FormattedName = FString::Printf(TEXT("%s"), *PlayerArray[NewIndex]->GetPlayerName());
 	UTextBlock* NameText = Cast<UTextBlock>(
 		GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_Name_Text"), *RankLetter)));
 	NameText->SetText(FText::FromString(FormattedName));
@@ -532,7 +535,7 @@ void AOccupationGameState::BindDetailResultWidget()
 		}
 
 		FString FormattedName;
-		FormattedName = FString::Printf(TEXT("%s"), *PlayerState->GetName());
+		FormattedName = FString::Printf(TEXT("%s"), *PlayerState->GetPlayerName());
 		DetailResultWidget->UserBoxNameText->SetText(FText::FromString(FormattedName));
 
 		DetailResultWidget->InfoBoxScoreText->SetText(
