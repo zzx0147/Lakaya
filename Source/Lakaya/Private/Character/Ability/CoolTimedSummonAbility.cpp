@@ -99,7 +99,9 @@ void UCoolTimedSummonAbility::NotifyAbilityInstanceStateChanged(const EAbilityIn
 	case EAbilityInstanceState::Ready:
 		OnPerformTimeNotified.Broadcast(AbilityInstance->GetAbilityTime());
 		break;
-	case EAbilityInstanceState::Perform: break;
+	case EAbilityInstanceState::Perform:
+		OnPerformTimeNotified.Broadcast(AbilityInstance->GetAbilityTime());
+		break;
 	case EAbilityInstanceState::ReadyForAction: break;
 	case EAbilityInstanceState::Action: break;
 	case EAbilityInstanceState::Ending: break;

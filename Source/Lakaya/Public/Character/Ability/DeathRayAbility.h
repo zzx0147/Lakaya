@@ -18,30 +18,18 @@ public:
 public:
 	virtual void InitializeComponent() override;
 	virtual void LocalAbilityStart() override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
 	virtual bool ShouldStartRemoteCall() override;
-	virtual void RemoteAbilityStart(const float& RequestTime) override;
-	virtual void RemoteAbilityStop(const float& RequestTime) override;
-	
+	virtual void OnDelayedAbilityStartTimeChanged(const float& NewDelayedAbilityStartTime) override;
+	virtual void StartDelayedAbility() override;
+	virtual void StopDelayedAbility() override;
 
 public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
 	FDeathRayPerformTimeSignature OnDeathRayPerformTimeNotified;
-
-protected:
-	virtual void OnRep_AbilityStartTime() override;
-
+	
 private:
-
-	
 	TWeakObjectPtr<class UNiagaraComponent> LaserEffect;
-	
-	UPROPERTY(EditAnywhere)
-	float AbilityDuration;
-
-	FTimerHandle AbilityTimer;
-
 	TWeakObjectPtr<class UArrowComponent> MuzzleComponent;
 };

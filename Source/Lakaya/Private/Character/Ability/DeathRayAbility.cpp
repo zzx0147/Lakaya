@@ -8,24 +8,10 @@
 
 UDeathRayAbility::UDeathRayAbility()
 {
-	AbilityDuration = 8.0f;
+	DelayedAbilityDuration = 8.0f;
+	
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;
-}
-
-void UDeathRayAbility::RemoteAbilityStart(const float& RequestTime)
-{
-	Super::RemoteAbilityStart(RequestTime);
-
-
-	float RemainDelay = AbilityStartTime - GetServerTime();
-	if (RemainDelay < 0.0f) RemainDelay = 0.0f;
-	
-	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("DeathRayRemoteStart"));
-	GetWorld()->GetTimerManager().SetTimer(AbilityTimer, [this]
-	{
-		RemoteAbilityStop(GetServerTime());
-	}, RemainDelay + AbilityDuration, false);
 }
 
 void UDeathRayAbility::LocalAbilityStart()
@@ -37,13 +23,8 @@ void UDeathRayAbility::LocalAbilityStart()
 bool UDeathRayAbility::ShouldStartRemoteCall()
 {
 	if(IsFiring()) return false;
+	if(IsDelayedAbilityRunning()) return false;
 	return IsEnableTime(GetServerTime() + 0.1f);
-}
-
-void UDeathRayAbility::RemoteAbilityStop(const float& RequestTime)
-{
-	Super::RemoteAbilityStop(RequestTime);
-	if (GetOwner()->HasAuthority()) ApplyCoolTime();
 }
 
 void UDeathRayAbility::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -52,36 +33,36 @@ void UDeathRayAbility::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	
 	if(!IsActive()) return;
 
-	FVector EndPoint = GetCameraForwardTracePoint(5000.0f, CollisionQueryParams);
+	const FVector EndPoint = GetCameraForwardTracePoint(5000.0f, CollisionQueryParams);
 
 	if (LaserEffect.IsValid() && MuzzleComponent.IsValid())
 	{
 		//if(GetOwner()->HasAuthority()) GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, *FString::Printf(TEXT("%f"),AbilityStartTime));
-		FVector result = MuzzleComponent->GetComponentTransform().InverseTransformPosition(EndPoint);
-		LaserEffect->SetNiagaraVariableVec3(TEXT("BeamEnd"), result);
+		const FVector Result = MuzzleComponent->GetComponentTransform().InverseTransformPosition(EndPoint);
+		LaserEffect->SetNiagaraVariableVec3(TEXT("BeamEnd"), Result);
 	}
 }
 
-void UDeathRayAbility::OnRep_AbilityStartTime()
+void UDeathRayAbility::OnDelayedAbilityStartTimeChanged(const float& NewDelayedAbilityStartTime)
 {
-	Super::OnRep_AbilityStartTime();
-
+	Super::OnDelayedAbilityStartTimeChanged(NewDelayedAbilityStartTime);
 	if(!LaserEffect.IsValid()) return;
 	
-	OnDeathRayPerformTimeNotified.Broadcast(AbilityStartTime);
+	OnDeathRayPerformTimeNotified.Broadcast(NewDelayedAbilityStartTime);
 
-	if(AbilityStartTime < 0.0f) LaserEffect->Deactivate();//AbilityStartTime이 음수면 스킬이 Off이므로 Deactivate
+	if(NewDelayedAbilityStartTime < 0.0f) LaserEffect->Deactivate();//AbilityStartTime이 음수면 스킬이 Off이므로 Deactivate
+}
 
-	if(AbilityStartTime > GetServerTime())//AbilityStartTime이 현재 시간보다 뒤면 해당 시간까지 기다렸다가 Activate
-	{
-		FTimerHandle timer;
-		GetWorld()->GetTimerManager().SetTimer(timer,[this]{LaserEffect->Activate();},AbilityStartTime - GetServerTime(),false);
-		return;
-	}
+void UDeathRayAbility::StartDelayedAbility()
+{
+	Super::StartDelayedAbility();
+	if(LaserEffect.IsValid()) LaserEffect->Activate();
+}
 
-	if (AbilityStartTime + AbilityDuration < GetServerTime()) return; //만약 AbilityStartTime + AbilityDuration보다 현재 시간이 더 크다면 능력이 이미 끝난것이므로 return
-	
-	LaserEffect->Activate();//AbilityStartTime이 이미 지났다면 바로 시작
+void UDeathRayAbility::StopDelayedAbility()
+{
+	Super::StopDelayedAbility();
+	if(LaserEffect.IsValid()) LaserEffect->Deactivate();
 }
 
 void UDeathRayAbility::InitializeComponent()
