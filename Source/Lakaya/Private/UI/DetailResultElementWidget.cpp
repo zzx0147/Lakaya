@@ -160,7 +160,7 @@ void UDetailResultElementWidget::SetElementWidget(const ALakayaBasePlayerState* 
 		Panels[Index]->SetVisibility(VisibilityType);
 		Portrait_Rena_Images[Index]->SetVisibility(bIsRena ? VisibilityType : ESlateVisibility::Collapsed);
 		Portrait_Wazi_Images[Index]->SetVisibility(bIsWazi ? VisibilityType : ESlateVisibility::Collapsed);
-		SetPlayerName(PlayerName_Texts[Index].Get(), *NewPlayerState->GetName());
+		SetPlayerName(PlayerName_Texts[Index].Get(), *NewPlayerState->GetPlayerName());
 		SetTotalScore(Score_Texts[Index].Get(), NewPlayerState->GetTotalScore());
 		SetSuccessCaptureCount(Occupation_Texts[Index].Get(), NewPlayerState->GetSuccessCaptureCount());
 		SetKillCount(Kill_Texts[Index].Get(), NewPlayerState->GetKillCount());
