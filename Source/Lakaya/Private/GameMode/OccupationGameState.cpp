@@ -310,8 +310,12 @@ void AOccupationGameState::SetClientTeam(const EPlayerTeam& NewTeam)
 void AOccupationGameState::DestroyShieldWallObject()
 {
 	UWorld* World = GetWorld();
-	if (World == nullptr) return;
-
+	if (World == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("World is null."));
+		return;
+	}
+	
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(World, AShieldWallObject::StaticClass(), FoundActors);
 
