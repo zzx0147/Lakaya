@@ -3,8 +3,6 @@
 
 #include "Character/LakayaBaseCharacter.h"
 
-#include <codecapi.h>
-
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
@@ -74,6 +72,10 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	ResurrectionNiagara->SetAutoActivate(false);
 	ResurrectionNiagara->SetAutoDestroy(false);
 	ResurrectionNiagara->SetAsset(ResurrectionFinder.Object);
+
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> DissolveCurveFinder(TEXT("/Game/Blueprints/Curve/CV_Float_DissolveCurve.CV_Float_DissolveCurve"));
+
+	if(DissolveCurveFinder.Succeeded()) DissolveCurve = DissolveCurveFinder.Object;
 
 }
 
@@ -270,12 +272,16 @@ void ALakayaBaseCharacter::StartDissolveEffect()
 
 		DissolveTimeline.PlayFromStart();
 	}
+	
+	if(CharacterOverlayMaterial.IsValid()) CharacterOverlayMaterial->SetScalarParameterValue(TEXT("Opacity") , 0.0f);
 }
 
 void ALakayaBaseCharacter::RemoveDissolveEffect()
 {
 	for(const auto TargetMaterial : DissolveTarget)
 		TargetMaterial->SetScalarParameterValue(TEXT("Dissolve"),2.0f);
+
+	if(CharacterOverlayMaterial.IsValid()) CharacterOverlayMaterial->SetScalarParameterValue(TEXT("Opacity") , 1.0f);
 }
 
 void ALakayaBaseCharacter::DissolveTick(const float& Value)
