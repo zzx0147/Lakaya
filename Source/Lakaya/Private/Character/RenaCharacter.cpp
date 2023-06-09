@@ -28,10 +28,10 @@ ARenaCharacter::ARenaCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	const auto BombAbility = FindAbility<UCoolTimedSummonAbility>(WeaponAbility);
 	const auto ReloadAbility = FindAbility<UReloadAbility>(WeaponReload);
 
-	MineAbility->OnPerformTimeNotified.AddUObject(this, &ARenaCharacter::OnMinePerformTimeNotified);
+	MineAbility->OnAbilityStartTimeNotified.AddUObject(this, &ARenaCharacter::OnMinePerformTimeNotified);
 	RayAbility->OnAbilityStartTimeNotified.AddUObject(this, &ARenaCharacter::OnDeathRayStartTimeNotified);
 	FireAbility->OnWantsToFireChanged.AddUObject(this, &ARenaCharacter::OnWantsToFireChanged);
-	BombAbility->OnPerformTimeNotified.AddUObject(this, &ARenaCharacter::OnBombPerformTimeNotified);
+	BombAbility->OnAbilityStartTimeNotified.AddUObject(this, &ARenaCharacter::OnBombPerformTimeNotified);
 	ReloadAbility->OnReloadStateChanged.AddUObject(this, &ARenaCharacter::OnReloadStateChanged);
 	ReloadAbility->OnReloadCompleteTimeNotified.AddUObject(this, &ARenaCharacter::OnReloadCompleteTimeNotified);
 }

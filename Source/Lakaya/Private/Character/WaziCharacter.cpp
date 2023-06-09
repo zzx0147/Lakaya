@@ -29,7 +29,7 @@ AWaziCharacter::AWaziCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	OverdriveAbility->OnAbilityStartTimeNotified.AddUObject(this, &AWaziCharacter::OnOverdriveStartTimeNotified);
 	ClairvoyanceAbility->OnAbilityStartTimeNotified.AddUObject(this, &AWaziCharacter::OnClairvoyanceStartTimeNotified);
 	FireAbility->OnWantsToFireChanged.AddUObject(this, &AWaziCharacter::OnWantsToFireChanged);
-	SmokeAbility->OnPerformTimeNotified.AddUObject(this, &AWaziCharacter::OnSmokePerformTimeNotified);
+	SmokeAbility->OnAbilityStartTimeNotified.AddUObject(this, &AWaziCharacter::OnSmokePerformTimeNotified);
 	ReloadAbility->OnReloadStateChanged.AddUObject(this, &AWaziCharacter::OnReloadStateChanged);
 	ReloadAbility->OnReloadCompleteTimeNotified.AddUObject(this, &AWaziCharacter::OnReloadCompleteTimeNotified);
 }

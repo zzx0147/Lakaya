@@ -4,8 +4,6 @@
 #include "Character/Ability/CharacterAbility.h"
 #include "ClairvoyanceAbility.generated.h"
 
-DECLARE_EVENT_OneParam(UClairvoyanceAbility, FClairvoyanceSignature, bool)
-
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UClairvoyanceAbility : public UCharacterAbility
 {
@@ -14,23 +12,24 @@ class LAKAYA_API UClairvoyanceAbility : public UCharacterAbility
 public:
 	UClairvoyanceAbility();
 
-	FClairvoyanceSignature OnClairvoyanceChanged;
-
-protected:
-
-	virtual void SetClairvoyanceState(const bool& NewState);
-
-public:
 	virtual void OnAliveStateChanged(const bool& AliveState) override;
 
 protected:
-	TObjectPtr<class AOutlineManager> GetOutlineManager();
 	virtual bool ShouldStartRemoteCall() override;
 	virtual void StartDelayedAbility() override;
-	virtual void StopDelayedAbility() override;
-	virtual void OnDelayedAbilityStartTimeChanged(const float& NewDelayedAbilityStartTime) override;
+
+	TObjectPtr<class AOutlineManager> GetOutlineManager();
+
+private:
+	void DisableClairvoyance();
+
+protected:
+	// 투시능력이 몇초동안 이뤄질지 지정합니다.
+	UPROPERTY(EditAnywhere)
+	float BaseAbilityDuration;
 
 	TWeakObjectPtr<AOutlineManager> OutlineManager;
-	bool bIsClairvoyanceOn;
 
+private:
+	FTimerHandle ClairvoyanceTimer;
 };
