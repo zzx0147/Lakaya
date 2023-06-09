@@ -17,9 +17,6 @@ protected:
 	virtual void NativeConstruct() override;
 	
 public:
-	UE_DEPRECATED(5.1, "이 함수는 더이상 사용되지 않습니다. 대신 다른 setter를 사용하세요.")
-	void SetData(int8 Rank,const FText& PlayerName, int8 Score) const; // 정보를 받아서 UI를 업데이트
-
 	// 플레이어 이름을 설정합니다.
 	void SetPlayerName(const FText& PlayerName) const;
 	void SetPlayerName(const FString& PlayerName) const;

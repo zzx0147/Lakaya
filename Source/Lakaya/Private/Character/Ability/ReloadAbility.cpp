@@ -40,6 +40,7 @@ void UReloadAbility::RemoteAbilityStart(const float& RequestTime)
 		return;
 
 	ReloadingTime = GetServerTime() + ReloadDelay;
+	OnReloadCompleteTimeNotified.Broadcast(ReloadingTime);
 	SetReloadState(true);
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &UReloadAbility::ReloadTimerHandler, ReloadDelay);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ReloadTimerSetted!"));
@@ -67,6 +68,7 @@ void UReloadAbility::OnRep_ReloadingTime()
 	UpdateReloadStateWithTime(CurrentTime);
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &UReloadAbility::ReloadTimerHandler,
 	                                       ReloadingTime - CurrentTime);
+	OnReloadCompleteTimeNotified.Broadcast(ReloadingTime);
 }
 
 void UReloadAbility::SetReloadState(const bool& NewState)

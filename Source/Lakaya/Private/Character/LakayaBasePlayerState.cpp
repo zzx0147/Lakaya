@@ -3,8 +3,6 @@
 
 #include "Character/LakayaBasePlayerState.h"
 
-#include "NiagaraFunctionLibrary.h"
-#include "NiagaraSystem.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/Image.h"
 #include "GameFramework/GameStateBase.h"
@@ -230,6 +228,12 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 	}
 }
 
+void ALakayaBasePlayerState::SetUniqueStencilMask(const ERendererStencilMask& StencilMask)
+{
+	UniqueRenderMask = StencilMask;
+	if (const auto Character = GetPawn<ACharacter>()) SetUniqueStencilMaskToMesh(Character->GetMesh());
+}
+
 float ALakayaBasePlayerState::GetServerTime() const
 {
 	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
@@ -277,6 +281,7 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		}
 		
 		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);
+		SetUniqueStencilMaskToMesh(Character->GetMesh());
 	}
 	else
 	{
@@ -371,6 +376,13 @@ void ALakayaBasePlayerState::SetAliveState(const bool& AliveState)
 	if (bRecentAliveState == AliveState) return;
 	bRecentAliveState = AliveState;
 	OnAliveStateChanged.Broadcast(AliveState);
+}
+
+void ALakayaBasePlayerState::SetUniqueStencilMaskToMesh(UMeshComponent* MeshComponent)
+{
+	if (!MeshComponent) return;
+	MeshComponent->SetCustomDepthStencilValue(255);
+	MeshComponent->SetCustomDepthStencilWriteMask(UniqueRenderMask);
 }
 
 void ALakayaBasePlayerState::RequestCharacterChange_Implementation(const FName& Name)

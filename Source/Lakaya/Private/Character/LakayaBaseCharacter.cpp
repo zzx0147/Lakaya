@@ -18,6 +18,7 @@
 const FName ALakayaBaseCharacter::SpringArmComponentName = FName(TEXT("SpringArm"));
 const FName ALakayaBaseCharacter::CameraComponentName = FName(TEXT("Camera"));
 const FName ALakayaBaseCharacter::ResourceComponentName = FName(TEXT("ResourceComponent"));
+const FName ALakayaBaseCharacter::ClairvoyanceMeshComponentName = FName(TEXT("ClairvoyanceMesh"));
 
 ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -26,6 +27,7 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	PlayerRotationInterpolationAlpha = 0.65f;
 	ATeamObjectType = ECC_GameTraceChannel5;
 	BTeamObjectType = ECC_GameTraceChannel6;
+	bIsAlive = true;
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(SpringArmComponentName);
 	SpringArm->SetupAttachment(RootComponent);
@@ -39,6 +41,16 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 
 	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(ResourceComponentName);
 	ResourceComponent->SetIsReplicated(true);
+
+	ClairvoyanceMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(ClairvoyanceMeshComponentName);
+	ClairvoyanceMeshComponent->SetupAttachment(GetMesh());
+	ClairvoyanceMeshComponent->SetRenderCustomDepth(true);
+	ClairvoyanceMeshComponent->SetCustomDepthStencilValue(255);
+	ClairvoyanceMeshComponent->SetCustomDepthStencilWriteMask(ERendererStencilMask::ERSM_128);
+	ClairvoyanceMeshComponent->SetCollisionEnabled(ECollisionEnabled::ProbeOnly);
+	ClairvoyanceMeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	ClairvoyanceMeshComponent->SetCollisionResponseToChannel(ECC_Camera, ECR_Block);
+	ClairvoyanceMeshComponent->SetVisibility(false);
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
@@ -99,6 +111,21 @@ void ALakayaBaseCharacter::Tick(float DeltaSeconds)
 	}
 }
 
+void ALakayaBaseCharacter::NotifyControllerChanged()
+{
+	Super::NotifyControllerChanged();
+	GetMesh()->SetRenderCustomDepth(!IsLocallyControlled());
+}
+
+void ALakayaBaseCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	MeshCollisionProfile = GetMesh()->GetCollisionProfileName();
+	MeshRelativeLocation = GetMesh()->GetRelativeLocation();
+	MeshRelativeRotation = GetMesh()->GetRelativeRotation();
+	GetMesh()->SetRenderCustomDepth(!IsLocallyControlled());
+}
+
 FRotator ALakayaBaseCharacter::GetPlayerRotation() const
 {
 	// 서버이거나 Autonomous인 경우 그냥 카메라 컴포넌트를 사용합니다.
@@ -116,6 +143,16 @@ void ALakayaBaseCharacter::PlayHitScreen()
 	HitScreenEffect->Activate(true);
 }
 
+void ALakayaBaseCharacter::EnableClairvoyance()
+{
+	ClairvoyanceMeshComponent->SetVisibility(true);
+}
+
+void ALakayaBaseCharacter::DisableClairvoyance()
+{
+	ClairvoyanceMeshComponent->SetVisibility(false);
+}
+
 void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
 {
 	RecentTeam = Team;
@@ -125,12 +162,25 @@ void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
 
 void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 {
+	bIsAlive = IsAlive;
 	ResourceComponent->OnAliveStateChanged(IsAlive);
-	if (IsAlive && ResurrectionNiagaraSystem)
+	if (IsAlive)
 	{
-		UNiagaraFunctionLibrary::SpawnSystemAttached(ResurrectionNiagaraSystem, RootComponent, FName(),
-		                                             FVector(0.0f, 0.0f, -90.0f), FRotator::ZeroRotator,
-		                                             EAttachLocation::SnapToTarget, true);
+		GetMesh()->SetAllBodiesSimulatePhysics(false);
+		GetMesh()->SetCollisionProfileName(MeshCollisionProfile);
+		GetMesh()->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		GetMesh()->SetRelativeLocationAndRotation(MeshRelativeLocation, MeshRelativeRotation);
+		if (ResurrectionNiagaraSystem)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAttached(ResurrectionNiagaraSystem, RootComponent, FName(),
+			                                             FVector(0.0f, 0.0f, -90.0f), FRotator::ZeroRotator,
+			                                             EAttachLocation::SnapToTarget, true);
+		}
+	}
+	else
+	{
+		GetMesh()->SetCollisionProfileName(TEXT("RagDoll"));
+		GetMesh()->SetAllBodiesSimulatePhysics(true);
 	}
 	if (HasAuthority()) GetCharacterMovement()->SetMovementMode(IsAlive ? MOVE_Walking : MOVE_None);
 }

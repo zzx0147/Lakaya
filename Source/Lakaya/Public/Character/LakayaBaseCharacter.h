@@ -28,6 +28,7 @@ public:
 	const static FName SpringArmComponentName;
 	const static FName CameraComponentName;
 	const static FName ResourceComponentName;
+	const static FName ClairvoyanceMeshComponentName;
 
 	explicit ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
@@ -36,8 +37,10 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void NotifyControllerChanged() override;
 
 protected:
+	virtual void BeginPlay() override;
 	virtual float InternalTakeRadialDamage(float Damage, FRadialDamageEvent const& RadialDamageEvent,
 	                                       AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -63,6 +66,9 @@ public:
 	UFUNCTION(BlueprintGetter)
 	const TArray<FName>& GetKillStreakBuffs() const { return KillStreakBuffs; }
 
+	UFUNCTION(BlueprintGetter)
+	const bool& GetAliveState() const { return bIsAlive; }
+
 	// 현재 플레이어가 바라보는 방향 정보를 가져옵니다.
 	UFUNCTION(BlueprintGetter)
 	FRotator GetPlayerRotation() const;
@@ -78,6 +84,12 @@ public:
 	bool IsSameTeam(const EPlayerTeam& Team) const;
 
 	void PlayHitScreen();
+
+	// 이 캐릭터에게 강제로 투시를 활성화합니다. 가려지는 부분만 투시가 되는 것이 아니라 가려지든 말든 투시효과를 그리게 되므로 유의하여 활성화해야 합니다.
+	void EnableClairvoyance();
+
+	// 투시효과를 비활성화합니다.
+	void DisableClairvoyance();
 
 protected:
 	virtual void SetTeam_Implementation(const EPlayerTeam& Team);
@@ -131,11 +143,20 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	UCameraComponent* Camera;
 
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* ClairvoyanceMeshComponent;
+
 	UPROPERTY(ReplicatedUsing=OnRep_PlayerRotation, Transient)
 	FPlayerRotationPacket PlayerRotation;
+
+	UPROPERTY(BlueprintGetter=GetAliveState)
+	bool bIsAlive;
 
 	FPlayerRotationPacket PrevPlayerRotation;
 	FPlayerRotationPacket LatestPlayerRotation;
 	FQuat LatestUpdateRotation;
 	EPlayerTeam RecentTeam;
+	FVector MeshRelativeLocation;
+	FRotator MeshRelativeRotation;
+	FName MeshCollisionProfile;
 };
