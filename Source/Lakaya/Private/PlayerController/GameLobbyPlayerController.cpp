@@ -6,6 +6,7 @@
 #include "Components/SlateWrapperTypes.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/PlayerState.h"
+#include "GameMode/AIIndividualGameState.h"
 #include "GameMode/LakayaBaseGameState.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameState.h"
@@ -162,31 +163,24 @@ void AGameLobbyPlayerController::LoadoutHandler(const FInputActionValue& Value)
 
 void AGameLobbyPlayerController::ShowScoreBoard(const FInputActionValue& Value)
 {
-	// if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
-	// {
-	// 	if (GameState->GetMatchState() == MatchState::WaitingPostMatch)
-	// 	{
-	// 		if (const auto NewGameState = Cast<AOccupationGameState>(GameState))
-	// 			NewGameState->ChangeResultWidget();
-	// 		
-	// 		return;
-	// 	}
-	// 	
-	// 	GameState->SetScoreBoardVisibility(true);
-	// }
-
-	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+	// 팀전일 때
+	if (const auto OccupationGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 	{
-		if (const auto NewGameState = Cast<AOccupationGameState>(GameState))
+		if (const auto NewGameState = Cast<AOccupationGameState>(OccupationGameState))
 		{
 			if (!NewGameState->TapBool) return;
 
-			if (GameState->GetMatchState() == MatchState::WaitingPostMatch)
+			if (OccupationGameState->GetMatchState() == MatchState::WaitingPostMatch)
+			{
+				// 게임이 종료되고 결과창에 어떠한 위젯이 띄워지고 있느냐에 따라서 위젯들이 보여지는게 달라집니다.
 				NewGameState->ChangeResultWidget();
-		}
+			}
 
-		GameState->SetScoreBoardVisibility(true);
+			OccupationGameState->SetScoreBoardVisibility(true);
+		}
 	}
+
+	// 개인전일 때
 }
 
 void AGameLobbyPlayerController::HideScoreBoard(const FInputActionValue& Value)
