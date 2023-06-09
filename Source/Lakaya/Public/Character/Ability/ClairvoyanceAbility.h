@@ -11,13 +11,15 @@ class LAKAYA_API UClairvoyanceAbility : public UCharacterAbility
 
 public:
 	UClairvoyanceAbility();
-
+	
 	virtual void OnAliveStateChanged(const bool& AliveState) override;
-
+	UFUNCTION(BlueprintCallable)
+	void SetEffectMaterial(UMaterialInstanceDynamic* NewEffectMaterial);
+	void CreateClairvoyanceWidget(APlayerController* PlayerController);
+	
 protected:
 	virtual bool ShouldStartRemoteCall() override;
 	virtual void StartDelayedAbility() override;
-
 	TObjectPtr<class AOutlineManager> GetOutlineManager();
 
 private:
@@ -29,7 +31,15 @@ protected:
 	float BaseAbilityDuration;
 
 	TWeakObjectPtr<AOutlineManager> OutlineManager;
+	
+	UPROPERTY(EditAnywhere)
+	TWeakObjectPtr<UMaterialInstanceDynamic> EffectMaterial;
+	
+	TWeakObjectPtr<UUserWidget> ClairvoyanceWidget;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> ClairvoyanceWidgetClass;
+	
 private:
 	FTimerHandle ClairvoyanceTimer;
 };
