@@ -128,7 +128,7 @@ void ASummonAbilityInstance::OnRep_AbilityInstanceState()
 void ASummonAbilityInstance::OnRep_OwningAbility()
 {
 	OnAbilityInstanceStateChanged.AddUObject(OwningAbility.Get(),
-	                                         &UCoolTimedSummonAbility::NotifyAbilityInstanceStateChanged);
+	                                         &UCoolTimedSummonAbility::OnAbilityInstanceStateChanged);
 }
 
 void ASummonAbilityInstance::HandleAbilityInstanceReady()
