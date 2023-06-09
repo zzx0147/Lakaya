@@ -278,7 +278,7 @@ void ALakayaBaseCharacter::StartDissolveEffect()
 
 void ALakayaBaseCharacter::RemoveDissolveEffect()
 {
-	for(const auto TargetMaterial : DissolveTarget)
+	for(const auto TargetMaterial : DissolveTargetArray)
 		TargetMaterial->SetScalarParameterValue(TEXT("Dissolve"),2.0f);
 
 	if(CharacterOverlayMaterial.IsValid()) CharacterOverlayMaterial->SetScalarParameterValue(TEXT("Opacity") , 1.0f);
@@ -286,11 +286,10 @@ void ALakayaBaseCharacter::RemoveDissolveEffect()
 
 void ALakayaBaseCharacter::DissolveTick(const float& Value)
 {
-	for(const auto temp : DissolveTarget)
+	for(const auto DissolveTarget : DissolveTargetArray)
 	{
-		temp->SetScalarParameterValue(TEXT("Dissolve"),Value);
+		DissolveTarget->SetScalarParameterValue(TEXT("Dissolve"),Value);
 	}
-	GEngine->AddOnScreenDebugMessage(-1,3,FColor::White,*FString::Printf(TEXT("%f"),Value));
 }
 
 void ALakayaBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

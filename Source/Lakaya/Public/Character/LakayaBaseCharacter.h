@@ -163,7 +163,7 @@ protected:
 
 	//디졸브 이펙트의 타겟 머티리얼들입니다
 	UPROPERTY(EditAnywhere,BlueprintReadWrite ,Category = Timeline)
-	TArray<TObjectPtr<UMaterialInstanceDynamic>> DissolveTarget;
+	TArray<TObjectPtr<UMaterialInstanceDynamic>> DissolveTargetArray;
 
 	//디졸브 이펙트를 위한 타임라인입니다
 	FTimeline DissolveTimeline;
