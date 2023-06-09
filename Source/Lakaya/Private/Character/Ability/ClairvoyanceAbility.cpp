@@ -5,30 +5,22 @@
 
 #include "ETC/OutlineManager.h"
 #include "Kismet/GameplayStatics.h"
-#include "Net/UnrealNetwork.h"
 
 UClairvoyanceAbility::UClairvoyanceAbility() : Super()
 {
-	bUseDelayedAbility = true;
-	DelayedAbilityDuration = 30.0f;
-	InitialDelay = 0.2f;
-	bIsClairvoyanceOn = false;
-	SetClairvoyanceState(bIsClairvoyanceOn);
-}
-
-void UClairvoyanceAbility::SetClairvoyanceState(const bool& NewState)
-{
-	if (NewState == bIsClairvoyanceOn) return;
-	bIsClairvoyanceOn = NewState;
-	OnClairvoyanceChanged.Broadcast(bIsClairvoyanceOn);
+	bCanEverStartRemoteCall = bUpdateStartTimeOnStart = true;
+	AbilityStartDelay = 0.2f;
+	BaseAbilityDuration = 30.f;
+	BaseCoolTime = 5.f;
 }
 
 void UClairvoyanceAbility::OnAliveStateChanged(const bool& AliveState)
 {
 	Super::OnAliveStateChanged(AliveState);
-	if (!AliveState)
+	if (auto& TimerManager = GetWorld()->GetTimerManager(); !AliveState && TimerManager.TimerExists(ClairvoyanceTimer))
 	{
-		StopDelayedAbility();
+		TimerManager.ClearTimer(ClairvoyanceTimer);
+		DisableClairvoyance();
 	}
 }
 
@@ -39,31 +31,21 @@ TObjectPtr<AOutlineManager> UClairvoyanceAbility::GetOutlineManager()
 	return OutlineManager.Get();
 }
 
+void UClairvoyanceAbility::DisableClairvoyance()
+{
+	if (GetOwner()->HasAuthority()) ApplyCoolTime();
+	GetOutlineManager()->UnRegisterClairvoyance(GetUniqueID(), GetPlayerTeam());
+}
+
 bool UClairvoyanceAbility::ShouldStartRemoteCall()
 {
-	if (IsDelayedAbilityRunning() || GetWorld()->GetTimerManager().TimerExists(AbilityStartTimerHandle)) return false;
-	
-	return IsEnableTime(GetServerTime() + 0.1f);
+	return !GetWorld()->GetTimerManager().TimerExists(ClairvoyanceTimer) && IsEnableTime(GetServerTime() + 0.1f);
 }
 
 void UClairvoyanceAbility::StartDelayedAbility()
 {
 	Super::StartDelayedAbility();
 	GetOutlineManager()->RegisterClairvoyance(GetUniqueID(), GetPlayerTeam());
+	GetWorld()->GetTimerManager().SetTimer(ClairvoyanceTimer, this, &UClairvoyanceAbility::DisableClairvoyance,
+	                                       BaseAbilityDuration);
 }
-
-void UClairvoyanceAbility::StopDelayedAbility()
-{
-	Super::StopDelayedAbility();
-	if (GetOwner()->HasAuthority()) ApplyCoolTime();
-	GetOutlineManager()->UnRegisterClairvoyance(GetUniqueID(), GetPlayerTeam());;
-	SetClairvoyanceState(false);
-}
-
-void UClairvoyanceAbility::OnDelayedAbilityStartTimeChanged(const float& NewDelayedAbilityStartTime)
-{
-	Super::OnDelayedAbilityStartTimeChanged(NewDelayedAbilityStartTime);
-	if(NewDelayedAbilityStartTime < 0) return;
-	SetClairvoyanceState(true);
-}
-

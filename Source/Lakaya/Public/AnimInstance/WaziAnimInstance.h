@@ -16,10 +16,10 @@ class LAKAYA_API UWaziAnimInstance : public UCharAnimInstance
 
 public:
 	UWaziAnimInstance();
-	
+
 	virtual void NativeBeginPlay() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
-	
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	bool bIsWeaponSkill;
@@ -40,9 +40,12 @@ public:
 
 private:
 	void OnWeaponAbilityPerformTimeNotified(const float& Time);
+	void OnOverdriveStartTimeNotified(const float& Time);
+	void OnClairvoyanceStartTimeNotified(const float& Time);
 
 	// 무기 능력으로 소환된 투사체가 실제로 투척이 시작되는 시간을 나타냅니다.
 	float WeaponAbilityPerformTime;
 	FTimerHandle WeaponAbilityAnimTimer;
-	
+	FTimerHandle PrimaryAbilityTimer;
+	FTimerHandle SecondaryAbilityTimer;
 };
