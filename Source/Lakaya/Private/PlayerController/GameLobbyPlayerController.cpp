@@ -11,6 +11,7 @@
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameState.h"
 #include "Interfaces/NetworkPredictionInterface.h"
+#include "Kismet/GameplayStatics.h"
 
 
 void AGameLobbyPlayerController::SetupInputComponent()
@@ -152,7 +153,13 @@ void AGameLobbyPlayerController::BeginPlay()
 void AGameLobbyPlayerController::MenuHandler(const FInputActionValue& Value)
 {
 	//TODO: UI를 띄웁니다.
-	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Menu"));
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Tab Key."));
+
+	if (GetWorld()->GetGameState<ALakayaBaseGameState>()->GetMatchState() == MatchState::WaitingPostMatch)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("뒤로가기"));
+		UGameplayStatics::OpenLevel(GetWorld(), "MainLobbyLevel");
+	}
 }
 
 void AGameLobbyPlayerController::LoadoutHandler(const FInputActionValue& Value)
@@ -191,4 +198,9 @@ void AGameLobbyPlayerController::HideScoreBoard(const FInputActionValue& Value)
 
 		GameState->SetScoreBoardVisibility(false);
 	}
+}
+
+void AGameLobbyPlayerController::EscapeHandler()
+{
+	UE_LOG(LogTemp, Warning, TEXT("EscapeHandler !"));	
 }

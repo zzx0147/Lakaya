@@ -22,6 +22,8 @@ void AAIIndividualGameState::BeginPlay()
 	
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
+		
+		
 		AIIndividualLiveScoreBoardWidget = CreateWidget<UIndividualLiveScoreBoardWidget>(LocalController, AIIndividualLiveScoreBoardWidgetClass);
 
 		if (GameResultWidgetClass)
