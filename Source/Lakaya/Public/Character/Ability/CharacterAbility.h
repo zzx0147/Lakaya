@@ -54,7 +54,7 @@ public:
 	 * @brief 서버로부터 클라이언트의 능력 중단요청 신호가 수신되면 호출됩니다.
 	 * @param RequestTime 클라이언트가 능력 사용중단을 요청한 시간입니다.
 	 */
-	virtual void RemoteAbilityStop(const float& RequestTime) { return; }
+	virtual void RemoteAbilityStop(const float& RequestTime);
 
 	// 캐릭터의 생존 상태가 업데이트될 때 호출됩니다. 서버, 클라이언트 모두에서 호출됩니다.
 	virtual void OnAliveStateChanged(const bool& AliveState);
