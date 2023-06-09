@@ -7,7 +7,7 @@
 
 UOverdriveAbility::UOverdriveAbility()
 {
-	bCanEverStartRemoteCall = true;
+	bCanEverStartRemoteCall = bUpdateStartTimeOnStart = true;
 	AbilityStartDelay = 0.2f;
 	BaseCoolTime = 5.f;
 	BaseAbilityDuration = 8.f;

@@ -8,7 +8,7 @@
 
 UClairvoyanceAbility::UClairvoyanceAbility() : Super()
 {
-	bCanEverStartRemoteCall = true;
+	bCanEverStartRemoteCall = bUpdateStartTimeOnStart = true;
 	AbilityStartDelay = 0.2f;
 	BaseAbilityDuration = 30.f;
 	BaseCoolTime = 5.f;
