@@ -9,20 +9,20 @@ void USkillWidget::NativeConstruct()
 	RenaQSkill = Cast<UImage>(GetWidgetFromName("Rena_Skill_Q"));
 	RenaESkill = Cast<UImage>(GetWidgetFromName("Rena_Skill_E"));
 	RenaRButtonSkill = Cast<UImage>(GetWidgetFromName("Rena_Skill_RButton"));
-	RenaRSkill = Cast<UImage>(GetWidgetFromName("Rena_Skill_R"));
+	// RenaRSkill = Cast<UImage>(GetWidgetFromName("Rena_Skill_R"));
 
 	WaziQSkill = Cast<UImage>(GetWidgetFromName("Wazi_Skill_Q"));
 	WaziESkill = Cast<UImage>(GetWidgetFromName("Wazi_Skill_E"));
 	WaziRButtonSkill = Cast<UImage>(GetWidgetFromName("Wazi_Skill_RButton"));
-	WaziRSkill = Cast<UImage>(GetWidgetFromName("Wazi_Skill_R"));
+	// WaziRSkill = Cast<UImage>(GetWidgetFromName("Wazi_Skill_R"));
 
 	check(RenaQSkill != nullptr);
 	check(RenaESkill != nullptr);
 	check(RenaRButtonSkill != nullptr);
-	check(RenaRSkill != nullptr);
+	// check(RenaRSkill != nullptr);
 
 	check(WaziQSkill != nullptr);
 	check(WaziESkill != nullptr);
 	check(WaziRButtonSkill != nullptr);
-	check(WaziRSkill != nullptr);
+	// check(WaziRSkill != nullptr);
 }
