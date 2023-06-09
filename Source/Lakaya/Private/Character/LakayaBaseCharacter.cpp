@@ -3,6 +3,8 @@
 
 #include "Character/LakayaBaseCharacter.h"
 
+#include <codecapi.h>
+
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
@@ -24,6 +26,7 @@ const FName ALakayaBaseCharacter::ResurrectionNiagaraName = FName(TEXT("Resurrec
 
 ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	DissolveTimelineLength = 2.5f;
 	MaxHealth = 100.f;
 	PrimaryActorTick.bCanEverTick = true;
 	PlayerRotationInterpolationAlpha = 0.65f;
@@ -71,6 +74,7 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	ResurrectionNiagara->SetAutoActivate(false);
 	ResurrectionNiagara->SetAutoDestroy(false);
 	ResurrectionNiagara->SetAsset(ResurrectionFinder.Object);
+
 }
 
 ELifetimeCondition ALakayaBaseCharacter::AllowActorComponentToReplicate(
@@ -107,6 +111,8 @@ void ALakayaBaseCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if(DissolveTimeline.IsPlaying()) DissolveTimeline.TickTimeline(DeltaSeconds);
+	
 	// 서버에서는 계속해서 플레이어의 회전정보를 업데이트합니다.
 	if (HasAuthority())
 	{
@@ -209,11 +215,13 @@ void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 			DamageImmuneEndingTime = GetServerTime() + ResurrectionDamageImmuneTime;
 			OnRep_DamageImmuneEndingTime();
 		}
+		RemoveDissolveEffect();
 	}
 	else
 	{
 		GetMesh()->SetCollisionProfileName(TEXT("RagDoll"));
 		GetMesh()->SetAllBodiesSimulatePhysics(true);
+		StartDissolveEffect();
 	}
 	if (HasAuthority()) GetCharacterMovement()->SetMovementMode(IsAlive ? MOVE_Walking : MOVE_None);
 }
@@ -249,6 +257,34 @@ FQuat ALakayaBaseCharacter::GetRawExtrapolatedRotator(const float& CurrentTime) 
 void ALakayaBaseCharacter::DamageImmuneTimerCallback()
 {
 	DamageImmuneMeshComponent->SetVisibility(false);
+}
+
+void ALakayaBaseCharacter::StartDissolveEffect()
+{
+	if(DissolveCurve.IsValid())
+	{
+		FOnTimelineFloat DissolveCurveCallback;
+		DissolveCurveCallback.BindUFunction(this,TEXT("DissolveTick"));
+		DissolveTimeline.AddInterpFloat(DissolveCurve.Get(), DissolveCurveCallback);
+		DissolveTimeline.SetTimelineLength(DissolveTimelineLength);
+
+		DissolveTimeline.PlayFromStart();
+	}
+}
+
+void ALakayaBaseCharacter::RemoveDissolveEffect()
+{
+	for(const auto TargetMaterial : DissolveTarget)
+		TargetMaterial->SetScalarParameterValue(TEXT("Dissolve"),2.0f);
+}
+
+void ALakayaBaseCharacter::DissolveTick(const float& Value)
+{
+	for(const auto temp : DissolveTarget)
+	{
+		temp->SetScalarParameterValue(TEXT("Dissolve"),Value);
+	}
+	GEngine->AddOnScreenDebugMessage(-1,3,FColor::White,*FString::Printf(TEXT("%f"),Value));
 }
 
 void ALakayaBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

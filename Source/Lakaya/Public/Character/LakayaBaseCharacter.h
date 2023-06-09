@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "Occupation/PlayerTeam.h"
 #include "LakayaBaseCharacter.generated.h"
@@ -116,6 +117,14 @@ private:
 
 	void DamageImmuneTimerCallback();
 
+	//디졸브 이펙트를 시작합니다
+	void StartDissolveEffect();
+
+	void RemoveDissolveEffect();
+	
+	UFUNCTION()
+	void DissolveTick(const float& Value);
+
 protected:
 	// 이 캐릭터의 고유한 최대 체력을 나타냅니다.
 	UPROPERTY(EditAnywhere)
@@ -147,6 +156,20 @@ protected:
 	// 로컬 캐릭터에 대한 아웃라인을 활성화할지 여부를 선택합니다.
 	UPROPERTY(EditAnywhere)
 	bool bEnableLocalOutline;
+
+	//머티리얼 디졸브 이펙트를 위한 커브입니다
+	UPROPERTY(EditAnywhere,BlueprintReadWrite ,Category = Timeline)
+	TWeakObjectPtr<UCurveFloat> DissolveCurve;
+
+	//디졸브 이펙트의 타겟 머티리얼들입니다
+	UPROPERTY(EditAnywhere,BlueprintReadWrite ,Category = Timeline)
+	TArray<TObjectPtr<UMaterialInstanceDynamic>> DissolveTarget;
+
+	//디졸브 이펙트를 위한 타임라인입니다
+	FTimeline DissolveTimeline;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite ,Category = Timeline)
+	float DissolveTimelineLength;
 
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
