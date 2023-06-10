@@ -3,11 +3,12 @@
 #include "EngineUtils.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
-#include "Engine/TriggerBox.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameMode.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Occupation/ShieldWallObject.h"
 #include "UI/DetailResultWidget.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/GameResultWidget.h"
@@ -131,8 +132,7 @@ void AOccupationGameState::BeginPlay()
 
 		if (DetailResultElementWidgetClass)
 		{
-			DetailResultElementWidget = CreateWidget<UDetailResultElementWidget>(
-				LocalController, DetailResultElementWidgetClass);
+			DetailResultElementWidget = CreateWidget<UDetailResultElementWidget>(LocalController, DetailResultElementWidgetClass);
 			if (DetailResultElementWidget.IsValid())
 			{
 				DetailResultElementWidget->AddToViewport(1);
@@ -173,7 +173,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 	TimerDelegate.BindLambda([this]
 	{
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		DestroyTriggerBox();
+		DestroyShieldWallObject();
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageVisible, TimerDelegate, MatchWaitDuration, false);
 
@@ -307,35 +307,20 @@ void AOccupationGameState::SetClientTeam(const EPlayerTeam& NewTeam)
 	for (const auto& Temp : PlayersByTeamMap[ClientTeam]) CharacterSelectWidget->RegisterPlayer(Temp);
 }
 
-void AOccupationGameState::DestroyTriggerBox()
+void AOccupationGameState::DestroyShieldWallObject()
 {
 	UWorld* World = GetWorld();
-	if (!World) return;
-
-	// for (TActorIterator<>)
+	if (World == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("World is null."));
+		return;
+	}
 	
-	// UWorld* World = GetWorld();
-	// if (World)
-	// {
-	// 	TArray<ATriggerBox*> TriggerBoxes;
-	//
-	// 	for (TActorIterator<ATriggerBox> ActorIterator(World); ActorIterator; ++ActorIterator)
-	// 	{
-	// 		ATriggerBox* TriggerBox = *ActorIterator;
-	// 		if (TriggerBox)
-	// 		{
-	// 			TriggerBoxes.Add(TriggerBox);
-	// 		}
-	// 	}
-	//
-	// 	for (ATriggerBox* TriggerBox : TriggerBoxes)
-	// 	{
-	// 		if (TriggerBox)
-	// 		{
-	// 			TriggerBox->Destroy();
-	// 		}
-	// 	}
-	// }
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(World, AShieldWallObject::StaticClass(), FoundActors);
+
+	for (AActor* ShieldActor : FoundActors)
+		ShieldActor->Destroy();
 }
 
 void AOccupationGameState::ShowEndResultWidget()
@@ -444,7 +429,7 @@ void AOccupationGameState::GradeResultTeamInfo(TArray<TObjectPtr<ALakayaBasePlay
 		*FString::Printf(TEXT("%s_%s_RankBoard_Image"), *RankLetter, *TeamLetter))->SetVisibility(
 		ESlateVisibility::SelfHitTestInvisible);
 
-	FString FormattedName = FString::Printf(TEXT("%s"), *PlayerArray[NewIndex]->GetName());
+	FString FormattedName = FString::Printf(TEXT("%s"), *PlayerArray[NewIndex]->GetPlayerName());
 	UTextBlock* NameText = Cast<UTextBlock>(
 		GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_Name_Text"), *RankLetter)));
 	NameText->SetText(FText::FromString(FormattedName));
@@ -550,7 +535,7 @@ void AOccupationGameState::BindDetailResultWidget()
 		}
 
 		FString FormattedName;
-		FormattedName = FString::Printf(TEXT("%s"), *PlayerState->GetName());
+		FormattedName = FString::Printf(TEXT("%s"), *PlayerState->GetPlayerName());
 		DetailResultWidget->UserBoxNameText->SetText(FText::FromString(FormattedName));
 
 		DetailResultWidget->InfoBoxScoreText->SetText(

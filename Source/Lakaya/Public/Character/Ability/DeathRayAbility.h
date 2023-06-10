@@ -12,36 +12,28 @@ UCLASS()
 class LAKAYA_API UDeathRayAbility : public UAutoFireAbility
 {
 	GENERATED_BODY()
+
 public:
 	UDeathRayAbility();
-	
-public:
+
 	virtual void InitializeComponent() override;
-	virtual void LocalAbilityStart() override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
 	virtual bool ShouldStartRemoteCall() override;
-	virtual void RemoteAbilityStart(const float& RequestTime) override;
-	virtual void RemoteAbilityStop(const float& RequestTime) override;
-	
-
-public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	FDeathRayPerformTimeSignature OnDeathRayPerformTimeNotified;
-
-protected:
-	virtual void OnRep_AbilityStartTime() override;
+	virtual void StartDelayedAbility() override;
+	virtual void OnDelayedAbilityStopTimeChanged(const float& NewDelayedAbilityStopTime) override;
 
 private:
+	void DeathRayTimerCallback();
 
-	
-	TWeakObjectPtr<class UNiagaraComponent> LaserEffect;
-	
+protected:
+	// 기본 적용될 능력의 길이입니다.
 	UPROPERTY(EditAnywhere)
-	float AbilityDuration;
+	float BaseAbilityDuration;
 
-	FTimerHandle AbilityTimer;
-
-	TWeakObjectPtr<class UArrowComponent> MuzzleComponent;
+private:
+	TWeakObjectPtr<class UNiagaraComponent> LaserEffect;
+	FTimerHandle DeathRayTimer;
 };

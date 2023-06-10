@@ -16,25 +16,22 @@ class LAKAYA_API UAutoFireAbility : public UCharacterAbility
 public:
 	UAutoFireAbility();
 
-	virtual void LocalAbilityStart() override;
-	virtual void LocalAbilityStop() override;
+	virtual bool ShouldStartRemoteCall() override;
+	virtual bool ShouldStopRemoteCall() override;
+	virtual void OnAliveStateChanged(const bool& AliveState) override;
+	virtual void InitializeComponent() override;
 
 protected:
-	virtual void BeginPlay() override;
-	virtual void RemoteAbilityStart(const float& RequestTime) override;
+	virtual void StartDelayedAbility() override;
 	virtual void RemoteAbilityStop(const float& RequestTime) override;
-	
-	UFUNCTION()
-	virtual void OnRep_AbilityStartTime();
-	
+
 public:
-	UFUNCTION(BlueprintGetter)
-	const bool& IsFiring() const { return bIsFiring; }
+	UFUNCTION(BlueprintSetter)
+	void SetBasisComponent(USceneComponent* NewComponent);
+
+	FORCEINLINE const bool& IsWantsToFire() const { return bWantsToFire; }
 
 protected:
-	UFUNCTION()
-	virtual void OnRep_IsFiring();
-
 	// 발사 가능 여부를 판별합니다.
 	virtual bool ShouldFire();
 
@@ -47,15 +44,7 @@ protected:
 private:
 	void FireTick();
 
-public:
-	// 사격상태가 변경되면 호출됩니다. true이면 사격중, 그렇지 않으면 사격중지를 의미합니다.
-	FIsFiringSignature OnFiringStateChanged;
-
 protected:
-	// 초탄 발사 지연시간을 의미합니다.
-	UPROPERTY(EditAnywhere)
-	float InitDelay;
-
 	// 초탄 이후 격발 지연시간을 의미합니다. 이 지연시간에 따라 연사속도가 결정됩니다.
 	UPROPERTY(EditAnywhere)
 	float FireDelay;
@@ -68,20 +57,12 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float FireDamage;
 
-	//사격 요청이 오고 실제로 사격이 시작되는 시간입니다. 음수일 경우 사격 중지를 의미합니다
-	UPROPERTY(ReplicatedUsing = OnRep_AbilityStartTime, Transient)
-	float AbilityStartTime;
-	
-protected:
+	UPROPERTY(BlueprintSetter=SetBasisComponent)
+	TObjectPtr<USceneComponent> BasisComponent;
+
 	FCollisionQueryParams CollisionQueryParams;
-	
+
 private:
-	UPROPERTY(ReplicatedUsing=OnRep_IsFiring, Transient)
-	bool bIsFiring;
-
-	bool bIsFireRequested;
+	bool bWantsToFire;
 	FTimerHandle FireTimer;
-	TWeakObjectPtr<class UCameraComponent> Camera;
-	TWeakObjectPtr<USceneComponent> RootComponent;
-
 };

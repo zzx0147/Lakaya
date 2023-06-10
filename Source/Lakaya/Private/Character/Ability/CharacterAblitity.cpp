@@ -11,18 +11,17 @@
 UCharacterAbility::UCharacterAbility()
 {
 	bWantsInitializeComponent = true;
-	bUseDelayedAbility = false;
+	AbilityStartDelay = AbilityStopDelay = 0.f;
 	OnAbilityStartTimeNotified.AddUObject(this, &UCharacterAbility::OnDelayedAbilityStartTimeChanged);
-	InitialDelay = 0.5f;
-	DelayedAbilityDuration = 1.0f;
-	bIsDelayedAbilityIsRunning = false;
+	OnAbilityStopTimeNotified.AddUObject(this, &UCharacterAbility::OnDelayedAbilityStopTimeChanged);
 }
 
 void UCharacterAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(UCharacterAbility, EnableTime);
-	if (bUseDelayedAbility) DOREPLIFETIME(UCharacterAbility, DelayedAbilityStartTime);
+	if (AbilityStartDelay > 0.f) DOREPLIFETIME(UCharacterAbility, DelayedAbilityStartTime);
+	if (AbilityStopDelay > 0.f) DOREPLIFETIME(UCharacterAbility, DelayedAbilityStopTime);
 }
 
 void UCharacterAbility::InitializeComponent()
@@ -35,11 +34,12 @@ void UCharacterAbility::InitializeComponent()
 
 void UCharacterAbility::RemoteAbilityStart(const float& RequestTime)
 {
-	if (bUseDelayedAbility)
-	{
-		DelayedAbilityStartTime = RequestTime + InitialDelay;
-		OnAbilityStartTimeNotified.Broadcast(DelayedAbilityStartTime);
-	}
+	if (AbilityStartDelay > 0.f && bUpdateStartTimeOnStart) UpdateAbilityStartTime(RequestTime);
+}
+
+void UCharacterAbility::RemoteAbilityStop(const float& RequestTime)
+{
+	if (AbilityStopDelay > 0.f && bUpdateStopTimeOnStop) UpdateAbilityStopTime(RequestTime);
 }
 
 void UCharacterAbility::OnAliveStateChanged(const bool& AliveState)
@@ -169,6 +169,11 @@ void UCharacterAbility::OnRep_DelayedAbilityStartTime()
 	OnAbilityStartTimeNotified.Broadcast(DelayedAbilityStartTime);
 }
 
+void UCharacterAbility::OnRep_DelayedAbilityStopTime()
+{
+	OnAbilityStopTimeNotified.Broadcast(DelayedAbilityStopTime);
+}
+
 void UCharacterAbility::ApplyCoolTime()
 {
 	EnableTime = GetServerTime() + GetCoolTime();
@@ -177,37 +182,42 @@ void UCharacterAbility::ApplyCoolTime()
 
 void UCharacterAbility::OnDelayedAbilityStartTimeChanged(const float& NewDelayedAbilityStartTime)
 {
-	if(NewDelayedAbilityStartTime < 0)//값이 음수라면 능력 강제 종료 신호
+	// 아직 능력 시작 시간이 도래하지 않았다면 타이머를 건다.
+	if (const auto RemainTime = NewDelayedAbilityStartTime - GetServerTime(); RemainTime > 0.f)
 	{
-		if(IsDelayedAbilityRunning()) StopDelayedAbility();
-		GetWorld()->GetTimerManager().ClearTimer(AbilityStartTimerHandle);
-		GetWorld()->GetTimerManager().ClearTimer(AbilityStopTimerHandle);
+		GetWorld()->GetTimerManager().SetTimer(AbilityStartTimerHandle, this, &UCharacterAbility::StartDelayedAbility,
+		                                       RemainTime);
 	}
+	//이미 능력이 시작됐다면 바로 시작한다.
+	else StartDelayedAbility();
+}
 
-	const float Now = GetServerTime();
-	const float AbilityEndTime = NewDelayedAbilityStartTime + DelayedAbilityDuration;
-
-	if (Now > AbilityEndTime) return; //어빌리티가 이미 종료된 시점이라면 아무것도 안함
-
-	if (NewDelayedAbilityStartTime > Now) // 아직 능력 시작 시간이 도래하지 않았다면 타이머를 건다.
+void UCharacterAbility::OnDelayedAbilityStopTimeChanged(const float& NewDelayedAbilityStopTime)
+{
+	if (const auto RemainTime = NewDelayedAbilityStopTime - GetServerTime(); RemainTime > 0.f)
 	{
-		GetWorld()->GetTimerManager().SetTimer(AbilityStartTimerHandle,this,&UCharacterAbility::StartDelayedAbility,NewDelayedAbilityStartTime - Now,false);
+		GetWorld()->GetTimerManager().SetTimer(AbilityStopTimerHandle, this, &UCharacterAbility::StopDelayedAbility,
+		                                       RemainTime);
 	}
-	else//이미 능력이 시작됐다면 바로 시작한다.
-	{
-		StartDelayedAbility();
-	}
+	else StopDelayedAbility();
+}
 
-	//어빌리티 종료 시간 타이머를 건다
-	GetWorld()->GetTimerManager().SetTimer(AbilityStopTimerHandle,this,&UCharacterAbility::StopDelayedAbility,AbilityEndTime - Now,false);
+void UCharacterAbility::UpdateAbilityStartTime(const float& Time)
+{
+	DelayedAbilityStartTime = Time + AbilityStartDelay;
+	OnAbilityStartTimeNotified.Broadcast(DelayedAbilityStartTime);
+}
+
+void UCharacterAbility::UpdateAbilityStopTime(const float& Time)
+{
+	DelayedAbilityStopTime = Time + AbilityStopDelay;
+	OnAbilityStopTimeNotified.Broadcast(DelayedAbilityStopTime);
 }
 
 void UCharacterAbility::StartDelayedAbility()
 {
-	bIsDelayedAbilityIsRunning = true;
 }
 
 void UCharacterAbility::StopDelayedAbility()
 {
-	bIsDelayedAbilityIsRunning = false;
 }

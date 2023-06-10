@@ -12,5 +12,5 @@ AInteractable::AInteractable(const FObjectInitializer& ObjectInitializer) : Supe
 	Mesh->SetupAttachment(RootComponent);
 
 	Trigger->InitSphereRadius(600.0f);
-	Trigger->SetRelativeLocation(FVector::ZeroVector);
+	Trigger->SetCollisionProfileName(TEXT("Interactable"));
 }

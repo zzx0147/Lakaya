@@ -87,17 +87,18 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 		else UE_LOG(LogScript, Error, TEXT("Invalid team value on OnTeamChanged lambda handler!"));
 	});
 
-	LakayaState->OnCharacterNameChanged.AddLambda([this, Element](const ALakayaBasePlayerState* LakayaState, const FName& PlayerCharacterName)
+	LakayaState->OnCharacterNameChanged.AddLambda([Element](const ALakayaBasePlayerState* LakayaState, const FName& PlayerCharacterName)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OnCharacterNameChanged."));
-		
-		if (LakayaState->GetCharacterName().ToString() == "Rena")
+
+		if (PlayerCharacterName == TEXT("Rena"))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("On_Rena"));
+			//TODO: 캐릭터 변경시 여기에서 Element또는 이미지에 대한 nullptr 참조 에러가 남
 			Element->Character_Rena_Image->SetVisibility(ESlateVisibility::HitTestInvisible);
 			Element->Character_Wazi_Image->SetVisibility(ESlateVisibility::Hidden);
 		}
-		if (LakayaState->GetCharacterName().ToString() == "Wazi")
+		if (PlayerCharacterName == TEXT("Wazi"))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("On_Wazi"));
 			Element->Character_Wazi_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -105,17 +106,13 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 		}
 	});
 
-	// TODO: 테스트를 하기 위해 주석처리 했습니다.
-	// 빌드파일을 뽑을 때에는 반드시 주석을 없애주어야 합니다.
-	// LakayaState->OnPlayerNameChanged.AddUObject(Element, &UScoreBoardElement::SetPlayerName);
+	LakayaState->OnPlayerNameChanged.AddUObject(Element, &UScoreBoardElement::SetPlayerName);
 	LakayaState->OnTotalScoreChanged.AddUObject(Element, &UScoreBoardElement::SetTotalScore);
 	LakayaState->OnSuccessCaptureCountChanged.AddUObject(Element, &UScoreBoardElement::SetSuccessCaptureCount);
 	LakayaState->OnKillCountChanged.AddUObject(Element, &UScoreBoardElement::SetKillCount);
 	LakayaState->OnDeathCountChanged.AddUObject(Element, &UScoreBoardElement::SetDeathCount);
 
-	// TODO: 테스트를 하기 위해 주석처리 했습니다.
-	// 빌드파일을 뽑을 때에는 반드시 주석을 없애주어야 합니다.
-	// Element->SetPlayerName(LakayaState->GetPlayerName());
+	Element->SetPlayerName(LakayaState->GetPlayerName());
 	Element->SetTotalScore(LakayaState->GetTotalScore());
 	Element->SetSuccessCaptureCount(LakayaState->GetSuccessCaptureCount());
 	Element->SetDeathCount(LakayaState->GetDeathCount());

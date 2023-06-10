@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "Occupation/PlayerTeam.h"
 #include "LakayaBaseCharacter.generated.h"
@@ -30,6 +31,7 @@ public:
 	const static FName ResourceComponentName;
 	const static FName ClairvoyanceMeshComponentName;
 	const static FName DamageImmuneMeshComponentName;
+	const static FName ResurrectionNiagaraName;
 
 	explicit ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
@@ -115,6 +117,14 @@ private:
 
 	void DamageImmuneTimerCallback();
 
+	//디졸브 이펙트를 시작합니다
+	void StartDissolveEffect();
+
+	void RemoveDissolveEffect();
+	
+	UFUNCTION()
+	void DissolveTick(const float& Value);
+
 protected:
 	// 이 캐릭터의 고유한 최대 체력을 나타냅니다.
 	UPROPERTY(EditAnywhere)
@@ -129,10 +139,6 @@ protected:
 	// 0에 너무 가까우면 회전이 동기화되지 않는 것처럼 보일 수 있습니다.
 	UPROPERTY(EditAnywhere, meta=(ClampMin = 0.1f, ClampMax = 1.0f))
 	float PlayerRotationInterpolationAlpha;
-
-	// 캐릭터가 부활했을 때 재생할 나이아가라 시스템을 지정합니다.
-	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* ResurrectionNiagaraSystem;
 
 	UPROPERTY(EditAnywhere)
 	class UNiagaraComponent* HitScreenEffect;
@@ -151,6 +157,20 @@ protected:
 	UPROPERTY(EditAnywhere)
 	bool bEnableLocalOutline;
 
+	//머티리얼 디졸브 이펙트를 위한 커브입니다
+	UPROPERTY(EditAnywhere,BlueprintReadWrite ,Category = Timeline)
+	TWeakObjectPtr<UCurveFloat> DissolveCurve;
+
+	//디졸브 이펙트의 타겟 머티리얼들입니다
+	UPROPERTY(EditAnywhere,BlueprintReadWrite ,Category = Timeline)
+	TArray<TObjectPtr<UMaterialInstanceDynamic>> DissolveTargetArray;
+
+	//디졸브 이펙트를 위한 타임라인입니다
+	FTimeline DissolveTimeline;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite ,Category = Timeline)
+	float DissolveTimelineLength;
+
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	class UResourceComponent* ResourceComponent;
@@ -166,6 +186,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* DamageImmuneMeshComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	UNiagaraComponent* ResurrectionNiagara;
 
 	UPROPERTY(ReplicatedUsing=OnRep_PlayerRotation, Transient)
 	FPlayerRotationPacket PlayerRotation;

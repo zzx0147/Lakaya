@@ -70,7 +70,7 @@ private:
 	UFUNCTION()
 	void OnRep_OccupationWinner();
 
-	void DestroyTriggerBox();
+	void DestroyShieldWallObject();
 
 	// 게임 승패여부를 띄워줍니다.
 	void ShowEndResultWidget();

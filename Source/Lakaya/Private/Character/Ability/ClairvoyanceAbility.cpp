@@ -3,105 +3,71 @@
 
 #include "Character/Ability/ClairvoyanceAbility.h"
 
+#include "Blueprint/UserWidget.h"
 #include "ETC/OutlineManager.h"
 #include "Kismet/GameplayStatics.h"
-#include "Net/UnrealNetwork.h"
 
 UClairvoyanceAbility::UClairvoyanceAbility() : Super()
 {
-	AbilityDuration = 10.0f;
-	bIsClairvoyanceOn = false;
-	SetClairvoyanceState(bIsClairvoyanceOn);
-}
-
-void UClairvoyanceAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(UClairvoyanceAbility, AbilityStartTime);
-}
-
-void UClairvoyanceAbility::OnRep_AbilityStartTime()
-{
-	// bIsClairvoyanceOn = true;
-	SetClairvoyanceState(true);
-	if (AbilityStartTime > GetServerTime())
-		GetWorld()->GetTimerManager().SetTimer(AbilityStartHandle, this, &UClairvoyanceAbility::AbilityStart,AbilityStartTime - GetServerTime(), false);
-	else
-		AbilityStart();
-}
-
-void UClairvoyanceAbility::RemoteAbilityStart(const float& RequestTime)
-{
-	Super::RemoteAbilityStart(RequestTime);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Server ClairvoyancecAbilityStart!"));
-	AbilityStartTime = RequestTime + AbilityDelay;
-	OnRep_AbilityStartTime();
+	bCanEverStartRemoteCall = bUpdateStartTimeOnStart = true;
+	AbilityStartDelay = 0.2f;
+	BaseAbilityDuration = 30.f;
+	BaseCoolTime = 5.f;
+	
 }
 
 void UClairvoyanceAbility::OnAliveStateChanged(const bool& AliveState)
 {
 	Super::OnAliveStateChanged(AliveState);
-	// if(!AliveState && bIsClairvoyanceOn)
-	// {
-	// 	AbilityEnd();
-	// 	GetWorld()->GetTimerManager().ClearTimer(AbilityStartHandle);
-	// }
-	if (!AliveState && GetOwner()->HasAuthority())
+	if (auto& TimerManager = GetWorld()->GetTimerManager(); !AliveState && TimerManager.TimerExists(ClairvoyanceTimer))
 	{
-		AbilityEnd();
-		GetWorld()->GetTimerManager().ClearTimer(AbilityStartHandle);
-		SetClairvoyanceState(false);
+		TimerManager.ClearTimer(ClairvoyanceTimer);
+		DisableClairvoyance();
 	}
 }
 
-void UClairvoyanceAbility::InitializeComponent()
+void UClairvoyanceAbility::SetEffectMaterial(UMaterialInstanceDynamic* NewEffectMaterial)
 {
-	Super::InitializeComponent();
+	EffectMaterial = NewEffectMaterial;
+}
+
+void UClairvoyanceAbility::CreateClairvoyanceWidget(APlayerController* PlayerController)
+{
+	if(PlayerController == nullptr) return;
+	if(ClairvoyanceWidgetClass == nullptr) return;
+	
+	ClairvoyanceWidget = CreateWidget<UUserWidget>(PlayerController, ClairvoyanceWidgetClass);
+	if(ClairvoyanceWidget == nullptr) return;
+	ClairvoyanceWidget->AddToViewport();
+	ClairvoyanceWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
 TObjectPtr<AOutlineManager> UClairvoyanceAbility::GetOutlineManager()
 {
 	if (OutlineManager.IsValid()) return OutlineManager.Get();
-
 	OutlineManager = Cast<AOutlineManager>(UGameplayStatics::GetActorOfClass(this, AOutlineManager::StaticClass()));
-
-
 	return OutlineManager.Get();
+}
+
+void UClairvoyanceAbility::DisableClairvoyance()
+{
+	if (GetOwner()->HasAuthority()) ApplyCoolTime();
+	GetOutlineManager()->UnRegisterClairvoyance(GetUniqueID(), GetPlayerTeam());
+	if (EffectMaterial.IsValid()) EffectMaterial->SetScalarParameterValue(TEXT("ClairvoyanceEffectOpacity"), 0.0f);
+	if (ClairvoyanceWidget.IsValid()) ClairvoyanceWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
 bool UClairvoyanceAbility::ShouldStartRemoteCall()
 {
-	if (bIsClairvoyanceOn) return false;
-
-	return IsEnableTime(GetServerTime() + 0.1f);;
+	return !GetWorld()->GetTimerManager().TimerExists(ClairvoyanceTimer) && IsEnableTime(GetServerTime() + 0.1f);
 }
 
-void UClairvoyanceAbility::SetClairvoyanceState(const bool& NewState)
+void UClairvoyanceAbility::StartDelayedAbility()
 {
-	if (NewState == bIsClairvoyanceOn) return;
-	bIsClairvoyanceOn = NewState;
-	OnClairvoyanceChanged.Broadcast(bIsClairvoyanceOn);
-}
-
-void UClairvoyanceAbility::AbilityStart()
-{
+	Super::StartDelayedAbility();
 	GetOutlineManager()->RegisterClairvoyance(GetUniqueID(), GetPlayerTeam());
-	GetWorld()->GetTimerManager().SetTimer(AbilityEndHandle, this, &UClairvoyanceAbility::AbilityEnd,
-	                                       AbilityStartTime + AbilityDuration - GetServerTime(), false);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ClairvoyancecAbilityStart!"));
-}
-
-void UClairvoyanceAbility::AbilityEnd()
-{
-	if (GetOwner()->HasAuthority()) ApplyCoolTime();
-	GetOutlineManager()->UnRegisterClairvoyance(GetUniqueID(), GetPlayerTeam());
-	// bIsClairvoyanceOn = false;
-	SetClairvoyanceState(false);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ClairvoyancecAbilityStop!"));
-}
-
-void UClairvoyanceAbility::LocalAbilityStart()
-{
-	Super::LocalAbilityStart();
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Client ClairvoyancecAbilityStart!"));
+	if (EffectMaterial.IsValid()) EffectMaterial->SetScalarParameterValue(TEXT("ClairvoyanceEffectOpacity"), 0.2f);
+	if (ClairvoyanceWidget.IsValid()) ClairvoyanceWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+	GetWorld()->GetTimerManager().SetTimer(ClairvoyanceTimer, this, &UClairvoyanceAbility::DisableClairvoyance,
+	                                       BaseAbilityDuration);
 }
