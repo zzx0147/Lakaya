@@ -100,15 +100,17 @@ void ALakayaBaseGameState::BeginPlay()
 		// 	}
 		// }
 
-		if (SkillWidgetClass)
-		{
-			SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
-			if (SkillWidget.IsValid())
-			{
-				SkillWidget->AddToViewport();
-				SkillWidget->SetVisibility(ESlateVisibility::Hidden);
-			}
-		}
+		// TODO : 크래쉬 문제로 인해서 주석처리 해주었습니다.
+		// 버그 해결이후에는 주석 처리를 풀어주어야 합니다.
+		// if (SkillWidgetClass)
+		// {
+		// 	SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
+		// 	if (SkillWidget.IsValid())
+		// 	{
+		// 		SkillWidget->AddToViewport();
+		// 		SkillWidget->SetVisibility(ESlateVisibility::Hidden);
+		// 	}
+		// }
 
 		if (KillLogWidgetClass)
 		{
@@ -147,8 +149,10 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	if (LocalPlayerState != nullptr)
 	{
 		const auto CharacterName = LocalPlayerState->GetCharacterName();
-		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SkillWidget->SetCharacter(CharacterName);
+		// TODO : 크래쉬 문제로 인해서 주석처리 해주었습니다.
+		// 버그 해결이후에는 주석 처리를 풀어주어야 합니다.
+		// SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		// SkillWidget->SetCharacter(CharacterName);
 		// LocalPlayerState->OnCharacterNameChanged.AddUObject(SkillWidget,&USkillWidget::SetCharacter);
 	}
 

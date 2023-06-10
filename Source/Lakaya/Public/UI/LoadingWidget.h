@@ -20,7 +20,7 @@ public:
 private:
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* LoadingWidgetText;
+	TWeakObjectPtr<UTextBlock> LoadingWidgetText;
 
 	uint8 MaxPlayerCount;
 };

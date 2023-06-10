@@ -1,5 +1,10 @@
 #include "UI/LoadingWidget.h"
 
+#include "GameMode/AIIndividualGameMode.h"
+#include "GameMode/AIIndividualGameState.h"
+#include "GameMode/OccupationGameState.h"
+#include "Kismet/GameplayStatics.h"
+
 void ULoadingWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -14,14 +19,30 @@ void ULoadingWidget::NativeConstruct()
 
 void ULoadingWidget::SetPlayerNumber(const uint8& PlayerCount)
 {
-	if (PlayerCount == MaxPlayerCount)
+	const auto CurrentGameState = UGameplayStatics::GetGameState(GetWorld());
+
+	AOccupationGameState* NewOccupationGameState = Cast<AOccupationGameState>(CurrentGameState);
+	AAIIndividualGameState* NewAIIndividualGameState = Cast<AAIIndividualGameState>(CurrentGameState);
+
+	// Occupation Mode
+	if (NewOccupationGameState)
 	{
-		LoadingWidgetText->SetText(FText::FromString(TEXT("곧 게임을 시작합니다.")));
-		return;
+		if (PlayerCount == MaxPlayerCount)
+		{
+			LoadingWidgetText->SetText(FText::FromString(TEXT("loading. . .")));
+			return;
+		}
+
+		LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), PlayerCount, MaxPlayerCount)));
 	}
 
-	//TODO: 텍스트 포맷을 따로 저장해두면 더 높은 퍼포먼스를 기대할 수 있습니다.
-	LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), PlayerCount, MaxPlayerCount)));
+	// AIIndividual Mode
+	if (NewAIIndividualGameState)
+	{
+		LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("loading. . ."))));
+	}
+
+	// TODO : Individual Mode 추가
 }
 
 void ULoadingWidget::SetMaximumPlayerNumber(const uint8& PlayerCount)
