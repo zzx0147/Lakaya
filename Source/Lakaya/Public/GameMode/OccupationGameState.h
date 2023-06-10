@@ -24,10 +24,6 @@ protected:
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
 
 public:
-	UFUNCTION(NetMulticast, Reliable)
-	void NotifyKillCharacter(AController* KilledController, AActor* KilledActor, AController* EventInstigator,
-	                         AActor* Causer);
-
 	// 현재 두 팀의 점수를 기준으로 승자를 정합니다.
 	void SetOccupationWinner();
 

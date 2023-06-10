@@ -84,3 +84,27 @@ void AWaziCharacter::OnReloadCompleteTimeNotified(const float& Time)
 {
 	ReloadCompleteTime = Time;
 }
+
+void AWaziCharacter::OnRep_Controller()
+{
+	Super::OnRep_Controller();
+	const auto MyController = GetController();
+	if(MyController == nullptr) return;
+	if (const auto PlayerController = Cast<APlayerController>(MyController); PlayerController->IsLocalController())
+		CreateClairvoyanceWidget(PlayerController);
+}
+
+
+void AWaziCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	if(NewController == nullptr) return;
+	if (const auto PlayerController = Cast<APlayerController>(NewController); PlayerController->IsLocalController())
+		CreateClairvoyanceWidget(PlayerController);
+}
+
+void AWaziCharacter::CreateClairvoyanceWidget(APlayerController* PlayerController)
+{
+	const auto ClairvoyanceAbility = FindAbility<UClairvoyanceAbility>(Secondary);
+	ClairvoyanceAbility->CreateClairvoyanceWidget(PlayerController);
+}

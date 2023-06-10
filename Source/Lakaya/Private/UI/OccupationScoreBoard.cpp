@@ -106,17 +106,13 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 		}
 	});
 
-	// TODO: 테스트를 하기 위해 주석처리 했습니다.
-	// 빌드파일을 뽑을 때에는 반드시 주석을 없애주어야 합니다.
-	// LakayaState->OnPlayerNameChanged.AddUObject(Element, &UScoreBoardElement::SetPlayerName);
+	LakayaState->OnPlayerNameChanged.AddUObject(Element, &UScoreBoardElement::SetPlayerName);
 	LakayaState->OnTotalScoreChanged.AddUObject(Element, &UScoreBoardElement::SetTotalScore);
 	LakayaState->OnSuccessCaptureCountChanged.AddUObject(Element, &UScoreBoardElement::SetSuccessCaptureCount);
 	LakayaState->OnKillCountChanged.AddUObject(Element, &UScoreBoardElement::SetKillCount);
 	LakayaState->OnDeathCountChanged.AddUObject(Element, &UScoreBoardElement::SetDeathCount);
 
-	// TODO: 테스트를 하기 위해 주석처리 했습니다.
-	// 빌드파일을 뽑을 때에는 반드시 주석을 없애주어야 합니다.
-	// Element->SetPlayerName(LakayaState->GetPlayerName());
+	Element->SetPlayerName(LakayaState->GetPlayerName());
 	Element->SetTotalScore(LakayaState->GetTotalScore());
 	Element->SetSuccessCaptureCount(LakayaState->GetSuccessCaptureCount());
 	Element->SetDeathCount(LakayaState->GetDeathCount());

@@ -23,6 +23,7 @@ public:
 protected:
 	virtual bool ShouldStartRemoteCall() override;
 	virtual void StartDelayedAbility() override;
+	virtual void StopDelayedAbility() override;
 	virtual void OnDelayedAbilityStopTimeChanged(const float& NewDelayedAbilityStopTime) override;
 
 private:

@@ -89,15 +89,16 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 
-		if (HelpWidgetClass)
-		{
-			HelpWidget = CreateWidget<UHelpWidget>(LocalController, HelpWidgetClass);
-			if (HelpWidget.IsValid())
-			{
-				HelpWidget->AddToViewport();
-				HelpWidget->SetVisibility(ESlateVisibility::Hidden);
-			}
-		}
+		// TODO : 아직 구현이 되지 않아 비활성화 합니다.
+		// if (HelpWidgetClass)
+		// {
+		// 	HelpWidget = CreateWidget<UHelpWidget>(LocalController, HelpWidgetClass);
+		// 	if (HelpWidget.IsValid())
+		// 	{
+		// 		HelpWidget->AddToViewport();
+		// 		HelpWidget->SetVisibility(ESlateVisibility::Hidden);
+		// 	}
+		// }
 
 		if (SkillWidgetClass)
 		{
@@ -157,7 +158,7 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 				SkillWidget->RenaQSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 				SkillWidget->RenaESkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 				SkillWidget->RenaRButtonSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				SkillWidget->RenaRSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				// SkillWidget->RenaRSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 			}
 		}
 
@@ -171,7 +172,7 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 				SkillWidget->WaziQSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 				SkillWidget->WaziESkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 				SkillWidget->WaziRButtonSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				SkillWidget->WaziRSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				// SkillWidget->WaziRSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 				ScoreBoard->RegisterPlayer(LocalPlayerState);
 			}
@@ -189,8 +190,9 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	if (CrosshairWidget != nullptr)
 		CrosshairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-	if (HelpWidget.IsValid())
-		HelpWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	// TODO : 아직 구현이 되지 않아 비활성화 합니다.
+	// if (HelpWidget.IsValid())
+	// 	HelpWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 	SetupTimerWidget(MatchWaitToStartTimer, MatchWaitDuration, MatchWaitEndingTime, [this]
 	{

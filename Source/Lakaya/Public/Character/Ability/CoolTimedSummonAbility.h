@@ -30,7 +30,7 @@ public:
 	                                   class ASummonAbilityInstance* const& AbilityInstance);
 
 	// 어빌리티 인스턴스 소환 시, 소환의 기준 위치를 선정할 때 사용되는 씬 컴포넌트를 지정합니다.
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintSetter)
 	void SetBasisComponent(USceneComponent* NewComponent);
 
 protected:

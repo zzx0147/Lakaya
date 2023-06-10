@@ -43,10 +43,16 @@ void UDeathRayAbility::StartDelayedAbility()
 	SetComponentTickEnabled(true);
 }
 
+void UDeathRayAbility::StopDelayedAbility()
+{
+	Super::StopDelayedAbility();
+	if (GetOwner()->HasAuthority()) ApplyCoolTime();
+	if (LaserEffect.IsValid()) LaserEffect->DeactivateImmediate();
+}
+
 void UDeathRayAbility::OnDelayedAbilityStopTimeChanged(const float& NewDelayedAbilityStopTime)
 {
 	Super::OnDelayedAbilityStopTimeChanged(NewDelayedAbilityStopTime);
-	if (GetOwner()->HasAuthority()) ApplyCoolTime();
 	if (!LaserEffect.IsValid()) return;
 	LaserEffect->Deactivate();
 	SetComponentTickEnabled(false);
