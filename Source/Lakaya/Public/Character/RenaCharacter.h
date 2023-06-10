@@ -21,6 +21,7 @@ protected:
 
 	virtual void OnMinePerformTimeNotified(const float& Time);
 	virtual void OnDeathRayStartTimeNotified(const float& Time);
+	virtual void OnDeathRayStopTimeNotified(const float& Time);
 	virtual void OnWantsToFireChanged(bool FireState);
 	virtual void OnBombPerformTimeNotified(const float& Time);
 	virtual void OnReloadCompleteTimeNotified(const float& Time);
@@ -30,17 +31,14 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float MineLateDelay;
 
-	// 죽음의 광선 스킬이 시작되고 몇초뒤부터 다른 행동이 가능하도록 할지 지정합니다.
-	UPROPERTY(EditAnywhere)
-	float DeathRayLateDelay;
-
 	// 에너지 폭탄을 던지고 나서 몇초동안 후딜레이가 적용되도록 할지 지정합니다.
 	UPROPERTY(EditAnywhere)
 	float BombLateDelay;
 
 private:
 	float MineEndingTime;
-	float DeathRayEndingTime;
+	float DeathRayStartTime;
+	float DeathRayStopTime;
 	bool bWantsToFire;
 	float BombEndingTime;
 	float ReloadCompleteTime;

@@ -1,28 +1,53 @@
 #include "GameMode/AIIndividualGameState.h"
 
-#include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
+#include "AI/AiCharacterController.h"
 #include "Character/LakayaBasePlayerState.h"
-#include "Kismet/GameplayStatics.h"
+#include "ETC/OutlineManager.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "PlayerController/InteractablePlayerController.h"
 #include "UI/IndividualWidget/IndividualGameResultWidget.h"
+#include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
 
 AAIIndividualGameState::AAIIndividualGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	
-	static ConstructorHelpers::FClassFinder<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardFinder(
-	TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_IndividualLiveScoreBoardWidget"));
+	MatchStartWaitWidgetLifeTime = 3.0f;
 
-	if (AIIndividualLiveScoreBoardFinder.Succeeded()) AIIndividualLiveScoreBoardWidgetClass = AIIndividualLiveScoreBoardFinder.Class;
+	static ConstructorHelpers::FClassFinder<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardFinder(
+		TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_IndividualLiveScoreBoardWidget"));
+
+	AIIndividualLiveScoreBoardWidgetClass = AIIndividualLiveScoreBoardFinder.Class;
+}
+
+void AAIIndividualGameState::AddPlayerState(APlayerState* PlayerState)
+{
+	Super::AddPlayerState(PlayerState);
+	if (const auto CastedState = Cast<ALakayaBasePlayerState>(PlayerState))
+	{
+		auto OnOwnerChanged = [this](AActor* InOwner, ALakayaBasePlayerState* State, const uint8 Count)
+		{
+			const auto Controller = Cast<APlayerController>(InOwner);
+			State->SetAlly(Controller && Controller->IsLocalController());
+			State->SetUniqueStencilMask(GetUniqueStencilMaskWithCount(Count));
+		};
+
+		const auto Count = PlayerArray.Num();
+		OnOwnerChanged(CastedState->GetOwner(), CastedState, Count);
+		CastedState->OnOwnerChanged.AddLambda(OnOwnerChanged, CastedState, Count);
+	}
 }
 
 void AAIIndividualGameState::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	if (SpawnOutlineManager()) OutlineManager->SetTeam(EPlayerTeam::Individual);
+
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
-		AIIndividualLiveScoreBoardWidget = CreateWidget<UIndividualLiveScoreBoardWidget>(LocalController, AIIndividualLiveScoreBoardWidgetClass);
+		AIIndividualLiveScoreBoardWidget = CreateWidget<UIndividualLiveScoreBoardWidget>(
+			LocalController, AIIndividualLiveScoreBoardWidgetClass);
 
 		if (GameResultWidgetClass)
 		{
@@ -33,25 +58,26 @@ void AAIIndividualGameState::BeginPlay()
 		}
 		else UE_LOG(LogTemp, Warning, TEXT("GameResultWidgeTClass is null"));
 	}
-
+	
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
-		AController* PlayerController = It->Get();
-		
-		const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(PlayerController->GetPlayerState<ALakayaBasePlayerState>());
-		
+		AController* AllControllers = It->Get();
+
+		const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(
+			AllControllers->GetPlayerState<ALakayaBasePlayerState>());
+
 		// AI와 플레이어들의 정보를 Array에 담습니다.
 		AllPlayersArray.Add(IndividualPlayerState);
-		
-		if (PlayerController && AIIndividualLiveScoreBoardWidget.IsValid())
+
+		if (AllControllers && AIIndividualLiveScoreBoardWidget.IsValid())
 		{
 			AIIndividualLiveScoreBoardWidget->AddToViewport();
-			AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
+			AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Hidden);
 			
-			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(PlayerController->PlayerState);
+			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
 			if (PlayerStateObj)
 			{
-				PlayerAIData.PlayerName = PlayerStateObj->GetDebugName(PlayerController);
+				PlayerAIData.PlayerName = PlayerStateObj->GetDebugName(AllControllers);
 				PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
 				FPlayerAIDataArray.Add(PlayerAIData);
 				
@@ -75,8 +101,8 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 		{
 			AController* PlayerController = It->Get();
 			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(PlayerController->PlayerState);
-			
-			if(PlayerController && PlayerController->IsA<AInteractablePlayerController>())
+
+			if (PlayerController && PlayerController->IsA<AInteractablePlayerController>())
 			{
 				if (PlayerStateObj)
 				{
@@ -99,9 +125,49 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 				}
 			}
 		}
-		
+
 		SetScoreBoardPlayerAIName(FPlayerAIDataArray);
 	}
+}
+
+void AAIIndividualGameState::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+
+	// 매치 시작하면 플레이어 동작 막기
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+		LocalController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_None);
+	
+	FTimerDelegate TimerDelegate;
+	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate, MatchStartWaitWidgetLifeTime, false);
+
+	// 게임이 본격적으로 시작이 되면 AI 의 비헤이비어 트리를 시작시켜줍니다.
+	TimerDelegate.BindLambda([this]
+	{
+		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
+		{
+			AController* AllControllers = It->Get();
+
+			APlayerController* PlayerCharacterController = Cast<APlayerController>(AllControllers);
+			AAiCharacterController* AiCharacterController = Cast<AAiCharacterController>(AllControllers);
+
+			if (AllControllers && AIIndividualLiveScoreBoardWidget.IsValid())
+				AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
+
+			// 플레이어 동작 
+			if (PlayerCharacterController)
+				PlayerCharacterController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+
+			// AI 동작
+			if (AiCharacterController)
+			{
+				AiCharacterController->BlackboardComp->InitializeBlackboard(*(AiCharacterController->BehaviorTreeAsset->BlackboardAsset));
+				AiCharacterController->BehaviorTreeComp->StartTree(*(AiCharacterController->BehaviorTreeAsset));
+				AiCharacterController->bIsBehaviorTreeStart = true;
+			}
+		}
+	});
+	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageVisible, TimerDelegate, MatchWaitDuration, false);
 }
 
 void AAIIndividualGameState::HandleMatchHasEnded()
@@ -114,9 +180,10 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 	// 플레이어의 정보를 가져와 게임결과 위젯을 바인딩해줍니다.
 	if (const auto LocalPlayerController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
-		const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(LocalPlayerController->GetPlayerState<ALakayaBasePlayerState>());
+		const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(
+			LocalPlayerController->GetPlayerState<ALakayaBasePlayerState>());
 		if (IndividualPlayerState == nullptr) UE_LOG(LogTemp, Warning, TEXT("IndividualPlayerState is null."));
-		
+
 		GameResultWidget->SetScore(IndividualPlayerState->GetTotalScore());
 		GameResultWidget->SetKill(IndividualPlayerState->GetKillCount());
 		GameResultWidget->SetDeath(IndividualPlayerState->GetDeathCount());
@@ -133,14 +200,14 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 	for (int i = 0; i < AllPlayersArray.Num(); ++i)
 	{
 		AllPlayersArray.Sort([](const TWeakObjectPtr<ALakayaBasePlayerState>& A,
-			const TWeakObjectPtr<ALakayaBasePlayerState>& B)
+		                        const TWeakObjectPtr<ALakayaBasePlayerState>& B)
 		{
 			return A->GetTotalScore() > B->GetTotalScore();
 		});
 	}
 
 	// 현재 플레이어 컨트롤러 반환
-	const auto CurrentPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->GetPlayerState<ALakayaBasePlayerState>());
+	const auto CurrentPlayerState = GetWorld()->GetFirstPlayerController()->GetPlayerState<ALakayaBasePlayerState>();
 	uint8 CurrentPlayerIndex = INDEX_NONE;
 	for (uint8 i = 0; i < AllPlayersArray.Num(); ++i)
 	{
@@ -181,6 +248,20 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("현재 플레이어를 찾을 수 없습니다."));
+	}
+}
+
+ERendererStencilMask AAIIndividualGameState::GetUniqueStencilMaskWithCount(const uint8& Count)
+{
+	switch (Count)
+	{
+	case 1: return ERendererStencilMask::ERSM_1;
+	case 2: return ERendererStencilMask::ERSM_2;
+	case 3: return ERendererStencilMask::ERSM_4;
+	case 4: return ERendererStencilMask::ERSM_8;
+	case 5: return ERendererStencilMask::ERSM_16;
+	case 6: return ERendererStencilMask::ERSM_32;
+	default: return ERendererStencilMask::ERSM_Default;
 	}
 }
 

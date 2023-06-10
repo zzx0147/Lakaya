@@ -21,7 +21,7 @@ protected:
 	void SetClairvoyance(const bool& bIsClairvoyance);
 
 public:
-	void SetTeam(const EPlayerTeam& NewTeam) { ClientTeam = NewTeam; }
+	void SetTeam(const EPlayerTeam& NewTeam);
 	void RegisterClairvoyance(const uint32& UniqueId, const EPlayerTeam& PlayerTeam);
 	void UnRegisterClairvoyance(const uint32& UniqueId, const EPlayerTeam& PlayerTeam);
 
@@ -38,6 +38,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	FName EnemyRenderingParameterName;
+
+	UPROPERTY(EditAnywhere)
+	FName EnemyNumberStartParameterName;
 
 	TSet<uint32> ActivatedClairvoyanceSet;
 	TWeakObjectPtr<UMaterialInstanceDynamic> ClairvoyanceDynamic;

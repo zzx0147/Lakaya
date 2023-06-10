@@ -17,6 +17,7 @@ AOutlineManager::AOutlineManager()
 		TEXT("ClairvoyancePostProcessComponent"));
 	ClairvoyancePostProcessComponent->bEnabled = true;
 	EnemyRenderingParameterName = FName(TEXT("bIsRenderEnemy"));
+	EnemyNumberStartParameterName = FName(TEXT("EnemyNumberStart"));
 }
 
 void AOutlineManager::PostInitializeComponents()
@@ -31,6 +32,13 @@ void AOutlineManager::SetClairvoyance(const bool& bIsClairvoyance)
 {
 	if (ClairvoyanceDynamic.IsValid())
 		ClairvoyanceDynamic->SetScalarParameterValue(EnemyRenderingParameterName, bIsClairvoyance ? 1.f : 0.f);
+}
+
+void AOutlineManager::SetTeam(const EPlayerTeam& NewTeam)
+{
+	ClientTeam = NewTeam;
+	ClairvoyanceDynamic->SetScalarParameterValue(EnemyNumberStartParameterName,
+	                                             NewTeam == EPlayerTeam::Individual ? 2.f : 8.f);
 }
 
 void AOutlineManager::RegisterClairvoyance(const uint32& UniqueId, const EPlayerTeam& PlayerTeam)

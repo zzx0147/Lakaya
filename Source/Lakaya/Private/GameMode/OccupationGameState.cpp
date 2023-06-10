@@ -1,6 +1,5 @@
 #include "GameMode/OccupationGameState.h"
 
-#include "EngineUtils.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
@@ -132,7 +131,8 @@ void AOccupationGameState::BeginPlay()
 
 		if (DetailResultElementWidgetClass)
 		{
-			DetailResultElementWidget = CreateWidget<UDetailResultElementWidget>(LocalController, DetailResultElementWidgetClass);
+			DetailResultElementWidget = CreateWidget<UDetailResultElementWidget>(
+				LocalController, DetailResultElementWidgetClass);
 			if (DetailResultElementWidget.IsValid())
 			{
 				DetailResultElementWidget->AddToViewport(1);
@@ -206,12 +206,6 @@ void AOccupationGameState::HandleMatchHasEnded()
 	BindDetailResultWidget();
 	BindDetailResultElementWidget();
 	TapBool = false;
-}
-
-void AOccupationGameState::NotifyKillCharacter_Implementation(AController* KilledController, AActor* KilledActor,
-                                                              AController* EventInstigator, AActor* Causer)
-{
-	//OnKillCharacterNotify.Broadcast(KilledController, KilledActor, EventInstigator, Causer);
 }
 
 void AOccupationGameState::EndTimeCheck()
@@ -315,7 +309,7 @@ void AOccupationGameState::DestroyShieldWallObject()
 		UE_LOG(LogTemp, Warning, TEXT("World is null."));
 		return;
 	}
-	
+
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(World, AShieldWallObject::StaticClass(), FoundActors);
 
