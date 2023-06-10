@@ -27,6 +27,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 
 	TWeakObjectPtr<class UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardWidget;
@@ -43,4 +44,11 @@ private:
 
 	// 게임 종료 시 등수를 뛰우는 위젯입니다.
 	TWeakObjectPtr<UIndividualGameResultWidget> GameResultWidget;
+
+	FTimerHandle TimerHandle_StartMessageVisible;
+	FTimerHandle TimerHandle_StartMessageHidden;
+	FTimerHandle TimerHandle_WaitTimerHandle;
+	
+	UPROPERTY(EditAnywhere)
+	float MatchStartWaitWidgetLifeTime;
 };
