@@ -2,6 +2,7 @@
 
 #include "AI/AiCharacterController.h"
 #include "Character/LakayaBasePlayerState.h"
+#include "ETC/OutlineManager.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "PlayerController/InteractablePlayerController.h"
@@ -24,21 +25,25 @@ void AAIIndividualGameState::AddPlayerState(APlayerState* PlayerState)
 	Super::AddPlayerState(PlayerState);
 	if (const auto CastedState = Cast<ALakayaBasePlayerState>(PlayerState))
 	{
-		auto SetAlly = [this](AActor* InOwner, ALakayaBasePlayerState* State)
+		auto OnOwnerChanged = [this](AActor* InOwner, ALakayaBasePlayerState* State, const uint8 Count)
 		{
 			const auto Controller = Cast<APlayerController>(InOwner);
 			State->SetAlly(Controller && Controller->IsLocalController());
+			State->SetUniqueStencilMask(GetUniqueStencilMaskWithCount(Count));
 		};
 
-		SetAlly(CastedState->GetOwner(), CastedState);
-		CastedState->OnOwnerChanged.AddLambda(SetAlly, CastedState);
+		const auto Count = PlayerArray.Num();
+		OnOwnerChanged(CastedState->GetOwner(), CastedState, Count);
+		CastedState->OnOwnerChanged.AddLambda(OnOwnerChanged, CastedState, Count);
 	}
 }
 
 void AAIIndividualGameState::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	if (SpawnOutlineManager()) OutlineManager->SetTeam(EPlayerTeam::Individual);
+
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
 		AIIndividualLiveScoreBoardWidget = CreateWidget<UIndividualLiveScoreBoardWidget>(
@@ -243,6 +248,20 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("현재 플레이어를 찾을 수 없습니다."));
+	}
+}
+
+ERendererStencilMask AAIIndividualGameState::GetUniqueStencilMaskWithCount(const uint8& Count)
+{
+	switch (Count)
+	{
+	case 1: return ERendererStencilMask::ERSM_1;
+	case 2: return ERendererStencilMask::ERSM_2;
+	case 3: return ERendererStencilMask::ERSM_4;
+	case 4: return ERendererStencilMask::ERSM_8;
+	case 5: return ERendererStencilMask::ERSM_16;
+	case 6: return ERendererStencilMask::ERSM_32;
+	default: return ERendererStencilMask::ERSM_Default;
 	}
 }
 
