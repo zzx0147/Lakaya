@@ -36,6 +36,8 @@ protected:
 	TSubclassOf<class UIndividualGameResultWidget> GameResultWidgetClass;
 
 private:
+	ERendererStencilMask GetUniqueStencilMaskWithCount(const uint8& Count);
+	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardWidgetClass;
 
