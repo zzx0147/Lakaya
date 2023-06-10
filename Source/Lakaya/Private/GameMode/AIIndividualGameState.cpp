@@ -1,30 +1,44 @@
 #include "GameMode/AIIndividualGameState.h"
 
-#include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
 #include "Character/LakayaBasePlayerState.h"
-#include "Kismet/GameplayStatics.h"
 #include "PlayerController/InteractablePlayerController.h"
 #include "UI/IndividualWidget/IndividualGameResultWidget.h"
+#include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
 
 AAIIndividualGameState::AAIIndividualGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	
-	static ConstructorHelpers::FClassFinder<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardFinder(
-	TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_IndividualLiveScoreBoardWidget"));
 
-	if (AIIndividualLiveScoreBoardFinder.Succeeded()) AIIndividualLiveScoreBoardWidgetClass = AIIndividualLiveScoreBoardFinder.Class;
+	static ConstructorHelpers::FClassFinder<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardFinder(
+		TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_IndividualLiveScoreBoardWidget"));
+
+	AIIndividualLiveScoreBoardWidgetClass = AIIndividualLiveScoreBoardFinder.Class;
+}
+
+void AAIIndividualGameState::AddPlayerState(APlayerState* PlayerState)
+{
+	Super::AddPlayerState(PlayerState);
+	if (const auto CastedState = Cast<ALakayaBasePlayerState>(PlayerState))
+	{
+		auto SetAlly = [this](AActor* Owner, ALakayaBasePlayerState* State)
+		{
+			const auto Controller = Cast<APlayerController>(Owner);
+			State->SetAlly(Controller && Controller->IsLocalController());
+		};
+
+		SetAlly(CastedState->GetOwner(), CastedState);
+		CastedState->OnOwnerChanged.AddLambda(SetAlly, CastedState);
+	}
 }
 
 void AAIIndividualGameState::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
-		
-		
-		AIIndividualLiveScoreBoardWidget = CreateWidget<UIndividualLiveScoreBoardWidget>(LocalController, AIIndividualLiveScoreBoardWidgetClass);
+		AIIndividualLiveScoreBoardWidget = CreateWidget<UIndividualLiveScoreBoardWidget>(
+			LocalController, AIIndividualLiveScoreBoardWidgetClass);
 
 		if (GameResultWidgetClass)
 		{
@@ -39,27 +53,28 @@ void AAIIndividualGameState::BeginPlay()
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
 		AController* PlayerController = It->Get();
-		
-		const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(PlayerController->GetPlayerState<ALakayaBasePlayerState>());
-		
+
+		const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(
+			PlayerController->GetPlayerState<ALakayaBasePlayerState>());
+
 		// AI와 플레이어들의 정보를 Array에 담습니다.
 		AllPlayersArray.Add(IndividualPlayerState);
-		
+
 		if (PlayerController && AIIndividualLiveScoreBoardWidget.IsValid())
 		{
 			AIIndividualLiveScoreBoardWidget->AddToViewport();
 			AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
-			
+
 			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(PlayerController->PlayerState);
 			if (PlayerStateObj)
 			{
 				PlayerAIData.PlayerName = PlayerStateObj->GetDebugName(PlayerController);
 				PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
 				FPlayerAIDataArray.Add(PlayerAIData);
-				
+
 				UE_LOG(LogTemp, Warning, TEXT("Set All PlayerData In AIIndividualLiveScoreBoardWidget"));
 			}
-			
+
 			SetScoreBoardPlayerAIName(FPlayerAIDataArray);
 		}
 	}
@@ -77,8 +92,8 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 		{
 			AController* PlayerController = It->Get();
 			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(PlayerController->PlayerState);
-			
-			if(PlayerController && PlayerController->IsA<AInteractablePlayerController>())
+
+			if (PlayerController && PlayerController->IsA<AInteractablePlayerController>())
 			{
 				if (PlayerStateObj)
 				{
@@ -101,7 +116,7 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 				}
 			}
 		}
-		
+
 		SetScoreBoardPlayerAIName(FPlayerAIDataArray);
 	}
 }
@@ -116,9 +131,10 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 	// 플레이어의 정보를 가져와 게임결과 위젯을 바인딩해줍니다.
 	if (const auto LocalPlayerController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
-		const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(LocalPlayerController->GetPlayerState<ALakayaBasePlayerState>());
+		const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(
+			LocalPlayerController->GetPlayerState<ALakayaBasePlayerState>());
 		if (IndividualPlayerState == nullptr) UE_LOG(LogTemp, Warning, TEXT("IndividualPlayerState is null."));
-		
+
 		GameResultWidget->SetScore(IndividualPlayerState->GetTotalScore());
 		GameResultWidget->SetKill(IndividualPlayerState->GetKillCount());
 		GameResultWidget->SetDeath(IndividualPlayerState->GetDeathCount());
@@ -135,14 +151,14 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 	for (int i = 0; i < AllPlayersArray.Num(); ++i)
 	{
 		AllPlayersArray.Sort([](const TWeakObjectPtr<ALakayaBasePlayerState>& A,
-			const TWeakObjectPtr<ALakayaBasePlayerState>& B)
+		                        const TWeakObjectPtr<ALakayaBasePlayerState>& B)
 		{
 			return A->GetTotalScore() > B->GetTotalScore();
 		});
 	}
 
 	// 현재 플레이어 컨트롤러 반환
-	const auto CurrentPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->GetPlayerState<ALakayaBasePlayerState>());
+	const auto CurrentPlayerState = GetWorld()->GetFirstPlayerController()->GetPlayerState<ALakayaBasePlayerState>();
 	uint8 CurrentPlayerIndex = INDEX_NONE;
 	for (uint8 i = 0; i < AllPlayersArray.Num(); ++i)
 	{
