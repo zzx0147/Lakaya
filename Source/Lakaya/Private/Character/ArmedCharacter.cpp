@@ -22,9 +22,9 @@ AArmedCharacter::AArmedCharacter(const FObjectInitializer& ObjectInitializer) : 
 	Abilities.Reserve(EAbilityKind::Count);
 	for (auto Index = 0; Index < EAbilityKind::Count; ++Index)
 	{
-		const auto Ability = CreateDefaultSubobject<UCharacterAbility>(AbilityComponentNames[Index]);
-		Ability->SetIsReplicated(true);
-		Abilities.EmplaceAt(Index, Ability);
+		Abilities.EmplaceAt(Index, Cast<UCharacterAbility>(CreateDefaultSubobject(
+			                    AbilityComponentNames[Index], UCharacterAbility::StaticClass(),
+			                    UCharacterAbility::StaticClass(), false, false)));
 	}
 }
 
