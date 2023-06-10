@@ -7,6 +7,8 @@
 #include "Occupation/PlayerTeam.h"
 #include "OutlineManager.generated.h"
 
+class ALakayaBaseCharacter;
+
 UCLASS()
 class LAKAYA_API AOutlineManager : public AActor
 {
@@ -22,8 +24,8 @@ protected:
 
 public:
 	void SetTeam(const EPlayerTeam& NewTeam);
-	void RegisterClairvoyance(const uint32& UniqueId, const EPlayerTeam& PlayerTeam);
-	void UnRegisterClairvoyance(const uint32& UniqueId, const EPlayerTeam& PlayerTeam);
+	void RegisterClairvoyance(const ALakayaBaseCharacter* Character);
+	void UnRegisterClairvoyance(const ALakayaBaseCharacter* Character);
 
 private:
 	EPlayerTeam ClientTeam;
@@ -42,6 +44,6 @@ private:
 	UPROPERTY(EditAnywhere)
 	FName EnemyNumberStartParameterName;
 
-	TSet<uint32> ActivatedClairvoyanceSet;
+	TSet<const ALakayaBaseCharacter*> ActivatedClairvoyanceSet;
 	TWeakObjectPtr<UMaterialInstanceDynamic> ClairvoyanceDynamic;
 };
