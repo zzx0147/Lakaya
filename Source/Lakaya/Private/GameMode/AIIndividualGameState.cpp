@@ -3,14 +3,20 @@
 
 #include "GameMode/AIIndividualGameState.h"
 
+#include "AI/AiCharacterController.h"
 #include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
 #include "Character/LakayaBasePlayerState.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "PlayerController/InteractablePlayerController.h"
+#include "UI/MatchStartWaitWidget.h"
 
 AAIIndividualGameState::AAIIndividualGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	MatchStartWaitWidgetLifeTime = 3.0f;
 	
 	static ConstructorHelpers::FClassFinder<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardFinder(
 	TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_IndividualLiveScoreBoardWidget"));
@@ -21,32 +27,6 @@ AAIIndividualGameState::AAIIndividualGameState()
 void AAIIndividualGameState::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
-		AIIndividualLiveScoreBoardWidget = CreateWidget<UIndividualLiveScoreBoardWidget>(LocalController, AIIndividualLiveScoreBoardWidgetClass);
-
-	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
-	{
-		AController* PlayerController = It->Get();
-
-		if (PlayerController && AIIndividualLiveScoreBoardWidget.IsValid())
-		{
-			AIIndividualLiveScoreBoardWidget->AddToViewport();
-			AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
-			
-			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(PlayerController->PlayerState);
-			if (PlayerStateObj)
-			{
-				PlayerAIData.PlayerName = PlayerStateObj->GetDebugName(PlayerController);
-				PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
-				FPlayerAIDataArray.Add(PlayerAIData);
-				
-				UE_LOG(LogTemp, Warning, TEXT("Set All PlayerData In AIIndividualLiveScoreBoardWidget"));
-			}
-			
-			SetScoreBoardPlayerAIName(FPlayerAIDataArray);
-		}
-	}
 }
 
 void AAIIndividualGameState::Tick(float DeltaSeconds)
@@ -88,6 +68,76 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 		
 		SetScoreBoardPlayerAIName(FPlayerAIDataArray);
 	}
+}
+
+void AAIIndividualGameState::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+		AIIndividualLiveScoreBoardWidget = CreateWidget<UIndividualLiveScoreBoardWidget>(LocalController, AIIndividualLiveScoreBoardWidgetClass);
+	
+	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
+	{
+		AController* AllControllers = It->Get();
+		APlayerController* PlayerCharacterController = Cast<APlayerController>(AllControllers);
+
+		if (PlayerCharacterController)
+		{
+			PlayerCharacterController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_None);
+		}
+
+		if (AllControllers && AIIndividualLiveScoreBoardWidget.IsValid())
+		{
+			AIIndividualLiveScoreBoardWidget->AddToViewport();
+			AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
+			
+			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
+			if (PlayerStateObj)
+			{
+				PlayerAIData.PlayerName = PlayerStateObj->GetDebugName(AllControllers);
+				PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
+				FPlayerAIDataArray.Add(PlayerAIData);
+				
+				UE_LOG(LogTemp, Warning, TEXT("Set All PlayerData In AIIndividualLiveScoreBoardWidget"));
+			}
+			
+			SetScoreBoardPlayerAIName(FPlayerAIDataArray);
+		}
+	}
+	
+	FTimerDelegate TimerDelegate;
+	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate, MatchStartWaitWidgetLifeTime, false);
+
+	// 게임이 본격적으로 시작이 되면 AI 의 비헤이비어 트리를 시작시켜줍니다.
+	TimerDelegate.BindLambda([this]
+	{
+		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
+		{
+			AController* AllControllers = It->Get();
+
+			APlayerController* PlayerCharacterController = Cast<APlayerController>(AllControllers);
+			AAiCharacterController* AiCharacterController = Cast<AAiCharacterController>(AllControllers);
+
+			if (PlayerCharacterController)
+			{
+				PlayerCharacterController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+			}
+			
+			if (AiCharacterController)
+			{
+				AiCharacterController->BlackboardComp->InitializeBlackboard(*(AiCharacterController->BehaviorTreeAsset->BlackboardAsset));
+				AiCharacterController->BehaviorTreeComp->StartTree(*(AiCharacterController->BehaviorTreeAsset));
+				AiCharacterController->bIsBehaviorTreeStart = true;
+			}
+		}
+	});
+	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageVisible, TimerDelegate, MatchWaitDuration, false);
+}
+
+void AAIIndividualGameState::HandleMatchHasEnded()
+{
+	Super::HandleMatchHasEnded();
 }
 
 void AAIIndividualGameState::SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray)

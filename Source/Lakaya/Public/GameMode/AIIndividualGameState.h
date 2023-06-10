@@ -30,11 +30,21 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void HandleMatchHasStarted() override;
+	virtual void HandleMatchHasEnded() override;
+
 
 	TWeakObjectPtr<class UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardWidget;
 	
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardWidgetClass;
+	
+	FTimerHandle TimerHandle_StartMessageVisible;
+	FTimerHandle TimerHandle_StartMessageHidden;
+	FTimerHandle TimerHandle_WaitTimerHandle;
+	
+	UPROPERTY(EditAnywhere)
+	float MatchStartWaitWidgetLifeTime;
 	
 };

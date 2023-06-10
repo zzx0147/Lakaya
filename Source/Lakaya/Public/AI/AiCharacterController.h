@@ -32,6 +32,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AI, meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* BehaviorTreeAsset;
+
+	UPROPERTY(EditAnywhere)
+	bool bIsBehaviorTreeStart;
 	
 private:
 	UFUNCTION(BlueprintCallable)
