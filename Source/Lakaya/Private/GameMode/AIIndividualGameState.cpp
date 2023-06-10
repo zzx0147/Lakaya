@@ -1,6 +1,9 @@
 #include "GameMode/AIIndividualGameState.h"
 
+#include "AI/AiCharacterController.h"
 #include "Character/LakayaBasePlayerState.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "PlayerController/InteractablePlayerController.h"
 #include "UI/IndividualWidget/IndividualGameResultWidget.h"
 #include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
@@ -8,6 +11,7 @@
 AAIIndividualGameState::AAIIndividualGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	MatchStartWaitWidgetLifeTime = 3.0f;
 
 	static ConstructorHelpers::FClassFinder<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardFinder(
 		TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_IndividualLiveScoreBoardWidget"));
@@ -20,9 +24,9 @@ void AAIIndividualGameState::AddPlayerState(APlayerState* PlayerState)
 	Super::AddPlayerState(PlayerState);
 	if (const auto CastedState = Cast<ALakayaBasePlayerState>(PlayerState))
 	{
-		auto SetAlly = [this](AActor* Owner, ALakayaBasePlayerState* State)
+		auto SetAlly = [this](AActor* InOwner, ALakayaBasePlayerState* State)
 		{
-			const auto Controller = Cast<APlayerController>(Owner);
+			const auto Controller = Cast<APlayerController>(InOwner);
 			State->SetAlly(Controller && Controller->IsLocalController());
 		};
 
@@ -34,50 +38,6 @@ void AAIIndividualGameState::AddPlayerState(APlayerState* PlayerState)
 void AAIIndividualGameState::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
-	{
-		AIIndividualLiveScoreBoardWidget = CreateWidget<UIndividualLiveScoreBoardWidget>(
-			LocalController, AIIndividualLiveScoreBoardWidgetClass);
-
-		if (GameResultWidgetClass)
-		{
-			GameResultWidget = CreateWidget<UIndividualGameResultWidget>(LocalController, GameResultWidgetClass);
-			if (GameResultWidget == nullptr) UE_LOG(LogTemp, Warning, TEXT("GameResultWidget is null."));
-			GameResultWidget->AddToViewport(1);
-			GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
-		}
-		else UE_LOG(LogTemp, Warning, TEXT("GameResultWidgeTClass is null"));
-	}
-
-	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
-	{
-		AController* PlayerController = It->Get();
-
-		const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(
-			PlayerController->GetPlayerState<ALakayaBasePlayerState>());
-
-		// AI와 플레이어들의 정보를 Array에 담습니다.
-		AllPlayersArray.Add(IndividualPlayerState);
-
-		if (PlayerController && AIIndividualLiveScoreBoardWidget.IsValid())
-		{
-			AIIndividualLiveScoreBoardWidget->AddToViewport();
-			AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
-
-			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(PlayerController->PlayerState);
-			if (PlayerStateObj)
-			{
-				PlayerAIData.PlayerName = PlayerStateObj->GetDebugName(PlayerController);
-				PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
-				FPlayerAIDataArray.Add(PlayerAIData);
-
-				UE_LOG(LogTemp, Warning, TEXT("Set All PlayerData In AIIndividualLiveScoreBoardWidget"));
-			}
-
-			SetScoreBoardPlayerAIName(FPlayerAIDataArray);
-		}
-	}
 }
 
 void AAIIndividualGameState::Tick(float DeltaSeconds)
@@ -119,6 +79,89 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 
 		SetScoreBoardPlayerAIName(FPlayerAIDataArray);
 	}
+}
+
+void AAIIndividualGameState::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+	
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+	{
+		AIIndividualLiveScoreBoardWidget = CreateWidget<UIndividualLiveScoreBoardWidget>(
+			LocalController, AIIndividualLiveScoreBoardWidgetClass);
+
+		if (GameResultWidgetClass)
+		{
+			GameResultWidget = CreateWidget<UIndividualGameResultWidget>(LocalController, GameResultWidgetClass);
+			if (GameResultWidget == nullptr) UE_LOG(LogTemp, Warning, TEXT("GameResultWidget is null."));
+			GameResultWidget->AddToViewport(1);
+			GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+		else UE_LOG(LogTemp, Warning, TEXT("GameResultWidgeTClass is null"));
+	}
+	
+	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
+	{
+		AController* AllControllers = It->Get();
+		APlayerController* PlayerCharacterController = Cast<APlayerController>(AllControllers);
+
+		const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(
+			AllControllers->GetPlayerState<ALakayaBasePlayerState>());
+
+		// AI와 플레이어들의 정보를 Array에 담습니다.
+		AllPlayersArray.Add(IndividualPlayerState);
+
+		if (PlayerCharacterController)
+		{
+			PlayerCharacterController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_None);
+		}
+
+		if (AllControllers && AIIndividualLiveScoreBoardWidget.IsValid())
+		{
+			AIIndividualLiveScoreBoardWidget->AddToViewport();
+			AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
+			
+			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
+			if (PlayerStateObj)
+			{
+				PlayerAIData.PlayerName = PlayerStateObj->GetDebugName(AllControllers);
+				PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
+				FPlayerAIDataArray.Add(PlayerAIData);
+				
+				UE_LOG(LogTemp, Warning, TEXT("Set All PlayerData In AIIndividualLiveScoreBoardWidget"));
+			}
+			
+			SetScoreBoardPlayerAIName(FPlayerAIDataArray);
+		}
+	}
+	
+	FTimerDelegate TimerDelegate;
+	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate, MatchStartWaitWidgetLifeTime, false);
+
+	// 게임이 본격적으로 시작이 되면 AI 의 비헤이비어 트리를 시작시켜줍니다.
+	TimerDelegate.BindLambda([this]
+	{
+		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
+		{
+			AController* AllControllers = It->Get();
+
+			APlayerController* PlayerCharacterController = Cast<APlayerController>(AllControllers);
+			AAiCharacterController* AiCharacterController = Cast<AAiCharacterController>(AllControllers);
+
+			if (PlayerCharacterController)
+			{
+				PlayerCharacterController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+			}
+			
+			if (AiCharacterController)
+			{
+				AiCharacterController->BlackboardComp->InitializeBlackboard(*(AiCharacterController->BehaviorTreeAsset->BlackboardAsset));
+				AiCharacterController->BehaviorTreeComp->StartTree(*(AiCharacterController->BehaviorTreeAsset));
+				AiCharacterController->bIsBehaviorTreeStart = true;
+			}
+		}
+	});
+	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageVisible, TimerDelegate, MatchWaitDuration, false);
 }
 
 void AAIIndividualGameState::HandleMatchHasEnded()
