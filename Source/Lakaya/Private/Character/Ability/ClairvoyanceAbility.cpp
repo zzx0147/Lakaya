@@ -3,6 +3,7 @@
 
 #include "Character/Ability/ClairvoyanceAbility.h"
 
+#include "Blueprint/UserWidget.h"
 #include "ETC/OutlineManager.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -12,6 +13,7 @@ UClairvoyanceAbility::UClairvoyanceAbility() : Super()
 	AbilityStartDelay = 0.2f;
 	BaseAbilityDuration = 30.f;
 	BaseCoolTime = 5.f;
+	
 }
 
 void UClairvoyanceAbility::OnAliveStateChanged(const bool& AliveState)
@@ -22,6 +24,22 @@ void UClairvoyanceAbility::OnAliveStateChanged(const bool& AliveState)
 		TimerManager.ClearTimer(ClairvoyanceTimer);
 		DisableClairvoyance();
 	}
+}
+
+void UClairvoyanceAbility::SetEffectMaterial(UMaterialInstanceDynamic* NewEffectMaterial)
+{
+	EffectMaterial = NewEffectMaterial;
+}
+
+void UClairvoyanceAbility::CreateClairvoyanceWidget(APlayerController* PlayerController)
+{
+	if(PlayerController == nullptr) return;
+	if(ClairvoyanceWidgetClass == nullptr) return;
+	
+	ClairvoyanceWidget = CreateWidget<UUserWidget>(PlayerController, ClairvoyanceWidgetClass);
+	if(ClairvoyanceWidget == nullptr) return;
+	ClairvoyanceWidget->AddToViewport();
+	ClairvoyanceWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
 TObjectPtr<AOutlineManager> UClairvoyanceAbility::GetOutlineManager()
@@ -35,6 +53,8 @@ void UClairvoyanceAbility::DisableClairvoyance()
 {
 	if (GetOwner()->HasAuthority()) ApplyCoolTime();
 	GetOutlineManager()->UnRegisterClairvoyance(GetUniqueID(), GetPlayerTeam());
+	if (EffectMaterial.IsValid()) EffectMaterial->SetScalarParameterValue(TEXT("ClairvoyanceEffectOpacity"), 0.0f);
+	if (ClairvoyanceWidget.IsValid()) ClairvoyanceWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
 bool UClairvoyanceAbility::ShouldStartRemoteCall()
@@ -46,6 +66,8 @@ void UClairvoyanceAbility::StartDelayedAbility()
 {
 	Super::StartDelayedAbility();
 	GetOutlineManager()->RegisterClairvoyance(GetUniqueID(), GetPlayerTeam());
+	if (EffectMaterial.IsValid()) EffectMaterial->SetScalarParameterValue(TEXT("ClairvoyanceEffectOpacity"), 0.2f);
+	if (ClairvoyanceWidget.IsValid()) ClairvoyanceWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 	GetWorld()->GetTimerManager().SetTimer(ClairvoyanceTimer, this, &UClairvoyanceAbility::DisableClairvoyance,
 	                                       BaseAbilityDuration);
 }

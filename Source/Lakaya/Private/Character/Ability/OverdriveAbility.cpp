@@ -24,7 +24,7 @@ void UOverdriveAbility::StartDelayedAbility()
 	ApplyBuff();
 	GetWorld()->GetTimerManager().SetTimer(OverdriveTimer, this, &UOverdriveAbility::DisableOverdrive,
 	                                       BaseAbilityDuration);
-	if (EffectMaterial.IsValid()) EffectMaterial->SetScalarParameterValue("EffectOpacity", 0.2f);
+	if (EffectMaterial.IsValid()) EffectMaterial->SetScalarParameterValue("OverdriveEffectOpacity", 0.2f);
 }
 
 void UOverdriveAbility::OnAliveStateChanged(const bool& AliveState)
@@ -54,5 +54,5 @@ void UOverdriveAbility::ApplyBuff()
 void UOverdriveAbility::DisableOverdrive()
 {
 	if (GetOwner()->HasAuthority()) ApplyCoolTime();
-	if (EffectMaterial.IsValid()) EffectMaterial->SetScalarParameterValue("EffectOpacity", 0.0f);
+	if (EffectMaterial.IsValid()) EffectMaterial->SetScalarParameterValue("OverdriveEffectOpacity", 0.0f);
 }
