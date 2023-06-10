@@ -26,3 +26,27 @@ void USkillWidget::NativeConstruct()
 	check(WaziRButtonSkill != nullptr);
 	// check(WaziRSkill != nullptr);
 }
+
+void USkillWidget::SetCharacter(FName CharacterName)
+{
+	if(CharacterName.Compare(TEXT("Wazi")))
+	{
+		RenaQSkill->SetVisibility(ESlateVisibility::Hidden);
+		RenaESkill->SetVisibility(ESlateVisibility::Hidden);
+		RenaRButtonSkill->SetVisibility(ESlateVisibility::Hidden);
+
+		WaziQSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		WaziESkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		WaziRButtonSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	else if(CharacterName.Compare(TEXT("Rena")))
+	{
+		WaziQSkill->SetVisibility(ESlateVisibility::Hidden);
+		WaziESkill->SetVisibility(ESlateVisibility::Hidden);
+		WaziRButtonSkill->SetVisibility(ESlateVisibility::Hidden);
+
+		RenaQSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		RenaESkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		RenaRButtonSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+}

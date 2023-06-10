@@ -19,6 +19,10 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
+	void SetCharacter(FName CharacterName);
+
+	
+private:
 	TWeakObjectPtr<UImage> RenaQSkill;			// 레나 Q 스킬
 	TWeakObjectPtr<UImage> RenaESkill;			// 레나 E 스킬
 	TWeakObjectPtr<UImage> RenaRButtonSkill;	// 레나 우클릭 스킬
