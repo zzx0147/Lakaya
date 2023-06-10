@@ -146,37 +146,10 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
 	if (LocalPlayerState != nullptr)
 	{
-		const FString CharacterName = LocalPlayerState->GetCharacterName().ToString();
-
-		if (CharacterName == "Rena")
-		{
-			// TODO : 레나 캐릭터 전용 UI
-			if (SkillWidget != nullptr)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("레나 캐릭터입니다."));
-				SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				SkillWidget->RenaQSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				SkillWidget->RenaESkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				SkillWidget->RenaRButtonSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				// SkillWidget->RenaRSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			}
-		}
-
-		if (CharacterName == "Wazi")
-		{
-			// TODO : 와지 캐릭터 전용 UI
-			if (SkillWidget != nullptr)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("와지 캐릭터입니다."));
-				SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				SkillWidget->WaziQSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				SkillWidget->WaziESkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				SkillWidget->WaziRButtonSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				// SkillWidget->WaziRSkill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-				ScoreBoard->RegisterPlayer(LocalPlayerState);
-			}
-		}
+		const auto CharacterName = LocalPlayerState->GetCharacterName();
+		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SkillWidget->SetCharacter(CharacterName);
+		// LocalPlayerState->OnCharacterNameChanged.AddUObject(SkillWidget,&USkillWidget::SetCharacter);
 	}
 
 	InternalSetCharacterSelectWidgetVisibility(false);
