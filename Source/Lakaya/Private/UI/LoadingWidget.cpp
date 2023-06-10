@@ -29,7 +29,7 @@ void ULoadingWidget::SetPlayerNumber(const uint8& PlayerCount)
 	{
 		if (PlayerCount == MaxPlayerCount)
 		{
-			LoadingWidgetText->SetText(FText::FromString(TEXT("loading. . .")));
+			LoadingWidgetText->SetText(FText::FromString(TEXT("loading . . .")));
 			return;
 		}
 
