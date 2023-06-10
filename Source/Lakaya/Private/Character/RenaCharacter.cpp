@@ -19,7 +19,6 @@ ARenaCharacter::ARenaCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	SetDefaultSubobjectClass(ResourceComponentName, UBulletComponent::StaticClass()))
 {
 	MineLateDelay = 0.3f;
-	DeathRayLateDelay = 5.f;
 	BombLateDelay = 0.3f;
 
 	const auto MineAbility = FindAbility<UCoolTimedSummonAbility>(Primary);
@@ -30,6 +29,7 @@ ARenaCharacter::ARenaCharacter(const FObjectInitializer& ObjectInitializer) : Su
 
 	MineAbility->OnAbilityStartTimeNotified.AddUObject(this, &ARenaCharacter::OnMinePerformTimeNotified);
 	RayAbility->OnAbilityStartTimeNotified.AddUObject(this, &ARenaCharacter::OnDeathRayStartTimeNotified);
+	RayAbility->OnAbilityStopTimeNotified.AddUObject(this, &ARenaCharacter::OnDeathRayStopTimeNotified);
 	FireAbility->OnWantsToFireChanged.AddUObject(this, &ARenaCharacter::OnWantsToFireChanged);
 	BombAbility->OnAbilityStartTimeNotified.AddUObject(this, &ARenaCharacter::OnBombPerformTimeNotified);
 	ReloadAbility->OnReloadStateChanged.AddUObject(this, &ARenaCharacter::OnReloadStateChanged);
@@ -39,7 +39,7 @@ ARenaCharacter::ARenaCharacter(const FObjectInitializer& ObjectInitializer) : Su
 void ARenaCharacter::SetAliveState_Implementation(bool IsAlive)
 {
 	Super::SetAliveState_Implementation(IsAlive);
-	if (!IsAlive) DeathRayEndingTime = 0.f;
+	if (!IsAlive) DeathRayStartTime = 0.f;
 }
 
 bool ARenaCharacter::ShouldStartAbility_Implementation(EAbilityKind Kind)
@@ -47,10 +47,10 @@ bool ARenaCharacter::ShouldStartAbility_Implementation(EAbilityKind Kind)
 	// 네트워크 레이턴시를 고려하여 기준 시간을 현재보다 조금 더 늦게 잡아서 조금 더 이른 시점부터 능력 사용 요청을 보낼 수 있도록 합니다. 
 	const auto BasisTime = GetServerTime() + 0.1f;
 
-	// 생존중이고, 점착지뢰 투척이 끝날 때까지 얼마 안남았고, 데스레이 종료까지 얼마 안남았고,
+	// 생존중이고, 점착지뢰 투척이 끝날 때까지 얼마 안남았고, 데스레이를 사용중이지 않고 후딜레이 종료까지 얼마 안남았고,
 	// 폭탄 투척이 끝날 때까지 얼마 안남았고, 재장전 종료까지 얼마 안남았고, 사격중이지 않을 때 스킬을 사용할 수 있도록 합니다. 
-	return GetAliveState() && MineEndingTime <= BasisTime && DeathRayEndingTime <= BasisTime
-		&& BombEndingTime <= BasisTime && ReloadCompleteTime <= BasisTime && !bWantsToFire;
+	return GetAliveState() && MineEndingTime <= BasisTime && DeathRayStopTime <= BasisTime && DeathRayStartTime <=
+		DeathRayStopTime && BombEndingTime <= BasisTime && ReloadCompleteTime <= BasisTime && !bWantsToFire;
 }
 
 bool ARenaCharacter::ShouldStartAbilityOnServer_Implementation(EAbilityKind Kind)
@@ -58,8 +58,8 @@ bool ARenaCharacter::ShouldStartAbilityOnServer_Implementation(EAbilityKind Kind
 	const auto Time = GetServerTime();
 
 	// 생존중이고, 점착지뢰 투척이 끝났고, 데스레이가 끝났고, 폭탄 투척이 끝났고, 재장전중이지 않고, 사격중이지 않을 때 스킬을 사용할 수 있도록 합니다.
-	return GetAliveState() && MineEndingTime <= Time && DeathRayEndingTime <= Time && BombEndingTime <= Time
-		&& !bIsReloading && !bWantsToFire;
+	return GetAliveState() && MineEndingTime <= Time && DeathRayStartTime <= DeathRayStopTime && DeathRayStopTime <=
+		Time && BombEndingTime <= Time && !bIsReloading && !bWantsToFire;
 }
 
 void ARenaCharacter::OnMinePerformTimeNotified(const float& Time)
@@ -69,7 +69,12 @@ void ARenaCharacter::OnMinePerformTimeNotified(const float& Time)
 
 void ARenaCharacter::OnDeathRayStartTimeNotified(const float& Time)
 {
-	DeathRayEndingTime = Time + DeathRayLateDelay;
+	DeathRayStartTime = Time;
+}
+
+void ARenaCharacter::OnDeathRayStopTimeNotified(const float& Time)
+{
+	DeathRayStopTime = Time;
 }
 
 void ARenaCharacter::OnWantsToFireChanged(bool FireState)
