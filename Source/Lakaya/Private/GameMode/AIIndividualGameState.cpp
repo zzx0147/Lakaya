@@ -117,8 +117,11 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 			{
 				if (PlayerStateObj)
 				{
-					// 점수판에 표시되는 이름 현재 컨트롤러 이름으로 표시중입니다.
-					PlayerAIData.PlayerName = PlayerStateObj->GetDebugName(PlayerController);
+					// 점수판에 표시되는 이름이며 현재 AI 의 캐릭터 + 몃번째의 AI 컨트롤러 번호인지를 표시해주고있습니다.
+					FString AIName = PlayerStateObj->GetCharacterName().ToString()
+					+ " AI (" +  FString::FromInt(static_cast<int>(It.GetIndex())) + ")";
+					PlayerAIData.PlayerName = AIName;
+					
 					PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
 					PlayerAIData.bIsPlayerCheck = false;
 					FPlayerAIDataArray.Add(PlayerAIData);
