@@ -10,6 +10,7 @@
 
 UCharacterAbility::UCharacterAbility()
 {
+	SetIsReplicatedByDefault(true);
 	bWantsInitializeComponent = true;
 	AbilityStartDelay = AbilityStopDelay = 0.f;
 	OnAbilityStartTimeNotified.AddUObject(this, &UCharacterAbility::OnDelayedAbilityStartTimeChanged);
