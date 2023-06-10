@@ -55,7 +55,7 @@ public:
 	void NotifyPlayerKilled(APlayerState* VictimController, APlayerState* InstigatorController, AActor* DamageCauser);
 
 protected:
-	virtual void UpdateCharacterSelectWidget(APlayerController* LocalController);
+	virtual class UGameLobbyCharacterSelectWidget* GetCharacterSelectWidget();
 
 	UFUNCTION()
 	virtual void OnRep_MatchEndingTime();
