@@ -75,34 +75,9 @@ void AAIIndividualGameState::BeginPlay()
 			AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Hidden);
 			
 			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
-			if (PlayerStateObj)
-			{
-				PlayerAIData.PlayerName = PlayerStateObj->GetDebugName(AllControllers);
-				PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
-				FPlayerAIDataArray.Add(PlayerAIData);
-				
-				UE_LOG(LogTemp, Warning, TEXT("Set All PlayerData In AIIndividualLiveScoreBoardWidget"));
-			}
-			
-			SetScoreBoardPlayerAIName(FPlayerAIDataArray);
-		}
-	}
-}
 
-void AAIIndividualGameState::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-
-	if (AIIndividualLiveScoreBoardWidget.IsValid())
-	{
-		FPlayerAIDataArray.Empty();
-
-		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
-		{
-			AController* PlayerController = It->Get();
-			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(PlayerController->PlayerState);
-
-			if (PlayerController && PlayerController->IsA<AInteractablePlayerController>())
+			// 매치시작전에 스폰된 플레이어와 AI의 정보를 미리 한번 넣어주는곳입니다. 이후 Tick에서 실시간으로 계속 검사합니다.
+			if (AllControllers && AllControllers->IsA<AInteractablePlayerController>())
 			{
 				if (PlayerStateObj)
 				{
@@ -113,15 +88,58 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 					FPlayerAIDataArray.Add(PlayerAIData);
 				}
 			}
-			if (PlayerController && !PlayerController->IsA<AInteractablePlayerController>())
+			if (AllControllers && !AllControllers->IsA<AInteractablePlayerController>())
 			{
 				if (PlayerStateObj)
 				{
 					// 점수판에 표시되는 이름이며 현재 AI 의 캐릭터 + 몃번째의 AI 컨트롤러 번호인지를 표시해주고있습니다.
-					FString AIName = PlayerStateObj->GetCharacterName().ToString()
+					AIName = PlayerStateObj->GetCharacterName().ToString()
 					+ " AI (" +  FString::FromInt(static_cast<int>(It.GetIndex())) + ")";
-					PlayerAIData.PlayerName = AIName;
+
+					// AI 이름을 Set해주어서 이제 AI도 자기 이름을 가지고 있도록 했습니다.
+					PlayerStateObj->SetPlayerName(AIName);
+					PlayerAIData.PlayerName = PlayerStateObj->GetPlayerName();
 					
+					PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
+					PlayerAIData.bIsPlayerCheck = false;
+					FPlayerAIDataArray.Add(PlayerAIData);
+				}
+			}
+			SetScoreBoardPlayerAIName(FPlayerAIDataArray);
+		}
+	}
+}
+
+void AAIIndividualGameState::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	// TODO : 실시간으로 순위판에 계속 킬수를 검사해 위젯 칸에 넣어주기위해 Tick에 구현했습니다 나중에 리팩토링 필요합니다.
+	if (AIIndividualLiveScoreBoardWidget.IsValid())
+	{
+		FPlayerAIDataArray.Empty();
+
+		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
+		{
+			AController* AllControllers = It->Get();
+			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
+
+			if (AllControllers && AllControllers->IsA<AInteractablePlayerController>())
+			{
+				if (PlayerStateObj)
+				{
+					// 점수판에 표시되는 플레이어의 이름을 표시합니다.
+					PlayerAIData.PlayerName = PlayerStateObj->GetPlayerName();
+					PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
+					PlayerAIData.bIsPlayerCheck = true;
+					FPlayerAIDataArray.Add(PlayerAIData);
+				}
+			}
+			if (AllControllers && !AllControllers->IsA<AInteractablePlayerController>())
+			{
+				if (PlayerStateObj)
+				{
+					PlayerAIData.PlayerName = PlayerStateObj->GetPlayerName();
 					PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
 					PlayerAIData.bIsPlayerCheck = false;
 					FPlayerAIDataArray.Add(PlayerAIData);
