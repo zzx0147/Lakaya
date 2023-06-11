@@ -36,6 +36,7 @@ bool UAutoFireAbility::ShouldStopRemoteCall()
 void UAutoFireAbility::StartDelayedAbility()
 {
 	Super::StartDelayedAbility();
+	if (!GetOwner()->HasAuthority()) return;
 	if (bWantsToFire) return;
 	bWantsToFire = true;
 	if (auto& TimerManager = GetWorld()->GetTimerManager(); !TimerManager.TimerExists(FireTimer))
