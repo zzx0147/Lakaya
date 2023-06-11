@@ -3,11 +3,13 @@
 
 #include "UI/KillLogElement.h"
 
+#include "AIController.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/PlayerState.h"
+#include "GameMode/AIIndividualGameState.h"
 
 //TODO: 리팩터링 필요
 void UKillLogElement::SetKillLog(APlayerState* Attacker, APlayerState* Victim)
@@ -27,9 +29,66 @@ void UKillLogElement::SetKillLog(APlayerState* Attacker, APlayerState* Victim)
 			WeaponImage->SetBrushFromTexture(WeaponImageMap[BaseAttacker->GetCharacterName()]);
 		}
 
-		if(BackgroundImageMap.Contains(BaseAttacker->GetTeam()))
+		// if(BackgroundImageMap.Contains(BaseAttacker->GetTeam()))
+		// {
+		// 	BackgroundImage->SetBrushFromTexture(BackgroundImageMap[BaseAttacker->GetTeam()]);
+		// }
+
+		// TODO : AI 개인전 GameState 일때는 공격자의 킬로그 이미지를 변경하고 아닐땐 공격자의 팀의 따른 이미지를 표시하게 구현하였습니다.
+		if(BackgroundImage.IsValid())
 		{
-			BackgroundImage->SetBrushFromTexture(BackgroundImageMap[BaseAttacker->GetTeam()]);
+			ALakayaBaseGameState* NowBaseGameState =
+				Cast<ALakayaBaseGameState>(BaseAttacker->GetWorld()->GetGameState());
+			
+			if(NowBaseGameState)
+			{
+				AAIIndividualGameState* AIIndividualGameState =
+					Cast<AAIIndividualGameState>(NowBaseGameState);
+				
+				if(AIIndividualGameState)
+				{
+					for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
+					{
+						AController* AllControllers = It->Get();
+
+						if(AllControllers == BaseAttacker->GetPawn()->GetController())
+						{
+							if(APlayerController* PlayerAttackerController =
+								Cast<APlayerController>(AllControllers))
+							{
+								if(PlayerAttackerController)
+								{
+									UTexture2D* IndividualPlayerKillLogImage =
+										LoadObject<UTexture2D>(nullptr,
+											TEXT("Texture2D'/Game/UI/individual/ingame_scoreboard/T_Individual_In_killlogbar_player.T_Individual_In_killlogbar_player'"));
+									BackgroundImage->SetBrushFromTexture(IndividualPlayerKillLogImage);
+								}
+							}
+							else if(AAIController* AIAttackerController =
+								Cast<AAIController>(AllControllers))
+							{
+								if(AIAttackerController)
+								{
+									UTexture2D* IndividualPlayerKillLogImage =
+										LoadObject<UTexture2D>(nullptr,
+											TEXT("Texture2D'/Game/UI/individual/ingame_scoreboard/T_Individual_In_killlogbar.T_Individual_In_killlogbar'"));
+									BackgroundImage->SetBrushFromTexture(IndividualPlayerKillLogImage);
+								}
+							}
+						}
+						else
+						{
+							if(BackgroundImageMap.Contains(BaseAttacker->GetTeam()))
+								BackgroundImage->SetBrushFromTexture(BackgroundImageMap[BaseAttacker->GetTeam()]);
+						}
+					}
+				}
+				else
+				{
+					if(BackgroundImageMap.Contains(BaseAttacker->GetTeam()))
+						BackgroundImage->SetBrushFromTexture(BackgroundImageMap[BaseAttacker->GetTeam()]);
+				}
+			}
 		}
 	}
 	

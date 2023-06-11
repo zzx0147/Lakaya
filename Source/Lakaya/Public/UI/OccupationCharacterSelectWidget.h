@@ -14,7 +14,7 @@ class LAKAYA_API UOccupationCharacterSelectWidget : public UGameLobbyCharacterSe
 {
 	GENERATED_BODY()
 public:
-	UOccupationCharacterSelectWidget(const FObjectInitializer& ObjectInitializer);
+	explicit UOccupationCharacterSelectWidget(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void NativeConstruct() override;

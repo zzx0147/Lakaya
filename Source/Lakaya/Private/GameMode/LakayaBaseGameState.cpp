@@ -221,45 +221,37 @@ void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
 		ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
 }
 
-void ALakayaBaseGameState::UpdateCharacterSelectWidget(APlayerController* LocalController)
+UGameLobbyCharacterSelectWidget* ALakayaBaseGameState::GetCharacterSelectWidget()
 {
-	//로컬 컨트롤러는 존재함이 보장됨, 서버의 경우 BeginPlay애서 클라이언트의 경우 OnRep_PlayerState에서 호출해줌
-
-	// 위젯 클래스가 없는 경우 아무것도 하지 않습니다.
-	if (CharacterSelectWidgetClass.Get() == nullptr) return;
-
-	// 캐릭터 위젯이 존재하지 않는 경우 생성합니다. 생성되지 않는 경우 리턴합니다.
-	if (!CharacterSelectWidget)
+	// 캐릭터 위젯이 존재하지 않는 경우 생성합니다.
+	if (!CharacterSelectWidget && CharacterSelectWidgetClass)
 	{
-		CharacterSelectWidget = CreateWidget<UGameLobbyCharacterSelectWidget>(
-			LocalController, CharacterSelectWidgetClass);
-		if (CharacterSelectWidget == nullptr) return;
-		CharacterSelectWidget->AddToViewport();
-		CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
+		CharacterSelectWidget = CreateWidget<UGameLobbyCharacterSelectWidget>(GetWorld(), CharacterSelectWidgetClass);
+		if (CharacterSelectWidget != nullptr)
+		{
+			CharacterSelectWidget->AddToViewport();
+			CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
 	}
-
-	// 캐릭터 선택창에 대한 이벤트 바인딩을 진행합니다.
-	if (const auto BasePlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
-	{
-		CharacterSelectWidget->OnChangeSelectedCharacter.AddUObject(
-			this, &ALakayaBaseGameState::OnPlayerCharacterNameChanged, BasePlayerState);
-
-		CharacterSelectWidget->SetLocalPlayerName(BasePlayerState->GetPlayerName());
-		BasePlayerState->OnPlayerNameChanged.AddUObject(CharacterSelectWidget,
-		                                                &UGameLobbyCharacterSelectWidget::SetLocalPlayerName);
-	}
+	return CharacterSelectWidget;
 }
 
 void ALakayaBaseGameState::ToggleCharacterSelectWidget()
 {
 	// 캐릭터 선택위젯이 숨겨져있었다면 보여주고, 보여지고 있었다면 숨깁니다.
 	if (MatchState != MatchState::InProgress) return;
-	InternalSetCharacterSelectWidgetVisibility(CharacterSelectWidget->GetVisibility() == ESlateVisibility::Hidden);
+	InternalSetCharacterSelectWidgetVisibility(GetCharacterSelectWidget()->GetVisibility() == ESlateVisibility::Hidden);
 }
 
 void ALakayaBaseGameState::OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController)
 {
-	UpdateCharacterSelectWidget(LocalPlayerController);
+	if (const auto PlayerState = LocalPlayerController->GetPlayerState<ALakayaBasePlayerState>())
+	{
+		const auto Widget = GetCharacterSelectWidget();
+		Widget->OnChangeSelectedCharacter.AddUObject(this, &ALakayaBaseGameState::OnPlayerCharacterNameChanged,
+		                                             PlayerState);
+		Widget->SetLocalPlayerName(PlayerState->GetPlayerName());
+	}
 }
 
 void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimController,
@@ -332,9 +324,9 @@ void ALakayaBaseGameState::OnPlayerCharacterNameChanged(const FName& NewCharacte
 void ALakayaBaseGameState::InternalSetCharacterSelectWidgetVisibility(const bool& Visible)
 {
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController();
-		LocalController && LocalController->IsLocalController() && CharacterSelectWidget)
+		LocalController && LocalController->IsLocalController())
 	{
 		LocalController->SetShowMouseCursor(Visible);
-		CharacterSelectWidget->SetVisibility(Visible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		GetCharacterSelectWidget()->SetVisibility(Visible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 }

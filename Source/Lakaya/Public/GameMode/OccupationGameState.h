@@ -99,8 +99,9 @@ private:
 		return PlayersByTeamMap[ClientTeam == EPlayerTeam::A ? EPlayerTeam::B : EPlayerTeam::A];
 	}
 
-	void RegisterPlayerByTeam(const EPlayerTeam& Team, ALakayaBasePlayerState* PlayerState);
-	ERendererStencilMask GetUniqueStencilMaskByTeamAndIndex(const EPlayerTeam& Team, const uint8& Count) const;
+	void UpdatePlayerByTeamMap(const EPlayerTeam& Team, ALakayaBasePlayerState* PlayerState);
+	void SetupPlayerStateOnLocal(ALakayaBasePlayerState* PlayerState);
+	static ERendererStencilMask GetUniqueStencilMask(const bool& IsAlly, const uint8& Index);
 
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
