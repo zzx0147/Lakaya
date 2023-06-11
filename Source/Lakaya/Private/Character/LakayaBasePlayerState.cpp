@@ -51,20 +51,14 @@ float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const&
 	if (!ShouldTakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser)) return 0.f;
 	const auto Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	if (Damage == 0.f) return 0.f;
+
 	Health -= Damage;
-
-	// 힐이고, 최대체력을 초과한 경우 최대체력으로 맞춰줍니다.
-	if (Damage < 0.f)
-		if (const auto MaxHealth = GetMaxHealth(); Health > MaxHealth)
-			Health = MaxHealth;
-
+	const auto IsDead = Health <= 0.f;
+	Health = FMath::Clamp(Health, 0, GetMaxHealth());
 	OnHealthChanged.Broadcast(Health);
-	NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
-	if (Health <= 0.f)
-	{
-		Health = 0.f;
-		OnPlayerKilled.Broadcast(GetOwningController(), EventInstigator, DamageCauser);
-	}
+
+	if (Damage > 0.f)NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
+	if (IsDead) OnPlayerKilled.Broadcast(GetOwningController(), EventInstigator, DamageCauser);
 
 	return Damage;
 }
