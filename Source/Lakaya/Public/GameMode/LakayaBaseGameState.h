@@ -74,8 +74,6 @@ private:
 
 	void InternalSetScoreBoardVisibility(const bool& Visible);
 
-	void OnPlayerCharacterNameChanged(const FName& NewCharacterName, ALakayaBasePlayerState* PlayerState);
-
 	void InternalSetCharacterSelectWidgetVisibility(const bool& Visible);
 
 public:

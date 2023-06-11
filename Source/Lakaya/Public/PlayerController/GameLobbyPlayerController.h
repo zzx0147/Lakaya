@@ -47,13 +47,13 @@ protected:
 
 	// 로컬컨트롤러의 플레이어 스테이트가 변경되면 호출됩니다.
 	virtual void NotifyLocalPlayerStateUpdated();
+
 private:
 	void MenuHandler(const FInputActionValue& Value);
 	void LoadoutHandler(const FInputActionValue& Value);
 	void ShowScoreBoard(const FInputActionValue& Value);
 	void HideScoreBoard(const FInputActionValue& Value);
-	void EscapeHandler();
-	
+
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
 
@@ -71,4 +71,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* HideScoreAction;
+
+	// 게임스테이트에 플레이어 스테이트가 셋업되었음을 알렸는지 여부를 나타냅니다.
+	bool bGameStatePlayerStateNotified;
 };

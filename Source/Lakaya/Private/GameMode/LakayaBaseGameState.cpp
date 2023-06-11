@@ -157,6 +157,7 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	}
 
 	InternalSetCharacterSelectWidgetVisibility(false);
+	if (CharacterSelectWidget) CharacterSelectWidget->EnableAutoHide(true);
 
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -221,8 +222,8 @@ void ALakayaBaseGameState::OnRep_MatchState()
 
 void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
 {
-	if (ScoreBoard.IsValid())
-		ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
+	if (!ScoreBoard.IsValid() || MatchState != MatchState::InProgress) return;
+	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
 }
 
 UGameLobbyCharacterSelectWidget* ALakayaBaseGameState::GetCharacterSelectWidget()
@@ -249,13 +250,6 @@ void ALakayaBaseGameState::ToggleCharacterSelectWidget()
 
 void ALakayaBaseGameState::OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController)
 {
-	if (const auto PlayerState = LocalPlayerController->GetPlayerState<ALakayaBasePlayerState>())
-	{
-		const auto Widget = GetCharacterSelectWidget();
-		Widget->OnChangeSelectedCharacter.AddUObject(this, &ALakayaBaseGameState::OnPlayerCharacterNameChanged,
-		                                             PlayerState);
-		Widget->SetLocalPlayerName(PlayerState->GetPlayerName());
-	}
 }
 
 void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimController,
@@ -316,13 +310,6 @@ void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible)
 {
 	if (!ScoreBoard.IsValid()) return;
 	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
-}
-
-void ALakayaBaseGameState::OnPlayerCharacterNameChanged(const FName& NewCharacterName,
-                                                        ALakayaBasePlayerState* PlayerState)
-{
-	PlayerState->RequestCharacterChange(NewCharacterName);
-	if (MatchState == MatchState::InProgress) InternalSetCharacterSelectWidgetVisibility(false);
 }
 
 void ALakayaBaseGameState::InternalSetCharacterSelectWidgetVisibility(const bool& Visible)

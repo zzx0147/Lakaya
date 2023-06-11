@@ -1,8 +1,10 @@
 #include "UI/GameLobbyCharacterSelectWidget.h"
 
+#include "Character/LakayaBasePlayerState.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/RichTextBlock.h"
+#include "Components/TextBlock.h"
 #include "UI/PlayerInfoWidget.h"
 
 UGameLobbyCharacterSelectWidget::UGameLobbyCharacterSelectWidget(const FObjectInitializer& ObjectInitializer) : Super(
@@ -61,7 +63,6 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 	GunImage = Cast<UImage>(GetWidgetFromName(TEXT("Gun_Img")));
 
 	PlayerInfoWidget = Cast<UPlayerInfoWidget>(GetWidgetFromName(TEXT("MyPlayerInfo")));
-	if (PlayerInfoWidget) PlayerInfoWidget->SetPlayerName(LocalPlayerName);
 
 	MagazineInfoText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Magazine_Text")));
 
@@ -82,12 +83,21 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 	//최초 캐릭터를 1번 캐릭터로 설정
 	PrevCharacterButton = CharacterButtonArray[0];
 	OnClickedCharacter1Button();
+
+	if (const auto PlayerState = GetOwningPlayerState<ALakayaBasePlayerState>())
+	{
+		OnChangeSelectedCharacter.AddUObject(PlayerState, &ALakayaBasePlayerState::RequestCharacterChange);
+		if (PlayerInfoWidget) PlayerInfoWidget->SetPlayerName(PlayerState->GetPlayerName());
+		PlayerState->OnPlayerNameChanged.AddLambda([this](const FString& Name)
+		{
+			if (PlayerInfoWidget) PlayerInfoWidget->SetPlayerName(Name);
+		});
+	}
 }
 
-void UGameLobbyCharacterSelectWidget::SetLocalPlayerName(const FString& Name)
+void UGameLobbyCharacterSelectWidget::EnableAutoHide(const bool& IsEnabled)
 {
-	LocalPlayerName = Name;
-	if (PlayerInfoWidget) PlayerInfoWidget->SetPlayerName(LocalPlayerName);
+	bAutoHide = IsEnabled;
 }
 
 void UGameLobbyCharacterSelectWidget::OnClickedCharacter1Button()
@@ -138,4 +148,10 @@ void UGameLobbyCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum)
 
 	if (MagazineInfoText != nullptr && MagazineMap.Contains(CharacterNameArray[CharacterNum]))
 		MagazineInfoText->SetText(FText::Format(MagazineTextFormat, MagazineMap[CharacterNameArray[CharacterNum]]));
+
+	if (bAutoHide)
+	{
+		SetVisibility(ESlateVisibility::Hidden);
+		GetOwningPlayer()->SetShowMouseCursor(false);
+	}
 }

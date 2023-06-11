@@ -3,10 +3,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "Components/SlateWrapperTypes.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/PlayerState.h"
-#include "GameMode/AIIndividualGameState.h"
 #include "GameMode/LakayaBaseGameState.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameState.h"
@@ -103,8 +101,12 @@ void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSu
 
 void AGameLobbyPlayerController::NotifyLocalPlayerStateUpdated()
 {
-	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>();
+		GameState && !bGameStatePlayerStateNotified && IsLocalController())
+	{
+		bGameStatePlayerStateNotified = true;
 		GameState->OnLocalPlayerControllerPlayerStateUpdated(this);
+	}
 }
 
 AGameLobbyPlayerController::AGameLobbyPlayerController()
@@ -139,15 +141,13 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 void AGameLobbyPlayerController::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
-	//클라의 경우 PlayerState가 생겼을 때 캐릭터 선택 위젯을 생성
-	if (IsLocalController()) NotifyLocalPlayerStateUpdated();
+	NotifyLocalPlayerStateUpdated();
 }
 
 void AGameLobbyPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	//서버의 경우에만 BeginPlay에서 캐릭터 선택 위젯을 생성
-	if (HasAuthority() && IsLocalController()) NotifyLocalPlayerStateUpdated();
+	NotifyLocalPlayerStateUpdated();
 }
 
 void AGameLobbyPlayerController::MenuHandler(const FInputActionValue& Value)
@@ -193,14 +193,5 @@ void AGameLobbyPlayerController::ShowScoreBoard(const FInputActionValue& Value)
 void AGameLobbyPlayerController::HideScoreBoard(const FInputActionValue& Value)
 {
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
-	{
-		if (GameState->GetMatchState() == MatchState::WaitingPostMatch) return;
-
 		GameState->SetScoreBoardVisibility(false);
-	}
-}
-
-void AGameLobbyPlayerController::EscapeHandler()
-{
-	UE_LOG(LogTemp, Warning, TEXT("EscapeHandler !"));	
 }
