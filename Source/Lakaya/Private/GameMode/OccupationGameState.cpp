@@ -1,5 +1,6 @@
 #include "GameMode/OccupationGameState.h"
 
+#include "CurrentGameMode.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
@@ -34,7 +35,8 @@ AOccupationGameState::AOccupationGameState()
 	MatchStartWaitWidgetLifeTime = 3.0f;
 	MatchStartWidgetLifeTime = 5.0f;
 	ClientTeam = EPlayerTeam::None;
-
+	ECurrentGameMode CurrentGameMode = ECurrentGameMode::OccupationMode;
+	
 	PlayersByTeamMap.Emplace(EPlayerTeam::A);
 	PlayersByTeamMap.Emplace(EPlayerTeam::B);
 }
@@ -44,6 +46,14 @@ void AOccupationGameState::BeginPlay()
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 		LocalController && LocalController->IsLocalController())
 	{
+		if (SkillWidgetClass)
+		{
+			SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
+			if (SkillWidget == nullptr) UE_LOG(LogTemp, Warning, TEXT("SkillWidget is null."));
+			SkillWidget->AddToViewport();
+			SkillWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+		
 		if (TeamScoreWidgetClass)
 		{
 			TeamScoreWidget = CreateWidget<UTeamScoreWidget>(LocalController, TeamScoreWidgetClass);
@@ -144,6 +154,9 @@ void AOccupationGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 
+	if (SkillWidget.IsValid())
+		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	
 	if (IsValid(TeamScoreWidget))
 		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
 

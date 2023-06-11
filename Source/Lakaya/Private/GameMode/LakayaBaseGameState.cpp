@@ -101,19 +101,20 @@ void ALakayaBaseGameState::BeginPlay()
 		// 	}
 		// }
 
-		if (SkillWidgetClass)
-		{
-			SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
-			if (SkillWidget.IsValid())
-			{
-				SkillWidget->AddToViewport();
-				SkillWidget->SetVisibility(ESlateVisibility::Hidden);
-
-				if (const auto BattlePlayerController = Cast<ABattlePlayerController>(LocalController);
-					BattlePlayerController != nullptr)
-					BattlePlayerController->SetSkillWidget(SkillWidget.Get());
-			}
-		}
+		// TODO: 개인전에서는 스킬을 사용하지 않습니다.
+		// if (SkillWidgetClass)
+		// {
+		// 	SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
+		// 	if (SkillWidget.IsValid())
+		// 	{
+		// 		SkillWidget->AddToViewport();
+		// 		SkillWidget->SetVisibility(ESlateVisibility::Hidden);
+		//
+		// 		if (const auto BattlePlayerController = Cast<ABattlePlayerController>(LocalController);
+		// 			BattlePlayerController != nullptr)
+		// 			BattlePlayerController->SetSkillWidget(SkillWidget.Get());
+		// 	}
+		// }
 
 		if (KillLogWidgetClass)
 		{
@@ -148,11 +149,12 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 
-	if (const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
-		LocalPlayerState != nullptr)
-	{
-		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
+	// TODO : 개인전에서는 스킬을 사용하지 않습니다.
+	// if (const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
+	// 	LocalPlayerState != nullptr)
+	// {
+	// 	SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	// }
 
 	InternalSetCharacterSelectWidgetVisibility(false);
 	if (CharacterSelectWidget) CharacterSelectWidget->EnableAutoHide(true);

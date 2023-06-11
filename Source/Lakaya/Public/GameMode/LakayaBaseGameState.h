@@ -109,9 +109,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UHelpWidget> HelpWidgetClass;
 
+	// TODO : 개인전엣는 스킬을 사용하지 않기에 주석처리 해주었습니다.
 	// 게임중에 표시되는 스킬 위젯을 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<USkillWidget> SkillWidgetClass;
+	// UPROPERTY(EditDefaultsOnly)
+	// TSubclassOf<USkillWidget> SkillWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGamePlayKillLogWidget> KillLogWidgetClass;
@@ -153,9 +154,10 @@ protected:
 	TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
 	TWeakObjectPtr<UHelpWidget> HelpWidget;
-	TWeakObjectPtr<USkillWidget> SkillWidget;
 	TWeakObjectPtr<UGamePlayKillLogWidget> KillLogWidget;
 
+	// TODO : 개인전엣는 스킬을 사용하지 않기에 주석처리 해주었습니다.
+	// TWeakObjectPtr<USkillWidget> SkillWidget;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class AOutlineManager> OutlineManagerClass;
 	TWeakObjectPtr<AOutlineManager> OutlineManager;

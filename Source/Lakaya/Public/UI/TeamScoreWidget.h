@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "MatchStateWidget.h"
+#include "Components/TextBlock.h"
 #include "GameMode/OccupationGameState.h"
 #include "Occupation/PlayerTeam.h"
 #include "TeamScoreWidget.generated.h"
@@ -25,10 +26,10 @@ private:
 	void OnTeamScoreChanged(const EPlayerTeam& Team, const float& Score) const;
 
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* ATeamScoreText;
+	TWeakObjectPtr<UTextBlock> AntiTeamScoreText;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* BTeamScoreText;
+	TWeakObjectPtr<UTextBlock> ProTeamScoreText;
 
 	float MaxScore;
 };

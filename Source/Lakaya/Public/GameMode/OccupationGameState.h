@@ -144,6 +144,10 @@ private:
 	FTimerHandle TimerHandle_GameResultHandle;
 	FTimerHandle TimerHandle_ShowGradeResultElementHandle;
 
+	// 게임중에 표시되는 스킬 위젯을 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<USkillWidget> SkillWidgetClass;
+	
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UTeamScoreWidget> TeamScoreWidgetClass;
@@ -176,6 +180,9 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UDetailResultElementWidget> DetailResultElementWidgetClass;
 
+	// 스킬 위젯 입니다.
+	TWeakObjectPtr<USkillWidget> SkillWidget;
+	
 	// 팀스코어 위젯 입니다.
 	TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
 
