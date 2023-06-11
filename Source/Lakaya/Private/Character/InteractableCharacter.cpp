@@ -25,10 +25,6 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 		InteractableActor = OtherActor;
 		OnInteractableActorChanged.Broadcast(InteractableActor.Get());
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NotifyActorBeginOverlap_InteractableActor is null."));
-	}
 }
 
 void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
