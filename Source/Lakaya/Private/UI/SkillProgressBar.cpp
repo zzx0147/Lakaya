@@ -3,8 +3,6 @@
 
 #include "UI/SkillProgressBar.h"
 
-#include <Windows.ApplicationModel.Background.h>
-
 #include "Components/ProgressBar.h"
 #include "GameFramework/GameStateBase.h"
 #include "Styling/SlateBrush.h"
