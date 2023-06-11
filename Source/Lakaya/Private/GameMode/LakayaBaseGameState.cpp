@@ -4,6 +4,7 @@
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "Net/UnrealNetwork.h"
+#include "PlayerController/BattlePlayerController.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/GamePlayCrossHairWidget.h"
 #include "UI/GamePlayKillLogWidget.h"
@@ -107,6 +108,9 @@ void ALakayaBaseGameState::BeginPlay()
 			{
 				SkillWidget->AddToViewport();
 				SkillWidget->SetVisibility(ESlateVisibility::Hidden);
+				
+				if(const auto BattlePlayerController = Cast<ABattlePlayerController>(LocalController); BattlePlayerController != nullptr)
+					BattlePlayerController->SetSkillWidget(SkillWidget.Get());
 			}
 		}
 
@@ -142,14 +146,10 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-
-	const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
-	if (LocalPlayerState != nullptr)
+	
+	if (const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState); LocalPlayerState != nullptr)
 	{
-		const auto CharacterName = LocalPlayerState->GetCharacterName();
 		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SkillWidget->SetCharacter(CharacterName);
-		// LocalPlayerState->OnCharacterNameChanged.AddUObject(SkillWidget,&USkillWidget::SetCharacter);
 	}
 
 	InternalSetCharacterSelectWidgetVisibility(false);
