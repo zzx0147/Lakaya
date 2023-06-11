@@ -155,9 +155,13 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 
-	// 매치 시작하면 플레이어 동작 막기
+	// 매치 시작하면 플레이어 인풋 막기
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
-		LocalController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_None);
+	{
+		// LocalController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_None);
+		
+		LocalController->DisableInput(LocalController);
+	}
 	
 	FTimerDelegate TimerDelegate;
 	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate, MatchStartWaitWidgetLifeTime, false);
@@ -175,9 +179,13 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 			if (AllControllers && AIIndividualLiveScoreBoardWidget.IsValid())
 				AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
 
-			// 플레이어 동작 
+			// 플레이어 인풋 동작 
 			if (PlayerCharacterController)
-				PlayerCharacterController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+			{
+				// PlayerCharacterController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+				
+				PlayerCharacterController->EnableInput(PlayerCharacterController);
+			}
 
 			// AI 동작
 			if (AiCharacterController)
