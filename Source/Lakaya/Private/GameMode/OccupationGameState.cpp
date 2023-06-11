@@ -1,6 +1,7 @@
 #include "GameMode/OccupationGameState.h"
 
 #include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
@@ -199,18 +200,15 @@ void AOccupationGameState::HandleMatchHasEnded()
 		GameResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 	// Anti팀의 배열과, Pro팀의 배열을 내림차순으로 정렬합니다.
-	for (auto& Element : PlayersByTeamMap)
+	static auto Predicate = [](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B)
 	{
-		Element.Value.Sort([](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B)
-		{
-			return A.GetTotalScore() > B.GetTotalScore();
-		});
-	}
+		return A.GetTotalScore() > B.GetTotalScore();
+	};
+	for (auto& Element : PlayersByTeamMap) Element.Value.Sort(Predicate);
 
 	ShowEndResultWidget();
 	BindDetailResultWidget();
 	BindDetailResultElementWidget();
-	TapBool = false;
 }
 
 void AOccupationGameState::EndTimeCheck()
@@ -368,7 +366,17 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 
 		Controller->SetShowMouseCursor(true);
 
-		TapBool = true;
+		if (const auto InputComponent = Cast<UEnhancedInputComponent>(Controller->InputComponent))
+		{
+			InputComponent->BindAction(ResultSwitchingAction, ETriggerEvent::Triggered, this,
+			                           &AOccupationGameState::ChangeResultWidget);
+		}
+
+		if (const auto SubSystem = Controller->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+		{
+			SubSystem->AddMappingContext(ResultShortcutContext, 200);
+		}
+
 		ShowGradeResultElementWidget(PlayerState);
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
