@@ -2,26 +2,6 @@
 
 #include "Components/TextBlock.h"
 
-void UGamePlayBulletWidget::NativeConstruct()
-{
-	Super::NativeConstruct();
-
-	//초기화 후 널체크
-#pragma region InitAndNullCheck
-
-	RemainBulletsText = Cast<UTextBlock>(GetWidgetFromName(TEXT("RemainBullets_Text")));
-	MagazineCapacityText = Cast<UTextBlock>(GetWidgetFromName(TEXT("MagazineCapacity_Text")));
-
-	RenaWeaponImage = Cast<UImage>(GetWidgetFromName("Rena_Weapon_Image"));
-	WaziWeaponImage = Cast<UImage>(GetWidgetFromName("Wazi_Weapon_Image"));
-	
-	check(RemainBulletsText != nullptr);
-	check(MagazineCapacityText != nullptr);
-	check(RenaWeaponImage != nullptr);
-	check(WaziWeaponImage != nullptr);
-#pragma endregion
-}
-
 void UGamePlayBulletWidget::SetRemainBullet(const uint16& RemainBullet)
 {
 	//업데이트된 총알 갯수를 저장하고 텍스트로 표기

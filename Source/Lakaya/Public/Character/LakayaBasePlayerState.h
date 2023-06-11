@@ -31,7 +31,6 @@ class LAKAYA_API ALakayaBasePlayerState : public APlayerState
 public:
 	ALakayaBasePlayerState();
 
-	virtual void PreInitializeComponents() override;
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 	virtual void OnRep_PlayerName() override;
@@ -270,6 +269,13 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGamePlayHealthWidget> HealthWidgetClass;
 
+	// 게임중에 표시되는 피격 레이더 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UDirectionalDamageIndicator> DirectionDamageIndicatorClass;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UGamePlayPortraitWidget> PortraitWidgetClass;
+
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Health, Transient)
 	float Health;
@@ -307,19 +313,12 @@ private:
 	FTimerHandle RespawnTimer;
 	FTimerHandle CurrentCaptureTimer;
 	bool bRecentAliveState;
-	TWeakObjectPtr<UGamePlayHealthWidget> HealthWidget;
-
-	// 게임중에 표시되는 피격 레이더 위젯 클래스를 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UDirectionalDamageIndicator> DirectionDamageIndicatorClass;
-
-	// 팀스코어 위젯 입니다.
-	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;
-
 	ERendererStencilMask UniqueRenderMask;
-
-	// 로컬 플레이어와 같은 팀인지 여부를 나타냅니다.
 	bool bIsAlly;
+
+	TWeakObjectPtr<UGamePlayHealthWidget> HealthWidget;
+	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;
+	TWeakObjectPtr<UGamePlayPortraitWidget> PortraitWidget;
 };
 
 template <class T>

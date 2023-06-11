@@ -3,6 +3,7 @@
 
 #include "ETC/OutlineManager.h"
 
+#include "Character/LakayaBaseCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/PostProcessComponent.h"
 
@@ -24,8 +25,9 @@ void AOutlineManager::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	ClairvoyanceDynamic = UMaterialInstanceDynamic::Create(ClairvoyanceMaterial, this);
-	if (ClairvoyanceDynamic.IsValid())
-		ClairvoyancePostProcessComponent->AddOrUpdateBlendable(ClairvoyanceDynamic.Get());
+	if (!ClairvoyanceDynamic.IsValid()) return;
+	ClairvoyancePostProcessComponent->AddOrUpdateBlendable(ClairvoyanceDynamic.Get());
+	ClairvoyanceDynamic->SetScalarParameterValue(EnemyRenderingParameterName, 0.f);
 }
 
 void AOutlineManager::SetClairvoyance(const bool& bIsClairvoyance)
@@ -38,19 +40,24 @@ void AOutlineManager::SetTeam(const EPlayerTeam& NewTeam)
 {
 	ClientTeam = NewTeam;
 	ClairvoyanceDynamic->SetScalarParameterValue(EnemyNumberStartParameterName,
-	                                             NewTeam == EPlayerTeam::Individual ? 2.f : 8.f);
+	                                             NewTeam == EPlayerTeam::Individual ? 2.f : 4.f);
 }
 
-void AOutlineManager::RegisterClairvoyance(const uint32& UniqueId, const EPlayerTeam& PlayerTeam)
+void AOutlineManager::RegisterClairvoyance(const ALakayaBaseCharacter* Character)
 {
-	if (ClientTeam != PlayerTeam || ActivatedClairvoyanceSet.Contains(UniqueId)) return;
-	ActivatedClairvoyanceSet.Emplace(UniqueId);
+	// 개인전에선 로컬 플레이어 컨트롤러인 경우에만, 다른 모드에서는 로컬 클라이언트와 같은 팀인 경우에만 투시를 허용합니다.
+	if ((ClientTeam == EPlayerTeam::Individual
+		     ? !Character->IsPlayerControlled() || !Character->IsLocallyControlled()
+		     : !Character->IsSameTeam(ClientTeam))
+		|| ActivatedClairvoyanceSet.Contains(Character)) return;
+	
+	ActivatedClairvoyanceSet.Emplace(Character);
 	if (!ActivatedClairvoyanceSet.IsEmpty()) SetClairvoyance(true);
 }
 
-void AOutlineManager::UnRegisterClairvoyance(const uint32& UniqueId, const EPlayerTeam& PlayerTeam)
+void AOutlineManager::UnRegisterClairvoyance(const ALakayaBaseCharacter* Character)
 {
-	if (ClientTeam != PlayerTeam || !ActivatedClairvoyanceSet.Contains(UniqueId)) return;
-	ActivatedClairvoyanceSet.Remove(UniqueId);
+	if (!ActivatedClairvoyanceSet.Contains(Character)) return;
+	ActivatedClairvoyanceSet.Remove(Character);
 	if (ActivatedClairvoyanceSet.IsEmpty()) SetClairvoyance(false);
 }

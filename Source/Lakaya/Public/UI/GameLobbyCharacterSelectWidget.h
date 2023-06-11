@@ -1,9 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/LakayaBasePlayerState.h"
-#include "Components/TextBlock.h"
-#include "UI/GameLobbyWeaponSelectWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "GameLobbyCharacterSelectWidget.generated.h"
 
 
@@ -18,14 +16,16 @@ class LAKAYA_API UGameLobbyCharacterSelectWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UGameLobbyCharacterSelectWidget(const FObjectInitializer& ObjectInitializer);
+	explicit UGameLobbyCharacterSelectWidget(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void NativeConstruct() override;
 
 public:
-	virtual void RegisterPlayer(APlayerState* PlayerState) { return; };
-	virtual void SetLocalPlayerName(const FString& Name);
+	virtual void RegisterPlayer(APlayerState* PlayerState) { return; }
+
+	// 캐릭터가 선택되면 자동으로 위젯이 가려질지 여부를 선택합니다. 
+	void EnableAutoHide(const bool& IsEnabled);
 
 protected:
 	//버튼에 바인딩되는 함수들은 UFUNTION을 사용해야함
@@ -42,7 +42,7 @@ public:
 	OnChangeSelectedCharacterSignature OnChangeSelectedCharacter;
 
 private:
-	TArray<TObjectPtr<UButton>> CharacterButtonArray;
+	TArray<TObjectPtr<class UButton>> CharacterButtonArray;
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TObjectPtr<UMaterialInterface>> CharacterRenderTargetMaterialArray;
@@ -57,19 +57,19 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FName, uint32> MagazineMap;
 
-	TObjectPtr<UImage> GunImage;
+	TObjectPtr<class UImage> GunImage;
 
 	TObjectPtr<UImage> SelectedCharacterImage;
 
 	TObjectPtr<UButton> PrevCharacterButton;
 
-	TObjectPtr<UTextBlock> MagazineInfoText;
+	TObjectPtr<class UTextBlock> MagazineInfoText;
 
 	FText MagazineTextFormat;
 
-	
 	TObjectPtr<class URichTextBlock> IntroductionText;
 
 	TObjectPtr<class UPlayerInfoWidget> PlayerInfoWidget;
-	FString LocalPlayerName;
+
+	bool bAutoHide;
 };

@@ -39,17 +39,6 @@ AOccupationGameState::AOccupationGameState()
 	PlayersByTeamMap.Emplace(EPlayerTeam::B);
 }
 
-void AOccupationGameState::OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController)
-{
-	Super::OnLocalPlayerControllerPlayerStateUpdated(LocalPlayerController);
-	if (!LocalPlayerController) return;
-	if (const auto PlayerState = LocalPlayerController->GetPlayerState<ALakayaBasePlayerState>())
-	{
-		SetClientTeam(PlayerState->GetTeam());
-		PlayerState->OnTeamChanged.AddUObject(this, &AOccupationGameState::SetClientTeam);
-	}
-}
-
 void AOccupationGameState::BeginPlay()
 {
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
@@ -263,8 +252,8 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 
 	if (const auto BasePlayerState = Cast<ALakayaBasePlayerState>(PlayerState))
 	{
-		RegisterPlayerByTeam(BasePlayerState->GetTeam(), BasePlayerState);
-		BasePlayerState->OnTeamChanged.AddUObject(this, &AOccupationGameState::RegisterPlayerByTeam, BasePlayerState);
+		UpdatePlayerByTeamMap(BasePlayerState->GetTeam(), BasePlayerState);
+		BasePlayerState->OnTeamChanged.AddUObject(this, &AOccupationGameState::UpdatePlayerByTeamMap, BasePlayerState);
 	}
 }
 
@@ -293,12 +282,12 @@ void AOccupationGameState::OnRep_OccupationWinner()
 
 void AOccupationGameState::SetClientTeam(const EPlayerTeam& NewTeam)
 {
+	if (ClientTeam == NewTeam) return;
 	ClientTeam = NewTeam;
 	if (SpawnOutlineManager()) OutlineManager->SetTeam(NewTeam);
-
-	//현재까지 등록된 플레이어 스테이트들을 위젯에 등록한다
-	if (!PlayersByTeamMap.Contains(ClientTeam)) return;
-	for (const auto& Temp : PlayersByTeamMap[ClientTeam]) CharacterSelectWidget->RegisterPlayer(Temp);
+	for (const auto& Pair : PlayersByTeamMap)
+		for (const auto& Player : Pair.Value)
+			SetupPlayerStateOnLocal(Player);
 }
 
 void AOccupationGameState::DestroyShieldWallObject()
@@ -561,24 +550,40 @@ void AOccupationGameState::BindDetailResultElementWidget()
 	}
 }
 
-void AOccupationGameState::RegisterPlayerByTeam(const EPlayerTeam& Team, ALakayaBasePlayerState* PlayerState)
+void AOccupationGameState::UpdatePlayerByTeamMap(const EPlayerTeam& Team, ALakayaBasePlayerState* PlayerState)
 {
 	if (!PlayersByTeamMap.Contains(Team)) return;
 	auto& PlayerStates = PlayersByTeamMap[Team];
 	PlayerStates.Emplace(PlayerState);
-	PlayerState->SetUniqueStencilMask(GetUniqueStencilMaskByTeamAndIndex(Team, PlayerStates.Num()));
-	PlayerState->SetAlly(ClientTeam == Team);
-	if (ClientTeam == Team && CharacterSelectWidget) CharacterSelectWidget->RegisterPlayer(PlayerState);
+
+	if (ClientTeam != EPlayerTeam::None) SetupPlayerStateOnLocal(PlayerState);
+
+	OnPlayerStateOwnerChanged(PlayerState->GetOwner());
+	PlayerState->OnOwnerChanged.AddUObject(this, &AOccupationGameState::OnPlayerStateOwnerChanged);
 }
 
-ERendererStencilMask AOccupationGameState::GetUniqueStencilMaskByTeamAndIndex(const EPlayerTeam& Team,
-                                                                              const uint8& Count) const
+ERendererStencilMask AOccupationGameState::GetUniqueStencilMask(const bool& IsAlly, const uint8& Index)
 {
-	switch (Count)
+	switch (Index)
 	{
-	case 1: return ClientTeam == Team ? ERendererStencilMask::ERSM_1 : ERendererStencilMask::ERSM_8;
-	case 2: return ClientTeam == Team ? ERendererStencilMask::ERSM_2 : ERendererStencilMask::ERSM_16;
-	case 3: return ClientTeam == Team ? ERendererStencilMask::ERSM_4 : ERendererStencilMask::ERSM_32;
+	case 0: return IsAlly ? ERendererStencilMask::ERSM_1 : ERendererStencilMask::ERSM_8;
+	case 1: return IsAlly ? ERendererStencilMask::ERSM_2 : ERendererStencilMask::ERSM_16;
+	case 2: return IsAlly ? ERendererStencilMask::ERSM_4 : ERendererStencilMask::ERSM_32;
 	default: return ERendererStencilMask::ERSM_Default;
 	}
+}
+
+void AOccupationGameState::OnPlayerStateOwnerChanged(AActor* InOwner)
+{
+	if (const auto Controller = Cast<APlayerController>(InOwner); Controller && Controller->IsLocalController())
+		SetClientTeam(Controller->GetPlayerState<ALakayaBasePlayerState>()->GetTeam());
+}
+
+void AOccupationGameState::SetupPlayerStateOnLocal(ALakayaBasePlayerState* PlayerState)
+{
+	const auto Team = PlayerState->GetTeam();
+	const auto IsAlly = Team == ClientTeam;
+	PlayerState->SetUniqueStencilMask(GetUniqueStencilMask(IsAlly, PlayersByTeamMap[Team].Find(PlayerState)));
+	PlayerState->SetAlly(IsAlly);
+	if (IsAlly) GetCharacterSelectWidget()->RegisterPlayer(PlayerState);
 }

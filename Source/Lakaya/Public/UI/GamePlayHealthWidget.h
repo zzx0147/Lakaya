@@ -34,8 +34,4 @@ private:
 
 	float MaximumHealth; //최대 체력 값
 	float Health; //체력 값
-
-public:
-	TObjectPtr<UImage> UserInfoCharImageRena;	// 캐릭터 정보창에 표기되는 레나 초상화
-	TObjectPtr<UImage> UserInfoCharImageWazi;	// 캐릭터 정보창에 표기되는 와지 초상화
 };

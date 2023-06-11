@@ -2,27 +2,45 @@
 
 #include "UI/SkillWidget.h"
 
+#include <filesystem>
+
+#include "Character/ArmedCharacter.h"
+#include "UI/SkillProgressBar.h"
+
 void USkillWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	RenaQSkill = Cast<UImage>(GetWidgetFromName("Rena_Skill_Q"));
-	RenaESkill = Cast<UImage>(GetWidgetFromName("Rena_Skill_E"));
-	RenaRButtonSkill = Cast<UImage>(GetWidgetFromName("Rena_Skill_RButton"));
-	// RenaRSkill = Cast<UImage>(GetWidgetFromName("Rena_Skill_R"));
+	QSkillProgressBar = Cast<USkillProgressBar>(GetWidgetFromName("Skill_Q"));
+	ESkillProgressBar = Cast<USkillProgressBar>(GetWidgetFromName("Skill_E"));
+	RButtonSkillProgressBar = Cast<USkillProgressBar>(GetWidgetFromName("Skill_RButton"));
 
-	WaziQSkill = Cast<UImage>(GetWidgetFromName("Wazi_Skill_Q"));
-	WaziESkill = Cast<UImage>(GetWidgetFromName("Wazi_Skill_E"));
-	WaziRButtonSkill = Cast<UImage>(GetWidgetFromName("Wazi_Skill_RButton"));
-	// WaziRSkill = Cast<UImage>(GetWidgetFromName("Wazi_Skill_R"));
+	check(QSkillProgressBar != nullptr);
+	check(ESkillProgressBar != nullptr);
+	check(RButtonSkillProgressBar != nullptr);
+}
 
-	check(RenaQSkill != nullptr);
-	check(RenaESkill != nullptr);
-	check(RenaRButtonSkill != nullptr);
-	// check(RenaRSkill != nullptr);
+void USkillWidget::SetCharacter(const FName& CharacterName)
+{
+	if(SkillWidgetTextureMap.Contains(CharacterName))
+	{
+		QSkillProgressBar->SetTexture(SkillWidgetTextureMap[CharacterName].QSkillTextureBackgroundImage,SkillWidgetTextureMap[CharacterName].QSkillTextureFillImage);
+		ESkillProgressBar->SetTexture(SkillWidgetTextureMap[CharacterName].ESkillTextureBackgroundImage,SkillWidgetTextureMap[CharacterName].ESkillTextureFillImage);
+		RButtonSkillProgressBar->SetTexture(SkillWidgetTextureMap[CharacterName].RButtonSkillTextureBackgroundImage,SkillWidgetTextureMap[CharacterName].RButtonSkillTextureFillImage);
+	}
+}
 
-	check(WaziQSkill != nullptr);
-	check(WaziESkill != nullptr);
-	check(WaziRButtonSkill != nullptr);
-	// check(WaziRSkill != nullptr);
+USkillProgressBar* USkillWidget::GetSkillProgressBar(const EAbilityKind AbilityKind)
+{
+	switch (AbilityKind)
+	{
+	case Primary:
+		return QSkillProgressBar.Get();
+	case Secondary:
+		return ESkillProgressBar.Get();
+	case WeaponAbility:
+		return RButtonSkillProgressBar.Get();
+	}
+	
+	return nullptr;
 }

@@ -14,10 +14,12 @@ class LAKAYA_API ABattlePlayerController : public AMovablePlayerController
 
 public:
 	ABattlePlayerController();
-
+	void SetSkillWidget(class USkillWidget* NewSkillWidget) {SkillWidget = NewSkillWidget;}
+	
 protected:
 	virtual void SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent) override;
 	virtual void SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem) override;
+	virtual void SkillWidgetBind();
 	virtual void OnPossessedPawnChangedCallback(APawn* ArgOldPawn, APawn* NewPawn) override;
 
 private:
@@ -77,4 +79,6 @@ private:
 	UInputAction* DashStopAction;
 
 	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
+
+	TWeakObjectPtr<class USkillWidget> SkillWidget;
 };

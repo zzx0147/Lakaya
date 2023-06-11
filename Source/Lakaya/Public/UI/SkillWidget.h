@@ -1,15 +1,35 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/Image.h"
+#include "Character/ArmedCharacter.h"
 #include "SkillWidget.generated.h"
 
-/**
- * 
- */
+USTRUCT(BlueprintType)
+struct FSkillWidgetTextureStruct
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere)
+	UTexture2D* QSkillTextureFillImage;
+
+	UPROPERTY(EditAnywhere)
+	UTexture2D* QSkillTextureBackgroundImage;
+	
+	UPROPERTY(EditAnywhere)
+	UTexture2D* ESkillTextureFillImage;
+
+	UPROPERTY(EditAnywhere)
+	UTexture2D* ESkillTextureBackgroundImage;
+	
+	UPROPERTY(EditAnywhere)
+	UTexture2D* RButtonSkillTextureFillImage;
+
+	UPROPERTY(EditAnywhere)
+	UTexture2D* RButtonSkillTextureBackgroundImage;
+};
+
+
 UCLASS()
 class LAKAYA_API USkillWidget : public UUserWidget
 {
@@ -19,13 +39,15 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
-	TWeakObjectPtr<UImage> RenaQSkill;			// 레나 Q 스킬
-	TWeakObjectPtr<UImage> RenaESkill;			// 레나 E 스킬
-	TWeakObjectPtr<UImage> RenaRButtonSkill;	// 레나 우클릭 스킬
-	// TWeakObjectPtr<UImage> RenaRSkill;			// 레나 R 스킬
+	void SetCharacter(const FName& CharacterName);
+	class USkillProgressBar* GetSkillProgressBar(EAbilityKind AbilityKind);
+	
+	
+private:
+	TWeakObjectPtr<class USkillProgressBar> QSkillProgressBar;			// 레나 Q 스킬
+	TWeakObjectPtr<USkillProgressBar> ESkillProgressBar;			// 레나 E 스킬
+	TWeakObjectPtr<USkillProgressBar> RButtonSkillProgressBar;	// 레나 우클릭 스킬
 
-	TWeakObjectPtr<UImage> WaziQSkill;			// 와지 Q 스킬
-	TWeakObjectPtr<UImage> WaziESkill;			// 와지 E 스킬
-	TWeakObjectPtr<UImage> WaziRButtonSkill;	// 와지 우클릭 스킬
-	// TWeakObjectPtr<UImage> WaziRSkill;			// 와지 R 스킬
+	UPROPERTY(EditAnywhere)
+	TMap<FName, FSkillWidgetTextureStruct> SkillWidgetTextureMap;
 };

@@ -51,4 +51,6 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	float MatchStartWaitWidgetLifeTime;
+
+	FString AIName;
 };
