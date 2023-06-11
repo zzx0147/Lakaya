@@ -3,20 +3,29 @@
 
 #include "Character/BulletComponent.h"
 
-#include "Character/LakayaBaseCharacter.h"
-#include "Character/LakayaBasePlayerState.h"
-#include "Character/Ability/CharacterAbility.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/GamePlayBulletWidget.h"
 
 UBulletComponent::UBulletComponent()
 {
+	bWantsInitializeComponent = true;
 	MaxBullets = 30;
 
 	static ConstructorHelpers::FClassFinder<UGamePlayBulletWidget> WidgetFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayBulletWidget"));
 
-	if (WidgetFinder.Succeeded()) BulletWidgetClass = WidgetFinder.Class;
+	BulletWidgetClass = WidgetFinder.Class;
+}
+
+void UBulletComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+	if (const auto Pawn = GetOwner<APawn>())
+	{
+		if (Pawn->HasAuthority()) Reload();
+		SetupBulletWidget(Pawn->GetController());
+		Pawn->ReceiveControllerChangedDelegate.AddUniqueDynamic(this, &UBulletComponent::OnOwnerControllerChanged);
+	}
 }
 
 void UBulletComponent::OnAliveStateChanged(const bool& AliveState)
@@ -25,19 +34,10 @@ void UBulletComponent::OnAliveStateChanged(const bool& AliveState)
 	if (AliveState && GetOwner()->HasAuthority()) Reload();
 }
 
-void UBulletComponent::OnRegister()
+void UBulletComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
-	Super::OnRegister();
-	if (const auto Pawn = GetOwner<APawn>())
-	{
-		if (Pawn->HasAuthority()) Reload();
-
-		if (const auto LocalController = Pawn->GetController<APlayerController>();
-			LocalController && LocalController->IsLocalController())
-			SetupBulletWidget(LocalController);
-
-		Pawn->ReceiveControllerChangedDelegate.AddUniqueDynamic(this, &UBulletComponent::OnOwnerControllerChanged);
-	}
+	Super::OnComponentDestroyed(bDestroyingHierarchy);
+	RemoveBulletWidget();
 }
 
 void UBulletComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -76,43 +76,28 @@ void UBulletComponent::OnOwnerControllerChanged(APawn* Pawn, AController* OldCon
 	RemoveBulletWidget();
 
 	// 새로운 컨트롤러가 로컬 플레이어 컨트롤러라면 위젯을 바인딩합니다.
-	if (const auto LocalController = Cast<APlayerController>(NewController);
-		LocalController && LocalController->IsLocalController())
-		SetupBulletWidget(LocalController);
+	SetupBulletWidget(NewController);
 }
 
-void UBulletComponent::SetupBulletWidget(APlayerController* LocalController)
+void UBulletComponent::SetupBulletWidget(AController* Controller)
 {
-	// 생성되지 않았다면 생성합니다.
-	if (!BulletWidget.IsValid()) BulletWidget = CreateWidget<UGamePlayBulletWidget>(LocalController, BulletWidgetClass);
-
-	// 정상적으로 생성되지 않는다면 리턴합니다.
-	if (!BulletWidget.IsValid()) return;
-
-	// 위젯 바인딩
-	BulletWidget->AddToViewport();
-	BulletWidget->SetMaxBullet(GetMaxBullets());
-	BulletWidget->SetRemainBullet(Bullets);
-
-	OnMaxBulletsChanged.AddUObject(BulletWidget.Get(), &UGamePlayBulletWidget::SetMaxBullet);
-	OnBulletsChanged.AddUObject(BulletWidget.Get(), &UGamePlayBulletWidget::SetRemainBullet);
-
-	const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(LocalController->PlayerState);
-	if (LocalPlayerState != nullptr)
+	if (const auto LocalController = Cast<APlayerController>(Controller);
+		LocalController && LocalController->IsLocalController())
 	{
-		const FString CharacterName = LocalPlayerState->GetCharacterName().ToString();
+		// 생성되지 않았다면 생성합니다.
+		if (!BulletWidget.IsValid())
+			BulletWidget = CreateWidget<UGamePlayBulletWidget>(LocalController, BulletWidgetClass);
 
-		if (CharacterName == "Rena")
-		{
-			// TODO : 레나 캐릭터 전용 UI
-			BulletWidget->RenaWeaponImage->SetVisibility(ESlateVisibility::Visible);
-		}
+		// 정상적으로 생성되지 않는다면 리턴합니다.
+		if (!BulletWidget.IsValid()) return;
 
-		if (CharacterName == "Wazi")
-		{
-			// TODO : 와지 캐릭터 전용 UI
-			BulletWidget->WaziWeaponImage->SetVisibility(ESlateVisibility::Visible);
-		}
+		// 위젯 바인딩
+		BulletWidget->AddToViewport();
+		BulletWidget->SetMaxBullet(GetMaxBullets());
+		BulletWidget->SetRemainBullet(Bullets);
+
+		OnMaxBulletsChanged.AddUObject(BulletWidget.Get(), &UGamePlayBulletWidget::SetMaxBullet);
+		OnBulletsChanged.AddUObject(BulletWidget.Get(), &UGamePlayBulletWidget::SetRemainBullet);
 	}
 }
 
