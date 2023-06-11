@@ -39,17 +39,6 @@ AOccupationGameState::AOccupationGameState()
 	PlayersByTeamMap.Emplace(EPlayerTeam::B);
 }
 
-void AOccupationGameState::OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController)
-{
-	Super::OnLocalPlayerControllerPlayerStateUpdated(LocalPlayerController);
-	if (!LocalPlayerController) return;
-	if (const auto PlayerState = LocalPlayerController->GetPlayerState<ALakayaBasePlayerState>())
-	{
-		SetClientTeam(PlayerState->GetTeam());
-		PlayerState->OnTeamChanged.AddUObject(this, &AOccupationGameState::SetClientTeam);
-	}
-}
-
 void AOccupationGameState::BeginPlay()
 {
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
@@ -566,7 +555,11 @@ void AOccupationGameState::UpdatePlayerByTeamMap(const EPlayerTeam& Team, ALakay
 	if (!PlayersByTeamMap.Contains(Team)) return;
 	auto& PlayerStates = PlayersByTeamMap[Team];
 	PlayerStates.Emplace(PlayerState);
+
 	if (ClientTeam != EPlayerTeam::None) SetupPlayerStateOnLocal(PlayerState);
+
+	OnPlayerStateOwnerChanged(PlayerState->GetOwner());
+	PlayerState->OnOwnerChanged.AddUObject(this, &AOccupationGameState::OnPlayerStateOwnerChanged);
 }
 
 ERendererStencilMask AOccupationGameState::GetUniqueStencilMask(const bool& IsAlly, const uint8& Index)
@@ -578,6 +571,12 @@ ERendererStencilMask AOccupationGameState::GetUniqueStencilMask(const bool& IsAl
 	case 2: return IsAlly ? ERendererStencilMask::ERSM_4 : ERendererStencilMask::ERSM_32;
 	default: return ERendererStencilMask::ERSM_Default;
 	}
+}
+
+void AOccupationGameState::OnPlayerStateOwnerChanged(AActor* Owner)
+{
+	if (const auto Controller = Cast<APlayerController>(Owner); Controller && Controller->IsLocalController())
+		SetClientTeam(Controller->GetPlayerState<ALakayaBasePlayerState>()->GetTeam());
 }
 
 void AOccupationGameState::SetupPlayerStateOnLocal(ALakayaBasePlayerState* PlayerState)

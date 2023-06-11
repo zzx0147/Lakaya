@@ -3,10 +3,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "Components/SlateWrapperTypes.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/PlayerState.h"
-#include "GameMode/AIIndividualGameState.h"
 #include "GameMode/LakayaBaseGameState.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameState.h"
@@ -101,12 +99,6 @@ void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSu
 	InputSubsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 }
 
-void AGameLobbyPlayerController::NotifyLocalPlayerStateUpdated()
-{
-	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
-		GameState->OnLocalPlayerControllerPlayerStateUpdated(this);
-}
-
 AGameLobbyPlayerController::AGameLobbyPlayerController()
 {
 	OnPossessedPawnChanged.AddUniqueDynamic(this, &AGameLobbyPlayerController::OnPossessedPawnChangedCallback);
@@ -134,20 +126,6 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 	if (WeaponFinder.Succeeded()) LoadoutAction = WeaponFinder.Object;
 	if (ShowScoreFinder.Succeeded()) ShowScoreAction = ShowScoreFinder.Object;
 	if (HideScoreFinder.Succeeded()) HideScoreAction = HideScoreFinder.Object;
-}
-
-void AGameLobbyPlayerController::OnRep_PlayerState()
-{
-	Super::OnRep_PlayerState();
-	//클라의 경우 PlayerState가 생겼을 때 캐릭터 선택 위젯을 생성
-	if (IsLocalController()) NotifyLocalPlayerStateUpdated();
-}
-
-void AGameLobbyPlayerController::BeginPlay()
-{
-	Super::BeginPlay();
-	//서버의 경우에만 BeginPlay에서 캐릭터 선택 위젯을 생성
-	if (HasAuthority() && IsLocalController()) NotifyLocalPlayerStateUpdated();
 }
 
 void AGameLobbyPlayerController::MenuHandler(const FInputActionValue& Value)
@@ -193,14 +171,5 @@ void AGameLobbyPlayerController::ShowScoreBoard(const FInputActionValue& Value)
 void AGameLobbyPlayerController::HideScoreBoard(const FInputActionValue& Value)
 {
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
-	{
-		if (GameState->GetMatchState() == MatchState::WaitingPostMatch) return;
-
 		GameState->SetScoreBoardVisibility(false);
-	}
-}
-
-void AGameLobbyPlayerController::EscapeHandler()
-{
-	UE_LOG(LogTemp, Warning, TEXT("EscapeHandler !"));	
 }

@@ -15,7 +15,6 @@ class LAKAYA_API AOccupationGameState : public ALakayaBaseGameState
 
 public:
 	AOccupationGameState();
-	virtual void OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController) override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -102,6 +101,7 @@ private:
 	void UpdatePlayerByTeamMap(const EPlayerTeam& Team, ALakayaBasePlayerState* PlayerState);
 	void SetupPlayerStateOnLocal(ALakayaBasePlayerState* PlayerState);
 	static ERendererStencilMask GetUniqueStencilMask(const bool& IsAlly, const uint8& Index);
+	void OnPlayerStateOwnerChanged(AActor* Owner);
 
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;

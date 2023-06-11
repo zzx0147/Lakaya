@@ -43,7 +43,7 @@ void ALakayaBaseGameState::BeginPlay()
 			{
 				LoadingWidget->SetMaximumPlayerNumber(MaximumPlayers);
 				LoadingWidget->SetPlayerNumber(PlayerArray.Num());
-				LoadingWidget->AddToViewport();
+				LoadingWidget->AddToViewport(10);
 				LoadingWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 			}
 		}
@@ -100,15 +100,17 @@ void ALakayaBaseGameState::BeginPlay()
 		// 	}
 		// }
 
-		if (SkillWidgetClass)
-		{
-			SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
-			if (SkillWidget.IsValid())
-			{
-				SkillWidget->AddToViewport();
-				SkillWidget->SetVisibility(ESlateVisibility::Hidden);
-			}
-		}
+		// TODO : 크래쉬 문제로 인해서 주석처리 해주었습니다.
+		// 버그 해결이후에는 주석 처리를 풀어주어야 합니다.
+		// if (SkillWidgetClass)
+		// {
+		// 	SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
+		// 	if (SkillWidget.IsValid())
+		// 	{
+		// 		SkillWidget->AddToViewport();
+		// 		SkillWidget->SetVisibility(ESlateVisibility::Hidden);
+		// 	}
+		// }
 
 		if (KillLogWidgetClass)
 		{
@@ -147,12 +149,15 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	if (LocalPlayerState != nullptr)
 	{
 		const auto CharacterName = LocalPlayerState->GetCharacterName();
-		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SkillWidget->SetCharacter(CharacterName);
+		// TODO : 크래쉬 문제로 인해서 주석처리 해주었습니다.
+		// 버그 해결이후에는 주석 처리를 풀어주어야 합니다.
+		// SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		// SkillWidget->SetCharacter(CharacterName);
 		// LocalPlayerState->OnCharacterNameChanged.AddUObject(SkillWidget,&USkillWidget::SetCharacter);
 	}
 
 	InternalSetCharacterSelectWidgetVisibility(false);
+	if (CharacterSelectWidget) CharacterSelectWidget->EnableAutoHide(true);
 
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -217,8 +222,8 @@ void ALakayaBaseGameState::OnRep_MatchState()
 
 void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
 {
-	if (ScoreBoard.IsValid())
-		ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
+	if (!ScoreBoard.IsValid() || MatchState != MatchState::InProgress) return;
+	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
 }
 
 UGameLobbyCharacterSelectWidget* ALakayaBaseGameState::GetCharacterSelectWidget()
@@ -241,17 +246,6 @@ void ALakayaBaseGameState::ToggleCharacterSelectWidget()
 	// 캐릭터 선택위젯이 숨겨져있었다면 보여주고, 보여지고 있었다면 숨깁니다.
 	if (MatchState != MatchState::InProgress) return;
 	InternalSetCharacterSelectWidgetVisibility(GetCharacterSelectWidget()->GetVisibility() == ESlateVisibility::Hidden);
-}
-
-void ALakayaBaseGameState::OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController)
-{
-	if (const auto PlayerState = LocalPlayerController->GetPlayerState<ALakayaBasePlayerState>())
-	{
-		const auto Widget = GetCharacterSelectWidget();
-		Widget->OnChangeSelectedCharacter.AddUObject(this, &ALakayaBaseGameState::OnPlayerCharacterNameChanged,
-		                                             PlayerState);
-		Widget->SetLocalPlayerName(PlayerState->GetPlayerName());
-	}
 }
 
 void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimController,
@@ -312,13 +306,6 @@ void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible)
 {
 	if (!ScoreBoard.IsValid()) return;
 	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
-}
-
-void ALakayaBaseGameState::OnPlayerCharacterNameChanged(const FName& NewCharacterName,
-                                                        ALakayaBasePlayerState* PlayerState)
-{
-	PlayerState->RequestCharacterChange(NewCharacterName);
-	if (MatchState == MatchState::InProgress) InternalSetCharacterSelectWidgetVisibility(false);
 }
 
 void ALakayaBaseGameState::InternalSetCharacterSelectWidgetVisibility(const bool& Visible)

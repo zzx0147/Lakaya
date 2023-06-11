@@ -4,11 +4,11 @@
 #include "Character/LakayaBasePlayerState.h"
 
 #include "Character/LakayaBaseCharacter.h"
-#include "Components/Image.h"
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/DirectionalDamageIndicator.h"
 #include "UI/GamePlayHealthWidget.h"
+#include "UI/GamePlayPortraitWidget.h"
 
 void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -29,20 +29,20 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 {
 	CharacterName = TEXT("Rena");
 	bRecentAliveState = true;
+	OnPawnSet.AddUniqueDynamic(this, &ALakayaBasePlayerState::OnPawnSetCallback);
 
 	static ConstructorHelpers::FClassFinder<UGamePlayHealthWidget> HealthFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
+
 	static ConstructorHelpers::FClassFinder<UDirectionalDamageIndicator> DirectionDamageFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_DirectionalDamageIndicator"));
 
-	if (HealthFinder.Succeeded()) HealthWidgetClass = HealthFinder.Class;
-	if (DirectionDamageFinder.Succeeded()) DirectionDamageIndicatorClass = DirectionDamageFinder.Class;
-}
+	static ConstructorHelpers::FClassFinder<UGamePlayPortraitWidget> PortraitFinder(
+		TEXT("/Game/Blueprints/UMG/WBP_Portrait"));
 
-void ALakayaBasePlayerState::PreInitializeComponents()
-{
-	Super::PreInitializeComponents();
-	OnPawnSet.AddUniqueDynamic(this, &ALakayaBasePlayerState::OnPawnSetCallback);
+	HealthWidgetClass = HealthFinder.Class;
+	DirectionDamageIndicatorClass = DirectionDamageFinder.Class;
+	PortraitWidgetClass = PortraitFinder.Class;
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -78,14 +78,12 @@ void ALakayaBasePlayerState::OnRep_PlayerName()
 void ALakayaBasePlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-	if (const auto LocalController = Cast<APlayerController>(GetOwningController());
-		LocalController && LocalController->IsLocalController())
+	if (const auto LocalController = GetPlayerController(); LocalController && LocalController->IsLocalController())
 	{
 		HealthWidget = CreateWidget<UGamePlayHealthWidget>(LocalController, HealthWidgetClass);
 		if (HealthWidget.IsValid())
 		{
 			HealthWidget->AddToViewport();
-			HealthWidget->SetVisibility(ESlateVisibility::Hidden);
 
 			OnHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetCurrentHealth);
 			OnMaxHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetMaximumHealth);
@@ -96,14 +94,15 @@ void ALakayaBasePlayerState::BeginPlay()
 
 		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(
 			LocalController, DirectionDamageIndicatorClass);
-		if (DirectionDamageIndicatorWidget == nullptr)
-		{
-			UE_LOG(LogTemp, Warning,
-			       TEXT("LakayaBasePlayerState_PreInitializeComponents DirectionDamageIndicatorWidget is null."));
-			return;
-		}
+		if (DirectionDamageIndicatorWidget) DirectionDamageIndicatorWidget->AddToViewport();
 
-		DirectionDamageIndicatorWidget->AddToViewport();
+		PortraitWidget = CreateWidget<UGamePlayPortraitWidget>(LocalController, PortraitWidgetClass);
+		if (PortraitWidget.IsValid())
+		{
+			PortraitWidget->AddToViewport();
+			PortraitWidget->ChangePortrait(GetCharacterName());
+			OnCharacterNameChanged.AddLambda([this](auto, const FName& Name) { PortraitWidget->ChangePortrait(Name); });
+		}
 	}
 }
 
@@ -275,16 +274,7 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 	if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
 	{
 		if (Team != EPlayerTeam::None) Character->SetTeam(Team);
-		if (HealthWidget.IsValid())
-		{
-			HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (GetCharacterName().ToString() == "Rena")
-				HealthWidget->UserInfoCharImageRena->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (GetCharacterName().ToString() == "Wazi")
-				HealthWidget->UserInfoCharImageWazi->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
+		if (HealthWidget.IsValid()) HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);
 		Character->SetStencilMask(UniqueRenderMask);
