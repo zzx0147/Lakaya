@@ -4,6 +4,7 @@
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "Net/UnrealNetwork.h"
+#include "PlayerController/BattlePlayerController.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/GamePlayCrossHairWidget.h"
 #include "UI/GamePlayKillLogWidget.h"
@@ -100,17 +101,18 @@ void ALakayaBaseGameState::BeginPlay()
 		// 	}
 		// }
 
-		// TODO : 크래쉬 문제로 인해서 주석처리 해주었습니다.
-		// 버그 해결이후에는 주석 처리를 풀어주어야 합니다.
-		// if (SkillWidgetClass)
-		// {
-		// 	SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
-		// 	if (SkillWidget.IsValid())
-		// 	{
-		// 		SkillWidget->AddToViewport();
-		// 		SkillWidget->SetVisibility(ESlateVisibility::Hidden);
-		// 	}
-		// }
+		if (SkillWidgetClass)
+		{
+			SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
+			if (SkillWidget.IsValid())
+			{
+				SkillWidget->AddToViewport();
+				SkillWidget->SetVisibility(ESlateVisibility::Hidden);
+				
+				if(const auto BattlePlayerController = Cast<ABattlePlayerController>(LocalController); BattlePlayerController != nullptr)
+					BattlePlayerController->SetSkillWidget(SkillWidget.Get());
+			}
+		}
 
 		if (KillLogWidgetClass)
 		{
@@ -144,16 +146,10 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-
-	const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
-	if (LocalPlayerState != nullptr)
+	
+	if (const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState); LocalPlayerState != nullptr)
 	{
-		const auto CharacterName = LocalPlayerState->GetCharacterName();
-		// TODO : 크래쉬 문제로 인해서 주석처리 해주었습니다.
-		// 버그 해결이후에는 주석 처리를 풀어주어야 합니다.
-		// SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		// SkillWidget->SetCharacter(CharacterName);
-		// LocalPlayerState->OnCharacterNameChanged.AddUObject(SkillWidget,&USkillWidget::SetCharacter);
+		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 
 	InternalSetCharacterSelectWidgetVisibility(false);

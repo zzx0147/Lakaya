@@ -75,6 +75,9 @@ public:
 	UFUNCTION(BlueprintGetter)
 	FRotator GetPlayerRotation() const;
 
+	UFUNCTION(BlueprintGetter)
+	const FName& GetCharacterName() const { return CharacterName; }
+
 	// 캐릭터에게 팀을 설정해줍니다.
 	UFUNCTION(BlueprintNativeEvent)
 	void SetTeam(const EPlayerTeam& Team);
@@ -121,7 +124,7 @@ private:
 	void StartDissolveEffect();
 
 	void RemoveDissolveEffect();
-	
+
 	UFUNCTION()
 	void DissolveTick(const float& Value);
 
@@ -158,18 +161,21 @@ protected:
 	bool bEnableLocalOutline;
 
 	//머티리얼 디졸브 이펙트를 위한 커브입니다
-	UPROPERTY(EditAnywhere,BlueprintReadWrite ,Category = Timeline)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Timeline)
 	TWeakObjectPtr<UCurveFloat> DissolveCurve;
 
 	//디졸브 이펙트의 타겟 머티리얼들입니다
-	UPROPERTY(EditAnywhere,BlueprintReadWrite ,Category = Timeline)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Timeline)
 	TArray<TObjectPtr<UMaterialInstanceDynamic>> DissolveTargetArray;
 
 	//디졸브 이펙트를 위한 타임라인입니다
 	FTimeline DissolveTimeline;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite ,Category = Timeline)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Timeline)
 	float DissolveTimelineLength;
+
+	//캐릭터의 이름입니다
+	FName CharacterName;
 
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
@@ -208,4 +214,6 @@ private:
 	FName MeshCollisionProfile;
 	TWeakObjectPtr<UMaterialInstanceDynamic> CharacterOverlayMaterial;
 	FTimerHandle DamageImmuneTimer;
+
+
 };
