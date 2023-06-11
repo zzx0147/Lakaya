@@ -82,6 +82,11 @@ void AGameLobbyPlayerController::OnPossess(APawn* PawnToPossess)
 	}
 }
 
+void AGameLobbyPlayerController::SetEnableExitShortcut(const bool& Enable)
+{
+	bEnableExitShortcut = Enable;
+}
+
 void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
 	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
@@ -126,18 +131,13 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 	if (WeaponFinder.Succeeded()) LoadoutAction = WeaponFinder.Object;
 	if (ShowScoreFinder.Succeeded()) ShowScoreAction = ShowScoreFinder.Object;
 	if (HideScoreFinder.Succeeded()) HideScoreAction = HideScoreFinder.Object;
+
+	ExitLevel = FSoftObjectPath(TEXT("/Script/Engine.World'/Game/Levels/MainLobbyLevel.MainLobbyLevel'"));
 }
 
 void AGameLobbyPlayerController::MenuHandler(const FInputActionValue& Value)
 {
-	//TODO: UI를 띄웁니다.
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Tab Key."));
-
-	if (GetWorld()->GetGameState<ALakayaBaseGameState>()->GetMatchState() == MatchState::WaitingPostMatch)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("뒤로가기"));
-		UGameplayStatics::OpenLevel(GetWorld(), "MainLobbyLevel");
-	}
+	if (bEnableExitShortcut) UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ExitLevel);
 }
 
 void AGameLobbyPlayerController::LoadoutHandler(const FInputActionValue& Value)

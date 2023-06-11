@@ -25,7 +25,7 @@ void AAttachableProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent
                                                              const FHitResult& SweepResult)
 {
 	const auto Start = OverlappedComponent->GetComponentLocation();
-	const auto Velocity = OverlappedComponent->GetPhysicsLinearVelocity();
+	const auto Velocity = OverlappedComponent->GetPhysicsLinearVelocity().GetUnsafeNormal();
 	DisableProjectilePhysics();
 	Super::OnCollisionComponentBeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep,
 	                                        SweepResult);
@@ -46,11 +46,11 @@ void AAttachableProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent
 		AttachedBone = HitResult.BoneName;
 		SetActorLocationAndRotation(HitResult.ImpactPoint, HitResult.ImpactNormal.Rotation());
 	}
-	// 충돌에 실패한 경우 그냥 투사체가 최초로 충돌했던 위치로 두고, 진행하던 방향의 반대 방향을 바라보도록 셋팅합니다.
+	// 충돌에 실패한 경우 그냥 투사체가 최초로 충돌했던 위치로 두고, 위를 바라보도록 합니다.
 	else
 	{
 		AttachedBone = NAME_None;
-		SetActorLocationAndRotation(Start, (-Velocity).Rotation());
+		SetActorLocationAndRotation(Start, FRotator::ZeroRotator);
 	}
 
 	// ALinearProjectile에서 ProjectileLocation은 월드좌표계였지만, 여기서는 부모 액터가 계속 움직이고 있을 수 있으므로 상대좌표계를 사용합니다.
