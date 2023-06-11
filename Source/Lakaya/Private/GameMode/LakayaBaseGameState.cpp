@@ -108,8 +108,9 @@ void ALakayaBaseGameState::BeginPlay()
 			{
 				SkillWidget->AddToViewport();
 				SkillWidget->SetVisibility(ESlateVisibility::Hidden);
-				
-				if(const auto BattlePlayerController = Cast<ABattlePlayerController>(LocalController); BattlePlayerController != nullptr)
+
+				if (const auto BattlePlayerController = Cast<ABattlePlayerController>(LocalController);
+					BattlePlayerController != nullptr)
 					BattlePlayerController->SetSkillWidget(SkillWidget.Get());
 			}
 		}
@@ -146,8 +147,9 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-	
-	if (const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState); LocalPlayerState != nullptr)
+
+	if (const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
+		LocalPlayerState != nullptr)
 	{
 		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
@@ -190,6 +192,10 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
 	GetWorldTimerManager().ClearTimer(EndingTimer);
+
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<AGameLobbyPlayerController>();
+		LocalController && LocalController->IsLocalController())
+		LocalController->SetEnableExitShortcut(true);
 }
 
 void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
