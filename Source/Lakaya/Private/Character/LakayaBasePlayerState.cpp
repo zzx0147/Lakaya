@@ -57,7 +57,7 @@ float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const&
 	Health = FMath::Clamp(Health, 0, GetMaxHealth());
 	OnHealthChanged.Broadcast(Health);
 
-	if (Damage > 0.f)NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
+	if (Damage > 0.f) NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
 	if (IsDead) OnPlayerKilled.Broadcast(GetOwningController(), EventInstigator, DamageCauser);
 
 	return Damage;
@@ -247,7 +247,7 @@ bool ALakayaBasePlayerState::ShouldTakeDamage(float DamageAmount, FDamageEvent c
                                               AController* EventInstigator, AActor* DamageCauser)
 {
 	// 플레이어가 이미 사망한 상태인 경우 데미지를 받지 않습니다.
-	if (!IsAlive()) return false;
+	if (!IsAlive() || !HasAuthority()) return false;
 
 	// EventInstigator가 nullptr인 경우 글로벌 데미지이거나 어떤 정의할 수 없는 데미지이지만 일단 받아야하는 데미지라고 판단합니다.
 	if (!EventInstigator) return true;

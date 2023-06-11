@@ -118,7 +118,6 @@ void UResultNotifyFireAbility::SingleFire()
 	{
 		End = Result.ImpactPoint;
 		const auto Pawn = GetOwner<APawn>();
-
 		UGameplayStatics::ApplyPointDamage(Result.GetActor(), GetTerminalDamage(Result), LineStart, Result,
 		                                   Pawn ? Pawn->GetController() : nullptr, GetOwner(), nullptr);
 	}

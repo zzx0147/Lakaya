@@ -107,9 +107,6 @@ public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;
 
-	// 게임 승패여부가 공지됐을 때는, 점수스코어판을 띄울 수 있는지 여부를 결정합니다.
-	bool TapBool = true;
-
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
 	EPlayerTeam CurrentOccupationWinner;
@@ -175,6 +172,12 @@ private:
 	// 게임 종료 시 게임 디테일 결과에서 플레이어들의 정보를 띄우는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UDetailResultElementWidget> DetailResultElementWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UInputMappingContext* ResultShortcutContext;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UInputAction* ResultSwitchingAction;
 
 	// 팀스코어 위젯 입니다.
 	TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
