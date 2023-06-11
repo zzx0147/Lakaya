@@ -43,7 +43,7 @@ void ALakayaBaseGameState::BeginPlay()
 			{
 				LoadingWidget->SetMaximumPlayerNumber(MaximumPlayers);
 				LoadingWidget->SetPlayerNumber(PlayerArray.Num());
-				LoadingWidget->AddToViewport();
+				LoadingWidget->AddToViewport(10);
 				LoadingWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 			}
 		}

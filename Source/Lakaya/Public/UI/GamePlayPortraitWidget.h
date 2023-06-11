@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "UI/CharacterBindableWidget.h"
 #include "GamePlayPortraitWidget.generated.h"
 
 class UImage;
@@ -10,20 +9,20 @@ class UTexture2D;
 
 //플레이 UI 중 캐릭터 초상화를 관리하는 클래스입니다
 UCLASS()
-class LAKAYA_API UGamePlayPortraitWidget : public UCharacterBindableWidget
+class LAKAYA_API UGamePlayPortraitWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
 public:
-	UGamePlayPortraitWidget(const FObjectInitializer& ObjectInitializer);
+	explicit UGamePlayPortraitWidget(const FObjectInitializer& ObjectInitializer);
 
-protected:
-	virtual void NativeConstruct() override;
-
-	// virtual void BindCharacter(ACharacter* const& Character) override;
-	// virtual bool UnbindCharacter(ACharacter* const& Character) override;
+	// 캐릭터 이름을 통해 초상화를 업데이트합니다.
+	void ChangePortrait(const FName& Key);
 
 private:
-	TObjectPtr<UImage> CharacterPortraitImage;//캐릭터 초상화를 표기하는 Image 위젯
-	//TODO: UPROPERTY(EditAnywhere)로 선언하면 에디터에서도 간단히 초상화를 추가할 수 있습니다.
-	TMap<FName,TObjectPtr<UTexture2D>> CharacterPortraitTextureMap;//표기될 초상화 텍스쳐 맵
+	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<UImage> CharacterPortraitImage; //캐릭터 초상화를 표기하는 Image 위젯
+
+	UPROPERTY(EditAnywhere)
+	TMap<FName, TObjectPtr<UTexture2D>> CharacterPortraitTextureMap; //표기될 초상화 텍스쳐 맵
 };
