@@ -573,9 +573,9 @@ ERendererStencilMask AOccupationGameState::GetUniqueStencilMask(const bool& IsAl
 	}
 }
 
-void AOccupationGameState::OnPlayerStateOwnerChanged(AActor* Owner)
+void AOccupationGameState::OnPlayerStateOwnerChanged(AActor* InOwner)
 {
-	if (const auto Controller = Cast<APlayerController>(Owner); Controller && Controller->IsLocalController())
+	if (const auto Controller = Cast<APlayerController>(InOwner); Controller && Controller->IsLocalController())
 		SetClientTeam(Controller->GetPlayerState<ALakayaBasePlayerState>()->GetTeam());
 }
 
