@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
 #include "GameLobbyPlayerController.generated.h"
 
@@ -50,10 +49,10 @@ protected:
 	TSoftObjectPtr<UWorld> ExitLevel;
 
 private:
-	void MenuHandler(const FInputActionValue& Value);
-	void LoadoutHandler(const FInputActionValue& Value);
-	void ShowScoreBoard(const FInputActionValue& Value);
-	void HideScoreBoard(const FInputActionValue& Value);
+	void MenuHandler();
+	void LoadoutHandler();
+	void ShowScoreBoard();
+	void HideScoreBoard();
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;

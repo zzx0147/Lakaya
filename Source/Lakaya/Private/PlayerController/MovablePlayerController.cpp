@@ -61,7 +61,7 @@ void AMovablePlayerController::Look(const FInputActionValue& Value)
 	AddPitchInput(Vector.Y);
 }
 
-void AMovablePlayerController::Jump(const FInputActionValue& Value)
+void AMovablePlayerController::Jump()
 {
 	if (const auto LocalCharacter = GetCharacter()) LocalCharacter->Jump();
 }

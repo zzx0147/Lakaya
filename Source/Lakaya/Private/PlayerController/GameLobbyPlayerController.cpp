@@ -133,24 +133,24 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 	ExitLevel = FSoftObjectPath(TEXT("/Script/Engine.World'/Game/Levels/MainLobbyLevel.MainLobbyLevel'"));
 }
 
-void AGameLobbyPlayerController::MenuHandler(const FInputActionValue& Value)
+void AGameLobbyPlayerController::MenuHandler()
 {
 	if (bEnableExitShortcut) UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ExitLevel);
 }
 
-void AGameLobbyPlayerController::LoadoutHandler(const FInputActionValue& Value)
+void AGameLobbyPlayerController::LoadoutHandler()
 {
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 		GameState->ToggleCharacterSelectWidget();
 }
 
-void AGameLobbyPlayerController::ShowScoreBoard(const FInputActionValue& Value)
+void AGameLobbyPlayerController::ShowScoreBoard()
 {
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 		GameState->SetScoreBoardVisibility(true);
 }
 
-void AGameLobbyPlayerController::HideScoreBoard(const FInputActionValue& Value)
+void AGameLobbyPlayerController::HideScoreBoard()
 {
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 		GameState->SetScoreBoardVisibility(false);

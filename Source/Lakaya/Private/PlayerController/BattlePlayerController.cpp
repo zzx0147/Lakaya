@@ -72,29 +72,29 @@ void ABattlePlayerController::SetupEnhancedInputComponent(UEnhancedInputComponen
 {
 	Super::SetupEnhancedInputComponent(EnhancedInputComponent);
 	EnhancedInputComponent->BindAction(PrimaryStartAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::PrimaryStart);
+	                                   &ABattlePlayerController::StartAbility, Primary);
 	EnhancedInputComponent->BindAction(PrimaryStopAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::PrimaryStop);
+	                                   &ABattlePlayerController::StopAbility, Primary);
 	EnhancedInputComponent->BindAction(SecondStartAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::SecondStart);
+	                                   &ABattlePlayerController::StartAbility, Secondary);
 	EnhancedInputComponent->BindAction(SecondStopAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::SecondStop);
+	                                   &ABattlePlayerController::StopAbility, Secondary);
 	EnhancedInputComponent->BindAction(FireStartAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::FireStart);
+	                                   &ABattlePlayerController::StartAbility, WeaponFire);
 	EnhancedInputComponent->BindAction(FireStopAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::FireStop);
+	                                   &ABattlePlayerController::StopAbility, WeaponFire);
 	EnhancedInputComponent->BindAction(AbilityStartAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::AbilityStart);
+	                                   &ABattlePlayerController::StartAbility, WeaponAbility);
 	EnhancedInputComponent->BindAction(AbilityStopAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::AbilityStop);
+	                                   &ABattlePlayerController::StopAbility, WeaponAbility);
 	EnhancedInputComponent->BindAction(ReloadStartAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::ReloadStart);
+	                                   &ABattlePlayerController::StartAbility, WeaponReload);
 	EnhancedInputComponent->BindAction(ReloadStopAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::ReloadStop);
+	                                   &ABattlePlayerController::StopAbility, WeaponReload);
 	EnhancedInputComponent->BindAction(DashStartAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::DashStart);
+	                                   &ABattlePlayerController::StartAbility, Dash);
 	EnhancedInputComponent->BindAction(DashStopAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::DashStop);
+	                                   &ABattlePlayerController::StopAbility, Dash);
 }
 
 void ABattlePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
@@ -108,7 +108,7 @@ void ABattlePlayerController::SkillWidgetBind()
 	if (SkillWidget.IsValid() && ArmedCharacter.IsValid())
 	{
 		SkillWidget->SetCharacter(ArmedCharacter->GetCharacterName());
-		
+
 		if (SkillWidget->GetSkillProgressBar(Primary) != nullptr)
 		{
 			const auto Ability = ArmedCharacter->FindAbility(Primary);
@@ -135,72 +135,17 @@ void ABattlePlayerController::SkillWidgetBind()
 void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, APawn* NewPawn)
 {
 	Super::OnPossessedPawnChangedCallback(ArgOldPawn, NewPawn);
-	
-	
-	if (IsLocalController())
-	{
-		ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
-		
-		SkillWidgetBind();
-	}
+	if (!IsLocalController()) return;
+	ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
+	SkillWidgetBind();
 }
 
-void ABattlePlayerController::PrimaryStart(const FInputActionValue& Value)
+void ABattlePlayerController::StartAbility(EAbilityKind AbilityKind)
 {
-	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(Primary);
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(AbilityKind);
 }
 
-void ABattlePlayerController::PrimaryStop(const FInputActionValue& Value)
+void ABattlePlayerController::StopAbility(EAbilityKind AbilityKind)
 {
-	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(Primary);
-}
-
-void ABattlePlayerController::SecondStart(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(Secondary);
-}
-
-void ABattlePlayerController::SecondStop(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(Secondary);
-}
-
-void ABattlePlayerController::FireStart(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(WeaponFire);
-}
-
-void ABattlePlayerController::FireStop(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(WeaponFire);
-}
-
-void ABattlePlayerController::AbilityStart(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(WeaponAbility);
-}
-
-void ABattlePlayerController::AbilityStop(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(WeaponAbility);
-}
-
-void ABattlePlayerController::ReloadStart(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(WeaponReload);
-}
-
-void ABattlePlayerController::ReloadStop(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(WeaponReload);
-}
-
-void ABattlePlayerController::DashStart(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(Dash);
-}
-
-void ABattlePlayerController::DashStop(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(Dash);
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(AbilityKind);
 }
