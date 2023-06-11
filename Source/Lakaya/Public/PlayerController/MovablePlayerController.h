@@ -6,6 +6,8 @@
 #include "GameLobbyPlayerController.h"
 #include "MovablePlayerController.generated.h"
 
+struct FInputActionValue;
+
 UCLASS()
 class LAKAYA_API AMovablePlayerController : public AGameLobbyPlayerController
 {
@@ -21,7 +23,7 @@ protected:
 private:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
-	void Jump(const FInputActionValue& Value);
+	void Jump();
 
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Context")
 	UInputMappingContext* MovementContext;

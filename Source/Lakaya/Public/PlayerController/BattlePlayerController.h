@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "MovablePlayerController.h"
-#include "InputActionValue.h"
 #include "Character/ArmedCharacter.h"
 #include "BattlePlayerController.generated.h"
 
@@ -69,7 +68,7 @@ private:
 	UPROPERTY(EditAnywhere, Category="Input|Weapon|Actions")
 	UInputAction* DashStopAction;
 
-	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
+	TWeakObjectPtr<AArmedCharacter> ArmedCharacter;
 
-	TWeakObjectPtr<class USkillWidget> SkillWidget;
+	TWeakObjectPtr<USkillWidget> SkillWidget;
 };
