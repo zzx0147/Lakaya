@@ -91,6 +91,13 @@ void UResultNotifyFireAbility::RemoteAbilityStop(const float& RequestTime)
 	SetWantsToFire(false);
 }
 
+void UResultNotifyFireAbility::OnComponentDestroyed(bool bDestroyingHierarchy)
+{
+	Super::OnComponentDestroyed(bDestroyingHierarchy);
+	if (const auto Temp = GetWorld(); Temp != nullptr)
+		Temp->GetTimerManager().ClearAllTimersForObject(this);
+}
+
 void UResultNotifyFireAbility::SetBasisComponent(USceneComponent* NewComponent)
 {
 	BasisComponent = NewComponent;
@@ -169,17 +176,20 @@ void UResultNotifyFireAbility::DrawDecal(const FVector& Location, const FVector&
 
 		// 일정시간 뒤 보이지 않는 곳으로 이동시켜두고, 다시 오브젝트 풀에 밀어넣습니다.
 		FTimerHandle TempTimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(TempTimerHandle, [this, Decal, Kind]
-		{
-			if(this == nullptr)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("수비ㅏㄹ 자밧ㅇ"));
-				return;
-			}
-			Decal->SetActorLocation(FVector(-9999.f, -9999.f, -9999.f));
-			if (DecalPool.Contains(Kind)) DecalPool[Kind].ReturnObject(Decal);
-			else Decal->Destroy();
-		}, DecalShowingTime, false);
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindUFunction(this, FName("DisableDecal"), Decal, Kind);
+		
+		GetWorld()->GetTimerManager().SetTimer(TempTimerHandle, TimerDelegate, DecalShowingTime, false);
+		
+		// GetWorld()->GetTimerManager().SetTimer(TempTimerHandle, [this, Decal, Kind]
+		// {
+		// 	if (this == nullptr) return;
+		// 	if (Decal == nullptr) return;
+		// 	
+		// 	Decal->SetActorLocation(FVector(-9999.f, -9999.f, -9999.f));
+		// 	if (DecalPool.Contains(Kind)) DecalPool[Kind].ReturnObject(Decal);
+		// 	else Decal->Destroy();
+		// }, DecalShowingTime, false);
 	}
 }
 
@@ -200,6 +210,16 @@ void UResultNotifyFireAbility::SetWantsToFire(const bool& FireState)
 {
 	bWantsToFire = FireState;
 	OnWantsToFireChanged.Broadcast(bWantsToFire);
+}
+
+void UResultNotifyFireAbility::DisableDecal(AActor* Decal, const EFireResult& Kind)
+{
+	if (this == nullptr) return;
+	if (Decal == nullptr) return;
+			
+	Decal->SetActorLocation(FVector(-9999.f, -9999.f, -9999.f));
+	if (DecalPool.Contains(Kind)) DecalPool[Kind].ReturnObject(Decal);
+	else Decal->Destroy();
 }
 
 void UResultNotifyFireAbility::NotifySingleFire_Implementation(const FVector& Start, const FVector& End,

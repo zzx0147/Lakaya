@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
 #include "Occupation/PlayerTeam.h"
+#include "TimerManager.h"
 #include "LakayaBasePlayerState.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FHealthChangeSignature, const float&)
@@ -321,20 +322,40 @@ private:
 	TWeakObjectPtr<UGamePlayPortraitWidget> PortraitWidget;
 };
 
+// template <class T>
+// void ALakayaBasePlayerState::SetRespawnTimers(const float& ReservedRespawnTime, T* Object,
+//                                              void (T::*Function)(AController*))
+// {
+// 	RespawnTime = ReservedRespawnTime;
+// 	const auto CurrentTime = GetServerTime();
+// 	UpdateAliveStateWithRespawnTime(CurrentTime);
+//
+// 	// 만약 RespawnTime이 현재 시간보다 낮게 설정된 경우 이 타이머는 설정되지 않습니다.
+// 	GetWorldTimerManager().SetTimer(RespawnTimer, [this, Object, Function]
+// 	{
+// 		if(this == nullptr) return;
+// 		
+// 		
+// 		SetAliveState(true);
+// 		if (Object && Function) (Object->*Function)(GetOwningController());
+// 	}, ReservedRespawnTime - CurrentTime, false);
+// }
+
+DECLARE_DELEGATE_TwoParams(FMyFunctionDelegate, AController*, float);
 template <class T>
 void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, T* Object,
-                                             void (T::*Function)(AController*))
+											 void (T::*Function)(AController*))
 {
 	RespawnTime = ReservedRespawnTime;
 	const auto CurrentTime = GetServerTime();
 	UpdateAliveStateWithRespawnTime(CurrentTime);
 
-	// 만약 RespawnTime이 현재 시간보다 낮게 설정된 경우 이 타이머는 설정되지 않습니다.
-	GetWorldTimerManager().SetTimer(RespawnTimer, [this, Object, Function]
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindLambda([=]() // 수정된 부분: 빈 괄호를 사용하여 매개변수 없음을 명시
 	{
-		if(this == nullptr) return;
-		
+		if (this == nullptr) return;
 		SetAliveState(true);
 		if (Object && Function) (Object->*Function)(GetOwningController());
-	}, ReservedRespawnTime - CurrentTime, false);
+	});
+	GetWorld()->GetTimerManager().SetTimer(RespawnTimer, TimerDelegate, ReservedRespawnTime - CurrentTime, false);
 }
