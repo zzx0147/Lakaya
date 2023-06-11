@@ -92,7 +92,7 @@ void UBulletComponent::SetupBulletWidget(AController* Controller)
 		if (!BulletWidget.IsValid()) return;
 
 		// 위젯 바인딩
-		BulletWidget->AddToViewport();
+		BulletWidget->AddToViewport(-1);
 		BulletWidget->SetMaxBullet(GetMaxBullets());
 		BulletWidget->SetRemainBullet(Bullets);
 
