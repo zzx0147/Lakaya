@@ -4,6 +4,7 @@
 #include "AI/AiCharacterController.h"
 
 #include "Character/ArmedCharacter.h"
+#include "Character/BulletComponent.h"
 
 AAiCharacterController::AAiCharacterController() // 생성자
 {
@@ -42,4 +43,24 @@ void AAiCharacterController::AIFireStart(AArmedCharacter* ArmCharacter)
 void AAiCharacterController::AIFireStop(AArmedCharacter* ArmCharacter)
 {
 	if (ArmCharacter) ArmCharacter->StopAbility(WeaponFire);
+}
+
+void AAiCharacterController::AIReloadStart(AArmedCharacter* ArmCharacter)
+{
+	if (ArmCharacter) ArmCharacter->StartAbility(WeaponReload);
+}
+
+void AAiCharacterController::AIReloadStop(AArmedCharacter* ArmCharacter)
+{
+	if (ArmCharacter) ArmCharacter->StopAbility(WeaponReload);
+}
+
+void AAiCharacterController::AIRemainBulletCheck(AArmedCharacter* ArmCharacter, uint8& RemainBullet)
+{
+	BulletComponent = GetPawn()->FindComponentByClass<UBulletComponent>();
+	
+	if (ArmCharacter)
+	{
+		RemainBullet = BulletComponent->GetBullets();
+	}
 }

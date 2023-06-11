@@ -43,9 +43,19 @@ private:
 	UFUNCTION(BlueprintCallable)
 	void AIFireStop(AArmedCharacter* ArmCharacter);
 
+	UFUNCTION(BlueprintCallable)
+	void AIReloadStart(AArmedCharacter* ArmCharacter);
+	
+	UFUNCTION(BlueprintCallable)
+	void AIReloadStop(AArmedCharacter* ArmCharacter);
+	
+	UFUNCTION(BlueprintCallable, Category = "AI")
+	void AIRemainBulletCheck(AArmedCharacter* ArmCharacter, uint8& RemainBullet);
+	
 private:
 	TWeakObjectPtr<AArmedCharacter> ArmedCharacter;
 
+	TWeakObjectPtr<class UBulletComponent> BulletComponent;
 	USpringArmComponent* SpringArm;
 	FVector AISpringArmOffset;
 
