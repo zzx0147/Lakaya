@@ -33,7 +33,7 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 
 	static ConstructorHelpers::FClassFinder<UGamePlayHealthWidget> HealthFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
-	
+
 	static ConstructorHelpers::FClassFinder<UDirectionalDamageIndicator> DirectionDamageFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_DirectionalDamageIndicator"));
 
@@ -78,14 +78,12 @@ void ALakayaBasePlayerState::OnRep_PlayerName()
 void ALakayaBasePlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-	if (const auto LocalController = Cast<APlayerController>(GetOwningController());
-		LocalController && LocalController->IsLocalController())
+	if (const auto LocalController = GetPlayerController(); LocalController && LocalController->IsLocalController())
 	{
 		HealthWidget = CreateWidget<UGamePlayHealthWidget>(LocalController, HealthWidgetClass);
 		if (HealthWidget.IsValid())
 		{
 			HealthWidget->AddToViewport();
-			HealthWidget->SetVisibility(ESlateVisibility::Hidden);
 
 			OnHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetCurrentHealth);
 			OnMaxHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetMaximumHealth);
