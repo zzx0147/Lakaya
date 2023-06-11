@@ -12,6 +12,7 @@
 
 const FName AAttachableMine::TriggerComponentName = FName(TEXT("TriggerComponent"));
 const FName AAttachableMine::ActivationNiagaraComponentName = FName(TEXT("ActivationNiagaraComponent"));
+const FName AAttachableMine::DamageComponentName = FName(TEXT("DamageComponent"));
 
 AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -20,9 +21,6 @@ AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : 
 	ExplodeDamage = 100.f;
 	bInstigatorExplode = bAllyExplode = false;
 	bEnemyExplode = true;
-
-	GetMeshComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
-	GetMeshComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 
 	TriggerComponent = CreateDefaultSubobject<USphereComponent>(TriggerComponentName);
 	TriggerComponent->SetupAttachment(RootComponent);
@@ -34,6 +32,11 @@ AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : 
 	ActivationNiagaraComponent->SetupAttachment(GetMeshComponent());
 	ActivationNiagaraComponent->SetAutoActivate(false);
 	ActivationNiagaraComponent->SetAutoDestroy(false);
+
+	DamageComponent = CreateDefaultSubobject<USphereComponent>(DamageComponentName);
+	DamageComponent->SetupAttachment(GetMeshComponent());
+	DamageComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	DamageComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 }
 
 float AAttachableMine::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
@@ -64,7 +67,7 @@ void AAttachableMine::HandleAbilityInstanceAction()
 	ActivationNiagaraComponent->Activate();
 	if (!HasAuthority()) return;
 	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	GetMeshComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	DamageComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	Health = BaseHealth;
 }
 
@@ -74,7 +77,7 @@ void AAttachableMine::HandleActionStateExit()
 	ActivationNiagaraComponent->Deactivate();
 	if (!HasAuthority()) return;
 	TriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	DamageComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 }
 
 bool AAttachableMine::ShouldTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
