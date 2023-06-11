@@ -14,19 +14,19 @@ void UTeamScoreWidget::NativeConstruct()
 		return;
 	}
 
-	AntiTeamScoreText = Cast<UTextBlock>(GetWidgetFromName(TEXT("ATeamScoreText")));
-	if (AntiTeamScoreText == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ATeamScoreText is null."));
-		return;
-	}
-
-	ProTeamScoreText = Cast<UTextBlock>(GetWidgetFromName(TEXT("BTeamScoreText")));
-	if (ProTeamScoreText == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("BTeamScoreText is null."));
-		return;
-	}
+	// AntiTeamScoreText = Cast<UTextBlock>(GetWidgetFromName(TEXT("ATeamScoreText")));
+	// if (AntiTeamScoreText == nullptr)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("ATeamScoreText is null."));
+	// 	return;
+	// }
+	//
+	// ProTeamScoreText = Cast<UTextBlock>(GetWidgetFromName(TEXT("BTeamScoreText")));
+	// if (ProTeamScoreText == nullptr)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("BTeamScoreText is null."));
+	// 	return;
+	// }
 
 	// 최대 점수를 지정해줍니다.
 	MaxScore = OccupationGameState->GetMaxScore();
