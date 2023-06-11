@@ -21,7 +21,7 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
-
+	
 public:
 	// 현재 두 팀의 점수를 기준으로 승자를 정합니다.
 	void SetOccupationWinner();
@@ -102,6 +102,7 @@ private:
 	void SetupPlayerStateOnLocal(ALakayaBasePlayerState* PlayerState);
 	static ERendererStencilMask GetUniqueStencilMask(const bool& IsAlly, const uint8& Index);
 	void OnPlayerStateOwnerChanged(AActor* Owner);
+
 
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;

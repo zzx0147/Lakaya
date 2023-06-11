@@ -23,7 +23,6 @@ AAIIndividualGameMode::AAIIndividualGameMode()
 void AAIIndividualGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
 		PlayerController = It->Get();
@@ -40,7 +39,6 @@ void AAIIndividualGameMode::BeginPlay()
 			}
 		}
 	}
-
 }
 
 void AAIIndividualGameMode::PostLogin(APlayerController* NewPlayer)
@@ -87,14 +85,14 @@ void AAIIndividualGameMode::HandleKillCountChanged(const uint16& NewKillCount)
 {
 	if (NewKillCount >= TargetKills)
 	{
-		EndGame(WinningCharController);
+		// EndGame(WinningCharController);
 		UE_LOG(LogTemp, Warning, TEXT("최고 킬 달성"));
+		EndMatch();
 	}
 }
 
 void AAIIndividualGameMode::EndGame(AController* WinerController)
 {
 	// TODO : 이긴 플레이어나 AI를 가져와 게임 종료시 점수판에 보여주고 메인화면으로 돌아가는 함수.
-	
 	UGameplayStatics::OpenLevel(GetWorld(), TEXT("MainLobbyLevel"));
 }

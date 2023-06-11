@@ -25,7 +25,7 @@ protected:
 
 	void HandleKillCountChanged(const uint16& NewKillCount);
 	void EndGame(AController* WinerController);
-
+	
 private:
 	UPROPERTY(EditDefaultsOnly)
 	int32 NumberOfAi;

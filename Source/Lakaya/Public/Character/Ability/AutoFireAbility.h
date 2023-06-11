@@ -24,7 +24,7 @@ public:
 protected:
 	virtual void StartDelayedAbility() override;
 	virtual void RemoteAbilityStop(const float& RequestTime) override;
-
+	
 public:
 	UFUNCTION(BlueprintSetter)
 	void SetBasisComponent(USceneComponent* NewComponent);

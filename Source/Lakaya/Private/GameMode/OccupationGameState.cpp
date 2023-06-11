@@ -1,6 +1,6 @@
 #include "GameMode/OccupationGameState.h"
 
-#include "CurrentGameMode.h"
+#include "EnhancedInputComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
@@ -30,12 +30,13 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 AOccupationGameState::AOccupationGameState()
 {
+
+	
 	MaxScore = 100.f;
 	MatchDuration = 180.f;
 	MatchStartWaitWidgetLifeTime = 3.0f;
 	MatchStartWidgetLifeTime = 5.0f;
 	ClientTeam = EPlayerTeam::None;
-	ECurrentGameMode CurrentGameMode = ECurrentGameMode::OccupationMode;
 	
 	PlayersByTeamMap.Emplace(EPlayerTeam::A);
 	PlayersByTeamMap.Emplace(EPlayerTeam::B);
@@ -46,6 +47,8 @@ void AOccupationGameState::BeginPlay()
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 		LocalController && LocalController->IsLocalController())
 	{
+		
+		
 		if (SkillWidgetClass)
 		{
 			SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);

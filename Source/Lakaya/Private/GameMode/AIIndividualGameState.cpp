@@ -210,14 +210,6 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 		GameResultWidget->SetDeath(IndividualPlayerState->GetDeathCount());
 	}
 
-	// 플레이어들의 정보가 담긴 배열을 내림차순으로 정렬합니다.
-	// std::sort(AllPlayersArray.begin(), AllPlayersArray.end(), []
-	// 	(const TWeakObjectPtr<ALakayaBasePlayerState>& A,
-	// 	const TWeakObjectPtr<ALakayaBasePlayerState>& B)
-	// {
-	// 	return A->GetKillCount() > B->GetKillCount();
-	// });
-
 	for (int i = 0; i < AllPlayersArray.Num(); ++i)
 	{
 		AllPlayersArray.Sort([](const TWeakObjectPtr<ALakayaBasePlayerState>& A,

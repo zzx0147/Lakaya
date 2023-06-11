@@ -286,46 +286,6 @@ UClass* ALakayaDefaultPlayGameMode::GetDefaultPawnClassForController_Implementat
 void ALakayaDefaultPlayGameMode::RespawnPlayer(AController* KilledController)
 {
 	RestartPlayer(KilledController);
-
-	/*GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnPlayer!!!!"));
-
-
-	TArray<AActor*> PlayerStartActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStartActors);
-
-	if (PlayerStartActors.Num() == 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No player start actors found."));
-		return;
-	}
-
-	APlayerStart* RandomPlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
-
-	APawn* KilledPawn = Cast<APawn>(KilledController->GetPawn());
-	ACharacter* KilledCharacterActor = Cast<ACharacter>(KilledController->GetCharacter());
-	
-	if (KilledPawn != nullptr)
-	{
-		KilledPawn->SetActorLocation(RandomPlayerStart->GetActorLocation());
-	}
-	else if (KilledController != nullptr)
-	{
-		KilledCharacterActor->SetActorLocation(RandomPlayerStart->GetActorLocation());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("KilledCharacter is not a pawn or an actor."));
-		return;
-	}
-	*/
-	// ADamageableCharacter* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
-	// if (KilledDamageableCharacter == nullptr)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("KilledDamageableCharacter is null."));
-	// 	return;
-	// }
-	//
-	// KilledDamageableCharacter->Respawn();
 }
 
 bool ALakayaDefaultPlayGameMode::ShouldRespawn()
