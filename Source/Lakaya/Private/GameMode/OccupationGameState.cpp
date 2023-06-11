@@ -154,6 +154,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindLambda([this]
 	{
+		if (this == nullptr) return;
 		if (MatchStartWaitWidget.IsValid()) MatchStartWaitWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate, MatchStartWaitWidgetLifeTime, false);
@@ -161,6 +162,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 	// 게임이 본격적으로 시작이 되면 StartMessage위젯을 띄워줍니다.
 	TimerDelegate.BindLambda([this]
 	{
+		if (this == nullptr) return;
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		DestroyShieldWallObject();
 	});
@@ -169,6 +171,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 	// StartMessage위젯을 5초 뒤에 비활성화 해줍니다.
 	TimerDelegate.BindLambda([this]
 	{
+		if (this == nullptr) return;
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, TimerDelegate,
@@ -338,6 +341,7 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindLambda([this, PlayerState, Controller]
 	{
+		if (this == nullptr) return;
 		GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
 		GradeResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 

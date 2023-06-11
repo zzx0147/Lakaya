@@ -188,6 +188,7 @@ void AInteractableCharacter::FinishInteraction_Implementation(EInteractionState 
 		FTimerDelegate TimerDelegate;
 		TimerDelegate.BindLambda([this]()
 		{
+			if (this == nullptr) return;
 			InteractionInfo.InteractionState = EInteractionState::None;
 			OnInteractionStateChanged.Broadcast(InteractionInfo);
 		});

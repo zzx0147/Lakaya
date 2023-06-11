@@ -169,6 +169,8 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 	// 게임이 본격적으로 시작이 되면 AI 의 비헤이비어 트리를 시작시켜줍니다.
 	TimerDelegate.BindLambda([this]
 	{
+		if (this == nullptr) return;
+
 		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 		{
 			AController* AllControllers = It->Get();
@@ -278,6 +280,9 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("현재 플레이어를 찾을 수 없습니다."));
 	}
+
+	FTimerManager Timers;
+	Timers.ClearAllTimersForObject(GetWorld());
 }
 
 ERendererStencilMask AAIIndividualGameState::GetUniqueStencilMaskWithCount(const uint8& Count)

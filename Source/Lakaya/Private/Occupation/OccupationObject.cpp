@@ -89,6 +89,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	// 시작 한 후 3초가 지나게 되면 자동으로 성공.
 	GetWorldTimerManager().SetTimer(InteractionTimerHandle, [this, Caller]
 	{
+		if (this == nullptr) return;
 		Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::Success);
 	}, MaxInteractionDuration, false);
 }
