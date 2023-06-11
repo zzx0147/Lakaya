@@ -55,12 +55,16 @@ void UWaziAnimInstance::OnWeaponAbilityPerformTimeNotified(const float& Time)
 
 		GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, [this]
 		{
+			if (this == nullptr) return;
+
 			// 선딜레이 애니메이션이 종료되는 시점부터는 1배속으로 재생합니다.
 			WeaponSkillAnimSpeed = 1.f;
 
 			// 전체 애니메이션이 종료되는 시간에 bIsWeaponSkill을 false로 바꿔줍니다.
 			GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, [this]
 			{
+				if (this == nullptr) return;
+
 				bIsWeaponSkill = false;
 			}, WeaponAbilityLateAnimDuration, false);
 		}, RemainTime, false);
@@ -74,8 +78,11 @@ void UWaziAnimInstance::OnWeaponAbilityPerformTimeNotified(const float& Time)
 		// 전체 애니메이션 시간 / 남은시간을 통해 애니메이션 배속을 특정합니다.
 		WeaponSkillAnimSpeed = (WeaponAbilityPerformDelayAnimDuration + WeaponAbilityLateAnimDuration) / RemainTime;
 		bIsWeaponSkill = true;
-		GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, [this] { bIsWeaponSkill = false; },
-		                                       RemainTime, false);
+		GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, [this]
+		{
+			if (this == nullptr) return;
+			bIsWeaponSkill = false;
+		}, RemainTime, false);
 	}
 }
 
@@ -83,14 +90,20 @@ void UWaziAnimInstance::OnOverdriveStartTimeNotified(const float& Time)
 {
 	const auto RemainTime = Time - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 	bIsPrimarySkill = RemainTime > 0.f;
-	GetWorld()->GetTimerManager().SetTimer(PrimaryAbilityTimer, [this] { bIsPrimarySkill = false; },
-	                                       RemainTime, false);
+	GetWorld()->GetTimerManager().SetTimer(PrimaryAbilityTimer, [this]
+	{
+		if (this == nullptr) return;
+		bIsPrimarySkill = false;
+	}, RemainTime, false);
 }
 
 void UWaziAnimInstance::OnClairvoyanceStartTimeNotified(const float& Time)
 {
 	const auto RemainTime = Time - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 	bIsSecondarySkill = RemainTime > 0.f;
-	GetWorld()->GetTimerManager().SetTimer(SecondaryAbilityTimer, [this] { bIsSecondarySkill = false; },
-	                                       RemainTime, false);
+	GetWorld()->GetTimerManager().SetTimer(SecondaryAbilityTimer, [this]
+	{
+		if (this == nullptr) return;
+		bIsSecondarySkill = false;
+	}, RemainTime, false);
 }

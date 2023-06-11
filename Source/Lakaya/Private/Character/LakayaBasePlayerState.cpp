@@ -212,6 +212,7 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 		FTimerDelegate TimerDelegate;
 		TimerDelegate.BindLambda([this]
 		{
+			if (this == nullptr) return;
 			if (GetWorld()->GetGameState()->HasMatchEnded())
 				GetWorldTimerManager().ClearTimer(CurrentCaptureTimer);
 
@@ -318,8 +319,11 @@ void ALakayaBasePlayerState::OnRep_RespawnTime()
 	UpdateAliveStateWithRespawnTime(CurrentTime);
 
 	// 부활시간에 OnAliveStateChanged 이벤트가 호출될 수 있도록 타이머를 설정합니다.
-	GetWorldTimerManager().SetTimer(RespawnTimer, [this] { SetAliveState(true); },
-	                                RespawnTime - CurrentTime, false);
+	GetWorldTimerManager().SetTimer(RespawnTimer, [this]
+	{
+		if (this == nullptr) return;
+		SetAliveState(true);
+	}, RespawnTime - CurrentTime, false);
 }
 
 void ALakayaBasePlayerState::OnRep_CharacterName()

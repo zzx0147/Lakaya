@@ -59,12 +59,16 @@ void URenaAnimInstance::OnWeaponAbilityPerformTimeNotified(const float& Time)
 
 		GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, [this]
 		{
+			if (this == nullptr) return;
+
 			// 선딜레이 애니메이션이 종료되는 시점부터는 1배속으로 재생합니다.
 			WeaponSkillAnimSpeed = 1.f;
 
 			// 전체 애니메이션이 종료되는 시간에 bIsWeaponSkill을 false로 바꿔줍니다.
 			GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, [this]
 			{
+				if (this == nullptr) return;
+
 				bIsWeaponSkill = false;
 			}, WeaponAbilityLateAnimDuration, false);
 		}, RemainTime, false);
@@ -78,8 +82,11 @@ void URenaAnimInstance::OnWeaponAbilityPerformTimeNotified(const float& Time)
 		// 전체 애니메이션 시간 / 남은시간을 통해 애니메이션 배속을 특정합니다.
 		WeaponSkillAnimSpeed = (WeaponAbilityPerformDelayAnimDuration + WeaponAbilityLateAnimDuration) / RemainTime;
 		bIsWeaponSkill = true;
-		GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, [this] { bIsWeaponSkill = false; },
-		                                       RemainTime, false);
+		GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, [this]
+		{
+			if (this == nullptr) return;
+			bIsWeaponSkill = false;
+		}, RemainTime, false);
 	}
 }
 
@@ -96,12 +103,16 @@ void URenaAnimInstance::OnPrimaryAbilityPerformTimeNotified(const float& Time)
 
 		GetWorld()->GetTimerManager().SetTimer(PrimaryAbilityAnimTimer, [this]
 		{
+			if (this == nullptr) return;
+
 			// 선딜레이 애니메이션이 종료되는 시점부터는 1배속으로 재생합니다.
 			WeaponSkillAnimSpeed = 1.f;
 
 			// 전체 애니메이션이 종료되는 시간에 bIsWeaponSkill을 false로 바꿔줍니다.
 			GetWorld()->GetTimerManager().SetTimer(PrimaryAbilityAnimTimer, [this]
 			{
+				if (this == nullptr) return;
+
 				bIsPrimarySkill = false;
 			}, PrimaryAbilityLateAnimDuration, false);
 		}, RemainTime, false);
@@ -115,8 +126,11 @@ void URenaAnimInstance::OnPrimaryAbilityPerformTimeNotified(const float& Time)
 		// 전체 애니메이션 시간 / 남은시간을 통해 애니메이션 배속을 특정합니다.
 		WeaponSkillAnimSpeed = (PrimaryAbilityPerformDelayAnimDuration + PrimaryAbilityLateAnimDuration) / RemainTime;
 		bIsPrimarySkill = true;
-		GetWorld()->GetTimerManager().SetTimer(PrimaryAbilityAnimTimer, [this] { bIsPrimarySkill = false; },
-		                                       RemainTime, false);
+		GetWorld()->GetTimerManager().SetTimer(PrimaryAbilityAnimTimer, [this]
+		{
+			if (this == nullptr) return;
+			bIsPrimarySkill = false;
+		}, RemainTime, false);
 	}
 }
 
@@ -132,17 +146,23 @@ void URenaAnimInstance::OnSecondaryAbilityPerformTimeNotified(const float& Time)
 
 		GetWorld()->GetTimerManager().SetTimer(SecondaryAbilityAnimTimer, [this]
 		{
+			if(this == nullptr) return;
+
 			// 선딜레이 애니메이션이 종료되는 시점부터는 1배속으로 재생합니다.
 			WeaponSkillAnimSpeed = 1.f;
 			bIsSecondarySkillAnimLoopCheck = true;
 
 			GetWorld()->GetTimerManager().SetTimer(SecondaryAbilityAnimTimer, [this]
 			{
+				if(this == nullptr) return;
+
 				// 선딜레이 애니메이션이 종료되는 시간에 bIsSecondarySkillAnimLoopCheck을 false로 바꿔줍니다.
 				// 루프 애니메이션 루프시킬지 해재할지 바인딩을 위한 변수!
 				bIsSecondarySkillAnimLoopCheck = false;
 				GetWorld()->GetTimerManager().SetTimer(SecondaryAbilityAnimTimer, [this]
 				{
+					if(this == nullptr) return;
+
 					// 전체 애니메이션이 종료되는 시간에 bIsSecondarySkill을 false로 바꿔줍니다.
 					bIsSecondarySkill = false;
 				}, SecondaryAbilityLateAnimDuration, false);

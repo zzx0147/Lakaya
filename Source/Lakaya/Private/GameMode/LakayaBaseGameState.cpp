@@ -184,6 +184,7 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	{
 		GetWorldTimerManager().SetTimer(EndingTimer, [this]
 		{
+			if (this == nullptr) return;
 			if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
 				AuthGameMode->EndMatch();
 		}, MatchDuration, false);

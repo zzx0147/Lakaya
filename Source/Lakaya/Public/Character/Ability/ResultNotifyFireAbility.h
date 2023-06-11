@@ -40,6 +40,7 @@ protected:
 	virtual void InitializeComponent() override;
 	virtual void RemoteAbilityStart(const float& RequestTime) override;
 	virtual void RemoteAbilityStop(const float& RequestTime) override;
+	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
 
 public:
 	// 현재 캐릭터의 사격의지를 가져옵니다.
@@ -86,6 +87,8 @@ private:
 
 	void SetWantsToFire(const bool& FireState);
 
+	UFUNCTION()
+	void DisableDecal(AActor* Decal, const EFireResult& Kind);
 public:
 	// 플레이어의 사격 의지가 변경된 경우 호출됩니다. 오너 클라이언트와 서버에서만 호출됩니다.
 	FWantsToFireSignature OnWantsToFireChanged;
