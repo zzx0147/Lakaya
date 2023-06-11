@@ -135,14 +135,9 @@ void ABattlePlayerController::SkillWidgetBind()
 void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, APawn* NewPawn)
 {
 	Super::OnPossessedPawnChangedCallback(ArgOldPawn, NewPawn);
-
-
-	if (IsLocalController())
-	{
-		ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
-
-		SkillWidgetBind();
-	}
+	if (!IsLocalController()) return;
+	ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
+	SkillWidgetBind();
 }
 
 void ABattlePlayerController::StartAbility(EAbilityKind AbilityKind)
