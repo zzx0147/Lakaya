@@ -183,13 +183,11 @@ void AOccupationGameState::HandleMatchHasEnded()
 		GameResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 	// Anti팀의 배열과, Pro팀의 배열을 내림차순으로 정렬합니다.
-	for (auto& Element : PlayersByTeamMap)
+	static auto Predicate = [](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B)
 	{
-		Element.Value.Sort([](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B)
-		{
-			return A.GetTotalScore() > B.GetTotalScore();
-		});
-	}
+		return A.GetTotalScore() > B.GetTotalScore();
+	};
+	for (auto& Element : PlayersByTeamMap) Element.Value.Sort(Predicate);
 
 	ShowEndResultWidget();
 	BindDetailResultWidget();
