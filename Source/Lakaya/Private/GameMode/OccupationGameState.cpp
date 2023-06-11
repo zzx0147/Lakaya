@@ -1,5 +1,7 @@
 #include "GameMode/OccupationGameState.h"
 
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
@@ -192,7 +194,6 @@ void AOccupationGameState::HandleMatchHasEnded()
 	ShowEndResultWidget();
 	BindDetailResultWidget();
 	BindDetailResultElementWidget();
-	TapBool = false;
 }
 
 void AOccupationGameState::EndTimeCheck()
@@ -350,7 +351,17 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 
 		Controller->SetShowMouseCursor(true);
 
-		TapBool = true;
+		if (const auto InputComponent = Cast<UEnhancedInputComponent>(Controller->InputComponent))
+		{
+			InputComponent->BindAction(ResultSwitchingAction, ETriggerEvent::Triggered, this,
+			                           &AOccupationGameState::ChangeResultWidget);
+		}
+
+		if (const auto SubSystem = Controller->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+		{
+			SubSystem->AddMappingContext(ResultShortcutContext, 200);
+		}
+
 		ShowGradeResultElementWidget(PlayerState);
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
