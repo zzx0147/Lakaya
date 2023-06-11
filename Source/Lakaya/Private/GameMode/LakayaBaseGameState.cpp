@@ -248,10 +248,6 @@ void ALakayaBaseGameState::ToggleCharacterSelectWidget()
 	InternalSetCharacterSelectWidgetVisibility(GetCharacterSelectWidget()->GetVisibility() == ESlateVisibility::Hidden);
 }
 
-void ALakayaBaseGameState::OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController)
-{
-}
-
 void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimController,
                                                              APlayerState* InstigatorController, AActor* DamageCauser)
 {

@@ -48,9 +48,6 @@ public:
 
 	virtual void ToggleCharacterSelectWidget();
 
-	// 로컬 플레이어 컨트롤러의 플레이어 스테이트가 변경되면 호출됩니다.
-	virtual void OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController);
-
 	UFUNCTION(NetMulticast, Reliable)
 	void NotifyPlayerKilled(APlayerState* VictimController, APlayerState* InstigatorController, AActor* DamageCauser);
 

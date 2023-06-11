@@ -15,7 +15,6 @@ class LAKAYA_API AOccupationGameState : public ALakayaBaseGameState
 
 public:
 	AOccupationGameState();
-	virtual void OnLocalPlayerControllerPlayerStateUpdated(APlayerController* LocalPlayerController) override;
 
 protected:
 	virtual void BeginPlay() override;
