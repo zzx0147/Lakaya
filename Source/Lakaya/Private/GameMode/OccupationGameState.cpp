@@ -558,14 +558,8 @@ void AOccupationGameState::UpdatePlayerByTeamMap(const EPlayerTeam& Team, ALakay
 
 	if (ClientTeam != EPlayerTeam::None) SetupPlayerStateOnLocal(PlayerState);
 
-	if (const auto Controller = PlayerState->GetOwningController(); Controller && Controller->IsLocalPlayerController())
-		SetClientTeam(PlayerState->GetTeam());
-
-	PlayerState->OnOwnerChanged.AddLambda([this](AActor* Owner)
-	{
-		if (const auto PC = Cast<APlayerController>(Owner); PC && PC->IsLocalController())
-			SetClientTeam(PC->GetPlayerState<ALakayaBasePlayerState>()->GetTeam());
-	});
+	OnPlayerStateOwnerChanged(PlayerState->GetOwner());
+	PlayerState->OnOwnerChanged.AddUObject(this, &AOccupationGameState::OnPlayerStateOwnerChanged);
 }
 
 ERendererStencilMask AOccupationGameState::GetUniqueStencilMask(const bool& IsAlly, const uint8& Index)
@@ -577,6 +571,12 @@ ERendererStencilMask AOccupationGameState::GetUniqueStencilMask(const bool& IsAl
 	case 2: return IsAlly ? ERendererStencilMask::ERSM_4 : ERendererStencilMask::ERSM_32;
 	default: return ERendererStencilMask::ERSM_Default;
 	}
+}
+
+void AOccupationGameState::OnPlayerStateOwnerChanged(AActor* Owner)
+{
+	if (const auto Controller = Cast<APlayerController>(Owner); Controller && Controller->IsLocalController())
+		SetClientTeam(Controller->GetPlayerState<ALakayaBasePlayerState>()->GetTeam());
 }
 
 void AOccupationGameState::SetupPlayerStateOnLocal(ALakayaBasePlayerState* PlayerState)

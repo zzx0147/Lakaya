@@ -99,16 +99,6 @@ void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSu
 	InputSubsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 }
 
-void AGameLobbyPlayerController::NotifyLocalPlayerStateUpdated()
-{
-	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>();
-		GameState && !bGameStatePlayerStateNotified && IsLocalController())
-	{
-		bGameStatePlayerStateNotified = true;
-		GameState->OnLocalPlayerControllerPlayerStateUpdated(this);
-	}
-}
-
 AGameLobbyPlayerController::AGameLobbyPlayerController()
 {
 	OnPossessedPawnChanged.AddUniqueDynamic(this, &AGameLobbyPlayerController::OnPossessedPawnChangedCallback);
@@ -136,18 +126,6 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 	if (WeaponFinder.Succeeded()) LoadoutAction = WeaponFinder.Object;
 	if (ShowScoreFinder.Succeeded()) ShowScoreAction = ShowScoreFinder.Object;
 	if (HideScoreFinder.Succeeded()) HideScoreAction = HideScoreFinder.Object;
-}
-
-void AGameLobbyPlayerController::OnRep_PlayerState()
-{
-	Super::OnRep_PlayerState();
-	NotifyLocalPlayerStateUpdated();
-}
-
-void AGameLobbyPlayerController::BeginPlay()
-{
-	Super::BeginPlay();
-	NotifyLocalPlayerStateUpdated();
 }
 
 void AGameLobbyPlayerController::MenuHandler(const FInputActionValue& Value)
