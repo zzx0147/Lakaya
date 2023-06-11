@@ -14,6 +14,7 @@ class LAKAYA_API AAttachableMine : public AAttachableProjectile
 public:
 	static const FName TriggerComponentName;
 	static const FName ActivationNiagaraComponentName;
+	static const FName DamageComponentName;
 
 	explicit AAttachableMine(const FObjectInitializer& ObjectInitializer);
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
@@ -69,6 +70,9 @@ private:
 	// 지뢰가 활성화되어있는 동안 사용될 나이아가라입니다.
 	UPROPERTY(VisibleAnywhere)
 	UNiagaraComponent* ActivationNiagaraComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	USphereComponent* DamageComponent;
 
 	float Health;
 };

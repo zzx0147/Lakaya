@@ -34,6 +34,9 @@ ARenaCharacter::ARenaCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	BombAbility->OnAbilityStartTimeNotified.AddUObject(this, &ARenaCharacter::OnBombPerformTimeNotified);
 	ReloadAbility->OnReloadStateChanged.AddUObject(this, &ARenaCharacter::OnReloadStateChanged);
 	ReloadAbility->OnReloadCompleteTimeNotified.AddUObject(this, &ARenaCharacter::OnReloadCompleteTimeNotified);
+
+	
+	CharacterName = TEXT("Rena");
 }
 
 void ARenaCharacter::SetAliveState_Implementation(bool IsAlive)

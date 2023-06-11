@@ -7,6 +7,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "Character/ArmedCharacter.h"
+#include "Character/Ability/CharacterAbility.h"
+#include "UI/SkillProgressBar.h"
+#include "UI/SkillWidget.h"
 
 
 ABattlePlayerController::ABattlePlayerController()
@@ -100,10 +103,46 @@ void ABattlePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsy
 	InputSubsystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
 }
 
+void ABattlePlayerController::SkillWidgetBind()
+{
+	if (SkillWidget.IsValid() && ArmedCharacter.IsValid())
+	{
+		SkillWidget->SetCharacter(ArmedCharacter->GetCharacterName());
+		
+		if (SkillWidget->GetSkillProgressBar(Primary) != nullptr)
+		{
+			const auto Ability = ArmedCharacter->FindAbility(Primary);
+			Ability->OnEnableTimeChanged.AddUObject(SkillWidget->GetSkillProgressBar(Primary),
+			                                        &USkillProgressBar::OnEnableTimeChange);
+		}
+
+		if (SkillWidget->GetSkillProgressBar(Secondary) != nullptr)
+		{
+			const auto Ability = ArmedCharacter->FindAbility(Secondary);
+			Ability->OnEnableTimeChanged.AddUObject(SkillWidget->GetSkillProgressBar(Secondary),
+			                                        &USkillProgressBar::OnEnableTimeChange);
+		}
+
+		if (SkillWidget->GetSkillProgressBar(WeaponAbility) != nullptr)
+		{
+			const auto Ability = ArmedCharacter->FindAbility(WeaponAbility);
+			Ability->OnEnableTimeChanged.AddUObject(SkillWidget->GetSkillProgressBar(WeaponAbility),
+			                                        &USkillProgressBar::OnEnableTimeChange);
+		}
+	}
+}
+
 void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, APawn* NewPawn)
 {
 	Super::OnPossessedPawnChangedCallback(ArgOldPawn, NewPawn);
-	if (IsLocalController()) ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
+	
+	
+	if (IsLocalController())
+	{
+		ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
+		
+		SkillWidgetBind();
+	}
 }
 
 void ABattlePlayerController::PrimaryStart(const FInputActionValue& Value)

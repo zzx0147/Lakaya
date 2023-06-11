@@ -32,6 +32,8 @@ AWaziCharacter::AWaziCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	SmokeAbility->OnAbilityStartTimeNotified.AddUObject(this, &AWaziCharacter::OnSmokePerformTimeNotified);
 	ReloadAbility->OnReloadStateChanged.AddUObject(this, &AWaziCharacter::OnReloadStateChanged);
 	ReloadAbility->OnReloadCompleteTimeNotified.AddUObject(this, &AWaziCharacter::OnReloadCompleteTimeNotified);
+
+	CharacterName = TEXT("Wazi");
 }
 
 bool AWaziCharacter::ShouldStartAbility_Implementation(EAbilityKind Kind)
