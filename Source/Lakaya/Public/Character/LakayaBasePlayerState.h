@@ -332,6 +332,8 @@ void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, T
 	// 만약 RespawnTime이 현재 시간보다 낮게 설정된 경우 이 타이머는 설정되지 않습니다.
 	GetWorldTimerManager().SetTimer(RespawnTimer, [this, Object, Function]
 	{
+		if(this == nullptr) return;
+		
 		SetAliveState(true);
 		if (Object && Function) (Object->*Function)(GetOwningController());
 	}, ReservedRespawnTime - CurrentTime, false);

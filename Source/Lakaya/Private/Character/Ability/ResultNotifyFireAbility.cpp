@@ -170,6 +170,11 @@ void UResultNotifyFireAbility::DrawDecal(const FVector& Location, const FVector&
 		FTimerHandle TempTimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(TempTimerHandle, [this, Decal, Kind]
 		{
+			if(this == nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("수비ㅏㄹ 자밧ㅇ"));
+				return;
+			}
 			Decal->SetActorLocation(FVector(-9999.f, -9999.f, -9999.f));
 			if (DecalPool.Contains(Kind)) DecalPool[Kind].ReturnObject(Decal);
 			else Decal->Destroy();
