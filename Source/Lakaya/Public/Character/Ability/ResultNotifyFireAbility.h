@@ -84,11 +84,9 @@ private:
 	void DrawDecal(const FVector& Location, const FVector& Normal, const EFireResult& Kind);
 	void DrawTrail(const FVector& Start, const FVector& End);
 	void DrawImpact(const FVector& Location, const FVector& Normal, const EFireResult& Kind);
-
 	void SetWantsToFire(const bool& FireState);
+	void DisableDecal(AActor* Decal, EFireResult Kind);
 
-	UFUNCTION()
-	void DisableDecal(AActor* Decal, const EFireResult& Kind);
 public:
 	// 플레이어의 사격 의지가 변경된 경우 호출됩니다. 오너 클라이언트와 서버에서만 호출됩니다.
 	FWantsToFireSignature OnWantsToFireChanged;
