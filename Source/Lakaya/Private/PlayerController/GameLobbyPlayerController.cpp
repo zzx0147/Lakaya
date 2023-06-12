@@ -3,9 +3,11 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "GameFramework/GameMode.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "GameMode/LakayaBaseGameState.h"
+#include "GameMode/OccupationGameState.h"
 #include "Interfaces/NetworkPredictionInterface.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -146,8 +148,23 @@ void AGameLobbyPlayerController::LoadoutHandler()
 
 void AGameLobbyPlayerController::ShowScoreBoard()
 {
-	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
-		GameState->SetScoreBoardVisibility(true);
+	// 팀전일 때
+	if (const auto OccupationGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+	{
+		if (const auto NewGameState = Cast<AOccupationGameState>(OccupationGameState))
+		{
+			if (!NewGameState->Tapbool) return;
+         
+			if (OccupationGameState->GetMatchState() == MatchState::WaitingPostMatch)
+			{
+				// 게임이 종료되고 결과창에 어떠한 위젯이 띄워지고 있느냐에 따라서 위젯들이 보여지는게 달라집니다.
+				NewGameState->ChangeResultWidget();
+			}
+			OccupationGameState->SetScoreBoardVisibility(true);
+		}
+	}
+
+	// 개인전일 때
 }
 
 void AGameLobbyPlayerController::HideScoreBoard()
