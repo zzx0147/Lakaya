@@ -36,7 +36,6 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
 	CharacterName = TEXT("Base");
-
 	
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(SpringArmComponentName);
 	SpringArm->SetupAttachment(RootComponent);
@@ -213,6 +212,7 @@ void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 		GetMesh()->SetCollisionProfileName(MeshCollisionProfile);
 		GetMesh()->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		GetMesh()->SetRelativeLocationAndRotation(MeshRelativeLocation, MeshRelativeRotation);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		ResurrectionNiagara->Activate(true);
 		if (HasAuthority())
 		{
@@ -225,6 +225,7 @@ void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 	{
 		GetMesh()->SetCollisionProfileName(TEXT("RagDoll"));
 		GetMesh()->SetAllBodiesSimulatePhysics(true);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		StartDissolveEffect();
 	}
 	if (HasAuthority()) GetCharacterMovement()->SetMovementMode(IsAlive ? MOVE_Walking : MOVE_None);
