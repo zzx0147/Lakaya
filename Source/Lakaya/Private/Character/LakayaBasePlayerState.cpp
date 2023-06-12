@@ -145,7 +145,7 @@ void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, c
 	const auto CurrentTime = GetServerTime();
 	UpdateAliveStateWithRespawnTime(CurrentTime);
 
-	FTimerDelegate TimerDelegate;
+	static FTimerDelegate TimerDelegate;
 	TimerDelegate.BindUObject(this, &ALakayaBasePlayerState::RespawnTimerCallback, Callback);
 	GetWorld()->GetTimerManager().SetTimer(RespawnTimer, TimerDelegate, ReservedRespawnTime - CurrentTime, false);
 }
