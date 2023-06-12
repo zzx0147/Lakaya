@@ -16,7 +16,6 @@ protected:
 	virtual void NativeConstruct() override;
 	
 public:
-	void SetScore(const uint16& ScoreCount) const;
 	void SetKill(const uint16& KillCount) const;
 	void SetDeath(const uint16& DeathCount) const;
 	
@@ -37,9 +36,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	TWeakObjectPtr<UImage> Sixth_Rank_Image;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	TWeakObjectPtr<UTextBlock> Score_Text;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	TWeakObjectPtr<UTextBlock> Kill_Text;

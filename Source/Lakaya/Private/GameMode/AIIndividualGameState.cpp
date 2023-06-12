@@ -215,7 +215,6 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 			LocalPlayerController->GetPlayerState<ALakayaBasePlayerState>());
 		if (IndividualPlayerState == nullptr) UE_LOG(LogTemp, Warning, TEXT("IndividualPlayerState is null."));
 
-		GameResultWidget->SetScore(IndividualPlayerState->GetTotalScore());
 		GameResultWidget->SetKill(IndividualPlayerState->GetKillCount());
 		GameResultWidget->SetDeath(IndividualPlayerState->GetDeathCount());
 	}
