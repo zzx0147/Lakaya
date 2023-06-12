@@ -223,7 +223,7 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 			TimerManager.ClearTimer(CurrentCaptureTimer);
 		
 		FTimerDelegate TimerDelegate;
-		TimerDelegate.BindLambda([this]
+		TimerDelegate.BindWeakLambda(this,[this]
 		{
 			if (this == nullptr) return;
 			if (GetWorld()->GetGameState()->HasMatchEnded())
@@ -231,6 +231,7 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 
 			AddTotalScoreCount(CurrentCaptureCount * 50);
 		});
+		
 		TimerManager.SetTimer(CurrentCaptureTimer, TimerDelegate, 1.0f, true);
 	}
 }
