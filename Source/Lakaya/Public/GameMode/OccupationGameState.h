@@ -209,4 +209,7 @@ private:
 
 	// 게임 디테일 Element 결과 위젯입니다.
 	TWeakObjectPtr<UDetailResultElementWidget> DetailResultElementWidget;
+
+public:
+	bool Tapbool = true;
 };
