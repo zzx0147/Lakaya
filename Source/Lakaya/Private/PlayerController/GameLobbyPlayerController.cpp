@@ -149,22 +149,26 @@ void AGameLobbyPlayerController::LoadoutHandler()
 void AGameLobbyPlayerController::ShowScoreBoard()
 {
 	// 팀전일 때
-	if (const auto OccupationGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
-	{
-		if (const auto NewGameState = Cast<AOccupationGameState>(OccupationGameState))
-		{
-			if (!NewGameState->Tapbool) return;
-         
-			if (OccupationGameState->GetMatchState() == MatchState::WaitingPostMatch)
-			{
-				// 게임이 종료되고 결과창에 어떠한 위젯이 띄워지고 있느냐에 따라서 위젯들이 보여지는게 달라집니다.
-				NewGameState->ChangeResultWidget();
-			}
-			OccupationGameState->SetScoreBoardVisibility(true);
-		}
-	}
-
+	// if (const auto OccupationGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+	// {
+	// 	if (const auto NewGameState = Cast<AOccupationGameState>(OccupationGameState))
+	// 	{
+	// 		if (!NewGameState->Tapbool) return;
+ //         
+	// 		if (OccupationGameState->GetMatchState() == MatchState::WaitingPostMatch)
+	// 		{
+	// 			// 게임이 종료되고 결과창에 어떠한 위젯이 띄워지고 있느냐에 따라서 위젯들이 보여지는게 달라집니다.
+	// 			NewGameState->ChangeResultWidget();
+	// 		}
+	// 		
+	// 		OccupationGameState->SetScoreBoardVisibility(true);
+	// 	}
+	// }
+	
 	// 개인전일 때
+
+	if (const auto NewGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+		NewGameState->SetScoreBoardVisibility(true);
 }
 
 void AGameLobbyPlayerController::HideScoreBoard()
