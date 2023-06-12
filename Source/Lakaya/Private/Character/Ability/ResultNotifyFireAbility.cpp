@@ -18,6 +18,7 @@ UResultNotifyFireAbility::UResultNotifyFireAbility()
 	PoolCount = 20;
 	DecalShowingTime = 10.f;
 	bCanEverStopRemoteCall = bCanEverStartRemoteCall = true;
+	CollapsedLocation = FVector(-9999.f,-9999.f,-9999.f);
 }
 
 bool UResultNotifyFireAbility::ShouldStartRemoteCall()
@@ -65,7 +66,7 @@ void UResultNotifyFireAbility::InitializeComponent()
 		DecalPool.Emplace(Pair.Key).SetupObjectPool(PoolCount, [this, DecalClass = Pair.Value]
 		{
 			const auto Actor = GetWorld()->SpawnActor<AActor>(DecalClass);
-			Actor->SetActorLocation(FVector(-9999.f, -9999.f, -9999.f));
+			if (Actor) Actor->SetActorLocation(CollapsedLocation);
 			return Actor;
 		});
 	}
@@ -174,7 +175,7 @@ void UResultNotifyFireAbility::DrawDecal(const FVector& Location, const FVector&
 
 		// 일정시간 뒤 보이지 않는 곳으로 이동시켜두고, 다시 오브젝트 풀에 밀어넣습니다.
 		FTimerHandle TempTimerHandle;
-		FTimerDelegate TimerDelegate;
+		static FTimerDelegate TimerDelegate;
 		TimerDelegate.BindUObject(this, &UResultNotifyFireAbility::DisableDecal, Decal, Kind);
 		GetWorld()->GetTimerManager().SetTimer(TempTimerHandle, TimerDelegate, DecalShowingTime, false);
 	}
@@ -202,7 +203,7 @@ void UResultNotifyFireAbility::SetWantsToFire(const bool& FireState)
 void UResultNotifyFireAbility::DisableDecal(AActor* Decal, EFireResult Kind)
 {
 	if (!Decal) return;
-	Decal->SetActorLocation(FVector(-9999.f, -9999.f, -9999.f));
+	Decal->SetActorLocation(CollapsedLocation);
 	if (DecalPool.Contains(Kind)) DecalPool[Kind].ReturnObject(Decal);
 	else Decal->Destroy();
 }

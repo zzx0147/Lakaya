@@ -143,6 +143,10 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TMap<FName, float> WeakPointMultiplier;
 
+	// 데칼들이 풀에 들어갔을 때 어디에 위치하고 있도록 할지 정의합니다.
+	UPROPERTY(EditAnywhere)
+	FVector CollapsedLocation;
+
 private:
 	UPROPERTY(BlueprintSetter=SetBasisComponent)
 	TObjectPtr<USceneComponent> BasisComponent;
