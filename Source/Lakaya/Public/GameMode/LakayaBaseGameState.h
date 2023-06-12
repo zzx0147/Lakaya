@@ -25,7 +25,7 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 	virtual void HandleMatchIsCharacterSelect();
-
+	
 	virtual void OnRep_MatchState() override;
 
 public:
@@ -74,6 +74,8 @@ private:
 	void InternalSetCharacterSelectWidgetVisibility(const bool& Visible);
 
 public:
+	virtual bool HasMatchStarted() const override;
+
 	// 현재 접속중인 플레이어 인원이 변경되면 호출됩니다. 매개변수로 변경된 플레이어 인원을 받습니다.
 	OnChangePlayerNumberSignature OnChangePlayerNumber;
 

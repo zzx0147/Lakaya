@@ -219,6 +219,7 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 	}, CharacterSelectTimeWidget);
 }
 
+
 void ALakayaBaseGameState::OnRep_MatchState()
 {
 	Super::OnRep_MatchState();
@@ -323,4 +324,13 @@ void ALakayaBaseGameState::InternalSetCharacterSelectWidgetVisibility(const bool
 		LocalController->SetShowMouseCursor(Visible);
 		CharacterSelectWidget->SetVisibility(Visible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
+}
+
+bool ALakayaBaseGameState::HasMatchStarted() const
+{
+	if(GetMatchState() == MatchState::IsSelectCharacter)
+	{
+		return false;	
+	}
+	return Super::HasMatchStarted();
 }
