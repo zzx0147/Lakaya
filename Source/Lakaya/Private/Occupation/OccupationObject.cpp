@@ -65,32 +65,31 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 		InteractingPawn = Caller;
 		OnInteractingActorSignature.Broadcast(InteractingPawn);
 		// OnInteractingActorSignature.Broadcast(InteractingPawn.Get());
-		// FirstCallerTime = Time;
+		FirstCallerTime = Time;
 	}
 	else // 누군가가 상호작용을 이미 하고 있다고 판단될 때 (서버시간을 체크)
 	{
-		return;
-		// APawn* SecondCaller = Caller;
-		// float SecondCallTime = Time;
+		APawn* SecondCaller = Caller;
+		float SecondCallTime = Time;
 		
 		// 더 빠르게 상호작용을 시작한 캐릭터를 결정합니다.
-		// if (SecondCallTime < FirstCallerTime)
-		// {
-		// 	UE_LOG(LogTemp, Warning, TEXT("%s is faster!"), *SecondCaller->GetName());
-		// 	if (InteractingPawn != nullptr && InteractingPawn->GetController() == Caller->Controller) return;
-		// 	Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
-		// 	InteractingPawn = SecondCaller;
-		// 	
-		// }
-		// else
-		// {
-		// 	UE_LOG(LogTemp, Warning, TEXT("%s is faster!"), *InteractingPawn->GetName());
-		// 	if (SecondCaller != nullptr && SecondCaller->GetController() == Caller->Controller)
-		// 	{
-		// 		UE_LOG(LogTemp, Warning, TEXT("이미 누군가가 상호작용을 하고 있습니다."));
-		// 		return;
-		// 	}
-		// }
+		if (SecondCallTime < FirstCallerTime)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s is faster!"), *SecondCaller->GetName());
+			if (InteractingPawn != nullptr && InteractingPawn->GetController() == Caller->Controller) return;
+			Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
+			InteractingPawn = SecondCaller;
+			
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s is faster!"), *InteractingPawn->GetName());
+			if (SecondCaller != nullptr && SecondCaller->GetController() == Caller->Controller)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("이미 누군가가 상호작용을 하고 있습니다."));
+				return;
+			}
+		}
 	}
 
 	// 시작 한 후 3초가 지나게 되면 자동으로 성공.
