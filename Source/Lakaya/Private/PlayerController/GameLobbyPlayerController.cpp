@@ -91,8 +91,6 @@ void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputCompo
 {
 	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
 	                                   &AGameLobbyPlayerController::MenuHandler);
-	EnhancedInputComponent->BindAction(LoadoutAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::LoadoutHandler);
 	EnhancedInputComponent->BindAction(ShowScoreAction, ETriggerEvent::Triggered, this,
 	                                   &AGameLobbyPlayerController::ShowScoreBoard);
 	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
@@ -117,9 +115,6 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> MenuFinder(
 		TEXT("InputAction'/Game/Input/IA_Menu'"));
 
-	static const ConstructorHelpers::FObjectFinder<UInputAction> WeaponFinder(
-		TEXT("InputAction'/Game/Input/IA_Loadout'"));
-
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ShowScoreFinder(
 		TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_ShowScore.IA_ShowScore'"));
 
@@ -128,7 +123,6 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 
 	if (ContextFinder.Succeeded()) InterfaceInputContext = ContextFinder.Object;
 	if (MenuFinder.Succeeded()) MenuAction = MenuFinder.Object;
-	if (WeaponFinder.Succeeded()) LoadoutAction = WeaponFinder.Object;
 	if (ShowScoreFinder.Succeeded()) ShowScoreAction = ShowScoreFinder.Object;
 	if (HideScoreFinder.Succeeded()) HideScoreAction = HideScoreFinder.Object;
 
@@ -140,12 +134,6 @@ void AGameLobbyPlayerController::MenuHandler()
 	if (bEnableExitShortcut) UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ExitLevel);
 }
 
-void AGameLobbyPlayerController::LoadoutHandler()
-{
-	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
-		GameState->ToggleCharacterSelectWidget();
-}
-
 void AGameLobbyPlayerController::ShowScoreBoard()
 {
 	// 팀전일 때
@@ -154,7 +142,7 @@ void AGameLobbyPlayerController::ShowScoreBoard()
 		if (const auto NewGameState = Cast<AOccupationGameState>(OccupationGameState))
 		{
 			if (!NewGameState->Tapbool) return;
-         
+
 			if (OccupationGameState->GetMatchState() == MatchState::WaitingPostMatch)
 			{
 				// 게임이 종료되고 결과창에 어떠한 위젯이 띄워지고 있느냐에 따라서 위젯들이 보여지는게 달라집니다.

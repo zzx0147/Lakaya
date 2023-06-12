@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EnhancedInputComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "GameLobbyCharacterSelectWidget.generated.h"
 
@@ -17,15 +18,21 @@ class LAKAYA_API UGameLobbyCharacterSelectWidget : public UUserWidget
 
 public:
 	explicit UGameLobbyCharacterSelectWidget(const FObjectInitializer& ObjectInitializer);
+	virtual void SetVisibility(ESlateVisibility InVisibility) override;
 
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 public:
 	virtual void RegisterPlayer(APlayerState* PlayerState) { return; }
 
 	// 캐릭터가 선택되면 자동으로 위젯이 가려질지 여부를 선택합니다. 
 	void EnableAutoHide(const bool& IsEnabled);
+
+	void SetShortcutEnabled(const bool& Enable);
+
+	void ToggleVisibility();
 
 protected:
 	//버튼에 바인딩되는 함수들은 UFUNTION을 사용해야함
@@ -40,6 +47,19 @@ protected:
 
 public:
 	OnChangeSelectedCharacterSignature OnChangeSelectedCharacter;
+
+protected:
+	UPROPERTY(EditDefaultsOnly)
+	UInputMappingContext* ShortcutContext;
+
+	UPROPERTY(EditDefaultsOnly)
+	int32 ShortcutPriority;
+
+	UPROPERTY(EditDefaultsOnly)
+	UInputAction* ToggleAction;
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bAutoShortcutEnable;
 
 private:
 	TArray<TObjectPtr<class UButton>> CharacterButtonArray;
