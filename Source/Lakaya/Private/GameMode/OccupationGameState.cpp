@@ -234,8 +234,11 @@ void AOccupationGameState::HandleMatchHasEnded()
 	{
 		return A.GetTotalScore() > B.GetTotalScore();
 	};
-	for (auto& Element : PlayersByTeamMap) Element.Value.Sort(Predicate);
 
+	for (auto& Element : PlayersByTeamMap)
+		Element.Value.Sort(Predicate);
+
+	
 	Tapbool = false;
 	ShowEndResultWidget();
 	BindDetailResultWidget();
@@ -405,12 +408,6 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 
 		Controller->SetShowMouseCursor(false);
 
-		// if (const auto InputComponent = Cast<UEnhancedInputComponent>(Controller->InputComponent))
-		// {
-		// 	InputComponent->BindAction(ResultSwitchingAction, ETriggerEvent::Triggered, this,
-		// 	                           &AOccupationGameState::ChangeResultWidget);
-		// }
-
 		if(Controller != nullptr && Controller->GetLocalPlayer() != nullptr)
 		{
 			if (const auto SubSystem = Controller->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
@@ -480,7 +477,7 @@ void AOccupationGameState::GradeResultTeamInfo(TArray<TObjectPtr<ALakayaBasePlay
 		*FString::Printf(TEXT("%s_%s_RankBoard_Image"), *RankLetter, *TeamLetter))->SetVisibility(
 		ESlateVisibility::SelfHitTestInvisible);
 
-	FString FormattedName = FString::Printf(TEXT("%s"), *PlayerArray[NewIndex]->GetPlayerName());
+	FString FormattedName = FString::Printf(TEXT("%s"), *NewPlayerArray[NewIndex]->GetPlayerName());
 	UTextBlock* NameText = Cast<UTextBlock>(
 		GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_Name_Text"), *RankLetter)));
 	NameText->SetText(FText::FromString(FormattedName));
@@ -546,7 +543,7 @@ void AOccupationGameState::BindDetailResultWidget()
 			if (PlayerState->GetCharacterName() == "Wazi")
 			{
 				DetailResultWidget->AntiWaziImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				DetailResultWidget->PortraitRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				DetailResultWidget->PortraitWaziImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 				DetailResultWidget->UserBoxCharacterNameText->SetText(FText::FromString(TEXT("WAZI")));
 			}
 		}
