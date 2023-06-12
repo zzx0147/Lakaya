@@ -10,7 +10,7 @@ class LAKAYA_API UPlayerInfoWidget : public UUserWidget
 	GENERATED_BODY()
 public:
 	UPlayerInfoWidget(const FObjectInitializer& ObjectInitializer);
-	void SetPlayerName(FString NewName);
+	void SetPlayerName(const FString& NewName);
 	void SetCharacterName(const FName& NewName);
 	
 protected:
