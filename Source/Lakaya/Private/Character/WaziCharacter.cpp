@@ -108,8 +108,11 @@ void AWaziCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 	if(NewController == nullptr) return;
-	if (const auto PlayerController = Cast<APlayerController>(NewController); PlayerController->IsLocalController())
+	
+	const auto PlayerController = Cast<APlayerController>(NewController);
+	if (PlayerController && PlayerController->IsLocalController())
 		CreateClairvoyanceWidget(PlayerController);
+	else return;
 }
 
 void AWaziCharacter::CreateClairvoyanceWidget(APlayerController* PlayerController)
