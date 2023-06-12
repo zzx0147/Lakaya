@@ -23,7 +23,7 @@ protected:
 
 public:
 	void SetEnableExitShortcut(const bool& Enable);
-	virtual void UnbindAllAndBindMenu( UEnhancedInputComponent* const& EnhancedInputComponent);
+	virtual void UnbindAllAndBindMenu(class UEnhancedInputComponent* const& EnhancedInputComponent);
 
 protected:
 	/**
@@ -49,6 +49,7 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UWorld> ExitLevel;
+
 private:
 	void ShowScoreBoard();
 	void HideScoreBoard();
