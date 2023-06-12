@@ -236,7 +236,10 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 	//TODO: ShouldRespawn 함수는 사망한 플레이어가 부활할 수 있는지 여부를 검사하기 위해 기획되었습니다. 따라서 매개변수로 플레이어 스테이트나 컨트롤러를 받아야 합니다.
 	if (ShouldRespawn())
 	{
-		VictimPlayerState->SetRespawnTimer(GetGameState<AGameState>()->GetServerWorldTimeSeconds() + MinRespawnDelay, this, &ALakayaDefaultPlayGameMode::RespawnPlayer);
+		FRespawnTimerDelegate Delegate;
+		Delegate.BindUObject(this, &ALakayaDefaultPlayGameMode::RespawnPlayer);
+		VictimPlayerState->SetRespawnTimer(GetGameState<AGameState>()->GetServerWorldTimeSeconds() + MinRespawnDelay,
+		                                   Delegate);
 		// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnTimerSetted!!!"));
 	}
 	else

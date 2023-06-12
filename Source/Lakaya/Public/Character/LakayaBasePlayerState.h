@@ -24,6 +24,8 @@ DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FPlayerNameSignature, const FStri
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOwnerChangeSignature, AActor*)
 
+DECLARE_DELEGATE_OneParam(FRespawnTimerDelegate, AController*)
+
 UCLASS()
 class LAKAYA_API ALakayaBasePlayerState : public APlayerState
 {
@@ -60,12 +62,9 @@ public:
 	 * @param ReservedRespawnTime 목표 부활 시간입니다. 이 시간에 플레이어가 부활합니다.
 	 * 음수를 기입하여 기약없이 사망한 상태로, 0을 포함한 현재 시간보다 낮은 값을 기입하여 생존상태로 변경시킬 수도 있습니다.
 	 * 이러한 경우 Object의 Function은 호출되지 않습니다.
-	 * @param Object Function을 실행할 객체입니다.
-	 * @param Function 부활 시간이 도래했을 때 실행할 Object의 멤버함수입니다.
+	 * @param Callback 리스폰 타이머가 종료되면 호출될 콜백입니다.
 	 */
-	template <class T = ALakayaBasePlayerState>
-	void SetRespawnTimer(const float& ReservedRespawnTime, T* Object = nullptr,
-	                     void (T::*Function)(AController*) = nullptr);
+	void SetRespawnTimer(const float& ReservedRespawnTime, const FRespawnTimerDelegate& Callback = nullptr);
 
 	// 이 플레이어의 생존 여부를 가져옵니다.
 	UFUNCTION(BlueprintGetter)
@@ -223,6 +222,8 @@ private:
 	UFUNCTION(Client, Reliable)
 	void NoticePlayerHit(const FName& CauserName, const FVector& CauserLocation, const float& Damage);
 
+	void RespawnTimerCallback(FRespawnTimerDelegate Callback);
+
 public:
 	// 현재 체력이 변경되는 경우 호출됩니다. 매개변수로 변경된 현재 체력을 받습니다.
 	FHealthChangeSignature OnHealthChanged;
@@ -321,41 +322,3 @@ private:
 	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;
 	TWeakObjectPtr<UGamePlayPortraitWidget> PortraitWidget;
 };
-
-// template <class T>
-// void ALakayaBasePlayerState::SetRespawnTimers(const float& ReservedRespawnTime, T* Object,
-//                                              void (T::*Function)(AController*))
-// {
-// 	RespawnTime = ReservedRespawnTime;
-// 	const auto CurrentTime = GetServerTime();
-// 	UpdateAliveStateWithRespawnTime(CurrentTime);
-//
-// 	// 만약 RespawnTime이 현재 시간보다 낮게 설정된 경우 이 타이머는 설정되지 않습니다.
-// 	GetWorldTimerManager().SetTimer(RespawnTimer, [this, Object, Function]
-// 	{
-// 		if(this == nullptr) return;
-// 		
-// 		
-// 		SetAliveState(true);
-// 		if (Object && Function) (Object->*Function)(GetOwningController());
-// 	}, ReservedRespawnTime - CurrentTime, false);
-// }
-
-DECLARE_DELEGATE_TwoParams(FMyFunctionDelegate, AController*, float);
-template <class T>
-void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, T* Object,
-											 void (T::*Function)(AController*))
-{
-	RespawnTime = ReservedRespawnTime;
-	const auto CurrentTime = GetServerTime();
-	UpdateAliveStateWithRespawnTime(CurrentTime);
-
-	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindLambda([=]() // 수정된 부분: 빈 괄호를 사용하여 매개변수 없음을 명시
-	{
-		if (this == nullptr) return;
-		SetAliveState(true);
-		if (Object && Function) (Object->*Function)(GetOwningController());
-	});
-	GetWorld()->GetTimerManager().SetTimer(RespawnTimer, TimerDelegate, ReservedRespawnTime - CurrentTime, false);
-}

@@ -139,6 +139,17 @@ void ALakayaBasePlayerState::SetTeam(const EPlayerTeam& DesireTeam)
 	OnTeamChanged.Broadcast(Team);
 }
 
+void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, const FRespawnTimerDelegate& Callback)
+{
+	RespawnTime = ReservedRespawnTime;
+	const auto CurrentTime = GetServerTime();
+	UpdateAliveStateWithRespawnTime(CurrentTime);
+
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindUObject(this, &ALakayaBasePlayerState::RespawnTimerCallback, Callback);
+	GetWorld()->GetTimerManager().SetTimer(RespawnTimer, TimerDelegate, ReservedRespawnTime - CurrentTime, false);
+}
+
 void ALakayaBasePlayerState::MakeAlive()
 {
 	RespawnTime = 0.f;
@@ -371,6 +382,12 @@ void ALakayaBasePlayerState::SetAliveState(const bool& AliveState)
 	if (bRecentAliveState == AliveState) return;
 	bRecentAliveState = AliveState;
 	OnAliveStateChanged.Broadcast(AliveState);
+}
+
+void ALakayaBasePlayerState::RespawnTimerCallback(FRespawnTimerDelegate Callback)
+{
+	SetAliveState(true);
+	Callback.Execute(GetOwningController());
 }
 
 void ALakayaBasePlayerState::RequestCharacterChange_Implementation(const FName& Name)
