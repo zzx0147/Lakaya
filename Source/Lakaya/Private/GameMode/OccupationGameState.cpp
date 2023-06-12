@@ -404,10 +404,10 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 			                           &AOccupationGameState::ChangeResultWidget);
 		}
 
-		if (const auto SubSystem = Controller->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
-		{
-			SubSystem->AddMappingContext(ResultShortcutContext, 200);
-		}
+//		if (const auto SubSystem = Controller->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+//		{
+//			SubSystem->AddMappingContext(ResultShortcutContext, 200);
+//		}
 
 		ShowGradeResultElementWidget(PlayerState);
 	});
