@@ -121,7 +121,10 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 void UGameLobbyCharacterSelectWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
-	SetShortcutEnabled(false);
+	if (GetOwningLocalPlayer())
+	{
+		SetShortcutEnabled(false);
+	}
 }
 
 void UGameLobbyCharacterSelectWidget::EnableAutoHide(const bool& IsEnabled)
