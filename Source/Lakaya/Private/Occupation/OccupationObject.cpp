@@ -30,15 +30,16 @@ void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME(AOccupationObject, ObjectTeam);
 	DOREPLIFETIME(AOccupationObject, InteractingPawn);
+	
 }
 
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Start!"));
-	
 	if (Caller == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OnInteractionStart_Caller is null."));
+		Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
 		return;
 	}
 	
@@ -46,6 +47,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	if (OccupationPlayerState == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
+		Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
 		return;
 	}
 
@@ -61,7 +63,9 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	if (InteractingPawn == nullptr)
 	{
 		InteractingPawn = Caller;
-		FirstCallerTime = Time;
+		OnInteractingActorSignature.Broadcast(InteractingPawn);
+		// OnInteractingActorSignature.Broadcast(InteractingPawn.Get());
+		// FirstCallerTime = Time;
 	}
 	else // 누군가가 상호작용을 이미 하고 있다고 판단될 때 (서버시간을 체크)
 	{
@@ -111,6 +115,7 @@ void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller, EInt
 	if (Cast<AInteractableCharacter>(GetInteractingPawn()) != InteractingPawn) return;
 	
 	InteractingPawn = nullptr;
+	OnInteractingActorSignature.Broadcast(InteractingPawn);
 	FirstCallerTime = 0;
 	
 	// InteractionStop 기능에서 타이머가 이미 만료되었는지를 확인해줍니다.
