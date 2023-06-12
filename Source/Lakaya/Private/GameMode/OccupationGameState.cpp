@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameMode.h"
 #include "Kismet/GameplayStatics.h"
@@ -235,6 +236,7 @@ void AOccupationGameState::HandleMatchHasEnded()
 	};
 	for (auto& Element : PlayersByTeamMap) Element.Value.Sort(Predicate);
 
+	Tapbool = false;
 	ShowEndResultWidget();
 	BindDetailResultWidget();
 	BindDetailResultElementWidget();
@@ -355,6 +357,11 @@ void AOccupationGameState::ShowEndResultWidget()
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 		GameResultWidget.IsValid() && LocalController && LocalController->IsLocalController())
 	{
+		LocalController->SetShowMouseCursor(false);
+		LocalController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_None);
+		const auto LobbyController = Cast<AGameLobbyPlayerController>(LocalController);
+		LobbyController->UnbindAllAndBindMenu(Cast<UEnhancedInputComponent>(LocalController->InputComponent));
+		
 		if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 		{
 			if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
@@ -396,13 +403,13 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 			GradeResultWidget->VictoryImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		else GradeResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-		Controller->SetShowMouseCursor(true);
+		Controller->SetShowMouseCursor(false);
 
-		if (const auto InputComponent = Cast<UEnhancedInputComponent>(Controller->InputComponent))
-		{
-			InputComponent->BindAction(ResultSwitchingAction, ETriggerEvent::Triggered, this,
-			                           &AOccupationGameState::ChangeResultWidget);
-		}
+		// if (const auto InputComponent = Cast<UEnhancedInputComponent>(Controller->InputComponent))
+		// {
+		// 	InputComponent->BindAction(ResultSwitchingAction, ETriggerEvent::Triggered, this,
+		// 	                           &AOccupationGameState::ChangeResultWidget);
+		// }
 
 		if(Controller != nullptr && Controller->GetLocalPlayer() != nullptr)
 		{
@@ -413,6 +420,7 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 		}
 
 		ShowGradeResultElementWidget(PlayerState);
+		Tapbool = true;
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
 }
