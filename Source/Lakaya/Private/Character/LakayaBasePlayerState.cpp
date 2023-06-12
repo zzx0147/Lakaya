@@ -93,7 +93,7 @@ void ALakayaBasePlayerState::BeginPlay()
 		PortraitWidget = CreateWidget<UGamePlayPortraitWidget>(LocalController, PortraitWidgetClass);
 		if (PortraitWidget.IsValid())
 		{
-			PortraitWidget->AddToViewport();
+			PortraitWidget->AddToViewport(-2);
 			PortraitWidget->ChangePortrait(GetCharacterName());
 			OnCharacterNameChanged.AddWeakLambda(
 				PortraitWidget.Get(), [Widget = PortraitWidget](auto, const FName& Name)
