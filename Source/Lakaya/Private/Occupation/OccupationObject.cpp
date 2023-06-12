@@ -34,6 +34,8 @@ void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Start!"));
+
+	FScopeLock ScopeLock(&InteractionMutex);
 	
 	if (Caller == nullptr)
 	{
@@ -98,7 +100,8 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller, EInteractionState NewState)
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Stop!"));
-	
+	FScopeLock ScopeLock(&InteractionMutex);
+
 	if (Caller == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OnInteractionStop_Caller is null."));
