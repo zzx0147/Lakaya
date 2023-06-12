@@ -35,7 +35,8 @@ void ALakayaBaseGameState::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController();
+		LocalController && LocalController->IsLocalController())
 	{
 		if (LoadingWidgetClass.Get() != nullptr)
 		{
@@ -250,8 +251,8 @@ UGameLobbyCharacterSelectWidget* ALakayaBaseGameState::GetCharacterSelectWidget(
 void ALakayaBaseGameState::ToggleCharacterSelectWidget()
 {
 	// 캐릭터 선택위젯이 숨겨져있었다면 보여주고, 보여지고 있었다면 숨깁니다.
-	if (MatchState != MatchState::InProgress) return;
-	InternalSetCharacterSelectWidgetVisibility(GetCharacterSelectWidget()->GetVisibility() == ESlateVisibility::Hidden);
+	if (!CharacterSelectWidget || MatchState != MatchState::InProgress) return;
+	InternalSetCharacterSelectWidgetVisibility(CharacterSelectWidget->GetVisibility() == ESlateVisibility::Hidden);
 }
 
 void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimController,
@@ -317,9 +318,9 @@ void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible)
 void ALakayaBaseGameState::InternalSetCharacterSelectWidgetVisibility(const bool& Visible)
 {
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController();
-		LocalController && LocalController->IsLocalController())
+		LocalController && LocalController->IsLocalController() && GetCharacterSelectWidget())
 	{
 		LocalController->SetShowMouseCursor(Visible);
-		GetCharacterSelectWidget()->SetVisibility(Visible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		CharacterSelectWidget->SetVisibility(Visible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 }

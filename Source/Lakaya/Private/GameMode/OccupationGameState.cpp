@@ -622,5 +622,6 @@ void AOccupationGameState::SetupPlayerStateOnLocal(ALakayaBasePlayerState* Playe
 	const auto IsAlly = Team == ClientTeam;
 	PlayerState->SetUniqueStencilMask(GetUniqueStencilMask(IsAlly, PlayersByTeamMap[Team].Find(PlayerState)));
 	PlayerState->SetAlly(IsAlly);
-	if (IsAlly) GetCharacterSelectWidget()->RegisterPlayer(PlayerState);
+	if (const auto Widget = GetCharacterSelectWidget(); Widget && IsAlly)
+		Widget->RegisterPlayer(PlayerState);
 }
