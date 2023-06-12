@@ -2,6 +2,7 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
@@ -10,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Occupation/ShieldWallObject.h"
+#include "UI/DetailResultElementWidget.h"
 #include "UI/DetailResultWidget.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/GameResultWidget.h"
@@ -18,7 +20,6 @@
 #include "UI/MatchStartWaitWidget.h"
 #include "UI/StartMessageWidget.h"
 #include "UI/TeamScoreWidget.h"
-#include "UI/DetailResultElementWidget.h"
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -31,8 +32,6 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 AOccupationGameState::AOccupationGameState()
 {
-
-	
 	MaxScore = 100.f;
 	MatchDuration = 180.f;
 	MatchStartWaitWidgetLifeTime = 3.0f;
@@ -41,6 +40,15 @@ AOccupationGameState::AOccupationGameState()
 	
 	PlayersByTeamMap.Emplace(EPlayerTeam::A);
 	PlayersByTeamMap.Emplace(EPlayerTeam::B);
+
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext> ResultContextFinder(
+		TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IC_ResultWidgetControl.IC_ResultWidgetControl'"));
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> ResultSwitchActionFinder(
+		TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_ShowScore.IA_ShowScore'"));
+	
+	ResultShortcutContext = ResultContextFinder.Object;
+	ResultSwitchingAction = ResultSwitchActionFinder.Object;
 }
 
 void AOccupationGameState::BeginPlay()
