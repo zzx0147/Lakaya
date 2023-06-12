@@ -255,13 +255,13 @@ void ALakayaBaseGameState::ToggleCharacterSelectWidget()
 	InternalSetCharacterSelectWidgetVisibility(CharacterSelectWidget->GetVisibility() == ESlateVisibility::Hidden);
 }
 
-void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimController,
-                                                             APlayerState* InstigatorController, AActor* DamageCauser)
+void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimPlayer,
+                                                             APlayerState* InstigatorPlayer, AActor* DamageCauser)
 {
-	OnPlayerKillNotified.Broadcast(VictimController, InstigatorController, DamageCauser);
+	OnPlayerKillNotified.Broadcast(VictimPlayer, InstigatorPlayer, DamageCauser);
 	if (KillLogWidget.IsValid())
 	{
-		KillLogWidget->OnKillCharacterNotify(VictimController, InstigatorController, DamageCauser);
+		KillLogWidget->OnKillCharacterNotify(VictimPlayer, InstigatorPlayer, DamageCauser);
 	}
 
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OnPlayerKillNotified.Broadcast"));
