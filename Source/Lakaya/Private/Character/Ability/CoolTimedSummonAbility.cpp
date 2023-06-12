@@ -37,7 +37,7 @@ void UCoolTimedSummonAbility::InitializeComponent()
 
 		AbilityInstance->SetOwningAbility(this);
 		AbilityInstance->SetTeam(GetPlayerTeam());
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("AbilityInstance spawned"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("AbilityInstance spawned"));
 		return AbilityInstance;
 	});
 }
@@ -75,7 +75,7 @@ void UCoolTimedSummonAbility::OnAbilityInstanceStateChanged(const EAbilityInstan
 	{
 	case EAbilityInstanceState::Collapsed:
 		AbilityInstancePool.ReturnObject(AbilityInstance);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object returned!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object returned!"));
 		break;
 	default: break;
 	}

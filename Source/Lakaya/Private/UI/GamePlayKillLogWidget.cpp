@@ -56,7 +56,7 @@ void UGamePlayKillLogWidget::OnKillCharacterNotify(APlayerState* KilledControlle
 	else Element = Cast<UKillLogElement>(KillLogBox->GetChildAt(InitialChildCount));
 
 
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("KilllogWidget!!! SetKillLog!!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("KilllogWidget!!! SetKillLog!!"));
 	//KillLogBox->ShiftChild(KillLogBox->GetChildrenCount(), Element);
 
 	 if(Element != nullptr)

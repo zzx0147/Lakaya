@@ -97,7 +97,7 @@ void ASmokeProjectile::OnTriggerComponentBeginOverlap(UPrimitiveComponent* Overl
 	if (const auto Character = Cast<ALakayaBaseCharacter>(OtherActor))
 	{
 		Character->EnableClairvoyance();
-		GEngine->AddOnScreenDebugMessage(-1,3,FColor::White,TEXT("Smoke enter"));
+		//GEngine->AddOnScreenDebugMessage(-1,3,FColor::White,TEXT("Smoke enter"));
 	}
 }
 
@@ -107,7 +107,7 @@ void ASmokeProjectile::OnTriggerComponentEndOverlap(UPrimitiveComponent* Overlap
 	if (const auto Character = Cast<ALakayaBaseCharacter>(OtherActor))
 	{
 		Character->DisableClairvoyance();
-		GEngine->AddOnScreenDebugMessage(-1,3,FColor::White,TEXT("Smoke exit"));
+		//GEngine->AddOnScreenDebugMessage(-1,3,FColor::White,TEXT("Smoke exit"));
 	}
 }
 

@@ -145,19 +145,19 @@ void UGameLobbyCharacterSelectWidget::ToggleVisibility()
 
 void UGameLobbyCharacterSelectWidget::OnClickedCharacter1Button()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("OnClickedCitizenButton")));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("OnClickedCitizenButton")));
 	SelectCharacter(0);
 }
 
 void UGameLobbyCharacterSelectWidget::OnClickedCharacter2Button()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("OnClickedGovernmentManButton")));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("OnClickedGovernmentManButton")));
 	SelectCharacter(1);
 }
 
 void UGameLobbyCharacterSelectWidget::OnClickedCharacter3Button()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("OnClickedGangsterButton")));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("OnClickedGangsterButton")));
 	SelectCharacter(2);
 }
 
@@ -166,8 +166,8 @@ void UGameLobbyCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum)
 	if (!CharacterNameArray.IsValidIndex(CharacterNum)) return;
 	//캐릭터를 선택하면 캐릭터 3D 출력을 변경하고 이전의 버튼을 활성화한뒤 선택한 캐릭터의 버튼을 비활성화
 	//OnCharacterSelectedCharater로 변경된 캐릭터 번호를 브로드캐스트
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow,
-	                                 FString::Printf(TEXT("SelectCharacter %d"), CharacterNum));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow,
+	//                                 FString::Printf(TEXT("SelectCharacter %d"), CharacterNum));
 
 	if (SelectedCharacterImage != nullptr &&
 		CharacterRenderTargetMaterialArray.IsValidIndex(CharacterNum) &&

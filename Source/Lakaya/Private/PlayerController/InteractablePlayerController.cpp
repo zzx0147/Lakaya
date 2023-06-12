@@ -45,7 +45,7 @@ void AInteractablePlayerController::SetupMappingContext(UEnhancedInputLocalPlaye
 
 void AInteractablePlayerController::OrderStartInteraction(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StartInteraction."));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StartInteraction."));
 	const auto InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
 
 	if (InteractableCharacter == nullptr)
@@ -59,7 +59,7 @@ void AInteractablePlayerController::OrderStartInteraction(const FInputActionValu
 
 void AInteractablePlayerController::OrderStopInteraction(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StopInteraction."));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Client StopInteraction."));
 	const auto InteractableCharacter = Cast<AInteractableCharacter>(GetCharacter());
 	if (InteractableCharacter == nullptr)
 	{

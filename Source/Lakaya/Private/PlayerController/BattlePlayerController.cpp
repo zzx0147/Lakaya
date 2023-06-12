@@ -68,6 +68,11 @@ ABattlePlayerController::ABattlePlayerController()
 	if (DashStopFinder.Succeeded()) DashStopAction = DashStopFinder.Object;
 }
 
+void ABattlePlayerController::SetSkillWidget(USkillWidget* NewSkillWidget)
+{
+	SkillWidget = NewSkillWidget;
+}
+
 void ABattlePlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
 	Super::SetupEnhancedInputComponent(EnhancedInputComponent);

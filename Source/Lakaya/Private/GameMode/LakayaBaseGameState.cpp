@@ -262,7 +262,7 @@ void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* Victi
 		KillLogWidget->OnKillCharacterNotify(VictimPlayer, InstigatorPlayer, DamageCauser);
 	}
 
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OnPlayerKillNotified.Broadcast"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OnPlayerKillNotified.Broadcast"));
 }
 
 void ALakayaBaseGameState::OnRep_MatchEndingTime()

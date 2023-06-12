@@ -302,11 +302,11 @@ void UEOSGameInstance::OnFindSessionCompleteWithQuickJoin(const bool bWasSuccess
 				//Results.Session.NumOpenPublicConnections;
 				//Results.Session.SessionSettings.NumPublicConnections;
 
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow,
-				                                 FString::Printf(
-					                                 TEXT("NumOpenPublicConnections %d :: NumPublicConnections %d"),
-					                                 Results.Session.NumOpenPublicConnections,
-					                                 Results.Session.SessionSettings.NumPublicConnections));
+				//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow,
+				//                                 FString::Printf(
+				//	                                 TEXT("NumOpenPublicConnections %d :: NumPublicConnections %d"),
+				//	                                 Results.Session.NumOpenPublicConnections,
+				//	                                 Results.Session.SessionSettings.NumPublicConnections));
 
 				if (bIsJoinable && Results.Session.NumOpenPublicConnections > 0 && Results.Session.
 					NumOpenPublicConnections < Results.Session.SessionSettings.NumPublicConnections)

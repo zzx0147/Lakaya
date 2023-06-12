@@ -213,8 +213,8 @@ void ALinearProjectile::SimulateProjectilePhysics(const bool& UsingQuery, const 
 		return;
 	}
 
-	GEngine->AddOnScreenDebugMessage(-1, 3, HasAuthority() ? FColor::White : FColor::Green,
-	                                 TEXT("Start projectile physics"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, HasAuthority() ? FColor::White : FColor::Green,
+	//	                                 TEXT("Start projectile physics"));
 
 	static FVector Location;
 	static FRotator Rotator;
@@ -261,8 +261,8 @@ void ALinearProjectile::SetIgnoreInstigator(UPrimitiveComponent* PrimitiveCompon
 
 void ALinearProjectile::SimulateProjectileMovement()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, HasAuthority() ? FColor::White : FColor::Green,
-	                                 TEXT("Start projectile simulate"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, HasAuthority() ? FColor::White : FColor::Green,
+	//	                                 TEXT("Start projectile simulate"));
 	DisableProjectilePhysics();
 	CalculateProjectilePath(ProjectileLocation, ProjectileRotation);
 	ProjectilePathResult.PathData.Heapify(CustomPointDataPredicate);

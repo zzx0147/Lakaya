@@ -14,7 +14,7 @@ class LAKAYA_API ABattlePlayerController : public AMovablePlayerController
 
 public:
 	ABattlePlayerController();
-	void SetSkillWidget(class USkillWidget* NewSkillWidget) { SkillWidget = NewSkillWidget; }
+	void SetSkillWidget(class USkillWidget* NewSkillWidget);
 
 protected:
 	virtual void SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent) override;

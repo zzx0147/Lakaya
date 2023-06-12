@@ -33,7 +33,7 @@ void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Start!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Start!"));
 	
 	if (Caller == nullptr)
 	{
@@ -51,7 +51,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	// 소유자 팀에서 상호작용 할 경우 막아두기
 	if (OccupationPlayerState->IsSameTeam(ObjectTeam))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OccupationObject_이미 점령한 오브젝트 입니다."));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OccupationObject_이미 점령한 오브젝트 입니다."));
 		Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
 		return;
 	}
@@ -96,7 +96,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 
 void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller, EInteractionState NewState)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Stop!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Stop!"));
 	
 	if (Caller == nullptr)
 	{

@@ -43,7 +43,7 @@ void UReloadAbility::RemoteAbilityStart(const float& RequestTime)
 	OnReloadCompleteTimeNotified.Broadcast(ReloadingTime);
 	SetReloadState(true);
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &UReloadAbility::ReloadTimerHandler, ReloadDelay);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ReloadTimerSetted!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("ReloadTimerSetted!"));
 }
 
 bool UReloadAbility::ShouldStartRemoteCall()
@@ -57,7 +57,7 @@ void UReloadAbility::ReloadTimerHandler()
 	if (GetOwner()->HasAuthority())
 	{
 		GetResourceComponent<UBulletComponent>()->Reload();
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Reloaded!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Reloaded!"));
 	}
 	SetReloadState(false);
 }
