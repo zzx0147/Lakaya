@@ -21,6 +21,7 @@
 #include "UI/MatchStartWaitWidget.h"
 #include "UI/StartMessageWidget.h"
 #include "UI/TeamScoreWidget.h"
+#include "UI/WeaponOutLineWidget.h"
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -79,6 +80,16 @@ void AOccupationGameState::BeginPlay()
 				TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 			else UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidget is null."));
+		}
+
+		if (WeaponOutLineWidgetClass)
+		{
+			WeaponOutLineWidget = CreateWidget<UWeaponOutLineWidget>(LocalController, WeaponOutLineWidgetClass);
+			if (IsValid(WeaponOutLineWidget))
+			{
+				WeaponOutLineWidget->AddToViewport();
+				WeaponOutLineWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
 		}
 
 		if (MatchStartWaitWidgetClass)
@@ -176,6 +187,9 @@ void AOccupationGameState::HandleMatchHasStarted()
 	if (IsValid(TeamScoreWidget))
 		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
 
+	if (IsValid(WeaponOutLineWidget))
+		WeaponOutLineWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	
 	if (MatchStartWaitWidget.IsValid())
 		MatchStartWaitWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
