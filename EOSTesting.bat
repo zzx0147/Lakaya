@@ -1,1 +1,1 @@
-start "" "C:\Program Files\Epic Games\UE_5.1\Engine\Binaries\Win64\UnrealEditor.exe" "C:\Users\bluet\Desktop\Lakaya\Lakaya\Lakaya.uproject" -game -ResX=800 -ResY=900 -WinX=0 -WinY=20 -log
+start "" "D:\Program Files\EpicGames\UE_5.1\Engine\Binaries\Win64\UnrealEditor.exe" "D:\Projects\UnrealProject\Lakaya\Lakaya.uproject" -game -ResX=800 -ResY=900 -WinX=0 -WinY=20 -log
