@@ -29,13 +29,12 @@ void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AOccupationObject, ObjectTeam);
+	DOREPLIFETIME(AOccupationObject, InteractingPawn);
 }
 
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Start!"));
-
-	FScopeLock ScopeLock(&InteractionMutex);
 	
 	if (Caller == nullptr)
 	{
@@ -69,14 +68,15 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 		return;
 		// APawn* SecondCaller = Caller;
 		// float SecondCallTime = Time;
-		//
-		// // 더 빠르게 상호작용을 시작한 캐릭터를 결정합니다.
+		
+		// 더 빠르게 상호작용을 시작한 캐릭터를 결정합니다.
 		// if (SecondCallTime < FirstCallerTime)
 		// {
 		// 	UE_LOG(LogTemp, Warning, TEXT("%s is faster!"), *SecondCaller->GetName());
 		// 	if (InteractingPawn != nullptr && InteractingPawn->GetController() == Caller->Controller) return;
 		// 	Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
 		// 	InteractingPawn = SecondCaller;
+		// 	
 		// }
 		// else
 		// {
@@ -100,7 +100,6 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller, EInteractionState NewState)
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Stop!"));
-	FScopeLock ScopeLock(&InteractionMutex);
 
 	if (Caller == nullptr)
 	{

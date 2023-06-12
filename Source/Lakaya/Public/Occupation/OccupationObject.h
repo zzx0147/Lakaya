@@ -69,6 +69,4 @@ private:
 	
 	FTimerHandle InteractionTimerHandle;
 	FTimerHandle InteractionStateHandle;
-
-	FCriticalSection InteractionMutex;
 };

@@ -122,7 +122,7 @@ void AInteractableCharacter::RequestInteractionStart_Implementation(const float&
 	InteractionInfo.InteractionState = EInteractionState::OnGoing;
 	OnInteractionStateChanged.Broadcast(InteractionInfo);
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
-
+	
 	Cast<AInteractable>(Actor)->OnInteractionStart(Time, this);
 }
 
