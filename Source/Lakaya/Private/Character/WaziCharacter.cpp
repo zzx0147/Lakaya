@@ -54,6 +54,13 @@ bool AWaziCharacter::ShouldStartAbilityOnServer_Implementation(EAbilityKind Kind
 	// 생존하고 있고, 오버드라이브 행동이 종료되었고, 투시 행동이 종료되었고,
 	// 연막 투척 스킬이 종료된 시점이고, 재장전중이지 않고 사격중이지 않을 때에 스킬을 사용할 수 있게 합니다.
 	return GetAliveState() && OverdriveEndingTime <= Time && ClairvoyanceEndingTime <= Time
+		&& SmokeEndingTime <= Time && !bIsReloading && !bWantsToFire && IsNotInteracting();
+}
+
+bool AWaziCharacter::ShouldInteract() const
+{
+	const auto Time = GetServerTime();
+	return Super::ShouldInteract() && GetAliveState() && OverdriveEndingTime <= Time && ClairvoyanceEndingTime <= Time
 		&& SmokeEndingTime <= Time && !bIsReloading && !bWantsToFire;
 }
 

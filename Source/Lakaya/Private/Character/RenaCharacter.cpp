@@ -62,7 +62,14 @@ bool ARenaCharacter::ShouldStartAbilityOnServer_Implementation(EAbilityKind Kind
 
 	// 생존중이고, 점착지뢰 투척이 끝났고, 데스레이가 끝났고, 폭탄 투척이 끝났고, 재장전중이지 않고, 사격중이지 않을 때 스킬을 사용할 수 있도록 합니다.
 	return GetAliveState() && MineEndingTime <= Time && DeathRayStartTime <= DeathRayStopTime && DeathRayStopTime <=
-		Time && BombEndingTime <= Time && !bIsReloading && !bWantsToFire;
+		Time && BombEndingTime <= Time && !bIsReloading && !bWantsToFire && IsNotInteracting();
+}
+
+bool ARenaCharacter::ShouldInteract() const
+{
+	const auto Time = GetServerTime();
+	return Super::ShouldInteract() && GetAliveState() && MineEndingTime <= Time && DeathRayStartTime <= DeathRayStopTime
+		&& DeathRayStopTime <= Time && BombEndingTime <= Time && !bIsReloading && !bWantsToFire;
 }
 
 void ARenaCharacter::OnMinePerformTimeNotified(const float& Time)

@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Occupation/ShieldWallObject.h"
+#include "PlayerController/BattlePlayerController.h"
 #include "UI/DetailResultElementWidget.h"
 #include "UI/DetailResultWidget.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
@@ -63,6 +64,8 @@ void AOccupationGameState::BeginPlay()
 			{
 				SkillWidget->AddToViewport();
 				SkillWidget->SetVisibility(ESlateVisibility::Hidden);
+				if(const auto BattlePlayerController = Cast<ABattlePlayerController>(LocalController))
+					BattlePlayerController->SetSkillWidget(SkillWidget.Get());
 			}
 			else UE_LOG(LogTemp, Warning, TEXT("SkillWidget is null."))
 		}
