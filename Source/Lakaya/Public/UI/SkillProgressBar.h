@@ -16,6 +16,7 @@ public:
 
 	void SetTexture(UTexture2D* NewBackgroundImageTexture, UTexture2D* NewFillImageTexture);
 	void UpdateWidget();
+	void SetMaxCoolTime(const float& NewMaxCoolTime) { MaxCoolTime = NewMaxCoolTime; }
 
 protected:
 	UFUNCTION(BlueprintCallable)

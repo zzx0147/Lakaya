@@ -103,32 +103,26 @@ void ABattlePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsy
 	InputSubsystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
 }
 
+void ABattlePlayerController::BindSkillProgressBar(const EAbilityKind& TargetSkill)
+{
+	if (const auto SkillProgressBar = SkillWidget->GetSkillProgressBar(TargetSkill); SkillProgressBar != nullptr)
+	{
+		const auto Ability = ArmedCharacter->FindAbility(TargetSkill);
+		Ability->OnEnableTimeChanged.AddUObject(SkillProgressBar,
+		                                        &USkillProgressBar::OnEnableTimeChange);
+		SkillProgressBar->SetMaxCoolTime(Ability->GetCoolTime());
+	}
+}
+
 void ABattlePlayerController::SkillWidgetBind()
 {
 	if (SkillWidget.IsValid() && ArmedCharacter.IsValid())
 	{
 		SkillWidget->SetCharacter(ArmedCharacter->GetCharacterName());
 
-		if (SkillWidget->GetSkillProgressBar(Primary) != nullptr)
-		{
-			const auto Ability = ArmedCharacter->FindAbility(Primary);
-			Ability->OnEnableTimeChanged.AddUObject(SkillWidget->GetSkillProgressBar(Primary),
-			                                        &USkillProgressBar::OnEnableTimeChange);
-		}
-
-		if (SkillWidget->GetSkillProgressBar(Secondary) != nullptr)
-		{
-			const auto Ability = ArmedCharacter->FindAbility(Secondary);
-			Ability->OnEnableTimeChanged.AddUObject(SkillWidget->GetSkillProgressBar(Secondary),
-			                                        &USkillProgressBar::OnEnableTimeChange);
-		}
-
-		if (SkillWidget->GetSkillProgressBar(WeaponAbility) != nullptr)
-		{
-			const auto Ability = ArmedCharacter->FindAbility(WeaponAbility);
-			Ability->OnEnableTimeChanged.AddUObject(SkillWidget->GetSkillProgressBar(WeaponAbility),
-			                                        &USkillProgressBar::OnEnableTimeChange);
-		}
+		BindSkillProgressBar(Primary);
+		BindSkillProgressBar(Secondary);
+		BindSkillProgressBar(WeaponAbility);
 	}
 }
 

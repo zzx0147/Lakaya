@@ -48,7 +48,7 @@ protected:
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
 	// 현재 상호작용을 할 수 있는지 판별합니다.
-	bool ShouldInteract() const;
+	virtual bool ShouldInteract() const;
 	
 public:
 	/**
@@ -78,7 +78,9 @@ public:
 	
 	FORCEINLINE const EInteractionState& GetInteractionState() const { return InteractionInfo.InteractionState; }
 
-	FORCEINLINE void SetInteractionState(const EInteractionState& NewState) { InteractionInfo.InteractionState = NewState; }	
+	FORCEINLINE void SetInteractionState(const EInteractionState& NewState) { InteractionInfo.InteractionState = NewState; }
+
+	FORCEINLINE bool IsNotInteracting() const { return InteractionInfo.InteractionState == EInteractionState::None; }
 
 private:
 	UFUNCTION(Server, Reliable, WithValidation)

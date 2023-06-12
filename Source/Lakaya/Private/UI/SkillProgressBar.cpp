@@ -75,9 +75,8 @@ void USkillProgressBar::NativePreConstruct()
 void USkillProgressBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-	if(!bUpdateProgressBar) return;
+	if(!bUpdateProgressBar || SkillProgressBar == nullptr) return;
 
-	if(SkillProgressBar == nullptr) return;
 	const float RemainCoolTime = EnableTime - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 	if(RemainCoolTime < 0)
 	{

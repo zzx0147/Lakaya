@@ -157,8 +157,12 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	// 	SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	// }
 
-	InternalSetCharacterSelectWidgetVisibility(false);
-	if (CharacterSelectWidget) CharacterSelectWidget->EnableAutoHide(true);
+	if (GetCharacterSelectWidget())
+	{
+		CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
+		CharacterSelectWidget->SetShortcutEnabled(true);
+		CharacterSelectWidget->EnableAutoHide(true);
+	}
 
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -206,7 +210,7 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 
 void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 {
-	InternalSetCharacterSelectWidgetVisibility(true);
+	if (GetCharacterSelectWidget()) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
 
 	if (LoadingWidget) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
 
@@ -246,13 +250,6 @@ UGameLobbyCharacterSelectWidget* ALakayaBaseGameState::GetCharacterSelectWidget(
 		}
 	}
 	return CharacterSelectWidget;
-}
-
-void ALakayaBaseGameState::ToggleCharacterSelectWidget()
-{
-	// 캐릭터 선택위젯이 숨겨져있었다면 보여주고, 보여지고 있었다면 숨깁니다.
-	if (!CharacterSelectWidget || MatchState != MatchState::InProgress) return;
-	InternalSetCharacterSelectWidgetVisibility(CharacterSelectWidget->GetVisibility() == ESlateVisibility::Hidden);
 }
 
 void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimPlayer,
@@ -313,14 +310,4 @@ void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible)
 {
 	if (!ScoreBoard.IsValid()) return;
 	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
-}
-
-void ALakayaBaseGameState::InternalSetCharacterSelectWidgetVisibility(const bool& Visible)
-{
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController();
-		LocalController && LocalController->IsLocalController() && GetCharacterSelectWidget())
-	{
-		LocalController->SetShowMouseCursor(Visible);
-		CharacterSelectWidget->SetVisibility(Visible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-	}
 }
