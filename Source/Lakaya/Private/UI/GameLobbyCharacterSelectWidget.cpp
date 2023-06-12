@@ -1,5 +1,8 @@
 #include "UI/GameLobbyCharacterSelectWidget.h"
 
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
@@ -16,6 +19,10 @@ UGameLobbyCharacterSelectWidget::UGameLobbyCharacterSelectWidget(const FObjectIn
 		TEXT("/Game/Characters/RenderTarget/MI_Wazi"));
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> RenderTargetMinamiFinder(
 		TEXT("/Game/Characters/RenderTarget/MI_Minami"));
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(TEXT(
+		"/Script/EnhancedInput.InputMappingContext'/Game/Input/IC_SelectWidgetControl.IC_SelectWidgetControl'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> ToggleFinder(
+		TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_Loadout.IA_Loadout'"));
 
 	CharacterRenderTargetMaterialArray =
 	{
@@ -40,6 +47,15 @@ UGameLobbyCharacterSelectWidget::UGameLobbyCharacterSelectWidget(const FObjectIn
 	MagazineMap.Emplace(CharacterNameArray[2], 40);
 
 	MagazineTextFormat = FText::FromString(TEXT("{0}/{0}"));
+	ShortcutPriority = 10;
+	ShortcutContext = ContextFinder.Object;
+	ToggleAction = ToggleFinder.Object;
+}
+
+void UGameLobbyCharacterSelectWidget::SetVisibility(ESlateVisibility InVisibility)
+{
+	Super::SetVisibility(InVisibility);
+	GetOwningPlayer()->SetShowMouseCursor(InVisibility == ESlateVisibility::Visible);
 }
 
 void UGameLobbyCharacterSelectWidget::NativeConstruct()
@@ -88,16 +104,43 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 	{
 		OnChangeSelectedCharacter.AddUObject(PlayerState, &ALakayaBasePlayerState::RequestCharacterChange);
 		if (PlayerInfoWidget) PlayerInfoWidget->SetPlayerName(PlayerState->GetPlayerName());
-		PlayerState->OnPlayerNameChanged.AddLambda([this](const FString& Name)
-		{
-			if (PlayerInfoWidget) PlayerInfoWidget->SetPlayerName(Name);
-		});
+		PlayerState->OnPlayerNameChanged.AddUObject(PlayerInfoWidget.Get(), &UPlayerInfoWidget::SetPlayerName);
 	}
+
+	if (const auto Controller = GetOwningPlayer())
+	{
+		if (const auto CastedComponent = Cast<UEnhancedInputComponent>(Controller->InputComponent))
+		{
+			CastedComponent->BindAction(ToggleAction, ETriggerEvent::Triggered, this,
+			                            &UGameLobbyCharacterSelectWidget::ToggleVisibility);
+		}
+	}
+	if (bAutoShortcutEnable) SetShortcutEnabled(true);
+}
+
+void UGameLobbyCharacterSelectWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
+	SetShortcutEnabled(false);
 }
 
 void UGameLobbyCharacterSelectWidget::EnableAutoHide(const bool& IsEnabled)
 {
 	bAutoHide = IsEnabled;
+}
+
+void UGameLobbyCharacterSelectWidget::SetShortcutEnabled(const bool& Enable)
+{
+	if (const auto Subsystem = GetOwningLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+	{
+		if (Enable) Subsystem->AddMappingContext(ShortcutContext, ShortcutPriority);
+		else Subsystem->RemoveMappingContext(ShortcutContext);
+	}
+}
+
+void UGameLobbyCharacterSelectWidget::ToggleVisibility()
+{
+	SetVisibility(GetVisibility() != ESlateVisibility::Hidden ? ESlateVisibility::Hidden : ESlateVisibility::Visible);
 }
 
 void UGameLobbyCharacterSelectWidget::OnClickedCharacter1Button()

@@ -50,7 +50,6 @@ protected:
 
 private:
 	void MenuHandler();
-	void LoadoutHandler();
 	void ShowScoreBoard();
 	void HideScoreBoard();
 
@@ -62,9 +61,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputAction* MenuAction;
-
-	UPROPERTY(EditAnywhere, Category=Input)
-	UInputAction* LoadoutAction;
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* ShowScoreAction;

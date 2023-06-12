@@ -91,8 +91,6 @@ void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputCompo
 {
 	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
 	                                   &AGameLobbyPlayerController::MenuHandler);
-	EnhancedInputComponent->BindAction(LoadoutAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::LoadoutHandler);
 	EnhancedInputComponent->BindAction(ShowScoreAction, ETriggerEvent::Triggered, this,
 	                                   &AGameLobbyPlayerController::ShowScoreBoard);
 	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
@@ -117,9 +115,6 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> MenuFinder(
 		TEXT("InputAction'/Game/Input/IA_Menu'"));
 
-	static const ConstructorHelpers::FObjectFinder<UInputAction> WeaponFinder(
-		TEXT("InputAction'/Game/Input/IA_Loadout'"));
-
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ShowScoreFinder(
 		TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_ShowScore.IA_ShowScore'"));
 
@@ -128,7 +123,6 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 
 	if (ContextFinder.Succeeded()) InterfaceInputContext = ContextFinder.Object;
 	if (MenuFinder.Succeeded()) MenuAction = MenuFinder.Object;
-	if (WeaponFinder.Succeeded()) LoadoutAction = WeaponFinder.Object;
 	if (ShowScoreFinder.Succeeded()) ShowScoreAction = ShowScoreFinder.Object;
 	if (HideScoreFinder.Succeeded()) HideScoreAction = HideScoreFinder.Object;
 
@@ -138,12 +132,6 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 void AGameLobbyPlayerController::MenuHandler()
 {
 	if (bEnableExitShortcut) UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ExitLevel);
-}
-
-void AGameLobbyPlayerController::LoadoutHandler()
-{
-	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
-		GameState->ToggleCharacterSelectWidget();
 }
 
 void AGameLobbyPlayerController::ShowScoreBoard()

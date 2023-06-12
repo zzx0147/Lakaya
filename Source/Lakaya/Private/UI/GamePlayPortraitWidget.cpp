@@ -7,7 +7,7 @@
 UGamePlayPortraitWidget::UGamePlayPortraitWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	static const ConstructorHelpers::FObjectFinder<UTexture2D> RenaPortraitFinder(TEXT(
-		"/Script/Engine.Texture2D'/Game/UI/Charaterselect/T_InGame_UserInfo_CharImage_Rena.T_InGame_UserInfo_CharImage_Rena'"));
+		"/Game/UI/Ingame/T_InGame_UserInfo_CharImage_Rena_2"));
 
 	static const ConstructorHelpers::FObjectFinder<UTexture2D> WaziPortraitFinder(TEXT(
 		"/Script/Engine.Texture2D'/Game/UI/Charaterselect/T_InGame_UserInfo_CharImage_Wazi.T_InGame_UserInfo_CharImage_Wazi'"));

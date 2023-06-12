@@ -46,8 +46,6 @@ public:
 	// 점수판의 표시 여부를 결정합니다. true를 넘기면 점수판이 표시됩니다.
 	void SetScoreBoardVisibility(const bool& Visible);
 
-	virtual void ToggleCharacterSelectWidget();
-
 	UFUNCTION(NetMulticast, Reliable)
 	void NotifyPlayerKilled(APlayerState* VictimPlayer, APlayerState* InstigatorPlayer, AActor* DamageCauser);
 
@@ -70,8 +68,6 @@ private:
 	                      std::function<void()> Callback, TWeakObjectPtr<class UGameTimeWidget> TimeWidget);
 
 	void InternalSetScoreBoardVisibility(const bool& Visible);
-
-	void InternalSetCharacterSelectWidgetVisibility(const bool& Visible);
 
 public:
 	virtual bool HasMatchStarted() const override;
