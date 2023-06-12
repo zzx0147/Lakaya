@@ -103,9 +103,6 @@ public:
 	// 플레이어의 연속처치 횟수를 가져옵니다.
 	const uint16& GetKillStreak() const { return KillStreak; }
 
-	// 현재 점령한 오브젝트 1개이상 이라면, 1초마다 점수를 올려줍니다.
-	const uint16& IncreaseScoreCount(const uint16& NewScore);
-
 	// 현재 플레이어의 점수를 올려줍니다.
 	const uint16& AddTotalScoreCount(const uint16& NewScore);
 
@@ -211,7 +208,7 @@ private:
 	// 생존 상태를 강제로 지정합니다. 생존 상태는 기본적으로 RespawnTime을 통해 추론되지만
 	// GetServerTime()의 시간오차로 인해 RespawnTimer가 콜백된 시점에
 	// RespawnTime을 통해 추론한 생존상태가 여전히 false일 수 있는 문제를 회피하기 위해 만들어졌습니다.
-	void SetAliveState(const bool& AliveState);
+	void SetAliveState(bool AliveState);
 
 	/**
 	 * @brief 플레이어가 피격됐음을 오너 클라이언트에게 알려줍니다.

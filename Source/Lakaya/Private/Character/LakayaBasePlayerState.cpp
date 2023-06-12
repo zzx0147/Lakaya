@@ -95,7 +95,11 @@ void ALakayaBasePlayerState::BeginPlay()
 		{
 			PortraitWidget->AddToViewport();
 			PortraitWidget->ChangePortrait(GetCharacterName());
-			OnCharacterNameChanged.AddLambda([this](auto, const FName& Name) { PortraitWidget->ChangePortrait(Name); });
+			OnCharacterNameChanged.AddWeakLambda(
+				PortraitWidget.Get(), [Widget = PortraitWidget](auto, const FName& Name)
+				{
+					Widget->ChangePortrait(Name);
+				});
 		}
 	}
 }
@@ -145,6 +149,7 @@ void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, c
 	const auto CurrentTime = GetServerTime();
 	UpdateAliveStateWithRespawnTime(CurrentTime);
 
+	if (ReservedRespawnTime < CurrentTime) return;
 	static FTimerDelegate TimerDelegate;
 	TimerDelegate.BindUObject(this, &ALakayaBasePlayerState::RespawnTimerCallback, Callback);
 	GetWorld()->GetTimerManager().SetTimer(RespawnTimer, TimerDelegate, ReservedRespawnTime - CurrentTime, false);
@@ -154,13 +159,6 @@ void ALakayaBasePlayerState::MakeAlive()
 {
 	RespawnTime = 0.f;
 	SetAliveState(true);
-}
-
-const uint16& ALakayaBasePlayerState::IncreaseScoreCount(const uint16& NewScore)
-{
-	TotalScore += NewScore;
-	OnRep_TotalScore();
-	return TotalScore;
 }
 
 const uint16& ALakayaBasePlayerState::AddTotalScoreCount(const uint16& NewScore)
@@ -212,10 +210,11 @@ void ALakayaBasePlayerState::ResetKillStreak()
 
 void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 {
+	auto& TimerManager = GetWorldTimerManager();
 	if (CurrentCaptureCount == 0)
 	{
-		if (GetWorldTimerManager().IsTimerActive(CurrentCaptureTimer))
-			GetWorldTimerManager().ClearTimer(CurrentCaptureTimer);
+		if (TimerManager.IsTimerActive(CurrentCaptureTimer))
+			TimerManager.ClearTimer(CurrentCaptureTimer);
 	}
 
 	if (CurrentCaptureCount == 1)
@@ -225,11 +224,11 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 		{
 			if (this == nullptr) return;
 			if (GetWorld()->GetGameState()->HasMatchEnded())
-				GetWorldTimerManager().ClearTimer(CurrentCaptureTimer);
+				GetWorld()->GetTimerManager().ClearTimer(CurrentCaptureTimer);
 
 			AddTotalScoreCount(CurrentCaptureCount * 50);
 		});
-		GetWorldTimerManager().SetTimer(CurrentCaptureTimer, TimerDelegate, 1.0f, true);
+		TimerManager.SetTimer(CurrentCaptureTimer, TimerDelegate, 1.0f, true);
 	}
 }
 
@@ -330,11 +329,9 @@ void ALakayaBasePlayerState::OnRep_RespawnTime()
 	UpdateAliveStateWithRespawnTime(CurrentTime);
 
 	// 부활시간에 OnAliveStateChanged 이벤트가 호출될 수 있도록 타이머를 설정합니다.
-	GetWorldTimerManager().SetTimer(RespawnTimer, [this]
-	{
-		if (this == nullptr) return;
-		SetAliveState(true);
-	}, RespawnTime - CurrentTime, false);
+	static FTimerDelegate Delegate;
+	Delegate.BindUObject(this, &ALakayaBasePlayerState::SetAliveState, true);
+	GetWorldTimerManager().SetTimer(RespawnTimer, Delegate, RespawnTime - CurrentTime, false);
 }
 
 void ALakayaBasePlayerState::OnRep_CharacterName()
@@ -377,7 +374,7 @@ void ALakayaBasePlayerState::UpdateAliveStateWithRespawnTime(const float& Curren
 	SetAliveState(RespawnTime >= 0.f && RespawnTime < CurrentTime);
 }
 
-void ALakayaBasePlayerState::SetAliveState(const bool& AliveState)
+void ALakayaBasePlayerState::SetAliveState(bool AliveState)
 {
 	if (bRecentAliveState == AliveState) return;
 	bRecentAliveState = AliveState;
