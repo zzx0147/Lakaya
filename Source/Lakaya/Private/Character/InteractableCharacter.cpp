@@ -91,8 +91,6 @@ void AInteractableCharacter::StartInteraction()
 		return;
 	}
 
-	// bInteractionRequested = true;
-
 	RequestInteractionStart(GetServerTime(), InteractableActor.Get());
 }
 
@@ -109,7 +107,7 @@ bool AInteractableCharacter::RequestInteractionStart_Validate(const float& Time,
 {
 	if (!ShouldInteract()) return false;
 
-	if (Actor && Actor->ActorHasTag("Interactable") && Time < GetServerTime() + 0.05f)
+	if (Actor && Actor->ActorHasTag("Interactable")/* && Time < GetServerTime() + 0.05f*/)
 	{
 		return true;
 	}
@@ -131,7 +129,7 @@ void AInteractableCharacter::RequestInteractionStart_Implementation(const float&
 bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, AActor* Actor,
                                                              EInteractionState NewState)
 {
-	if (Actor && Actor->ActorHasTag("Interactable") && Time < GetServerTime() + 0.05f)
+	if (Actor && Actor->ActorHasTag("Interactable")/*&& Time < GetServerTime() + 0.05f*/)
 	{
 		return true;
 	}
