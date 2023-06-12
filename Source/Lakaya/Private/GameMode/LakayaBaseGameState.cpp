@@ -195,6 +195,8 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
 	GetWorldTimerManager().ClearTimer(EndingTimer);
+	if (ScoreBoard.IsValid()) ScoreBoard->RemoveFromParent();
+	if (CharacterSelectWidget) CharacterSelectWidget->RemoveFromParent();
 
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<AGameLobbyPlayerController>();
 		LocalController && LocalController->IsLocalController())
@@ -227,8 +229,7 @@ void ALakayaBaseGameState::OnRep_MatchState()
 
 void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
 {
-	if (!ScoreBoard.IsValid() || MatchState != MatchState::InProgress) return;
-	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
+	if (MatchState == MatchState::InProgress) InternalSetScoreBoardVisibility(Visible);
 }
 
 UGameLobbyCharacterSelectWidget* ALakayaBaseGameState::GetCharacterSelectWidget()
