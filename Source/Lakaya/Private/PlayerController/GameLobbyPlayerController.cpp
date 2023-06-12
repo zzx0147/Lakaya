@@ -90,11 +90,22 @@ void AGameLobbyPlayerController::SetEnableExitShortcut(const bool& Enable)
 void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
 	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::MenuHandler);
+								   &AGameLobbyPlayerController::MenuHandler);
 	EnhancedInputComponent->BindAction(ShowScoreAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::ShowScoreBoard);
+									   &AGameLobbyPlayerController::ShowScoreBoard);
 	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::HideScoreBoard);
+									   &AGameLobbyPlayerController::HideScoreBoard);
+}
+
+void AGameLobbyPlayerController::UnbindAllAndBindMenu(UEnhancedInputComponent* const& EnhancedInputComponent)
+{
+	EnhancedInputComponent->ClearActionBindings();
+	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
+									   &AGameLobbyPlayerController::MenuHandler);
+	EnhancedInputComponent->BindAction(ShowScoreAction, ETriggerEvent::Triggered, this,
+									   &AGameLobbyPlayerController::ShowScoreBoard);
+	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
+									   &AGameLobbyPlayerController::HideScoreBoard);
 }
 
 void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
@@ -136,6 +147,8 @@ void AGameLobbyPlayerController::MenuHandler()
 
 void AGameLobbyPlayerController::ShowScoreBoard()
 {
+	UE_LOG(LogTemp, Warning, TEXT("ShowScoreBoard"));
+	
 	// 팀전일 때
 	if (const auto OccupationGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 	{
