@@ -149,6 +149,10 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UTeamScoreWidget> TeamScoreWidgetClass;
 
+	// 게임 시작 시 무기박스 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UWeaponOutLineWidget> WeaponOutLineWidgetClass;
+	
 	// 게임 시작 시 "라카야 제어기를 점령하세요" 메세지를 띄우는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UStartMessageWidget> StartMessageWidgetClass;
@@ -156,11 +160,11 @@ private:
 	// 게임 시작 시 "라운드 시작까지 10초 남았습니다" 메세지를 띄우는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UMatchStartWaitWidget> MatchStartWaitWidgetClass;
-
+	
 	// 게임 종료 시 "승리", "패배" 및 팀별 점수를 띄우는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameResultWidget> GameResultWidgetClass;
-
+	
 	// 게임 종료 후 배경 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGradeResultWidget> GradeResultWidgetClass;
@@ -189,6 +193,9 @@ private:
 	// 팀스코어 위젯 입니다.
 	TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
 
+	// 무기박스 위젯 입니다.
+	TObjectPtr<UWeaponOutLineWidget> WeaponOutLineWidget;
+	
 	// "라운드 시작까지 10초 남았습니다" 위젯 입니다.
 	TWeakObjectPtr<UMatchStartWaitWidget> MatchStartWaitWidget;
 
