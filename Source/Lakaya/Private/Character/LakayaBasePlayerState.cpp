@@ -219,6 +219,9 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 
 	if (CurrentCaptureCount == 1)
 	{
+		if (TimerManager.IsTimerActive(CurrentCaptureTimer))
+			TimerManager.ClearTimer(CurrentCaptureTimer);
+		
 		FTimerDelegate TimerDelegate;
 		TimerDelegate.BindLambda([this]
 		{
