@@ -18,6 +18,7 @@ public:
 protected:
 	virtual bool ShouldStartAbility_Implementation(EAbilityKind Kind) override;
 	virtual bool ShouldStartAbilityOnServer_Implementation(EAbilityKind Kind) override;
+	virtual bool ShouldInteract() const override;
 
 	virtual void OnMinePerformTimeNotified(const float& Time);
 	virtual void OnDeathRayStartTimeNotified(const float& Time);
