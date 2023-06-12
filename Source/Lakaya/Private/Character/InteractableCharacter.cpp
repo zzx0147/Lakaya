@@ -66,13 +66,6 @@ bool AInteractableCharacter::ShouldInteract() const
 		return false;
 	}
 
-	// const auto Interactable = Cast<AInteractable>(InteractableActor);
-	// if (!Interactable)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("ShouldInteract: Interactable is null."));
-	// 	return false;
-	// }
-	
 	if (OccupationObject->GetInteractingPawn() != nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("이미 누군가가 점령을 시도하고 있습니다."));
