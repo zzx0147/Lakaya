@@ -242,6 +242,7 @@ void AOccupationGameState::EndTimeCheck()
 
 void AOccupationGameState::ChangeResultWidget()
 {
+	if (!GradeResultWidget.IsValid() || !DetailResultWidget.IsValid() || !DetailResultElementWidget.IsValid()) return;
 	ESlateVisibility gradeVisibility = ResultBool ? ESlateVisibility::Hidden : ESlateVisibility::SelfHitTestInvisible;
 	ESlateVisibility detailVisibility = ResultBool ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden;
 
@@ -334,27 +335,28 @@ void AOccupationGameState::DestroyShieldWallObject()
 
 void AOccupationGameState::ShowEndResultWidget()
 {
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
+		GameResultWidget.IsValid() && LocalController && LocalController->IsLocalController())
 	{
-		const auto LakayaPlayerState = Cast<ALakayaBasePlayerState>(
-			LocalController->GetPlayerState<ALakayaBasePlayerState>());
-		if (LakayaPlayerState == nullptr) UE_LOG(LogTemp, Warning, TEXT("LakayaPlayerState is null."));
-
-		if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
+		if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 		{
-			// 승리했다면 "승리" 이미지를 띄워줍니다.
-			GameResultWidget->VictoryImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
-		else
-		{
-			// 패배했다면 "패배" 이미지를 띄워줍니다.
-			GameResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
+			if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
+			{
+				// 승리했다면 "승리" 이미지를 띄워줍니다.
+				GameResultWidget->VictoryImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			}
+			else
+			{
+				// 패배했다면 "패배" 이미지를 띄워줍니다.
+				GameResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			}
 
-		GameResultWidget->AntiScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), ATeamScore)));
-		GameResultWidget->ProScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), BTeamScore)));
+			GameResultWidget->AntiScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), ATeamScore)));
+			GameResultWidget->ProScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), BTeamScore)));
 
-		ShowGradeResultWidget(LakayaPlayerState, LocalController);
+			ShowGradeResultWidget(LakayaPlayerState, LocalController);
+		}
+		else UE_LOG(LogTemp, Warning, TEXT("LakayaPlayerState is null."));
 	}
 }
 
@@ -364,7 +366,7 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindLambda([this, PlayerState, Controller]
 	{
-		if (this == nullptr) return;
+		if (this == nullptr || !GameResultWidget.IsValid() || !GradeResultWidget.IsValid()) return;
 		GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
 		GradeResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
@@ -397,7 +399,7 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 
 void AOccupationGameState::ShowGradeResultElementWidget(ALakayaBasePlayerState* NewPlayerState) const
 {
-	GradeResultElementWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+	if (GradeResultElementWidget.IsValid()) GradeResultElementWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 
 	if (NewPlayerState->GetTeam() == EPlayerTeam::A)
 	{
@@ -413,6 +415,7 @@ void AOccupationGameState::ShowGradeResultElementWidget(ALakayaBasePlayerState* 
 void AOccupationGameState::GradeResultTeamInfo(TArray<TObjectPtr<ALakayaBasePlayerState>>& NewPlayerArray,
                                                uint8 NewIndex) const
 {
+	if (!GradeResultElementWidget.IsValid()) return;
 	FString CharacterName;
 	if (NewPlayerArray[NewIndex]->GetCharacterName() == "Rena")
 		CharacterName.Append("Rena");
@@ -492,7 +495,8 @@ void AOccupationGameState::ShowProTeamGradeResultElementWidget() const
 
 void AOccupationGameState::BindDetailResultWidget()
 {
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController();
+		DetailResultWidget.IsValid() && LocalController && LocalController->IsLocalController())
 	{
 		const ALakayaBasePlayerState* PlayerState = Cast<ALakayaBasePlayerState>(LocalController->PlayerState);
 
@@ -571,6 +575,7 @@ void AOccupationGameState::BindDetailResultWidget()
 
 void AOccupationGameState::BindDetailResultElementWidget()
 {
+	if (!DetailResultElementWidget.IsValid()) return;
 	uint8 AntiIndex = 0;
 	uint8 ProIndex = 0;
 

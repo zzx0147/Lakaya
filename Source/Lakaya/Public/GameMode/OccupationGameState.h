@@ -21,7 +21,7 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
-	
+
 public:
 	// 현재 두 팀의 점수를 기준으로 승자를 정합니다.
 	void SetOccupationWinner();
@@ -103,7 +103,6 @@ private:
 	static ERendererStencilMask GetUniqueStencilMask(const bool& IsAlly, const uint8& Index);
 	void OnPlayerStateOwnerChanged(AActor* Owner);
 
-
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;
@@ -145,7 +144,7 @@ private:
 	// 게임중에 표시되는 스킬 위젯을 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<USkillWidget> SkillWidgetClass;
-	
+
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UTeamScoreWidget> TeamScoreWidgetClass;
@@ -178,14 +177,14 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UDetailResultElementWidget> DetailResultElementWidgetClass;
 
-	// 스킬 위젯 입니다.
-	TWeakObjectPtr<USkillWidget> SkillWidget;
-	
 	UPROPERTY(EditDefaultsOnly)
 	class UInputMappingContext* ResultShortcutContext;
 
 	UPROPERTY(EditDefaultsOnly)
 	class UInputAction* ResultSwitchingAction;
+
+	// 스킬 위젯 입니다.
+	TWeakObjectPtr<USkillWidget> SkillWidget;
 
 	// 팀스코어 위젯 입니다.
 	TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
