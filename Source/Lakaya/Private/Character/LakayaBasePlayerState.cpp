@@ -356,12 +356,12 @@ void ALakayaBasePlayerState::OnRep_SuccessCaptureCount()
 
 void ALakayaBasePlayerState::OnRep_DeathCount()
 {
-	OnKillCountChanged.Broadcast(KillCount);
+	OnDeathCountChanged.Broadcast(DeathCount);
 }
 
 void ALakayaBasePlayerState::OnRep_KillCount()
 {
-	OnDeathCountChanged.Broadcast(DeathCount);
+	OnKillCountChanged.Broadcast(KillCount);
 }
 
 void ALakayaBasePlayerState::OnRep_KillStreak()
