@@ -74,6 +74,18 @@ void ALakayaBasePlayerState::BeginPlay()
 	Super::BeginPlay();
 	if (const auto LocalController = GetPlayerController(); LocalController && LocalController->IsLocalController())
 	{
+		PortraitWidget = CreateWidget<UGamePlayPortraitWidget>(LocalController, PortraitWidgetClass);
+		if (PortraitWidget.IsValid())
+		{
+			PortraitWidget->AddToViewport(-2);
+			PortraitWidget->ChangePortrait(GetCharacterName());
+			OnCharacterNameChanged.AddWeakLambda(
+				PortraitWidget.Get(), [Widget = PortraitWidget](auto, const FName& Name)
+				{
+					Widget->ChangePortrait(Name);
+				});
+		}
+		
 		HealthWidget = CreateWidget<UGamePlayHealthWidget>(LocalController, HealthWidgetClass);
 		if (HealthWidget.IsValid())
 		{
@@ -89,18 +101,6 @@ void ALakayaBasePlayerState::BeginPlay()
 		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(
 			LocalController, DirectionDamageIndicatorClass);
 		if (DirectionDamageIndicatorWidget) DirectionDamageIndicatorWidget->AddToViewport();
-
-		PortraitWidget = CreateWidget<UGamePlayPortraitWidget>(LocalController, PortraitWidgetClass);
-		if (PortraitWidget.IsValid())
-		{
-			PortraitWidget->AddToViewport(-2);
-			PortraitWidget->ChangePortrait(GetCharacterName());
-			OnCharacterNameChanged.AddWeakLambda(
-				PortraitWidget.Get(), [Widget = PortraitWidget](auto, const FName& Name)
-				{
-					Widget->ChangePortrait(Name);
-				});
-		}
 	}
 }
 
