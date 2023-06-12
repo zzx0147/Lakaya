@@ -40,6 +40,7 @@ protected:
 	virtual void InitializeComponent() override;
 	virtual void RemoteAbilityStart(const float& RequestTime) override;
 	virtual void RemoteAbilityStop(const float& RequestTime) override;
+	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
 
 public:
 	// 현재 캐릭터의 사격의지를 가져옵니다.
@@ -83,8 +84,8 @@ private:
 	void DrawDecal(const FVector& Location, const FVector& Normal, const EFireResult& Kind);
 	void DrawTrail(const FVector& Start, const FVector& End);
 	void DrawImpact(const FVector& Location, const FVector& Normal, const EFireResult& Kind);
-
 	void SetWantsToFire(const bool& FireState);
+	void DisableDecal(AActor* Decal, EFireResult Kind);
 
 public:
 	// 플레이어의 사격 의지가 변경된 경우 호출됩니다. 오너 클라이언트와 서버에서만 호출됩니다.
@@ -141,6 +142,10 @@ protected:
 	// 특정 부위 적중시 적용할 피해 배율을 정의합니다.
 	UPROPERTY(EditAnywhere)
 	TMap<FName, float> WeakPointMultiplier;
+
+	// 데칼들이 풀에 들어갔을 때 어디에 위치하고 있도록 할지 정의합니다.
+	UPROPERTY(EditAnywhere)
+	FVector CollapsedLocation;
 
 private:
 	UPROPERTY(BlueprintSetter=SetBasisComponent)

@@ -25,10 +25,6 @@ void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 		InteractableActor = OtherActor;
 		OnInteractableActorChanged.Broadcast(InteractableActor.Get());
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NotifyActorBeginOverlap_InteractableActor is null."));
-	}
 }
 
 void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
@@ -188,6 +184,7 @@ void AInteractableCharacter::FinishInteraction_Implementation(EInteractionState 
 		FTimerDelegate TimerDelegate;
 		TimerDelegate.BindLambda([this]()
 		{
+			if (this == nullptr) return;
 			InteractionInfo.InteractionState = EInteractionState::None;
 			OnInteractionStateChanged.Broadcast(InteractionInfo);
 		});

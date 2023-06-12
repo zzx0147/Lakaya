@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
 #include "Occupation/PlayerTeam.h"
+#include "TimerManager.h"
 #include "LakayaBasePlayerState.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FHealthChangeSignature, const float&)
@@ -22,6 +23,8 @@ DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FCountInfoSignature, const uint16
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FPlayerNameSignature, const FString&)
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOwnerChangeSignature, AActor*)
+
+DECLARE_DELEGATE_OneParam(FRespawnTimerDelegate, AController*)
 
 UCLASS()
 class LAKAYA_API ALakayaBasePlayerState : public APlayerState
@@ -59,12 +62,9 @@ public:
 	 * @param ReservedRespawnTime 목표 부활 시간입니다. 이 시간에 플레이어가 부활합니다.
 	 * 음수를 기입하여 기약없이 사망한 상태로, 0을 포함한 현재 시간보다 낮은 값을 기입하여 생존상태로 변경시킬 수도 있습니다.
 	 * 이러한 경우 Object의 Function은 호출되지 않습니다.
-	 * @param Object Function을 실행할 객체입니다.
-	 * @param Function 부활 시간이 도래했을 때 실행할 Object의 멤버함수입니다.
+	 * @param Callback 리스폰 타이머가 종료되면 호출될 콜백입니다.
 	 */
-	template <class T = ALakayaBasePlayerState>
-	void SetRespawnTimer(const float& ReservedRespawnTime, T* Object = nullptr,
-	                     void (T::*Function)(AController*) = nullptr);
+	void SetRespawnTimer(const float& ReservedRespawnTime, const FRespawnTimerDelegate& Callback = nullptr);
 
 	// 이 플레이어의 생존 여부를 가져옵니다.
 	UFUNCTION(BlueprintGetter)
@@ -102,9 +102,6 @@ public:
 
 	// 플레이어의 연속처치 횟수를 가져옵니다.
 	const uint16& GetKillStreak() const { return KillStreak; }
-
-	// 현재 점령한 오브젝트 1개이상 이라면, 1초마다 점수를 올려줍니다.
-	const uint16& IncreaseScoreCount(const uint16& NewScore);
 
 	// 현재 플레이어의 점수를 올려줍니다.
 	const uint16& AddTotalScoreCount(const uint16& NewScore);
@@ -211,7 +208,7 @@ private:
 	// 생존 상태를 강제로 지정합니다. 생존 상태는 기본적으로 RespawnTime을 통해 추론되지만
 	// GetServerTime()의 시간오차로 인해 RespawnTimer가 콜백된 시점에
 	// RespawnTime을 통해 추론한 생존상태가 여전히 false일 수 있는 문제를 회피하기 위해 만들어졌습니다.
-	void SetAliveState(const bool& AliveState);
+	void SetAliveState(bool AliveState);
 
 	/**
 	 * @brief 플레이어가 피격됐음을 오너 클라이언트에게 알려줍니다.
@@ -221,6 +218,8 @@ private:
 	 */
 	UFUNCTION(Client, Reliable)
 	void NoticePlayerHit(const FName& CauserName, const FVector& CauserLocation, const float& Damage);
+
+	void RespawnTimerCallback(FRespawnTimerDelegate Callback);
 
 public:
 	// 현재 체력이 변경되는 경우 호출됩니다. 매개변수로 변경된 현재 체력을 받습니다.
@@ -320,19 +319,3 @@ private:
 	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;
 	TWeakObjectPtr<UGamePlayPortraitWidget> PortraitWidget;
 };
-
-template <class T>
-void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, T* Object,
-                                             void (T::*Function)(AController*))
-{
-	RespawnTime = ReservedRespawnTime;
-	const auto CurrentTime = GetServerTime();
-	UpdateAliveStateWithRespawnTime(CurrentTime);
-
-	// 만약 RespawnTime이 현재 시간보다 낮게 설정된 경우 이 타이머는 설정되지 않습니다.
-	GetWorldTimerManager().SetTimer(RespawnTimer, [this, Object, Function]
-	{
-		SetAliveState(true);
-		if (Object && Function) (Object->*Function)(GetOwningController());
-	}, ReservedRespawnTime - CurrentTime, false);
-}

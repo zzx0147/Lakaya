@@ -17,7 +17,7 @@ public:
 protected:
 	virtual bool ShouldStartRemoteCall() override;
 	virtual void StartDelayedAbility() override;
-
+	
 public:
 	UFUNCTION(BlueprintCallable)
 	void SetEffectMaterial(UMaterialInstanceDynamic* NewEffectMaterial);

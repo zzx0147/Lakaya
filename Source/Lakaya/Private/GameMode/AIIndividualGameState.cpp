@@ -155,9 +155,13 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 
-	// 매치 시작하면 플레이어 동작 막기
+	// 매치 시작하면 플레이어 인풋 막기
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
-		LocalController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_None);
+	{
+		// LocalController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_None);
+		
+		LocalController->DisableInput(LocalController);
+	}
 	
 	FTimerDelegate TimerDelegate;
 	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate, MatchStartWaitWidgetLifeTime, false);
@@ -165,6 +169,8 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 	// 게임이 본격적으로 시작이 되면 AI 의 비헤이비어 트리를 시작시켜줍니다.
 	TimerDelegate.BindLambda([this]
 	{
+		if (this == nullptr) return;
+
 		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 		{
 			AController* AllControllers = It->Get();
@@ -175,9 +181,13 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 			if (AllControllers && AIIndividualLiveScoreBoardWidget.IsValid())
 				AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
 
-			// 플레이어 동작 
+			// 플레이어 인풋 동작 
 			if (PlayerCharacterController)
-				PlayerCharacterController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+			{
+				// PlayerCharacterController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+				
+				PlayerCharacterController->EnableInput(PlayerCharacterController);
+			}
 
 			// AI 동작
 			if (AiCharacterController)
@@ -209,14 +219,6 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 		GameResultWidget->SetKill(IndividualPlayerState->GetKillCount());
 		GameResultWidget->SetDeath(IndividualPlayerState->GetDeathCount());
 	}
-
-	// 플레이어들의 정보가 담긴 배열을 내림차순으로 정렬합니다.
-	// std::sort(AllPlayersArray.begin(), AllPlayersArray.end(), []
-	// 	(const TWeakObjectPtr<ALakayaBasePlayerState>& A,
-	// 	const TWeakObjectPtr<ALakayaBasePlayerState>& B)
-	// {
-	// 	return A->GetKillCount() > B->GetKillCount();
-	// });
 
 	for (int i = 0; i < AllPlayersArray.Num(); ++i)
 	{
@@ -270,6 +272,9 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("현재 플레이어를 찾을 수 없습니다."));
 	}
+
+	FTimerManager Timers;
+	Timers.ClearAllTimersForObject(GetWorld());
 }
 
 ERendererStencilMask AAIIndividualGameState::GetUniqueStencilMaskWithCount(const uint8& Count)

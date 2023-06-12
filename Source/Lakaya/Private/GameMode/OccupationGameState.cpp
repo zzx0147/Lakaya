@@ -1,5 +1,8 @@
 #include "GameMode/OccupationGameState.h"
 
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
@@ -8,6 +11,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Occupation/ShieldWallObject.h"
+#include "PlayerController/BattlePlayerController.h"
+#include "UI/DetailResultElementWidget.h"
 #include "UI/DetailResultWidget.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/GameResultWidget.h"
@@ -16,7 +21,6 @@
 #include "UI/MatchStartWaitWidget.h"
 #include "UI/StartMessageWidget.h"
 #include "UI/TeamScoreWidget.h"
-#include "UI/DetailResultElementWidget.h"
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -37,6 +41,15 @@ AOccupationGameState::AOccupationGameState()
 
 	PlayersByTeamMap.Emplace(EPlayerTeam::A);
 	PlayersByTeamMap.Emplace(EPlayerTeam::B);
+
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext> ResultContextFinder(
+		TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IC_ResultWidgetControl.IC_ResultWidgetControl'"));
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> ResultSwitchActionFinder(
+		TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_ShowScore.IA_ShowScore'"));
+
+	ResultShortcutContext = ResultContextFinder.Object;
+	ResultSwitchingAction = ResultSwitchActionFinder.Object;
 }
 
 void AOccupationGameState::BeginPlay()
@@ -44,37 +57,50 @@ void AOccupationGameState::BeginPlay()
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 		LocalController && LocalController->IsLocalController())
 	{
+		if (SkillWidgetClass)
+		{
+			SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
+			if (SkillWidget.IsValid())
+			{
+				SkillWidget->AddToViewport();
+				SkillWidget->SetVisibility(ESlateVisibility::Hidden);
+				if(const auto BattlePlayerController = Cast<ABattlePlayerController>(LocalController))
+					BattlePlayerController->SetSkillWidget(SkillWidget.Get());
+			}
+			else UE_LOG(LogTemp, Warning, TEXT("SkillWidget is null."))
+		}
+
 		if (TeamScoreWidgetClass)
 		{
 			TeamScoreWidget = CreateWidget<UTeamScoreWidget>(LocalController, TeamScoreWidgetClass);
-			if (TeamScoreWidget == nullptr)
+			if (TeamScoreWidget)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidget is null."));
+				TeamScoreWidget->AddToViewport();
+				TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
-			TeamScoreWidget->AddToViewport();
-			TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
+			else UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidget is null."));
 		}
 
 		if (MatchStartWaitWidgetClass)
 		{
 			MatchStartWaitWidget = CreateWidget<UMatchStartWaitWidget>(LocalController, MatchStartWaitWidgetClass);
-			if (MatchStartWaitWidget == nullptr)
+			if (MatchStartWaitWidget.IsValid())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("MatchStartWaitWidget is null."));
+				MatchStartWaitWidget->AddToViewport();
+				MatchStartWaitWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
-			MatchStartWaitWidget->AddToViewport();
-			MatchStartWaitWidget->SetVisibility(ESlateVisibility::Hidden);
+			else UE_LOG(LogTemp, Warning, TEXT("MatchStartWaitWidget is null."));
 		}
 
 		if (StartMessageWidgetClass)
 		{
 			StartMessageWidget = CreateWidget<UStartMessageWidget>(LocalController, StartMessageWidgetClass);
-			if (StartMessageWidget == nullptr)
+			if (StartMessageWidget.IsValid())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("StartMessageWidget is null."));
+				StartMessageWidget->AddToViewport();
+				StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
-			StartMessageWidget->AddToViewport();
-			StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
+			else UE_LOG(LogTemp, Warning, TEXT("StartMessageWidget is null."));
 		}
 
 		if (GameResultWidgetClass)
@@ -144,6 +170,9 @@ void AOccupationGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 
+	if (SkillWidget.IsValid())
+		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
 	if (IsValid(TeamScoreWidget))
 		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
 
@@ -154,6 +183,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindLambda([this]
 	{
+		if (this == nullptr) return;
 		if (MatchStartWaitWidget.IsValid()) MatchStartWaitWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate, MatchStartWaitWidgetLifeTime, false);
@@ -161,6 +191,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 	// 게임이 본격적으로 시작이 되면 StartMessage위젯을 띄워줍니다.
 	TimerDelegate.BindLambda([this]
 	{
+		if (this == nullptr) return;
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		DestroyShieldWallObject();
 	});
@@ -169,6 +200,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 	// StartMessage위젯을 5초 뒤에 비활성화 해줍니다.
 	TimerDelegate.BindLambda([this]
 	{
+		if (this == nullptr) return;
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, TimerDelegate,
@@ -183,18 +215,15 @@ void AOccupationGameState::HandleMatchHasEnded()
 		GameResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 	// Anti팀의 배열과, Pro팀의 배열을 내림차순으로 정렬합니다.
-	for (auto& Element : PlayersByTeamMap)
+	static auto Predicate = [](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B)
 	{
-		Element.Value.Sort([](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B)
-		{
-			return A.GetTotalScore() > B.GetTotalScore();
-		});
-	}
+		return A.GetTotalScore() > B.GetTotalScore();
+	};
+	for (auto& Element : PlayersByTeamMap) Element.Value.Sort(Predicate);
 
 	ShowEndResultWidget();
 	BindDetailResultWidget();
 	BindDetailResultElementWidget();
-	TapBool = false;
 }
 
 void AOccupationGameState::EndTimeCheck()
@@ -216,6 +245,7 @@ void AOccupationGameState::EndTimeCheck()
 
 void AOccupationGameState::ChangeResultWidget()
 {
+	if (!GradeResultWidget.IsValid() || !DetailResultWidget.IsValid() || !DetailResultElementWidget.IsValid()) return;
 	ESlateVisibility gradeVisibility = ResultBool ? ESlateVisibility::Hidden : ESlateVisibility::SelfHitTestInvisible;
 	ESlateVisibility detailVisibility = ResultBool ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden;
 
@@ -308,27 +338,28 @@ void AOccupationGameState::DestroyShieldWallObject()
 
 void AOccupationGameState::ShowEndResultWidget()
 {
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
+		GameResultWidget.IsValid() && LocalController && LocalController->IsLocalController())
 	{
-		const auto LakayaPlayerState = Cast<ALakayaBasePlayerState>(
-			LocalController->GetPlayerState<ALakayaBasePlayerState>());
-		if (LakayaPlayerState == nullptr) UE_LOG(LogTemp, Warning, TEXT("LakayaPlayerState is null."));
-
-		if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
+		if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 		{
-			// 승리했다면 "승리" 이미지를 띄워줍니다.
-			GameResultWidget->VictoryImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
-		else
-		{
-			// 패배했다면 "패배" 이미지를 띄워줍니다.
-			GameResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
+			if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
+			{
+				// 승리했다면 "승리" 이미지를 띄워줍니다.
+				GameResultWidget->VictoryImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			}
+			else
+			{
+				// 패배했다면 "패배" 이미지를 띄워줍니다.
+				GameResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			}
 
-		GameResultWidget->AntiScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), ATeamScore)));
-		GameResultWidget->ProScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), BTeamScore)));
+			GameResultWidget->AntiScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), ATeamScore)));
+			GameResultWidget->ProScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), BTeamScore)));
 
-		ShowGradeResultWidget(LakayaPlayerState, LocalController);
+			ShowGradeResultWidget(LakayaPlayerState, LocalController);
+		}
+		else UE_LOG(LogTemp, Warning, TEXT("LakayaPlayerState is null."));
 	}
 }
 
@@ -338,6 +369,7 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindLambda([this, PlayerState, Controller]
 	{
+		if (this == nullptr || !GameResultWidget.IsValid() || !GradeResultWidget.IsValid()) return;
 		GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
 		GradeResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
@@ -352,7 +384,17 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 
 		Controller->SetShowMouseCursor(true);
 
-		TapBool = true;
+		if (const auto InputComponent = Cast<UEnhancedInputComponent>(Controller->InputComponent))
+		{
+			InputComponent->BindAction(ResultSwitchingAction, ETriggerEvent::Triggered, this,
+			                           &AOccupationGameState::ChangeResultWidget);
+		}
+
+		if (const auto SubSystem = Controller->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+		{
+			SubSystem->AddMappingContext(ResultShortcutContext, 200);
+		}
+
 		ShowGradeResultElementWidget(PlayerState);
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
@@ -360,7 +402,7 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 
 void AOccupationGameState::ShowGradeResultElementWidget(ALakayaBasePlayerState* NewPlayerState) const
 {
-	GradeResultElementWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+	if (GradeResultElementWidget.IsValid()) GradeResultElementWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 
 	if (NewPlayerState->GetTeam() == EPlayerTeam::A)
 	{
@@ -376,6 +418,7 @@ void AOccupationGameState::ShowGradeResultElementWidget(ALakayaBasePlayerState* 
 void AOccupationGameState::GradeResultTeamInfo(TArray<TObjectPtr<ALakayaBasePlayerState>>& NewPlayerArray,
                                                uint8 NewIndex) const
 {
+	if (!GradeResultElementWidget.IsValid()) return;
 	FString CharacterName;
 	if (NewPlayerArray[NewIndex]->GetCharacterName() == "Rena")
 		CharacterName.Append("Rena");
@@ -455,7 +498,8 @@ void AOccupationGameState::ShowProTeamGradeResultElementWidget() const
 
 void AOccupationGameState::BindDetailResultWidget()
 {
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController();
+		DetailResultWidget.IsValid() && LocalController && LocalController->IsLocalController())
 	{
 		const ALakayaBasePlayerState* PlayerState = Cast<ALakayaBasePlayerState>(LocalController->PlayerState);
 
@@ -534,6 +578,7 @@ void AOccupationGameState::BindDetailResultWidget()
 
 void AOccupationGameState::BindDetailResultElementWidget()
 {
+	if (!DetailResultElementWidget.IsValid()) return;
 	uint8 AntiIndex = 0;
 	uint8 ProIndex = 0;
 
@@ -585,5 +630,6 @@ void AOccupationGameState::SetupPlayerStateOnLocal(ALakayaBasePlayerState* Playe
 	const auto IsAlly = Team == ClientTeam;
 	PlayerState->SetUniqueStencilMask(GetUniqueStencilMask(IsAlly, PlayersByTeamMap[Team].Find(PlayerState)));
 	PlayerState->SetAlly(IsAlly);
-	if (IsAlly) GetCharacterSelectWidget()->RegisterPlayer(PlayerState);
+	if (const auto Widget = GetCharacterSelectWidget(); Widget && IsAlly)
+		Widget->RegisterPlayer(PlayerState);
 }

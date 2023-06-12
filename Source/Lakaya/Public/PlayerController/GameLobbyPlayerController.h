@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
 #include "GameLobbyPlayerController.generated.h"
 
@@ -20,9 +19,12 @@ public:
 
 protected:
 	virtual void SetupInputComponent() override;
-
 	virtual void OnPossess(APawn* PawnToPossess) override;
 
+public:
+	void SetEnableExitShortcut(const bool& Enable);
+
+protected:
 	/**
 	 * @brief 이 플레이어 컨트롤러가 빙의중인 폰이 변경될 때 호출됩니다. 서버에서든 클라이언트에서든 모두 호출됩니다.
 	 * @param ArgOldPawn 빙의중이었던 폰 객체입니다.
@@ -43,11 +45,14 @@ protected:
 	 */
 	virtual void SetupMappingContext(class UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem);
 
+	UPROPERTY(EditAnywhere)
+	TSoftObjectPtr<UWorld> ExitLevel;
+
 private:
-	void MenuHandler(const FInputActionValue& Value);
-	void LoadoutHandler(const FInputActionValue& Value);
-	void ShowScoreBoard(const FInputActionValue& Value);
-	void HideScoreBoard(const FInputActionValue& Value);
+	void MenuHandler();
+	void LoadoutHandler();
+	void ShowScoreBoard();
+	void HideScoreBoard();
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
@@ -66,4 +71,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* HideScoreAction;
+
+	bool bEnableExitShortcut;
 };

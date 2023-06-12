@@ -63,6 +63,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UNiagaraSystem* ExplosionNiagara;
 
+	UPROPERTY(EditAnywhere)
+	float ExplosionOffset;
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* TriggerComponent;

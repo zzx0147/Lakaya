@@ -1,20 +1,11 @@
 #include "GameMode/AIIndividualGameMode.h"
 
-#include "Character/StatPlayerState.h"
 #include "GameMode/AIIndividualGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "AI/AiCharacterController.h"
 
 AAIIndividualGameMode::AAIIndividualGameMode()
 {
-	// MatchStartDelay = 5.0f;
-	// MatchEndDelay = 2.0f;
-	
-	// DefaultPawnClass = AArmedCharacter::StaticClass();
-	// PlayerControllerClass = ABattlePlayerController::StaticClass();
-	// PlayerStateClass = AStatPlayerState::StaticClass();
-	// GameStateClass = AAIIndividualGameState::StaticClass();
-
 	NumberOfAi = 5;
 	TargetKills = 20;
 	WinningCharController = nullptr;
@@ -23,7 +14,6 @@ AAIIndividualGameMode::AAIIndividualGameMode()
 void AAIIndividualGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
 		PlayerController = It->Get();
@@ -40,7 +30,6 @@ void AAIIndividualGameMode::BeginPlay()
 			}
 		}
 	}
-
 }
 
 void AAIIndividualGameMode::PostLogin(APlayerController* NewPlayer)
@@ -87,14 +76,8 @@ void AAIIndividualGameMode::HandleKillCountChanged(const uint16& NewKillCount)
 {
 	if (NewKillCount >= TargetKills)
 	{
-		EndGame(WinningCharController);
+		// EndGame(WinningCharController);
 		UE_LOG(LogTemp, Warning, TEXT("최고 킬 달성"));
+		EndMatch();
 	}
-}
-
-void AAIIndividualGameMode::EndGame(AController* WinerController)
-{
-	// TODO : 이긴 플레이어나 AI를 가져와 게임 종료시 점수판에 보여주고 메인화면으로 돌아가는 함수.
-	
-	UGameplayStatics::OpenLevel(GetWorld(), TEXT("MainLobbyLevel"));
 }

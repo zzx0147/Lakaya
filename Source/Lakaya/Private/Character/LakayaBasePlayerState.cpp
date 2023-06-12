@@ -57,7 +57,7 @@ float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const&
 	Health = FMath::Clamp(Health, 0, GetMaxHealth());
 	OnHealthChanged.Broadcast(Health);
 
-	if (Damage > 0.f)NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
+	if (Damage > 0.f) NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
 	if (IsDead) OnPlayerKilled.Broadcast(GetOwningController(), EventInstigator, DamageCauser);
 
 	return Damage;
@@ -95,7 +95,11 @@ void ALakayaBasePlayerState::BeginPlay()
 		{
 			PortraitWidget->AddToViewport();
 			PortraitWidget->ChangePortrait(GetCharacterName());
-			OnCharacterNameChanged.AddLambda([this](auto, const FName& Name) { PortraitWidget->ChangePortrait(Name); });
+			OnCharacterNameChanged.AddWeakLambda(
+				PortraitWidget.Get(), [Widget = PortraitWidget](auto, const FName& Name)
+				{
+					Widget->ChangePortrait(Name);
+				});
 		}
 	}
 }
@@ -139,17 +143,22 @@ void ALakayaBasePlayerState::SetTeam(const EPlayerTeam& DesireTeam)
 	OnTeamChanged.Broadcast(Team);
 }
 
+void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, const FRespawnTimerDelegate& Callback)
+{
+	RespawnTime = ReservedRespawnTime;
+	const auto CurrentTime = GetServerTime();
+	UpdateAliveStateWithRespawnTime(CurrentTime);
+
+	if (ReservedRespawnTime < CurrentTime) return;
+	static FTimerDelegate TimerDelegate;
+	TimerDelegate.BindUObject(this, &ALakayaBasePlayerState::RespawnTimerCallback, Callback);
+	GetWorld()->GetTimerManager().SetTimer(RespawnTimer, TimerDelegate, ReservedRespawnTime - CurrentTime, false);
+}
+
 void ALakayaBasePlayerState::MakeAlive()
 {
 	RespawnTime = 0.f;
 	SetAliveState(true);
-}
-
-const uint16& ALakayaBasePlayerState::IncreaseScoreCount(const uint16& NewScore)
-{
-	TotalScore += NewScore;
-	OnRep_TotalScore();
-	return TotalScore;
 }
 
 const uint16& ALakayaBasePlayerState::AddTotalScoreCount(const uint16& NewScore)
@@ -201,10 +210,11 @@ void ALakayaBasePlayerState::ResetKillStreak()
 
 void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 {
+	auto& TimerManager = GetWorldTimerManager();
 	if (CurrentCaptureCount == 0)
 	{
-		if (GetWorldTimerManager().IsTimerActive(CurrentCaptureTimer))
-			GetWorldTimerManager().ClearTimer(CurrentCaptureTimer);
+		if (TimerManager.IsTimerActive(CurrentCaptureTimer))
+			TimerManager.ClearTimer(CurrentCaptureTimer);
 	}
 
 	if (CurrentCaptureCount == 1)
@@ -212,12 +222,13 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 		FTimerDelegate TimerDelegate;
 		TimerDelegate.BindLambda([this]
 		{
+			if (this == nullptr) return;
 			if (GetWorld()->GetGameState()->HasMatchEnded())
-				GetWorldTimerManager().ClearTimer(CurrentCaptureTimer);
+				GetWorld()->GetTimerManager().ClearTimer(CurrentCaptureTimer);
 
 			AddTotalScoreCount(CurrentCaptureCount * 50);
 		});
-		GetWorldTimerManager().SetTimer(CurrentCaptureTimer, TimerDelegate, 1.0f, true);
+		TimerManager.SetTimer(CurrentCaptureTimer, TimerDelegate, 1.0f, true);
 	}
 }
 
@@ -247,7 +258,7 @@ bool ALakayaBasePlayerState::ShouldTakeDamage(float DamageAmount, FDamageEvent c
                                               AController* EventInstigator, AActor* DamageCauser)
 {
 	// 플레이어가 이미 사망한 상태인 경우 데미지를 받지 않습니다.
-	if (!IsAlive()) return false;
+	if (!IsAlive() || !HasAuthority()) return false;
 
 	// EventInstigator가 nullptr인 경우 글로벌 데미지이거나 어떤 정의할 수 없는 데미지이지만 일단 받아야하는 데미지라고 판단합니다.
 	if (!EventInstigator) return true;
@@ -318,8 +329,9 @@ void ALakayaBasePlayerState::OnRep_RespawnTime()
 	UpdateAliveStateWithRespawnTime(CurrentTime);
 
 	// 부활시간에 OnAliveStateChanged 이벤트가 호출될 수 있도록 타이머를 설정합니다.
-	GetWorldTimerManager().SetTimer(RespawnTimer, [this] { SetAliveState(true); },
-	                                RespawnTime - CurrentTime, false);
+	static FTimerDelegate Delegate;
+	Delegate.BindUObject(this, &ALakayaBasePlayerState::SetAliveState, true);
+	GetWorldTimerManager().SetTimer(RespawnTimer, Delegate, RespawnTime - CurrentTime, false);
 }
 
 void ALakayaBasePlayerState::OnRep_CharacterName()
@@ -362,11 +374,17 @@ void ALakayaBasePlayerState::UpdateAliveStateWithRespawnTime(const float& Curren
 	SetAliveState(RespawnTime >= 0.f && RespawnTime < CurrentTime);
 }
 
-void ALakayaBasePlayerState::SetAliveState(const bool& AliveState)
+void ALakayaBasePlayerState::SetAliveState(bool AliveState)
 {
 	if (bRecentAliveState == AliveState) return;
 	bRecentAliveState = AliveState;
 	OnAliveStateChanged.Broadcast(AliveState);
+}
+
+void ALakayaBasePlayerState::RespawnTimerCallback(FRespawnTimerDelegate Callback)
+{
+	SetAliveState(true);
+	Callback.Execute(GetOwningController());
 }
 
 void ALakayaBasePlayerState::RequestCharacterChange_Implementation(const FName& Name)
@@ -385,15 +403,12 @@ bool ALakayaBasePlayerState::RequestCharacterChange_Validate(const FName& Name)
 void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserName, const FVector& CauserLocation,
                                                             const float& Damage)
 {
-	const auto PlayerController = GetPlayerController();
-	if (!PlayerController) return;
-
-	if (PlayerController->IsLocalPlayerController())
+	if (const auto PlayerController = GetPlayerController(); PlayerController && PlayerController->IsLocalController())
 	{
-		//TODO: 위젯 nullptr 체크 필요, 매개변수 하드코딩 수정 필요
-		DirectionDamageIndicatorWidget->IndicateStart(CauserName.ToString(), CauserLocation, 3.0f);
+		if (DirectionDamageIndicatorWidget)
+			DirectionDamageIndicatorWidget->IndicateStart(CauserName.ToString(), CauserLocation, 3.0f);
 
-		Cast<ALakayaBaseCharacter>(PlayerController->GetCharacter())->PlayHitScreen();
+		if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->PlayHitScreen();
 	}
 }
 

@@ -4,7 +4,6 @@
 #include "GameFramework/GameMode.h"
 #include "LakayaDefaultPlayGameMode.generated.h"
 
-
 namespace MatchState
 {
 	extern const FName IsSelectCharacter; //캐릭터를 선택할때의 상태입니다, WaitingToStart 다음 상태이며, 이 상태가 끝나면 InProgress로 넘어갑니다

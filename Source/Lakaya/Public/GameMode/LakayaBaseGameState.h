@@ -49,7 +49,7 @@ public:
 	virtual void ToggleCharacterSelectWidget();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void NotifyPlayerKilled(APlayerState* VictimController, APlayerState* InstigatorController, AActor* DamageCauser);
+	void NotifyPlayerKilled(APlayerState* VictimPlayer, APlayerState* InstigatorPlayer, AActor* DamageCauser);
 
 protected:
 	virtual class UGameLobbyCharacterSelectWidget* GetCharacterSelectWidget();
@@ -109,12 +109,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UHelpWidget> HelpWidgetClass;
 
+	// TODO : 개인전엣는 스킬을 사용하지 않기에 주석처리 해주었습니다.
 	// 게임중에 표시되는 스킬 위젯을 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<USkillWidget> SkillWidgetClass;
+	// UPROPERTY(EditDefaultsOnly)
+	// TSubclassOf<USkillWidget> SkillWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGamePlayKillLogWidget> KillLogWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class AOutlineManager> OutlineManagerClass;
 
 	// 게임이 최대 몇초간 진행될지 정의합니다.
 	UPROPERTY(EditAnywhere)
@@ -126,8 +130,6 @@ protected:
 	// 게임시작 후 몇초간 대기할 지 정의합니다.
 	UPROPERTY(EditAnywhere)
 	float MatchWaitDuration;
-
-	TObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 
 	UPROPERTY(EditDefaultsOnly)
 	uint8 MaximumPlayers;
@@ -146,17 +148,17 @@ protected:
 	FTimerHandle MatchWaitToStartTimer;
 
 	TObjectPtr<ULoadingWidget> LoadingWidget;
-
+	TObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 	TObjectPtr<UGamePlayCrosshairWidget> CrosshairWidget;
 
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
 	TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
 	TWeakObjectPtr<UHelpWidget> HelpWidget;
-	TWeakObjectPtr<USkillWidget> SkillWidget;
 	TWeakObjectPtr<UGamePlayKillLogWidget> KillLogWidget;
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class AOutlineManager> OutlineManagerClass;
+	// TODO : 개인전엣는 스킬을 사용하지 않기에 주석처리 해주었습니다.
+	// TWeakObjectPtr<USkillWidget> SkillWidget;
+
 	TWeakObjectPtr<AOutlineManager> OutlineManager;
 };

@@ -3,10 +3,10 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "GameFramework/GameMode.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "GameMode/LakayaBaseGameState.h"
-#include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameState.h"
 #include "Interfaces/NetworkPredictionInterface.h"
 #include "Kismet/GameplayStatics.h"
@@ -82,6 +82,11 @@ void AGameLobbyPlayerController::OnPossess(APawn* PawnToPossess)
 	}
 }
 
+void AGameLobbyPlayerController::SetEnableExitShortcut(const bool& Enable)
+{
+	bEnableExitShortcut = Enable;
+}
+
 void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
 	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
@@ -126,41 +131,35 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 	if (WeaponFinder.Succeeded()) LoadoutAction = WeaponFinder.Object;
 	if (ShowScoreFinder.Succeeded()) ShowScoreAction = ShowScoreFinder.Object;
 	if (HideScoreFinder.Succeeded()) HideScoreAction = HideScoreFinder.Object;
+
+	ExitLevel = FSoftObjectPath(TEXT("/Script/Engine.World'/Game/Levels/MainLobbyLevel.MainLobbyLevel'"));
 }
 
-void AGameLobbyPlayerController::MenuHandler(const FInputActionValue& Value)
+void AGameLobbyPlayerController::MenuHandler()
 {
-	//TODO: UI를 띄웁니다.
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Tab Key."));
-
-	if (GetWorld()->GetGameState<ALakayaBaseGameState>()->GetMatchState() == MatchState::WaitingPostMatch)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("뒤로가기"));
-		UGameplayStatics::OpenLevel(GetWorld(), "MainLobbyLevel");
-	}
+	if (bEnableExitShortcut) UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ExitLevel);
 }
 
-void AGameLobbyPlayerController::LoadoutHandler(const FInputActionValue& Value)
+void AGameLobbyPlayerController::LoadoutHandler()
 {
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 		GameState->ToggleCharacterSelectWidget();
 }
 
-void AGameLobbyPlayerController::ShowScoreBoard(const FInputActionValue& Value)
+void AGameLobbyPlayerController::ShowScoreBoard()
 {
 	// 팀전일 때
 	if (const auto OccupationGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 	{
 		if (const auto NewGameState = Cast<AOccupationGameState>(OccupationGameState))
 		{
-			if (!NewGameState->TapBool) return;
-
+			if (!NewGameState->Tapbool) return;
+         
 			if (OccupationGameState->GetMatchState() == MatchState::WaitingPostMatch)
 			{
 				// 게임이 종료되고 결과창에 어떠한 위젯이 띄워지고 있느냐에 따라서 위젯들이 보여지는게 달라집니다.
 				NewGameState->ChangeResultWidget();
 			}
-
 			OccupationGameState->SetScoreBoardVisibility(true);
 		}
 	}
@@ -168,7 +167,7 @@ void AGameLobbyPlayerController::ShowScoreBoard(const FInputActionValue& Value)
 	// 개인전일 때
 }
 
-void AGameLobbyPlayerController::HideScoreBoard(const FInputActionValue& Value)
+void AGameLobbyPlayerController::HideScoreBoard()
 {
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 		GameState->SetScoreBoardVisibility(false);

@@ -35,7 +35,8 @@ void ALakayaBaseGameState::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController();
+		LocalController && LocalController->IsLocalController())
 	{
 		if (LoadingWidgetClass.Get() != nullptr)
 		{
@@ -101,18 +102,20 @@ void ALakayaBaseGameState::BeginPlay()
 		// 	}
 		// }
 
-		if (SkillWidgetClass)
-		{
-			SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
-			if (SkillWidget.IsValid())
-			{
-				SkillWidget->AddToViewport();
-				SkillWidget->SetVisibility(ESlateVisibility::Hidden);
-				
-				if(const auto BattlePlayerController = Cast<ABattlePlayerController>(LocalController); BattlePlayerController != nullptr)
-					BattlePlayerController->SetSkillWidget(SkillWidget.Get());
-			}
-		}
+		// TODO: 개인전에서는 스킬을 사용하지 않습니다.
+		// if (SkillWidgetClass)
+		// {
+		// 	SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
+		// 	if (SkillWidget.IsValid())
+		// 	{
+		// 		SkillWidget->AddToViewport();
+		// 		SkillWidget->SetVisibility(ESlateVisibility::Hidden);
+		//
+		// 		if (const auto BattlePlayerController = Cast<ABattlePlayerController>(LocalController);
+		// 			BattlePlayerController != nullptr)
+		// 			BattlePlayerController->SetSkillWidget(SkillWidget.Get());
+		// 	}
+		// }
 
 		if (KillLogWidgetClass)
 		{
@@ -146,11 +149,13 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-	
-	if (const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState); LocalPlayerState != nullptr)
-	{
-		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
+
+	// TODO : 개인전에서는 스킬을 사용하지 않습니다.
+	// if (const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
+	// 	LocalPlayerState != nullptr)
+	// {
+	// 	SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	// }
 
 	InternalSetCharacterSelectWidgetVisibility(false);
 	if (CharacterSelectWidget) CharacterSelectWidget->EnableAutoHide(true);
@@ -180,6 +185,7 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	{
 		GetWorldTimerManager().SetTimer(EndingTimer, [this]
 		{
+			if (this == nullptr) return;
 			if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
 				AuthGameMode->EndMatch();
 		}, MatchDuration, false);
@@ -190,6 +196,12 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
 	GetWorldTimerManager().ClearTimer(EndingTimer);
+	if (ScoreBoard.IsValid()) ScoreBoard->RemoveFromParent();
+	if (CharacterSelectWidget) CharacterSelectWidget->RemoveFromParent();
+
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<AGameLobbyPlayerController>();
+		LocalController && LocalController->IsLocalController())
+		LocalController->SetEnableExitShortcut(true);
 }
 
 void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
@@ -218,8 +230,7 @@ void ALakayaBaseGameState::OnRep_MatchState()
 
 void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
 {
-	if (!ScoreBoard.IsValid() || MatchState != MatchState::InProgress) return;
-	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
+	if (MatchState == MatchState::InProgress) InternalSetScoreBoardVisibility(Visible);
 }
 
 UGameLobbyCharacterSelectWidget* ALakayaBaseGameState::GetCharacterSelectWidget()
@@ -240,17 +251,17 @@ UGameLobbyCharacterSelectWidget* ALakayaBaseGameState::GetCharacterSelectWidget(
 void ALakayaBaseGameState::ToggleCharacterSelectWidget()
 {
 	// 캐릭터 선택위젯이 숨겨져있었다면 보여주고, 보여지고 있었다면 숨깁니다.
-	if (MatchState != MatchState::InProgress) return;
-	InternalSetCharacterSelectWidgetVisibility(GetCharacterSelectWidget()->GetVisibility() == ESlateVisibility::Hidden);
+	if (!CharacterSelectWidget || MatchState != MatchState::InProgress) return;
+	InternalSetCharacterSelectWidgetVisibility(CharacterSelectWidget->GetVisibility() == ESlateVisibility::Hidden);
 }
 
-void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimController,
-                                                             APlayerState* InstigatorController, AActor* DamageCauser)
+void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimPlayer,
+                                                             APlayerState* InstigatorPlayer, AActor* DamageCauser)
 {
-	OnPlayerKillNotified.Broadcast(VictimController, InstigatorController, DamageCauser);
+	OnPlayerKillNotified.Broadcast(VictimPlayer, InstigatorPlayer, DamageCauser);
 	if (KillLogWidget.IsValid())
 	{
-		KillLogWidget->OnKillCharacterNotify(VictimController, InstigatorController, DamageCauser);
+		KillLogWidget->OnKillCharacterNotify(VictimPlayer, InstigatorPlayer, DamageCauser);
 	}
 
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OnPlayerKillNotified.Broadcast"));
@@ -307,9 +318,9 @@ void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible)
 void ALakayaBaseGameState::InternalSetCharacterSelectWidgetVisibility(const bool& Visible)
 {
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController();
-		LocalController && LocalController->IsLocalController())
+		LocalController && LocalController->IsLocalController() && GetCharacterSelectWidget())
 	{
 		LocalController->SetShowMouseCursor(Visible);
-		GetCharacterSelectWidget()->SetVisibility(Visible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		CharacterSelectWidget->SetVisibility(Visible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 }

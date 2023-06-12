@@ -21,6 +21,7 @@ AAttachableMine::AAttachableMine(const FObjectInitializer& ObjectInitializer) : 
 	ExplodeDamage = 100.f;
 	bInstigatorExplode = bAllyExplode = false;
 	bEnemyExplode = true;
+	ExplosionOffset = 40.f;
 
 	TriggerComponent = CreateDefaultSubobject<USphereComponent>(TriggerComponentName);
 	TriggerComponent->SetupAttachment(RootComponent);
@@ -97,10 +98,17 @@ void AAttachableMine::OnTriggerComponentBeginOverlap(UPrimitiveComponent* Overla
                                                      UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
                                                      bool bFromSweep, const FHitResult& SweepResult)
 {
-	UGameplayStatics::ApplyRadialDamage(GetWorld(), ExplodeDamage, GetActorLocation(), ExplodeRange, nullptr, {}, this,
-	                                    GetInstigatorController());
-	NotifyExplosion(GetActorLocation());
+	const auto Location = GetActorLocation();
+	const auto ExplodeLocation = Location + GetActorForwardVector() * ExplosionOffset;
+	UGameplayStatics::ApplyRadialDamage(GetWorld(), ExplodeDamage,
+	                                    ExplodeLocation, ExplodeRange,
+	                                    nullptr, {}, this, GetInstigatorController());
+
+	NotifyExplosion(Location);
 	SetAbilityInstanceState(EAbilityInstanceState::Ending);
+
+	DrawDebugLine(GetWorld(), Location, ExplodeLocation, FColor::Green, false, 5.f);
+	DrawDebugSphere(GetWorld(), ExplodeLocation, ExplodeRange, 10, FColor::Red, false, 5.f);
 }
 
 void AAttachableMine::NotifyExplosion_Implementation(const FVector& Location)

@@ -147,10 +147,9 @@ void ALakayaDefaultPlayGameMode::PostInitializeComponents()
 void ALakayaDefaultPlayGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-	
+
 	UE_LOG(LogTemp, Warning, TEXT("The Player has entered the game."));
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), GetNumPlayers());
-
 	RegisterPlayer(NewPlayer);
 }
 
@@ -237,7 +236,10 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 	//TODO: ShouldRespawn 함수는 사망한 플레이어가 부활할 수 있는지 여부를 검사하기 위해 기획되었습니다. 따라서 매개변수로 플레이어 스테이트나 컨트롤러를 받아야 합니다.
 	if (ShouldRespawn())
 	{
-		VictimPlayerState->SetRespawnTimer(GetGameState<AGameState>()->GetServerWorldTimeSeconds() + MinRespawnDelay, this, &ALakayaDefaultPlayGameMode::RespawnPlayer);
+		static FRespawnTimerDelegate Delegate;
+		Delegate.BindUObject(this, &ALakayaDefaultPlayGameMode::RespawnPlayer);
+		VictimPlayerState->SetRespawnTimer(GetGameState<AGameState>()->GetServerWorldTimeSeconds() + MinRespawnDelay,
+		                                   Delegate);
 		// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnTimerSetted!!!"));
 	}
 	else
@@ -287,46 +289,6 @@ UClass* ALakayaDefaultPlayGameMode::GetDefaultPawnClassForController_Implementat
 void ALakayaDefaultPlayGameMode::RespawnPlayer(AController* KilledController)
 {
 	RestartPlayer(KilledController);
-
-	/*GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnPlayer!!!!"));
-
-
-	TArray<AActor*> PlayerStartActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStartActors);
-
-	if (PlayerStartActors.Num() == 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No player start actors found."));
-		return;
-	}
-
-	APlayerStart* RandomPlayerStart = Cast<APlayerStart>(PlayerStartActors[FMath::RandRange(0, PlayerStartActors.Num() - 1)]);
-
-	APawn* KilledPawn = Cast<APawn>(KilledController->GetPawn());
-	ACharacter* KilledCharacterActor = Cast<ACharacter>(KilledController->GetCharacter());
-	
-	if (KilledPawn != nullptr)
-	{
-		KilledPawn->SetActorLocation(RandomPlayerStart->GetActorLocation());
-	}
-	else if (KilledController != nullptr)
-	{
-		KilledCharacterActor->SetActorLocation(RandomPlayerStart->GetActorLocation());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("KilledCharacter is not a pawn or an actor."));
-		return;
-	}
-	*/
-	// ADamageableCharacter* KilledDamageableCharacter = Cast<ADamageableCharacter>(KilledCharacterActor);
-	// if (KilledDamageableCharacter == nullptr)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("KilledDamageableCharacter is null."));
-	// 	return;
-	// }
-	//
-	// KilledDamageableCharacter->Respawn();
 }
 
 bool ALakayaDefaultPlayGameMode::ShouldRespawn()
