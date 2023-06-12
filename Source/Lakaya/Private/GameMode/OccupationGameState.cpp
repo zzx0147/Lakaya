@@ -37,7 +37,7 @@ AOccupationGameState::AOccupationGameState()
 	MatchStartWaitWidgetLifeTime = 3.0f;
 	MatchStartWidgetLifeTime = 5.0f;
 	ClientTeam = EPlayerTeam::None;
-	
+
 	PlayersByTeamMap.Emplace(EPlayerTeam::A);
 	PlayersByTeamMap.Emplace(EPlayerTeam::B);
 
@@ -46,7 +46,7 @@ AOccupationGameState::AOccupationGameState()
 
 	static ConstructorHelpers::FObjectFinder<UInputAction> ResultSwitchActionFinder(
 		TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_ShowScore.IA_ShowScore'"));
-	
+
 	ResultShortcutContext = ResultContextFinder.Object;
 	ResultSwitchingAction = ResultSwitchActionFinder.Object;
 }
@@ -56,47 +56,48 @@ void AOccupationGameState::BeginPlay()
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 		LocalController && LocalController->IsLocalController())
 	{
-		
-		
 		if (SkillWidgetClass)
 		{
 			SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
-			if (SkillWidget == nullptr) UE_LOG(LogTemp, Warning, TEXT("SkillWidget is null."));
-			SkillWidget->AddToViewport();
-			SkillWidget->SetVisibility(ESlateVisibility::Hidden);
+			if (SkillWidget.IsValid())
+			{
+				SkillWidget->AddToViewport();
+				SkillWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+			else UE_LOG(LogTemp, Warning, TEXT("SkillWidget is null."))
 		}
-		
+
 		if (TeamScoreWidgetClass)
 		{
 			TeamScoreWidget = CreateWidget<UTeamScoreWidget>(LocalController, TeamScoreWidgetClass);
-			if (TeamScoreWidget == nullptr)
+			if (TeamScoreWidget)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidget is null."));
+				TeamScoreWidget->AddToViewport();
+				TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
-			TeamScoreWidget->AddToViewport();
-			TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
+			else UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidget is null."));
 		}
 
 		if (MatchStartWaitWidgetClass)
 		{
 			MatchStartWaitWidget = CreateWidget<UMatchStartWaitWidget>(LocalController, MatchStartWaitWidgetClass);
-			if (MatchStartWaitWidget == nullptr)
+			if (MatchStartWaitWidget.IsValid())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("MatchStartWaitWidget is null."));
+				MatchStartWaitWidget->AddToViewport();
+				MatchStartWaitWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
-			MatchStartWaitWidget->AddToViewport();
-			MatchStartWaitWidget->SetVisibility(ESlateVisibility::Hidden);
+			else UE_LOG(LogTemp, Warning, TEXT("MatchStartWaitWidget is null."));
 		}
 
 		if (StartMessageWidgetClass)
 		{
 			StartMessageWidget = CreateWidget<UStartMessageWidget>(LocalController, StartMessageWidgetClass);
-			if (StartMessageWidget == nullptr)
+			if (StartMessageWidget.IsValid())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("StartMessageWidget is null."));
+				StartMessageWidget->AddToViewport();
+				StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
-			StartMessageWidget->AddToViewport();
-			StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
+			else UE_LOG(LogTemp, Warning, TEXT("StartMessageWidget is null."));
 		}
 
 		if (GameResultWidgetClass)
@@ -168,7 +169,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 
 	if (SkillWidget.IsValid())
 		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	
+
 	if (IsValid(TeamScoreWidget))
 		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
 
