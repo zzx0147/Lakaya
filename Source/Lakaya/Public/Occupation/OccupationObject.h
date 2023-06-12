@@ -71,4 +71,7 @@ private:
 	
 	FTimerHandle InteractionTimerHandle;
 	FTimerHandle InteractionStateHandle;
+
+	UPROPERTY(Replicated)
+	APawn* InteractingPawn;
 };

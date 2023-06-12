@@ -47,7 +47,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Trigger")
 	USphereComponent* Trigger;
-	
-	APawn* InteractingPawn;
+
+
+
 	TWeakObjectPtr<APawn> OwnerPlayer;
 };

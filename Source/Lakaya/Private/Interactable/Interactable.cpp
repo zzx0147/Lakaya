@@ -4,7 +4,7 @@ AInteractable::AInteractable(const FObjectInitializer& ObjectInitializer) : Supe
 {
 	Tags.Add("Interactable");
 
-	InteractingPawn = nullptr;
+	// InteractingPawn = nullptr;
 	Trigger = CreateDefaultSubobject<USphereComponent>(TEXT("Trigger Sphere"));
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 

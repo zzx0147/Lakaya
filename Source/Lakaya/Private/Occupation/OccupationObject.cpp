@@ -13,7 +13,8 @@ AOccupationObject::AOccupationObject(const FObjectInitializer& ObjectInitializer
 	
 	if (SM_Cylinder.Succeeded())
 		Mesh->SetStaticMesh(SM_Cylinder.Object);
-	
+
+	InteractingPawn = nullptr;
 	bReplicates = true;
 }
 
@@ -30,7 +31,6 @@ void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME(AOccupationObject, ObjectTeam);
 	DOREPLIFETIME(AOccupationObject, InteractingPawn);
-	
 }
 
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
