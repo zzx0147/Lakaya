@@ -226,8 +226,17 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 		TimerDelegate.BindWeakLambda(this,[this]
 		{
 			if (this == nullptr) return;
-			if (GetWorld()->GetGameState()->HasMatchEnded())
-				GetWorld()->GetTimerManager().ClearTimer(CurrentCaptureTimer);
+			if (const auto World = GetWorld())
+			{
+				if (const auto GameState = World->GetGameState())
+				{
+					if (GameState->HasMatchEnded())
+					{
+						World->GetTimerManager().ClearTimer(CurrentCaptureTimer);
+						return;
+					}
+				}
+			}
 
 			AddTotalScoreCount(CurrentCaptureCount * 50);
 		});
