@@ -8,6 +8,11 @@ public class Lakaya : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput","OnlineSubsystem","OnlineSubsystemEOS", "UMG", "AIModule", "NavigationSystem", "Niagara", "SlateCore" });
+		PublicDependencyModuleNames.AddRange(new string[]
+		{
+			"Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput", "OnlineSubsystem",
+			"OnlineSubsystemNull", "UMG", "AIModule", "NavigationSystem", "Niagara", "SlateCore"
+		});
+		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
 	}
 }
