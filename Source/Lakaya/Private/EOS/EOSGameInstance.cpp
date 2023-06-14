@@ -12,6 +12,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
+static const int MaxPlayer = 2;
+
 UEOSGameInstance::UEOSGameInstance()
 {
 	bIsLoggedIn = false;
@@ -89,7 +91,7 @@ void UEOSGameInstance::CreateSession()
 		SessionSettings.bShouldAdvertise = true;
 
 		SessionSettings.bIsLANMatch = false;
-		SessionSettings.NumPublicConnections = 6;
+		SessionSettings.NumPublicConnections = MaxPlayer;
 		SessionSettings.bAllowJoinInProgress = true;
 		SessionSettings.bAllowJoinViaPresence = true;
 		SessionSettings.bUsesPresence = true;
@@ -418,7 +420,7 @@ void UEOSGameInstance::StartSession()
 	newSessionSettings.bShouldAdvertise = true;
 
 	newSessionSettings.bIsLANMatch = false;
-	newSessionSettings.NumPublicConnections = 6;
+	newSessionSettings.NumPublicConnections = MaxPlayer;
 	newSessionSettings.bAllowJoinInProgress = false;
 	newSessionSettings.bAllowJoinViaPresence = true;
 	newSessionSettings.bUsesPresence = true;
