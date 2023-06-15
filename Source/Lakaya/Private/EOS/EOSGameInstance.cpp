@@ -12,7 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
-static const int MaxPlayer = 2;
+static const int MaxPlayer = 6;
 
 UEOSGameInstance::UEOSGameInstance()
 {
@@ -27,7 +27,9 @@ void UEOSGameInstance::Init()
 
 	OnlineSubsystem = IOnlineSubsystem::Get();
 	if (OnlineSubsystem) OnlineSessionPtr = OnlineSubsystem->GetSessionInterface();
-	//Login();
+
+	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, *OnlineSubsystem->GetSubsystemName().ToString());
+	
 }
 
 void UEOSGameInstance::Shutdown()
@@ -43,6 +45,8 @@ void UEOSGameInstance::Login()
 {
 	if (OnlineSubsystem == nullptr) return;
 
+	if(OnlineSubsystem->GetSubsystemName().ToString().Compare(TEXT("STEAM")) != 0) return;
+	
 	if (const IOnlineIdentityPtr Identity = OnlineSubsystem->GetIdentityInterface())
 	{
 		FOnlineAccountCredentials Credentials;
@@ -66,7 +70,8 @@ void UEOSGameInstance::OnLoginComplete(int32 LocalUserNum, const bool bWasSucces
 {
 	UE_LOG(LogTemp, Warning, TEXT("LoggedIn: %d"), bWasSuccessful);
 	bIsLoggedIn = bWasSuccessful;
-
+	OnLoginCompleted.Broadcast(bIsLoggedIn);
+	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::White, TEXT("Login Compelete"));	
 	if (OnlineSubsystem == nullptr) return;
 
 	if (const IOnlineIdentityPtr Identity = OnlineSubsystem->GetIdentityInterface())
@@ -521,6 +526,11 @@ void UEOSGameInstance::OnDestroySessionCompleteAndReJoinSession(FName SessionNam
 	
 	OnlineSessionPtr->ClearOnDestroySessionCompleteDelegates(this);
 	QuickJoinSession();
+}
+
+bool UEOSGameInstance::IsLoggedIn()
+{
+	return bIsLoggedIn;
 }
 
 bool UEOSGameInstance::IsServer()
