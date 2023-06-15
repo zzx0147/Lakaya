@@ -69,6 +69,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void PrintSessionState();
 
+	UFUNCTION(BlueprintCallable)
 	void CleanUpSession();
 
 	void OnDestroySessionCompleteAndReJoinSession(FName SessionName, bool bWasSuccessful);

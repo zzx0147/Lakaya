@@ -458,9 +458,7 @@ void UEOSGameInstance::OnUpdateSessionComplete(const FName SessionName, const bo
 
 void UEOSGameInstance::EndSession()
 {
-	if (!IsServer()) return;
 	if (!OnlineSubsystem) return;
-
 	if (!OnlineSessionPtr) return;
 
 	OnlineSessionPtr->EndSession(NAME_GameSession);
@@ -492,28 +490,44 @@ void UEOSGameInstance::PrintSessionState()
 void UEOSGameInstance::CleanUpSession()
 {
 	if (OnlineSubsystem == nullptr) return;
-
+	
 	if (!OnlineSessionPtr) return;
 
-	if (const EOnlineSessionState::Type SessionState = OnlineSessionPtr->GetSessionState(NAME_GameSession); EOnlineSessionState::InProgress == SessionState)
+	const auto Session = OnlineSessionPtr->GetNamedSession(NAME_GameSession);
+
+	if(Session == nullptr) return;
+	
+	if(Session->bHosting)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Ending session because of return to front end"));
-		OnlineSessionPtr->EndSession(NAME_GameSession);
-		OnlineSessionPtr->OnEndSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnEndSessionComplete);
+		DestroySession();
 	}
-	else if (EOnlineSessionState::Ending == SessionState)
+	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("Waiting for session to end on return to main menu"));
+		EndSession();
 	}
-	else if (EOnlineSessionState::Ended == SessionState || EOnlineSessionState::Pending == SessionState)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Destroying session on return to main menu"));
-		OnlineSessionPtr->DestroySession(NAME_GameSession);
-	}
-	else if (EOnlineSessionState::Starting == SessionState || EOnlineSessionState::Creating == SessionState)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Waiting for session to start, and then we will end it to return to main menu"));
-	}
+	
+	// if (const EOnlineSessionState::Type SessionState = OnlineSessionPtr->GetSessionState(NAME_GameSession); EOnlineSessionState::InProgress == SessionState)
+	// {
+	// 	UE_LOG(LogTemp, Log, TEXT("Ending session because of return to front end"));
+	// 	OnlineSessionPtr->EndSession(NAME_GameSession);
+	// 	OnlineSessionPtr->OnEndSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnEndSessionComplete);
+	// }
+	// else if (EOnlineSessionState::Ending == SessionState)
+	// {
+	// 	UE_LOG(LogTemp, Log, TEXT("Waiting for session to end on return to main menu"));
+	// }
+	// else if (EOnlineSessionState::Ended == SessionState || EOnlineSessionState::Pending == SessionState)
+	// {
+	// 	UE_LOG(LogTemp, Log, TEXT("Destroying session on return to main menu"));
+	// 	OnlineSessionPtr->DestroySession(NAME_GameSession);
+	// }
+	// else if (EOnlineSessionState::Starting == SessionState || EOnlineSessionState::Creating == SessionState)
+	// {
+	// 	UE_LOG(LogTemp, Log, TEXT("Waiting for session to start, and then we will end it to return to main menu"));
+	// }
+
+
+	
 }
 
 void UEOSGameInstance::OnDestroySessionCompleteAndReJoinSession(FName SessionName, bool bWasSuccessful)
