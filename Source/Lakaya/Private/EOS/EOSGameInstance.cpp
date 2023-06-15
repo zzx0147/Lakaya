@@ -165,8 +165,7 @@ void UEOSGameInstance::DestroySession()
 	if (!bIsLoggedIn) return;
 	if (!OnlineSubsystem) return;
 	if (!OnlineSessionPtr) return;
-
-
+	
 	OnlineSessionPtr->OnDestroySessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnDestroySessionComplete);
 	OnlineSessionPtr->DestroySession(NAME_GameSession);
 }
@@ -466,7 +465,7 @@ void UEOSGameInstance::EndSession()
 
 	OnlineSessionPtr->EndSession(NAME_GameSession);
 	//CleanUpSession();
-	//SessionPtr->OnEndSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnEndSessionComplete);
+	OnlineSessionPtr->OnEndSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnEndSessionComplete);
 }
 
 void UEOSGameInstance::OnEndSessionComplete(FName SessionName, bool bWasSuccessful)
@@ -478,7 +477,7 @@ void UEOSGameInstance::OnEndSessionComplete(FName SessionName, bool bWasSuccessf
 	OnlineSessionPtr->OnEndSessionCompleteDelegates.Clear();
 	OnlineSessionPtr->OnDestroySessionCompleteDelegates.AddUObject(
 		this, &UEOSGameInstance::OnDestroySessionComplete);
-	OnlineSessionPtr->DestroySession(NAME_GameSession);
+	// OnlineSessionPtr->DestroySession(NAME_GameSession);
 }
 
 void UEOSGameInstance::PrintSessionState()

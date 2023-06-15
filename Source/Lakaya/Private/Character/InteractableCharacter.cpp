@@ -105,14 +105,16 @@ void AInteractableCharacter::StopInteraction(EInteractionState NewState)
 
 bool AInteractableCharacter::RequestInteractionStart_Validate(const float& Time, AActor* Actor)
 {
-	if (!ShouldInteract()) return false;
+	// if (!ShouldInteract()) return false;
+	//
+	// if (Actor && Actor->ActorHasTag("Interactable")/* && Time < GetServerTime() + 0.05f*/)
+	// {
+	// 	return true;
+	// }
+	//
+	// return false;
 
-	if (Actor && Actor->ActorHasTag("Interactable")/* && Time < GetServerTime() + 0.05f*/)
-	{
-		return true;
-	}
-
-	return false;
+	return true;
 }
 
 void AInteractableCharacter::RequestInteractionStart_Implementation(const float& Time, AActor* Actor)
