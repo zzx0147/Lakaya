@@ -28,7 +28,7 @@ void UEOSGameInstance::Init()
 	OnlineSubsystem = IOnlineSubsystem::Get();
 	if (OnlineSubsystem) OnlineSessionPtr = OnlineSubsystem->GetSessionInterface();
 
-	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, *OnlineSubsystem->GetSubsystemName().ToString());
+	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, *OnlineSubsystem->GetSubsystemName().ToString());
 	
 }
 
@@ -71,7 +71,7 @@ void UEOSGameInstance::OnLoginComplete(int32 LocalUserNum, const bool bWasSucces
 	UE_LOG(LogTemp, Warning, TEXT("LoggedIn: %d"), bWasSuccessful);
 	bIsLoggedIn = bWasSuccessful;
 	OnLoginCompleted.Broadcast(bIsLoggedIn);
-	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::White, TEXT("Login Compelete"));	
+	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::White, TEXT("Login Compelete"));
 	if (OnlineSubsystem == nullptr) return;
 
 	if (const IOnlineIdentityPtr Identity = OnlineSubsystem->GetIdentityInterface())
