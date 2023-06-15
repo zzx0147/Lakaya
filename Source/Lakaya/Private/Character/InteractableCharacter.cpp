@@ -129,13 +129,14 @@ void AInteractableCharacter::RequestInteractionStart_Implementation(const float&
 bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, AActor* Actor,
                                                              EInteractionState NewState)
 {
-	if (Actor && Actor->ActorHasTag("Interactable")/*&& Time < GetServerTime() + 0.05f*/)
-	{
-		return true;
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStop_Validate failed."));
-	return false;
+	// if (Actor && Actor->ActorHasTag("Interactable")/*&& Time < GetServerTime() + 0.05f*/)
+	// {
+	// 	return true;
+	// }
+	//
+	// UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStop_Validate failed."));
+	// return false;
+	return true;
 }
 
 void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor,
