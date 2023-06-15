@@ -1,6 +1,7 @@
 #include "GameMode/LakayaBaseGameState.h"
 
 #include "Character/LakayaBasePlayerState.h"
+#include "EOS/EOSGameInstance.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "Net/UnrealNetwork.h"
@@ -206,6 +207,20 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<AGameLobbyPlayerController>();
 		LocalController && LocalController->IsLocalController())
 		LocalController->SetEnableExitShortcut(true);
+
+
+	const auto GameInstance = GetGameInstance();
+	const auto EOSGameInstance = Cast<UEOSGameInstance>(GameInstance);
+	if(EOSGameInstance == nullptr) return;
+	if(HasAuthority())
+	{
+		EOSGameInstance->DestroySession();
+	}
+	else
+	{
+		EOSGameInstance->EndSession();
+	}
+	
 }
 
 void ALakayaBaseGameState::HandleMatchIsCharacterSelect()

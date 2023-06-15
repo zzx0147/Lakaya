@@ -12,7 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
-static const int MaxPlayer = 2;
+static const int MaxPlayer = 6;
 
 UEOSGameInstance::UEOSGameInstance()
 {
@@ -27,7 +27,9 @@ void UEOSGameInstance::Init()
 
 	OnlineSubsystem = IOnlineSubsystem::Get();
 	if (OnlineSubsystem) OnlineSessionPtr = OnlineSubsystem->GetSessionInterface();
-	//Login();
+
+	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, *OnlineSubsystem->GetSubsystemName().ToString());
+	
 }
 
 void UEOSGameInstance::Shutdown()
@@ -43,6 +45,8 @@ void UEOSGameInstance::Login()
 {
 	if (OnlineSubsystem == nullptr) return;
 
+	if(OnlineSubsystem->GetSubsystemName().ToString().Compare(TEXT("STEAM")) != 0) return;
+	
 	if (const IOnlineIdentityPtr Identity = OnlineSubsystem->GetIdentityInterface())
 	{
 		FOnlineAccountCredentials Credentials;
@@ -66,7 +70,8 @@ void UEOSGameInstance::OnLoginComplete(int32 LocalUserNum, const bool bWasSucces
 {
 	UE_LOG(LogTemp, Warning, TEXT("LoggedIn: %d"), bWasSuccessful);
 	bIsLoggedIn = bWasSuccessful;
-
+	OnLoginCompleted.Broadcast(bIsLoggedIn);
+	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::White, TEXT("Login Compelete"));
 	if (OnlineSubsystem == nullptr) return;
 
 	if (const IOnlineIdentityPtr Identity = OnlineSubsystem->GetIdentityInterface())
@@ -160,8 +165,7 @@ void UEOSGameInstance::DestroySession()
 	if (!bIsLoggedIn) return;
 	if (!OnlineSubsystem) return;
 	if (!OnlineSessionPtr) return;
-
-
+	
 	OnlineSessionPtr->OnDestroySessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnDestroySessionComplete);
 	OnlineSessionPtr->DestroySession(NAME_GameSession);
 }
@@ -454,14 +458,12 @@ void UEOSGameInstance::OnUpdateSessionComplete(const FName SessionName, const bo
 
 void UEOSGameInstance::EndSession()
 {
-	if (!IsServer()) return;
 	if (!OnlineSubsystem) return;
-
 	if (!OnlineSessionPtr) return;
 
 	OnlineSessionPtr->EndSession(NAME_GameSession);
 	//CleanUpSession();
-	//SessionPtr->OnEndSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnEndSessionComplete);
+	OnlineSessionPtr->OnEndSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnEndSessionComplete);
 }
 
 void UEOSGameInstance::OnEndSessionComplete(FName SessionName, bool bWasSuccessful)
@@ -473,7 +475,7 @@ void UEOSGameInstance::OnEndSessionComplete(FName SessionName, bool bWasSuccessf
 	OnlineSessionPtr->OnEndSessionCompleteDelegates.Clear();
 	OnlineSessionPtr->OnDestroySessionCompleteDelegates.AddUObject(
 		this, &UEOSGameInstance::OnDestroySessionComplete);
-	OnlineSessionPtr->DestroySession(NAME_GameSession);
+	// OnlineSessionPtr->DestroySession(NAME_GameSession);
 }
 
 void UEOSGameInstance::PrintSessionState()
@@ -488,28 +490,44 @@ void UEOSGameInstance::PrintSessionState()
 void UEOSGameInstance::CleanUpSession()
 {
 	if (OnlineSubsystem == nullptr) return;
-
+	
 	if (!OnlineSessionPtr) return;
 
-	if (const EOnlineSessionState::Type SessionState = OnlineSessionPtr->GetSessionState(NAME_GameSession); EOnlineSessionState::InProgress == SessionState)
+	const auto Session = OnlineSessionPtr->GetNamedSession(NAME_GameSession);
+
+	if(Session == nullptr) return;
+	
+	if(Session->bHosting)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Ending session because of return to front end"));
-		OnlineSessionPtr->EndSession(NAME_GameSession);
-		OnlineSessionPtr->OnEndSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnEndSessionComplete);
+		DestroySession();
 	}
-	else if (EOnlineSessionState::Ending == SessionState)
+	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("Waiting for session to end on return to main menu"));
+		EndSession();
 	}
-	else if (EOnlineSessionState::Ended == SessionState || EOnlineSessionState::Pending == SessionState)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Destroying session on return to main menu"));
-		OnlineSessionPtr->DestroySession(NAME_GameSession);
-	}
-	else if (EOnlineSessionState::Starting == SessionState || EOnlineSessionState::Creating == SessionState)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Waiting for session to start, and then we will end it to return to main menu"));
-	}
+	
+	// if (const EOnlineSessionState::Type SessionState = OnlineSessionPtr->GetSessionState(NAME_GameSession); EOnlineSessionState::InProgress == SessionState)
+	// {
+	// 	UE_LOG(LogTemp, Log, TEXT("Ending session because of return to front end"));
+	// 	OnlineSessionPtr->EndSession(NAME_GameSession);
+	// 	OnlineSessionPtr->OnEndSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnEndSessionComplete);
+	// }
+	// else if (EOnlineSessionState::Ending == SessionState)
+	// {
+	// 	UE_LOG(LogTemp, Log, TEXT("Waiting for session to end on return to main menu"));
+	// }
+	// else if (EOnlineSessionState::Ended == SessionState || EOnlineSessionState::Pending == SessionState)
+	// {
+	// 	UE_LOG(LogTemp, Log, TEXT("Destroying session on return to main menu"));
+	// 	OnlineSessionPtr->DestroySession(NAME_GameSession);
+	// }
+	// else if (EOnlineSessionState::Starting == SessionState || EOnlineSessionState::Creating == SessionState)
+	// {
+	// 	UE_LOG(LogTemp, Log, TEXT("Waiting for session to start, and then we will end it to return to main menu"));
+	// }
+
+
+	
 }
 
 void UEOSGameInstance::OnDestroySessionCompleteAndReJoinSession(FName SessionName, bool bWasSuccessful)
@@ -521,6 +539,11 @@ void UEOSGameInstance::OnDestroySessionCompleteAndReJoinSession(FName SessionNam
 	
 	OnlineSessionPtr->ClearOnDestroySessionCompleteDelegates(this);
 	QuickJoinSession();
+}
+
+bool UEOSGameInstance::IsLoggedIn()
+{
+	return bIsLoggedIn;
 }
 
 bool UEOSGameInstance::IsServer()
