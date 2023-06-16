@@ -9,6 +9,7 @@
 
 //퀵 조인 완료시 콜백해주는 델리게이트
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickJoinSessionComplete,bool,IsSucsess);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoginCompleted,bool,IsSucsess);
 
 UCLASS()
 class LAKAYA_API UEOSGameInstance : public UGameInstance
@@ -68,16 +69,24 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void PrintSessionState();
 
+	UFUNCTION(BlueprintCallable)
 	void CleanUpSession();
 
 	void OnDestroySessionCompleteAndReJoinSession(FName SessionName, bool bWasSuccessful);
 
+	UFUNCTION(BlueprintCallable)
+	bool IsLoggedIn();
+	
 private:
 	static bool IsServer();
 
 public:
 	UPROPERTY(BlueprintAssignable,VisibleAnywhere, BlueprintCallable, Category = "Event")
 	FOnQuickJoinSessionComplete OnQuickJoinSessionComplete;
+
+	UPROPERTY(BlueprintAssignable,VisibleAnywhere, BlueprintCallable, Category = "Event")
+	FOnLoginCompleted OnLoginCompleted;
+	
 protected:
 	IOnlineSubsystem* OnlineSubsystem;
 
