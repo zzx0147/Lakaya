@@ -11,6 +11,13 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickJoinSessionComplete,bool,IsSucsess);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoginCompleted,bool,IsSucsess);
 
+enum class ERequestType
+{
+	None,
+	ShowRecord,
+	InsertRecord
+};
+
 UCLASS()
 class LAKAYA_API UEOSGameInstance : public UGameInstance
 {
@@ -76,6 +83,16 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool IsLoggedIn();
+
+	void Connect();
+
+	virtual void SendData();
+
+	void RequestShowRecord();
+		
+	virtual void RecvData();
+
+	bool IsSocketConnected();
 	
 private:
 	static bool IsServer();
@@ -98,4 +115,11 @@ protected:
 
 	APlayerController* MyPlayerController;
 	//FName CurrentServerName;
+
+	FUniqueNetIdPtr ClientNetId;
+
+private:
+	FSocket* SocketClient;
+	ISocketSubsystem* SocketSubsystem;
+	uint32 RecvDataSize;
 };
