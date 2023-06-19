@@ -5,6 +5,7 @@
 #include "OnlineSessionSettings.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "OnlineSubsystem.h"
+#include "Occupation/PlayerTeam.h"
 #include "EOSGameInstance.generated.h"
 
 //퀵 조인 완료시 콜백해주는 델리게이트
@@ -17,6 +18,38 @@ enum class ERequestType
 	ShowRecord,
 	InsertRecord
 };
+
+USTRUCT()
+struct FRecordResultStruct
+{
+	GENERATED_BODY()
+
+	float StartTime;
+	float Duration;
+	EPlayerTeam WinTeam;
+	TArray<FPlayerStats> AntiPlayers;
+	TArray<FPlayerStats> ProPlayers;
+};
+
+USTRUCT()
+struct FPlayerStats
+{
+	GENERATED_BODY()
+	
+	FString PlayerID;
+
+	FName PlayerName;
+
+	uint16 Kill; 
+
+	uint16 Death;
+
+	uint16 OccupationCount;
+
+	uint16 OccupationTickCount;
+};
+
+
 
 UCLASS()
 class LAKAYA_API UEOSGameInstance : public UGameInstance
@@ -90,9 +123,16 @@ public:
 
 	void RequestShowRecord();
 		
-	virtual void RecvData();
+	virtual void RecvDataByJson();
 
 	bool IsSocketConnected();
+
+	bool HasPendingData();
+
+	TArray<FRecordResultStruct> RecvRecordResultData();
+
+	void SendRecordResultData(const FRecordResultStruct& NewRecordResult);
+
 	
 private:
 	static bool IsServer();

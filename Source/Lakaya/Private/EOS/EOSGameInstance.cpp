@@ -562,14 +562,24 @@ void UEOSGameInstance::Connect()
 	SocketClient = SocketSubsystem->CreateSocket(NAME_Stream, TEXT("SocketClient"), false);
 	
 	FIPv4Address IPAddress;
-	FIPv4Address::Parse("127.0.0.1", IPAddress);
-	int32 Port = 45510;
+	FIPv4Address::Parse(TEXT("150.230.43.3"), IPAddress);
+	int32 Port = 55165;
 
 	TSharedRef<FInternetAddr> Addr = SocketSubsystem->CreateInternetAddr();
 	Addr->SetIp(IPAddress.Value);
 	Addr->SetPort(Port);
 
 	bool bConnected = SocketClient->Connect(*Addr);
+	if(bConnected)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Socket Connect Success"));
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Socket Connect Fail"));
+	}
+	
+	SocketClient->SetNonBlocking(true);
 }
 
 void UEOSGameInstance::SendData()
@@ -579,16 +589,16 @@ void UEOSGameInstance::SendData()
 
 void UEOSGameInstance::RequestShowRecord()
 {
-	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
+	const TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
 	JsonObject->SetStringField(TEXT("RequestType"), TEXT("ShowRecord"));
 	JsonObject->SetStringField(TEXT("PlayerID"),ClientNetId->ToString());
 	
 	FString JsonRequestString;
-	TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&JsonRequestString);
+	const TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&JsonRequestString);
 	if (FJsonSerializer::Serialize(JsonObject.ToSharedRef(), JsonWriter))
 	{
 		// UTF-8로 인코딩 된 Json 문자열
-		FTCHARToUTF8 Utf8JsonString(*JsonRequestString);
+		const FTCHARToUTF8 Utf8JsonString(*JsonRequestString);
 
 		// Json 문자열을 TArray<uint8>로 변환
 		TArray<uint8> DataToSend;
@@ -610,16 +620,16 @@ void UEOSGameInstance::RequestShowRecord()
 	}
 }
 
-void UEOSGameInstance::RecvData()
+void UEOSGameInstance::RecvDataByJson()
 {
-	int32 Size = 32;
-	uint8 Buffer[32];
+	int32 Size = 1000;
+	uint8 Buffer[1000];
 	
 	
 	uint32 PendingDataSize;
-	if(SocketClient->HasPendingData(PendingDataSize) && PendingDataSize >= 32)
+	if(SocketClient->HasPendingData(PendingDataSize))
 	{
-		SocketClient->Recv(Buffer,32,Size,ESocketReceiveFlags::None);
+		SocketClient->Recv(Buffer,Size,Size,ESocketReceiveFlags::None);
 		
 		FString ReceivedString = FString(Size, (const TCHAR*)Buffer);
 	
@@ -628,7 +638,6 @@ void UEOSGameInstance::RecvData()
 	
 		if(FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 		{
-			
 			// JsonObject를 사용하여 Json 데이터 처리
 		}
 		else
@@ -640,11 +649,64 @@ void UEOSGameInstance::RecvData()
 
 bool UEOSGameInstance::IsSocketConnected()
 {
+	if(SocketClient == nullptr) return false;
+	
 	return EConnectionState::USOCK_Open == SocketClient->GetConnectionState();
+}
+
+bool UEOSGameInstance::HasPendingData()
+{
+	if(SocketClient == nullptr) return false;
+	uint32 DataSize;
+	return SocketClient->HasPendingData(DataSize);
+}
+
+TArray<FRecordResultStruct> UEOSGameInstance::RecvRecordResultData()
+{
+	TArray<FRecordResultStruct> Results;
+	
+	int32 Size = 1000;
+	uint8 Buffer[1000];
+	
+	uint32 PendingDataSize;
+	if(SocketClient->HasPendingData(PendingDataSize))
+	{
+		SocketClient->Recv(Buffer,Size,Size,ESocketReceiveFlags::None);
+
+		const FString ReceivedString = FString(Size, (const TCHAR*)Buffer);
+	
+		TSharedPtr<FJsonObject> JsonObject;
+		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ReceivedString);
+	
+		if(FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+		{
+			// JsonObject를 사용하여 Json 데이터 처리
+			// JsonObject->TryGetArrayField()
+		
+			
+			
+		}
+		else
+		{
+			
+		}
+	}
+	
+	return Results;
+}
+
+void UEOSGameInstance::SendRecordResultData(const FRecordResultStruct& NewRecordResult)
+{
+	if(SocketClient == nullptr) return;
+
+	
+	
+	
 }
 
 bool UEOSGameInstance::IsServer()
 {
 	return UKismetSystemLibrary::IsServer(GEngine->GetWorld()) || UKismetSystemLibrary::IsDedicatedServer(
 		GEngine->GetWorld());
+	
 }
