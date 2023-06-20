@@ -24,7 +24,7 @@ struct FRecordResultStruct
 {
 	GENERATED_BODY()
 
-	float StartTime;
+	int64 StartTime;
 	float Duration;
 	EPlayerTeam WinTeam;
 	TArray<FPlayerStats> AntiPlayers;
@@ -38,7 +38,7 @@ struct FPlayerStats
 	
 	FString PlayerID;
 
-	FName PlayerName;
+	FString PlayerName;
 
 	uint16 Kill; 
 
@@ -131,9 +131,8 @@ public:
 
 	TArray<FRecordResultStruct> RecvRecordResultData();
 
-	void SendRecordResultData(const FRecordResultStruct& NewRecordResult);
+	bool SendRecordResultData(const FRecordResultStruct& NewRecordResult);
 
-	
 private:
 	static bool IsServer();
 

@@ -27,6 +27,7 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 
 ALakayaBasePlayerState::ALakayaBasePlayerState()
 {
+	OccupationTickCount = 0;
 	CharacterName = TEXT("Rena");
 	bRecentAliveState = true;
 	OnPawnSet.AddUniqueDynamic(this, &ALakayaBasePlayerState::OnPawnSetCallback);
@@ -239,6 +240,8 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 			}
 
 			AddTotalScoreCount(CurrentCaptureCount * 50);
+			OccupationTickCount += CurrentCaptureCount;
+			
 		});
 		
 		TimerManager.SetTimer(CurrentCaptureTimer, TimerDelegate, 1.0f, true);
@@ -255,6 +258,18 @@ void ALakayaBasePlayerState::SetAlly(const bool& Ally)
 {
 	bIsAlly = Ally;
 	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->SetAlly(bIsAlly);
+}
+
+FPlayerStats ALakayaBasePlayerState::GetPlayerStats()
+{
+	FPlayerStats MyStats;
+	MyStats.Kill = GetKillCount();
+	MyStats.Death = GetDeathCount();
+	MyStats.PlayerName = GetPlayerName();
+	MyStats.PlayerID = GetUniqueId().ToString();
+	MyStats.OccupationCount = GetSuccessCaptureCount();
+	MyStats.OccupationTickCount = OccupationTickCount;
+	return MyStats;
 }
 
 float ALakayaBasePlayerState::GetServerTime() const

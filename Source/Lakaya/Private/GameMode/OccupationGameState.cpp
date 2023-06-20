@@ -66,7 +66,7 @@ void AOccupationGameState::BeginPlay()
 			{
 				SkillWidget->AddToViewport();
 				SkillWidget->SetVisibility(ESlateVisibility::Hidden);
-				if(const auto BattlePlayerController = Cast<ABattlePlayerController>(LocalController))
+				if (const auto BattlePlayerController = Cast<ABattlePlayerController>(LocalController))
 					BattlePlayerController->SetSkillWidget(SkillWidget.Get());
 			}
 			else UE_LOG(LogTemp, Warning, TEXT("SkillWidget is null."))
@@ -190,7 +190,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 
 	if (IsValid(WeaponOutLineWidget))
 		WeaponOutLineWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	
+
 	if (MatchStartWaitWidget.IsValid())
 		MatchStartWaitWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
@@ -238,7 +238,19 @@ void AOccupationGameState::HandleMatchHasEnded()
 	for (auto& Element : PlayersByTeamMap)
 		Element.Value.Sort(Predicate);
 
-	
+	MatchResult.WinTeam = GetOccupationWinner();
+	MatchResult.StartTime = StartTimeStamp;
+	MatchResult.Duration = GetServerWorldTimeSeconds() - StartTime;
+	AddPlayerStateToRecordResult(EPlayerTeam::A, PlayersByTeamMap[EPlayerTeam::A]);
+	AddPlayerStateToRecordResult(EPlayerTeam::B, PlayersByTeamMap[EPlayerTeam::B]);
+
+	if (const auto EOSGameInstance = Cast<UEOSGameInstance>(GetGameInstance()))
+	{
+		ReserveSendRecord();
+		// EOSGameInstance->SendRecordResultData(MatchResult);
+	}
+
+
 	Tapbool = false;
 	ShowEndResultWidget();
 	BindDetailResultWidget();
@@ -339,6 +351,26 @@ void AOccupationGameState::SetClientTeam(const EPlayerTeam& NewTeam)
 			SetupPlayerStateOnLocal(Player);
 }
 
+bool AOccupationGameState::TrySendRecord()
+{
+	if (const auto EOSGameInstance = Cast<UEOSGameInstance>(GetGameInstance()))
+	{
+		if(!EOSGameInstance->IsSocketConnected())
+		{
+			static bool DoOnce = false;
+			if(!DoOnce)
+			{
+				EOSGameInstance->Connect();
+				DoOnce = true;
+			}
+			return false;
+		}
+		
+		return EOSGameInstance->SendRecordResultData(MatchResult);
+	}
+	return false;
+}
+
 void AOccupationGameState::DestroyShieldWallObject()
 {
 	UWorld* World = GetWorld();
@@ -364,7 +396,7 @@ void AOccupationGameState::ShowEndResultWidget()
 		LocalController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_None);
 		const auto LobbyController = Cast<AGameLobbyPlayerController>(LocalController);
 		LobbyController->UnbindAllAndBindMenu(Cast<UEnhancedInputComponent>(LocalController->InputComponent));
-		
+
 		if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 		{
 			if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
@@ -408,7 +440,7 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 
 		Controller->SetShowMouseCursor(false);
 
-		if(Controller != nullptr && Controller->GetLocalPlayer() != nullptr)
+		if (Controller != nullptr && Controller->GetLocalPlayer() != nullptr)
 		{
 			if (const auto SubSystem = Controller->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
 			{
@@ -644,6 +676,24 @@ void AOccupationGameState::OnPlayerStateOwnerChanged(AActor* InOwner)
 {
 	if (const auto Controller = Cast<APlayerController>(InOwner); Controller && Controller->IsLocalController())
 		SetClientTeam(Controller->GetPlayerState<ALakayaBasePlayerState>()->GetTeam());
+}
+
+void AOccupationGameState::AddPlayerStateToRecordResult(EPlayerTeam InTeam, TArray<ALakayaBasePlayerState*> InPlayers)
+{
+	if (InTeam == EPlayerTeam::A)
+	{
+		for (const auto BasePlayerState : InPlayers)
+		{
+			MatchResult.AntiPlayers.Emplace(BasePlayerState->GetPlayerStats());
+		}
+	}
+	else if (InTeam == EPlayerTeam::B)
+	{
+		for (const auto BasePlayerState : InPlayers)
+		{
+			MatchResult.ProPlayers.Emplace(BasePlayerState->GetPlayerStats());
+		}
+	}
 }
 
 void AOccupationGameState::SetupPlayerStateOnLocal(ALakayaBasePlayerState* PlayerState)

@@ -16,7 +16,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Online/OnlineSessionNames.h"
 
-static const int MaxPlayer = 6;
+static constexpr int MaxPlayer = 6;
 
 UEOSGameInstance::UEOSGameInstance()
 {
@@ -33,6 +33,9 @@ void UEOSGameInstance::Init()
 	OnlineSubsystem = IOnlineSubsystem::Get();
 	if (OnlineSubsystem) OnlineSessionPtr = OnlineSubsystem->GetSessionInterface();
 
+	SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
+	SocketClient = SocketSubsystem->CreateSocket(NAME_Stream, TEXT("SocketClient"), false);
+	
 	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, *OnlineSubsystem->GetSubsystemName().ToString());
 }
 
@@ -42,6 +45,11 @@ void UEOSGameInstance::Shutdown()
 	if (IsServer())
 	{
 		DestroySession();
+	}
+
+	if (IsSocketConnected())
+	{
+		SocketClient->Close();
 	}
 }
 
@@ -558,9 +566,6 @@ bool UEOSGameInstance::IsLoggedIn()
 
 void UEOSGameInstance::Connect()
 {
-	SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
-	SocketClient = SocketSubsystem->CreateSocket(NAME_Stream, TEXT("SocketClient"), false);
-	
 	FIPv4Address IPAddress;
 	FIPv4Address::Parse(TEXT("150.230.43.3"), IPAddress);
 	int32 Port = 55165;
@@ -578,21 +583,20 @@ void UEOSGameInstance::Connect()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Socket Connect Fail"));
 	}
-	
+
 	SocketClient->SetNonBlocking(true);
 }
 
 void UEOSGameInstance::SendData()
 {
-
 }
 
 void UEOSGameInstance::RequestShowRecord()
 {
 	const TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
 	JsonObject->SetStringField(TEXT("RequestType"), TEXT("ShowRecord"));
-	JsonObject->SetStringField(TEXT("PlayerID"),ClientNetId->ToString());
-	
+	JsonObject->SetStringField(TEXT("PlayerID"), ClientNetId->ToString());
+
 	FString JsonRequestString;
 	const TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&JsonRequestString);
 	if (FJsonSerializer::Serialize(JsonObject.ToSharedRef(), JsonWriter))
@@ -624,39 +628,38 @@ void UEOSGameInstance::RecvDataByJson()
 {
 	int32 Size = 1000;
 	uint8 Buffer[1000];
-	
-	
+
+
 	uint32 PendingDataSize;
-	if(SocketClient->HasPendingData(PendingDataSize))
+	if (SocketClient->HasPendingData(PendingDataSize))
 	{
-		SocketClient->Recv(Buffer,Size,Size,ESocketReceiveFlags::None);
-		
+		SocketClient->Recv(Buffer, Size, Size, ESocketReceiveFlags::None);
+
 		FString ReceivedString = FString(Size, (const TCHAR*)Buffer);
-	
+
 		TSharedPtr<FJsonObject> JsonObject;
 		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ReceivedString);
-	
-		if(FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+
+		if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 		{
 			// JsonObject를 사용하여 Json 데이터 처리
 		}
 		else
 		{
-			
 		}
 	}
 }
 
 bool UEOSGameInstance::IsSocketConnected()
 {
-	if(SocketClient == nullptr) return false;
+	if (SocketClient == nullptr) return false;
 	
-	return EConnectionState::USOCK_Open == SocketClient->GetConnectionState();
+	return ESocketConnectionState::SCS_Connected == SocketClient->GetConnectionState();
 }
 
 bool UEOSGameInstance::HasPendingData()
 {
-	if(SocketClient == nullptr) return false;
+	if (SocketClient == nullptr) return false;
 	uint32 DataSize;
 	return SocketClient->HasPendingData(DataSize);
 }
@@ -664,49 +667,114 @@ bool UEOSGameInstance::HasPendingData()
 TArray<FRecordResultStruct> UEOSGameInstance::RecvRecordResultData()
 {
 	TArray<FRecordResultStruct> Results;
-	
+
 	int32 Size = 1000;
 	uint8 Buffer[1000];
-	
+
 	uint32 PendingDataSize;
-	if(SocketClient->HasPendingData(PendingDataSize))
+	if (SocketClient->HasPendingData(PendingDataSize))
 	{
-		SocketClient->Recv(Buffer,Size,Size,ESocketReceiveFlags::None);
+		SocketClient->Recv(Buffer, Size, Size, ESocketReceiveFlags::None);
 
 		const FString ReceivedString = FString(Size, (const TCHAR*)Buffer);
-	
+
 		TSharedPtr<FJsonObject> JsonObject;
 		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ReceivedString);
-	
-		if(FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+
+		if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 		{
 			// JsonObject를 사용하여 Json 데이터 처리
 			// JsonObject->TryGetArrayField()
-		
-			
-			
 		}
 		else
 		{
-			
 		}
 	}
-	
+
 	return Results;
 }
 
-void UEOSGameInstance::SendRecordResultData(const FRecordResultStruct& NewRecordResult)
+bool UEOSGameInstance::SendRecordResultData(const FRecordResultStruct& NewRecordResult)
 {
-	if(SocketClient == nullptr) return;
+	if (SocketClient == nullptr) return false;
 
-	
-	
-	
+	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
+	TSharedPtr<FJsonObject> MatchResultObject = MakeShareable(new FJsonObject());
+
+	JsonObject->SetStringField(TEXT("RequestType"),TEXT("InsertRecord"));
+
+	MatchResultObject->SetNumberField(TEXT("StartTime"), NewRecordResult.StartTime);
+	MatchResultObject->SetNumberField(TEXT("Duration"), NewRecordResult.Duration);
+	MatchResultObject->SetNumberField(TEXT("WinTeam"), static_cast<int32>(NewRecordResult.WinTeam));
+
+	auto ConvertPlayerStatsToJson = [](FPlayerStats PlayerStat)
+	{
+		TSharedRef<FJsonObject> PlayerJsonObject = MakeShared<FJsonObject>();
+		PlayerJsonObject->SetStringField(TEXT("PlayerID"), PlayerStat.PlayerID);
+		GEngine->AddOnScreenDebugMessage(-1, 300, FColor::Green, *PlayerStat.PlayerID);
+		PlayerJsonObject->SetStringField(TEXT("PlayerName"), PlayerStat.PlayerName);
+		PlayerJsonObject->SetNumberField(TEXT("Kill"), PlayerStat.Kill);
+		PlayerJsonObject->SetNumberField(TEXT("Death"), PlayerStat.Death);
+		PlayerJsonObject->SetNumberField(TEXT("OccupationCount"), PlayerStat.OccupationCount);
+		PlayerJsonObject->SetNumberField(TEXT("OccupationTickCount"), PlayerStat.OccupationTickCount);
+		
+		return PlayerJsonObject;
+	};
+
+	// 플레이어 통계 배열을 변환
+	TArray<TSharedPtr<FJsonValue>> AntiPlayersJsonArray;
+	TArray<TSharedPtr<FJsonValue>> ProPlayersJsonArray;
+	for (auto& PlayerStat : NewRecordResult.AntiPlayers)
+	{
+		AntiPlayersJsonArray.Add(MakeShared<FJsonValueObject>(ConvertPlayerStatsToJson(PlayerStat)));
+	}
+	for (auto& PlayerStat : NewRecordResult.ProPlayers)
+	{
+		ProPlayersJsonArray.Add(MakeShared<FJsonValueObject>(ConvertPlayerStatsToJson(PlayerStat)));
+	}
+
+	MatchResultObject->SetArrayField(TEXT("AntiPlayers"), AntiPlayersJsonArray);
+	MatchResultObject->SetArrayField(TEXT("ProPlayers"), ProPlayersJsonArray);
+
+	JsonObject->SetObjectField(TEXT("MatchResult"), MatchResultObject);
+
+
+	FString JsonRequestString;
+	TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&JsonRequestString);
+	if (FJsonSerializer::Serialize(JsonObject.ToSharedRef(), JsonWriter))
+	{
+		// UTF-8로 인코딩된 JSON 문자열 변환
+		FTCHARToUTF8 Utf8JsonString(*JsonRequestString);
+
+		GEngine->AddOnScreenDebugMessage(-1, 300, FColor::Green, *JsonRequestString);
+
+		// JSON 문자열을 TArray<uint8>로 변환
+		TArray<uint8> DataToSend;
+		DataToSend.Empty();
+		// DataToSend.Append((uint8*)*JsonRequestString, JsonRequestString.Len());
+		DataToSend.Append((uint8*)Utf8JsonString.Get(), Utf8JsonString.Length());
+
+		// 전송
+		int32 BytesSent;
+		 if (SocketClient->Send(DataToSend.GetData(), DataToSend.Num(), BytesSent))
+		 {
+		 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("RecordDataSend Success"));
+		 	// 데이터 전송 성공
+		 	return true;
+		 }
+		 else
+		 {
+		 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("RecordDataSend Fail"));
+		 	// 데이터 전송 실패
+		 	return false;
+		 }
+	}
+
+	return false;
 }
 
 bool UEOSGameInstance::IsServer()
 {
 	return UKismetSystemLibrary::IsServer(GEngine->GetWorld()) || UKismetSystemLibrary::IsDedicatedServer(
 		GEngine->GetWorld());
-	
 }
