@@ -244,12 +244,13 @@ void AOccupationGameState::HandleMatchHasEnded()
 	AddPlayerStateToRecordResult(EPlayerTeam::A, PlayersByTeamMap[EPlayerTeam::A]);
 	AddPlayerStateToRecordResult(EPlayerTeam::B, PlayersByTeamMap[EPlayerTeam::B]);
 
-	if (const auto EOSGameInstance = Cast<UEOSGameInstance>(GetGameInstance()))
+	if (HasAuthority())
 	{
-		ReserveSendRecord();
-		// EOSGameInstance->SendRecordResultData(MatchResult);
+		if (const auto EOSGameInstance = Cast<UEOSGameInstance>(GetGameInstance()))
+		{
+			ReserveSendRecord();
+		}
 	}
-
 
 	Tapbool = false;
 	ShowEndResultWidget();
@@ -351,22 +352,22 @@ void AOccupationGameState::SetClientTeam(const EPlayerTeam& NewTeam)
 			SetupPlayerStateOnLocal(Player);
 }
 
-bool AOccupationGameState::TrySendRecord()
+bool AOccupationGameState::TrySendMatchResultData()
 {
 	if (const auto EOSGameInstance = Cast<UEOSGameInstance>(GetGameInstance()))
 	{
-		if(!EOSGameInstance->IsSocketConnected())
+		if (!EOSGameInstance->IsSocketConnected())
 		{
 			static bool DoOnce = false;
-			if(!DoOnce)
+			if (!DoOnce)
 			{
 				EOSGameInstance->Connect();
 				DoOnce = true;
 			}
 			return false;
 		}
-		
-		return EOSGameInstance->SendRecordResultData(MatchResult);
+
+		return EOSGameInstance->SendMatchResultData(MatchResult);
 	}
 	return false;
 }

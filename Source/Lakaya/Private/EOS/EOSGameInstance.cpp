@@ -587,11 +587,7 @@ void UEOSGameInstance::Connect()
 	SocketClient->SetNonBlocking(true);
 }
 
-void UEOSGameInstance::SendData()
-{
-}
-
-void UEOSGameInstance::RequestShowRecord()
+bool UEOSGameInstance::RequestShowRecord()
 {
 	const TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
 	JsonObject->SetStringField(TEXT("RequestType"), TEXT("ShowRecord"));
@@ -615,40 +611,18 @@ void UEOSGameInstance::RequestShowRecord()
 			if (SocketClient->Send(DataToSend.GetData(), DataToSend.Num(), BytesSent))
 			{
 				// 데이터 전송 성공
+				return true;
 			}
 			else
 			{
 				// 데이터 전송 실패
+				return false;
 			}
 		}
 	}
+	return false;
 }
 
-void UEOSGameInstance::RecvDataByJson()
-{
-	int32 Size = 1000;
-	uint8 Buffer[1000];
-
-
-	uint32 PendingDataSize;
-	if (SocketClient->HasPendingData(PendingDataSize))
-	{
-		SocketClient->Recv(Buffer, Size, Size, ESocketReceiveFlags::None);
-
-		FString ReceivedString = FString(Size, (const TCHAR*)Buffer);
-
-		TSharedPtr<FJsonObject> JsonObject;
-		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ReceivedString);
-
-		if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
-		{
-			// JsonObject를 사용하여 Json 데이터 처리
-		}
-		else
-		{
-		}
-	}
-}
 
 bool UEOSGameInstance::IsSocketConnected()
 {
@@ -664,9 +638,10 @@ bool UEOSGameInstance::HasPendingData()
 	return SocketClient->HasPendingData(DataSize);
 }
 
-TArray<FRecordResultStruct> UEOSGameInstance::RecvRecordResultData()
+TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 {
-	TArray<FRecordResultStruct> Results;
+	GEngine->AddOnScreenDebugMessage(-1,3,FColor::Red, TEXT("Start Recv Match Result Record"));
+	TArray<FMatchResultStruct> Results;
 
 	int32 Size = 1000;
 	uint8 Buffer[1000];
@@ -681,8 +656,16 @@ TArray<FRecordResultStruct> UEOSGameInstance::RecvRecordResultData()
 		TSharedPtr<FJsonObject> JsonObject;
 		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ReceivedString);
 
+		GEngine->AddOnScreenDebugMessage(-1,3,FColor::Orange, ReceivedString);
+		
 		if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 		{
+			// const auto MatchRecordArray = JsonObject->GetArrayField(TEXT("MatchRecords"));
+			// for (const auto MatchRecord : MatchRecordArray)
+			// {
+			// }
+			//
+			
 			// JsonObject를 사용하여 Json 데이터 처리
 			// JsonObject->TryGetArrayField()
 		}
@@ -694,7 +677,7 @@ TArray<FRecordResultStruct> UEOSGameInstance::RecvRecordResultData()
 	return Results;
 }
 
-bool UEOSGameInstance::SendRecordResultData(const FRecordResultStruct& NewRecordResult)
+bool UEOSGameInstance::SendMatchResultData(const FMatchResultStruct& NewRecordResult)
 {
 	if (SocketClient == nullptr) return false;
 

@@ -55,7 +55,7 @@ public:
 
 protected:
 	virtual void SetClientTeam(const EPlayerTeam& NewTeam);
-	virtual bool TrySendRecord() override;
+	virtual bool TrySendMatchResultData() override;
 private:
 	UFUNCTION()
 	void OnRep_ATeamScore();
@@ -222,7 +222,7 @@ private:
 	// 게임 디테일 Element 결과 위젯입니다.
 	TWeakObjectPtr<UDetailResultElementWidget> DetailResultElementWidget;
 
-	FRecordResultStruct MatchResult;
+	FMatchResultStruct MatchResult;
 	
 public:
 	bool Tapbool = true;

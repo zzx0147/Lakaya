@@ -20,7 +20,7 @@ enum class ERequestType
 };
 
 USTRUCT()
-struct FRecordResultStruct
+struct FMatchResultStruct
 {
 	GENERATED_BODY()
 
@@ -118,20 +118,16 @@ public:
 	bool IsLoggedIn();
 
 	void Connect();
-
-	virtual void SendData();
-
-	void RequestShowRecord();
-		
-	virtual void RecvDataByJson();
-
+	
+	bool RequestShowRecord();
+	
 	bool IsSocketConnected();
 
 	bool HasPendingData();
 
-	TArray<FRecordResultStruct> RecvRecordResultData();
+	TArray<FMatchResultStruct> RecvMatchResultRecord();
 
-	bool SendRecordResultData(const FRecordResultStruct& NewRecordResult);
+	bool SendMatchResultData(const FMatchResultStruct& NewRecordResult);
 
 private:
 	static bool IsServer();

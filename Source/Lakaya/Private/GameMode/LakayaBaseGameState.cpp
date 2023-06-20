@@ -216,7 +216,6 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	if(HasAuthority())
 	{
 		EOSGameInstance->DestroySession();
-		ReserveSendRecord();
 	}
 	else
 	{
@@ -245,7 +244,7 @@ void ALakayaBaseGameState::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	if(bWantsSendRecordResult)
 	{
-		bWantsSendRecordResult = !TrySendRecord();
+		bWantsSendRecordResult = !TrySendMatchResultData();
 	}
 }
 
@@ -324,7 +323,7 @@ void ALakayaBaseGameState::ReserveSendRecord()
 	bWantsSendRecordResult = true;
 }
 
-bool ALakayaBaseGameState::TrySendRecord()
+bool ALakayaBaseGameState::TrySendMatchResultData()
 {
 	return true;
 }

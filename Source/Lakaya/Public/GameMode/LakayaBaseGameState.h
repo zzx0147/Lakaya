@@ -67,7 +67,7 @@ protected:
 
 	virtual void ReserveSendRecord();
 
-	virtual bool TrySendRecord();
+	virtual bool TrySendMatchResultData();
 
 private:
 	void SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,
