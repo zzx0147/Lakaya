@@ -11,16 +11,15 @@
 #include "UI/GamePlayKillLogWidget.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
-#include "UI/HelpWidget.h"
 #include "UI/LoadingWidget.h"
-#include "UI/SkillWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	MaximumPlayers = 6;
 	MatchDuration = 180.f;
 	MatchWaitDuration = 10.0f;
+	bWantsSendRecordResult = false;
 }
 
 void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -150,7 +149,9 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-
+	StartTimeStamp = FDateTime::UtcNow().ToUnixTimestamp();
+	StartTime = GetServerWorldTimeSeconds();
+	
 	// TODO : 개인전에서는 스킬을 사용하지 않습니다.
 	// if (const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
 	// 	LocalPlayerState != nullptr)
@@ -238,6 +239,14 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 	}, CharacterSelectTimeWidget);
 }
 
+void ALakayaBaseGameState::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if(bWantsSendRecordResult)
+	{
+		bWantsSendRecordResult = !TrySendMatchResultData();
+	}
+}
 
 void ALakayaBaseGameState::OnRep_MatchState()
 {
@@ -307,6 +316,16 @@ bool ALakayaBaseGameState::SpawnOutlineManager()
 			return true;
 	}
 	return false;
+}
+
+void ALakayaBaseGameState::ReserveSendRecord()
+{
+	bWantsSendRecordResult = true;
+}
+
+bool ALakayaBaseGameState::TrySendMatchResultData()
+{
+	return true;
 }
 
 void ALakayaBaseGameState::SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,

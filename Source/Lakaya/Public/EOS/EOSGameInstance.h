@@ -5,11 +5,51 @@
 #include "OnlineSessionSettings.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "OnlineSubsystem.h"
+#include "Occupation/PlayerTeam.h"
 #include "EOSGameInstance.generated.h"
 
 //퀵 조인 완료시 콜백해주는 델리게이트
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickJoinSessionComplete,bool,IsSucsess);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoginCompleted,bool,IsSucsess);
+
+enum class ERequestType
+{
+	None,
+	ShowRecord,
+	InsertRecord
+};
+
+USTRUCT()
+struct FMatchResultStruct
+{
+	GENERATED_BODY()
+
+	int64 StartTime;
+	float Duration;
+	EPlayerTeam WinTeam;
+	TArray<FPlayerStats> AntiPlayers;
+	TArray<FPlayerStats> ProPlayers;
+};
+
+USTRUCT()
+struct FPlayerStats
+{
+	GENERATED_BODY()
+	
+	FString PlayerID;
+
+	FString PlayerName;
+
+	uint16 Kill; 
+
+	uint16 Death;
+
+	uint16 OccupationCount;
+
+	uint16 OccupationTickCount;
+};
+
+
 
 UCLASS()
 class LAKAYA_API UEOSGameInstance : public UGameInstance
@@ -76,7 +116,19 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool IsLoggedIn();
+
+	void Connect();
 	
+	bool RequestShowRecord();
+	
+	bool IsSocketConnected();
+
+	bool HasPendingData();
+
+	TArray<FMatchResultStruct> RecvMatchResultRecord();
+
+	bool SendMatchResultData(const FMatchResultStruct& NewRecordResult);
+
 private:
 	static bool IsServer();
 
@@ -98,4 +150,11 @@ protected:
 
 	APlayerController* MyPlayerController;
 	//FName CurrentServerName;
+
+	FUniqueNetIdPtr ClientNetId;
+
+private:
+	FSocket* SocketClient;
+	ISocketSubsystem* SocketSubsystem;
+	uint32 RecvDataSize;
 };
