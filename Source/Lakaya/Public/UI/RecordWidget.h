@@ -22,7 +22,18 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 private:
-	bool bRequestShowRecord;
+	bool bShowRecordRequested;
 
 	TWeakObjectPtr<class UEOSGameInstance> EOSGameInstance;
+
+	UPROPERTY()
+	TArray<TObjectPtr<class URecordRow>> RecordRowWidgetArray;
+
+	TObjectPtr<class UScrollBox> RecordScrollViewWidget;
+	
+	int32 RecordRowNumber;
+	// TArray<TObjectPtr<class >>
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<URecordRow> RecordRowClass;
 };
