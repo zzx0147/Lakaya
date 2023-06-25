@@ -141,6 +141,7 @@ void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, 
 
 void ABattlePlayerController::StartAbility(EAbilityKind AbilityKind)
 {
+	//TODO: 어빌리티 컨텍스트 개념 추가. 즉시 StartAbility를 호출하는 것이 아니도록 해야함
 	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(AbilityKind);
 }
 

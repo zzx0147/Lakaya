@@ -1,14 +1,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MatchStateWidget.h"
 #include "Components/TextBlock.h"
 #include "GameMode/OccupationGameState.h"
 #include "Occupation/PlayerTeam.h"
 #include "TeamScoreWidget.generated.h"
 
 UCLASS()
-class LAKAYA_API UTeamScoreWidget : public UMatchStateWidget
+class LAKAYA_API UTeamScoreWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
