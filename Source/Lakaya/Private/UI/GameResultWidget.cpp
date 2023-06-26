@@ -1,5 +1,7 @@
 #include "UI/GameResultWidget.h"
 
+#include "Components/Image.h"
+#include "Components/TextBlock.h"
 #include "GameMode/OccupationGameState.h"
 
 void UGameResultWidget::NativeConstruct()

@@ -6,6 +6,7 @@
 #include "Character/LakayaBasePlayerState.h"
 #include "GameFramework/GameState.h"
 #include "UI/SkillWidget.h"
+#include "functional"
 #include "LakayaBaseGameState.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBaseGameState, OnChangePlayerNumberSignature, const uint8&)
