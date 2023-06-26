@@ -35,7 +35,7 @@ void UEOSGameInstance::Init()
 
 	SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
 	SocketClient = SocketSubsystem->CreateSocket(NAME_Stream, TEXT("SocketClient"), false);
-	
+
 	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, *OnlineSubsystem->GetSubsystemName().ToString());
 }
 
@@ -566,16 +566,17 @@ bool UEOSGameInstance::IsLoggedIn()
 
 void UEOSGameInstance::Connect()
 {
+	//IP 설정
 	FIPv4Address IPAddress;
 	FIPv4Address::Parse(TEXT("150.230.43.3"), IPAddress);
-	int32 Port = 55165;
+	constexpr int32 Port = 55165; 
 
-	TSharedRef<FInternetAddr> Addr = SocketSubsystem->CreateInternetAddr();
+	const TSharedRef<FInternetAddr> Addr = SocketSubsystem->CreateInternetAddr();
 	Addr->SetIp(IPAddress.Value);
 	Addr->SetPort(Port);
 
-	bool bConnected = SocketClient->Connect(*Addr);
-	if(bConnected)
+	//연결
+	if (bool bConnected = SocketClient->Connect(*Addr))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Socket Connect Success"));
 	}
@@ -583,16 +584,18 @@ void UEOSGameInstance::Connect()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Socket Connect Fail"));
 	}
-
+	//연결 이후부터는 논블로킹으로 작동
 	SocketClient->SetNonBlocking(true);
 }
 
 bool UEOSGameInstance::RequestShowRecord()
 {
+	//Json 오브젝트에 RequestType과 PlayerID를 저장합니다
 	const TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
 	JsonObject->SetStringField(TEXT("RequestType"), TEXT("ShowRecord"));
 	JsonObject->SetStringField(TEXT("PlayerID"), ClientNetId->ToString());
 
+	//Json 오브젝트를 직렬화
 	FString JsonRequestString;
 	const TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&JsonRequestString);
 	if (FJsonSerializer::Serialize(JsonObject.ToSharedRef(), JsonWriter))
@@ -613,19 +616,16 @@ bool UEOSGameInstance::RequestShowRecord()
 				// 데이터 전송 성공
 				return true;
 			}
-			else
-			{
-				// 데이터 전송 실패
-				return false;
-			}
 		}
 	}
+	//데이터 전송 실패
 	return false;
 }
 
 
 bool UEOSGameInstance::IsSocketConnected()
 {
+	//소켓이 생성되지 않았으면 false
 	if (SocketClient == nullptr) return false;
 	
 	return ESocketConnectionState::SCS_Connected == SocketClient->GetConnectionState();
@@ -633,6 +633,7 @@ bool UEOSGameInstance::IsSocketConnected()
 
 bool UEOSGameInstance::HasPendingData()
 {
+	//소켓이 생성되지 않았으면 false
 	if (SocketClient == nullptr) return false;
 	uint32 DataSize;
 	return SocketClient->HasPendingData(DataSize);
@@ -640,37 +641,99 @@ bool UEOSGameInstance::HasPendingData()
 
 TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 {
-	GEngine->AddOnScreenDebugMessage(-1,3,FColor::Red, TEXT("Start Recv Match Result Record"));
 	TArray<FMatchResultStruct> Results;
 
-	int32 Size = 1000;
-	uint8 Buffer[1000];
+	int32 Size;
+	uint8 Buffer[10000];
 
 	uint32 PendingDataSize;
+	//서버로부터 수신한 데이터가 있는지 확인 후 수신
 	if (SocketClient->HasPendingData(PendingDataSize))
 	{
-		SocketClient->Recv(Buffer, Size, Size, ESocketReceiveFlags::None);
-
-		const FString ReceivedString = FString(Size, (const TCHAR*)Buffer);
-
-		TSharedPtr<FJsonObject> JsonObject;
-		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ReceivedString);
-
-		GEngine->AddOnScreenDebugMessage(-1,3,FColor::Orange, ReceivedString);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Start Recv Match Result Record"));
+		//데이터 수신
+		SocketClient->Recv(Buffer, 10000, Size, ESocketReceiveFlags::None);
 		
+		// const FString ReceivedString = FString(Size, (const TCHAR*)Buffer);
+		FUTF8ToTCHAR Utf8Converted((const ANSICHAR*)Buffer, Size);
+		// 변환된 TCHAR를 FString으로 변환
+		FString ConvertedString(Utf8Converted);
+
+
+		//수신한 Json스트링을 Json 오브젝트로 역직렬화
+		TSharedPtr<FJsonObject> JsonObject;
+		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ConvertedString);
 		if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 		{
-			// const auto MatchRecordArray = JsonObject->GetArrayField(TEXT("MatchRecords"));
-			// for (const auto MatchRecord : MatchRecordArray)
-			// {
-			// }
-			//
+			//Json 오브젝트로부터 데이터 추출
+			const auto MatchRecordArray = JsonObject->GetArrayField(TEXT("MatchRecords"));
 			
-			// JsonObject를 사용하여 Json 데이터 처리
-			// JsonObject->TryGetArrayField()
+			for (const auto MatchRecord : MatchRecordArray)
+			{
+				FMatchResultStruct MatchResultStruct;
+				TSharedPtr<FJsonObject> ElementAsObject = MatchRecord->AsObject();
+				
+				if (ElementAsObject->HasField(TEXT("StartTime")))
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 300, FColor::Red, FString::Printf(TEXT("asefasefasefef")));
+					const double DoubleValue = ElementAsObject->GetNumberField(TEXT("StartTime"));
+					int64 Int64Value = static_cast<int64>(DoubleValue);
+					MatchResultStruct.StartTime = Int64Value;
+				}
+
+				if (ElementAsObject->HasField(TEXT("Duration")))
+				{
+					const double DoubleValue = ElementAsObject->GetNumberField(TEXT("Duration"));
+					MatchResultStruct.Duration = DoubleValue;
+				}
+				
+				if (ElementAsObject->HasField(TEXT("WinTeam")))
+				{
+					int32 WinTeamValue = ElementAsObject->GetIntegerField(TEXT("WinTeam"));
+					MatchResultStruct.WinTeam = WinTeamValue == 1 ? EPlayerTeam::A : EPlayerTeam::B;
+				}
+
+				const auto ProPlayersJson = ElementAsObject->GetArrayField(TEXT("ProPlayers"));
+				const auto AntiPlayersJson = ElementAsObject->GetArrayField(TEXT("AntiPlayers"));
+
+				for(const auto PlayerElement : ProPlayersJson)
+				{
+					const TSharedPtr<FJsonObject> PlayerJsonObject = PlayerElement->AsObject();
+					FPlayerStats PlayerStats;
+
+					if(PlayerJsonObject->HasField(TEXT("PlayerName"))) PlayerStats.PlayerName = PlayerJsonObject->GetStringField(TEXT("PlayerName"));
+					if(PlayerJsonObject->HasField(TEXT("PlayerID"))) PlayerStats.PlayerID = PlayerJsonObject->GetStringField(TEXT("PlayerID"));
+					if(PlayerJsonObject->HasField(TEXT("Kill"))) PlayerStats.Kill = PlayerJsonObject->GetIntegerField(TEXT("Kill"));
+					if(PlayerJsonObject->HasField(TEXT("Death"))) PlayerStats.Death = PlayerJsonObject->GetIntegerField(TEXT("Death"));
+					if(PlayerJsonObject->HasField(TEXT("OccupationCount"))) PlayerStats.OccupationCount = PlayerJsonObject->GetIntegerField(TEXT("OccupationCount"));
+					if(PlayerJsonObject->HasField(TEXT("OccupationTickCount"))) PlayerStats.OccupationTickCount = PlayerJsonObject->GetIntegerField(TEXT("OccupationTickCount"));
+					
+					MatchResultStruct.ProPlayers.Emplace(PlayerStats);
+				}
+
+				for(const auto PlayerElement : AntiPlayersJson)
+				{
+					const TSharedPtr<FJsonObject> PlayerJsonObject = PlayerElement->AsObject();
+					FPlayerStats PlayerStats;
+
+					if(PlayerJsonObject->HasField(TEXT("PlayerName"))) PlayerStats.PlayerName = PlayerJsonObject->GetStringField(TEXT("PlayerName"));
+					if(PlayerJsonObject->HasField(TEXT("PlayerID"))) PlayerStats.PlayerID = PlayerJsonObject->GetStringField(TEXT("PlayerID"));
+					if(PlayerJsonObject->HasField(TEXT("Kill"))) PlayerStats.Kill = PlayerJsonObject->GetIntegerField(TEXT("Kill"));
+					if(PlayerJsonObject->HasField(TEXT("Death"))) PlayerStats.Death = PlayerJsonObject->GetIntegerField(TEXT("Death"));
+					if(PlayerJsonObject->HasField(TEXT("OccupationCount"))) PlayerStats.OccupationCount = PlayerJsonObject->GetIntegerField(TEXT("OccupationCount"));
+					if(PlayerJsonObject->HasField(TEXT("OccupationTickCount"))) PlayerStats.OccupationTickCount = PlayerJsonObject->GetIntegerField(TEXT("OccupationTickCount"));
+					
+					MatchResultStruct.AntiPlayers.Emplace(PlayerStats);
+				}
+				
+				//추출한 데이터를 결과 구조체 배열에 저장
+				Results.Emplace(MatchResultStruct);
+			}
+			
 		}
 		else
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Fail Deserialize Json"));
 		}
 	}
 
@@ -681,15 +744,17 @@ bool UEOSGameInstance::SendMatchResultData(const FMatchResultStruct& NewRecordRe
 {
 	if (SocketClient == nullptr) return false;
 
+	//Json 오브젝트 생성
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
 	TSharedPtr<FJsonObject> MatchResultObject = MakeShareable(new FJsonObject());
 
+	//Json 오브젝트에 RequestType, 시작 시간, 게임 길이, 이긴 팀 정보를 작성
 	JsonObject->SetStringField(TEXT("RequestType"),TEXT("InsertRecord"));
-
 	MatchResultObject->SetNumberField(TEXT("StartTime"), NewRecordResult.StartTime);
 	MatchResultObject->SetNumberField(TEXT("Duration"), NewRecordResult.Duration);
 	MatchResultObject->SetNumberField(TEXT("WinTeam"), static_cast<int32>(NewRecordResult.WinTeam));
 
+	//PlayerStats를 Json으보젝트로 작성하는 함수
 	auto ConvertPlayerStatsToJson = [](FPlayerStats PlayerStat)
 	{
 		TSharedRef<FJsonObject> PlayerJsonObject = MakeShared<FJsonObject>();
@@ -700,11 +765,11 @@ bool UEOSGameInstance::SendMatchResultData(const FMatchResultStruct& NewRecordRe
 		PlayerJsonObject->SetNumberField(TEXT("Death"), PlayerStat.Death);
 		PlayerJsonObject->SetNumberField(TEXT("OccupationCount"), PlayerStat.OccupationCount);
 		PlayerJsonObject->SetNumberField(TEXT("OccupationTickCount"), PlayerStat.OccupationTickCount);
-		
+
 		return PlayerJsonObject;
 	};
 
-	// 플레이어 통계 배열을 변환
+	//두 플레이어 팀의 정보를 JsonValue배열로 작성
 	TArray<TSharedPtr<FJsonValue>> AntiPlayersJsonArray;
 	TArray<TSharedPtr<FJsonValue>> ProPlayersJsonArray;
 	for (auto& PlayerStat : NewRecordResult.AntiPlayers)
@@ -716,12 +781,12 @@ bool UEOSGameInstance::SendMatchResultData(const FMatchResultStruct& NewRecordRe
 		ProPlayersJsonArray.Add(MakeShared<FJsonValueObject>(ConvertPlayerStatsToJson(PlayerStat)));
 	}
 
+	//만든 배열을 JsonObject에 작성
 	MatchResultObject->SetArrayField(TEXT("AntiPlayers"), AntiPlayersJsonArray);
 	MatchResultObject->SetArrayField(TEXT("ProPlayers"), ProPlayersJsonArray);
-
 	JsonObject->SetObjectField(TEXT("MatchResult"), MatchResultObject);
 
-
+	//만든 Json 오브젝트를 직렬화
 	FString JsonRequestString;
 	TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&JsonRequestString);
 	if (FJsonSerializer::Serialize(JsonObject.ToSharedRef(), JsonWriter))
@@ -739,18 +804,18 @@ bool UEOSGameInstance::SendMatchResultData(const FMatchResultStruct& NewRecordRe
 
 		// 전송
 		int32 BytesSent;
-		 if (SocketClient->Send(DataToSend.GetData(), DataToSend.Num(), BytesSent))
-		 {
-		 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("RecordDataSend Success"));
-		 	// 데이터 전송 성공
-		 	return true;
-		 }
-		 else
-		 {
-		 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("RecordDataSend Fail"));
-		 	// 데이터 전송 실패
-		 	return false;
-		 }
+		if (SocketClient->Send(DataToSend.GetData(), DataToSend.Num(), BytesSent))
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("RecordDataSend Success"));
+			// 데이터 전송 성공
+			return true;
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("RecordDataSend Fail"));
+			// 데이터 전송 실패
+			return false;
+		}
 	}
 
 	return false;
