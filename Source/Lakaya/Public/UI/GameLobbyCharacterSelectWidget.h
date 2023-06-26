@@ -50,7 +50,7 @@ public:
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
-	UInputMappingContext* ShortcutContext;
+	class UInputMappingContext* ShortcutContext;
 
 	UPROPERTY(EditDefaultsOnly)
 	int32 ShortcutPriority;
