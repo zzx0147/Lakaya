@@ -113,7 +113,7 @@ void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSu
 	InputSubsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 }
 
-AGameLobbyPlayerController::AGameLobbyPlayerController()
+AGameLobbyPlayerController::AGameLobbyPlayerController(): APlayerController()
 {
 	OnPossessedPawnChanged.AddUniqueDynamic(this, &AGameLobbyPlayerController::OnPossessedPawnChangedCallback);
 	if (IsRunningDedicatedServer()) return;

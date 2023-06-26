@@ -1,14 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CharacterBindableWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "GamePlayConsecutiveKillsWidget.generated.h"
 
 class UProgressBar;
 
 //연속처치 표기 클래스
 UCLASS()
-class LAKAYA_API UGamePlayConsecutiveKillsWidget : public UCharacterBindableWidget
+class LAKAYA_API UGamePlayConsecutiveKillsWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
