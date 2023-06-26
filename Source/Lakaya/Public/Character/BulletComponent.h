@@ -13,9 +13,6 @@ class LAKAYA_API UBulletComponent : public UResourceComponent
 {
 	GENERATED_BODY()
 
-	template <class UserClass>
-	using TMemberFunction = void (UserClass::*)();
-
 public:
 	UBulletComponent();
 	virtual void InitializeComponent() override;
@@ -28,21 +25,10 @@ public:
 	const uint16& GetMaxBullets() const { return MaxBullets; }
 
 	// 탄창이 가득차있는지 여부를 조사합니다.
-	bool IsFull() const { return GetBullets() == GetMaxBullets(); }
+	bool IsFull() const { return GetBullets() >= GetMaxBullets(); }
 
 	// 제시된 값이 소모될 수 있을만큼 총알이 충분한지 질의합니다.
 	bool IsEnough(const uint16& Value) const { return Bullets >= Value; }
-
-	/**
-	 * @brief 총알을 차감하고, 그에 따른 함수를 실행합니다.
-	 * @param Value 총알을 차감할 양입니다.
-	 * @param Caller 멤버함수가 실행될 객체입니다. 보통 this를 넘겨주면 됩니다.
-	 * @param OnSuccess 차감에 성공하면 실행될 멤버함수입니다.
-	 * @param OnFailed 차감에 실패하면 실행될 멤버함수입니다.
-	 */
-	template <class UserClass = nullptr_t>
-	void CostBullet(const uint16& Value, UserClass* const& Caller = nullptr,
-	                TMemberFunction<UserClass> OnSuccess = nullptr, TMemberFunction<UserClass> OnFailed = nullptr);
 
 	/**
 	 * @brief 총알 차감을 시도하고, 결과를 반환합니다.
@@ -92,16 +78,3 @@ private:
 
 	TWeakObjectPtr<UGamePlayBulletWidget> BulletWidget;
 };
-
-template <class UserClass>
-void UBulletComponent::CostBullet(const uint16& Value, UserClass* const& Caller, void (UserClass::*OnSuccess)(),
-                                  void (UserClass::*OnFailed)())
-{
-	if (Bullets >= Value)
-	{
-		Bullets -= Value;
-		if (Caller && OnSuccess) (Caller->*OnSuccess)();
-		OnBulletsChanged.Broadcast(Bullets);
-	}
-	else if (Caller && OnFailed) (Caller->*OnFailed)();
-}

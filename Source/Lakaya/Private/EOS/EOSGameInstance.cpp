@@ -11,6 +11,7 @@
 #include "OnlineSessionSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Online/OnlineSessionNames.h"
 
 static const int MaxPlayer = 6;
 
