@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "CoreMinimal.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "GameFramework/GameState.h"
@@ -26,7 +28,7 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 	virtual void HandleMatchIsCharacterSelect();
-	
+	virtual void Tick(float DeltaSeconds) override;
 	virtual void OnRep_MatchState() override;
 
 public:
@@ -64,6 +66,10 @@ protected:
 
 	bool SpawnOutlineManager();
 
+	virtual void ReserveSendRecord();
+
+	virtual bool TrySendMatchResultData();
+
 private:
 	void SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,
 	                      std::function<void()> Callback, TWeakObjectPtr<class UGameTimeWidget> TimeWidget);
@@ -80,6 +86,9 @@ public:
 	FOnPlayerKillNotifiedSignature OnPlayerKillNotified;
 
 protected:
+	int64 StartTimeStamp;//유닉스 타임 스탬프를 사용합니다
+	float StartTime;//서버가 시작된 시점을 0초로 계산합니다
+
 	// Tab키를 눌렀을 때 표시되는 점수판 위젯의 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGameScoreBoardWidget> ScoreBoardClass;
@@ -160,4 +169,7 @@ protected:
 	// TWeakObjectPtr<USkillWidget> SkillWidget;
 
 	TWeakObjectPtr<AOutlineManager> OutlineManager;
+
+private:
+	bool bWantsSendRecordResult;
 };

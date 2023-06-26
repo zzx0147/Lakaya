@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "LakayaBaseGameState.h"
+#include "EOS/EOSGameInstance.h"
 #include "Occupation/PlayerTeam.h"
 #include "OccupationGameState.generated.h"
 
@@ -54,7 +55,7 @@ public:
 
 protected:
 	virtual void SetClientTeam(const EPlayerTeam& NewTeam);
-
+	virtual bool TrySendMatchResultData() override;
 private:
 	UFUNCTION()
 	void OnRep_ATeamScore();
@@ -103,11 +104,15 @@ private:
 	static ERendererStencilMask GetUniqueStencilMask(const bool& IsAlly, const uint8& Index);
 	void OnPlayerStateOwnerChanged(AActor* Owner);
 
+	void AddPlayerStateToRecordResult(EPlayerTeam InTeam ,TArray<ALakayaBasePlayerState*> InPlayers);
+	
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;
+	
 
 private:
+	
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
 	EPlayerTeam CurrentOccupationWinner;
 
@@ -217,6 +222,8 @@ private:
 	// 게임 디테일 Element 결과 위젯입니다.
 	TWeakObjectPtr<UDetailResultElementWidget> DetailResultElementWidget;
 
+	FMatchResultStruct MatchResult;
+	
 public:
 	bool Tapbool = true;
 };

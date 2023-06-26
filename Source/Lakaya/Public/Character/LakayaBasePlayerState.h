@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerState.h"
 #include "Occupation/PlayerTeam.h"
 #include "TimerManager.h"
+#include "EOS/EOSGameInstance.h"
 #include "LakayaBasePlayerState.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FHealthChangeSignature, const float&)
@@ -135,6 +136,8 @@ public:
 
 	void SetAlly(const bool& Ally);
 
+	FPlayerStats GetPlayerStats();
+	
 protected:
 	// 현재 서버의 시간을 가져옵니다.
 	float GetServerTime() const;
@@ -297,6 +300,8 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_CurrentCaptureCount, Transient)
 	uint16 CurrentCaptureCount;
 
+	uint16 OccupationTickCount;
+	
 	UPROPERTY(ReplicatedUsing=OnRep_SuccessCaptureCount, Transient)
 	uint16 SuccessCaptureCount;
 
