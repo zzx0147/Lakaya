@@ -12,12 +12,9 @@ class LAKAYA_API UGamePlayConsecutiveKillsWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-public:
-	// 해당 무기에 바인딩합니다.
-	void BindWeapon(class UWeaponComponent* const& WeaponComponent);
-
-	// 해당 무기와 바인딩을 해제합니다.
-	void UnBindWeapon(UWeaponComponent* const& WeaponComponent);
+// public:
+// 	virtual void BindCharacter(ACharacter* const& Character) override;
+// 	virtual bool UnbindCharacter(ACharacter* const& Character) override;
 
 protected:
 	virtual void NativeConstruct() override;

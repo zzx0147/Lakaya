@@ -1,47 +1,32 @@
 #define DO_CHECK 1
 
 #include "UI/GamePlayPortraitWidget.h"
+
 #include "Components/Image.h"
 
 UGamePlayPortraitWidget::UGamePlayPortraitWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	static const ConstructorHelpers::FObjectFinder<UTexture2D> RenaPortraitFinder(TEXT(
+		"/Game/UI/Ingame/T_InGame_UserInfo_CharImage_Rena_2"));
+
+	static const ConstructorHelpers::FObjectFinder<UTexture2D> WaziPortraitFinder(TEXT(
+		"/Script/Engine.Texture2D'/Game/UI/Charaterselect/T_InGame_UserInfo_CharImage_Wazi.T_InGame_UserInfo_CharImage_Wazi'"));
+
+	static const ConstructorHelpers::FObjectFinder<UTexture2D> RenaWeaponFinder(
+		TEXT("/Script/Engine.Texture2D'/Game/UI/Ingame/Rena/T_Rena_Weapon_Icon.T_Rena_Weapon_Icon'"));
+
+	static const ConstructorHelpers::FObjectFinder<UTexture2D> WaziWeaponFinder(
+		TEXT("/Script/Engine.Texture2D'/Game/UI/Ingame/wazi/T_Wazi_Weapon_Icon.T_Wazi_Weapon_Icon'"));
+
+	PortraitTextureMap.Reserve(3);
+	PortraitTextureMap.Emplace(FName(TEXT("Rena")), {RenaPortraitFinder.Object, RenaWeaponFinder.Object});
+	PortraitTextureMap.Emplace(FName(TEXT("Wazi")), {WaziPortraitFinder.Object, WaziWeaponFinder.Object});
 }
 
-void UGamePlayPortraitWidget::NativeConstruct()
+void UGamePlayPortraitWidget::ChangePortrait(const FName& Key)
 {
-	Super::NativeConstruct();
-
-	//초기화 후 널 체크
-#pragma region InitAndNullCheck
-
-	CharacterPortraitImage = Cast<UImage>(GetWidgetFromName(TEXT("CharacterPortrait_Img")));
-
-	CharacterPortraitTextureArray =
-	{
-		LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/CharacterPortrait/T_Citizen")),
-		LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/CharacterPortrait/T_GovernmentMan")),
-		LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/CharacterPortrait/T_Gangster")),
-	};
-
-	check(CharacterPortraitImage != nullptr);
-	for (auto temp : CharacterPortraitTextureArray) { check(temp != nullptr) }
-
-#pragma endregion
-
-	//기본 초상화를 0번(시민)으로 설정
-	SetCharacterPortrait(0);
-}
-
-void UGamePlayPortraitWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeConstruct();
-}
-
-void UGamePlayPortraitWidget::SetCharacterPortrait(int32 CharacterNum)
-{
-	//캐릭터 넘버를 벗어나는 경우 종료
-	if (CharacterNum < 0 || CharacterPortraitTextureArray.Num() <= CharacterNum) return;
-
-	//캐릭터 넘버를 기준으로 배열에서 텍스처를 가져와 이미지를 변경
-	CharacterPortraitImage->SetBrushFromTexture(CharacterPortraitTextureArray[CharacterNum]);
+	if (!PortraitTextureMap.Contains(Key)) return;
+	const auto& [CharacterImage, WeaponImage] = PortraitTextureMap[Key];
+	CharacterPortraitImage->SetBrushFromTexture(CharacterImage);
+	WeaponPortraitImage->SetBrushFromTexture(WeaponImage);
 }

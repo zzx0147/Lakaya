@@ -1,74 +1,29 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Character/InteractableCharacter.h"
-
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
-#include "Camera/CameraComponent.h"
-#include "InputMappingContext.h"
+#include "Character/LakayaBasePlayerState.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Interactable/Interactable.h"
-#include "PlayerController/MovablePlayerController.h"
+#include "Net/UnrealNetwork.h"
+#include "Occupation/OccupationObject.h"
 
-AInteractableCharacter::AInteractableCharacter()
+AInteractableCharacter::AInteractableCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	if (IsRunningDedicatedServer()) return;
-
-	InteractionRange = 500;
-	CollisionChannel = ECC_Camera;
-
-	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> InteractionContextFinder(
-		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_InteractionControl'"));
-
-	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionStartFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_InteractionStart'"));
-
-	static const ConstructorHelpers::FObjectFinder<UInputAction> InteractionStopFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_InteractionStop'"));
-
-	if (InteractionContextFinder.Succeeded()) InteractionContext = InteractionContextFinder.Object;
-	if (InteractionStartFinder.Succeeded()) InteractionStartAction = InteractionStartFinder.Object;
-	if (InteractionStopFinder.Succeeded()) InteractionStopAction = InteractionStopFinder.Object;
+	InteractionInfo.InteractionState = EInteractionState::None;
 }
 
-void AInteractableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AInteractableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	if (const auto CastedComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
-	{
-		CastedComponent->BindAction(InteractionStartAction, ETriggerEvent::Triggered, this,
-		                            &AInteractableCharacter::InteractionStart);
-		CastedComponent->BindAction(InteractionStopAction, ETriggerEvent::Triggered, this,
-		                            &AInteractableCharacter::InteractionStop);
-	}
-
-	if (const auto PlayerControl = Cast<APlayerController>(GetController()))
-	{
-		if (const auto Local = PlayerControl->GetLocalPlayer())
-		{
-			InputSubSystem = Local->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-		}
-	}
-}
-
-void AInteractableCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	TraceQueryParams.AddIgnoredActor(this);
+	DOREPLIFETIME(AInteractableCharacter, InteractionInfo);
 }
 
 void AInteractableCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
-
-	// Add interaction context when overlapped by trigger
-	if (!InputSubSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
-	++InteractableCount;
-	if (!InputSubSystem->HasMappingContext(InteractionContext))
+	if (OtherActor->ActorHasTag(TEXT("Interactable")))
 	{
-		InputSubSystem->AddMappingContext(InteractionContext, InteractionPriority);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context added"));
+		InteractableActor = OtherActor;
+		OnInteractableActorChanged.Broadcast(InteractableActor.Get());
 	}
 }
 
@@ -76,194 +31,169 @@ void AInteractableCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorEndOverlap(OtherActor);
 
-	// Remove interaction context when far away from triggers
-	if (!InputSubSystem.IsValid() || !OtherActor->ActorHasTag(TEXT("Interactable"))) return;
-	--InteractableCount;
-	if (InteractableCount == 0)
+	if (OtherActor == InteractableActor)
 	{
-		InputSubSystem->RemoveMappingContext(InteractionContext);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow,TEXT("Interaction context removed"));
+		InteractableActor = nullptr;
+		OnInteractableActorChanged.Broadcast(InteractableActor.Get());
 	}
 }
 
-void AInteractableCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
+bool AInteractableCharacter::ShouldInteract() const
 {
-	Super::KillCharacter(EventInstigator, DamageCauser);
-	if (InteractingActor.IsValid()) Cast<IInteractable>(InteractingActor)->OnCharacterDead(this);
+	if (!InteractableActor.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("상호작용 가능한 오브젝트 존재하지 않습니다."));
+		return false;
+	}
+
+	const auto OccupationObject = Cast<AOccupationObject>(InteractableActor);
+	if (!OccupationObject)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ShouldInteractStart_OccupationObject is null."));
+		return false;
+	}
+
+	const auto InteractablePlayerState = Cast<ALakayaBasePlayerState>(GetPlayerState());
+	if (!InteractablePlayerState)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InteractablePlayerState is null."));
+		return false;
+	}
+
+	if (InteractablePlayerState->GetTeam() == OccupationObject->GetObjectTeam())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("이미 점령한 포집기 입니다."));
+		return false;
+	}
+
+	if (OccupationObject->GetInteractingPawn() != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("이미 누군가가 점령을 시도하고 있습니다."));
+		return false;
+	}
+
+	if (InteractionInfo.InteractionState != EInteractionState::None)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InteractionState is not none."));
+		return false;
+	}
+
+	return true;
 }
 
-void AInteractableCharacter::InitiateInteractionStart(const float& Time, AActor* Actor, const float& Duration)
+void AInteractableCharacter::StartInteraction()
 {
-	// Execute InteractionStartNotify when Duration is longer then LockstepDelay
-	if (Duration > LockstepDelay)
+	UE_LOG(LogTemp, Warning, TEXT("StartInteraction."));
+
+	if (!ShouldInteract())
 	{
-		InteractionStartNotify(Time, Actor, Duration);
+		UE_LOG(LogTemp, Warning, TEXT("StartInteraction ShouldInteract()"));
 		return;
 	}
 
-	InitiateLockstepEvent(Time, [this,Actor]
-	{
-		// Execute OnInteractionStart when It's focusable
-		if (IsFocussedBy(EFocusContext::Server, EFocusSpace::MainHand))
-			Cast<IInteractable>(Actor)->OnInteractionStart(this);
-		else UE_LOG(LogActor, Error, TEXT("FocusState was not None on InitiateInteractionStart! FocusState was %d"),
-		            GetFocusState(EFocusContext::Server,EFocusSpace::MainHand));
-	});
+	RequestInteractionStart(GetServerTime(), InteractableActor.Get());
 }
 
-void AInteractableCharacter::NoticeInstantInteractionLocal()
+void AInteractableCharacter::StopInteraction(EInteractionState NewState)
 {
-	if (ReleaseFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
-		InteractingActor = nullptr;
-	else UE_LOG(LogActor, Error, TEXT("Fail to release focus on NoticeInstantInteractionLocal! FocusState was %d"),
-	            GetFocusState(EFocusContext::Owner,EFocusSpace::MainHand));
-}
+	UE_LOG(LogTemp, Warning, TEXT("StopInteraction."));
 
-void AInteractableCharacter::InteractionStopNotify_Implementation(const float& Time, AActor* Actor)
-{
-	InitiateLockstepEvent(Time, [this,Time,Actor]
-	{
-		if (HasAuthority())
-		{
-			if (ReleaseFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
-			{
-				GetWorldTimerManager().ClearTimer(OwnerInteractionTimer);
-				Cast<IInteractable>(Actor)->OnInteractionStop(this);
-			}
-			else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStopNotify with authority!"));
-		}
+	if (InteractionInfo.InteractingActor == nullptr) return;
 
-		if (ReleaseFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
-		{
-			GetWorldTimerManager().ClearTimer(InteractionTimer);
-			OnInteractionStoppedNotify.Broadcast(Time);
-		}
-		else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStopNotify!"));
-	});
-}
-
-void AInteractableCharacter::InteractionStartNotify_Implementation(const float& Time, AActor* Actor,
-                                                                   const float& Duration)
-{
-	InitiateLockstepEvent(Time, [this,Time,Actor,Duration]
-	{
-		// Execute OnInteractionStart when It's server and focusable.
-		if (HasAuthority())
-		{
-			if (SetFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
-				Cast<IInteractable>(Actor)->OnInteractionStart(this);
-			else UE_LOG(LogActor, Error,
-			            TEXT("Fail to set focus on InteractionStartNotify with authority! FocusState was %d"),
-			            GetFocusState(EFocusContext::Server,EFocusSpace::MainHand));
-		}
-
-		if (SetFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
-		{
-			if (IsOwnedByLocalPlayer())
-			{
-				// 오너 컨텍스트는 LockstepDelay만큼 일찍 포커스를 해제합니다.
-				GetWorldTimerManager().SetTimer(OwnerInteractionTimer, [this]
-				{
-					if (ReleaseFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
-					{
-						InteractingActor = nullptr;
-						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,
-														 TEXT("Interaction Completed in Owner!"));
-					}
-					else
-						UE_LOG(LogActor, Error,
-						   TEXT("Fail to release focus on InteractionStartNotify owner context! FocusState was %d"),
-						   GetFocusState(EFocusContext::Owner,EFocusSpace::MainHand));
-				}, Duration - LockstepDelay, false);
-			}
-
-			// 서버와 시뮬레이트 컨텍스트는 Duration만큼 기다린 후 포커스를 해제합니다.
-			GetWorldTimerManager().SetTimer(InteractionTimer, [this]
-			{
-				if (HasAuthority())
-				{
-					if (ReleaseFocus(EFocusContext::Server, EFocusSpace::MainHand, EFocusState::Interacting))
-						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,
-														 TEXT("Interaction Completed in Server!"));
-					else
-						UE_LOG(LogActor, Error,
-						   TEXT("Fail to release focus on InteractionStartNotify with authority! FocusState was %d"),
-						   GetFocusState(EFocusContext::Server,EFocusSpace::MainHand));
-				}
-
-				if (ReleaseFocus(EFocusContext::Simulated, EFocusSpace::MainHand, EFocusState::Interacting))
-					GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Green,
-													 TEXT("Interaction Completed in Simulated!"));
-				else UE_LOG(LogActor, Error, TEXT("Fail to release focus on InteractionStartNotify! FocusState was %d"),
-							GetFocusState(EFocusContext::Simulated,EFocusSpace::MainHand));
-			}, Duration, false);
-
-			OnInteractionStarted.Broadcast(Time, Actor, Duration);
-		}
-		else UE_LOG(LogActor, Error, TEXT("Fail to set focus on InteractionStartNotify! FocusState was %d"),
-		            GetFocusState(EFocusContext::Simulated,EFocusSpace::MainHand));
-	});
+	RequestInteractionStop(GetServerTime(), InteractableActor.Get(), NewState);
 }
 
 bool AInteractableCharacter::RequestInteractionStart_Validate(const float& Time, AActor* Actor)
 {
-	return Actor && Actor->Implements<UInteractable>();
+	// if (!ShouldInteract()) return false;
+	//
+	// if (Actor && Actor->ActorHasTag("Interactable")/* && Time < GetServerTime() + 0.05f*/)
+	// {
+	// 	return true;
+	// }
+	//
+	// return false;
+
+	return true;
 }
 
 void AInteractableCharacter::RequestInteractionStart_Implementation(const float& Time, AActor* Actor)
 {
-	Cast<IInteractable>(Actor)->OnServerInteractionBegin(GetServerTime(), this);
+	InteractionInfo.InteractingActor = Actor;
+	OnInteractingActorChanged.Broadcast(InteractionInfo.InteractingActor.Get());
+	InteractionInfo.InteractionState = EInteractionState::OnGoing;
+	OnInteractionStateChanged.Broadcast(InteractionInfo);
+	GetCharacterMovement()->SetMovementMode(MOVE_None);
+	
+	Cast<AInteractable>(Actor)->OnInteractionStart(Time, this);
 }
 
-bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, AActor* Actor)
+bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, AActor* Actor,
+                                                             EInteractionState NewState)
 {
-	return Actor && Actor->Implements<UInteractable>();
+	// if (Actor && Actor->ActorHasTag("Interactable")/*&& Time < GetServerTime() + 0.05f*/)
+	// {
+	// 	return true;
+	// }
+	//
+	// UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStop_Validate failed."));
+	// return false;
+	return true;
 }
 
-void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor)
+void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor,
+                                                                   EInteractionState NewState)
 {
-	Cast<IInteractable>(Actor)->OnServerInteractionStopBegin(GetServerTime(), this);
+	if (!InteractionInfo.InteractingActor.IsValid() ||
+		InteractionInfo.InteractionState != EInteractionState::OnGoing)
+		return;
+
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+
+	Cast<AInteractable>(Actor)->OnInteractionStop(GetServerTime(), this, NewState);
 }
 
-void AInteractableCharacter::InitiateLockstepEvent(const float& Time, std::function<void()> Callback)
+bool AInteractableCharacter::FinishInteraction_Validate(EInteractionState NewState, float Time)
 {
-	const auto TimerDelay = Time + LockstepDelay - GetServerTime();
-	if (TimerDelay > 0)
+	return true;
+}
+
+void AInteractableCharacter::FinishInteraction_Implementation(EInteractionState NewState, float Time)
+{
+	InteractionInfo.InteractionState = NewState;
+	OnInteractionStateChanged.Broadcast(InteractionInfo);
+
+	if (InteractionInfo.InteractionState == EInteractionState::None)
 	{
-		TSharedPtr<FTimerHandle> Timer = MakeShared<FTimerHandle>();
-		GetWorldTimerManager().SetTimer(*Timer, [Callback,Ptr = Timer] { Callback(); }, TimerDelay, false);
+		InteractionInfo.InteractingActor = nullptr;
+		OnInteractingActorChanged.Broadcast(InteractionInfo.InteractingActor.Get());
+		return;
 	}
-	else if (TimerDelay == 0) Callback();
-	else UE_LOG(LogActor, Warning, TEXT("InititateLockstepEvent::TimerDelay was negative number! (%f)"), TimerDelay);
-}
 
-void AInteractableCharacter::InteractionStart(const FInputActionValue& Value)
-{
-	FHitResult HitResult;
-	const auto Location = GetCamera()->GetComponentLocation();
-	const auto End = Location + GetCamera()->GetForwardVector() * InteractionRange;
+	// 성공했다면 오브젝트에서 OnInteractionFinish() 호출
+	Cast<AInteractable>(InteractionInfo.InteractingActor)->OnInteractionFinish(this);
 
-	DrawDebugLine(GetWorld(), Location, End, FColor::Yellow, false, 2);
-	if (GetWorld()->LineTraceSingleByChannel(HitResult, Location, End, CollisionChannel, TraceQueryParams))
-		if (const auto Actor = HitResult.GetActor())
-			if (Actor->Implements<UInteractable>()
-				&& SetFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
-			{
-				//When hit actor was implement IInteractable and this character was Focusable
-				InteractingActor = Actor;
-				Cast<IInteractable>(Actor)->OnLocalInteractionBegin(this);
-				RequestInteractionStart(GetServerTime(), Actor);
-			}
-}
+	InteractionInfo.InteractingActor = nullptr;
+	OnInteractingActorChanged.Broadcast(InteractionInfo.InteractingActor.Get());
 
-void AInteractableCharacter::InteractionStop(const FInputActionValue& Value)
-{
-	if (!InteractingActor.IsValid()) return;
-	if (ReleaseFocus(EFocusContext::Owner, EFocusSpace::MainHand, EFocusState::Interacting))
+	// 1초뒤에 None상태로 돌아옵니다.
+	if (InteractionInfo.InteractionState == EInteractionState::Success)
 	{
-		Cast<IInteractable>(InteractingActor.Get())->OnLocalInteractionStopBegin(this);
-		RequestInteractionStop(GetServerTime(), InteractingActor.Get());
-		InteractingActor = nullptr;
+		Cast<ALakayaBasePlayerState>(GetPlayerState())->IncreaseSuccessCaptureCount();
+		Cast<ALakayaBasePlayerState>(GetPlayerState())->AddTotalScoreCount(500);
+		
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindLambda([this]()
+		{
+			if (this == nullptr) return;
+			InteractionInfo.InteractionState = EInteractionState::None;
+			OnInteractionStateChanged.Broadcast(InteractionInfo);
+		});
+		GetWorldTimerManager().SetTimer(InteractionClearTimer, TimerDelegate, 0.5f, false);
 	}
-	else UE_LOG(LogActor, Error, TEXT("It was posssible to InteractionStop but It was not focussed by Interacting!"))
+}
+
+void AInteractableCharacter::OnRep_InteractingActor() const
+{
+	OnInteractingActorChanged.Broadcast(InteractionInfo.InteractingActor.Get());
 }

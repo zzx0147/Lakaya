@@ -1,48 +1,51 @@
 #include "UI/LoadingWidget.h"
 
-#include "PlayerController/MenuCallingPlayerController.h"
-#include "Net/UnrealNetwork.h"
+#include "GameMode/AIIndividualGameMode.h"
+#include "GameMode/AIIndividualGameState.h"
+#include "GameMode/OccupationGameState.h"
+#include "Kismet/GameplayStatics.h"
 
 void ULoadingWidget::NativeConstruct()
 {
-    Super::NativeConstruct();
+	Super::NativeConstruct();
 
-    OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-    if (OccupationGameState == nullptr)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_GameMode is null."));
-        return;
-    }
-
-    OnChangeJoinedPlayers(OccupationGameState->GetNumPlayers());
-    
-    // 바인딩
-    LoadingWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("LoadingWidgetText")));
-    if (LoadingWidgetText == nullptr)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_JoinedPlayerText is null."));
-        return;
-    }
-
-    OccupationGameState->OnOccupationChangeJoinedPlayers.AddUObject(this, &ULoadingWidget::OnChangeJoinedPlayers);
-    OccupationGameState->OnOccupationChangeGameState.AddUObject(this, &ULoadingWidget::ReMoveLoadingWidget);
+	LoadingWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("LoadingWidgetText")));
+	if (LoadingWidgetText == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_JoinedPlayerText is null."));
+		return;
+	}
 }
 
-void ULoadingWidget::OnChangeJoinedPlayers(uint8 JoinedPlayers)
+void ULoadingWidget::SetPlayerNumber(const uint8& PlayerCount)
 {
-    if (JoinedPlayers == OccupationGameState->GetMaxPlayers())
-    {
-        LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("곧 게임을 시작합니다."))));
-        return;
-    }
-    
-    LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), JoinedPlayers, OccupationGameState->GetMaxPlayers())));
+	const auto CurrentGameState = UGameplayStatics::GetGameState(GetWorld());
+
+	AOccupationGameState* NewOccupationGameState = Cast<AOccupationGameState>(CurrentGameState);
+	AAIIndividualGameState* NewAIIndividualGameState = Cast<AAIIndividualGameState>(CurrentGameState);
+
+	// Occupation Mode
+	if (NewOccupationGameState)
+	{
+		if (PlayerCount == MaxPlayerCount)
+		{
+			LoadingWidgetText->SetText(FText::FromString(TEXT("loading . . .")));
+			return;
+		}
+
+		LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("(%d / %d)"), PlayerCount, MaxPlayerCount)));
+	}
+
+	// AIIndividual Mode
+	if (NewAIIndividualGameState)
+	{
+		LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("loading. . ."))));
+	}
+
+	// TODO : Individual Mode 추가
 }
 
-void ULoadingWidget::ReMoveLoadingWidget(EOccupationGameState ChangeGamState)
+void ULoadingWidget::SetMaximumPlayerNumber(const uint8& PlayerCount)
 {
-    if (ChangeGamState == EOccupationGameState::Progress)
-    {
-        this->RemoveFromParent();
-    }
+	MaxPlayerCount = PlayerCount;
 }

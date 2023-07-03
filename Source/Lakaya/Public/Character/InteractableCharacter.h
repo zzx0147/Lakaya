@@ -1,126 +1,127 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "ArmedCharacter.h"
-#include "GameFramework/GameStateBase.h"
-#include "InputActionValue.h"
 #include "InteractableCharacter.generated.h"
 
-DECLARE_EVENT_ThreeParams(AInteractableCharacter, FInteractionStartSignature, const float&, AActor*, const float&);
+DECLARE_EVENT_OneParam(AInteractableCharacter, FInteractionSignature, AActor*);
+DECLARE_EVENT_OneParam(AInteractableCharacter, FOnInteractionStateChanged, FInteractionInfo);
 
-DECLARE_EVENT_OneParam(AInteractableCharacter, FInteractionEndedSignature, const float&);
+UENUM()
+enum class EInteractionState : uint8
+{
+	None UMETA(DisplayerName = "None"),
+	OnGoing UMETA(DisplayerName = "OnGoing"),
+	Success UMETA(DisPlayerName = "Success"),
+	Stopped UMETA(DisPlayerName = "Stopped"),
+	Canceled UMETA(DisPlayerName = "Canceled"),
+};
 
-/**
- *
- */
+USTRUCT()
+struct FInteractionInfo
+{
+	GENERATED_BODY();
+
+	// 현재 인터랙션 중인 액터입니다.
+	UPROPERTY()
+	TWeakObjectPtr<AActor> InteractingActor;
+
+	// 현재 플레이어의 상호작용 상태를 나타냅니다.
+	UPROPERTY()
+	EInteractionState InteractionState = EInteractionState::None;
+
+	// 현재 인터렉션 상태가 유지되는 목표 시간입니다.
+	// UPROPERTY()
+	// float EndingTime;
+};
+
 UCLASS(Config = Game)
 class LAKAYA_API AInteractableCharacter : public AArmedCharacter
 {
 	GENERATED_BODY()
 
 public:
-	AInteractableCharacter();
-
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-
+	explicit AInteractableCharacter(const FObjectInitializer& ObjectInitializer);
+	
 protected:
-	virtual void BeginPlay() override;
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
-	virtual void KillCharacter(AController* EventInstigator, AActor* DamageCauser) override;
 
+	// 현재 상호작용을 할 수 있는지 판별합니다.
+	virtual bool ShouldInteract() const;
+	
 public:
 	/**
-	 * @brief 인터렉션 시작 절차를 시작합니다. 반드시 서버에서 호출해야 합니다.
-	 * @param Time 인터렉션 시작 입력이 시작된 시간입니다.
-	 * @param Actor 인터렉션을 시작하는 대상 액터입니다.
-	 * @param Duration 인터렉션이 수행되는 시간입니다. 시간이 긴 경우 모든 클라이언트에게 전파됩니다.
+	 * @brief 상호작용을 요청합니다.
 	 */
-	void InitiateInteractionStart(const float& Time, AActor* Actor, const float& Duration = -1.f);
+	void StartInteraction();
 
 	/**
-	 * @brief 즉시 발생하는 인터렉션임을 오너 클라이언트에게 알립니다.
+	 * @brief 상호작용 중단을 요청합니다.
+	 * @param NewState 상호작용이 중단되었을 때, 상호작용 성공 여부를 나타냅니다. 
 	 */
-	void NoticeInstantInteractionLocal();
+	void StopInteraction(EInteractionState NewState);
 
+	// 상호작용이 끝남을 알려줍니다.
+	// 상호작용이 끝나게 되면 실행되는 함수입니다.
 	/**
-	 * @brief 인터렉션 중단 절차를 시작합니다. 반드시 서버에서 호출해야 합니다.
-	 * @param Time 인터렉션 중단 입력이 시작된 시간입니다.
-	 * @param Actor 인터렉션 중단 대상 액터입니다.
+	 * @brief 상호작용이 끝남을 알려줍니다.
+	 * @param NewState 상호작용이 끝났을 시, 성공 여부입니다.
+	 * @param Time 상호작용이 끝난 시간입니다.
+	 * 
 	 */
-	UFUNCTION(NetMulticast, Reliable)
-	void InteractionStopNotify(const float& Time, AActor* Actor);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void FinishInteraction(EInteractionState NewState, float Time);
 
-protected:
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE AActor* GetInteractingActor() const { return InteractionInfo.InteractingActor.Get(); }
+	
+	FORCEINLINE const EInteractionState& GetInteractionState() const { return InteractionInfo.InteractionState; }
+
+	FORCEINLINE void SetInteractionState(const EInteractionState& NewState) { InteractionInfo.InteractionState = NewState; }
+
+	FORCEINLINE bool IsNotInteracting() const { return InteractionInfo.InteractionState == EInteractionState::None; }
+
+private:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void RequestInteractionStart(const float& Time, AActor* Actor);
 
+	/**
+	 * @brief 클라에게 중단 요청을 받게 되면 서버에서 실행됩니다.
+	 * @param Time 중단 요청을 받은 시간입니다.
+	 * @param Actor 중단을 요청한 캐릭터입니다.
+	 * @param NewState 중단을 했을 때, 상호작용 성공 여부를 나타냅니다.
+	 * 
+	 */
 	UFUNCTION(Server, Reliable, WithValidation)
-	void RequestInteractionStop(const float& Time, AActor* Actor);
-
-	// 현재시점의 서버 시간을 가져옵니다.
-	FORCEINLINE float GetServerTime() const { return GetWorld()->GetGameState()->GetServerWorldTimeSeconds(); }
+	void RequestInteractionStop(const float& Time, AActor* Actor, EInteractionState NewState);
 
 private:
-	/**
-	 * @brief 이 캐릭터가 인터렉션을 시작함을 서버와 모든 클라이언트에게 알립니다. 오랫동안 실행되는 인터렉션일 때 사용됩니다.
-	 * @param Time 인터렉션이 시작된 시간입니다. 보통은 캐릭터가 서버에 인터렉션 시작을 요청했을 때 호출됩니다.
-	 * @param Actor 인터렉션을 시작하는 대상 액터입니다.
-	 * @param Duration 인터렉션의 지속 시간입니다.
-	 */
-	UFUNCTION(NetMulticast, Reliable)
-	void InteractionStartNotify(const float& Time, AActor* Actor, const float& Duration);
+	// 인터렉션이 가능한 액터입니다.
+	TWeakObjectPtr<AActor> InteractableActor;
 
-	/**
-	 * @brief 락스텝 이벤트를 예약합니다. 너무 늦게 예약된 이벤트인 경우 로그를 남기고 취소됩니다.
-	 * @param Time 락스텝 이벤트가 요청된 시간입니다.
-	 * @param Callback 락스텝 이벤트가 목표로 하는 시간에 실행할 함수입니다.
-	 */
-	void InitiateLockstepEvent(const float& Time, std::function<void()> Callback);
-
-	void InteractionStart(const FInputActionValue& Value);
-	void InteractionStop(const FInputActionValue& Value);
+	UPROPERTY(ReplicatedUsing = OnRep_InteractingActor)
+	FInteractionInfo InteractionInfo;
+	
+	// 현재 본인의 상호작용 상태를 나타냅니다.
+	// TODO : 적용했을 시, 클라 측에서 버그가 발생함 (이유를 찾지못함)
+	UPROPERTY()
+	bool bInteractionRequested;
+	
+	UFUNCTION()
+	void OnRep_InteractingActor() const;
 
 public:
-	/**
-	 * @brief 긴 인터렉션이 시작되었을 때 호출됩니다. 인터렉션 시작 시간, 대상 액터를 매개변수로 받습니다.
-	 * 이 이벤트는 오래 걸리는 상호작용시를 상정하여 선언되었으므로 즉시 실행되는 상호작용의 경우 호출되지 않을 수 있습니다.
-	 */
-	FInteractionStartSignature OnInteractionStarted;
+	// 인터렉션이 가능한 액터가 변경되는 경우 호출됩니다. 매개변수로 넘겨진 액터가 nullptr이면 인터렉션이 불가능해졌음을 의미하며,
+	// 그렇지 않은 경우 해당 액터와 인터렉션이 가능해졌음을 의미합니다.
+	FInteractionSignature OnInteractableActorChanged;
 
-	/**
-	 * @brief 긴 인터렉션이 중단되었을 때 호출됩니다. 매개변수로 중단된 시간을 받습니다.
-	 */
-	FInteractionEndedSignature OnInteractionStoppedNotify;
+	// 인터렉션중인 액터가 변화한 경우 호출됩니다. 매개변수로 넘겨진 액터가 nullptr이면 인터렉션 중단을 의미하며,
+	// 그렇지 않은 경우 인터렉션중임을 의미합니다.
+	FInteractionSignature OnInteractingActorChanged;
 
-private:
-	UPROPERTY(EditAnywhere, Category = "Input|Interaction|Context")
-	class UInputMappingContext* InteractionContext;
-
-	UPROPERTY(EditAnywhere, Category = "Input|Interaction|Context")
-	int8 InteractionPriority;
-
-	UPROPERTY(EditAnywhere, Category = "Input|Interaction|Actions")
-	class UInputAction* InteractionStartAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input|Interaction|Actions")
-	UInputAction* InteractionStopAction;
-
-	UPROPERTY(EditAnywhere, Category = Interaction)
-	float InteractionRange;
-
-	UPROPERTY(EditAnywhere, Category = Interaction)
-	TEnumAsByte<ECollisionChannel> CollisionChannel;
-
-	UPROPERTY(Config)
-	float LockstepDelay = 0.1f;
-
-	uint8 InteractableCount;
-	TWeakObjectPtr<AActor> InteractingActor;
-	FCollisionQueryParams TraceQueryParams;
-	FTimerHandle InteractionTimer;
-	FTimerHandle OwnerInteractionTimer;
-	TWeakObjectPtr<class UEnhancedInputLocalPlayerSubsystem> InputSubSystem;
+	// 상호작용 상태가 변화한 경우 호출됩니다. 매개변수로 넘겨진 액터가 nullptr이면 인터렉션 중단을 의미합니다.
+	FOnInteractionStateChanged OnInteractionStateChanged;
+	
+	FTimerHandle InteractionClearTimer;
 };

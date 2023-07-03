@@ -3,28 +3,24 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
-#include "GameFramework/HUD.h"
-#include "GameMode/OccupationGameState.h"
 #include "LoadingWidget.generated.h"
 
 UCLASS()
 class LAKAYA_API ULoadingWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
-private:
+	
+protected:
 	virtual void NativeConstruct() override;
 
+public:
+	virtual void SetPlayerNumber(const uint8& PlayerCount);
+	virtual void SetMaximumPlayerNumber(const uint8& PlayerCount);
+
+private:
+
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* LoadingWidgetText;
+	TWeakObjectPtr<UTextBlock> LoadingWidgetText;
 
-public:
-	UFUNCTION()
-	void ReMoveLoadingWidget(EOccupationGameState ChangeGamState);
-	
-public:
-	UFUNCTION()
-	void OnChangeJoinedPlayers(uint8 Number);
-
-	AOccupationGameState* OccupationGameState;
+	uint8 MaxPlayerCount;
 };

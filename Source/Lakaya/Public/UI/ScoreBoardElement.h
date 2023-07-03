@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Image.h"
 #include "ScoreBoardElement.generated.h"
 
 class UTextBlock;
@@ -11,17 +12,37 @@ UCLASS()
 class LAKAYA_API UScoreBoardElement : public UUserWidget
 {
 	GENERATED_BODY()
-	
-	UScoreBoardElement(const FObjectInitializer& ObjectInitializer);
-public:
-	void SetData(int8 Rank,const FText PlayerName, int8 Score); // 정보를 받아서 UI를 업데이트
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	
+public:
+	// 플레이어 이름을 설정합니다.
+	void SetPlayerName(const FText& PlayerName) const;
+	void SetPlayerName(const FString& PlayerName) const;
 
+	// 누적 점수를 업데이트합니다.
+	void SetTotalScore(const uint16& ScoreCount) const;
+
+	// 누적 점령 성공 횟수를 업데이트합니다.
+	void SetSuccessCaptureCount(const uint16& CaptureCount) const;
+	
+	// 누적 킬 횟수를 업데이트합니다.
+	void SetKillCount(const uint16& KillCount) const;
+
+	// 누적 사망 횟수를 업데이트합니다.
+	void SetDeathCount(const uint16& DeathCount) const;
+	
 private:
-	UTextBlock* RankText; //랭킹
-	UTextBlock* PlayerNameText; //플레이어 이름
-	UTextBlock* ScoreText; //점수
+	TWeakObjectPtr<UTextBlock> PlayerNameText;	 // 플레이어 이름
+	TWeakObjectPtr<UTextBlock> ScoreText;	   	 // 점수
+	TWeakObjectPtr<UTextBlock> CaptureText;		 // 점령 성공
+	TWeakObjectPtr<UTextBlock> KillText;		 // 킬
+	TWeakObjectPtr<UTextBlock> DeathText;		 // 데스
+
+public:
+	TWeakObjectPtr<UImage> Anti_BackGround_Image;			// Anti_뒷배경
+	TWeakObjectPtr<UImage> Pro_BackGround_Image;			// Pro_뒷배경
+	TWeakObjectPtr<UImage> Character_Rena_Image;		// Anti_레나 초상화
+	TWeakObjectPtr<UImage> Character_Wazi_Image;		// Anti_와지 초상화
 };

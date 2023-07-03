@@ -1,7 +1,16 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Interactable/Interactable.h"
 
-#include "GameFramework/GameStateBase.h"
-#include "GameFramework/PlayerState.h"
+AInteractable::AInteractable(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	Tags.Add("Interactable");
+
+	// InteractingPawn = nullptr;
+	Trigger = CreateDefaultSubobject<USphereComponent>(TEXT("Trigger Sphere"));
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+
+	SetRootComponent(Trigger);
+	Mesh->SetupAttachment(RootComponent);
+
+	Trigger->InitSphereRadius(600.0f);
+	Trigger->SetCollisionProfileName(TEXT("Interactable"));
+}

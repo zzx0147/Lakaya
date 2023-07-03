@@ -3,105 +3,117 @@
 
 #include "Character/ArmedCharacter.h"
 
-#include "Weapon/WeaponClassData.h"
-#include "Weapon/WeaponComponent.h"
-#include "Engine/DataTable.h"
+#include "Character/Ability/CharacterAbility.h"
 #include "Net/UnrealNetwork.h"
 
-AArmedCharacter::AArmedCharacter()
-{
-	bReplicateUsingRegisteredSubObjectList = true;
-
-	static const ConstructorHelpers::FObjectFinder<UDataTable> DataFinder(
-		TEXT("DataTable'/Game/Dev/Yongwoo/DataTables/DT_WeaponClassDataTable'"));
-
-	if (DataFinder.Succeeded()) WeaponClassDataTable = DataFinder.Object;
-}
+const TArray<FName> AArmedCharacter::AbilityComponentNames = {
+	FName(TEXT("PrimaryAbility")), FName(TEXT("SecondaryAbility")), FName(TEXT("WeaponFire")),
+	FName(TEXT("WeaponAbility")), FName(TEXT("WeaponReload")), FName(TEXT("DashAbility"))
+};
 
 void AArmedCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AArmedCharacter, PrimaryWeapon);
+	DOREPLIFETIME(AArmedCharacter, Abilities);
 }
 
-void AArmedCharacter::SetupPrimaryWeapon(const FName& WeaponClassRowName)
+AArmedCharacter::AArmedCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	const auto Data = WeaponClassDataTable->FindRow<FWeaponClassData>(WeaponClassRowName,TEXT("SetupPrimaryWeapon"));
-
-	PrimaryWeapon = Cast<UWeaponComponent>(
-		AddComponentByClass(Data->WeaponClass.LoadSynchronous(), false, FTransform::Identity, false));
-
-	if (!PrimaryWeapon) UE_LOG(LogActor, Fatal, TEXT("PrimaryWeapon was setted as nullptr"));
-	PrimaryWeapon->RequestSetupData(Data->AssetRowName);
-	PrimaryWeapon->SetIsReplicated(true);
-	if (!PrimaryWeapon->GetIsReplicated()) UE_LOG(LogTemp, Fatal, TEXT("PrimaryWeapon is NOT replicated"));
-	OnPrimaryWeaponChanged.Broadcast(PrimaryWeapon);
+	Abilities.Reserve(EAbilityKind::Count);
+	for (auto Index = 0; Index < EAbilityKind::Count; ++Index)
+	{
+		Abilities.EmplaceAt(Index, Cast<UCharacterAbility>(CreateDefaultSubobject(
+			                    AbilityComponentNames[Index], UCharacterAbility::StaticClass(),
+			                    UCharacterAbility::StaticClass(), false, false)));
+	}
 }
 
 ELifetimeCondition AArmedCharacter::AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const
 {
-	if (ComponentToReplicate->IsA(UWeaponComponent::StaticClass())) return COND_None;
+	if (ComponentToReplicate->IsA(UCharacterAbility::StaticClass())) return COND_None;
 	return Super::AllowActorComponentToReplicate(ComponentToReplicate);
 }
 
-void AArmedCharacter::BeginPlay()
+void AArmedCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
 {
-	Super::BeginPlay();
-
-	//TODO: 무기 셋업은 게임모드에서 수행되어야 합니다.
-	if (HasAuthority()) SetupPrimaryWeapon(TEXT("Test"));
+	Super::SetTeam_Implementation(Team);
+	for (const auto& Ability : Abilities) Ability->SetTeam(Team);
 }
 
-void AArmedCharacter::KillCharacter(AController* EventInstigator, AActor* DamageCauser)
+void AArmedCharacter::SetAliveState_Implementation(bool IsAlive)
 {
-	Super::KillCharacter(EventInstigator, DamageCauser);
-	PrimaryWeapon->UpgradeInitialize();
-	if (const auto Causer = Cast<AArmedCharacter>(DamageCauser)) Causer->PrimaryWeapon->UpgradeWeapon();
+	Super::SetAliveState_Implementation(IsAlive);
+	for (const auto& Ability : Abilities) Ability->OnAliveStateChanged(IsAlive);
 }
 
-void AArmedCharacter::KillCharacterNotify_Implementation(AController* EventInstigator, AActor* DamageCauser)
+void AArmedCharacter::StartAbility(const EAbilityKind& Kind)
 {
-	Super::KillCharacterNotify_Implementation(EventInstigator, DamageCauser);
-	PrimaryWeapon->OnCharacterDead();
+	if (const auto Ability = FindAbility(Kind); Ability && ShouldStartAbility(Kind))
+	{
+		Ability->LocalAbilityStart();
+		if (Ability->CanStartRemoteCall())
+			RequestStartAbility(Kind, GetServerTime());
+	}
 }
 
-void AArmedCharacter::RespawnNotify_Implementation()
+void AArmedCharacter::StopAbility(const EAbilityKind& Kind)
 {
-	Super::RespawnNotify_Implementation();
-	PrimaryWeapon->OnCharacterRespawn();
+	if (const auto Ability = FindAbility(Kind); Ability && ShouldStopAbility(Kind))
+	{
+		Ability->LocalAbilityStop();
+		if (Ability->CanStopRemoteCall())
+			RequestStopAbility(Kind, GetServerTime());
+	}
 }
 
-void AArmedCharacter::FireStart()
+UCharacterAbility* AArmedCharacter::FindAbility(const EAbilityKind& Kind) const
 {
-	PrimaryWeapon->FireStart();
+	if (Abilities.IsValidIndex(Kind)) return Abilities[Kind];
+	return nullptr;
 }
 
-void AArmedCharacter::FireStop()
+bool AArmedCharacter::ShouldStopAbilityOnServer_Implementation(EAbilityKind Kind)
 {
-	PrimaryWeapon->FireStop();
+	return true;
 }
 
-void AArmedCharacter::AbilityStart()
+bool AArmedCharacter::ShouldStartAbilityOnServer_Implementation(EAbilityKind Kind)
 {
-	PrimaryWeapon->AbilityStart();
+	return true;
 }
 
-void AArmedCharacter::AbilityStop()
+void AArmedCharacter::RequestStopAbility_Implementation(const EAbilityKind& Kind, const float& Time)
 {
-	PrimaryWeapon->AbilityStop();
+	if (ShouldStopAbilityOnServer(Kind)) Abilities[Kind]->RemoteAbilityStop(Time);
 }
 
-void AArmedCharacter::ReloadStart()
+bool AArmedCharacter::RequestStopAbility_Validate(const EAbilityKind& Kind, const float& Time)
 {
-	PrimaryWeapon->ReloadStart();
+	// Time값이 조작되었는지 여부를 검사합니다. 0.05f는 서버시간의 허용오차를 의미합니다.
+	// return FindAbility(Kind) != nullptr;
+	// return FindAbility(Kind) && GetServerTime() + 0.07f >= Time;
+	return true;
 }
 
-void AArmedCharacter::ReloadStop()
+void AArmedCharacter::RequestStartAbility_Implementation(const EAbilityKind& Kind, const float& Time)
 {
-	PrimaryWeapon->ReloadStop();
+	if (ShouldStartAbilityOnServer(Kind)) Abilities[Kind]->RemoteAbilityStart(Time);
 }
 
-void AArmedCharacter::OnRep_PrimaryWeapon()
+bool AArmedCharacter::RequestStartAbility_Validate(const EAbilityKind& Kind, const float& Time)
 {
-	OnPrimaryWeaponChanged.Broadcast(PrimaryWeapon);
+	// Time값이 조작되었는지 여부를 검사합니다. 0.05f는 서버시간의 허용오차를 의미합니다.
+	// return FindAbility(Kind) != nullptr;
+	// return FindAbility(Kind) && GetServerTime() + 0.7f >= Time;
+	return true;
+}
+
+bool AArmedCharacter::ShouldStartAbility_Implementation(EAbilityKind Kind)
+{
+	return true;
+}
+
+bool AArmedCharacter::ShouldStopAbility_Implementation(EAbilityKind Kind)
+{
+	return true;
 }

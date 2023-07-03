@@ -2,15 +2,10 @@
 
 #include "UI/GamePlayKillLogWidget.h"
 
-#include "Character/DamageableCharacter.h"
 #include "Components/VerticalBox.h"
+#include "GameMode/OccupationGameState.h"
 #include "UI/KillLogElement.h"
 
-void UGamePlayKillLogWidget::OnCharacterBeginPlay(ADamageableCharacter* Character)
-{
-	if (Character) Character->OnKillCharacterNotify.AddUObject(this, &UGamePlayKillLogWidget::OnKillCharacterNotify);
-	else UE_LOG(LogInit, Error, TEXT("SetupKillLogWidget::Character was nullptr!"));
-}
 
 UGamePlayKillLogWidget::UGamePlayKillLogWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -44,10 +39,13 @@ void UGamePlayKillLogWidget::NativeConstruct()
 		Result->SetVisibility(ESlateVisibility::Collapsed);
 		return Result;
 	});
+
+	// if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+		// GameState->OnPlayerKillNotified.AddUObject(this, &UGamePlayKillLogWidget::OnKillCharacterNotify);
 }
 
-void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController, AActor* KilledActor,
-                                                   AController* Instigator, AActor* Causer)
+void UGamePlayKillLogWidget::OnKillCharacterNotify(APlayerState* KilledController,
+                                                   APlayerState* Instigator, AActor* Causer)
 {
 	UKillLogElement* Element;
 	if (ShownElementCount < MaxElementCount)
@@ -57,6 +55,12 @@ void UGamePlayKillLogWidget::OnKillCharacterNotify(AController* KilledController
 	}
 	else Element = Cast<UKillLogElement>(KillLogBox->GetChildAt(InitialChildCount));
 
-	// KillLogBox->ShiftChild(KillLogBox->GetChildrenCount(), Element);
-	Element->SetKillLog(Cast<ADamageableCharacter>(Causer), Cast<ACharacter>(KilledActor));
+
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("KilllogWidget!!! SetKillLog!!"));
+	//KillLogBox->ShiftChild(KillLogBox->GetChildrenCount(), Element);
+
+	 if(Element != nullptr)
+		Element->SetKillLog(Instigator, KilledController);
+		
+	
 }

@@ -1,67 +1,20 @@
 #include "UI/GameResultWidget.h"
-#include "Character/CollectorPlayerState.h"
-#include "GameFramework/Character.h"
+
+#include "Components/Image.h"
+#include "Components/TextBlock.h"
+#include "GameMode/OccupationGameState.h"
 
 void UGameResultWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-	if (OccupationGameState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_GameMode is null."));
-		return;
-	}
+	VictoryImage = Cast<UImage>(GetWidgetFromName(TEXT("Result_Victory_Image")));
+	DefeatImage = Cast<UImage>(GetWidgetFromName(TEXT("Result_Defeat_Image")));
+	AntiScore = Cast<UTextBlock>(GetWidgetFromName(TEXT("Result_Anti_Score_Text")));
+	ProScore = Cast<UTextBlock>(GetWidgetFromName(TEXT("Result_Pro_Score_Text")));
 
-	GameResultWidgetText = Cast<UTextBlock>(GetWidgetFromName(TEXT("GameResultWidgetText")));
-	if (GameResultWidgetText == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("LoadingWidget_JoinedPlayerText is null."));
-		return;
-	}
-
-	OccupationGameState->OnOccupationChangeOccupationWinner.AddUObject(this, &UGameResultWidget::OnChangeWinner);
-
-	SetVisibility(ESlateVisibility::Hidden);
-}
-
-void UGameResultWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-}
-
-void UGameResultWidget::ReMoveLoadingWidget(EOccupationGameState ChangeGameState)
-{
-	// TODO :
-}
-
-void UGameResultWidget::OnChangeWinner(EOccupationWinner NewWinner)
-{
-	SetVisibility(ESlateVisibility::Visible);
-
-	ACollectorPlayerState* PlayerState = Cast<ACollectorPlayerState>(GetOwningPlayer()->GetCharacter()->GetPlayerState());
-	if (PlayerState == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GameResultWidget_PlayerState is null."));
-		return;
-	}
-	
-	FString WinnerString;
-	switch (OccupationGameState->GetOccupationWinner())
-	{
-	case EOccupationWinner::UnCertain:
-		WinnerString = FString(TEXT("Undecided"));
-		break;
-	case EOccupationWinner::A:
-		if (PlayerState->GetPlayerTeamState() == EPlayerTeamState::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
-		else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
-		break;
-	case EOccupationWinner::B:
-		if (PlayerState->GetPlayerTeamState() == EPlayerTeamState::A) GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("패배."))));
-		else GameResultWidgetText->SetText(FText::FromString(FString::Printf(TEXT("승리!"))));
-		break;
-	default:
-		WinnerString = FString(TEXT("Unknown"));
-		break;
-	}
+	if (VictoryImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("VictoryImage is null."));
+	if (DefeatImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("DefeatImage is null."));
+	if (AntiScore == nullptr) UE_LOG(LogTemp, Warning, TEXT("AntiScore is null."));
+	if (ProScore == nullptr) UE_LOG(LogTemp, Warning, TEXT("ProScore is null."));
 }

@@ -1,169 +1,229 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameState.h"
+#include "LakayaBaseGameState.h"
+#include "EOS/EOSGameInstance.h"
+#include "Occupation/PlayerTeam.h"
 #include "OccupationGameState.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeJoinedPlayers, uint8);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeGameState, EOccupationGameState);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeATeamScore, float);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeBTeamScore, float);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnOccupationChangeOccupationWinner, EOccupationWinner)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeOccupationWinner, const EPlayerTeam&)
+DECLARE_EVENT_TwoParams(AOccupationGameState, FTeamScoreSignature, const EPlayerTeam&, const float&)
 
-UENUM()
-enum class EOccupationGameState : uint8
-{
-	Menu UMETA(DisplayerName = "Menu"), // 메뉴 선택, 설정 ... 상태
-	StandBy UMETA(DisplayName = "StandBy"), // 다른 플레이어 입장 대기 상태
-	// SelectWait UMETA(DisplayName = "SelectWait"), // 무기 및 캐릭터 선택 대기 상태
-	StandByToPregressLoading UMETA(DisplayName = "StandByToPregressLoading"),
-	Progress UMETA(DisplayName = "Progress"), // 게임진행 상태
-	Finish UMETA(DisplayName = "Finish") // 게임종료 상태
-};
-
-UENUM()
-enum class EOccupationWinner : uint8
-{
-	UnCertain UMETA(DisplayerName = "UnCertain"), // 승리자가 정해지지 않은 상태.
-	A UMETA(DisplayerName = "A"), // A팀이 승리한 상태.
-	B UMETA(DisplayerName = "B") // B팀이 승리한 상태.
-};
-
-/**
- * 
- */
 UCLASS()
-class LAKAYA_API AOccupationGameState : public AGameState
+class LAKAYA_API AOccupationGameState : public ALakayaBaseGameState
 {
 	GENERATED_BODY()
 
-private:
+public:
+	AOccupationGameState();
+
+protected:
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaSeconds) override;
-	
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void HandleMatchHasStarted() override;
+	virtual void HandleMatchHasEnded() override;
+	virtual void AddPlayerState(APlayerState* PlayerState) override;
 
 public:
-	UFUNCTION()
-	void SetNumPlayers(const uint8 NewNumPlayers);
+	// 현재 두 팀의 점수를 기준으로 승자를 정합니다.
+	void SetOccupationWinner();
 
-	UFUNCTION()
-	void SetGameState(const EOccupationGameState NewGameState);
-	
-	UFUNCTION()
-	void SetOccupationWinner(const EOccupationWinner NewWinner);
-
-	UFUNCTION()
-	void SetATeamScore();
-
-	UFUNCTION()
-	void SetBTeamScore();
-
-	UFUNCTION()
-	void AddATeamObjectNum();
-
-	UFUNCTION()
-	void AddBTeamObjectNum();
-
-	UFUNCTION()
-	void SubATeamObjectNum();
-
-	UFUNCTION()
-	void SubBTeamObjectNum();
-
-	UFUNCTION()
-	FORCEINLINE uint8 GetMaxPlayers() const { return MaxPlayers; }
-
-	UFUNCTION()
-	FORCEINLINE uint8 GetNumPlayers() const { return NumPlayers; }
-	
-	UFUNCTION()
-	FORCEINLINE float GetATeamScore() const { return ATeamScore; }
-
-	UFUNCTION()
-	FORCEINLINE float GetBTeamScore() const { return BTeamScore; }
-
-	UFUNCTION()
-	FORCEINLINE float GetATeamObjectNum() const { return ATeamObjectNum; }
-
-	UFUNCTION()
-	FORCEINLINE float GetBTeamObjectNum() const { return BTeamObjectNum; }
-
-	UFUNCTION()
-	FORCEINLINE float GetMaxScore() const { return MaxScore; }
-
-	UFUNCTION()
-	FORCEINLINE EOccupationWinner GetOccupationWinner() const { return CurrentOccupationWinner; }
-	
 	/**
-	 * @brief 매치가 시작되었을 때 호출됩니다. 
-	 * @param MatchTime 매치가 몇초동안 진행되는지 나타냅니다.
+	 * @brief 팀에 점수를 부여합니다.
+	 * @param Team 점수를 부여할 팀입니다.
+	 * @param AdditiveScore 추가될 점수입니다.
 	 */
-	void OnMatchStarted(const float& MatchTime);
+	void AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore);
 
-	// 남은 매칭 시간을 가져옵니다. 아직 매칭시간 정보가 설정되지 않았거나, 시간이 지나간 경우 0을 반환합니다.
-	float GetRemainMatchTime();
+	// 해당 팀의 점수를 받아옵니다.
+	float GetTeamScore(const EPlayerTeam& Team) const;
+
+	// 최대 점수를 가져옵니다.
+	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }
+
+	// 승리자의 정보를 가져옵니다.
+	FORCEINLINE const EPlayerTeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
+
+	// 어떤 팀이든 최대 점수에 도달한 팀이 있는지 여부를 조사합니다.
+	FORCEINLINE bool GetSomeoneReachedMaxScore() const
+	{
+		return ATeamScore >= MaxScore || BTeamScore >= MaxScore;
+	}
 
 	void EndTimeCheck();
+
+	void ChangeResultWidget();
+
+protected:
+	virtual void SetClientTeam(const EPlayerTeam& NewTeam);
+	virtual bool TrySendMatchResultData() override;
 private:
-	UPROPERTY(ReplicatedUsing = OnRep_NumPlayers)
-	uint8 NumPlayers;
-
-	UPROPERTY(ReplicatedUsing = OnRep_GameState)
-	EOccupationGameState CurrentGameState = EOccupationGameState::Menu;
-
-	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner)
-	EOccupationWinner CurrentOccupationWinner = EOccupationWinner::UnCertain;
-
-	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore)
-	float ATeamScore = 0;
-
-	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore)
-	float BTeamScore = 0;
-
-	UPROPERTY(Replicated)
-	float StartTime;
-
-	UPROPERTY(Replicated)
-	float MatchEndingTime;
-		
-	uint8 ATeamObjectNum = 0;
-
-	uint8 BTeamObjectNum = 0;
-
-	UPROPERTY(EditAnywhere)
-	uint8 MaxPlayers = 4;
-
-	const float Standard = 0.2f;
-
-	const float MaxScore = 100.0f;
-private:
-	UFUNCTION()
-	void OnRep_NumPlayers();
-
-	UFUNCTION()
-	void OnRep_GameState();
-
 	UFUNCTION()
 	void OnRep_ATeamScore();
-	
+
 	UFUNCTION()
 	void OnRep_BTeamScore();
 
 	UFUNCTION()
 	void OnRep_OccupationWinner();
 
-public:
-	FOnOccupationChangeJoinedPlayers OnOccupationChangeJoinedPlayers;
-	FOnOccupationChangeGameState OnOccupationChangeGameState;
-	FOnOccupationChangeATeamScore OnOccupationChangeATeamScore;
-	FOnOccupationChangeBTeamScore OnOccupationChangeBTeamScore;
-	FOnOccupationChangeOccupationWinner OnOccupationChangeOccupationWinner;
+	void DestroyShieldWallObject();
+
+	// 게임 승패여부를 띄워줍니다.
+	void ShowEndResultWidget();
+
+	// 게임결과 배경위젯를 띄워줍니다.
+	void ShowGradeResultWidget(class ALakayaBasePlayerState* PlayerState, APlayerController* Controller);
+
+	// 게임결과 등수 위젯을 띄워줍니다.
+	void ShowGradeResultElementWidget(ALakayaBasePlayerState* NewPlayerState) const;
+
+	void GradeResultTeamInfo(TArray<TObjectPtr<ALakayaBasePlayerState>>& PlayerArray, uint8 NewIndex) const;
+
+	// 본인의 팀에 따라 보여지는 게임결과 등수 위젯을 띄워줍니다.
+	void ShowAntiTeamGradeResultElementWidget() const;
+	void ShowProTeamGradeResultElementWidget() const;
+
+	// DetailResultWidget에서 본인의 정보를 바인딩합니다.
+	void BindDetailResultWidget();
+
+	// 모든 인원들의 정보를 담은 위젯을 바인딩합니다.
+	void BindDetailResultElementWidget();
+
+	FORCEINLINE TArray<TObjectPtr<ALakayaBasePlayerState>>& GetAllyArray()
+	{
+		return PlayersByTeamMap[ClientTeam];
+	}
+
+	FORCEINLINE TArray<TObjectPtr<ALakayaBasePlayerState>>& GetEnemyArray()
+	{
+		return PlayersByTeamMap[ClientTeam == EPlayerTeam::A ? EPlayerTeam::B : EPlayerTeam::A];
+	}
+
+	void UpdatePlayerByTeamMap(const EPlayerTeam& Team, ALakayaBasePlayerState* PlayerState);
+	void SetupPlayerStateOnLocal(ALakayaBasePlayerState* PlayerState);
+	static ERendererStencilMask GetUniqueStencilMask(const bool& IsAlly, const uint8& Index);
+	void OnPlayerStateOwnerChanged(AActor* Owner);
+
+	void AddPlayerStateToRecordResult(EPlayerTeam InTeam ,TArray<ALakayaBasePlayerState*> InPlayers);
 	
+public:
+	FOnChangeOccupationWinner OnChangeOccupationWinner;
+	FTeamScoreSignature OnTeamScoreSignature;
+	
+
 private:
-	FTimerHandle TimerHandle_AteamScoreIncrease;
-	FTimerHandle TimerHandle_BteamScoreIncrease;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
+	EPlayerTeam CurrentOccupationWinner;
+
+	// Anti
+	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore, Transient)
+	float ATeamScore;
+
+	// Pro
+	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore, Transient)
+	float BTeamScore;
+
+	UPROPERTY(EditAnywhere)
+	float MaxScore;
+
+	UPROPERTY(EditAnywhere)
+	float MatchStartWaitWidgetLifeTime;
+
+	UPROPERTY(EditAnywhere)
+	float MatchStartWidgetLifeTime;
+
+	bool ResultBool = false;
+
+	TMap<EPlayerTeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> PlayersByTeamMap;
+
+	EPlayerTeam ClientTeam;
+
 	FTimerHandle TimerHandle_GameTimeCheck;
+	FTimerHandle TimerHandle_StartMessageVisible;
+	FTimerHandle TimerHandle_StartMessageHidden;
+	FTimerHandle TimerHandle_WaitTimerHandle;
+	FTimerHandle TimerHandle_GameResultHandle;
+	FTimerHandle TimerHandle_ShowGradeResultElementHandle;
+
+	// 게임중에 표시되는 스킬 위젯을 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<USkillWidget> SkillWidgetClass;
+
+	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UTeamScoreWidget> TeamScoreWidgetClass;
+
+	// 게임 시작 시 무기박스 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UWeaponOutLineWidget> WeaponOutLineWidgetClass;
+	
+	// 게임 시작 시 "라카야 제어기를 점령하세요" 메세지를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UStartMessageWidget> StartMessageWidgetClass;
+
+	// 게임 시작 시 "라운드 시작까지 10초 남았습니다" 메세지를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UMatchStartWaitWidget> MatchStartWaitWidgetClass;
+	
+	// 게임 종료 시 "승리", "패배" 및 팀별 점수를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGameResultWidget> GameResultWidgetClass;
+	
+	// 게임 종료 후 배경 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGradeResultWidget> GradeResultWidgetClass;
+
+	// 게임 종료 후 게임 팀내 등수 결과를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGradeResultElementWidget> GradeResultElementWidgetClass;
+
+	// 게임 종료 시 게임 디테일 결과를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UDetailResultWidget> DetailResultWidgetClass;
+
+	// 게임 종료 시 게임 디테일 결과에서 플레이어들의 정보를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UDetailResultElementWidget> DetailResultElementWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UInputMappingContext* ResultShortcutContext;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UInputAction* ResultSwitchingAction;
+
+	// 스킬 위젯 입니다.
+	TWeakObjectPtr<USkillWidget> SkillWidget;
+
+	// 팀스코어 위젯 입니다.
+	TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
+
+	// 무기박스 위젯 입니다.
+	TObjectPtr<UWeaponOutLineWidget> WeaponOutLineWidget;
+	
+	// "라운드 시작까지 10초 남았습니다" 위젯 입니다.
+	TWeakObjectPtr<UMatchStartWaitWidget> MatchStartWaitWidget;
+
+	// "라카야 제어기를 점령하세요" 위젯 입니다.
+	TWeakObjectPtr<UStartMessageWidget> StartMessageWidget;
+
+	// 게임 승패 위젯 입니다.
+	TWeakObjectPtr<UGameResultWidget> GameResultWidget;
+
+	// 게임 종료 후 배경 위젯입니다.
+	TWeakObjectPtr<UGradeResultWidget> GradeResultWidget;
+
+	// 게임 팀내 등수 결과 위젯입니다.
+	TWeakObjectPtr<UGradeResultElementWidget> GradeResultElementWidget;
+
+	// 게임 디테일 결과 위젯입니다.
+	TWeakObjectPtr<UDetailResultWidget> DetailResultWidget;
+
+	// 게임 디테일 Element 결과 위젯입니다.
+	TWeakObjectPtr<UDetailResultElementWidget> DetailResultElementWidget;
+
+	FMatchResultStruct MatchResult;
+	
+public:
+	bool Tapbool = true;
 };

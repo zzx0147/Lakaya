@@ -4,15 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "NavigationSystem.h"
-#include "Perception/AIPerceptionComponent.h"
-#include "Perception/AISenseConfig_Sight.h"
-#include "Character/ArmedCharacter.h"
-#include "Character/InteractableCharacter.h"
-#include "Character/OccupationCharacter.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
-#include "BehaviorTree/BlackboardData.h"
+#include "BehaviorTree/BehaviorTreeComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "AiCharacterController.generated.h"
 
 /**
@@ -26,16 +21,44 @@ class LAKAYA_API AAiCharacterController : public AAIController
 public:
 	AAiCharacterController();
 
+	virtual void OnPossess(APawn* InPawn) override;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AI, meta = (AllowPrivateAccess = "true"))
+	UBlackboardComponent* BlackboardComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AI, meta = (AllowPrivateAccess = "true"))
+	UBehaviorTreeComponent* BehaviorTreeComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AI, meta = (AllowPrivateAccess = "true"))
+	UBehaviorTree* BehaviorTreeAsset;
+
+	UPROPERTY(EditAnywhere)
+	bool bIsBehaviorTreeStart;
+	
 private:
-	virtual void BeginPlay() override;
+	//TODO: 매개변수로 EAbilityKind를 넘기는 편이 어떨까..
+	UFUNCTION(BlueprintCallable)
+	void AIFireStart(class AArmedCharacter* ArmCharacter);
 
 	UFUNCTION(BlueprintCallable)
-	void AiFireStart(AOccupationCharacter* OccuCharacter);
+	void AIFireStop(AArmedCharacter* ArmCharacter);
 
 	UFUNCTION(BlueprintCallable)
-	void AiFireStop(AOccupationCharacter* OccuCharacter);
-
+	void AIReloadStart(AArmedCharacter* ArmCharacter);
+	
+	UFUNCTION(BlueprintCallable)
+	void AIReloadStop(AArmedCharacter* ArmCharacter);
+	
+	UFUNCTION(BlueprintCallable, Category = "AI")
+	void AIRemainBulletCheck(AArmedCharacter* ArmCharacter, uint8& RemainBullet);
+	
 private:
-	TWeakObjectPtr<class AArmedCharacter> ArmedCharacter;
-   
+	//TODO: 사용되지 않음
+	TWeakObjectPtr<AArmedCharacter> ArmedCharacter;
+
+	TWeakObjectPtr<class UBulletComponent> BulletComponent;
+	USpringArmComponent* SpringArm;
+	FVector AISpringArmOffset;
+
 };

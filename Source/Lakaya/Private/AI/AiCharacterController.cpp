@@ -2,62 +2,65 @@
 
 
 #include "AI/AiCharacterController.h"
-#include "AI/AiCharacter.h"
-#include "GameMode/OccupationGameMode.h"
-#include "GameMode/OccupationGameState.h"
+
+#include "Character/ArmedCharacter.h"
+#include "Character/BulletComponent.h"
 
 AAiCharacterController::AAiCharacterController() // 생성자
 {
 	bWantsPlayerState = true;
+
+	// 블랙보드와 비헤이비어 트리 컴포넌트 생성
+	BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComp"));
+	BehaviorTreeComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComp"));
+
+	// AI의 SpringArm SocketOffset 설정을 위한 변수
+	AISpringArmOffset = FVector(0,0,-54);
 }
 
-void AAiCharacterController::BeginPlay()
+void AAiCharacterController::OnPossess(APawn* InPawn)
 {
-	Super::BeginPlay();
+	Super::OnPossess(InPawn);
 
-	AOccupationGameMode* OccupationGameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
-	if (OccupationGameMode == nullptr)
+	// OnPossess 되었을때 비헤이비어 트리 에셋 할당해주면 컴포넌트에 있는 블랙보드와 비헤이비어 트리를 시작시켜줌
+	if (bIsBehaviorTreeStart == true && BehaviorTreeAsset)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AiCharacterController_GameMode is null."));
-		return;
+		BlackboardComp->InitializeBlackboard(*(BehaviorTreeAsset->BlackboardAsset));
+		BehaviorTreeComp->StartTree(*(BehaviorTreeAsset));
 	}
+
+	// 카메라와 총구의 사잇값에서 총알이나가는 문제때문에 AI가 총알을 휘게쏴서 0으로 맞춰줌!
+	SpringArm = GetPawn()->FindComponentByClass<USpringArmComponent>();
+	if (SpringArm)
+		SpringArm->SocketOffset = AISpringArmOffset;
+}
+
+void AAiCharacterController::AIFireStart(AArmedCharacter* ArmCharacter)
+{
+	if (ArmCharacter) ArmCharacter->StartAbility(WeaponFire);
+}
+
+void AAiCharacterController::AIFireStop(AArmedCharacter* ArmCharacter)
+{
+	if (ArmCharacter) ArmCharacter->StopAbility(WeaponFire);
+}
+
+void AAiCharacterController::AIReloadStart(AArmedCharacter* ArmCharacter)
+{
+	if (ArmCharacter) ArmCharacter->StartAbility(WeaponReload);
+}
+
+void AAiCharacterController::AIReloadStop(AArmedCharacter* ArmCharacter)
+{
+	if (ArmCharacter) ArmCharacter->StopAbility(WeaponReload);
+}
+
+void AAiCharacterController::AIRemainBulletCheck(AArmedCharacter* ArmCharacter, uint8& RemainBullet)
+{
+	BulletComponent = GetPawn()->FindComponentByClass<UBulletComponent>();
 	
-	AOccupationGameState* OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-	if (OccupationGameState == nullptr)
+	if (ArmCharacter)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_GameState is null."));
-		return;
-	}
-
-	// OccupationGameState->AddMaxPlayer();
-	// OccupationGameState->AddPlayerState(GetCharacter()->GetController()->PlayerState);
-	// OccupationGameMode->NumPlayers++;
-	// int32 CurrentPlayerNum = OccupationGameState->PlayerArray.Num();
-	// OccupationGameState->SetNumPlayers(CurrentPlayerNum);
-	// UE_LOG(LogTemp, Warning, TEXT("AiController BeginPlay."));
-}
-
-void AAiCharacterController::AiFireStart(AOccupationCharacter* OccuCharacter)
-{
-	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
-   
-	if (OccuCharacter) OccuCharacter->FireStart();
-	else
-	{
-		UE_LOG(LogInit, Warning, TEXT("Error Ai Start Fire"))
+		RemainBullet = BulletComponent->GetBullets();
 	}
 }
-
-void AAiCharacterController::AiFireStop(AOccupationCharacter* OccuCharacter)
-{
-	ArmedCharacter = Cast<AArmedCharacter>(OccuCharacter);
-   
-	if (OccuCharacter) OccuCharacter->FireStop();
-	else
-	{
-		UE_LOG(LogInit, Warning, TEXT("Error Ai Stop Fire"))
-	}
-}
-
-
-

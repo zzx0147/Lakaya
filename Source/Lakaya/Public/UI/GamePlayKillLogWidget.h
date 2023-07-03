@@ -14,19 +14,17 @@ class LAKAYA_API UGamePlayKillLogWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UGamePlayKillLogWidget(const FObjectInitializer& ObjectInitializer);
+	explicit UGamePlayKillLogWidget(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void NativeConstruct() override;
 
 public:
-	virtual void OnCharacterBeginPlay(class ADamageableCharacter* Character);
-
-private:
 	// ADamageableCharacter::OnKillCharacterNotify 이벤트에 등록된 콜백함수
-	void OnKillCharacterNotify(AController* KilledController, AActor* KilledActor, AController* Instigator,
-	                           AActor* Causer);
-
+	void OnKillCharacterNotify(APlayerState* KilledController, APlayerState* Instigator,
+							   AActor* Causer);
+private:
+	
 	// 킬 로그 엘리먼트 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UKillLogElement> KillLogClass;
@@ -36,7 +34,7 @@ private:
 	uint8 MaxElementCount;
 
 	class UVerticalBox* KillLogBox;
-	SimpleObjectPool<UKillLogElement> ElementPool;
+	TSimpleObjectPool<UKillLogElement> ElementPool;
 	uint8 InitialChildCount;
 	uint8 ShownElementCount;
 };

@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "GameMode/OccupationGameState.h"
 #include "GamePlayCrossHairWidget.generated.h"
 
 class UImage;
@@ -15,10 +14,7 @@ class LAKAYA_API UGamePlayCrosshairWidget : public UUserWidget
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
-	UFUNCTION()
-	void SetGamePlayCrosshairWidget(EOccupationGameState ChangeGameState);
 private:
-	UImage* CrosshairImage;//크로스헤어를 표기하는 위젯
+	UImage* CrosshairImage; //크로스헤어를 표기하는 위젯
 };

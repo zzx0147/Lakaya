@@ -1,4 +1,5 @@
 #pragma once
+#define DO_CHECK 1
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -12,20 +13,14 @@ class LAKAYA_API UGamePlayBulletWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-protected:
-	virtual void NativeConstruct() override;
-
 public:
-	// 위젯이 표시하는 정보가, 해당 컴포넌트의 값이 변경됨에 따라 변경되도록 합니다.
-	void BindWeapon(class UGunComponent* const& GunComponent);
-
-	// 해당 무기와의 바인딩을 해제합니다.
-	void UnBindWeapon(UGunComponent* const& GunComponent);
+	void SetRemainBullet(const uint16& RemainBullet);
+	void SetMaxBullet(const uint16& MaxBullet);
 
 private:
-	void OnChangeRemainBullets(const uint16& NewRemainBullets);
-	void OnChangeMagazineCapacity(const uint16& NewMagazineCapacity);
+	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<UTextBlock> RemainBulletsText; //남은 총알을 표기하는 텍스트
 
-	UTextBlock* RemainBulletsText; //남은 총알을 표기하는 텍스트
-	UTextBlock* MagazineCapacityText; //최대 총알을 표기하는 텍스트
+	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<UTextBlock> MagazineCapacityText; //최대 총알을 표기하는 텍스트
 };

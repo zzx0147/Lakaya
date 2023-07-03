@@ -1,46 +1,34 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "GameMode/OccupationGameState.h"
+#include "Occupation/PlayerTeam.h"
 #include "TeamScoreWidget.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class LAKAYA_API UTeamScoreWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-private:
+protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
+	
 private:
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* ATeamScoreText;
+	UFUNCTION()
+	void OnChangeATeamScore(const float& NewScore) const;
+
+	UFUNCTION()
+	void OnChangeBTeamScore(const float& NewScore) const;
+
+	UFUNCTION()
+	void OnTeamScoreChanged(const EPlayerTeam& Team, const float& Score) const;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* BTeamScoreText;
-	
-public:
-	UFUNCTION()
-	void SetTeamScoreWidget(EOccupationGameState ChangeGameState);
+	TWeakObjectPtr<UTextBlock> AntiTeamScoreText;
 
-public:
-	UFUNCTION()
-	void ReMoveTeamScoreWidget(EOccupationGameState ChangeGameState);
-	
-	UFUNCTION()
-	void OnChangeATeamScore(float NewScore);
-	
-	UFUNCTION()
-	void OnChangeBTeamScore(float NewScore);
+	UPROPERTY(meta = (BindWidget))
+	TWeakObjectPtr<UTextBlock> ProTeamScoreText;
 
-private:
-	AOccupationGameState* OccupationGameState;
+	float MaxScore;
 };

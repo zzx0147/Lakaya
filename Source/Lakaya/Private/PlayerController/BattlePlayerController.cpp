@@ -5,38 +5,53 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Character/ArmedCharacter.h"
 #include "InputMappingContext.h"
-#include "Character/CollectorPlayerState.h"
-#include "Character/DamageableCharacter.h"
-#include "UI/GamePlayBulletWidget.h"
-#include "UI/GamePlayConsecutiveKillsWidget.h"
-#include "UI/GamePlayKillLogWidget.h"
-#include "Weapon/GunComponent.h"
+#include "Character/ArmedCharacter.h"
+#include "Character/Ability/CharacterAbility.h"
+#include "UI/SkillProgressBar.h"
+#include "UI/SkillWidget.h"
 
 
 ABattlePlayerController::ABattlePlayerController()
 {
 	static const ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(
-		TEXT("InputMappingContext'/Game/Dev/Yongwoo/Input/IC_WeaponControl'"));
+		TEXT("InputMappingContext'/Game/Input/IC_WeaponControl'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> FireStartFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_FireStart'"));
+		TEXT("InputAction'/Game/Input/IA_FireStart'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> FireStopFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_FireStop'"));
+		TEXT("InputAction'/Game/Input/IA_FireStop'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> AbilityStartFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_AbilityStart'"));
+		TEXT("InputAction'/Game/Input/IA_AbilityStart'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> AbilityStopFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_AbilityStop'"));
+		TEXT("InputAction'/Game/Input/IA_AbilityStop'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ReloadStartFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ReloadStart'"));
+		TEXT("InputAction'/Game/Input/IA_ReloadStart'"));
 
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ReloadStopFinder(
-		TEXT("InputAction'/Game/Dev/Yongwoo/Input/IA_ReloadStop'"));
+		TEXT("InputAction'/Game/Input/IA_ReloadStop'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> PrimaryStartFinder(TEXT(
+		"/Script/EnhancedInput.InputAction'/Game/Input/IA_PrimaryAbilityStart.IA_PrimaryAbilityStart'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> PrimaryStopFinder(TEXT(
+		"/Script/EnhancedInput.InputAction'/Game/Input/IA_PrimaryAbilityStop.IA_PrimaryAbilityStop'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> SecondaryStartFinder(TEXT(
+		"/Script/EnhancedInput.InputAction'/Game/Input/IA_SecondaryAbilityStart.IA_SecondaryAbilityStart'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> SecondaryStopFinder(TEXT(
+		"/Script/EnhancedInput.InputAction'/Game/Input/IA_SecondaryAbilityStop.IA_SecondaryAbilityStop'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> DashStartFinder(TEXT(
+		"/Script/EnhancedInput.InputAction'/Game/Input/IA_DashStart.IA_DashStart'"));
+
+	static const ConstructorHelpers::FObjectFinder<UInputAction> DashStopFinder(TEXT(
+		"/Script/EnhancedInput.InputAction'/Game/Input/IA_DashStop.IA_DashStop'"));
 
 	if (ContextFinder.Succeeded()) WeaponControlContext = ContextFinder.Object;
 	if (FireStartFinder.Succeeded()) FireStartAction = FireStartFinder.Object;
@@ -45,74 +60,46 @@ ABattlePlayerController::ABattlePlayerController()
 	if (AbilityStopFinder.Succeeded()) AbilityStopAction = AbilityStopFinder.Object;
 	if (ReloadStartFinder.Succeeded()) ReloadStartAction = ReloadStartFinder.Object;
 	if (ReloadStopFinder.Succeeded()) ReloadStopAction = ReloadStopFinder.Object;
-
-	static const ConstructorHelpers::FClassFinder<UGamePlayKillLogWidget> KillLogFinder(
-		TEXT("/Game/Blueprints/UMG/WBP_GamePlayKillLogWidget"));
-
-	static const ConstructorHelpers::FClassFinder<UGamePlayHealthWidget> HealthFinder(
-		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
-
-	static const ConstructorHelpers::FClassFinder<UGamePlayBulletWidget> BulletFinder(
-		TEXT("/Game/Blueprints/UMG/WBP_GamePlayBulletWidget"));
-
-	static const ConstructorHelpers::FClassFinder<UGamePlayConsecutiveKillsWidget> ConsecutiveFinder(
-		TEXT("/Game/Blueprints/UMG/WBP_GamePlayConsecutiveKillsWidget"));
-
-	KillLogClass = KillLogFinder.Class;
-	if (!KillLogClass) UE_LOG(LogController, Fatal, TEXT("Fail to find KillLogClass!"));
-
-	HealthWidgetClass = HealthFinder.Class;
-	if (!HealthWidgetClass) UE_LOG(LogController, Fatal, TEXT("Fail to find HealthWidgetClass!"));
-
-	BulletWidgetClass = BulletFinder.Class;
-	if (!BulletWidgetClass) UE_LOG(LogController, Fatal, TEXT("Fail to find BulletWidgetClass!"));
-
-	ConsecutiveKillsWidgetClass = ConsecutiveFinder.Class;
-	if (!ConsecutiveKillsWidgetClass) UE_LOG(LogController, Fatal, TEXT("Fail to find ConsecutiveKillsWidgetClass!"));
+	if (PrimaryStartFinder.Succeeded()) PrimaryStartAction = PrimaryStartFinder.Object;
+	if (PrimaryStopFinder.Succeeded()) PrimaryStopAction = PrimaryStopFinder.Object;
+	if (SecondaryStartFinder.Succeeded()) SecondStartAction = SecondaryStartFinder.Object;
+	if (SecondaryStopFinder.Succeeded()) SecondStopAction = SecondaryStopFinder.Object;
+	if (DashStartFinder.Succeeded()) DashStartAction = DashStartFinder.Object;
+	if (DashStopFinder.Succeeded()) DashStopAction = DashStopFinder.Object;
 }
 
-void ABattlePlayerController::BeginPlay()
+void ABattlePlayerController::SetSkillWidget(USkillWidget* NewSkillWidget)
 {
-	Super::BeginPlay();
-	if (!IsLocalController()) return;
-	
-	if (const auto GameState = GetWorld()->GetGameState<AOccupationGameState>())
-	{
-		GameState->OnOccupationChangeGameState.AddLambda([this](EOccupationGameState State)
-		{
-			if (State == EOccupationGameState::Progress)
-			{
-				if (KillLogWidget) KillLogWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				if (HealthWidget) HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				if (ConsecutiveKillsWidget)
-					ConsecutiveKillsWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				if (BulletWidget) BulletWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			}
-		});
-	}
-
-	if (!KillLogWidget) KillLogWidget = CreateViewportWidget<UGamePlayKillLogWidget>(KillLogClass);
-	if (!HealthWidget) HealthWidget = CreateViewportWidget<UGamePlayHealthWidget>(HealthWidgetClass);
-	if (!ConsecutiveKillsWidget)
-		ConsecutiveKillsWidget = CreateViewportWidget<UGamePlayConsecutiveKillsWidget>(ConsecutiveKillsWidgetClass);
-	if (!BulletWidget) BulletWidget = CreateViewportWidget<UGamePlayBulletWidget>(BulletWidgetClass);
+	SkillWidget = NewSkillWidget;
 }
 
 void ABattlePlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
 	Super::SetupEnhancedInputComponent(EnhancedInputComponent);
+	EnhancedInputComponent->BindAction(PrimaryStartAction, ETriggerEvent::Triggered, this,
+	                                   &ABattlePlayerController::StartAbility, Primary);
+	EnhancedInputComponent->BindAction(PrimaryStopAction, ETriggerEvent::Triggered, this,
+	                                   &ABattlePlayerController::StopAbility, Primary);
+	EnhancedInputComponent->BindAction(SecondStartAction, ETriggerEvent::Triggered, this,
+	                                   &ABattlePlayerController::StartAbility, Secondary);
+	EnhancedInputComponent->BindAction(SecondStopAction, ETriggerEvent::Triggered, this,
+	                                   &ABattlePlayerController::StopAbility, Secondary);
 	EnhancedInputComponent->BindAction(FireStartAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::FireStart);
+	                                   &ABattlePlayerController::StartAbility, WeaponFire);
 	EnhancedInputComponent->BindAction(FireStopAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::FireStop);
+	                                   &ABattlePlayerController::StopAbility, WeaponFire);
 	EnhancedInputComponent->BindAction(AbilityStartAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::AbilityStart);
+	                                   &ABattlePlayerController::StartAbility, WeaponAbility);
 	EnhancedInputComponent->BindAction(AbilityStopAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::AbilityStop);
+	                                   &ABattlePlayerController::StopAbility, WeaponAbility);
 	EnhancedInputComponent->BindAction(ReloadStartAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::ReloadStart);
+	                                   &ABattlePlayerController::StartAbility, WeaponReload);
 	EnhancedInputComponent->BindAction(ReloadStopAction, ETriggerEvent::Triggered, this,
-	                                   &ABattlePlayerController::ReloadStop);
+	                                   &ABattlePlayerController::StopAbility, WeaponReload);
+	EnhancedInputComponent->BindAction(DashStartAction, ETriggerEvent::Triggered, this,
+	                                   &ABattlePlayerController::StartAbility, Dash);
+	EnhancedInputComponent->BindAction(DashStopAction, ETriggerEvent::Triggered, this,
+	                                   &ABattlePlayerController::StopAbility, Dash);
 }
 
 void ABattlePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
@@ -121,88 +108,44 @@ void ABattlePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsy
 	InputSubsystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
 }
 
+void ABattlePlayerController::BindSkillProgressBar(const EAbilityKind& TargetSkill)
+{
+	if (const auto SkillProgressBar = SkillWidget->GetSkillProgressBar(TargetSkill); SkillProgressBar != nullptr)
+	{
+		const auto Ability = ArmedCharacter->FindAbility(TargetSkill);
+		Ability->OnEnableTimeChanged.AddUObject(SkillProgressBar,
+		                                        &USkillProgressBar::OnEnableTimeChange);
+		SkillProgressBar->SetMaxCoolTime(Ability->GetCoolTime());
+	}
+}
+
+void ABattlePlayerController::SkillWidgetBind()
+{
+	if (SkillWidget.IsValid() && ArmedCharacter.IsValid())
+	{
+		SkillWidget->SetCharacter(ArmedCharacter->GetCharacterName());
+
+		BindSkillProgressBar(Primary);
+		BindSkillProgressBar(Secondary);
+		BindSkillProgressBar(WeaponAbility);
+	}
+}
+
 void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, APawn* NewPawn)
 {
 	Super::OnPossessedPawnChangedCallback(ArgOldPawn, NewPawn);
 	if (!IsLocalController()) return;
-
-	if (const auto OldCharacter = Cast<ADamageableCharacter>(ArgOldPawn))
-	{
-		if (HealthWidget) HealthWidget->UnBindCharacter(OldCharacter);
-	}
-
-	if (const auto NewCharacter = Cast<ADamageableCharacter>(NewPawn))
-	{
-		if (!HealthWidget) HealthWidget = CreateViewportWidget<UGamePlayHealthWidget>(HealthWidgetClass);
-		HealthWidget->BindCharacter(NewCharacter);
-	}
-
-	if (const auto OldCharacter = Cast<AArmedCharacter>(ArgOldPawn))
-	{
-		OldCharacter->OnPrimaryWeaponChanged.RemoveAll(this);
-
-		if (const auto WeaponComponent = OldCharacter->GetPrimaryWeapon())
-		{
-			if (ConsecutiveKillsWidget) ConsecutiveKillsWidget->UnBindWeapon(WeaponComponent);
-			if (BulletWidget) BulletWidget->UnBindWeapon(Cast<UGunComponent>(WeaponComponent));
-		}
-	}
-
 	ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
-	if (ArmedCharacter.IsValid())
-	{
-		if (const auto WeaponComponent = ArmedCharacter->GetPrimaryWeapon()) OnWeaponChanged(WeaponComponent);
-		ArmedCharacter->OnPrimaryWeaponChanged.AddUObject(this, &ABattlePlayerController::OnWeaponChanged);
-	}
-	else UE_LOG(LogInit, Warning, TEXT("NewPawn was not AAramedCharacter!"))
+	SkillWidgetBind();
 }
 
-void ABattlePlayerController::OnCharacterBeginPlay(ACharacter* ArgCharacter)
+void ABattlePlayerController::StartAbility(EAbilityKind AbilityKind)
 {
-	if (const auto Damageable = Cast<ADamageableCharacter>(ArgCharacter))
-	{
-		if (!KillLogWidget) KillLogWidget = CreateViewportWidget<UGamePlayKillLogWidget>(KillLogClass);
-		KillLogWidget->OnCharacterBeginPlay(Damageable);
-	}
+	//TODO: 어빌리티 컨텍스트 개념 추가. 즉시 StartAbility를 호출하는 것이 아니도록 해야함
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(AbilityKind);
 }
 
-void ABattlePlayerController::OnWeaponChanged(UWeaponComponent* const& WeaponComponent)
+void ABattlePlayerController::StopAbility(EAbilityKind AbilityKind)
 {
-	if (!WeaponComponent) return;
-	if (!ConsecutiveKillsWidget)
-		ConsecutiveKillsWidget = CreateViewportWidget<UGamePlayConsecutiveKillsWidget>(ConsecutiveKillsWidgetClass);
-	if (!BulletWidget) BulletWidget = CreateViewportWidget<UGamePlayBulletWidget>(BulletWidgetClass);
-
-	ConsecutiveKillsWidget->BindWeapon(WeaponComponent);
-	BulletWidget->BindWeapon(Cast<UGunComponent>(WeaponComponent));
-}
-
-void ABattlePlayerController::FireStart(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->FireStart();
-}
-
-void ABattlePlayerController::FireStop(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->FireStop();
-}
-
-void ABattlePlayerController::AbilityStart(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->AbilityStart();
-}
-
-void ABattlePlayerController::AbilityStop(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->AbilityStop();
-}
-
-void ABattlePlayerController::ReloadStart(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->ReloadStart();
-}
-
-void ABattlePlayerController::ReloadStop(const FInputActionValue& Value)
-{
-	if (ArmedCharacter.IsValid()) ArmedCharacter->ReloadStop();
+	if (ArmedCharacter.IsValid()) ArmedCharacter->StopAbility(AbilityKind);
 }

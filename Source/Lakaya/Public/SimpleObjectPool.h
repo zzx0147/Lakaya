@@ -3,7 +3,7 @@
 #include "list"
 
 template <class T>
-class SimpleObjectPool
+class TSimpleObjectPool
 {
 public:
 	/**
@@ -22,27 +22,35 @@ public:
 	 */
 	void ReturnObject(T* Object);
 
+	void ForEach(std::function<void(T*)> Execute);
+
 private:
+	void CreateInstance();
+	
 	std::list<T*> AvailableObjects;
+	std::vector<T*> CreatedObjects;
 	std::function<T*()> InstanceMaker = nullptr;
 };
 
 template <class T>
-void SimpleObjectPool<T>::SetupObjectPool(const uint16& InitialCount, std::function<T*()> MakeFunction)
+void TSimpleObjectPool<T>::SetupObjectPool(const uint16& InitialCount, std::function<T*()> MakeFunction)
 {
 	InstanceMaker = MakeFunction;
-	for (uint16 Count = 0; Count < InitialCount; ++Count)
-		AvailableObjects.emplace_back(InstanceMaker());
+	for (uint16 Count = 0; Count < InitialCount; ++Count) CreateInstance();
 }
 
 template <class T>
-T* SimpleObjectPool<T>::GetObject()
+T* TSimpleObjectPool<T>::GetObject()
 {
 	if (AvailableObjects.empty())
 	{
-		if (InstanceMaker) return InstanceMaker();
-		else UE_LOG(LogTemp, Error, TEXT("Pool was not setted!"))
-	};
+		if (!InstanceMaker)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Pool was not setted!"))
+			return nullptr;
+		}
+		CreateInstance();
+	}
 
 	auto Instance = AvailableObjects.back();
 	AvailableObjects.pop_back();
@@ -50,7 +58,28 @@ T* SimpleObjectPool<T>::GetObject()
 }
 
 template <class T>
-void SimpleObjectPool<T>::ReturnObject(T* Object)
+void TSimpleObjectPool<T>::ReturnObject(T* Object)
 {
-	AvailableObjects.emplace_back(Object);
+	//TODO: n번 탐색하므로 비효율적입니다.
+	for (auto& Instance : CreatedObjects)
+	{
+		if (Instance != Object) continue;
+		AvailableObjects.emplace_back(Object);
+		return;
+	}
+	UE_LOG(LogScript, Error, TEXT("Returned object was not created by this object pool!"));
+}
+
+template <class T>
+void TSimpleObjectPool<T>::ForEach(std::function<void(T*)> Execute)
+{
+	if (Execute) for (auto& Object : CreatedObjects) Execute(Object);
+}
+
+template <class T>
+void TSimpleObjectPool<T>::CreateInstance()
+{
+	auto Instance = InstanceMaker();
+	CreatedObjects.emplace_back(Instance);
+	AvailableObjects.emplace_back(Instance);
 }

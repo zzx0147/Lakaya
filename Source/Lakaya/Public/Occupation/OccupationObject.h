@@ -1,75 +1,77 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/CapsuleComponent.h"
-#include "Components/SphereComponent.h"
-#include "GameFramework/Actor.h"
+#include "PlayerTeam.h"
 #include "Interactable/Interactable.h"
 #include "OccupationObject.generated.h"
 
-UENUM()
-enum class EObjectOwner : uint8
-{
-	None UMETA(DisplayName = "None"), // 아무도 소유하고 있지 않은 상태
-	A UMETA(DisplayName = "A"), // A팀이 소유하고 있는 상태
-	B UMETA(DisplayName = "B"), // B팀이 소유하고 있는 상태
-};
+DECLARE_EVENT_OneParam(AOccupationObject, FOccupationStateSignature, EPlayerTeam);
+DECLARE_EVENT_OneParam(AOccupationObject, FOccupationInteractingActorSignature, APawn*)
 
 UCLASS()
-class LAKAYA_API AOccupationObject : public AActor, public IInteractable
+class LAKAYA_API AOccupationObject : public AInteractable
 {
 	GENERATED_BODY()
-	
-public:	
-	AOccupationObject();
+
+public:
+	explicit AOccupationObject(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void BeginPlay() override;
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-public:	
-	virtual void Tick(float DeltaTime) override;
 
 private:
-	virtual void OnServerInteractionBegin(const float& Time, APawn* Caller) override;
-	virtual void OnInteractionStart(APawn* Caller) override;
-	virtual void OnLocalInteractionStopBegin(APawn* Caller) override;
-	virtual void OnServerInteractionStopBegin(const float& Time, APawn* Caller) override;
-	virtual void OnInteractionStop(APawn* Caller) override;
+	/**
+	 * @brief 오브젝트가 캐릭터 요청에 의해 상호작용을 시작합니다.
+	 * @param Time 캐릭터가 상호작용을 요청한 시간입니다.
+	 * @param Caller 상호작용을 요청한 캐릭터입니다.
+	 */
+	virtual void OnInteractionStart(const float& Time, APawn* Caller) override;
 
-private:
-	void AutomaticInteractionStop();
+	/**
+	 * @brief 오브젝트가 캐릭터 요청에 의해 상호작용을 중단합니다.
+	 * @param Time 캐릭터가 상호작용을 요청한 시간입니다.
+	 * @param Caller 상호작용을 요청한 캐릭터입니다.
+	 */
+	virtual void OnInteractionStop(const float& Time, APawn* Caller, EInteractionState NewState) override;
 
-private:
-	const float MaxInteractionDuration = 3;
-	float InteractingStartTime;
-	float InteractingStopTime;
+	/**
+	 * @brief 상호작용을 성공했을 때 실행됩니다.
+	 * @param Caller 상호작용을 요청한 캐릭터입니다.
+	 */
+	virtual void OnInteractionFinish(APawn* Caller) override;
 
-private:
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UCapsuleComponent* Trigger;
+	virtual void OnCharacterDead(APawn* Caller) override;
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* Cylinder;
+public:
+	// 상호작용에 성공했을 때, 실행되는 함수입니다.
 
-	UPROPERTY(VisibleAnywhere, Category = "Trigger")
-	USphereComponent* TriggerSphere;
+	FORCEINLINE APawn* GetInteractingPawn() const { return InteractingPawn; }
+	FORCEINLINE EPlayerTeam GetObjectTeam() const { return ObjectTeam; }
+	FORCEINLINE APawn* GetOwnerPlayer() const { return OwnerPlayer.Get(); }
 	
-private:
-	UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject)
-	EObjectOwner ObjectOwner = EObjectOwner::None;
+	void SetTeamObject(const EPlayerTeam& Team);
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetTeam(EPlayerTeam Team);
 
+	FOccupationInteractingActorSignature OnInteractingActorSignature;
+	
 private:
 	UFUNCTION()
 	void OnRep_BroadCastTeamObject();
 
-private:
-	void SetTeamObject(EObjectOwner Team);
-	
-private:
-	FTimerHandle InteractionTimerHandle;
+	UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject)
+	EPlayerTeam ObjectTeam = EPlayerTeam::None;
 
-private:
+	float FirstCallerTime = 0;
+	const float MaxInteractionDuration = 3;
+
+	FOccupationStateSignature OnOccupationStateSignature;
+	
+	FTimerHandle InteractionTimerHandle;
+	FTimerHandle InteractionStateHandle;
+
+	UPROPERTY(Replicated)
 	APawn* InteractingPawn;
-	APawn* Owner;
 };
