@@ -7,7 +7,7 @@
 #include "ResourceComponent.generated.h"
 
 
-UCLASS(Abstract, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UResourceComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -32,6 +32,12 @@ public:
 
 	// 강제로 자원을 소모하는 부동소수점 타입 오버로딩입니다.
 	virtual void CostResource(const double& Value) PURE_VIRTUAL(UResourceComponent::CostResource,)
+
+	// 자원을 일정량 충전하는 정수타입 오버로딩입니다.
+	virtual void GainResource(const uint64& Value) PURE_VIRTUAL(UResourceComponent::GainResource,)
+
+	// 자원을 일정량 충전하는 정수타입 오버로딩입니다.
+	virtual void GainResource(const double& Value) PURE_VIRTUAL(UResourceComponent::GainResource,)
 
 	/**
 	 * @brief 매개변수로 넘겨진 값이 소모될 수 있을 만큼 자원이 충분한지 검사하는 정수타입 오버로딩입니다.
