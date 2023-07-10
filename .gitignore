@@ -92,3 +92,7 @@ Lakaya.uproject.DotSettings.user
 
 # kawaii physics plugin files
 !Plugins/KawaiiPhysics/Binaries/Win64/*
+
+#Files For Server Test
+LakayaServerPlayer.lnk
+Binaries/Linux/
