@@ -23,6 +23,7 @@ protected:
 
 public:
 	void SetEnableExitShortcut(const bool& Enable);
+	virtual void UnbindAllAndBindMenu(class UEnhancedInputComponent* const& EnhancedInputComponent);
 
 protected:
 	/**
@@ -39,6 +40,7 @@ protected:
 	 */
 	virtual void SetupEnhancedInputComponent(class UEnhancedInputComponent* const& EnhancedInputComponent);
 
+
 	/**
 	 * @brief 향상된 입력을 사용하는 우리 게임을 위해 선언된 함수입니다. SetupInputComponent에서 호출됩니다.
 	 * @param InputSubsystem 인풋 로컬 서브시스템 객체입니다. 이를 통해 인풋 맵핑 컨텍스트를 추가할 수 있습니다.
@@ -49,10 +51,9 @@ protected:
 	TSoftObjectPtr<UWorld> ExitLevel;
 
 private:
-	void MenuHandler();
-	void LoadoutHandler();
 	void ShowScoreBoard();
 	void HideScoreBoard();
+	void MenuHandler();
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
@@ -62,9 +63,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputAction* MenuAction;
-
-	UPROPERTY(EditAnywhere, Category=Input)
-	UInputAction* LoadoutAction;
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* ShowScoreAction;

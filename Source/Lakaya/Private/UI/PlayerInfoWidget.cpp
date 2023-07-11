@@ -11,7 +11,7 @@ UPlayerInfoWidget::UPlayerInfoWidget(const FObjectInitializer& ObjectInitializer
 	PlayerName = FText::GetEmpty();
 }
 
-void UPlayerInfoWidget::SetPlayerName(FString NewName)
+void UPlayerInfoWidget::SetPlayerName(const FString& NewName)
 {
 	PlayerName = FText::FromString(NewName);
 	if(PlayerNameText != nullptr)

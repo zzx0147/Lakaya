@@ -27,6 +27,7 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 
 ALakayaBasePlayerState::ALakayaBasePlayerState()
 {
+	OccupationTickCount = 0;
 	CharacterName = TEXT("Rena");
 	bRecentAliveState = true;
 	OnPawnSet.AddUniqueDynamic(this, &ALakayaBasePlayerState::OnPawnSetCallback);
@@ -74,6 +75,18 @@ void ALakayaBasePlayerState::BeginPlay()
 	Super::BeginPlay();
 	if (const auto LocalController = GetPlayerController(); LocalController && LocalController->IsLocalController())
 	{
+		PortraitWidget = CreateWidget<UGamePlayPortraitWidget>(LocalController, PortraitWidgetClass);
+		if (PortraitWidget.IsValid())
+		{
+			PortraitWidget->AddToViewport(-2);
+			PortraitWidget->ChangePortrait(GetCharacterName());
+			OnCharacterNameChanged.AddWeakLambda(
+				PortraitWidget.Get(), [Widget = PortraitWidget](auto, const FName& Name)
+				{
+					Widget->ChangePortrait(Name);
+				});
+		}
+		
 		HealthWidget = CreateWidget<UGamePlayHealthWidget>(LocalController, HealthWidgetClass);
 		if (HealthWidget.IsValid())
 		{
@@ -89,18 +102,6 @@ void ALakayaBasePlayerState::BeginPlay()
 		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(
 			LocalController, DirectionDamageIndicatorClass);
 		if (DirectionDamageIndicatorWidget) DirectionDamageIndicatorWidget->AddToViewport();
-
-		PortraitWidget = CreateWidget<UGamePlayPortraitWidget>(LocalController, PortraitWidgetClass);
-		if (PortraitWidget.IsValid())
-		{
-			PortraitWidget->AddToViewport();
-			PortraitWidget->ChangePortrait(GetCharacterName());
-			OnCharacterNameChanged.AddWeakLambda(
-				PortraitWidget.Get(), [Widget = PortraitWidget](auto, const FName& Name)
-				{
-					Widget->ChangePortrait(Name);
-				});
-		}
 	}
 }
 
@@ -219,15 +220,30 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 
 	if (CurrentCaptureCount == 1)
 	{
+		if (TimerManager.IsTimerActive(CurrentCaptureTimer))
+			TimerManager.ClearTimer(CurrentCaptureTimer);
+		
 		FTimerDelegate TimerDelegate;
-		TimerDelegate.BindLambda([this]
+		TimerDelegate.BindWeakLambda(this,[this]
 		{
 			if (this == nullptr) return;
-			if (GetWorld()->GetGameState()->HasMatchEnded())
-				GetWorld()->GetTimerManager().ClearTimer(CurrentCaptureTimer);
+			if (const auto World = GetWorld())
+			{
+				if (const auto GameState = World->GetGameState())
+				{
+					if (GameState->HasMatchEnded())
+					{
+						World->GetTimerManager().ClearTimer(CurrentCaptureTimer);
+						return;
+					}
+				}
+			}
 
 			AddTotalScoreCount(CurrentCaptureCount * 50);
+			OccupationTickCount += CurrentCaptureCount;
+			
 		});
+		
 		TimerManager.SetTimer(CurrentCaptureTimer, TimerDelegate, 1.0f, true);
 	}
 }
@@ -242,6 +258,18 @@ void ALakayaBasePlayerState::SetAlly(const bool& Ally)
 {
 	bIsAlly = Ally;
 	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->SetAlly(bIsAlly);
+}
+
+FPlayerStats ALakayaBasePlayerState::GetPlayerStats()
+{
+	FPlayerStats MyStats;
+	MyStats.Kill = GetKillCount();
+	MyStats.Death = GetDeathCount();
+	MyStats.PlayerName = GetPlayerName();
+	MyStats.PlayerID = GetUniqueId().ToString();
+	MyStats.OccupationCount = GetSuccessCaptureCount();
+	MyStats.OccupationTickCount = OccupationTickCount;
+	return MyStats;
 }
 
 float ALakayaBasePlayerState::GetServerTime() const
@@ -356,12 +384,12 @@ void ALakayaBasePlayerState::OnRep_SuccessCaptureCount()
 
 void ALakayaBasePlayerState::OnRep_DeathCount()
 {
-	OnKillCountChanged.Broadcast(KillCount);
+	OnDeathCountChanged.Broadcast(DeathCount);
 }
 
 void ALakayaBasePlayerState::OnRep_KillCount()
 {
-	OnDeathCountChanged.Broadcast(DeathCount);
+	OnKillCountChanged.Broadcast(KillCount);
 }
 
 void ALakayaBasePlayerState::OnRep_KillStreak()

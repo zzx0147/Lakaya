@@ -215,62 +215,56 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 			LocalPlayerController->GetPlayerState<ALakayaBasePlayerState>());
 		if (IndividualPlayerState == nullptr) UE_LOG(LogTemp, Warning, TEXT("IndividualPlayerState is null."));
 
-		GameResultWidget->SetScore(IndividualPlayerState->GetTotalScore());
 		GameResultWidget->SetKill(IndividualPlayerState->GetKillCount());
 		GameResultWidget->SetDeath(IndividualPlayerState->GetDeathCount());
 	}
 
-	for (int i = 0; i < AllPlayersArray.Num(); ++i)
-	{
-		AllPlayersArray.Sort([](const TWeakObjectPtr<ALakayaBasePlayerState>& A,
-		                        const TWeakObjectPtr<ALakayaBasePlayerState>& B)
-		{
-			return A->GetTotalScore() > B->GetTotalScore();
-		});
-	}
+	// for (int i = 0; i < AllPlayersArray.Num(); ++i)
+	// {
+	// 	AllPlayersArray.Sort([](const TWeakObjectPtr<ALakayaBasePlayerState>& A,
+	// 	                        const TWeakObjectPtr<ALakayaBasePlayerState>& B)
+	// 	{
+	// 		return A->GetTotalScore() > B->GetTotalScore();
+	// 	});
+	// }
 
-	// 현재 플레이어 컨트롤러 반환
-	const auto CurrentPlayerState = GetWorld()->GetFirstPlayerController()->GetPlayerState<ALakayaBasePlayerState>();
-	uint8 CurrentPlayerIndex = INDEX_NONE;
-	for (uint8 i = 0; i < AllPlayersArray.Num(); ++i)
+	TArray<FPlayerAIData> SortedPlayerAIDataArray = FPlayerAIDataArray;
+	SortedPlayerAIDataArray.Sort([](const FPlayerAIData& A,
+	                                const FPlayerAIData& B)
 	{
-		if (AllPlayersArray[i].Get() == CurrentPlayerState)
-		{
-			CurrentPlayerIndex = i;
-			break;
-		}
-	}
+		return A.KillCount > B.KillCount;
+	});
 
-	if (CurrentPlayerIndex != INDEX_NONE)
+	for (int32 i = 0; i < SortedPlayerAIDataArray.Num(); ++i)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("플레이어의 순위 : %d"), CurrentPlayerIndex);
-		switch (CurrentPlayerIndex)
+		const FPlayerAIData& SortedPlayerAIData = SortedPlayerAIDataArray[i];
+
+		if (SortedPlayerAIData.bIsPlayerCheck == true)
 		{
-		case 0:
-			GameResultWidget->First_Rank_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			break;
-		case 1:
-			GameResultWidget->Second_Rank_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			break;
-		case 2:
-			GameResultWidget->Third_Rank_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			break;
-		case 3:
-			GameResultWidget->Fourth_Rank_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			break;
-		case 4:
-			GameResultWidget->Fifth_Rank_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			break;
-		case 5:
-			GameResultWidget->Sixth_Rank_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			break;
-		default:
-			break;
+			switch (i)
+			{
+			case 0:
+				GameResultWidget->First_Rank_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				break;
+			case 1:
+				GameResultWidget->Second_Rank_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				break;
+			case 2:
+				GameResultWidget->Third_Rank_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				break;
+			case 3:
+				GameResultWidget->Fourth_Rank_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				break;
+			case 4:
+				GameResultWidget->Fifth_Rank_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				break;
+			case 5:
+				GameResultWidget->Sixth_Rank_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				break;
+			default:
+				break;
+			}
 		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("현재 플레이어를 찾을 수 없습니다."));
 	}
 
 	FTimerManager Timers;

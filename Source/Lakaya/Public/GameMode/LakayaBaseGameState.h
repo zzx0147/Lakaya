@@ -1,9 +1,12 @@
 #pragma once
 
+#include <functional>
+
 #include "CoreMinimal.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "GameFramework/GameState.h"
 #include "UI/SkillWidget.h"
+#include "functional"
 #include "LakayaBaseGameState.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBaseGameState, OnChangePlayerNumberSignature, const uint8&)
@@ -25,7 +28,7 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 	virtual void HandleMatchIsCharacterSelect();
-
+	virtual void Tick(float DeltaSeconds) override;
 	virtual void OnRep_MatchState() override;
 
 public:
@@ -46,8 +49,6 @@ public:
 	// 점수판의 표시 여부를 결정합니다. true를 넘기면 점수판이 표시됩니다.
 	void SetScoreBoardVisibility(const bool& Visible);
 
-	virtual void ToggleCharacterSelectWidget();
-
 	UFUNCTION(NetMulticast, Reliable)
 	void NotifyPlayerKilled(APlayerState* VictimPlayer, APlayerState* InstigatorPlayer, AActor* DamageCauser);
 
@@ -65,15 +66,19 @@ protected:
 
 	bool SpawnOutlineManager();
 
+	virtual void ReserveSendRecord();
+
+	virtual bool TrySendMatchResultData();
+
 private:
 	void SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,
 	                      std::function<void()> Callback, TWeakObjectPtr<class UGameTimeWidget> TimeWidget);
 
 	void InternalSetScoreBoardVisibility(const bool& Visible);
 
-	void InternalSetCharacterSelectWidgetVisibility(const bool& Visible);
-
 public:
+	virtual bool HasMatchStarted() const override;
+
 	// 현재 접속중인 플레이어 인원이 변경되면 호출됩니다. 매개변수로 변경된 플레이어 인원을 받습니다.
 	OnChangePlayerNumberSignature OnChangePlayerNumber;
 
@@ -81,6 +86,9 @@ public:
 	FOnPlayerKillNotifiedSignature OnPlayerKillNotified;
 
 protected:
+	int64 StartTimeStamp;//유닉스 타임 스탬프를 사용합니다
+	float StartTime;//서버가 시작된 시점을 0초로 계산합니다
+
 	// Tab키를 눌렀을 때 표시되는 점수판 위젯의 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGameScoreBoardWidget> ScoreBoardClass;
@@ -161,4 +169,7 @@ protected:
 	// TWeakObjectPtr<USkillWidget> SkillWidget;
 
 	TWeakObjectPtr<AOutlineManager> OutlineManager;
+
+private:
+	bool bWantsSendRecordResult;
 };

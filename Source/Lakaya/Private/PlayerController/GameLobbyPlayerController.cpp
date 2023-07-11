@@ -90,13 +90,22 @@ void AGameLobbyPlayerController::SetEnableExitShortcut(const bool& Enable)
 void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
 	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::MenuHandler);
-	EnhancedInputComponent->BindAction(LoadoutAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::LoadoutHandler);
+								   &AGameLobbyPlayerController::MenuHandler);
 	EnhancedInputComponent->BindAction(ShowScoreAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::ShowScoreBoard);
+									   &AGameLobbyPlayerController::ShowScoreBoard);
 	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::HideScoreBoard);
+									   &AGameLobbyPlayerController::HideScoreBoard);
+}
+
+void AGameLobbyPlayerController::UnbindAllAndBindMenu(UEnhancedInputComponent* const& EnhancedInputComponent)
+{
+	EnhancedInputComponent->ClearActionBindings();
+	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
+									   &AGameLobbyPlayerController::MenuHandler);
+	EnhancedInputComponent->BindAction(ShowScoreAction, ETriggerEvent::Triggered, this,
+									   &AGameLobbyPlayerController::ShowScoreBoard);
+	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
+									   &AGameLobbyPlayerController::HideScoreBoard);
 }
 
 void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
@@ -104,7 +113,7 @@ void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSu
 	InputSubsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 }
 
-AGameLobbyPlayerController::AGameLobbyPlayerController()
+AGameLobbyPlayerController::AGameLobbyPlayerController(): APlayerController()
 {
 	OnPossessedPawnChanged.AddUniqueDynamic(this, &AGameLobbyPlayerController::OnPossessedPawnChangedCallback);
 	if (IsRunningDedicatedServer()) return;
@@ -117,9 +126,6 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> MenuFinder(
 		TEXT("InputAction'/Game/Input/IA_Menu'"));
 
-	static const ConstructorHelpers::FObjectFinder<UInputAction> WeaponFinder(
-		TEXT("InputAction'/Game/Input/IA_Loadout'"));
-
 	static const ConstructorHelpers::FObjectFinder<UInputAction> ShowScoreFinder(
 		TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_ShowScore.IA_ShowScore'"));
 
@@ -128,7 +134,6 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 
 	if (ContextFinder.Succeeded()) InterfaceInputContext = ContextFinder.Object;
 	if (MenuFinder.Succeeded()) MenuAction = MenuFinder.Object;
-	if (WeaponFinder.Succeeded()) LoadoutAction = WeaponFinder.Object;
 	if (ShowScoreFinder.Succeeded()) ShowScoreAction = ShowScoreFinder.Object;
 	if (HideScoreFinder.Succeeded()) HideScoreAction = HideScoreFinder.Object;
 
@@ -140,14 +145,10 @@ void AGameLobbyPlayerController::MenuHandler()
 	if (bEnableExitShortcut) UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ExitLevel);
 }
 
-void AGameLobbyPlayerController::LoadoutHandler()
-{
-	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
-		GameState->ToggleCharacterSelectWidget();
-}
-
 void AGameLobbyPlayerController::ShowScoreBoard()
 {
+	UE_LOG(LogTemp, Warning, TEXT("ShowScoreBoard"));
+	
 	// 팀전일 때
 	if (const auto OccupationGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 	{
@@ -160,10 +161,11 @@ void AGameLobbyPlayerController::ShowScoreBoard()
 				// 게임이 종료되고 결과창에 어떠한 위젯이 띄워지고 있느냐에 따라서 위젯들이 보여지는게 달라집니다.
 				NewGameState->ChangeResultWidget();
 			}
+			
 			OccupationGameState->SetScoreBoardVisibility(true);
 		}
 	}
-
+	
 	// 개인전일 때
 }
 
@@ -172,3 +174,4 @@ void AGameLobbyPlayerController::HideScoreBoard()
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 		GameState->SetScoreBoardVisibility(false);
 }
+

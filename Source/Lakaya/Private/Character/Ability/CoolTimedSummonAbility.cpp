@@ -37,7 +37,7 @@ void UCoolTimedSummonAbility::InitializeComponent()
 
 		AbilityInstance->SetOwningAbility(this);
 		AbilityInstance->SetTeam(GetPlayerTeam());
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("AbilityInstance spawned"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("AbilityInstance spawned"));
 		return AbilityInstance;
 	});
 }
@@ -52,6 +52,7 @@ void UCoolTimedSummonAbility::RemoteAbilityStart(const float& RequestTime)
 {
 	Super::RemoteAbilityStart(RequestTime);
 	if (!IsEnableTime(GetServerTime()) || !CostResource(ResourceCost)) return;
+	ApplyCoolTime();
 
 	if (const auto AbilityInstance = AbilityInstancePool.GetObject())
 		AbilityInstance->SetAbilityInstanceState(EAbilityInstanceState::Ready);
@@ -74,10 +75,7 @@ void UCoolTimedSummonAbility::OnAbilityInstanceStateChanged(const EAbilityInstan
 	{
 	case EAbilityInstanceState::Collapsed:
 		AbilityInstancePool.ReturnObject(AbilityInstance);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object returned!"));
-		break;
-	case EAbilityInstanceState::Perform:
-		ApplyCoolTime();
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,TEXT("Object returned!"));
 		break;
 	default: break;
 	}

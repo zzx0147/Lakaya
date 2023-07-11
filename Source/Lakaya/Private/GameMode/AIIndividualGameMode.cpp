@@ -1,5 +1,7 @@
 #include "GameMode/AIIndividualGameMode.h"
 
+#include <random>
+
 #include "GameMode/AIIndividualGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "AI/AiCharacterController.h"
@@ -38,10 +40,22 @@ void AAIIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 
 	if (AiControllerArray.Num() > 0) return;
 
+	std::random_device rd; // 랜덤 디바이스 초기화
+	std::mt19937 gen(rd()); // 랜덤 엔진 초기화
+	std::uniform_int_distribution<> distrib(0, 1); // 해당 범위 정수 중 임의의 값 생성
+	
 	for (int i = 0; i < NumberOfAi; ++i) //첫번째 플레이어가 접속하면 그때 AI를 생성합니다, 플레이어가 한명일 때만을 가정합니다
 	{
 		AAiCharacterController* AiController;
 		AiController = GetWorld()->SpawnActor<AAiCharacterController>(AIControllerClass);
+
+		// 랜덤 캐릭터 이름 생성
+		FName RandomCharacterName = (distrib(gen) == 0) ? TEXT("Rena") : TEXT("Wazi");
+
+		// AI의 캐릭터 변경
+		ALakayaBasePlayerState* AiState = AiController->GetPlayerState<ALakayaBasePlayerState>();
+		AiState->RequestCharacterChange(RandomCharacterName);
+		
 		AiControllerArray.Emplace(AiController);
 		RegisterPlayer(AiController);
 	}

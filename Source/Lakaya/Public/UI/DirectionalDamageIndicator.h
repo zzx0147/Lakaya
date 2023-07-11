@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CharacterBindableWidget.h"
 #include "UI/DirectionalIndicatorElement.h"
 #include "DirectionalDamageIndicator.generated.h"
 

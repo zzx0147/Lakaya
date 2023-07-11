@@ -1,9 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MatchStateWidget.h"
-#include "Components/Image.h"
-#include "Components/TextBlock.h"
+#include "Blueprint/UserWidget.h"
 #include "GameResultWidget.generated.h"
 
 UCLASS()
@@ -15,8 +13,8 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
-	TWeakObjectPtr<UImage> VictoryImage;
+	TWeakObjectPtr<class UImage> VictoryImage;
 	TWeakObjectPtr<UImage> DefeatImage;
-	TWeakObjectPtr<UTextBlock> AntiScore;
+	TWeakObjectPtr<class UTextBlock> AntiScore;
 	TWeakObjectPtr<UTextBlock> ProScore;
 };

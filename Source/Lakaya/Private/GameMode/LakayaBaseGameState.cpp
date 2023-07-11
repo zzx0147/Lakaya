@@ -1,6 +1,7 @@
 #include "GameMode/LakayaBaseGameState.h"
 
 #include "Character/LakayaBasePlayerState.h"
+#include "EOS/EOSGameInstance.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "Net/UnrealNetwork.h"
@@ -10,16 +11,15 @@
 #include "UI/GamePlayKillLogWidget.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
-#include "UI/HelpWidget.h"
 #include "UI/LoadingWidget.h"
-#include "UI/SkillWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	MaximumPlayers = 6;
 	MatchDuration = 180.f;
 	MatchWaitDuration = 10.0f;
+	bWantsSendRecordResult = false;
 }
 
 void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -149,7 +149,9 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-
+	StartTimeStamp = FDateTime::UtcNow().ToUnixTimestamp();
+	StartTime = GetServerWorldTimeSeconds();
+	
 	// TODO : 개인전에서는 스킬을 사용하지 않습니다.
 	// if (const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
 	// 	LocalPlayerState != nullptr)
@@ -157,8 +159,12 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	// 	SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	// }
 
-	InternalSetCharacterSelectWidgetVisibility(false);
-	if (CharacterSelectWidget) CharacterSelectWidget->EnableAutoHide(true);
+	if (GetCharacterSelectWidget())
+	{
+		CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
+		CharacterSelectWidget->SetShortcutEnabled(true);
+		CharacterSelectWidget->EnableAutoHide(true);
+	}
 
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -202,11 +208,25 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<AGameLobbyPlayerController>();
 		LocalController && LocalController->IsLocalController())
 		LocalController->SetEnableExitShortcut(true);
+
+
+	const auto GameInstance = GetGameInstance();
+	const auto EOSGameInstance = Cast<UEOSGameInstance>(GameInstance);
+	if(EOSGameInstance == nullptr) return;
+	if(HasAuthority())
+	{
+		EOSGameInstance->DestroySession();
+	}
+	else
+	{
+		EOSGameInstance->EndSession();
+	}
+	
 }
 
 void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 {
-	InternalSetCharacterSelectWidgetVisibility(true);
+	if (GetCharacterSelectWidget()) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
 
 	if (LoadingWidget) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
 
@@ -217,6 +237,15 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 	{
 		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->StartMatch();
 	}, CharacterSelectTimeWidget);
+}
+
+void ALakayaBaseGameState::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if(bWantsSendRecordResult)
+	{
+		bWantsSendRecordResult = !TrySendMatchResultData();
+	}
 }
 
 void ALakayaBaseGameState::OnRep_MatchState()
@@ -248,13 +277,6 @@ UGameLobbyCharacterSelectWidget* ALakayaBaseGameState::GetCharacterSelectWidget(
 	return CharacterSelectWidget;
 }
 
-void ALakayaBaseGameState::ToggleCharacterSelectWidget()
-{
-	// 캐릭터 선택위젯이 숨겨져있었다면 보여주고, 보여지고 있었다면 숨깁니다.
-	if (!CharacterSelectWidget || MatchState != MatchState::InProgress) return;
-	InternalSetCharacterSelectWidgetVisibility(CharacterSelectWidget->GetVisibility() == ESlateVisibility::Hidden);
-}
-
 void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimPlayer,
                                                              APlayerState* InstigatorPlayer, AActor* DamageCauser)
 {
@@ -264,7 +286,7 @@ void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* Victi
 		KillLogWidget->OnKillCharacterNotify(VictimPlayer, InstigatorPlayer, DamageCauser);
 	}
 
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OnPlayerKillNotified.Broadcast"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OnPlayerKillNotified.Broadcast"));
 }
 
 void ALakayaBaseGameState::OnRep_MatchEndingTime()
@@ -296,6 +318,16 @@ bool ALakayaBaseGameState::SpawnOutlineManager()
 	return false;
 }
 
+void ALakayaBaseGameState::ReserveSendRecord()
+{
+	bWantsSendRecordResult = true;
+}
+
+bool ALakayaBaseGameState::TrySendMatchResultData()
+{
+	return true;
+}
+
 void ALakayaBaseGameState::SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,
                                             std::function<void(void)> Callback,
                                             TWeakObjectPtr<UGameTimeWidget> TimeWidget)
@@ -314,13 +346,11 @@ void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible)
 	if (!ScoreBoard.IsValid()) return;
 	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
 }
-
-void ALakayaBaseGameState::InternalSetCharacterSelectWidgetVisibility(const bool& Visible)
+bool ALakayaBaseGameState::HasMatchStarted() const
 {
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController();
-		LocalController && LocalController->IsLocalController() && GetCharacterSelectWidget())
+	if (GetMatchState() == MatchState::IsSelectCharacter)
 	{
-		LocalController->SetShowMouseCursor(Visible);
-		CharacterSelectWidget->SetVisibility(Visible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		return false;
 	}
+	return Super::HasMatchStarted();
 }

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "LakayaBaseGameState.h"
+#include "EOS/EOSGameInstance.h"
 #include "Occupation/PlayerTeam.h"
 #include "OccupationGameState.generated.h"
 
@@ -54,7 +55,7 @@ public:
 
 protected:
 	virtual void SetClientTeam(const EPlayerTeam& NewTeam);
-
+	virtual bool TrySendMatchResultData() override;
 private:
 	UFUNCTION()
 	void OnRep_ATeamScore();
@@ -103,11 +104,15 @@ private:
 	static ERendererStencilMask GetUniqueStencilMask(const bool& IsAlly, const uint8& Index);
 	void OnPlayerStateOwnerChanged(AActor* Owner);
 
+	void AddPlayerStateToRecordResult(EPlayerTeam InTeam ,TArray<ALakayaBasePlayerState*> InPlayers);
+	
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;
+	
 
 private:
+	
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
 	EPlayerTeam CurrentOccupationWinner;
 
@@ -149,6 +154,10 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UTeamScoreWidget> TeamScoreWidgetClass;
 
+	// 게임 시작 시 무기박스 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UWeaponOutLineWidget> WeaponOutLineWidgetClass;
+	
 	// 게임 시작 시 "라카야 제어기를 점령하세요" 메세지를 띄우는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UStartMessageWidget> StartMessageWidgetClass;
@@ -156,11 +165,11 @@ private:
 	// 게임 시작 시 "라운드 시작까지 10초 남았습니다" 메세지를 띄우는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UMatchStartWaitWidget> MatchStartWaitWidgetClass;
-
+	
 	// 게임 종료 시 "승리", "패배" 및 팀별 점수를 띄우는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameResultWidget> GameResultWidgetClass;
-
+	
 	// 게임 종료 후 배경 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGradeResultWidget> GradeResultWidgetClass;
@@ -189,6 +198,9 @@ private:
 	// 팀스코어 위젯 입니다.
 	TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
 
+	// 무기박스 위젯 입니다.
+	TObjectPtr<UWeaponOutLineWidget> WeaponOutLineWidget;
+	
 	// "라운드 시작까지 10초 남았습니다" 위젯 입니다.
 	TWeakObjectPtr<UMatchStartWaitWidget> MatchStartWaitWidget;
 
@@ -210,6 +222,8 @@ private:
 	// 게임 디테일 Element 결과 위젯입니다.
 	TWeakObjectPtr<UDetailResultElementWidget> DetailResultElementWidget;
 
+	FMatchResultStruct MatchResult;
+	
 public:
 	bool Tapbool = true;
 };

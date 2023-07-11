@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MatchStateWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "LoadingWidget.generated.h"
 

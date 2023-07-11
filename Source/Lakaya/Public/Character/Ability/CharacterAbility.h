@@ -64,6 +64,9 @@ public:
 	bool CanStartRemoteCall();
 	bool CanStopRemoteCall();
 
+	// 최종적으로 적용할 쿨타임을 가져옵니다.
+	virtual float GetCoolTime() { return BaseCoolTime; }
+	
 protected:
 	// 서버에게 능력 사용 요청 신호를 보낼지 여부를 조사합니다.
 	virtual bool ShouldStartRemoteCall();
@@ -156,9 +159,6 @@ protected:
 
 	UFUNCTION()
 	virtual void OnRep_DelayedAbilityStopTime();
-
-	// 최종적으로 적용할 쿨타임을 가져옵니다.
-	virtual float GetCoolTime() { return BaseCoolTime; }
 
 	// 쿨타임을 적용합니다. 반드시 서버측에서 호출되어야 합니다.
 	virtual void ApplyCoolTime();

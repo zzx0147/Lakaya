@@ -37,6 +37,7 @@ public:
 	bool bIsBehaviorTreeStart;
 	
 private:
+	//TODO: 매개변수로 EAbilityKind를 넘기는 편이 어떨까..
 	UFUNCTION(BlueprintCallable)
 	void AIFireStart(class AArmedCharacter* ArmCharacter);
 
@@ -53,6 +54,7 @@ private:
 	void AIRemainBulletCheck(AArmedCharacter* ArmCharacter, uint8& RemainBullet);
 	
 private:
+	//TODO: 사용되지 않음
 	TWeakObjectPtr<AArmedCharacter> ArmedCharacter;
 
 	TWeakObjectPtr<class UBulletComponent> BulletComponent;

@@ -40,6 +40,7 @@ public:
 	 */
 	virtual void OnInteractionFinish(APawn* Caller) { return; }
 
+
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Mesh")
 	UStaticMeshComponent* Mesh;
@@ -47,6 +48,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Trigger")
 	USphereComponent* Trigger;
 
-	TWeakObjectPtr<APawn> InteractingPawn;
+
+
 	TWeakObjectPtr<APawn> OwnerPlayer;
 };

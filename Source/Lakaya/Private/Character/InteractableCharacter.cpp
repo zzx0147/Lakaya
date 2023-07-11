@@ -91,8 +91,6 @@ void AInteractableCharacter::StartInteraction()
 		return;
 	}
 
-	// bInteractionRequested = true;
-
 	RequestInteractionStart(GetServerTime(), InteractableActor.Get());
 }
 
@@ -107,14 +105,16 @@ void AInteractableCharacter::StopInteraction(EInteractionState NewState)
 
 bool AInteractableCharacter::RequestInteractionStart_Validate(const float& Time, AActor* Actor)
 {
-	if (!ShouldInteract()) return false;
+	// if (!ShouldInteract()) return false;
+	//
+	// if (Actor && Actor->ActorHasTag("Interactable")/* && Time < GetServerTime() + 0.05f*/)
+	// {
+	// 	return true;
+	// }
+	//
+	// return false;
 
-	if (Actor && Actor->ActorHasTag("Interactable") && Time < GetServerTime() + 0.05f)
-	{
-		return true;
-	}
-
-	return false;
+	return true;
 }
 
 void AInteractableCharacter::RequestInteractionStart_Implementation(const float& Time, AActor* Actor)
@@ -124,20 +124,21 @@ void AInteractableCharacter::RequestInteractionStart_Implementation(const float&
 	InteractionInfo.InteractionState = EInteractionState::OnGoing;
 	OnInteractionStateChanged.Broadcast(InteractionInfo);
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
-
+	
 	Cast<AInteractable>(Actor)->OnInteractionStart(Time, this);
 }
 
 bool AInteractableCharacter::RequestInteractionStop_Validate(const float& Time, AActor* Actor,
                                                              EInteractionState NewState)
 {
-	if (Actor && Actor->ActorHasTag("Interactable") && Time < GetServerTime() + 0.05f)
-	{
-		return true;
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStop_Validate failed."));
-	return false;
+	// if (Actor && Actor->ActorHasTag("Interactable")/*&& Time < GetServerTime() + 0.05f*/)
+	// {
+	// 	return true;
+	// }
+	//
+	// UE_LOG(LogTemp, Warning, TEXT("RequestInteractionStop_Validate failed."));
+	// return false;
+	return true;
 }
 
 void AInteractableCharacter::RequestInteractionStop_Implementation(const float& Time, AActor* Actor,

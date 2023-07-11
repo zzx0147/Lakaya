@@ -68,6 +68,11 @@ ABattlePlayerController::ABattlePlayerController()
 	if (DashStopFinder.Succeeded()) DashStopAction = DashStopFinder.Object;
 }
 
+void ABattlePlayerController::SetSkillWidget(USkillWidget* NewSkillWidget)
+{
+	SkillWidget = NewSkillWidget;
+}
+
 void ABattlePlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
 	Super::SetupEnhancedInputComponent(EnhancedInputComponent);
@@ -103,32 +108,26 @@ void ABattlePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsy
 	InputSubsystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
 }
 
+void ABattlePlayerController::BindSkillProgressBar(const EAbilityKind& TargetSkill)
+{
+	if (const auto SkillProgressBar = SkillWidget->GetSkillProgressBar(TargetSkill); SkillProgressBar != nullptr)
+	{
+		const auto Ability = ArmedCharacter->FindAbility(TargetSkill);
+		Ability->OnEnableTimeChanged.AddUObject(SkillProgressBar,
+		                                        &USkillProgressBar::OnEnableTimeChange);
+		SkillProgressBar->SetMaxCoolTime(Ability->GetCoolTime());
+	}
+}
+
 void ABattlePlayerController::SkillWidgetBind()
 {
 	if (SkillWidget.IsValid() && ArmedCharacter.IsValid())
 	{
 		SkillWidget->SetCharacter(ArmedCharacter->GetCharacterName());
 
-		if (SkillWidget->GetSkillProgressBar(Primary) != nullptr)
-		{
-			const auto Ability = ArmedCharacter->FindAbility(Primary);
-			Ability->OnEnableTimeChanged.AddUObject(SkillWidget->GetSkillProgressBar(Primary),
-			                                        &USkillProgressBar::OnEnableTimeChange);
-		}
-
-		if (SkillWidget->GetSkillProgressBar(Secondary) != nullptr)
-		{
-			const auto Ability = ArmedCharacter->FindAbility(Secondary);
-			Ability->OnEnableTimeChanged.AddUObject(SkillWidget->GetSkillProgressBar(Secondary),
-			                                        &USkillProgressBar::OnEnableTimeChange);
-		}
-
-		if (SkillWidget->GetSkillProgressBar(WeaponAbility) != nullptr)
-		{
-			const auto Ability = ArmedCharacter->FindAbility(WeaponAbility);
-			Ability->OnEnableTimeChanged.AddUObject(SkillWidget->GetSkillProgressBar(WeaponAbility),
-			                                        &USkillProgressBar::OnEnableTimeChange);
-		}
+		BindSkillProgressBar(Primary);
+		BindSkillProgressBar(Secondary);
+		BindSkillProgressBar(WeaponAbility);
 	}
 }
 
@@ -142,6 +141,7 @@ void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, 
 
 void ABattlePlayerController::StartAbility(EAbilityKind AbilityKind)
 {
+	//TODO: 어빌리티 컨텍스트 개념 추가. 즉시 StartAbility를 호출하는 것이 아니도록 해야함
 	if (ArmedCharacter.IsValid()) ArmedCharacter->StartAbility(AbilityKind);
 }
 

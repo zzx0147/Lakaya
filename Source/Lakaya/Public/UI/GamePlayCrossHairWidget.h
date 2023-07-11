@@ -1,14 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CharacterBindableWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "GamePlayCrossHairWidget.generated.h"
 
 class UImage;
 
 //크로스헤어 표기 클래스
 UCLASS()
-class LAKAYA_API UGamePlayCrosshairWidget : public UCharacterBindableWidget
+class LAKAYA_API UGamePlayCrosshairWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

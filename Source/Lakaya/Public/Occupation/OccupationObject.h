@@ -6,6 +6,7 @@
 #include "OccupationObject.generated.h"
 
 DECLARE_EVENT_OneParam(AOccupationObject, FOccupationStateSignature, EPlayerTeam);
+DECLARE_EVENT_OneParam(AOccupationObject, FOccupationInteractingActorSignature, APawn*)
 
 UCLASS()
 class LAKAYA_API AOccupationObject : public AInteractable
@@ -45,7 +46,7 @@ private:
 public:
 	// 상호작용에 성공했을 때, 실행되는 함수입니다.
 
-	FORCEINLINE APawn* GetInteractingPawn() const { return InteractingPawn.Get(); }
+	FORCEINLINE APawn* GetInteractingPawn() const { return InteractingPawn; }
 	FORCEINLINE EPlayerTeam GetObjectTeam() const { return ObjectTeam; }
 	FORCEINLINE APawn* GetOwnerPlayer() const { return OwnerPlayer.Get(); }
 	
@@ -53,6 +54,8 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetTeam(EPlayerTeam Team);
+
+	FOccupationInteractingActorSignature OnInteractingActorSignature;
 	
 private:
 	UFUNCTION()
@@ -61,7 +64,6 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject)
 	EPlayerTeam ObjectTeam = EPlayerTeam::None;
 
-	// TWeakObjectPtr<class AInteractableCharacter> InteractingCharacter;
 	float FirstCallerTime = 0;
 	const float MaxInteractionDuration = 3;
 
@@ -69,4 +71,7 @@ private:
 	
 	FTimerHandle InteractionTimerHandle;
 	FTimerHandle InteractionStateHandle;
+
+	UPROPERTY(Replicated)
+	APawn* InteractingPawn;
 };
