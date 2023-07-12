@@ -46,7 +46,9 @@ SourceArt/**/*.png
 SourceArt/**/*.tga
 
 # Binary Files
+
 Binaries/Win64/**
+!Binaries/Linux/*
 !Binaries/Win64/LakayaEditor.target
 !Binaries/Win64/UnrealEditor.modules
 !Binaries/Win64/UnrealEditor-Lakaya.dll
@@ -98,4 +100,4 @@ Lakaya.uproject.DotSettings.user
 
 #Files For Server Test
 LakayaServerPlayer.lnk
-Binaries/Linux/
+
