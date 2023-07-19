@@ -55,6 +55,10 @@
 		{
 			"Name": "AnimationWarping",
 			"Enabled": true
+		},
+		{
+			"Name": "Agones",
+			"Enabled": true	
 		}
 	]
 }
