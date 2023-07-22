@@ -85,12 +85,12 @@ Packaged/*
 
 # Rider files
 .idea/*
+*.DotSettings.user
 Plugins/Developer/RiderLink/*
 
 
 # Mac files
 .DS_Store
-Lakaya.uproject.DotSettings.user
 
 # plugin files
 !Plugins/KawaiiPhysics/Binaries/Win64/*
