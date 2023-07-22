@@ -198,8 +198,8 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
 {
 	RecentTeam = Team;
-	if (Team == EPlayerTeam::A) GetCapsuleComponent()->SetCollisionObjectType(ATeamObjectType);
-	else if (Team == EPlayerTeam::B) GetCapsuleComponent()->SetCollisionObjectType(BTeamObjectType);
+	if (Team == EPlayerTeam::Anti) GetCapsuleComponent()->SetCollisionObjectType(ATeamObjectType);
+	else if (Team == EPlayerTeam::Pro) GetCapsuleComponent()->SetCollisionObjectType(BTeamObjectType);
 }
 
 void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
