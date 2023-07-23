@@ -11,8 +11,9 @@ public class Lakaya : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
 			"Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput", "OnlineSubsystem",
-			"OnlineSubsystemNull", "UMG", "AIModule", "NavigationSystem", "Niagara", "SlateCore", "Sockets", "Networking", "Json", "Agones"
-        });
+			"OnlineSubsystemNull", "UMG", "AIModule", "NavigationSystem", "Niagara", "SlateCore", "Sockets",
+			"Networking", "Json", "Agones", "GameplayAbilities", "GameplayTags", "GameplayTasks"
+		});
 		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
 	}
 }
