@@ -211,7 +211,7 @@ void ALakayaBaseCharacter::SetAbilitySystemComponent(UAbilitySystemComponent* In
 void ALakayaBaseCharacter::GiveAbilities()
 {
 	const auto AbilitySystem = GetAbilitySystemComponent();
-	if (!AbilitySystem) return;
+	if (!ensure(AbilitySystem)) return;
 
 	AbilityHandles.Empty();
 	for (auto&& Ability : CharacterAbilities)
@@ -223,7 +223,7 @@ void ALakayaBaseCharacter::GiveAbilities()
 void ALakayaBaseCharacter::ClearAbilities()
 {
 	const auto AbilitySystem = GetAbilitySystemComponent();
-	if (!AbilitySystem) return;
+	if (!ensure(AbilitySystem)) return;
 
 	for (auto&& AbilityHandle : AbilityHandles)
 	{

@@ -306,12 +306,12 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		OnAliveStateChanged.RemoveAll(OldCharacter);
 	}
 
-	if (const auto OldAbilityInterface = Cast<IRegisterAbilityInterface>(OldPawn))
+	if (const auto OldAbilityInterface = Cast<IRegisterAbilityInterface>(OldPawn); ensure(OldAbilityInterface))
 	{
 		OldAbilityInterface->ClearAbilities();
 	}
 
-	if (const auto NewAbilityInterface = Cast<IRegisterAbilityInterface>(NewPawn))
+	if (const auto NewAbilityInterface = Cast<IRegisterAbilityInterface>(NewPawn); ensure(NewAbilityInterface))
 	{
 		NewAbilityInterface->SetAbilitySystemComponent(AbilitySystem);
 		NewAbilityInterface->GiveAbilities();
