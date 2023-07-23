@@ -4,10 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "RegisterAbilityInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "Occupation/PlayerTeam.h"
 #include "LakayaBaseCharacter.generated.h"
+
+struct FGameplayAbilitySpec;
 
 USTRUCT()
 struct FPlayerRotationPacket
@@ -22,7 +25,8 @@ struct FPlayerRotationPacket
 };
 
 UCLASS()
-class LAKAYA_API ALakayaBaseCharacter : public ACharacter, public IAbilitySystemInterface
+class LAKAYA_API ALakayaBaseCharacter : public ACharacter, public IAbilitySystemInterface,
+                                        public IRegisterAbilityInterface
 {
 	GENERATED_BODY()
 
@@ -42,6 +46,9 @@ public:
 	                         AActor* DamageCauser) override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual void SetAbilitySystemComponent(UAbilitySystemComponent* InAbilitySystem) override;
+	virtual void GiveAbilities() override;
+	virtual void ClearAbilities() override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -102,8 +109,6 @@ public:
 	void SetStencilMask(const ERendererStencilMask& StencilMask);
 
 	void SetAlly(const bool& IsAlly);
-
-	void SetAbilitySystemComponent(UAbilitySystemComponent* InAbilitySystem);
 
 protected:
 	virtual void SetTeam_Implementation(const EPlayerTeam& Team);
@@ -181,6 +186,10 @@ protected:
 	//캐릭터의 이름입니다
 	FName CharacterName;
 
+	/** 이 캐릭터가 사용할 어빌리티들을 지정합니다. */
+	UPROPERTY(EditAnywhere)
+	TArray<FGameplayAbilitySpec> CharacterAbilities;
+
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	class UResourceComponent* ResourceComponent;
@@ -219,4 +228,5 @@ private:
 	TWeakObjectPtr<UMaterialInstanceDynamic> CharacterOverlayMaterial;
 	FTimerHandle DamageImmuneTimer;
 	TWeakObjectPtr<UAbilitySystemComponent> CachedAbilitySystem;
+	TArray<struct FGameplayAbilitySpecHandle> AbilityHandles;
 };

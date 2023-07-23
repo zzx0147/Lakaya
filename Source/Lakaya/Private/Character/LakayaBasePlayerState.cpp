@@ -306,11 +306,21 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		OnAliveStateChanged.RemoveAll(OldCharacter);
 	}
 
+	if (const auto OldAbilityInterface = Cast<IRegisterAbilityInterface>(OldPawn))
+	{
+		OldAbilityInterface->ClearAbilities();
+	}
+
+	if (const auto NewAbilityInterface = Cast<IRegisterAbilityInterface>(NewPawn))
+	{
+		NewAbilityInterface->SetAbilitySystemComponent(AbilitySystem);
+		NewAbilityInterface->GiveAbilities();
+	}
+
 	if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
 	{
 		if (Team != EPlayerTeam::None) Character->SetTeam(Team);
 		if (HealthWidget.IsValid()) HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		Character->SetAbilitySystemComponent(AbilitySystem);
 
 		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);
 		Character->SetStencilMask(UniqueRenderMask);

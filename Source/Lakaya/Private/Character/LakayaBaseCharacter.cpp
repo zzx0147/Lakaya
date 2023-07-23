@@ -208,6 +208,30 @@ void ALakayaBaseCharacter::SetAbilitySystemComponent(UAbilitySystemComponent* In
 	CachedAbilitySystem = InAbilitySystem;
 }
 
+void ALakayaBaseCharacter::GiveAbilities()
+{
+	const auto AbilitySystem = GetAbilitySystemComponent();
+	if (!AbilitySystem) return;
+
+	AbilityHandles.Empty();
+	for (auto&& Ability : CharacterAbilities)
+	{
+		AbilityHandles.Emplace(AbilitySystem->GiveAbility(Ability));
+	}
+}
+
+void ALakayaBaseCharacter::ClearAbilities()
+{
+	const auto AbilitySystem = GetAbilitySystemComponent();
+	if (!AbilitySystem) return;
+
+	for (auto&& AbilityHandle : AbilityHandles)
+	{
+		AbilitySystem->ClearAbility(AbilityHandle);
+	}
+	AbilityHandles.Empty();
+}
+
 void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
 {
 	RecentTeam = Team;
