@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "GameFramework/PlayerState.h"
 #include "Occupation/PlayerTeam.h"
 #include "TimerManager.h"
@@ -28,7 +29,7 @@ DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOwnerChangeSignature, AActor*)
 DECLARE_DELEGATE_OneParam(FRespawnTimerDelegate, AController*)
 
 UCLASS()
-class LAKAYA_API ALakayaBasePlayerState : public APlayerState
+class LAKAYA_API ALakayaBasePlayerState : public APlayerState, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -39,6 +40,7 @@ public:
 	                         AActor* DamageCauser) override;
 	virtual void OnRep_PlayerName() override;
 	virtual void SetOwner(AActor* NewOwner) override;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -137,7 +139,7 @@ public:
 	void SetAlly(const bool& Ally);
 
 	FPlayerStats GetPlayerStats();
-	
+
 protected:
 	// 현재 서버의 시간을 가져옵니다.
 	float GetServerTime() const;
@@ -301,7 +303,7 @@ private:
 	uint16 CurrentCaptureCount;
 
 	uint16 OccupationTickCount;
-	
+
 	UPROPERTY(ReplicatedUsing=OnRep_SuccessCaptureCount, Transient)
 	uint16 SuccessCaptureCount;
 
@@ -313,6 +315,9 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_KillStreak, Transient)
 	uint16 KillStreak;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UAbilitySystemComponent> AbilitySystem;
 
 	FTimerHandle RespawnTimer;
 	FTimerHandle CurrentCaptureTimer;

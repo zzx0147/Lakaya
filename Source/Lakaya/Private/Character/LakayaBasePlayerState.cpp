@@ -3,6 +3,7 @@
 
 #include "Character/LakayaBasePlayerState.h"
 
+#include "AbilitySystemComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
@@ -44,6 +45,8 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	HealthWidgetClass = HealthFinder.Class;
 	DirectionDamageIndicatorClass = DirectionDamageFinder.Class;
 	PortraitWidgetClass = PortraitFinder.Class;
+
+	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -86,7 +89,7 @@ void ALakayaBasePlayerState::BeginPlay()
 					Widget->ChangePortrait(Name);
 				});
 		}
-		
+
 		HealthWidget = CreateWidget<UGamePlayHealthWidget>(LocalController, HealthWidgetClass);
 		if (HealthWidget.IsValid())
 		{
@@ -222,9 +225,9 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 	{
 		if (TimerManager.IsTimerActive(CurrentCaptureTimer))
 			TimerManager.ClearTimer(CurrentCaptureTimer);
-		
+
 		FTimerDelegate TimerDelegate;
-		TimerDelegate.BindWeakLambda(this,[this]
+		TimerDelegate.BindWeakLambda(this, [this]
 		{
 			if (this == nullptr) return;
 			if (const auto World = GetWorld())
@@ -241,9 +244,8 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 
 			AddTotalScoreCount(CurrentCaptureCount * 50);
 			OccupationTickCount += CurrentCaptureCount;
-			
 		});
-		
+
 		TimerManager.SetTimer(CurrentCaptureTimer, TimerDelegate, 1.0f, true);
 	}
 }
@@ -444,4 +446,9 @@ void ALakayaBasePlayerState::SetOwner(AActor* NewOwner)
 {
 	Super::SetOwner(NewOwner);
 	OnOwnerChanged.Broadcast(Owner);
+}
+
+UAbilitySystemComponent* ALakayaBasePlayerState::GetAbilitySystemComponent() const
+{
+	return AbilitySystem;
 }
