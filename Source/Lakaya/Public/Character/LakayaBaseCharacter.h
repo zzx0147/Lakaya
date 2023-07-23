@@ -228,5 +228,4 @@ private:
 	TWeakObjectPtr<UMaterialInstanceDynamic> CharacterOverlayMaterial;
 	FTimerHandle DamageImmuneTimer;
 	TWeakObjectPtr<UAbilitySystemComponent> CachedAbilitySystem;
-	TArray<struct FGameplayAbilitySpecHandle> AbilityHandles;
 };

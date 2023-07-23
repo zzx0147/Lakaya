@@ -213,10 +213,9 @@ void ALakayaBaseCharacter::GiveAbilities()
 	const auto AbilitySystem = GetAbilitySystemComponent();
 	if (!ensure(AbilitySystem)) return;
 
-	AbilityHandles.Empty();
 	for (auto&& Ability : CharacterAbilities)
 	{
-		AbilityHandles.Emplace(AbilitySystem->GiveAbility(Ability));
+		AbilitySystem->GiveAbility(Ability);
 	}
 }
 
@@ -225,11 +224,10 @@ void ALakayaBaseCharacter::ClearAbilities()
 	const auto AbilitySystem = GetAbilitySystemComponent();
 	if (!ensure(AbilitySystem)) return;
 
-	for (auto&& AbilityHandle : AbilityHandles)
+	for (auto&& Ability : CharacterAbilities)
 	{
-		AbilitySystem->ClearAbility(AbilityHandle);
+		AbilitySystem->ClearAbility(Ability.Handle);
 	}
-	AbilityHandles.Empty();
 }
 
 void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
