@@ -3,6 +3,7 @@
 
 #include "Character/LakayaBaseCharacter.h"
 
+#include "AbilitySystemComponent.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
@@ -134,6 +135,13 @@ void ALakayaBaseCharacter::Tick(float DeltaSeconds)
 	}
 }
 
+UAbilitySystemComponent* ALakayaBaseCharacter::GetAbilitySystemComponent() const
+{
+	if (CachedAbilitySystem.IsValid()) return CachedAbilitySystem.Get();
+	const auto CastedState = GetPlayerState<IAbilitySystemInterface>();
+	return ensure(CastedState) ? CastedState->GetAbilitySystemComponent() : nullptr;
+}
+
 void ALakayaBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -193,6 +201,11 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 	}
 
 	CharacterOverlayMaterial->SetVectorParameterValue(TEXT("Color"), IsAlly ? FLinearColor::Blue : FLinearColor::Red);
+}
+
+void ALakayaBaseCharacter::SetAbilitySystemComponent(UAbilitySystemComponent* InAbilitySystem)
+{
+	CachedAbilitySystem = InAbilitySystem;
 }
 
 void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "Occupation/PlayerTeam.h"
@@ -21,7 +22,7 @@ struct FPlayerRotationPacket
 };
 
 UCLASS()
-class LAKAYA_API ALakayaBaseCharacter : public ACharacter
+class LAKAYA_API ALakayaBaseCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -40,6 +41,7 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -100,6 +102,8 @@ public:
 	void SetStencilMask(const ERendererStencilMask& StencilMask);
 
 	void SetAlly(const bool& IsAlly);
+
+	void SetAbilitySystemComponent(UAbilitySystemComponent* InAbilitySystem);
 
 protected:
 	virtual void SetTeam_Implementation(const EPlayerTeam& Team);
@@ -214,4 +218,5 @@ private:
 	FName MeshCollisionProfile;
 	TWeakObjectPtr<UMaterialInstanceDynamic> CharacterOverlayMaterial;
 	FTimerHandle DamageImmuneTimer;
+	TWeakObjectPtr<UAbilitySystemComponent> CachedAbilitySystem;
 };
