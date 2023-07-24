@@ -18,8 +18,8 @@ void UTeamScoreWidget::NativeConstruct()
 	MaxScore = OccupationGameState->GetMaxScore();
 
 	// 생성되었을 때, 점수를 초기화 해줍니다.
-	OnChangeATeamScore(OccupationGameState->GetTeamScore(EPlayerTeam::A));
-	OnChangeBTeamScore(OccupationGameState->GetTeamScore(EPlayerTeam::B));
+	OnChangeATeamScore(OccupationGameState->GetTeamScore(EPlayerTeam::Anti));
+	OnChangeBTeamScore(OccupationGameState->GetTeamScore(EPlayerTeam::Pro));
 
 	// 점수가 바뀌게 되면, 점수를 최신화 해줍니다.
 	OccupationGameState->OnTeamScoreSignature.AddUObject(this, &UTeamScoreWidget::OnTeamScoreChanged);
@@ -40,7 +40,7 @@ void UTeamScoreWidget::OnChangeBTeamScore(const float& NewScore) const
 
 void UTeamScoreWidget::OnTeamScoreChanged(const EPlayerTeam& Team, const float& Score) const
 {
-	if (Team == EPlayerTeam::A) OnChangeATeamScore(Score);
-	else if (Team == EPlayerTeam::B) OnChangeBTeamScore(Score);
+	if (Team == EPlayerTeam::Anti) OnChangeATeamScore(Score);
+	else if (Team == EPlayerTeam::Pro) OnChangeBTeamScore(Score);
 	else UE_LOG(LogScript, Warning, TEXT("Event broadcasted with invalid value! it was %d"), Team);
 }

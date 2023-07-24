@@ -46,13 +46,15 @@ SourceArt/**/*.png
 SourceArt/**/*.tga
 
 # Binary Files
+
 Binaries/Win64/**
+!Binaries/Linux/*
 !Binaries/Win64/LakayaEditor.target
 !Binaries/Win64/UnrealEditor.modules
 !Binaries/Win64/UnrealEditor-Lakaya.dll
 Binaries/Mac/*
 Binaries/IOS/*
-# Plugins/*/Binaries/*
+Plugins/*/Binaries/Mac/*
 
 # Builds
 Build/*
@@ -83,19 +85,21 @@ Packaged/*
 
 # Rider files
 .idea/*
+*.DotSettings.user
 Plugins/Developer/RiderLink/*
 
 
 # Mac files
 .DS_Store
-Lakaya.uproject.DotSettings.user
 
-# kawaii physics plugin files
+# plugin files
 !Plugins/KawaiiPhysics/Binaries/Win64/*
 !Plugins/AdvancedSessions/Binaries/Win64/*
 !Plugins/AdvancedSteamSessions/Binaries/Win64/*
+!Plugins/Agones/Binaries/Win64/*
+
 
 
 #Files For Server Test
 LakayaServerPlayer.lnk
-Binaries/Linux/
+

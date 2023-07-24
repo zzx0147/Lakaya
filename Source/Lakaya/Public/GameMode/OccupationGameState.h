@@ -96,7 +96,7 @@ private:
 
 	FORCEINLINE TArray<TObjectPtr<ALakayaBasePlayerState>>& GetEnemyArray()
 	{
-		return PlayersByTeamMap[ClientTeam == EPlayerTeam::A ? EPlayerTeam::B : EPlayerTeam::A];
+		return PlayersByTeamMap[ClientTeam == EPlayerTeam::Anti ? EPlayerTeam::Pro : EPlayerTeam::Anti];
 	}
 
 	void UpdatePlayerByTeamMap(const EPlayerTeam& Team, ALakayaBasePlayerState* PlayerState);

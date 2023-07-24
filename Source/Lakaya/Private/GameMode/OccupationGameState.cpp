@@ -41,8 +41,8 @@ AOccupationGameState::AOccupationGameState()
 	MatchStartWidgetLifeTime = 5.0f;
 	ClientTeam = EPlayerTeam::None;
 
-	PlayersByTeamMap.Emplace(EPlayerTeam::A);
-	PlayersByTeamMap.Emplace(EPlayerTeam::B);
+	PlayersByTeamMap.Emplace(EPlayerTeam::Anti);
+	PlayersByTeamMap.Emplace(EPlayerTeam::Pro);
 
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> ResultContextFinder(
 		TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IC_ResultWidgetControl.IC_ResultWidgetControl'"));
@@ -241,8 +241,8 @@ void AOccupationGameState::HandleMatchHasEnded()
 	MatchResult.WinTeam = GetOccupationWinner();
 	MatchResult.StartTime = StartTimeStamp;
 	MatchResult.Duration = GetServerWorldTimeSeconds() - StartTime;
-	AddPlayerStateToRecordResult(EPlayerTeam::A, PlayersByTeamMap[EPlayerTeam::A]);
-	AddPlayerStateToRecordResult(EPlayerTeam::B, PlayersByTeamMap[EPlayerTeam::B]);
+	AddPlayerStateToRecordResult(EPlayerTeam::Anti, PlayersByTeamMap[EPlayerTeam::Anti]);
+	AddPlayerStateToRecordResult(EPlayerTeam::Pro, PlayersByTeamMap[EPlayerTeam::Pro]);
 
 	if (HasAuthority())
 	{
@@ -290,18 +290,18 @@ void AOccupationGameState::ChangeResultWidget()
 
 void AOccupationGameState::SetOccupationWinner()
 {
-	CurrentOccupationWinner = ATeamScore > BTeamScore ? EPlayerTeam::A : EPlayerTeam::B;
+	CurrentOccupationWinner = ATeamScore > BTeamScore ? EPlayerTeam::Anti : EPlayerTeam::Pro;
 	OnRep_OccupationWinner();
 }
 
 void AOccupationGameState::AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore)
 {
-	if (Team == EPlayerTeam::A)
+	if (Team == EPlayerTeam::Anti)
 	{
 		ATeamScore += AdditiveScore;
 		OnRep_ATeamScore();
 	}
-	else if (Team == EPlayerTeam::B)
+	else if (Team == EPlayerTeam::Pro)
 	{
 		BTeamScore += AdditiveScore;
 		OnRep_BTeamScore();
@@ -321,20 +321,20 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 
 float AOccupationGameState::GetTeamScore(const EPlayerTeam& Team) const
 {
-	if (Team == EPlayerTeam::A) return ATeamScore;
-	if (Team == EPlayerTeam::B) return BTeamScore;
+	if (Team == EPlayerTeam::Anti) return ATeamScore;
+	if (Team == EPlayerTeam::Pro) return BTeamScore;
 	UE_LOG(LogScript, Warning, TEXT("Trying to GetTeamScore with not valid value! it was %d"), Team);
 	return 0.f;
 }
 
 void AOccupationGameState::OnRep_ATeamScore()
 {
-	OnTeamScoreSignature.Broadcast(EPlayerTeam::A, ATeamScore);
+	OnTeamScoreSignature.Broadcast(EPlayerTeam::Anti, ATeamScore);
 }
 
 void AOccupationGameState::OnRep_BTeamScore()
 {
-	OnTeamScoreSignature.Broadcast(EPlayerTeam::B, BTeamScore);
+	OnTeamScoreSignature.Broadcast(EPlayerTeam::Pro, BTeamScore);
 }
 
 void AOccupationGameState::OnRep_OccupationWinner()
@@ -430,9 +430,9 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 		GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
 		GradeResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-		if (PlayerState->GetTeam() == EPlayerTeam::A)
+		if (PlayerState->GetTeam() == EPlayerTeam::Anti)
 			GradeResultWidget->AntiTextBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		if (PlayerState->GetTeam() == EPlayerTeam::B)
+		if (PlayerState->GetTeam() == EPlayerTeam::Pro)
 			GradeResultWidget->ProTextBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 		if (PlayerState->IsSameTeam(GetOccupationWinner()))
@@ -459,12 +459,12 @@ void AOccupationGameState::ShowGradeResultElementWidget(ALakayaBasePlayerState* 
 {
 	if (GradeResultElementWidget.IsValid()) GradeResultElementWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 
-	if (NewPlayerState->GetTeam() == EPlayerTeam::A)
+	if (NewPlayerState->GetTeam() == EPlayerTeam::Anti)
 	{
 		ShowAntiTeamGradeResultElementWidget();
 	}
 
-	if (NewPlayerState->GetTeam() == EPlayerTeam::B)
+	if (NewPlayerState->GetTeam() == EPlayerTeam::Pro)
 	{
 		ShowProTeamGradeResultElementWidget();
 	}
@@ -498,9 +498,9 @@ void AOccupationGameState::GradeResultTeamInfo(TArray<TObjectPtr<ALakayaBasePlay
 	}
 
 	FString TeamLetter;
-	if (NewPlayerArray[NewIndex]->GetTeam() == EPlayerTeam::A)
+	if (NewPlayerArray[NewIndex]->GetTeam() == EPlayerTeam::Anti)
 		TeamLetter = "Anti";
-	if (NewPlayerArray[NewIndex]->GetTeam() == EPlayerTeam::B)
+	if (NewPlayerArray[NewIndex]->GetTeam() == EPlayerTeam::Pro)
 		TeamLetter = "Pro";
 
 	GradeResultElementWidget->GetWidgetFromName(
@@ -531,7 +531,7 @@ void AOccupationGameState::ShowAntiTeamGradeResultElementWidget() const
 {
 	TArray<TObjectPtr<ALakayaBasePlayerState>> AntiPlayerArray;
 	int index = 0;
-	for (auto RegisterPlayerState : PlayersByTeamMap[EPlayerTeam::A])
+	for (auto RegisterPlayerState : PlayersByTeamMap[EPlayerTeam::Anti])
 	{
 		AntiPlayerArray.Add(RegisterPlayerState);
 		GradeResultTeamInfo(AntiPlayerArray, index);
@@ -543,7 +543,7 @@ void AOccupationGameState::ShowProTeamGradeResultElementWidget() const
 {
 	TArray<TObjectPtr<ALakayaBasePlayerState>> ProPlayerArray;
 	int index = 0;
-	for (auto RegisterPlayerState : PlayersByTeamMap[EPlayerTeam::B])
+	for (auto RegisterPlayerState : PlayersByTeamMap[EPlayerTeam::Pro])
 	{
 		ProPlayerArray.Add(RegisterPlayerState);
 		GradeResultTeamInfo(ProPlayerArray, index);
@@ -559,7 +559,7 @@ void AOccupationGameState::BindDetailResultWidget()
 		const ALakayaBasePlayerState* PlayerState = Cast<ALakayaBasePlayerState>(LocalController->PlayerState);
 
 		// Anti
-		if (PlayerState->GetTeam() == EPlayerTeam::A)
+		if (PlayerState->GetTeam() == EPlayerTeam::Anti)
 		{
 			DetailResultWidget->AntiTextBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 			DetailResultWidget->AntiUserBoxNameImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -582,7 +582,7 @@ void AOccupationGameState::BindDetailResultWidget()
 		}
 
 		// Pro
-		if (PlayerState->GetTeam() == EPlayerTeam::B)
+		if (PlayerState->GetTeam() == EPlayerTeam::Pro)
 		{
 			DetailResultWidget->ProTextBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 			DetailResultWidget->ProUserBoxNameImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -637,13 +637,13 @@ void AOccupationGameState::BindDetailResultElementWidget()
 	uint8 AntiIndex = 0;
 	uint8 ProIndex = 0;
 
-	for (auto& ElementPlayerState : PlayersByTeamMap[EPlayerTeam::A])
+	for (auto& ElementPlayerState : PlayersByTeamMap[EPlayerTeam::Anti])
 	{
 		DetailResultElementWidget->SetElementWidget(ElementPlayerState, AntiIndex);
 		++AntiIndex;
 	}
 
-	for (auto& ElementPlayerState : PlayersByTeamMap[EPlayerTeam::B])
+	for (auto& ElementPlayerState : PlayersByTeamMap[EPlayerTeam::Pro])
 	{
 		DetailResultElementWidget->SetElementWidget(ElementPlayerState, ProIndex);
 		++ProIndex;
@@ -681,14 +681,14 @@ void AOccupationGameState::OnPlayerStateOwnerChanged(AActor* InOwner)
 
 void AOccupationGameState::AddPlayerStateToRecordResult(EPlayerTeam InTeam, TArray<ALakayaBasePlayerState*> InPlayers)
 {
-	if (InTeam == EPlayerTeam::A)
+	if (InTeam == EPlayerTeam::Anti)
 	{
 		for (const auto BasePlayerState : InPlayers)
 		{
 			MatchResult.AntiPlayers.Emplace(BasePlayerState->GetPlayerStats());
 		}
 	}
-	else if (InTeam == EPlayerTeam::B)
+	else if (InTeam == EPlayerTeam::Pro)
 	{
 		for (const auto BasePlayerState : InPlayers)
 		{
