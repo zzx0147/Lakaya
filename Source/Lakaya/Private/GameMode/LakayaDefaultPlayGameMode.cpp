@@ -150,8 +150,6 @@ void ALakayaDefaultPlayGameMode::PostLogin(APlayerController* NewPlayer)
 	Super::PostLogin(NewPlayer);
 	UE_LOG(LogTemp, Warning, TEXT("The Player has entered the game."));
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), GetNumPlayers());
-	
-	AgonesSDK->PlayerConnect("netspeak-player", {}, {});
 	RegisterPlayer(NewPlayer);
 }
 
