@@ -9,7 +9,7 @@
 UENUM(BlueprintType)
 enum class ELakayaAbilityInputBind
 {
-	Ability1 UMETA(DisplayName = "Q") = 0,
+	Ability1 = 0 UMETA(DisplayName = "Q"),
 	Ability2 UMETA(DisplayName = "E"),
 	Ability3 UMETA(DisplayName = "RMB"),
 	Ability4 UMETA(DisplayName = "LMB"),
