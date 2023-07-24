@@ -66,8 +66,7 @@ private:
 	void ShowScoreBoard();
 	void HideScoreBoard();
 	void MenuHandler();
-	void AbilityPressed(int32 InputID);
-	void AbilityReleased(int32 InputID);
+	void AbilityInput(TMemFunPtrType<false, UAbilitySystemComponent, void(int32)>::Type Function, int32 InputID);
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
@@ -76,7 +75,7 @@ private:
 	int8 InterfaceContextPriority;
 
 	UPROPERTY(EditAnywhere, Category=Input)
-	class UInputAction* MenuAction;
+	UInputAction* MenuAction;
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* ShowScoreAction;

@@ -91,19 +91,21 @@ void AGameLobbyPlayerController::SetEnableExitShortcut(const bool& Enable)
 void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
 	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
-								   &AGameLobbyPlayerController::MenuHandler);
+	                                   &AGameLobbyPlayerController::MenuHandler);
 	EnhancedInputComponent->BindAction(ShowScoreAction, ETriggerEvent::Triggered, this,
-									   &AGameLobbyPlayerController::ShowScoreBoard);
+	                                   &AGameLobbyPlayerController::ShowScoreBoard);
 	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
-									   &AGameLobbyPlayerController::HideScoreBoard);
+	                                   &AGameLobbyPlayerController::HideScoreBoard);
 
 	for (const auto& [Input, Action] : AbilityInputBindings)
 	{
 		const int32 InputID = static_cast<int32>(Input);
 		EnhancedInputComponent->BindAction(Action, ETriggerEvent::Triggered, this,
-		                                   &AGameLobbyPlayerController::AbilityPressed, InputID);
+		                                   &AGameLobbyPlayerController::AbilityInput,
+		                                   &UAbilitySystemComponent::AbilityLocalInputPressed, InputID);
 		EnhancedInputComponent->BindAction(Action, ETriggerEvent::Canceled, this,
-		                                   &AGameLobbyPlayerController::AbilityReleased, InputID);
+		                                   &AGameLobbyPlayerController::AbilityInput,
+		                                   &UAbilitySystemComponent::AbilityLocalInputReleased, InputID);
 	}
 }
 
@@ -111,11 +113,11 @@ void AGameLobbyPlayerController::UnbindAllAndBindMenu(UEnhancedInputComponent* c
 {
 	EnhancedInputComponent->ClearActionBindings();
 	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
-									   &AGameLobbyPlayerController::MenuHandler);
+	                                   &AGameLobbyPlayerController::MenuHandler);
 	EnhancedInputComponent->BindAction(ShowScoreAction, ETriggerEvent::Triggered, this,
-									   &AGameLobbyPlayerController::ShowScoreBoard);
+	                                   &AGameLobbyPlayerController::ShowScoreBoard);
 	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
-									   &AGameLobbyPlayerController::HideScoreBoard);
+	                                   &AGameLobbyPlayerController::HideScoreBoard);
 }
 
 void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
@@ -162,47 +164,39 @@ void AGameLobbyPlayerController::MenuHandler()
 	if (bEnableExitShortcut) UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ExitLevel);
 }
 
-void AGameLobbyPlayerController::AbilityPressed(int32 InputID)
+void AGameLobbyPlayerController::AbilityInput(
+	TMemFunPtrType<false, UAbilitySystemComponent, void(int32)>::Type Function,
+	int32 InputID)
 {
 	if (!AbilitySystem.IsValid())
 	{
 		AbilitySystem = GetAbilitySystemComponent();
 		if (!ensure(AbilitySystem.IsValid())) return;
 	}
-	AbilitySystem->AbilityLocalInputPressed(InputID);
-}
-
-void AGameLobbyPlayerController::AbilityReleased(int32 InputID)
-{
-	if (!AbilitySystem.IsValid())
-	{
-		AbilitySystem = GetAbilitySystemComponent();
-		if (!ensure(AbilitySystem.IsValid())) return;
-	}
-	AbilitySystem->AbilityLocalInputReleased(InputID);
+	(AbilitySystem.Get()->*Function)(InputID);
 }
 
 void AGameLobbyPlayerController::ShowScoreBoard()
 {
 	UE_LOG(LogTemp, Warning, TEXT("ShowScoreBoard"));
-	
+
 	// 팀전일 때
 	if (const auto OccupationGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 	{
 		if (const auto NewGameState = Cast<AOccupationGameState>(OccupationGameState))
 		{
 			if (!NewGameState->Tapbool) return;
-         
+
 			if (OccupationGameState->GetMatchState() == MatchState::WaitingPostMatch)
 			{
 				// 게임이 종료되고 결과창에 어떠한 위젯이 띄워지고 있느냐에 따라서 위젯들이 보여지는게 달라집니다.
 				NewGameState->ChangeResultWidget();
 			}
-			
+
 			OccupationGameState->SetScoreBoardVisibility(true);
 		}
 	}
-	
+
 	// 개인전일 때
 }
 
@@ -211,4 +205,3 @@ void AGameLobbyPlayerController::HideScoreBoard()
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 		GameState->SetScoreBoardVisibility(false);
 }
-
