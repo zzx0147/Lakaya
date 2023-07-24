@@ -27,6 +27,7 @@ ALakayaDefaultPlayGameMode::ALakayaDefaultPlayGameMode()
 	MinRespawnDelay = 5.0f;
 	CharacterSelectStartDelay = 3.0f;
 	//CharacterSelectTime = 10.0f;
+	AgonesSDK = CreateDefaultSubobject<UAgonesComponent>(TEXT("AgonesSDK"));
 }
 
 void ALakayaDefaultPlayGameMode::RestartPlayer(AController* NewPlayer)
@@ -147,9 +148,10 @@ void ALakayaDefaultPlayGameMode::PostInitializeComponents()
 void ALakayaDefaultPlayGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-
 	UE_LOG(LogTemp, Warning, TEXT("The Player has entered the game."));
 	UE_LOG(LogTemp, Warning, TEXT("Current Player Num : %d"), GetNumPlayers());
+	
+	AgonesSDK->PlayerConnect("netspeak-player", {}, {});
 	RegisterPlayer(NewPlayer);
 }
 

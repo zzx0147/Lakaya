@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
+#include "AgonesComponent.h"
 #include "LakayaDefaultPlayGameMode.generated.h"
 
 namespace MatchState
@@ -95,6 +96,9 @@ protected:
 
 	FTimerHandle TimerHandle_DelayedEnded;
 	float MatchEndDelay = 5.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAgonesComponent* AgonesSDK;
 	
 private:
 	UPROPERTY()
