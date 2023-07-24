@@ -3,27 +3,36 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "GameFramework/PlayerController.h"
+#include "Character/LakayaAbilitySet.h"
 #include "GameLobbyPlayerController.generated.h"
+
+USTRUCT(BlueprintType)
+struct FLakayaAbilityInputInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	ELakayaAbilityInputBind Input;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class UInputAction> Action;
+};
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API AGameLobbyPlayerController : public APlayerController
+class LAKAYA_API AGameLobbyPlayerController : public APlayerController, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
-	AGameLobbyPlayerController();
-
-protected:
-	virtual void SetupInputComponent() override;
-	virtual void OnPossess(APawn* PawnToPossess) override;
-
-public:
 	void SetEnableExitShortcut(const bool& Enable);
 	virtual void UnbindAllAndBindMenu(class UEnhancedInputComponent* const& EnhancedInputComponent);
+	AGameLobbyPlayerController();
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:
 	/**
@@ -47,6 +56,9 @@ protected:
 	 */
 	virtual void SetupMappingContext(class UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem);
 
+	virtual void SetupInputComponent() override;
+	virtual void OnPossess(APawn* PawnToPossess) override;
+
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UWorld> ExitLevel;
 
@@ -54,6 +66,8 @@ private:
 	void ShowScoreBoard();
 	void HideScoreBoard();
 	void MenuHandler();
+	void AbilityPressed(int32 InputID);
+	void AbilityReleased(int32 InputID);
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	class UInputMappingContext* InterfaceInputContext;
@@ -70,5 +84,9 @@ private:
 	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* HideScoreAction;
 
+	UPROPERTY(EditAnywhere)
+	TArray<FLakayaAbilityInputInfo> AbilityInputBindings;
+
 	bool bEnableExitShortcut;
+	TWeakObjectPtr<UAbilitySystemComponent> AbilitySystem;
 };

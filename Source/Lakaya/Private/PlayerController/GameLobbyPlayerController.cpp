@@ -1,5 +1,6 @@
 #include "PlayerController/GameLobbyPlayerController.h"
 
+#include "AbilitySystemComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
@@ -95,6 +96,15 @@ void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputCompo
 									   &AGameLobbyPlayerController::ShowScoreBoard);
 	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
 									   &AGameLobbyPlayerController::HideScoreBoard);
+
+	for (const auto& [Input, Action] : AbilityInputBindings)
+	{
+		const int32 InputID = static_cast<int32>(Input);
+		EnhancedInputComponent->BindAction(Action, ETriggerEvent::Triggered, this,
+		                                   &AGameLobbyPlayerController::AbilityPressed, InputID);
+		EnhancedInputComponent->BindAction(Action, ETriggerEvent::Canceled, this,
+		                                   &AGameLobbyPlayerController::AbilityReleased, InputID);
+	}
 }
 
 void AGameLobbyPlayerController::UnbindAllAndBindMenu(UEnhancedInputComponent* const& EnhancedInputComponent)
@@ -140,9 +150,36 @@ AGameLobbyPlayerController::AGameLobbyPlayerController(): APlayerController()
 	ExitLevel = FSoftObjectPath(TEXT("/Script/Engine.World'/Game/Levels/MainLobbyLevel.MainLobbyLevel'"));
 }
 
+UAbilitySystemComponent* AGameLobbyPlayerController::GetAbilitySystemComponent() const
+{
+	if (AbilitySystem.IsValid()) return AbilitySystem.Get();
+	const auto CastedState = GetPlayerState<IAbilitySystemInterface>();
+	return ensure(CastedState) ? CastedState->GetAbilitySystemComponent() : nullptr;
+}
+
 void AGameLobbyPlayerController::MenuHandler()
 {
 	if (bEnableExitShortcut) UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ExitLevel);
+}
+
+void AGameLobbyPlayerController::AbilityPressed(int32 InputID)
+{
+	if (!AbilitySystem.IsValid())
+	{
+		AbilitySystem = GetAbilitySystemComponent();
+		if (!ensure(AbilitySystem.IsValid())) return;
+	}
+	AbilitySystem->AbilityLocalInputPressed(InputID);
+}
+
+void AGameLobbyPlayerController::AbilityReleased(int32 InputID)
+{
+	if (!AbilitySystem.IsValid())
+	{
+		AbilitySystem = GetAbilitySystemComponent();
+		if (!ensure(AbilitySystem.IsValid())) return;
+	}
+	AbilitySystem->AbilityLocalInputReleased(InputID);
 }
 
 void AGameLobbyPlayerController::ShowScoreBoard()
