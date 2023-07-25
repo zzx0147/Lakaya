@@ -23,7 +23,7 @@ void URecordRow::NativeConstruct()
 
 void URecordRow::SetRecordRowData(const EPlayerTeam& InWinTeam, const FText& InStartTimeText, const FText& InDurationText)
 {
-	WinText = FText::FromString(InWinTeam == EPlayerTeam::A ? TEXT("A") : TEXT("B"));
+	WinText = FText::FromString(InWinTeam == EPlayerTeam::Anti ? TEXT("A") : TEXT("B"));
 	StartTimeText = InStartTimeText;
 	DurationText = InDurationText;
 	UpdateTextBlock();

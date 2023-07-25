@@ -145,7 +145,7 @@ void AOccupationObject::OnInteractionFinish(APawn* Caller)
 	const auto CallerState = Cast<ALakayaBasePlayerState>(Caller->GetPlayerState());
 
 	// 만약 성공한 플레이어 팀이 A라면
-	if (CallerState->IsSameTeam(EPlayerTeam::A))
+	if (CallerState->IsSameTeam(EPlayerTeam::Anti))
 	{
 		// 기존에 이미 다른 팀에서 점령을 했던 상활이라면, 점령했던 플레이어의 현재 점령한 오브젝트 갯수를 줄여줍니다.
 		// 다른 팀의 ObjectCount 또한 줄여줍니다.
@@ -153,12 +153,12 @@ void AOccupationObject::OnInteractionFinish(APawn* Caller)
 		if (OwnerPlayer != nullptr)
 		{
 			Cast<ALakayaBasePlayerState>(OwnerPlayer->GetPlayerState())->DecreaseCurrentCaptureCount();
-			OccupationGameMode->SubOccupyObject(EPlayerTeam::B);
+			OccupationGameMode->SubOccupyObject(EPlayerTeam::Pro);
 		}
 		
-		SetTeamObject(EPlayerTeam::A);
+		SetTeamObject(EPlayerTeam::Anti);
 		OnOccupationStateSignature.Broadcast(ObjectTeam);
-		OccupationGameMode->AddOccupyObject(EPlayerTeam::A);
+		OccupationGameMode->AddOccupyObject(EPlayerTeam::Anti);
 		OwnerPlayer = Caller;
 		Cast<ALakayaBasePlayerState>(OwnerPlayer->GetPlayerState())->IncreaseCurrentCaptureCount();
 
@@ -172,12 +172,12 @@ void AOccupationObject::OnInteractionFinish(APawn* Caller)
 		if (OwnerPlayer != nullptr)
 		{
 			Cast<ALakayaBasePlayerState>(OwnerPlayer->GetPlayerState())->DecreaseCurrentCaptureCount();
-			OccupationGameMode->SubOccupyObject(EPlayerTeam::A);
+			OccupationGameMode->SubOccupyObject(EPlayerTeam::Anti);
 		}
 		
-		SetTeamObject(EPlayerTeam::B);
+		SetTeamObject(EPlayerTeam::Pro);
 		OnOccupationStateSignature.Broadcast(ObjectTeam);
-		OccupationGameMode->AddOccupyObject(EPlayerTeam::B);
+		OccupationGameMode->AddOccupyObject(EPlayerTeam::Pro);
 		OwnerPlayer = Caller;
 		Cast<ALakayaBasePlayerState>(OwnerPlayer->GetPlayerState())->IncreaseCurrentCaptureCount();
 	}

@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Occupation/PlayerTeam.h"
+#include "functional"
 #include "KillLogElement.generated.h"
 
 UCLASS()
