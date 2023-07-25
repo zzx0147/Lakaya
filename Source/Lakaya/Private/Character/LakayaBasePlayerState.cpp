@@ -318,6 +318,8 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		if (HasAuthority()) NewAbilityInterface->GiveAbilities();
 	}
 
+	if (HasAuthority()) AbilitySystem->SetAvatarActor(NewPawn);
+
 	if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
 	{
 		if (Team != EPlayerTeam::None) Character->SetTeam(Team);
