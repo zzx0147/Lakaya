@@ -213,7 +213,7 @@ void ALakayaBaseCharacter::GiveAbilities()
 	const auto AbilitySystem = GetAbilitySystemComponent();
 	if (!ensure(AbilitySystem)) return;
 
-	AbilityHandles.Empty();
+	ClearAbilities();
 	for (auto&& Ability : CharacterAbilities)
 	{
 		AbilityHandles.Emplace(AbilitySystem->GiveAbility(Ability));
