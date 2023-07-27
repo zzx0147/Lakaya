@@ -11,6 +11,7 @@
 #include "GameMode/OccupationGameState.h"
 #include "Interfaces/NetworkPredictionInterface.h"
 #include "Kismet/GameplayStatics.h"
+#include "PlayerController/LakayaAbilityInputContainer.h"
 
 
 void AGameLobbyPlayerController::SetupInputComponent()
@@ -97,16 +98,8 @@ void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputCompo
 	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
 	                                   &AGameLobbyPlayerController::HideScoreBoard);
 
-	for (const auto& [Input, Action] : AbilityInputBindings)
-	{
-		const int32 InputID = static_cast<int32>(Input);
-		EnhancedInputComponent->BindAction(Action, ETriggerEvent::Triggered, this,
-		                                   &AGameLobbyPlayerController::AbilityInput,
-		                                   &UAbilitySystemComponent::AbilityLocalInputPressed, InputID);
-		EnhancedInputComponent->BindAction(Action, ETriggerEvent::Canceled, this,
-		                                   &AGameLobbyPlayerController::AbilityInput,
-		                                   &UAbilitySystemComponent::AbilityLocalInputReleased, InputID);
-	}
+	AbilityInputSet.LoadSynchronous()->BindActions(EnhancedInputComponent, this,
+	                                               &AGameLobbyPlayerController::AbilityInput);
 }
 
 void AGameLobbyPlayerController::UnbindAllAndBindMenu(UEnhancedInputComponent* const& EnhancedInputComponent)
@@ -123,6 +116,7 @@ void AGameLobbyPlayerController::UnbindAllAndBindMenu(UEnhancedInputComponent* c
 void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
 {
 	InputSubsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
+	AbilityInputSet.LoadSynchronous()->AddMappingContext(InputSubsystem);
 }
 
 AGameLobbyPlayerController::AGameLobbyPlayerController(): APlayerController()

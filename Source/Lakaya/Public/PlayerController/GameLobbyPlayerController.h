@@ -5,20 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "GameFramework/PlayerController.h"
-#include "Character/LakayaAbilitySet.h"
 #include "GameLobbyPlayerController.generated.h"
-
-USTRUCT(BlueprintType)
-struct FLakayaAbilityInputInfo
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere)
-	ELakayaAbilityInputBind Input;
-
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<class UInputAction> Action;
-};
 
 /**
  * 
@@ -32,7 +19,7 @@ public:
 	void SetEnableExitShortcut(const bool& Enable);
 	virtual void UnbindAllAndBindMenu(class UEnhancedInputComponent* const& EnhancedInputComponent);
 	AGameLobbyPlayerController();
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:
 	/**
@@ -48,7 +35,6 @@ protected:
 	 * @param EnhancedInputComponent 향상된 입력 컴포넌트 객체입니다. 이를 통해 인풋 바인딩이 가능합니다.
 	 */
 	virtual void SetupEnhancedInputComponent(class UEnhancedInputComponent* const& EnhancedInputComponent);
-
 
 	/**
 	 * @brief 향상된 입력을 사용하는 우리 게임을 위해 선언된 함수입니다. SetupInputComponent에서 호출됩니다.
@@ -77,7 +63,7 @@ private:
 	int8 InterfaceContextPriority;
 
 	UPROPERTY(EditAnywhere, Category=Input)
-	UInputAction* MenuAction;
+	class UInputAction* MenuAction;
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* ShowScoreAction;
@@ -86,7 +72,7 @@ private:
 	UInputAction* HideScoreAction;
 
 	UPROPERTY(EditAnywhere)
-	TArray<FLakayaAbilityInputInfo> AbilityInputBindings;
+	TSoftObjectPtr<class ULakayaAbilityInputSet> AbilityInputSet;
 
 	bool bEnableExitShortcut;
 	TWeakObjectPtr<UAbilitySystemComponent> AbilitySystem;
