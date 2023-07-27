@@ -18,11 +18,11 @@ void AGameLobbyPlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 
 	const auto CastedComponent = Cast<UEnhancedInputComponent>(InputComponent);
-	if (!CastedComponent) UE_LOG(LogInit, Fatal, TEXT("InputComponent was not UEnhancedInputComponent!"));
+	check(CastedComponent)
 	SetupEnhancedInputComponent(CastedComponent);
 
 	const auto InputSubsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	if (!InputSubsystem) UE_LOG(LogInit, Fatal, TEXT("UEnhancedInputLocalPlayerSubsystem was not exist!"));
+	check(InputSubsystem)
 	SetupMappingContext(InputSubsystem);
 }
 
