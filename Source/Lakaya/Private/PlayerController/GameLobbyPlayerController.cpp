@@ -11,7 +11,7 @@
 #include "GameMode/OccupationGameState.h"
 #include "Interfaces/NetworkPredictionInterface.h"
 #include "Kismet/GameplayStatics.h"
-#include "PlayerController/LakayaAbilityInputContainer.h"
+#include "PlayerController/LakayaAbilityInputSet.h"
 
 
 void AGameLobbyPlayerController::SetupInputComponent()

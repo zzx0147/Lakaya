@@ -7,7 +7,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Character/LakayaAbilitySet.h"
-#include "LakayaAbilityInputContainer.generated.h"
+#include "LakayaAbilityInputSet.generated.h"
 
 USTRUCT(BlueprintType)
 struct FLakayaAbilityInputInfo
