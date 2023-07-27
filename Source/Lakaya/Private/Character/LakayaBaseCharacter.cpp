@@ -4,6 +4,7 @@
 #include "Character/LakayaBaseCharacter.h"
 
 #include "AbilitySystemComponent.h"
+#include "LakayaAbilitySet.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
@@ -210,26 +211,12 @@ void ALakayaBaseCharacter::SetAbilitySystemComponent(UAbilitySystemComponent* In
 
 void ALakayaBaseCharacter::GiveAbilities()
 {
-	const auto AbilitySystem = GetAbilitySystemComponent();
-	if (!ensure(AbilitySystem)) return;
-
-	ClearAbilities();
-	for (auto&& Ability : CharacterAbilities)
-	{
-		AbilityHandles.Emplace(AbilitySystem->GiveAbility(Ability));
-	}
+	CharacterAbilities->GiveAbilities(GetAbilitySystemComponent());
 }
 
 void ALakayaBaseCharacter::ClearAbilities()
 {
-	const auto AbilitySystem = GetAbilitySystemComponent();
-	if (!ensure(AbilitySystem)) return;
-
-	for (auto&& AbilityHandle : AbilityHandles)
-	{
-		AbilitySystem->ClearAbility(AbilityHandle);
-	}
-	AbilityHandles.Empty();
+	CharacterAbilities->ClearAbilities();
 }
 
 void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)

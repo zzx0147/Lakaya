@@ -188,7 +188,7 @@ protected:
 
 	/** 이 캐릭터가 사용할 어빌리티들을 지정합니다. */
 	UPROPERTY(EditAnywhere)
-	TArray<FGameplayAbilitySpec> CharacterAbilities;
+	TObjectPtr<class ULakayaAbilitySet> CharacterAbilities;
 
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
