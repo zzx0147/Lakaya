@@ -27,7 +27,7 @@ struct FLakayaAbilityInputInfo
 };
 
 /**
- * 
+ * @brief 어빌리티 시스템 컴포넌트의 입력 바인딩을 위한 데이터 에셋입니다.
  */
 UCLASS()
 class ULakayaAbilityInputSet : public UDataAsset
@@ -54,6 +54,12 @@ public:
 	/** 이 데이터 에셋이 추가한 컨텍스트를 제거합니다. */
 	void RemoveMappingContext() const;
 
+	/**
+	 * @brief 이 데이터 에셋이 가지고 있는 입력 바인딩 데이터를 통해 입력 바인딩을 추가합니다.
+	 * @param InputComponent 입력 바인딩을 추가할 대상 컴포넌트입니다.
+	 * @param Object 입력에 대한 콜백을 받게 될 오브젝트입니다.
+	 * @param InputHandler 입력에 대한 콜백함수이며, Object의 멤버함수입니다.
+	 */
 	template <typename T>
 	void BindActions(UEnhancedInputComponent* InputComponent, T* Object, TInputActionCallback<T> InputHandler);
 
