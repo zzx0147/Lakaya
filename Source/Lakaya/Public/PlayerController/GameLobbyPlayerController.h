@@ -57,6 +57,8 @@ protected:
 	virtual void SetupMappingContext(class UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem);
 
 	virtual void SetupInputComponent() override;
+
+	/** 언리얼 엔진의 버그를 수정하기 위한 오버라이드입니다. */
 	virtual void OnPossess(APawn* PawnToPossess) override;
 
 	UPROPERTY(EditAnywhere)
