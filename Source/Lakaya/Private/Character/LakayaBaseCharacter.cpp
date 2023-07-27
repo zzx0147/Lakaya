@@ -4,7 +4,7 @@
 #include "Character/LakayaBaseCharacter.h"
 
 #include "AbilitySystemComponent.h"
-#include "LakayaAbilitySet.h"
+#include "Character/LakayaAbilitySet.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
