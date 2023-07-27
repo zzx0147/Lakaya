@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayAbilitySpecHandle.h"
 #include "Engine/DataAsset.h"
 #include "LakayaAbilitySet.generated.h"
 
@@ -58,7 +59,7 @@ public:
 	/**
 	 * @brief 이 어빌리티 셋이 등록한 어빌리티에 대한 핸들들을 반환합니다.
 	 */
-	FORCEINLINE const TArray<struct FGameplayAbilitySpecHandle>& GetRegisteredAbilityHandles() const
+	FORCEINLINE const TArray<FGameplayAbilitySpecHandle>& GetRegisteredAbilityHandles() const
 	{
 		return RegisteredAbilities;
 	}
