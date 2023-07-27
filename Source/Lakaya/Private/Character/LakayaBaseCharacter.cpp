@@ -211,12 +211,13 @@ void ALakayaBaseCharacter::SetAbilitySystemComponent(UAbilitySystemComponent* In
 
 void ALakayaBaseCharacter::GiveAbilities()
 {
-	CharacterAbilities->GiveAbilities(GetAbilitySystemComponent());
+	if (CharacterAbilities.IsNull()) return;
+	CharacterAbilities.LoadSynchronous()->GiveAbilities(GetAbilitySystemComponent());
 }
 
 void ALakayaBaseCharacter::ClearAbilities()
 {
-	CharacterAbilities->ClearAbilities();
+	if (CharacterAbilities.IsValid()) CharacterAbilities->ClearAbilities();
 }
 
 void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
