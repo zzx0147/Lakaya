@@ -186,6 +186,7 @@ protected:
 	//캐릭터의 이름입니다
 	FName CharacterName;
 
+	//TODO: 클라이언트는 이것을 전혀 사용하지 않습니다. 따라서 TSoftObjectPtr로 선언을 변경하고, 이것을 사용하는 로직에서 로딩이 수행되도록 변경합니다.
 	/** 이 캐릭터가 사용할 어빌리티들을 지정합니다. */
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class ULakayaAbilitySet> CharacterAbilities;
