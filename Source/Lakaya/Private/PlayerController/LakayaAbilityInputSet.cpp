@@ -26,10 +26,11 @@ void ULakayaAbilityInputSet::AddMappingContext(UEnhancedInputLocalPlayerSubsyste
 	RegisteredInputSubsystem = InputSubsystem;
 }
 
-void ULakayaAbilityInputSet::RemoveMappingContext() const
+void ULakayaAbilityInputSet::RemoveMappingContext()
 {
 	if (!RegisteredInputSubsystem.IsValid()) return;
 	RegisteredInputSubsystem->RemoveMappingContext(Context);
+	RegisteredInputSubsystem.Reset();
 }
 
 void ULakayaAbilityInputSet::RemoveActions()

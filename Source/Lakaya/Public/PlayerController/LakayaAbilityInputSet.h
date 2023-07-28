@@ -72,7 +72,7 @@ public:
 	void AddMappingContext(UEnhancedInputLocalPlayerSubsystem* InputSubsystem);
 
 	/** 이 데이터 에셋이 추가한 컨텍스트를 제거합니다. */
-	void RemoveMappingContext() const;
+	void RemoveMappingContext();
 
 	/**
 	 * @brief 이 데이터 에셋이 가지고 있는 입력 바인딩 데이터를 통해 입력 바인딩을 추가합니다.
