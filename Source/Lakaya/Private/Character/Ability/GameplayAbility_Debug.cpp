@@ -12,11 +12,25 @@ void UGameplayAbility_Debug::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 	AddDebugMessage(TEXT("Abillity Activated"), ActivationInfo);
 }
 
+void UGameplayAbility_Debug::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+	Super::OnGiveAbility(ActorInfo, Spec);
+	AddDebugMessage(TEXT("On Give Ability"), ActorInfo);
+}
+
+void UGameplayAbility_Debug::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo,
+                                             const FGameplayAbilitySpec& Spec)
+{
+	Super::OnRemoveAbility(ActorInfo, Spec);
+	AddDebugMessage(TEXT("On Remove Ability"), ActorInfo);
+}
+
 UGameplayAbility_Debug::UGameplayAbility_Debug()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::NonInstanced;
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
+	bReplicateInputDirectly = true;
 }
 
 void UGameplayAbility_Debug::InputPressed(const FGameplayAbilitySpecHandle Handle,
