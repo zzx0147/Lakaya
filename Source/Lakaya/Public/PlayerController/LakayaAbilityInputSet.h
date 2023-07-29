@@ -114,7 +114,7 @@ void FLakayaAbilityInputInfo::BindAction(UEnhancedInputComponent* InputComponent
 		                           &UAbilitySystemComponent::AbilityLocalInputPressed, InputID).GetHandle();
 
 	ReleaseHandle =
-		InputComponent->BindAction(Action, ETriggerEvent::Canceled, Object, InputHandler,
+		InputComponent->BindAction(Action, ETriggerEvent::Completed, Object, InputHandler,
 		                           &UAbilitySystemComponent::AbilityLocalInputReleased, InputID).GetHandle();
 }
 
