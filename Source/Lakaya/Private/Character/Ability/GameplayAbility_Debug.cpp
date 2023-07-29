@@ -31,6 +31,7 @@ UGameplayAbility_Debug::UGameplayAbility_Debug()
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	bReplicateInputDirectly = true;
+	bEndOnRelease = true;
 }
 
 void UGameplayAbility_Debug::InputPressed(const FGameplayAbilitySpecHandle Handle,
