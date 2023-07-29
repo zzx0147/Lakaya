@@ -213,11 +213,14 @@ void ALakayaBaseCharacter::GiveAbilities()
 {
 	if (CharacterAbilities.IsNull()) return;
 	CharacterAbilities.LoadSynchronous()->GiveAbilities(GetAbilitySystemComponent());
+	UE_LOG(LogTemp, Log, TEXT("%s Give Abilities"), *GetName());
 }
 
 void ALakayaBaseCharacter::ClearAbilities()
 {
-	if (CharacterAbilities.IsValid()) CharacterAbilities->ClearAbilities();
+	if (!CharacterAbilities.IsValid()) return;
+	CharacterAbilities->ClearAbilities();
+	UE_LOG(LogTemp, Log, TEXT("%s Clear Abilities"), *GetName());
 }
 
 void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
