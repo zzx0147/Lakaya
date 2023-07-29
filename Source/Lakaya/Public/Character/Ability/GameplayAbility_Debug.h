@@ -4,17 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
-#include "UGameplayAbility_Debug.generated.h"
+#include "GameplayAbility_Debug.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API UUGameplayAbility_Debug : public UGameplayAbility
+class LAKAYA_API UGameplayAbility_Debug : public UGameplayAbility
 {
 	GENERATED_BODY()
 
 public:
+	UGameplayAbility_Debug();
 	virtual void InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	                          const FGameplayAbilityActivationInfo ActivationInfo) override;
 	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
