@@ -242,13 +242,13 @@ void ALinearProjectile::SetTeamCollisionResponse(UPrimitiveComponent* PrimitiveC
 
 	// A팀이고 같은 팀에 대한 충돌이 허용된 경우나 B팀이고 적에 대한 충돌이 허용된 경우에만 ATeamCharacter에 대해 Overlap을 설정합니다.
 	PrimitiveComponent->SetCollisionResponseToChannel(
-		ATeamCollisionChannel, (Team == EPlayerTeam::A && WithAlly) || (Team == EPlayerTeam::B && WithEnemy)
+		ATeamCollisionChannel, (Team == EPlayerTeam::Anti && WithAlly) || (Team == EPlayerTeam::Pro && WithEnemy)
 			                       ? ECR_Overlap
 			                       : ECR_Ignore);
 
 	// A팀이고 적에 대한 충돌이 허용된 경우나 B팀이고 같은 팀에 대한 충돌이 허용된 경우에만 ATeamCharacter에 대해 Overlap을 설정합니다.
 	PrimitiveComponent->SetCollisionResponseToChannel(
-		BTeamCollisionChannel, (Team == EPlayerTeam::A && WithEnemy) || (Team == EPlayerTeam::B && WithAlly)
+		BTeamCollisionChannel, (Team == EPlayerTeam::Anti && WithEnemy) || (Team == EPlayerTeam::Pro && WithAlly)
 			                       ? ECR_Overlap
 			                       : ECR_Ignore);
 }
