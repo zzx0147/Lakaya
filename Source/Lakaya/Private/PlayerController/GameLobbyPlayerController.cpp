@@ -99,7 +99,7 @@ void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputCompo
 	                                   &AGameLobbyPlayerController::HideScoreBoard);
 
 	AbilityInputSet.LoadSynchronous()->BindActions(EnhancedInputComponent, this,
-	                                               &AGameLobbyPlayerController::AbilityInput);
+	                                               &AGameLobbyPlayerController::AbilityInput, InputHandleContainer);
 }
 
 void AGameLobbyPlayerController::UnbindAllAndBindMenu(UEnhancedInputComponent* const& EnhancedInputComponent)

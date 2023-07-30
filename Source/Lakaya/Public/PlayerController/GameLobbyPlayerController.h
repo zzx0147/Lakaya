@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "LakayaAbilityInputSet.h"
 #include "GameFramework/PlayerController.h"
 #include "GameLobbyPlayerController.generated.h"
 
@@ -76,4 +77,5 @@ private:
 
 	bool bEnableExitShortcut;
 	TWeakObjectPtr<UAbilitySystemComponent> AbilitySystem;
+	FLakayaInputHandleContainer InputHandleContainer;
 };

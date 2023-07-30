@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "LakayaAbilitySet.h"
 #include "RegisterAbilityInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
@@ -46,8 +47,7 @@ public:
 	                         AActor* DamageCauser) override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-	virtual void SetAbilitySystemComponent(UAbilitySystemComponent* InAbilitySystem) override;
-	virtual void GiveAbilities() override;
+	virtual void GiveAbilities(UAbilitySystemComponent* InAbilitySystem) override;
 	virtual void ClearAbilities() override;
 
 protected:
@@ -188,7 +188,7 @@ protected:
 
 	/** 이 캐릭터가 사용할 어빌리티들을 지정하는 데이터 에셋입니다. */
 	UPROPERTY(EditAnywhere)
-	TSoftObjectPtr<class ULakayaAbilitySet> CharacterAbilities;
+	TSoftObjectPtr<ULakayaAbilitySet> CharacterAbilities;
 
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
@@ -227,6 +227,5 @@ private:
 	FName MeshCollisionProfile;
 	TWeakObjectPtr<UMaterialInstanceDynamic> CharacterOverlayMaterial;
 	FTimerHandle DamageImmuneTimer;
-	TWeakObjectPtr<UAbilitySystemComponent> CachedAbilitySystem;
-	TArray<struct FGameplayAbilitySpecHandle> AbilityHandles;
+	FLakayaAbilityHandleContainer AbilityHandleContainer;
 };

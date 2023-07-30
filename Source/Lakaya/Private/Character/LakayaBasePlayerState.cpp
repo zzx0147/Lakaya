@@ -312,10 +312,10 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		OldAbilityInterface->ClearAbilities();
 	}
 
-	if (const auto NewAbilityInterface = Cast<IRegisterAbilityInterface>(NewPawn))
+	if (const auto NewAbilityInterface = Cast<IRegisterAbilityInterface>(NewPawn);
+		HasAuthority() && NewAbilityInterface)
 	{
-		NewAbilityInterface->SetAbilitySystemComponent(AbilitySystem);
-		if (HasAuthority()) NewAbilityInterface->GiveAbilities();
+		NewAbilityInterface->GiveAbilities(AbilitySystem);
 	}
 
 	if (HasAuthority()) AbilitySystem->SetAvatarActor(NewPawn);

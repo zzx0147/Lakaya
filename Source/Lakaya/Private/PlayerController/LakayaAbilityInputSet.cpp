@@ -3,41 +3,22 @@
 
 #include "PlayerController/LakayaAbilityInputSet.h"
 
-void FLakayaAbilityInputInfo::RemoveBinding(UEnhancedInputComponent* InputComponent)
+void FLakayaInputHandle::RemoveBinding(UEnhancedInputComponent* InputComponent)
 {
-	if (!IsValid(InputComponent)) return;
+	if (!ensure(InputComponent)) return;
+	RemoveSingleBinding(Press, InputComponent);
+	RemoveSingleBinding(Release, InputComponent);
+}
 
-	static auto RemoveBind = [](uint32& Binding, UEnhancedInputComponent* const& InputComp)
+void FLakayaInputHandleContainer::RemoveBindings()
+{
+	if (InputComponent.IsValid())
 	{
-		if (Binding == 0) return;
-		InputComp->RemoveBindingByHandle(Binding);
-		Binding = 0;
-	};
-
-	RemoveBind(PressHandle, InputComponent);
-	RemoveBind(ReleaseHandle, InputComponent);
-}
-
-void ULakayaAbilityInputSet::AddMappingContext(UEnhancedInputLocalPlayerSubsystem* InputSubsystem)
-{
-	if (!ensure(IsValid(InputSubsystem))) return;
-	RemoveMappingContext();
-	InputSubsystem->AddMappingContext(Context, Priority);
-	RegisteredInputSubsystem = InputSubsystem;
-}
-
-void ULakayaAbilityInputSet::RemoveMappingContext()
-{
-	if (!RegisteredInputSubsystem.IsValid()) return;
-	RegisteredInputSubsystem->RemoveMappingContext(Context);
-	RegisteredInputSubsystem.Reset();
-}
-
-void ULakayaAbilityInputSet::RemoveActions()
-{
-	if (!RegisteredInputComponent.IsValid()) return;
-	for (auto& BindInfo : AbilityInputBindings)
-	{
-		BindInfo.RemoveBinding(RegisteredInputComponent.Get());
+		for (auto& Handle : Handles)
+		{
+			Handle.RemoveBinding(InputComponent.Get());
+		}
 	}
+	Handles.Empty();
+	InputComponent.Reset();
 }

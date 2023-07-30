@@ -3,32 +3,28 @@
 
 #include "Character/LakayaAbilitySet.h"
 
-#include "AbilitySystemComponent.h"
-#include "GameplayAbilitySpec.h"
 
-void ULakayaAbilitySet::GiveAbilities(UAbilitySystemComponent* AbilitySystemComponent, const int32& InputOffset)
+void FLakayaAbilityHandleContainer::ClearAbilities()
 {
-	// 어빌리티 시스템 컴포넌트는 유효해야 합니다.
-	if (!ensure(AbilitySystemComponent)) return;
-
-	// 이미 어빌리티가 등록되어있었을 수 있으므로, 먼저 어빌리티를 해제합니다.
-	ClearAbilities();
-
-	for (const auto& [Input, Class] : Abilities)
+	if (AbilitySystem.IsValid())
 	{
-		const auto& AbilitySpec = FGameplayAbilitySpec(Class, 1, static_cast<int32>(Input) + InputOffset);
-		RegisteredAbilities.Emplace(AbilitySystemComponent->GiveAbility(AbilitySpec));
+		for (const auto& Handle : Handles)
+		{
+			AbilitySystem->ClearAbility(Handle);
+		}
 	}
-	RegisteredAbilitySystem = AbilitySystemComponent;
+	Handles.Empty();
+	AbilitySystem.Reset();
 }
 
-void ULakayaAbilitySet::ClearAbilities()
+void ULakayaAbilitySet::GiveAbilities(UAbilitySystemComponent* InAbilitySystem,
+                                      FLakayaAbilityHandleContainer& OutHandle)
 {
-	if (!RegisteredAbilitySystem.IsValid()) return;
-	for (auto&& Handle : RegisteredAbilities)
+	if (!ensure(InAbilitySystem)) return;
+	OutHandle.Handles.Empty();
+	for (const auto& Ability : Abilities)
 	{
-		RegisteredAbilitySystem->ClearAbility(Handle);
+		OutHandle.Handles.Emplace(Ability.GiveAbility(InAbilitySystem));
 	}
-	RegisteredAbilities.Empty();
-	RegisteredAbilitySystem.Reset();
+	OutHandle.AbilitySystem = InAbilitySystem;
 }

@@ -23,14 +23,9 @@ class LAKAYA_API IRegisterAbilityInterface
 
 public:
 	/**
-	 * @brief AbilitySystemComponent를 지정합니다. 
-	 */
-	virtual void SetAbilitySystemComponent(UAbilitySystemComponent* InAbilitySystem) = 0;
-
-	/**
 	 * @brief 어빌리티 시스템에 어빌리티를 등록하라는 지시입니다.
 	 */
-	virtual void GiveAbilities() = 0;
+	virtual void GiveAbilities(UAbilitySystemComponent* InAbilitySystem) = 0;
 
 	/**
 	 * @brief 어빌리티 시스템에서 등록했던 어빌리티를 제거하라는 지시입니다.

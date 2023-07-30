@@ -138,9 +138,29 @@ void ALakayaBaseCharacter::Tick(float DeltaSeconds)
 
 UAbilitySystemComponent* ALakayaBaseCharacter::GetAbilitySystemComponent() const
 {
-	if (CachedAbilitySystem.IsValid()) return CachedAbilitySystem.Get();
+	// 어빌리티 핸들 컨테이너에 캐싱된 어빌리티 시스템이 유효한 경우 해당 어빌리티 시스템을 반환합니다.
+	if (AbilityHandleContainer.AbilitySystem.IsValid())
+	{
+		return AbilityHandleContainer.AbilitySystem.Get();
+	}
+
+	// 마지막으로 플레이어 스테이트를 타입캐스팅하여 플레이어 스테이트의 어빌리티 시스템 컴포넌트를 사용합니다.
 	const auto CastedState = GetPlayerState<IAbilitySystemInterface>();
 	return ensure(CastedState) ? CastedState->GetAbilitySystemComponent() : nullptr;
+}
+
+void ALakayaBaseCharacter::GiveAbilities(UAbilitySystemComponent* InAbilitySystem)
+{
+	if (!ensure(InAbilitySystem) || CharacterAbilities.IsNull()) return;
+	CharacterAbilities.LoadSynchronous()->GiveAbilities(InAbilitySystem, AbilityHandleContainer);
+	UE_LOG(LogTemp, Log, TEXT("%s Give Abilities"), *GetName());
+}
+
+void ALakayaBaseCharacter::ClearAbilities()
+{
+	if (!CharacterAbilities.IsValid()) return;
+	AbilityHandleContainer.ClearAbilities();
+	UE_LOG(LogTemp, Log, TEXT("%s Clear Abilities"), *GetName());
 }
 
 void ALakayaBaseCharacter::BeginPlay()
@@ -202,25 +222,6 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 	}
 
 	CharacterOverlayMaterial->SetVectorParameterValue(TEXT("Color"), IsAlly ? FLinearColor::Blue : FLinearColor::Red);
-}
-
-void ALakayaBaseCharacter::SetAbilitySystemComponent(UAbilitySystemComponent* InAbilitySystem)
-{
-	CachedAbilitySystem = InAbilitySystem;
-}
-
-void ALakayaBaseCharacter::GiveAbilities()
-{
-	if (CharacterAbilities.IsNull()) return;
-	CharacterAbilities.LoadSynchronous()->GiveAbilities(GetAbilitySystemComponent());
-	UE_LOG(LogTemp, Log, TEXT("%s Give Abilities"), *GetName());
-}
-
-void ALakayaBaseCharacter::ClearAbilities()
-{
-	if (!CharacterAbilities.IsValid()) return;
-	CharacterAbilities->ClearAbilities();
-	UE_LOG(LogTemp, Log, TEXT("%s Clear Abilities"), *GetName());
 }
 
 void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
