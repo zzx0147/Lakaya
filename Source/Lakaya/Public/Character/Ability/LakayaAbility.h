@@ -35,7 +35,9 @@ protected:
 
 	/** 캐시된 입력 서브시스템을 가져옵니다. 캐시된 입력 서브시스템이 유효하지 않다면, 캐시를 업데이트합니다. 하지만 여전히 nullptr일 수 있습니다. */
 	UEnhancedInputLocalPlayerSubsystem* GetCachedInputSubsystem(const FGameplayAbilityActorInfo* ActorInfo);
-	
+
+	void Log(const FGameplayAbilityActorInfo* ActorInfo, const FString& Message) const;
+
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	                             const FGameplayAbilityActivationInfo ActivationInfo,
 	                             const FGameplayEventData* TriggerEventData) override;
@@ -46,6 +48,9 @@ protected:
 private:
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<ULakayaAbilityInputSet> InputSet;
+
+	UPROPERTY(EditAnywhere)
+	uint8 bAddLogOnScreen : 1;
 
 	FLakayaInputHandleContainer InputHandleContainer;
 	TWeakObjectPtr<UEnhancedInputLocalPlayerSubsystem> CachedInputSubsystem;
