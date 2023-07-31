@@ -5,9 +5,9 @@
 
 #include "PlayerController/LakayaAbilityInputSet.h"
 
-void ULakayaAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+void ULakayaAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
-	Super::OnAvatarSet(ActorInfo, Spec);
+	Super::OnGiveAbility(ActorInfo, Spec);
 	if (!InputSet.IsNull() && ActorInfo->IsLocallyControlledPlayer())
 	{
 		InputSet.LoadSynchronous()->BindActions(GetEnhancedInputComponent(ActorInfo), this,

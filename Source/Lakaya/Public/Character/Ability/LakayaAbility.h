@@ -17,7 +17,7 @@ class LAKAYA_API ULakayaAbility : public UGameplayAbility
 	GENERATED_BODY()
 
 public:
-	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
 protected:
@@ -36,6 +36,7 @@ protected:
 	/** 캐시된 입력 서브시스템을 가져옵니다. 캐시된 입력 서브시스템이 유효하지 않다면, 캐시를 업데이트합니다. 하지만 여전히 nullptr일 수 있습니다. */
 	UEnhancedInputLocalPlayerSubsystem* GetCachedInputSubsystem(const FGameplayAbilityActorInfo* ActorInfo);
 
+	/** 로그를 출력합니다. */
 	void Log(const FGameplayAbilityActorInfo* ActorInfo, const FString& Message) const;
 
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
