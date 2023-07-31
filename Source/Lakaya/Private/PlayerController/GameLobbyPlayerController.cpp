@@ -1,8 +1,5 @@
 #include "PlayerController/GameLobbyPlayerController.h"
 
-#include "AbilitySystemComponent.h"
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "GameFramework/GameMode.h"
 #include "GameFramework/PawnMovementComponent.h"
@@ -11,7 +8,6 @@
 #include "GameMode/OccupationGameState.h"
 #include "Interfaces/NetworkPredictionInterface.h"
 #include "Kismet/GameplayStatics.h"
-#include "PlayerController/LakayaAbilityInputSet.h"
 
 
 void AGameLobbyPlayerController::SetupInputComponent()
@@ -158,9 +154,7 @@ void AGameLobbyPlayerController::MenuHandler()
 	if (bEnableExitShortcut) UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ExitLevel);
 }
 
-void AGameLobbyPlayerController::AbilityInput(
-	TMemFunPtrType<false, UAbilitySystemComponent, void(int32)>::Type Function,
-	int32 InputID)
+void AGameLobbyPlayerController::AbilityInput(TAbilitySystemInputCallback Function, int32 InputID)
 {
 	if (!AbilitySystem.IsValid())
 	{

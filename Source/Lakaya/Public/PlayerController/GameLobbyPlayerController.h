@@ -18,9 +18,9 @@ class LAKAYA_API AGameLobbyPlayerController : public APlayerController, public I
 
 public:
 	void SetEnableExitShortcut(const bool& Enable);
-	virtual void UnbindAllAndBindMenu(class UEnhancedInputComponent* const& EnhancedInputComponent);
+	virtual void UnbindAllAndBindMenu(UEnhancedInputComponent* const& EnhancedInputComponent);
 	AGameLobbyPlayerController();
-	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:
 	/**
@@ -35,13 +35,13 @@ protected:
 	 * @brief 향상된 입력을 사용하는 우리 게임을 위해 선언된 함수입니다. SetupInputComponent에서 호출됩니다.
 	 * @param EnhancedInputComponent 향상된 입력 컴포넌트 객체입니다. 이를 통해 인풋 바인딩이 가능합니다.
 	 */
-	virtual void SetupEnhancedInputComponent(class UEnhancedInputComponent* const& EnhancedInputComponent);
+	virtual void SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent);
 
 	/**
 	 * @brief 향상된 입력을 사용하는 우리 게임을 위해 선언된 함수입니다. SetupInputComponent에서 호출됩니다.
 	 * @param InputSubsystem 인풋 로컬 서브시스템 객체입니다. 이를 통해 인풋 맵핑 컨텍스트를 추가할 수 있습니다.
 	 */
-	virtual void SetupMappingContext(class UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem);
+	virtual void SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem);
 
 	virtual void SetupInputComponent() override;
 
@@ -55,16 +55,16 @@ private:
 	void ShowScoreBoard();
 	void HideScoreBoard();
 	void MenuHandler();
-	void AbilityInput(TMemFunPtrType<false, UAbilitySystemComponent, void(int32)>::Type Function, int32 InputID);
+	void AbilityInput(TAbilitySystemInputCallback Function, int32 InputID);
 
 	UPROPERTY(EditAnywhere, Category=Input)
-	class UInputMappingContext* InterfaceInputContext;
+	UInputMappingContext* InterfaceInputContext;
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	int8 InterfaceContextPriority;
 
 	UPROPERTY(EditAnywhere, Category=Input)
-	class UInputAction* MenuAction;
+	UInputAction* MenuAction;
 
 	UPROPERTY(EditAnywhere, Category=Input)
 	UInputAction* ShowScoreAction;
@@ -73,7 +73,7 @@ private:
 	UInputAction* HideScoreAction;
 
 	UPROPERTY(EditAnywhere)
-	TSoftObjectPtr<class ULakayaAbilityInputSet> AbilityInputSet;
+	TSoftObjectPtr<ULakayaAbilityInputSet> AbilityInputSet;
 
 	bool bEnableExitShortcut;
 	TWeakObjectPtr<UAbilitySystemComponent> AbilitySystem;
