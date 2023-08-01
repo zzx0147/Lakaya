@@ -63,8 +63,8 @@ struct FLakayaAbilityInputInfo : public FLakayaInputID
 		};
 
 		return {
-			SingleBinding(ETriggerEvent::Triggered, &UAbilitySystemComponent::AbilityLocalInputPressed),
-			SingleBinding(ETriggerEvent::Completed, &UAbilitySystemComponent::AbilityLocalInputReleased)
+			SingleBinding(ETriggerEvent::Started, &UAbilitySystemComponent::AbilityLocalInputPressed),
+			SingleBinding(ETriggerEvent::Triggered, &UAbilitySystemComponent::AbilityLocalInputReleased)
 		};
 	}
 };
