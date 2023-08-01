@@ -21,10 +21,22 @@ class LAKAYA_API ULakayaAbility : public UGameplayAbility
 public:
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	virtual void InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	                          const FGameplayAbilityActivationInfo ActivationInfo) override;
+	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	                           const FGameplayAbilityActivationInfo ActivationInfo) override;
 
 protected:
 	/** 어빌리티 인풋 셋을 통한 입력 바인딩 시에 사용되는 콜백 함수입니다. */
 	virtual void AbilityInput(TAbilitySystemInputCallback Function, int32 InputID);
+
+	virtual void NativeEndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	                              const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
+	                              bool bWasCancelled);
+
+	virtual void NativeCancelAbility(const FGameplayAbilitySpecHandle Handle,
+	                                 const FGameplayAbilityActorInfo* ActorInfo,
+	                                 const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility);
 
 	/** ActorInfo를 통해 향상된 입력 컴포넌트를 찾아 가져옵니다. 반환값은 nullptr일 수 있습니다. */
 	static UEnhancedInputComponent* GetEnhancedInputComponent(const FGameplayAbilityActorInfo* ActorInfo);
@@ -44,9 +56,12 @@ protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	                             const FGameplayAbilityActivationInfo ActivationInfo,
 	                             const FGameplayEventData* TriggerEventData) override;
+	virtual void CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	                           const FGameplayAbilityActivationInfo ActivationInfo,
+	                           bool bReplicateCancelAbility) override final;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	                        const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
-	                        bool bWasCancelled) override;
+	                        bool bWasCancelled) override final;
 
 private:
 	UPROPERTY(EditAnywhere)

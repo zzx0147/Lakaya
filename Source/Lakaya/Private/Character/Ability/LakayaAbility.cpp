@@ -3,6 +3,7 @@
 
 #include "Character/Ability/LakayaAbility.h"
 
+#include "AbilitySystemLog.h"
 #include "Input/LakayaInputContext.h"
 #include "PlayerController/LakayaAbilityInputSet.h"
 
@@ -28,11 +29,46 @@ void ULakayaAbility::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo,
 	InputHandleContainer.RemoveBindings();
 }
 
+void ULakayaAbility::InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+                                  const FGameplayAbilityActivationInfo ActivationInfo)
+{
+	Log(ActorInfo, TEXT("Input Pressed"));
+}
+
+void ULakayaAbility::InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+                                   const FGameplayAbilityActivationInfo ActivationInfo)
+{
+	Log(ActorInfo, TEXT("Input Released"));
+}
+
 void ULakayaAbility::AbilityInput(TAbilitySystemInputCallback Function, int32 InputID)
 {
 	const auto AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo();
 	if (!ensure(AbilitySystemComponent)) return;
 	(AbilitySystemComponent->*Function)(InputID);
+}
+
+void ULakayaAbility::NativeEndAbility(const FGameplayAbilitySpecHandle Handle,
+                                      const FGameplayAbilityActorInfo* ActorInfo,
+                                      const FGameplayAbilityActivationInfo ActivationInfo,
+                                      bool bReplicateEndAbility, bool bWasCancelled)
+{
+	if (!InputContext.IsNull())
+	{
+		if (const auto InputSubsystem = GetCachedInputSubsystem(ActorInfo))
+		{
+			InputContext.LoadSynchronous()->RemoveMappingContext(InputSubsystem);
+		}
+	}
+	Log(ActorInfo, TEXT("End Ability"));
+}
+
+void ULakayaAbility::NativeCancelAbility(const FGameplayAbilitySpecHandle Handle,
+                                         const FGameplayAbilityActorInfo* ActorInfo,
+                                         const FGameplayAbilityActivationInfo ActivationInfo,
+                                         bool bReplicateCancelAbility)
+{
+	Log(ActorInfo, TEXT("Cancel Ability"));
 }
 
 UEnhancedInputComponent* ULakayaAbility::GetEnhancedInputComponent(const FGameplayAbilityActorInfo* ActorInfo)
@@ -96,17 +132,37 @@ void ULakayaAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	Log(ActorInfo, TEXT("Activate Ability"));
 }
 
+void ULakayaAbility::CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+                                   const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility)
+{
+	if (!CanBeCanceled()) return;
+	if (ScopeLockCount > 0)
+	{
+		UE_LOG(LogAbilitySystem, Verbose, TEXT(
+			       "Attempting to cancel Ability %s but ScopeLockCount was greater than 0, adding cancel to the WaitingToExecute Array"
+		       ), *GetName());
+		WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this, &ULakayaAbility::CancelAbility, Handle, ActorInfo,
+		                                                      ActivationInfo, bReplicateCancelAbility));
+		return;
+	}
+	Super::CancelAbility(Handle, ActorInfo, ActivationInfo, bReplicateCancelAbility);
+	NativeCancelAbility(Handle, ActorInfo, ActivationInfo, bReplicateCancelAbility);
+}
+
 void ULakayaAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
                                 const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
                                 bool bWasCancelled)
 {
-	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-	if (!InputContext.IsNull())
+	if (!IsEndAbilityValid(Handle, ActorInfo)) return;
+	if (ScopeLockCount > 0)
 	{
-		if (const auto InputSubsystem = GetCachedInputSubsystem(ActorInfo))
-		{
-			InputContext.LoadSynchronous()->RemoveMappingContext(InputSubsystem);
-		}
+		UE_LOG(LogAbilitySystem, Verbose, TEXT(
+			       "Attempting to end Ability %s but ScopeLockCount was greater than 0, adding end to the WaitingToExecute Array"
+		       ), *GetName());
+		WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this, &ULakayaAbility::EndAbility, Handle, ActorInfo,
+		                                                      ActivationInfo, bReplicateEndAbility, bWasCancelled));
+		return;
 	}
-	Log(ActorInfo, TEXT("End Ability"));
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	NativeEndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
