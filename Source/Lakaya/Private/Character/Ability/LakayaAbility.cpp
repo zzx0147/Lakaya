@@ -11,6 +11,12 @@ void ULakayaAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, c
 	Super::OnGiveAbility(ActorInfo, Spec);
 	if (!InputSet.IsNull() && ActorInfo->IsLocallyControlledPlayer())
 	{
+		if (!ensureMsgf(InstancingPolicy == EGameplayAbilityInstancingPolicy::InstancedPerActor,
+		                TEXT("[%s]어빌리티가 InputSet 기능을 사용하려면 반드시 인스턴싱 정책을 InstancedPerActor로 설정해야 합니다."), *GetName()))
+		{
+			return;
+		}
+
 		InputSet.LoadSynchronous()->BindActions(GetEnhancedInputComponent(ActorInfo), this,
 		                                        &ULakayaAbility::AbilityInput, InputHandleContainer);
 	}
