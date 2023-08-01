@@ -96,8 +96,11 @@ void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputCompo
 	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
 	                                   &AGameLobbyPlayerController::HideScoreBoard);
 
-	AbilityInputSet.LoadSynchronous()->BindActions(EnhancedInputComponent, this,
-	                                               &AGameLobbyPlayerController::AbilityInput, InputHandleContainer);
+	if (!AbilityInputSet.IsNull())
+	{
+		AbilityInputSet.LoadSynchronous()->BindActions(EnhancedInputComponent, this,
+		                                               &AGameLobbyPlayerController::AbilityInput, InputHandleContainer);
+	}
 }
 
 void AGameLobbyPlayerController::UnbindAllAndBindMenu(UEnhancedInputComponent* const& EnhancedInputComponent)
