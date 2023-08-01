@@ -30,10 +30,12 @@ protected:
 	/** 어빌리티 인풋 셋을 통한 입력 바인딩 시에 사용되는 콜백 함수입니다. */
 	virtual void AbilityInput(TAbilitySystemInputCallback Function, int32 InputID);
 
+	/** 기존의 EndAbility를 대체하는 이벤트 함수입니다. */
 	virtual void NativeEndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	                              const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
 	                              bool bWasCancelled);
 
+	/** 기존의 CancelAbility를 대체하는 이벤트 함수입니다. */
 	virtual void NativeCancelAbility(const FGameplayAbilitySpecHandle Handle,
 	                                 const FGameplayAbilityActorInfo* ActorInfo,
 	                                 const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility);
