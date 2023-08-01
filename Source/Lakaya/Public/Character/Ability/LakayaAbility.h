@@ -7,6 +7,8 @@
 #include "PlayerController/LakayaAbilityInputSet.h"
 #include "LakayaAbility.generated.h"
 
+class UEnhancedInputLocalPlayerSubsystem;
+class ULakayaInputContext;
 class ULakayaAbilityInputSet;
 /**
  * @brief Lakaya 게임에서 사용되는 여러가지 기능들을 제공하는 어빌리티 클래스입니다.
@@ -49,6 +51,9 @@ protected:
 private:
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<ULakayaAbilityInputSet> InputSet;
+
+	UPROPERTY(EditAnywhere)
+	TSoftObjectPtr<ULakayaInputContext> InputContext;
 
 	UPROPERTY(EditAnywhere)
 	uint8 bAddLogOnScreen : 1;

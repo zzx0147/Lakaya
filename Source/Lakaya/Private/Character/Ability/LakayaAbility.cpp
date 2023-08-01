@@ -3,6 +3,7 @@
 
 #include "Character/Ability/LakayaAbility.h"
 
+#include "Input/LakayaInputContext.h"
 #include "PlayerController/LakayaAbilityInputSet.h"
 
 void ULakayaAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
@@ -79,11 +80,11 @@ void ULakayaAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                      const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-	if (!InputSet.IsNull())
+	if (!InputContext.IsNull())
 	{
 		if (const auto InputSubsystem = GetCachedInputSubsystem(ActorInfo))
 		{
-			InputSet.LoadSynchronous()->AddMappingContext(InputSubsystem);
+			InputContext.LoadSynchronous()->AddMappingContext(InputSubsystem);
 		}
 	}
 	Log(ActorInfo, TEXT("Activate Ability"));
@@ -94,11 +95,11 @@ void ULakayaAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const F
                                 bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-	if (!InputSet.IsNull())
+	if (!InputContext.IsNull())
 	{
 		if (const auto InputSubsystem = GetCachedInputSubsystem(ActorInfo))
 		{
-			InputSet.LoadSynchronous()->RemoveMappingContext(InputSubsystem);
+			InputContext.LoadSynchronous()->RemoveMappingContext(InputSubsystem);
 		}
 	}
 	Log(ActorInfo, TEXT("End Ability"));

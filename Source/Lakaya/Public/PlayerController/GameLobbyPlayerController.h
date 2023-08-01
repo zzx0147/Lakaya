@@ -8,6 +8,9 @@
 #include "GameFramework/PlayerController.h"
 #include "GameLobbyPlayerController.generated.h"
 
+class UEnhancedInputLocalPlayerSubsystem;
+class ULakayaInputContext;
+class UInputMappingContext;
 /**
  * 
  */
@@ -74,6 +77,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<ULakayaAbilityInputSet> AbilityInputSet;
+
+	UPROPERTY(EditAnywhere)
+	TSoftObjectPtr<ULakayaInputContext> AbilityInputContext;
 
 	bool bEnableExitShortcut;
 	TWeakObjectPtr<UAbilitySystemComponent> AbilitySystem;

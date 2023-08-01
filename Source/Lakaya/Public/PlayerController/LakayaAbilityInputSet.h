@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
 #include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
 #include "Input/LakayaInputID.h"
 #include "LakayaAbilityInputSet.generated.h"
 
@@ -54,7 +53,7 @@ struct FLakayaAbilityInputInfo : public FLakayaInputID
 	 */
 	template <typename T>
 	FLakayaInputHandle BindAction(UEnhancedInputComponent* InputComponent, T* Object,
-	                                TInputActionCallback<T> InputHandler) const
+	                              TInputActionCallback<T> InputHandler) const
 	{
 		if (!ensure(IsValid(InputComponent) && IsValid(Object)) || !Action) return {};
 
@@ -90,30 +89,6 @@ class ULakayaAbilityInputSet : public UDataAsset
 
 public:
 	/**
-	 * @brief 이 데이터 에셋의 컨텍스트를 추가합니다.
-	 * @param InputSubsystem 컨텍스트를 추가할 대상 서브시스템입니다.
-	 */
-	FORCEINLINE void AddMappingContext(UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
-	{
-		if (ensure(IsValid(InputSubsystem)))
-		{
-			InputSubsystem->AddMappingContext(Context, Priority);
-		}
-	}
-
-	/**
-	 * @brief 이 데이터 에셋의 컨텍스트를 서브시스템에서 제거합니다.
-	 * @param InputSubsystem 컨텍스트를 제거할 대상 서브시스템입니다.
-	 */
-	FORCEINLINE void RemoveMappingContext(UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
-	{
-		if (ensure(IsValid(InputSubsystem)))
-		{
-			InputSubsystem->RemoveMappingContext(Context);
-		}
-	}
-
-	/**
 	 * @brief 이 데이터 에셋이 가지고 있는 입력 바인딩 데이터를 통해 입력 바인딩을 추가합니다.
 	 * @param InputComponent 입력 바인딩을 추가할 대상 컴포넌트입니다.
 	 * @param Object 입력에 대한 콜백을 받게 될 오브젝트입니다.
@@ -134,14 +109,6 @@ public:
 	}
 
 private:
-	/** 기본 컨텍스트를 지정합니다. */
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UInputMappingContext> Context;
-
-	/** 컨텍스트의 중요도를 지정합니다. */
-	UPROPERTY(EditAnywhere)
-	int8 Priority;
-
 	/** 추가할 모든 InputID와 입력의 바인딩 정보입니다. */
 	UPROPERTY(EditAnywhere)
 	TArray<FLakayaAbilityInputInfo> AbilityInputBindings;

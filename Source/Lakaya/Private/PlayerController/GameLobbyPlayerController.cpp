@@ -1,11 +1,13 @@
 #include "PlayerController/GameLobbyPlayerController.h"
 
+#include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "GameFramework/GameMode.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "GameMode/LakayaBaseGameState.h"
 #include "GameMode/OccupationGameState.h"
+#include "Input/LakayaInputContext.h"
 #include "Interfaces/NetworkPredictionInterface.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -112,7 +114,10 @@ void AGameLobbyPlayerController::UnbindAllAndBindMenu(UEnhancedInputComponent* c
 void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
 {
 	InputSubsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
-	AbilityInputSet.LoadSynchronous()->AddMappingContext(InputSubsystem);
+	if (!AbilityInputContext.IsNull())
+	{
+		AbilityInputContext.LoadSynchronous()->AddMappingContext(InputSubsystem);
+	}
 }
 
 AGameLobbyPlayerController::AGameLobbyPlayerController(): APlayerController()
