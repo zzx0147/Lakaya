@@ -52,8 +52,17 @@ protected:
 	/** 캐시된 입력 서브시스템을 가져옵니다. 캐시된 입력 서브시스템이 유효하지 않다면, 캐시를 업데이트합니다. 하지만 여전히 nullptr일 수 있습니다. */
 	UEnhancedInputLocalPlayerSubsystem* GetCachedInputSubsystem(const FGameplayAbilityActorInfo* ActorInfo);
 
+	/** 로그 출력 포맷을 통해 문자열을 생성합니다. */
+	FString LogFormat(const FGameplayAbilityActorInfo* ActorInfo, const FString& Message) const;
+
 	/** 로그를 출력합니다. */
-	void Log(const FGameplayAbilityActorInfo* ActorInfo, const FString& Message) const;
+	void Log(const FString& Message) const;
+
+	/** 로그포맷을 사용하여 로그를 출력합니다. */
+	FORCEINLINE void Log(const FGameplayAbilityActorInfo* ActorInfo, const FString& Message) const
+	{
+		Log(LogFormat(ActorInfo, Message));
+	}
 
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	                             const FGameplayAbilityActivationInfo ActivationInfo,

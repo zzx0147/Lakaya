@@ -99,7 +99,7 @@ UEnhancedInputLocalPlayerSubsystem* ULakayaAbility::GetCachedInputSubsystem(cons
 	return CachedInputSubsystem.Get();
 }
 
-void ULakayaAbility::Log(const FGameplayAbilityActorInfo* ActorInfo, const FString& Message) const
+FString ULakayaAbility::LogFormat(const FGameplayAbilityActorInfo* ActorInfo, const FString& Message) const
 {
 	static const auto Format = TEXT("[{0}{1}][{2}] : {3}");
 	static const auto ServerString = TEXT("Server");
@@ -108,12 +108,15 @@ void ULakayaAbility::Log(const FGameplayAbilityActorInfo* ActorInfo, const FStri
 
 	const bool Authority = ActorInfo ? ActorInfo->IsNetAuthority() : GIsServer;
 
-	const auto FormattedString = FString::Format(
+	return FString::Format(
 		Format, {Authority ? ServerString : ClientString, ActorInfo ? TEXT("") : ProbString, GetName(), Message});
+}
 
-	UE_LOG(LogTemp, Log, TEXT("%s"), *FormattedString);
+void ULakayaAbility::Log(const FString& Message) const
+{
+	UE_LOG(LogTemp, Log, TEXT("%s"), *Message);
 	if (!bAddLogOnScreen || !GEngine) return;
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, Authority ? FColor::Red : FColor::White, FormattedString);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, Message);
 }
 
 void ULakayaAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
