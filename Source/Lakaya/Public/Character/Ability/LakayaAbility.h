@@ -19,8 +19,6 @@ class LAKAYA_API ULakayaAbility : public UGameplayAbility
 	GENERATED_BODY()
 
 public:
-	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
-	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	virtual void InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	                          const FGameplayAbilityActivationInfo ActivationInfo) override;
 	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -47,10 +45,7 @@ protected:
 	static ULocalPlayer* GetLocalPlayer(const FGameplayAbilityActorInfo* ActorInfo);
 
 	/** ActorInfo를 통해 향상된 입력 서브시스템을 찾아 가져옵니다. 반환값은 nullptr일 수 있습니다. */
-	static UEnhancedInputLocalPlayerSubsystem* GetEnhancedInputSubsystem(const FGameplayAbilityActorInfo* ActorInfo);
-
-	/** 캐시된 입력 서브시스템을 가져옵니다. 캐시된 입력 서브시스템이 유효하지 않다면, 캐시를 업데이트합니다. 하지만 여전히 nullptr일 수 있습니다. */
-	UEnhancedInputLocalPlayerSubsystem* GetCachedInputSubsystem(const FGameplayAbilityActorInfo* ActorInfo);
+	UEnhancedInputLocalPlayerSubsystem* GetEnhancedInputSubsystem(const FGameplayAbilityActorInfo* ActorInfo);
 
 	/** 로그 출력 포맷을 통해 문자열을 생성합니다. */
 	FString LogFormat(const FGameplayAbilityActorInfo* ActorInfo, const FString& Message) const;
@@ -75,8 +70,8 @@ protected:
 	                        bool bWasCancelled) override final;
 
 private:
-	UPROPERTY(EditAnywhere)
-	TSoftObjectPtr<ULakayaAbilityInputSet> InputSet;
+	static UEnhancedInputLocalPlayerSubsystem* InternalGetEnhancedInputSubsystem(
+		const FGameplayAbilityActorInfo* ActorInfo);
 
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<ULakayaInputContext> InputContext;
@@ -84,6 +79,5 @@ private:
 	UPROPERTY(EditAnywhere)
 	uint8 bAddLogOnScreen : 1;
 
-	FLakayaInputHandleContainer InputHandleContainer;
 	TWeakObjectPtr<UEnhancedInputLocalPlayerSubsystem> CachedInputSubsystem;
 };

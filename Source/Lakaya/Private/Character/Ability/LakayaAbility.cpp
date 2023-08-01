@@ -7,28 +7,6 @@
 #include "Input/LakayaInputContext.h"
 #include "PlayerController/LakayaAbilityInputSet.h"
 
-void ULakayaAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
-{
-	Super::OnGiveAbility(ActorInfo, Spec);
-	if (!InputSet.IsNull() && ActorInfo->IsLocallyControlledPlayer())
-	{
-		if (!ensureMsgf(InstancingPolicy == EGameplayAbilityInstancingPolicy::InstancedPerActor,
-		                TEXT("[%s]어빌리티가 InputSet 기능을 사용하려면 반드시 인스턴싱 정책을 InstancedPerActor로 설정해야 합니다."), *GetName()))
-		{
-			return;
-		}
-
-		InputSet.LoadSynchronous()->BindActions(GetEnhancedInputComponent(ActorInfo), this,
-		                                        &ULakayaAbility::AbilityInput, InputHandleContainer);
-	}
-}
-
-void ULakayaAbility::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
-{
-	Super::OnRemoveAbility(ActorInfo, Spec);
-	InputHandleContainer.RemoveBindings();
-}
-
 void ULakayaAbility::InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
                                   const FGameplayAbilityActivationInfo ActivationInfo)
 {
@@ -55,7 +33,7 @@ void ULakayaAbility::NativeEndAbility(const FGameplayAbilitySpecHandle Handle,
 {
 	if (!InputContext.IsNull())
 	{
-		if (const auto InputSubsystem = GetCachedInputSubsystem(ActorInfo))
+		if (const auto InputSubsystem = GetEnhancedInputSubsystem(ActorInfo))
 		{
 			InputContext.LoadSynchronous()->RemoveMappingContext(InputSubsystem);
 		}
@@ -88,14 +66,18 @@ ULocalPlayer* ULakayaAbility::GetLocalPlayer(const FGameplayAbilityActorInfo* Ac
 UEnhancedInputLocalPlayerSubsystem* ULakayaAbility::GetEnhancedInputSubsystem(
 	const FGameplayAbilityActorInfo* ActorInfo)
 {
-	const auto LocalPlayer = GetLocalPlayer(ActorInfo);
-	return LocalPlayer ? LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>() : nullptr;
-}
+	// 인스턴스를 생성하지 않는 경우 서브시스템을 캐싱하면 안되므로, 매번 새로 가져옵니다. 
+	if (InstancingPolicy == EGameplayAbilityInstancingPolicy::NonInstanced)
+	{
+		return InternalGetEnhancedInputSubsystem(ActorInfo);
+	}
 
-UEnhancedInputLocalPlayerSubsystem* ULakayaAbility::GetCachedInputSubsystem(const FGameplayAbilityActorInfo* ActorInfo)
-{
-	if (CachedInputSubsystem.IsValid()) return CachedInputSubsystem.Get();
-	CachedInputSubsystem = GetEnhancedInputSubsystem(ActorInfo);
+	// 서브시스템이 유효하지 않는 경우 업데이트합니다.
+	if (CachedInputSubsystem.IsValid())
+	{
+		CachedInputSubsystem = InternalGetEnhancedInputSubsystem(ActorInfo);
+	}
+
 	return CachedInputSubsystem.Get();
 }
 
@@ -127,7 +109,7 @@ void ULakayaAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 	if (!InputContext.IsNull())
 	{
-		if (const auto InputSubsystem = GetCachedInputSubsystem(ActorInfo))
+		if (const auto InputSubsystem = GetEnhancedInputSubsystem(ActorInfo))
 		{
 			InputContext.LoadSynchronous()->AddMappingContext(InputSubsystem);
 		}
@@ -168,4 +150,11 @@ void ULakayaAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const F
 	}
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 	NativeEndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+UEnhancedInputLocalPlayerSubsystem* ULakayaAbility::InternalGetEnhancedInputSubsystem(
+	const FGameplayAbilityActorInfo* ActorInfo)
+{
+	const auto LocalPlayer = GetLocalPlayer(ActorInfo);
+	return LocalPlayer ? LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>() : nullptr;
 }
