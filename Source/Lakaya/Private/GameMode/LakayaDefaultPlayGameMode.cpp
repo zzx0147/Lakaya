@@ -137,6 +137,7 @@ AActor* ALakayaDefaultPlayGameMode::FindPlayerStart_Implementation(AController* 
 void ALakayaDefaultPlayGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	AgonesSDK->Ready({},{});
 }
 
 //TODO: 사용되지 않는 오버라이딩 제거
