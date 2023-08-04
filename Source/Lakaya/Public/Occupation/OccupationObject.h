@@ -5,7 +5,7 @@
 #include "Interactable/Interactable.h"
 #include "OccupationObject.generated.h"
 
-DECLARE_EVENT_OneParam(AOccupationObject, FOccupationStateSignature, EPlayerTeam);
+DECLARE_EVENT_OneParam(AOccupationObject, FOccupationStateSignature, EPlayerTeam)
 DECLARE_EVENT_OneParam(AOccupationObject, FOccupationInteractingActorSignature, APawn*)
 
 UCLASS()
