@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PlayerTeam.h"
+#include "Team.h"
 #include "CaptureArenaManager.generated.h"
 
 UENUM()

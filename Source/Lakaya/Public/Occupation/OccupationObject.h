@@ -1,11 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PlayerTeam.h"
+#include "Team.h"
 #include "Interactable/Interactable.h"
 #include "OccupationObject.generated.h"
 
-DECLARE_EVENT_OneParam(AOccupationObject, FOccupationStateSignature, EPlayerTeam)
+DECLARE_EVENT_OneParam(AOccupationObject, FOccupationStateSignature, ETeam)
 DECLARE_EVENT_OneParam(AOccupationObject, FOccupationInteractingActorSignature, APawn*)
 
 UCLASS()
@@ -47,13 +47,13 @@ public:
 	// 상호작용에 성공했을 때, 실행되는 함수입니다.
 
 	FORCEINLINE APawn* GetInteractingPawn() const { return InteractingPawn; }
-	FORCEINLINE EPlayerTeam GetObjectTeam() const { return ObjectTeam; }
+	FORCEINLINE ETeam GetObjectTeam() const { return ObjectTeam; }
 	FORCEINLINE APawn* GetOwnerPlayer() const { return OwnerPlayer.Get(); }
 	
-	void SetTeamObject(const EPlayerTeam& Team);
+	void SetTeamObject(const ETeam& Team);
 	
 	UFUNCTION(BlueprintImplementableEvent)
-	void SetTeam(EPlayerTeam Team);
+	void SetTeam(ETeam Team);
 
 	FOccupationInteractingActorSignature OnInteractingActorSignature;
 	
@@ -62,7 +62,7 @@ private:
 	void OnRep_BroadCastTeamObject();
 
 	UPROPERTY(ReplicatedUsing = OnRep_BroadCastTeamObject)
-	EPlayerTeam ObjectTeam = EPlayerTeam::None;
+	ETeam ObjectTeam = ETeam::None;
 
 	float FirstCallerTime = 0;
 	const float MaxInteractionDuration = 3;

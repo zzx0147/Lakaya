@@ -36,17 +36,17 @@ void AOutlineManager::SetClairvoyance(const bool& bIsClairvoyance)
 		ClairvoyanceDynamic->SetScalarParameterValue(EnemyRenderingParameterName, bIsClairvoyance ? 1.f : 0.f);
 }
 
-void AOutlineManager::SetTeam(const EPlayerTeam& NewTeam)
+void AOutlineManager::SetTeam(const ETeam& NewTeam)
 {
 	ClientTeam = NewTeam;
 	ClairvoyanceDynamic->SetScalarParameterValue(EnemyNumberStartParameterName,
-	                                             NewTeam == EPlayerTeam::Individual ? 2.f : 4.f);
+	                                             NewTeam == ETeam::Individual ? 2.f : 4.f);
 }
 
 void AOutlineManager::RegisterClairvoyance(const ALakayaBaseCharacter* Character)
 {
 	// 개인전에선 로컬 플레이어 컨트롤러인 경우에만, 다른 모드에서는 로컬 클라이언트와 같은 팀인 경우에만 투시를 허용합니다.
-	if ((ClientTeam == EPlayerTeam::Individual
+	if ((ClientTeam == ETeam::Individual
 		     ? !Character->IsPlayerControlled() || !Character->IsLocallyControlled()
 		     : !Character->IsSameTeam(ClientTeam))
 		|| ActivatedClairvoyanceSet.Contains(Character)) return;

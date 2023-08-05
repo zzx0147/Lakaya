@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/TextBlock.h"
 #include "GameMode/OccupationGameState.h"
-#include "Occupation/PlayerTeam.h"
+#include "Occupation/Team.h"
 #include "TeamScoreWidget.generated.h"
 
 UCLASS()
@@ -22,7 +22,7 @@ private:
 	void OnChangeBTeamScore(const float& NewScore) const;
 
 	UFUNCTION()
-	void OnTeamScoreChanged(const EPlayerTeam& Team, const float& Score) const;
+	void OnTeamScoreChanged(const ETeam& Team, const float& Score) const;
 
 	UPROPERTY(meta = (BindWidget))
 	TWeakObjectPtr<UTextBlock> AntiTeamScoreText;

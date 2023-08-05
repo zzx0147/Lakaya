@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
-#include "Occupation/PlayerTeam.h"
+#include "Occupation/Team.h"
 #include "OccupationGameMode.generated.h"
 
 UCLASS()
@@ -34,13 +34,13 @@ public:
 	 * @brief 팀이 점령중인 오브젝트 개수를 추가합니다.
 	 * @param Team 점령을 시도한 팀입니다.
 	 */
-	void AddOccupyObject(const EPlayerTeam& Team);
+	void AddOccupyObject(const ETeam& Team);
 
 	/**
 	 * @brief 팀이 점령중인 오브젝트 개수를 차감합니다.
 	 * @param Team 점령을 해제당한 팀입니다.
 	 */
-	void SubOccupyObject(const EPlayerTeam& Team);
+	void SubOccupyObject(const ETeam& Team);
 
 private:
 	// 일정시간마다 호출되어 각 팀에 점수를 부여합니다.

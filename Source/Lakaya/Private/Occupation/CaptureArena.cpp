@@ -20,8 +20,8 @@ ACaptureArena::ACaptureArena()
 	Trigger->OnComponentBeginOverlap.AddDynamic(this, &ACaptureArena::OnOverlapBegin);
 	Trigger->OnComponentEndOverlap.AddDynamic(this, &ACaptureArena::OnOverlapEnd);
 
-	OccupyingPlayerList.Emplace(EPlayerTeam::Anti);
-	OccupyingPlayerList.Emplace(EPlayerTeam::Pro);
+	OccupyingPlayerList.Emplace(ETeam::Anti);
+	OccupyingPlayerList.Emplace(ETeam::Pro);
 }
 
 void ACaptureArena::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -101,7 +101,7 @@ void ACaptureArena::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	}
 }
 
-void ACaptureArena::AddToOccupyPlayerList(EPlayerTeam Team, ALakayaBasePlayerState* Player)
+void ACaptureArena::AddToOccupyPlayerList(ETeam Team, ALakayaBasePlayerState* Player)
 {
 	if (OccupyingPlayerList.Contains(Team))
 	{
@@ -111,7 +111,7 @@ void ACaptureArena::AddToOccupyPlayerList(EPlayerTeam Team, ALakayaBasePlayerSta
 	CheckCaptureArenaInPlayer();
 }
 
-void ACaptureArena::RemoveFromOccupyPlayerList(EPlayerTeam Team, ALakayaBasePlayerState* Player)
+void ACaptureArena::RemoveFromOccupyPlayerList(ETeam Team, ALakayaBasePlayerState* Player)
 {
 	if (OccupyingPlayerList.Contains(Team))
 	{
@@ -123,11 +123,11 @@ void ACaptureArena::RemoveFromOccupyPlayerList(EPlayerTeam Team, ALakayaBasePlay
 
 void ACaptureArena::CheckCaptureArenaInPlayer()
 {
-	UE_LOG(LogTemp, Warning, TEXT("AntiTeam Occupying Player Number : %d"), OccupyingPlayerList[EPlayerTeam::Anti].Num());
-	UE_LOG(LogTemp, Warning, TEXT("ProTeam Occupying Player Number : %d"), OccupyingPlayerList[EPlayerTeam::Pro].Num());
+	UE_LOG(LogTemp, Warning, TEXT("AntiTeam Occupying Player Number : %d"), OccupyingPlayerList[ETeam::Anti].Num());
+	UE_LOG(LogTemp, Warning, TEXT("ProTeam Occupying Player Number : %d"), OccupyingPlayerList[ETeam::Pro].Num());
 
-	uint8 AntiTeamPlayerCount = OccupyingPlayerList.Contains(EPlayerTeam::Anti) ? OccupyingPlayerList[EPlayerTeam::Anti].Num() : 0;
-	uint8 ProTeamPlayerCount = OccupyingPlayerList.Contains(EPlayerTeam::Pro) ? OccupyingPlayerList[EPlayerTeam::Pro].Num() : 0;
+	uint8 AntiTeamPlayerCount = OccupyingPlayerList.Contains(ETeam::Anti) ? OccupyingPlayerList[ETeam::Anti].Num() : 0;
+	uint8 ProTeamPlayerCount = OccupyingPlayerList.Contains(ETeam::Pro) ? OccupyingPlayerList[ETeam::Pro].Num() : 0;
 
 	if (AntiTeamPlayerCount > 0 && ProTeamPlayerCount == 0)
 	{

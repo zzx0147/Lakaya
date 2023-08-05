@@ -159,7 +159,7 @@ void ALinearProjectile::Tick(float DeltaSeconds)
 	                             UKismetMathLibrary::NormalizeToRange(TimeDiff, RecentPointData.Time, TopData->Time)));
 }
 
-void ALinearProjectile::SetTeam(const EPlayerTeam& Team)
+void ALinearProjectile::SetTeam(const ETeam& Team)
 {
 	Super::SetTeam(Team);
 	if (HasAuthority()) SetTeamCollisionResponse(CollisionComponent, Team, bAllyCollision, bEnemyCollision);
@@ -233,22 +233,22 @@ void ALinearProjectile::DisableProjectilePhysics()
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
-void ALinearProjectile::SetTeamCollisionResponse(UPrimitiveComponent* PrimitiveComponent, const EPlayerTeam& Team,
+void ALinearProjectile::SetTeamCollisionResponse(UPrimitiveComponent* PrimitiveComponent, const ETeam& Team,
                                                  const bool& WithAlly, const bool& WithEnemy) const
 {
 	// 개인전이고 적에 대한 충돌이 허용되는 경우에만 Overlap을 설정합니다.
 	PrimitiveComponent->SetCollisionResponseToChannel(
-		IndividualCollisionChannel, Team == EPlayerTeam::Individual && WithEnemy ? ECR_Overlap : ECR_Ignore);
+		IndividualCollisionChannel, Team == ETeam::Individual && WithEnemy ? ECR_Overlap : ECR_Ignore);
 
 	// A팀이고 같은 팀에 대한 충돌이 허용된 경우나 B팀이고 적에 대한 충돌이 허용된 경우에만 ATeamCharacter에 대해 Overlap을 설정합니다.
 	PrimitiveComponent->SetCollisionResponseToChannel(
-		ATeamCollisionChannel, (Team == EPlayerTeam::Anti && WithAlly) || (Team == EPlayerTeam::Pro && WithEnemy)
+		ATeamCollisionChannel, (Team == ETeam::Anti && WithAlly) || (Team == ETeam::Pro && WithEnemy)
 			                       ? ECR_Overlap
 			                       : ECR_Ignore);
 
 	// A팀이고 적에 대한 충돌이 허용된 경우나 B팀이고 같은 팀에 대한 충돌이 허용된 경우에만 ATeamCharacter에 대해 Overlap을 설정합니다.
 	PrimitiveComponent->SetCollisionResponseToChannel(
-		BTeamCollisionChannel, (Team == EPlayerTeam::Anti && WithEnemy) || (Team == EPlayerTeam::Pro && WithAlly)
+		BTeamCollisionChannel, (Team == ETeam::Anti && WithEnemy) || (Team == ETeam::Pro && WithAlly)
 			                       ? ECR_Overlap
 			                       : ECR_Ignore);
 }

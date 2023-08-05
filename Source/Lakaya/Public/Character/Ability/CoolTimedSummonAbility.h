@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "CharacterAbility.h"
 #include "SimpleObjectPool.h"
-#include "Occupation/PlayerTeam.h"
+#include "Occupation/Team.h"
 #include "CoolTimedSummonAbility.generated.h"
 
 enum class EAbilityInstanceState;
@@ -17,7 +17,7 @@ class LAKAYA_API UCoolTimedSummonAbility : public UCharacterAbility
 
 public:
 	UCoolTimedSummonAbility();
-	virtual void SetTeam(const EPlayerTeam& Team) override;
+	virtual void SetTeam(const ETeam& Team) override;
 
 protected:
 	virtual void InitializeComponent() override;

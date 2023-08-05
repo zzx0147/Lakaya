@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PlayerTeam.h"
+#include "Team.h"
 #include "GameFramework/Actor.h"
 #include "CaptureArenaManager.h"
 #include "CaptureArena.generated.h"
@@ -25,7 +25,7 @@ protected:
 
 private:
 	/**
-	 * @brief 트리거가 다른 액터와 충돌됐을 때, 실행되는 함수입니다.
+	 * @brief 다른 액터와 충돌됐을 때, 실행되는 함수입니다.
 	 * @param OverlappedComp 겹친 컴포넌트를 나타내는 포인터입니다.
 	 * @param OtherActor 겹친 다른 액터를 나타내는 포인터입니다.
 	 * @param OtherComp 겹친 다른 컴포넌트를 나타내는 포인터입니다.
@@ -45,10 +45,10 @@ private:
 	 * @param Player 리스트에 추가할 플레이어입니다.
 	 */
 	UFUNCTION()
-	void AddToOccupyPlayerList(EPlayerTeam Team, ALakayaBasePlayerState* Player);
+	void AddToOccupyPlayerList(ETeam Team, ALakayaBasePlayerState* Player);
 
 	UFUNCTION()
-	void RemoveFromOccupyPlayerList(EPlayerTeam Team, ALakayaBasePlayerState* Player);
+	void RemoveFromOccupyPlayerList(ETeam Team, ALakayaBasePlayerState* Player);
 
 	/**
 	 * @brief 점령구역에 누군가가 나가거나 들어오게 되었을 때 실행되며, 점령구역에 인원수를 점검하여, 점령상태를 바꾸는 함수입니다.
@@ -63,7 +63,7 @@ private:
 	UPROPERTY(Replicated)
 	ECaptureArenaState CurrentCaptureArenaState = ECaptureArenaState::None;
 
-	TMap<EPlayerTeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> OccupyingPlayerList;
+	TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> OccupyingPlayerList;
 
 	FCaptureArenaStateOnChangedSignature CaptureArenaStateOnChangedSignature;
 };
