@@ -87,7 +87,6 @@ void ACaptureArena::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Ot
 			{
 				GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Cast Failed."));	
 			}
-
 		}
 		else
 		{
@@ -101,52 +100,94 @@ void ACaptureArena::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	}
 }
 
-void ACaptureArena::AddToOccupyPlayerList(ETeam Team, ALakayaBasePlayerState* Player)
+void ACaptureArena::AddToOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePlayerState* Player)
 {
-	if (OccupyingPlayerList.Contains(Team))
+	if (OccupyingPlayerList.Contains(PlayerTeam))
 	{
-		OccupyingPlayerList[Team].Add(Player);
+		OccupyingPlayerList[PlayerTeam].Add(Player);
 	}
 
-	CheckCaptureArenaInPlayer();
+	CheckCaptureArenaInPlayer(PlayerTeam);
 }
 
-void ACaptureArena::RemoveFromOccupyPlayerList(ETeam Team, ALakayaBasePlayerState* Player)
+void ACaptureArena::RemoveFromOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePlayerState* Player)
 {
-	if (OccupyingPlayerList.Contains(Team))
+	if (OccupyingPlayerList.Contains(PlayerTeam))
 	{
-		OccupyingPlayerList[Team].Remove(Player);
+		OccupyingPlayerList[PlayerTeam].Remove(Player);
 	}
 
-	CheckCaptureArenaInPlayer();
+	CheckCaptureArenaInPlayer(PlayerTeam);
 }
 
-void ACaptureArena::CheckCaptureArenaInPlayer()
+void ACaptureArena::CheckCaptureArenaInPlayer(const ETeam& PlayerTeam)
 {
 	UE_LOG(LogTemp, Warning, TEXT("AntiTeam Occupying Player Number : %d"), OccupyingPlayerList[ETeam::Anti].Num());
 	UE_LOG(LogTemp, Warning, TEXT("ProTeam Occupying Player Number : %d"), OccupyingPlayerList[ETeam::Pro].Num());
 
-	uint8 AntiTeamPlayerCount = OccupyingPlayerList.Contains(ETeam::Anti) ? OccupyingPlayerList[ETeam::Anti].Num() : 0;
-	uint8 ProTeamPlayerCount = OccupyingPlayerList.Contains(ETeam::Pro) ? OccupyingPlayerList[ETeam::Pro].Num() : 0;
+	const uint8 AntiTeamPlayerCount = OccupyingPlayerList.Contains(ETeam::Anti) ? OccupyingPlayerList[ETeam::Anti].Num() : 0;
+	const uint8 ProTeamPlayerCount = OccupyingPlayerList.Contains(ETeam::Pro) ? OccupyingPlayerList[ETeam::Pro].Num() : 0;
 
+	switch (CurrentCaptureArenaState)
+	{
+	case ECaptureArenaState::None:
+		UpdateCaptureArenaStateNone(AntiTeamPlayerCount, ProTeamPlayerCount, CurrentCaptureArenaState);
+		break;
+
+	// case ECaptureArenaState::Anti:
+	// 	CaptureArenaStateOnChangedSignature.Broadcast(CurrentCaptureArenaState);
+	// 	break;
+	// case ECaptureArenaState::Pro:
+	// 	CaptureArenaStateOnChangedSignature.Broadcast(CurrentCaptureArenaState);
+	// 	break;
+	// default:
+		// break;
+		default:
+			break;
+	}
+}
+
+void ACaptureArena::UpdateCaptureArenaStateNone(const uint8& AntiTeamPlayerCount, const uint8& ProTeamPlayerCount, const ECaptureArenaState& CaptureArenaState)
+{
 	if (AntiTeamPlayerCount > 0 && ProTeamPlayerCount == 0)
 	{
 		// Anti팀이 점령하고 있는 상태입니다.
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Anti팀이 점령하고 있는 상태입니다."));
+		SetCurrentCaptureArenaState(ECaptureArenaState::AntiProgress);
 	}
 	else if (AntiTeamPlayerCount == 0 && ProTeamPlayerCount > 0)
 	{
 		// Pro팀이 점령하고 있는 상태입니다.
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Pro팀이 점령하고 있는 상태입니다."));
+		SetCurrentCaptureArenaState(ECaptureArenaState::ProProgress);
 	}
 	else if (AntiTeamPlayerCount > 0 && ProTeamPlayerCount > 0)
 	{
-		// Anti팀과 Pro팀이 대치하고 있는 상태입니다.
+		// Anti팀과 Pro팀이 점령되지 않은 점령구역에서 대치하고 있는 상태입니다.
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Anti팀과 Pro팀이 대치하고 있는 상태입니다."));
+		SetCurrentCaptureArenaState(ECaptureArenaState::Opposite);
 	}
 	else if (AntiTeamPlayerCount == 0 && ProTeamPlayerCount == 0)
 	{
 		// 아무도 점령하지 않은 상태입니다.
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("아무도 점령하지 않은 상태입니다."));
+		SetCurrentCaptureArenaState(ECaptureArenaState::None);
+	}
+	
+	CaptureArenaStateOnChangedSignature.Broadcast(CurrentCaptureArenaState);
+	const FString EnumString = GetEnumAsString(CurrentCaptureArenaState);
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, EnumString);
+}
+
+FString ACaptureArena::GetEnumAsString(const ECaptureArenaState& EnumValue)
+{
+	const TObjectPtr<UEnum> EnumPtr = FindObject<UEnum>(nullptr, TEXT("/Script/Lakaya.ECaptureArenaState"));
+	if (EnumPtr)
+	{
+		return EnumPtr->GetNameStringByIndex(static_cast<uint8>(EnumValue));
+	}
+	else
+	{
+		return FString("Casting Failed.");
 	}
 }
