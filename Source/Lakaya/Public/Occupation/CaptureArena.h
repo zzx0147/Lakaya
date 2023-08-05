@@ -5,32 +5,10 @@
 #include "CoreMinimal.h"
 #include "PlayerTeam.h"
 #include "GameFramework/Actor.h"
+#include "CaptureArenaManager.h"
 #include "CaptureArena.generated.h"
 
-// DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOccupyingPlayerListOnChangedSignature, const TMap<EPlayerTeam, TSoftObjectPtr<ALakayaBasePlayerState>>>, OccupyingPlayerList);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCaptureArenaStateOnChangedSignature, ECaptureArenaState, CurrentCaptureArenaState);
-
-UENUM()
-enum class ECaptureArenaState : uint8
-{
-	// 아무도 점령하지 않은 상태입니다.
-	None UMETA(DisplayerName = "None"),
-
-	// Anti팀에서 점령을 시도하는 상태입니다.
-	AntiProgress UMETA(DisplayerName = "AntiProgress"),
-
-	// Anti팀이 점령한 상태입니다.
-	Anti UMETA(DisplayerName = "Anti"),
-
-	// Pro팀에서 점령을 시도하는 상태입니다.
-	ProProgress UMETA(DisplayerName = "ProProgress"),
-
-	// Pro팀에서 점령한 상태입니다.
-	Pro UMETA(DisplayerName = "Pro"),
-
-	// Anti님과 Pro팀이 대치하고 있는 상태입니다.
-	Opposite UMETA(DisPlayerName = "Opposite"),
-};
+DECLARE_MULTICAST_DELEGATE_OneParam(FCaptureArenaStateOnChangedSignature, ECaptureArenaState);
 
 UCLASS()
 class LAKAYA_API ACaptureArena : public AActor
@@ -40,12 +18,14 @@ class LAKAYA_API ACaptureArena : public AActor
 public:	
 	ACaptureArena();
 
+	FORCEINLINE const ECaptureArenaState& GetCurrentCaptureArenaState() const { return CurrentCaptureArenaState; }
+	FORCEINLINE void SetCurrentCaptureArenaState(const ECaptureArenaState& NewState) { CurrentCaptureArenaState = NewState; }
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
 	/**
-	 * @brief 
+	 * @brief 트리거가 다른 액터와 충돌됐을 때, 실행되는 함수입니다.
 	 * @param OverlappedComp 겹친 컴포넌트를 나타내는 포인터입니다.
 	 * @param OtherActor 겹친 다른 액터를 나타내는 포인터입니다.
 	 * @param OtherComp 겹친 다른 컴포넌트를 나타내는 포인터입니다.
@@ -59,28 +39,31 @@ private:
 	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	/**
+	 * @brief 점령중인 플레이어 리스트에 플레이어를 넣어주는 함수입니다.
+	 * @param Team 리스트에 추가할 플레이어의 소속 팀입니다.
+	 * @param Player 리스트에 추가할 플레이어입니다.
+	 */
 	UFUNCTION()
 	void AddToOccupyPlayerList(EPlayerTeam Team, ALakayaBasePlayerState* Player);
 
 	UFUNCTION()
 	void RemoveFromOccupyPlayerList(EPlayerTeam Team, ALakayaBasePlayerState* Player);
-	
+
+	/**
+	 * @brief 점령구역에 누군가가 나가거나 들어오게 되었을 때 실행되며, 점령구역에 인원수를 점검하여, 점령상태를 바꾸는 함수입니다.
+	 */
 	UFUNCTION()
 	void CheckCaptureArenaInPlayer();
-	
-	UFUNCTION()
-	void OnRep_BroadCastCaptureState();
-	
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = Box)
 	TObjectPtr<class UBoxComponent> Trigger;
 
-	UPROPERTY(ReplicatedUsing = OnRep_BroadCastCaptureState)
+	UPROPERTY(Replicated)
 	ECaptureArenaState CurrentCaptureArenaState = ECaptureArenaState::None;
-	
-	// UPROPERTY(Replicated)
+
 	TMap<EPlayerTeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> OccupyingPlayerList;
 
-	// FOccupyingPlayerListOnChangedSignature OccupyingPlayerListOnChangedSignature;
 	FCaptureArenaStateOnChangedSignature CaptureArenaStateOnChangedSignature;
 };

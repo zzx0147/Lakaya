@@ -9,12 +9,14 @@ enum class EPlayerTeam : uint8
 	// 현재 팀 배정을 받지 못한 상태
 	None UMETA(DisplayerName = "None"),
 
-	Anti UMETA(DisplayerName = "안티"),
+	// Anti팀에 배정된 상태
+	Anti UMETA(DisplayerName = "Anti"),
 
-	Pro UMETA(DisplayerName = "프로"),
+	// Pro팀에 배정된 상태
+	Pro UMETA(DisplayerName = "Pro"),
 
 	// 개인전
-	Individual UMETA(DisplayerName = "개인전")
+	Individual UMETA(DisplayerName = "Individual")
 };
 
 inline bool JudgeSameTeam(const EPlayerTeam& First, const EPlayerTeam& Second)

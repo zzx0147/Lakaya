@@ -28,7 +28,7 @@ void ACaptureArena::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ACaptureArena, OccupyingPlayerList);
+	DOREPLIFETIME(ACaptureArena, CurrentCaptureArenaState);
 }
 
 void ACaptureArena::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -45,7 +45,7 @@ void ACaptureArena::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* 
 			if(auto OccupyingPlayerState = Cast<ALakayaBasePlayerState>(OverlappedArmedCharacter->GetPlayerState()))
 			{
 				// 겹친 액터가 캐릭터입니다.
-				GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Character OverlapBegin."));
+				// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Character OverlapBegin."));
 				AddToOccupyPlayerList(OccupyingPlayerState->GetTeam(), OccupyingPlayerState);
 			}
 			else
@@ -80,7 +80,7 @@ void ACaptureArena::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Ot
 			if(auto OccupyingPlayerState = Cast<ALakayaBasePlayerState>(OverlappedArmedCharacter->GetPlayerState()))
 			{
 				// 충돌이 끝난 액터가 캐릭터입니다.
-				GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Character OverlapEnd."));
+				// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Character OverlapEnd."));
 				RemoveFromOccupyPlayerList(OccupyingPlayerState->GetTeam(), OccupyingPlayerState);
 			}
 			else
@@ -123,8 +123,8 @@ void ACaptureArena::RemoveFromOccupyPlayerList(EPlayerTeam Team, ALakayaBasePlay
 
 void ACaptureArena::CheckCaptureArenaInPlayer()
 {
-	UE_LOG(LogTemp, Warning, TEXT("OccupyingPlayerList Number : %d"), OccupyingPlayerList.Num());
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("CheckCaptureArenaInPlayer Function"));
+	UE_LOG(LogTemp, Warning, TEXT("AntiTeam Occupying Player Number : %d"), OccupyingPlayerList[EPlayerTeam::Anti].Num());
+	UE_LOG(LogTemp, Warning, TEXT("ProTeam Occupying Player Number : %d"), OccupyingPlayerList[EPlayerTeam::Pro].Num());
 
 	uint8 AntiTeamPlayerCount = OccupyingPlayerList.Contains(EPlayerTeam::Anti) ? OccupyingPlayerList[EPlayerTeam::Anti].Num() : 0;
 	uint8 ProTeamPlayerCount = OccupyingPlayerList.Contains(EPlayerTeam::Pro) ? OccupyingPlayerList[EPlayerTeam::Pro].Num() : 0;
@@ -144,10 +144,9 @@ void ACaptureArena::CheckCaptureArenaInPlayer()
 		// Anti팀과 Pro팀이 대치하고 있는 상태입니다.
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Anti팀과 Pro팀이 대치하고 있는 상태입니다."));
 	}
-}
-		
-
-void ACaptureArena::OnRep_BroadCastCaptureState()
-{
-	CaptureArenaStateOnChangedSignature.Broadcast(CurrentCaptureArenaState);
+	else if (AntiTeamPlayerCount == 0 && ProTeamPlayerCount == 0)
+	{
+		// 아무도 점령하지 않은 상태입니다.
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("아무도 점령하지 않은 상태입니다."));
+	}
 }
