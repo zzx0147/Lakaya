@@ -31,10 +31,10 @@ enum class ECaptureArenaState : uint8
 	// 아무도 점령하지 않은 상태입니다.
 	None UMETA(DisplayerName = "None"),
 
-	// Anti팀에서 점령을 시도하고 있는 상태입니다.
+	// Anti이 점령을 시도하고 있는 상태입니다.
 	AntiProgress UMETA(DisplayerName = "AntiProgress"),
 
-	// Anti팀에서 점령구역을 탈취하고 있는 상태입니다.
+	// Anti이 Pro팀 점령구역을 탈취하려는 상태입니다.
 	AntiExtortion UMETA(DisplayerName = "AntiExtortion"),
 	
 	// Anti팀이 점령한 상태입니다.
@@ -43,7 +43,7 @@ enum class ECaptureArenaState : uint8
 	// Pro팀에서 점령을 시도하는 상태입니다.
 	ProProgress UMETA(DisplayerName = "ProProgress"),
 
-	// Pro팀에서 점령구역을 탈취하고 있는 상태입니다.
+	// Pro팀이 Anti팀 점령구역을 탈취하려는 상태입니다..
 	ProExtortion UMETA(DisplayerName = "ProExtortion"),
 	
 	// Pro팀에서 점령한 상태입니다.
@@ -78,6 +78,6 @@ inline bool JudgeSameTeam(const ETeam& PlayerTeam, const ECaptureArenaState& Cap
 	{
 		return false;
 	}
-	
+
 	return false;
 }

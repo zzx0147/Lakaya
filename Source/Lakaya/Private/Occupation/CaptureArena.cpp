@@ -5,7 +5,9 @@
 #include "Character/ArmedCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/BoxComponent.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "ProfilingDebugging/BootProfiling.h"
 
 ACaptureArena::ACaptureArena()
 {
@@ -128,55 +130,100 @@ void ACaptureArena::CheckCaptureArenaInPlayer(const ETeam& PlayerTeam)
 	const uint8 AntiTeamPlayerCount = OccupyingPlayerList.Contains(ETeam::Anti) ? OccupyingPlayerList[ETeam::Anti].Num() : 0;
 	const uint8 ProTeamPlayerCount = OccupyingPlayerList.Contains(ETeam::Pro) ? OccupyingPlayerList[ETeam::Pro].Num() : 0;
 
-	switch (CurrentCaptureArenaState)
-	{
-	case ECaptureArenaState::None:
-		UpdateCaptureArenaStateNone(AntiTeamPlayerCount, ProTeamPlayerCount, CurrentCaptureArenaState);
-		break;
-
-	// case ECaptureArenaState::Anti:
-	// 	CaptureArenaStateOnChangedSignature.Broadcast(CurrentCaptureArenaState);
-	// 	break;
-	// case ECaptureArenaState::Pro:
-	// 	CaptureArenaStateOnChangedSignature.Broadcast(CurrentCaptureArenaState);
-	// 	break;
-	// default:
-		// break;
-		default:
-			break;
-	}
+	UpdateCaptureArenaState(AntiTeamPlayerCount, ProTeamPlayerCount, CurrentCaptureArenaState);
 }
 
-void ACaptureArena::UpdateCaptureArenaStateNone(const uint8& AntiTeamPlayerCount, const uint8& ProTeamPlayerCount, const ECaptureArenaState& CaptureArenaState)
+void ACaptureArena::UpdateCaptureArenaState(const uint8& AntiTeamPlayerCount, const uint8& ProTeamPlayerCount, const ECaptureArenaState& CaptureArenaState)
 {
 	if (AntiTeamPlayerCount > 0 && ProTeamPlayerCount == 0)
 	{
-		// Anti팀이 점령하고 있는 상태입니다.
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Anti팀이 점령하고 있는 상태입니다."));
-		SetCurrentCaptureArenaState(ECaptureArenaState::AntiProgress);
+		CaptureArenaHandleAntiTeam(CaptureArenaState);
 	}
 	else if (AntiTeamPlayerCount == 0 && ProTeamPlayerCount > 0)
 	{
-		// Pro팀이 점령하고 있는 상태입니다.
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Pro팀이 점령하고 있는 상태입니다."));
-		SetCurrentCaptureArenaState(ECaptureArenaState::ProProgress);
+		CaptureArenaHandleProTeam(CaptureArenaState);
 	}
 	else if (AntiTeamPlayerCount > 0 && ProTeamPlayerCount > 0)
 	{
-		// Anti팀과 Pro팀이 점령되지 않은 점령구역에서 대치하고 있는 상태입니다.
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Anti팀과 Pro팀이 대치하고 있는 상태입니다."));
-		SetCurrentCaptureArenaState(ECaptureArenaState::Opposite);
+		CaptureArenaHandleOpposite(CaptureArenaState);
 	}
 	else if (AntiTeamPlayerCount == 0 && ProTeamPlayerCount == 0)
 	{
-		// 아무도 점령하지 않은 상태입니다.
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("아무도 점령하지 않은 상태입니다."));
+		CaptureArenaHandleNone(CaptureArenaState);
+	}
+
+	// TODO: 
+	// CaptureArenaStateOnChangedSignature.Broadcast(CurrentCaptureArenaState);
+	// const FString EnumString = GetEnumAsString(CurrentCaptureArenaState);
+	// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, EnumString);
+}
+
+// Anti팀 1명이상, Pro팀 0명
+void ACaptureArena::CaptureArenaHandleAntiTeam(const ECaptureArenaState& CaptureArenaState)
+{
+	if (CaptureArenaState == ECaptureArenaState::None || CaptureArenaState == ECaptureArenaState::Pro || CaptureArenaState == ECaptureArenaState::Opposite)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Anti팀이 점령을 시도하고 있는 상태입니다."));
+		SetCurrentCaptureArenaState(ECaptureArenaState::AntiProgress);
+	}
+	else if (CaptureArenaState == ECaptureArenaState::Anti)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("이미 본인 소유의 점령구 입니다."));
+	}
+}
+
+// Anti팀 0명, Pro팀 1명이상
+void ACaptureArena::CaptureArenaHandleProTeam(const ECaptureArenaState& CaptureArenaState)
+{
+	if (CaptureArenaState == ECaptureArenaState::None || CaptureArenaState == ECaptureArenaState::Anti || CaptureArenaState == ECaptureArenaState::Opposite)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Pro팀이 점령을 시도하고 있는 상태입니다."));
+		SetCurrentCaptureArenaState(ECaptureArenaState::ProProgress);
+	}
+	else if (CaptureArenaState == ECaptureArenaState::Pro)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("이미 본인 소유의 점령구역 입니다."));
+	}
+}
+
+// Anti팀 1명이상, Pro팀 1명이상
+void ACaptureArena::CaptureArenaHandleOpposite(const ECaptureArenaState& CaptureArenaState)
+{
+	if (CaptureArenaState == ECaptureArenaState::AntiProgress || CaptureArenaState == ECaptureArenaState::ProProgress)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Anti팀과 Pro팀이 서로 대치하고 있는 상태입니다."));
+		SetCurrentCaptureArenaState(ECaptureArenaState::Opposite);
+	}
+	else if (CaptureArenaState == ECaptureArenaState::Anti)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Pro팀이 Anti팀의 점령구역을 탈취하려는 상태입니다."));
+		SetCurrentCaptureArenaState(ECaptureArenaState::ProExtortion);
+	}
+	else if (CaptureArenaState == ECaptureArenaState::Pro)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Anti팀이 Pro팀의 점령구역을 탈취하려는 상태입니다."));
+		SetCurrentCaptureArenaState(ECaptureArenaState::AntiExtortion);
+	}
+}
+
+// Anti팀 0명, Pro팀 0명
+void ACaptureArena::CaptureArenaHandleNone(const ECaptureArenaState& CaptureArenaState)
+{
+	if (CaptureArenaState == ECaptureArenaState::Anti || CaptureArenaState == ECaptureArenaState::ProExtortion)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("점령구역이 Anti 상태입니다."));
+		SetCurrentCaptureArenaState(ECaptureArenaState::Anti);
+	}
+	else if (CaptureArenaState == ECaptureArenaState::Pro || CaptureArenaState == ECaptureArenaState::AntiExtortion)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("점령구역이 Pro 상태입니다."));
+		SetCurrentCaptureArenaState(ECaptureArenaState::Pro);
+	}
+	else if (CaptureArenaState == ECaptureArenaState::ProProgress || CaptureArenaState == ECaptureArenaState::AntiProgress)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("점령구역이 None 상태입니다."));
 		SetCurrentCaptureArenaState(ECaptureArenaState::None);
 	}
-	
-	CaptureArenaStateOnChangedSignature.Broadcast(CurrentCaptureArenaState);
-	const FString EnumString = GetEnumAsString(CurrentCaptureArenaState);
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, EnumString);
 }
 
 FString ACaptureArena::GetEnumAsString(const ECaptureArenaState& EnumValue)

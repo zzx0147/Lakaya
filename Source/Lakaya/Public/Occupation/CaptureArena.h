@@ -22,7 +22,7 @@ public:
 
 	/**
 	 * @brief Enum타입을 String으로 바꿔줍니다.
-	 * @param enumValue 타입을 String으로 바꿔줄 Enum입니다.
+	 * @param EnumValue 타입을 String으로 바꿔줄 Enum입니다.
 	 * @return Enum타입이 String타입으로 바뀌어서 리턴합니다.
 	 */
 	UFUNCTION()
@@ -66,13 +66,41 @@ private:
 	void CheckCaptureArenaInPlayer(const ETeam& PlayerTeam);
 
 	/**
-	 * @brief Anti팀과 Pro팀의 인원수를 비교하여 점령구역 상태를 업데이트 해주는 함수입니다.
+	 * @brief 점령구역 상태가 CheckCaptureArenaInPlayer함수를 통해 인원수를 체크하여 상태를 업데이트해주는 함수입니다.
 	 * @param AntiTeamPlayerCount 현재 점령구역에 있는 Anti팀의 플레이어 수 입니다.
 	 * @param ProTeamPlayerCount 현재 점령구역에 있는 Pro팀의 플레이어 수 입니다.
 	 * @param CaptureArenaState 현재 점령구역의 상태를 나타냅니다.
 	 */
 	UFUNCTION()
-	void UpdateCaptureArenaStateNone(const uint8& AntiTeamPlayerCount, const uint8& ProTeamPlayerCount, const ECaptureArenaState& CaptureArenaState);
+	void UpdateCaptureArenaState(const uint8& AntiTeamPlayerCount, const uint8& ProTeamPlayerCount, const ECaptureArenaState& CaptureArenaState);
+
+	/**
+	 * @brief 점령구역에 Anti팀의 인원이 1명이상 이며 Pro팀의 인원이 0명일 때 호출되는 함수입니다.
+	 * @param CaptureArenaState 현재 점령구역의 상태입니다.
+	 */
+	UFUNCTION()
+	void CaptureArenaHandleAntiTeam(const ECaptureArenaState& CaptureArenaState);
+
+	/**
+	 * @brief 점령구역에 Anti팀의 인원이 0명 이며 Pro팀의 인원이 1명이상일 때 호출되는 함수입니다.
+	 * @param CaptureArenaState 현재 점령구역의 상태입니다.
+	 */
+	UFUNCTION()
+	void CaptureArenaHandleProTeam(const ECaptureArenaState& CaptureArenaState);
+
+	/**
+	 * @brief 점령구역에 Anti팀의 인원과 Pro팀의 인원이 서로 1명이상 일 때 호출되는 함수입니다.
+	 * @param CaptureArenaState 현재 점령구역의 상태입니다.
+	 */
+	UFUNCTION()
+	void CaptureArenaHandleOpposite(const ECaptureArenaState& CaptureArenaState);
+
+	/**
+	 * @brief 점령구역에 Anti팀의 인원과 Pro팀의 인원이 서로 0명일 때 호출되는 함수입니다.
+	 * @param CaptureArenaState 현재 점령구역의 상태입니다.
+	 */
+	UFUNCTION()
+	void CaptureArenaHandleNone(const ECaptureArenaState& CaptureArenaState);
 private:
 	UPROPERTY(VisibleAnywhere, Category = Box)
 	TObjectPtr<class UBoxComponent> Trigger;
