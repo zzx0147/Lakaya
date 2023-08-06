@@ -3,18 +3,18 @@
 
 #include "EOS/EOSGameInstance.h"
 
-#include "Interfaces/OnlineSessionInterface.h"
-#include "Interfaces/OnlineIdentityInterface.h"
-#include "Interfaces/OnlineFriendsInterface.h"
-#include "Interfaces/OnlineExternalUIInterface.h"
-#include "OnlineSubSystem.h"
 #include "OnlineSessionSettings.h"
 #include "Sockets.h"
 #include "SocketSubsystem.h"
+#include "Interfaces/OnlineExternalUIInterface.h"
+#include "Interfaces/OnlineFriendsInterface.h"
+#include "Interfaces/OnlineIdentityInterface.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "Interfaces/IPv4/IPv4Address.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Online/OnlineSessionNames.h"
+#include "OnlineSubsystem.h"
 
 static constexpr int MaxPlayer = 6;
 
@@ -668,7 +668,7 @@ TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 			//Json 오브젝트로부터 데이터 추출
 			const auto MatchRecordArray = JsonObject->GetArrayField(TEXT("MatchRecords"));
 			
-			for (const auto MatchRecord : MatchRecordArray)
+			for (const auto& MatchRecord : MatchRecordArray)
 			{
 				FMatchResultStruct MatchResultStruct;
 				TSharedPtr<FJsonObject> ElementAsObject = MatchRecord->AsObject();
@@ -696,7 +696,7 @@ TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 				const auto ProPlayersJson = ElementAsObject->GetArrayField(TEXT("ProPlayers"));
 				const auto AntiPlayersJson = ElementAsObject->GetArrayField(TEXT("AntiPlayers"));
 
-				for(const auto PlayerElement : ProPlayersJson)
+				for(const auto& PlayerElement : ProPlayersJson)
 				{
 					const TSharedPtr<FJsonObject> PlayerJsonObject = PlayerElement->AsObject();
 					FPlayerStats PlayerStats;
@@ -711,7 +711,7 @@ TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 					MatchResultStruct.ProPlayers.Emplace(PlayerStats);
 				}
 
-				for(const auto PlayerElement : AntiPlayersJson)
+				for(const auto& PlayerElement : AntiPlayersJson)
 				{
 					const TSharedPtr<FJsonObject> PlayerJsonObject = PlayerElement->AsObject();
 					FPlayerStats PlayerStats;
@@ -819,6 +819,35 @@ bool UEOSGameInstance::SendMatchResultData(const FMatchResultStruct& NewRecordRe
 	}
 
 	return false;
+}
+
+
+void UEOSGameInstance::CreateDedicatedSession()
+{
+	if (!OnlineSubsystem) return;
+	if (!OnlineSessionPtr) return;
+
+	SessionSettings.bIsDedicated = true;
+	SessionSettings.bShouldAdvertise = true;
+
+	SessionSettings.bIsLANMatch = false;
+	SessionSettings.NumPublicConnections = MaxPlayer;
+	SessionSettings.bAllowJoinInProgress = true;
+	SessionSettings.bAllowJoinViaPresence = true;
+	SessionSettings.bUsesPresence = true;
+	SessionSettings.bUseLobbiesIfAvailable = true;
+	SessionSettings.bAllowJoinViaPresenceFriendsOnly = false;
+	SessionSettings.bAllowInvites = true;
+
+	SessionSettings.Set(SEARCH_KEYWORDS, FString("LakayaLobby"),
+	                    EOnlineDataAdvertisementType::ViaOnlineService);
+	SessionSettings.Set(FName(TEXT("ISJOINABLE")), true, EOnlineDataAdvertisementType::ViaOnlineService);
+
+	OnlineSessionPtr->OnCreateSessionCompleteDelegates.AddUObject(
+		this, &UEOSGameInstance::OnCreateSessionComplete);
+	
+	const FName SessionName(NAME_GameSession);
+	OnlineSessionPtr->CreateSession(0, FName(NAME_GameSession), SessionSettings);//데디일때
 }
 
 bool UEOSGameInstance::IsServer()

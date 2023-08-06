@@ -36,7 +36,7 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
 	CharacterName = TEXT("Base");
-	
+
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(SpringArmComponentName);
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->bUsePawnControlRotation = true;
@@ -74,10 +74,10 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	ResurrectionNiagara->SetAutoDestroy(false);
 	ResurrectionNiagara->SetAsset(ResurrectionFinder.Object);
 
-	static ConstructorHelpers::FObjectFinder<UCurveFloat> DissolveCurveFinder(TEXT("/Game/Blueprints/Curve/CV_Float_DissolveCurve.CV_Float_DissolveCurve"));
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> DissolveCurveFinder(
+		TEXT("/Game/Blueprints/Curve/CV_Float_DissolveCurve.CV_Float_DissolveCurve"));
 
-	if(DissolveCurveFinder.Succeeded()) DissolveCurve = DissolveCurveFinder.Object;
-
+	if (DissolveCurveFinder.Succeeded()) DissolveCurve = DissolveCurveFinder.Object;
 }
 
 ELifetimeCondition ALakayaBaseCharacter::AllowActorComponentToReplicate(
@@ -114,8 +114,8 @@ void ALakayaBaseCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if(DissolveTimeline.IsPlaying()) DissolveTimeline.TickTimeline(DeltaSeconds);
-	
+	if (DissolveTimeline.IsPlaying()) DissolveTimeline.TickTimeline(DeltaSeconds);
+
 	// 서버에서는 계속해서 플레이어의 회전정보를 업데이트합니다.
 	if (HasAuthority())
 	{
@@ -266,32 +266,32 @@ void ALakayaBaseCharacter::DamageImmuneTimerCallback()
 
 void ALakayaBaseCharacter::StartDissolveEffect()
 {
-	if(DissolveCurve.IsValid())
+	if (DissolveCurve)
 	{
 		FOnTimelineFloat DissolveCurveCallback;
 		DissolveCurveCallback.BindUFunction(this,TEXT("DissolveTick"));
-		DissolveTimeline.AddInterpFloat(DissolveCurve.Get(), DissolveCurveCallback);
+		DissolveTimeline.AddInterpFloat(DissolveCurve, DissolveCurveCallback);
 		DissolveTimeline.SetTimelineLength(DissolveTimelineLength);
 
 		DissolveTimeline.PlayFromStart();
 	}
-	
-	if(CharacterOverlayMaterial.IsValid()) CharacterOverlayMaterial->SetScalarParameterValue(TEXT("Opacity") , 0.0f);
+
+	if (CharacterOverlayMaterial.IsValid()) CharacterOverlayMaterial->SetScalarParameterValue(TEXT("Opacity"), 0.0f);
 }
 
 void ALakayaBaseCharacter::RemoveDissolveEffect()
 {
-	for(const auto TargetMaterial : DissolveTargetArray)
-		TargetMaterial->SetScalarParameterValue(TEXT("Dissolve"),2.0f);
+	for (const auto TargetMaterial : DissolveTargetArray)
+		TargetMaterial->SetScalarParameterValue(TEXT("Dissolve"), 2.0f);
 
-	if(CharacterOverlayMaterial.IsValid()) CharacterOverlayMaterial->SetScalarParameterValue(TEXT("Opacity") , 1.0f);
+	if (CharacterOverlayMaterial.IsValid()) CharacterOverlayMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
 }
 
 void ALakayaBaseCharacter::DissolveTick(const float& Value)
 {
-	for(const auto DissolveTarget : DissolveTargetArray)
+	for (const auto DissolveTarget : DissolveTargetArray)
 	{
-		DissolveTarget->SetScalarParameterValue(TEXT("Dissolve"),Value);
+		DissolveTarget->SetScalarParameterValue(TEXT("Dissolve"), Value);
 	}
 }
 
