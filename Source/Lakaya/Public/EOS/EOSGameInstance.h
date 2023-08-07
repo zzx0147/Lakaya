@@ -5,7 +5,7 @@
 #include "OnlineSessionSettings.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "OnlineSubsystem.h"
-#include "Occupation/PlayerTeam.h"
+#include "Occupation/Team.h"
 #include "EOSGameInstance.generated.h"
 
 //퀵 조인 완료시 콜백해주는 델리게이트
@@ -29,7 +29,7 @@ struct FMatchResultStruct
 
 	int64 StartTime;
 	float Duration;
-	EPlayerTeam WinTeam;
+	ETeam WinTeam;
 	TArray<FPlayerStats> AntiPlayers;
 	TArray<FPlayerStats> ProPlayers;
 };

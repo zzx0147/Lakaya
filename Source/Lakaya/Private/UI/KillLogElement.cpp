@@ -131,9 +131,9 @@ UKillLogElement::UKillLogElement(const FObjectInitializer& ObjectInitializer):Su
 	CharacterImageMap.Emplace(FName(TEXT("Wazi")));
 	CharacterImageMap.Emplace(FName(TEXT("Minami")));
 
-	BackgroundImageMap.Emplace(EPlayerTeam::Anti);
-	BackgroundImageMap.Emplace(EPlayerTeam::Pro);
-	BackgroundImageMap.Emplace(EPlayerTeam::Individual);
+	BackgroundImageMap.Emplace(ETeam::Anti);
+	BackgroundImageMap.Emplace(ETeam::Pro);
+	BackgroundImageMap.Emplace(ETeam::Individual);
 	
 }
 

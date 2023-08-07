@@ -42,7 +42,7 @@ void AAIIndividualGameState::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (SpawnOutlineManager()) OutlineManager->SetTeam(EPlayerTeam::Individual);
+	if (SpawnOutlineManager()) OutlineManager->SetTeam(ETeam::Individual);
 
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
