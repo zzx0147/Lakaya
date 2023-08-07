@@ -8,6 +8,7 @@
 #include "CaptureArena.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FCaptureArenaStateOnChangedSignature, ECaptureArenaState);
+DECLARE_MULTICAST_DELEGATE_OneParam(FCaptureArenaTeamOnChangedSignature, ETeam);
 
 UCLASS()
 class LAKAYA_API ACaptureArena : public AActor
@@ -20,6 +21,8 @@ public:
 	FORCEINLINE const ECaptureArenaState& GetCurrentCaptureArenaState() const { return CurrentCaptureArenaState; }
 	FORCEINLINE void SetCurrentCaptureArenaState(const ECaptureArenaState& NewState) { CurrentCaptureArenaState = NewState; }
 
+	FORCEINLINE const ETeam& GetCurrentCaptureArenaTeam() const { return CurrentCaptureArenaTeam; }
+	FORCEINLINE void SetCurrentCaptureArenaTeam(const ETeam& NewTeam) { CurrentCaptureArenaTeam = NewTeam; }
 	/**
 	 * @brief Enum타입을 String으로 바꿔줍니다.
 	 * @param EnumValue 타입을 String으로 바꿔줄 Enum입니다.
@@ -30,7 +33,6 @@ public:
 	
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 private:
 	/**
 	 * @brief 다른 액터와 충돌됐을 때, 실행되는 함수입니다.
@@ -101,6 +103,9 @@ private:
 	 */
 	UFUNCTION()
 	void CaptureArenaHandleNone(const ECaptureArenaState& CaptureArenaState);
+
+	UFUNCTION()
+	void UpdateCaptureProgress();
 private:
 	UPROPERTY(VisibleAnywhere, Category = Box)
 	TObjectPtr<class UBoxComponent> Trigger;
@@ -108,7 +113,22 @@ private:
 	UPROPERTY(Replicated)
 	ECaptureArenaState CurrentCaptureArenaState = ECaptureArenaState::None;
 
+	UPROPERTY(Replicated)
+	ETeam CurrentCaptureArenaTeam = ETeam::None;
+	
 	TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> OccupyingPlayerList;
-
+	
 	FCaptureArenaStateOnChangedSignature CaptureArenaStateOnChangedSignature;
+	FCaptureArenaTeamOnChangedSignature CaptureArenaTeamOnChangedSignature;
+
+	UPROPERTY()
+	float AntiTeamCaptureProgress;
+
+	UPROPERTY()
+	float ProTeamCaptureProgress;
+
+	UPROPERTY()
+	float CaptureSpeed;
+
+	FTimerHandle CaptureProgressTimerHandle;
 };
