@@ -48,7 +48,7 @@ public:
 	AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const override;
 
 protected:
-	virtual void SetTeam_Implementation(const EPlayerTeam& Team) override;
+	virtual void SetTeam_Implementation(const ETeam& Team) override;
 	virtual void SetAliveState_Implementation(bool IsAlive) override;
 
 public:

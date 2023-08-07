@@ -45,10 +45,10 @@ void ALakayaDefaultPlayGameMode::RestartPlayer(AController* NewPlayer)
 	{
 		switch (BasePlayerState->GetTeam())
 		{
-		case EPlayerTeam::Anti:
+		case ETeam::Anti:
 			SpawnTag = ATeamSpawnTag;
 			break;
-		case EPlayerTeam::Pro:
+		case ETeam::Pro:
 			SpawnTag = BTeamSpawnTag;
 			break;
 		default:

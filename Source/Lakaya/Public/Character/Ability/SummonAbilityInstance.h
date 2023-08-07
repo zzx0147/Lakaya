@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Occupation/PlayerTeam.h"
+#include "Occupation/Team.h"
 #include "SummonAbilityInstance.generated.h"
 
 UENUM()
@@ -52,8 +52,8 @@ public:
 	FORCEINLINE const EAbilityInstanceState& GetInstanceState() const { return AbilityInstanceState; }
 
 	// 어빌리티 인스턴스에게 팀 정보를 셋업합니다.
-	virtual void SetTeam(const EPlayerTeam& Team);
-	FORCEINLINE const EPlayerTeam& GetTeam() const { return RecentTeam; }
+	virtual void SetTeam(const ETeam& Team);
+	FORCEINLINE const ETeam& GetTeam() const { return RecentTeam; }
 
 	/**
 	 * @brief 어빌리티 인스턴스의 시간값을 가져옵니다. 이 시간값은 어빌리티 인스턴스의 상태에 따라 여러가지 용도로 쓰입니다.
@@ -136,6 +136,6 @@ private:
 	TWeakObjectPtr<UCoolTimedSummonAbility> OwningAbility;
 
 	FTimerHandle StateTimer;
-	EPlayerTeam RecentTeam;
+	ETeam RecentTeam;
 	EAbilityInstanceState RecentInstanceState;
 };

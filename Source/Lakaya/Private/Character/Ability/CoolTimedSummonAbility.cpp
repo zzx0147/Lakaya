@@ -86,7 +86,7 @@ void UCoolTimedSummonAbility::SetBasisComponent(USceneComponent* NewComponent)
 	BasisComponent = NewComponent;
 }
 
-void UCoolTimedSummonAbility::SetTeam(const EPlayerTeam& Team)
+void UCoolTimedSummonAbility::SetTeam(const ETeam& Team)
 {
 	Super::SetTeam(Team);
 	AbilityInstancePool.ForEach([Team](ASummonAbilityInstance* Instance) { if (Instance) Instance->SetTeam(Team); });

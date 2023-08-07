@@ -3,11 +3,11 @@
 #include "CoreMinimal.h"
 #include "LakayaBaseGameState.h"
 #include "EOS/EOSGameInstance.h"
-#include "Occupation/PlayerTeam.h"
+#include "Occupation/Team.h"
 #include "OccupationGameState.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeOccupationWinner, const EPlayerTeam&)
-DECLARE_EVENT_TwoParams(AOccupationGameState, FTeamScoreSignature, const EPlayerTeam&, const float&)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeOccupationWinner, const ETeam&)
+DECLARE_EVENT_TwoParams(AOccupationGameState, FTeamScoreSignature, const ETeam&, const float&)
 
 UCLASS()
 class LAKAYA_API AOccupationGameState : public ALakayaBaseGameState
@@ -32,16 +32,16 @@ public:
 	 * @param Team 점수를 부여할 팀입니다.
 	 * @param AdditiveScore 추가될 점수입니다.
 	 */
-	void AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore);
+	void AddTeamScore(const ETeam& Team, const float& AdditiveScore);
 
 	// 해당 팀의 점수를 받아옵니다.
-	float GetTeamScore(const EPlayerTeam& Team) const;
+	float GetTeamScore(const ETeam& Team) const;
 
 	// 최대 점수를 가져옵니다.
 	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }
 
 	// 승리자의 정보를 가져옵니다.
-	FORCEINLINE const EPlayerTeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
+	FORCEINLINE const ETeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
 
 	// 어떤 팀이든 최대 점수에 도달한 팀이 있는지 여부를 조사합니다.
 	FORCEINLINE bool GetSomeoneReachedMaxScore() const
@@ -54,7 +54,7 @@ public:
 	void ChangeResultWidget();
 
 protected:
-	virtual void SetClientTeam(const EPlayerTeam& NewTeam);
+	virtual void SetClientTeam(const ETeam& NewTeam);
 	virtual bool TrySendMatchResultData() override;
 private:
 	UFUNCTION()
@@ -96,15 +96,15 @@ private:
 
 	FORCEINLINE TArray<TObjectPtr<ALakayaBasePlayerState>>& GetEnemyArray()
 	{
-		return PlayersByTeamMap[ClientTeam == EPlayerTeam::Anti ? EPlayerTeam::Pro : EPlayerTeam::Anti];
+		return PlayersByTeamMap[ClientTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti];
 	}
 
-	void UpdatePlayerByTeamMap(const EPlayerTeam& Team, ALakayaBasePlayerState* PlayerState);
+	void UpdatePlayerByTeamMap(const ETeam& Team, ALakayaBasePlayerState* PlayerState);
 	void SetupPlayerStateOnLocal(ALakayaBasePlayerState* PlayerState);
 	static ERendererStencilMask GetUniqueStencilMask(const bool& IsAlly, const uint8& Index);
 	void OnPlayerStateOwnerChanged(AActor* Owner);
 
-	void AddPlayerStateToRecordResult(EPlayerTeam InTeam ,TArray<ALakayaBasePlayerState*> InPlayers);
+	void AddPlayerStateToRecordResult(ETeam InTeam ,TArray<ALakayaBasePlayerState*> InPlayers);
 	
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
@@ -114,7 +114,7 @@ public:
 private:
 	
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
-	EPlayerTeam CurrentOccupationWinner;
+	ETeam CurrentOccupationWinner;
 
 	// Anti
 	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore, Transient)
@@ -135,9 +135,9 @@ private:
 
 	bool ResultBool = false;
 
-	TMap<EPlayerTeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> PlayersByTeamMap;
+	TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> PlayersByTeamMap;
 
-	EPlayerTeam ClientTeam;
+	ETeam ClientTeam;
 
 	FTimerHandle TimerHandle_GameTimeCheck;
 	FTimerHandle TimerHandle_StartMessageVisible;

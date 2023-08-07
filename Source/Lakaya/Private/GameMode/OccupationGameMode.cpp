@@ -97,7 +97,7 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
 				}
 
-				const auto Team = i % 2 == 0 ? EPlayerTeam::Anti : EPlayerTeam::Pro;
+				const auto Team = i % 2 == 0 ? ETeam::Anti : ETeam::Pro;
 				LakayaBasePlayerState->SetTeam(Team);
 				UE_LOG(LogTemp, Warning, TEXT("%s"), i % 2 == 0 ? TEXT("A팀에 배정 되었습니다.") : TEXT("B팀에 배정 되었습니다."));
 			}
@@ -112,20 +112,20 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 
 void AOccupationGameMode::UpdateTeamScoreTick()
 {
-	if (ATeamObjectCount > 0) OccupationGameState->AddTeamScore(EPlayerTeam::Anti, ATeamObjectCount * AdditiveScore);
-	if (BTeamObjectCount > 0) OccupationGameState->AddTeamScore(EPlayerTeam::Pro, BTeamObjectCount * AdditiveScore);
+	if (ATeamObjectCount > 0) OccupationGameState->AddTeamScore(ETeam::Anti, ATeamObjectCount * AdditiveScore);
+	if (BTeamObjectCount > 0) OccupationGameState->AddTeamScore(ETeam::Pro, BTeamObjectCount * AdditiveScore);
 }
 
-void AOccupationGameMode::AddOccupyObject(const EPlayerTeam& Team)
+void AOccupationGameMode::AddOccupyObject(const ETeam& Team)
 {
-	if (Team == EPlayerTeam::Anti) ++ATeamObjectCount;
-	else if (Team == EPlayerTeam::Pro) ++BTeamObjectCount;
+	if (Team == ETeam::Anti) ++ATeamObjectCount;
+	else if (Team == ETeam::Pro) ++BTeamObjectCount;
 	else UE_LOG(LogScript, Warning, TEXT("Trying to AddOccupyObject with invalid value! it was %d"), Team);
 }
 
-void AOccupationGameMode::SubOccupyObject(const EPlayerTeam& Team)
+void AOccupationGameMode::SubOccupyObject(const ETeam& Team)
 {
-	if (Team == EPlayerTeam::Anti && ATeamObjectCount > 0) --ATeamObjectCount;
-	else if (Team == EPlayerTeam::Pro && BTeamObjectCount > 0) --BTeamObjectCount;
+	if (Team == ETeam::Anti && ATeamObjectCount > 0) --ATeamObjectCount;
+	else if (Team == ETeam::Pro && BTeamObjectCount > 0) --BTeamObjectCount;
 	else UE_LOG(LogScript, Warning, TEXT("Trying to SubOccupyObject with invalid value! it was %d"), Team);
 }

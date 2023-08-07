@@ -149,7 +149,7 @@ FRotator ALakayaBaseCharacter::GetPlayerRotation() const
 	return LatestUpdateRotation.Rotator();
 }
 
-bool ALakayaBaseCharacter::IsSameTeam(const EPlayerTeam& Team) const
+bool ALakayaBaseCharacter::IsSameTeam(const ETeam& Team) const
 {
 	return JudgeSameTeam(RecentTeam, Team);
 }
@@ -195,11 +195,11 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 	CharacterOverlayMaterial->SetVectorParameterValue(TEXT("Color"), IsAlly ? FLinearColor::Blue : FLinearColor::Red);
 }
 
-void ALakayaBaseCharacter::SetTeam_Implementation(const EPlayerTeam& Team)
+void ALakayaBaseCharacter::SetTeam_Implementation(const ETeam& Team)
 {
 	RecentTeam = Team;
-	if (Team == EPlayerTeam::Anti) GetCapsuleComponent()->SetCollisionObjectType(ATeamObjectType);
-	else if (Team == EPlayerTeam::Pro) GetCapsuleComponent()->SetCollisionObjectType(BTeamObjectType);
+	if (Team == ETeam::Anti) GetCapsuleComponent()->SetCollisionObjectType(ATeamObjectType);
+	else if (Team == ETeam::Pro) GetCapsuleComponent()->SetCollisionObjectType(BTeamObjectType);
 }
 
 void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)

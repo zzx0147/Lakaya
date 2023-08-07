@@ -19,7 +19,7 @@ public:
 	explicit AAttachableMine(const FObjectInitializer& ObjectInitializer);
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
-	virtual void SetTeam(const EPlayerTeam& Team) override;
+	virtual void SetTeam(const ETeam& Team) override;
 
 protected:
 	virtual void BeginPlay() override;
