@@ -120,6 +120,7 @@ void ULakayaAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 {
 	AddMappingContext(ActorInfo);
 	Log(ActorInfo, TEXT("Activate Ability"));
+	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
 void ULakayaAbility::CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -135,8 +136,8 @@ void ULakayaAbility::CancelAbility(const FGameplayAbilitySpecHandle Handle, cons
 		                                                      ActivationInfo, bReplicateCancelAbility));
 		return;
 	}
-	Super::CancelAbility(Handle, ActorInfo, ActivationInfo, bReplicateCancelAbility);
 	NativeCancelAbility(Handle, ActorInfo, ActivationInfo, bReplicateCancelAbility);
+	Super::CancelAbility(Handle, ActorInfo, ActivationInfo, bReplicateCancelAbility);
 }
 
 void ULakayaAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -153,8 +154,8 @@ void ULakayaAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const F
 		                                                      ActivationInfo, bReplicateEndAbility, bWasCancelled));
 		return;
 	}
-	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 	NativeEndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
 UEnhancedInputLocalPlayerSubsystem* ULakayaAbility::InternalGetEnhancedInputSubsystem(
