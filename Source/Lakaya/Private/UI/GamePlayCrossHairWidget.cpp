@@ -2,7 +2,7 @@
 
 #define DO_CHECK 1
 
-#include "UI/GamePlayCrosshairWidget.h"
+#include "UI/GamePlayCrossHairWidget.h"
 #include "Components/Image.h"
 
 void UGamePlayCrosshairWidget::NativeConstruct()

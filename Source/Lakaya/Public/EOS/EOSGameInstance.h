@@ -149,6 +149,10 @@ public:
 	//게임 한판이 종료되었을 때 해당 게임의 정보를 서버로 송신합니다
 	bool SendMatchResultData(const FMatchResultStruct& NewRecordResult);
 
+	UFUNCTION(BlueprintCallable)
+	void CreateDedicatedSession();
+
+	
 private:
 	static bool IsServer();
 

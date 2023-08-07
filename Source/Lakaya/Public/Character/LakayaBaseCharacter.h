@@ -162,7 +162,7 @@ protected:
 
 	//머티리얼 디졸브 이펙트를 위한 커브입니다
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Timeline)
-	TWeakObjectPtr<UCurveFloat> DissolveCurve;
+	TObjectPtr<UCurveFloat> DissolveCurve;
 
 	//디졸브 이펙트의 타겟 머티리얼들입니다
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Timeline)
@@ -214,6 +214,4 @@ private:
 	FName MeshCollisionProfile;
 	TWeakObjectPtr<UMaterialInstanceDynamic> CharacterOverlayMaterial;
 	FTimerHandle DamageImmuneTimer;
-
-
 };
