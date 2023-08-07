@@ -26,7 +26,9 @@ void AOccupationGameMode::OnPlayerKilled(AController* VictimController, AControl
 
 void AOccupationGameMode::BeginPlay()
 {
+	Super::BeginPlay();
 	OccupationGameState = GetGameState<AOccupationGameState>();
+	UE_LOG(LogTemp, Warning, TEXT("Occupation Game Mode Begin Play"));
 }
 
 //TODO: 필요없는 함수 오버라이딩

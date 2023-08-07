@@ -70,7 +70,7 @@ protected:
 	// 여기에 들어설 때 HandleLeavingMap()함수 호출
 	// 일반적인 흐름의 마지막 상태.
 	virtual void HandleLeavingMap() override;
-
+	
 public:
 	virtual void OnPlayerKilled(AController* VictimController, AController* InstigatorController, AActor* DamageCauser);
 	virtual void StartSelectCharacter();
