@@ -9,6 +9,8 @@
 #include "EOS/EOSGameInstance.h"
 #include "GameFramework/PlayerStart.h"
 #include "GameMode/LakayaBaseGameState.h"
+#include "Runtime/Core/Public/Misc/Parse.h"
+#include "Runtime/Core/Public/HAL/PlatformProcess.h"
 #include "Kismet/GameplayStatics.h"
 
 namespace MatchState
@@ -28,6 +30,7 @@ ALakayaDefaultPlayGameMode::ALakayaDefaultPlayGameMode()
 	CharacterSelectStartDelay = 3.0f;
 	//CharacterSelectTime = 10.0f;
 	AgonesSDK = CreateDefaultSubobject<UAgonesComponent>(TEXT("AgonesSDK"));
+	AgonesSDK->bDisableAutoConnect = false;
 }
 
 void ALakayaDefaultPlayGameMode::RestartPlayer(AController* NewPlayer)
@@ -137,7 +140,7 @@ AActor* ALakayaDefaultPlayGameMode::FindPlayerStart_Implementation(AController* 
 void ALakayaDefaultPlayGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	AgonesSDK->Ready({},{});
+	UE_LOG(LogTemp, Warning, TEXT("Occupation Game Mode Begin Play"));
 }
 
 //TODO: 사용되지 않는 오버라이딩 제거
