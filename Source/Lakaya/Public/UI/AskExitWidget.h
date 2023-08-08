@@ -18,9 +18,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void BackLobby();
 protected:
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	TWeakObjectPtr<class UButton> AskExit_Yes_Button;
-
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	TWeakObjectPtr<UButton> AskExit_No_Button;
+	// UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	// TWeakObjectPtr<class UButton> AskExit_Yes_Button;
+	//
+	// UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	// TWeakObjectPtr<UButton> AskExit_No_Button;
 };

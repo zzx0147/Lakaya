@@ -8,11 +8,11 @@ bool UAskExitWidget::Initialize()
 	bool bResult = Super::Initialize();
 	if (!bResult) return false;
 
-	if (AskExit_Yes_Button != nullptr)
-		AskExit_Yes_Button->OnClicked.AddDynamic(this, &UAskExitWidget::QuitGame);
-
-	if (AskExit_No_Button != nullptr)
-		AskExit_No_Button->OnClicked.AddDynamic(this, &UAskExitWidget::BackLobby);
+	// if (AskExit_Yes_Button != nullptr)
+	// 	AskExit_Yes_Button->OnClicked.AddDynamic(this, &UAskExitWidget::QuitGame);
+	//
+	// if (AskExit_No_Button != nullptr)
+	// 	AskExit_No_Button->OnClicked.AddDynamic(this, &UAskExitWidget::BackLobby);
 	
 	return true;
 }
@@ -30,5 +30,5 @@ void UAskExitWidget::QuitGame()
 
 void UAskExitWidget::BackLobby()
 {
-	RemoveFromParent();	
+	SetVisibility(ESlateVisibility::Hidden);
 }
