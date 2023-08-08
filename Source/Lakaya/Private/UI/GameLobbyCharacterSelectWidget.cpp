@@ -74,7 +74,7 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 	{
 		Cast<UButton>(GetWidgetFromName(FName(TEXT("Rena_Btn")))),
 		Cast<UButton>(GetWidgetFromName(FName(TEXT("Wazi_Btn")))),
-		Cast<UButton>(GetWidgetFromName(FName(TEXT("Minami_Btn"))))
+		Cast<UButton>(GetWidgetFromName(FName(TEXT("Gangrim_Btn"))))
 	};
 
 	IntroductionText = Cast<URichTextBlock>(GetWidgetFromName(TEXT("Introduction_Text")));
