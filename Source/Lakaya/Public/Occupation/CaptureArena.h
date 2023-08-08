@@ -33,6 +33,7 @@ public:
 	
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 private:
 	/**
 	 * @brief 다른 액터와 충돌됐을 때, 실행되는 함수입니다.
@@ -106,6 +107,8 @@ private:
 
 	UFUNCTION()
 	void UpdateCaptureProgress();
+
+	
 private:
 	UPROPERTY(VisibleAnywhere, Category = Box)
 	TObjectPtr<class UBoxComponent> Trigger;

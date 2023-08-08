@@ -5,6 +5,7 @@
 #include "Character/ArmedCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/BoxComponent.h"
+#include "GameMode/OccupationGameState.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "ProfilingDebugging/BootProfiling.h"
@@ -266,11 +267,29 @@ void ACaptureArena::UpdateCaptureProgress()
 		if (AntiTeamCaptureProgress >= 4.0f)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("AntiTeam Capture Success."));
+			const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
+			if (OccupationGameState == nullptr)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("OccupationGameState is null."));
+			}
+
+			if (GetCurrentCaptureArenaTeam() == ETeam::Pro)
+			{
+				OccupationGameState->SubCaptureAreaCount(ETeam::Pro);
+			}
+
+			OccupationGameState->AddCaptureAreaCount(ETeam::Anti);
 			SetCurrentCaptureArenaState(ECaptureArenaState::Anti);
 			AntiTeamCaptureProgress = 0.0f;
 			SetCurrentCaptureArenaTeam(ETeam::Anti);
 			CaptureArenaTeamOnChangedSignature.Broadcast(GetCurrentCaptureArenaTeam());
 			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
+			
+			if (bool bIncrease = OccupationGameState->CheckCaptureAreaCount(ETeam::Anti))
+			{
+				OccupationGameState->SetTeamToUpdate(ETeam::Anti);
+				OccupationGameState->StartScoreUpdate(ETeam::Anti, 1.0f);
+			}
 		}
 	}
 	else if (GetCurrentCaptureArenaState() == ECaptureArenaState::ProProgress)
@@ -280,11 +299,29 @@ void ACaptureArena::UpdateCaptureProgress()
 		if (ProTeamCaptureProgress >= 4.0f)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("ProTream Capture Success."));
+			const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
+			if (OccupationGameState == nullptr)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("OccupationGameState is null."));
+			}
+			
+			if (GetCurrentCaptureArenaTeam() == ETeam::Anti)
+			{
+				OccupationGameState->SubCaptureAreaCount(ETeam::Anti);
+			}
+
+			OccupationGameState->AddCaptureAreaCount(ETeam::Pro);
 			SetCurrentCaptureArenaState(ECaptureArenaState::Pro);
 			ProTeamCaptureProgress = 0.0f;
 			SetCurrentCaptureArenaTeam(ETeam::Pro);
 			CaptureArenaTeamOnChangedSignature.Broadcast(GetCurrentCaptureArenaTeam());
 			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
+			
+			if (bool bIncrease = OccupationGameState->CheckCaptureAreaCount(ETeam::Pro))
+			{
+				OccupationGameState->SetTeamToUpdate(ETeam::Pro);
+				OccupationGameState->StartScoreUpdate(ETeam::Pro, 1.0f);
+			}
 		}
 	}
 }
