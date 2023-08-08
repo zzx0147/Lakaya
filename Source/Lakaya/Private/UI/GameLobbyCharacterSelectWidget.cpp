@@ -55,7 +55,10 @@ UGameLobbyCharacterSelectWidget::UGameLobbyCharacterSelectWidget(const FObjectIn
 void UGameLobbyCharacterSelectWidget::SetVisibility(ESlateVisibility InVisibility)
 {
 	Super::SetVisibility(InVisibility);
-	GetOwningPlayer()->SetShowMouseCursor(InVisibility == ESlateVisibility::Visible);
+	if (const auto PlayerController = GetOwningPlayer())
+	{
+		PlayerController->SetShowMouseCursor(InVisibility == ESlateVisibility::Visible);
+	}
 }
 
 void UGameLobbyCharacterSelectWidget::NativeConstruct()
@@ -134,10 +137,13 @@ void UGameLobbyCharacterSelectWidget::EnableAutoHide(const bool& IsEnabled)
 
 void UGameLobbyCharacterSelectWidget::SetShortcutEnabled(const bool& Enable)
 {
-	if (const auto Subsystem = GetOwningLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+	if (const auto OwningLocalPlayer = GetOwningLocalPlayer())
 	{
-		if (Enable) Subsystem->AddMappingContext(ShortcutContext, ShortcutPriority);
-		else Subsystem->RemoveMappingContext(ShortcutContext);
+		if (const auto Subsystem = OwningLocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+		{
+			if (Enable) Subsystem->AddMappingContext(ShortcutContext, ShortcutPriority);
+			else Subsystem->RemoveMappingContext(ShortcutContext);
+		}
 	}
 }
 
