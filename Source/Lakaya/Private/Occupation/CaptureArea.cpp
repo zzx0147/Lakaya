@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Occupation/CaptureArena.h"
+#include "Occupation/CaptureArea.h"
 
 #include "Character/ArmedCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
@@ -10,7 +10,7 @@
 #include "Net/UnrealNetwork.h"
 #include "ProfilingDebugging/BootProfiling.h"
 
-ACaptureArena::ACaptureArena()
+ACaptureArea::ACaptureArea()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
@@ -21,8 +21,8 @@ ACaptureArena::ACaptureArena()
 
 	Trigger->SetBoxExtent(CaptureAreaRange);
 	
-	Trigger->OnComponentBeginOverlap.AddDynamic(this, &ACaptureArena::OnOverlapBegin);
-	Trigger->OnComponentEndOverlap.AddDynamic(this, &ACaptureArena::OnOverlapEnd);
+	Trigger->OnComponentBeginOverlap.AddDynamic(this, &ACaptureArea::OnOverlapBegin);
+	Trigger->OnComponentEndOverlap.AddDynamic(this, &ACaptureArea::OnOverlapEnd);
 
 	OccupyingPlayerList.Emplace(ETeam::Anti);
 	OccupyingPlayerList.Emplace(ETeam::Pro);
@@ -32,15 +32,15 @@ ACaptureArena::ACaptureArena()
 	CaptureSpeed = 1.0f;
 }
 
-void ACaptureArena::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void ACaptureArea::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ACaptureArena, CurrentCaptureArenaState);
-	DOREPLIFETIME(ACaptureArena, CurrentCaptureArenaTeam);
+	DOREPLIFETIME(ACaptureArea, CurrentCaptureArenaState);
+	DOREPLIFETIME(ACaptureArea, CurrentCaptureArenaTeam);
 }
 
-void ACaptureArena::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+void ACaptureArea::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// 동일한 액터를 확인하여 self-overlaps를 무시합니다.
@@ -73,7 +73,7 @@ void ACaptureArena::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* 
 	}
 }
 
-void ACaptureArena::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+void ACaptureArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	// 동일한 액터를 확인하여 self-overlaps를 무시합니다.
@@ -106,7 +106,7 @@ void ACaptureArena::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	}
 }
 
-void ACaptureArena::AddToOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePlayerState* Player)
+void ACaptureArea::AddToOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePlayerState* Player)
 {
 	if (OccupyingPlayerList.Contains(PlayerTeam))
 	{
@@ -116,7 +116,7 @@ void ACaptureArena::AddToOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePl
 	CheckCaptureArenaInPlayer(PlayerTeam);
 }
 
-void ACaptureArena::RemoveFromOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePlayerState* Player)
+void ACaptureArea::RemoveFromOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePlayerState* Player)
 {
 	if (OccupyingPlayerList.Contains(PlayerTeam))
 	{
@@ -126,7 +126,7 @@ void ACaptureArena::RemoveFromOccupyPlayerList(const ETeam& PlayerTeam, ALakayaB
 	CheckCaptureArenaInPlayer(PlayerTeam);
 }
 
-void ACaptureArena::CheckCaptureArenaInPlayer(const ETeam& PlayerTeam)
+void ACaptureArea::CheckCaptureArenaInPlayer(const ETeam& PlayerTeam)
 {
 	UE_LOG(LogTemp, Warning, TEXT("AntiTeam Occupying Player Number : %d"), OccupyingPlayerList[ETeam::Anti].Num());
 	UE_LOG(LogTemp, Warning, TEXT("ProTeam Occupying Player Number : %d"), OccupyingPlayerList[ETeam::Pro].Num());
@@ -137,7 +137,7 @@ void ACaptureArena::CheckCaptureArenaInPlayer(const ETeam& PlayerTeam)
 	UpdateCaptureArenaState(AntiTeamPlayerCount, ProTeamPlayerCount, CurrentCaptureArenaState);
 }
 
-void ACaptureArena::UpdateCaptureArenaState(const uint8& AntiTeamPlayerCount, const uint8& ProTeamPlayerCount, const ECaptureArenaState& CaptureArenaState)
+void ACaptureArea::UpdateCaptureArenaState(const uint8& AntiTeamPlayerCount, const uint8& ProTeamPlayerCount, const ECaptureArenaState& CaptureArenaState)
 {
 	if (AntiTeamPlayerCount > 0 && ProTeamPlayerCount == 0)
 	{
@@ -162,7 +162,7 @@ void ACaptureArena::UpdateCaptureArenaState(const uint8& AntiTeamPlayerCount, co
 }
 
 // Anti팀 1명이상, Pro팀 0명
-void ACaptureArena::CaptureArenaHandleAntiTeam(const ECaptureArenaState& CaptureArenaState)
+void ACaptureArea::CaptureArenaHandleAntiTeam(const ECaptureArenaState& CaptureArenaState)
 {
 	if (CaptureArenaState == ECaptureArenaState::None || CaptureArenaState == ECaptureArenaState::Pro || CaptureArenaState == ECaptureArenaState::Opposite
 		|| CaptureArenaState == ECaptureArenaState::AntiExtortion)
@@ -173,7 +173,7 @@ void ACaptureArena::CaptureArenaHandleAntiTeam(const ECaptureArenaState& Capture
 		{
 			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 		}
-		GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArena::UpdateCaptureProgress, 0.1f, true);
+		GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::UpdateCaptureProgress, 0.1f, true);
 	}
 	else if (CaptureArenaState == ECaptureArenaState::Anti)
 	{
@@ -182,7 +182,7 @@ void ACaptureArena::CaptureArenaHandleAntiTeam(const ECaptureArenaState& Capture
 }
 
 // Anti팀 0명, Pro팀 1명이상
-void ACaptureArena::CaptureArenaHandleProTeam(const ECaptureArenaState& CaptureArenaState)
+void ACaptureArea::CaptureArenaHandleProTeam(const ECaptureArenaState& CaptureArenaState)
 {
 	if (CaptureArenaState == ECaptureArenaState::None || CaptureArenaState == ECaptureArenaState::Anti || CaptureArenaState == ECaptureArenaState::Opposite
 		|| CaptureArenaState == ECaptureArenaState::ProExtortion)
@@ -193,7 +193,7 @@ void ACaptureArena::CaptureArenaHandleProTeam(const ECaptureArenaState& CaptureA
 		{
 			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 		}
-		GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArena::UpdateCaptureProgress, 0.1f, true);
+		GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::UpdateCaptureProgress, 0.1f, true);
 	}
 	else if (CaptureArenaState == ECaptureArenaState::Pro)
 	{
@@ -202,7 +202,7 @@ void ACaptureArena::CaptureArenaHandleProTeam(const ECaptureArenaState& CaptureA
 }
 
 // Anti팀 1명이상, Pro팀 1명이상
-void ACaptureArena::CaptureArenaHandleOpposite(const ECaptureArenaState& CaptureArenaState)
+void ACaptureArea::CaptureArenaHandleOpposite(const ECaptureArenaState& CaptureArenaState)
 {
 	if (CaptureArenaState == ECaptureArenaState::AntiProgress || CaptureArenaState == ECaptureArenaState::ProProgress)
 	{
@@ -225,7 +225,7 @@ void ACaptureArena::CaptureArenaHandleOpposite(const ECaptureArenaState& Capture
 }
 
 // Anti팀 0명, Pro팀 0명
-void ACaptureArena::CaptureArenaHandleNone(const ECaptureArenaState& CaptureArenaState)
+void ACaptureArea::CaptureArenaHandleNone(const ECaptureArenaState& CaptureArenaState)
 {
 	if (CaptureArenaState == ECaptureArenaState::Anti || CaptureArenaState == ECaptureArenaState::ProExtortion)
 	{
@@ -259,7 +259,7 @@ void ACaptureArena::CaptureArenaHandleNone(const ECaptureArenaState& CaptureAren
 	}
 }
 
-void ACaptureArena::UpdateCaptureProgress()
+void ACaptureArea::UpdateCaptureProgress()
 {
 	if (GetCurrentCaptureArenaState() == ECaptureArenaState::AntiProgress)
 	{
@@ -327,7 +327,7 @@ void ACaptureArena::UpdateCaptureProgress()
 	}
 }
 
-FString ACaptureArena::GetEnumAsString(const ECaptureArenaState& EnumValue)
+FString ACaptureArea::GetEnumAsString(const ECaptureArenaState& EnumValue)
 {
 	const TObjectPtr<UEnum> EnumPtr = FindObject<UEnum>(nullptr, TEXT("/Script/Lakaya.ECaptureArenaState"));
 	if (EnumPtr)

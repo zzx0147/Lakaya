@@ -5,18 +5,18 @@
 #include "CoreMinimal.h"
 #include "Team.h"
 #include "GameFramework/Actor.h"
-#include "CaptureArena.generated.h"
+#include "CaptureArea.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FCaptureArenaStateOnChangedSignature, ECaptureArenaState);
 DECLARE_MULTICAST_DELEGATE_OneParam(FCaptureArenaTeamOnChangedSignature, ETeam);
 
 UCLASS()
-class LAKAYA_API ACaptureArena : public AActor
+class LAKAYA_API ACaptureArea : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
-	ACaptureArena();
+	ACaptureArea();
 
 	FORCEINLINE const ECaptureArenaState& GetCurrentCaptureArenaState() const { return CurrentCaptureArenaState; }
 	FORCEINLINE void SetCurrentCaptureArenaState(const ECaptureArenaState& NewState) { CurrentCaptureArenaState = NewState; }
