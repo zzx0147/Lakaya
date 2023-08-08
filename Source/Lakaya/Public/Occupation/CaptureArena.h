@@ -113,6 +113,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Box)
 	TObjectPtr<class UBoxComponent> Trigger;
 
+	UPROPERTY(EditAnywhere)
+	FVector CaptureAreaRange;
+	
 	UPROPERTY(Replicated)
 	ECaptureArenaState CurrentCaptureArenaState = ECaptureArenaState::None;
 

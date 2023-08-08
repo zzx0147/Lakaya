@@ -15,10 +15,11 @@ ACaptureArena::ACaptureArena()
 	PrimaryActorTick.bCanEverTick = false;
 
 	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
-
+	CaptureAreaRange = FVector(1000.0f, 1000.0f, 1000.0f);
+	
 	RootComponent = Trigger;
 
-	Trigger->SetBoxExtent(FVector(200.f, 200.f, 200.f));
+	Trigger->SetBoxExtent(CaptureAreaRange);
 	
 	Trigger->OnComponentBeginOverlap.AddDynamic(this, &ACaptureArena::OnOverlapBegin);
 	Trigger->OnComponentEndOverlap.AddDynamic(this, &ACaptureArena::OnOverlapEnd);
