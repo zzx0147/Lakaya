@@ -30,7 +30,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float BaseAbilityDuration;
 
-	TWeakObjectPtr<AOutlineManager> OutlineManager;
+	TWeakObjectPtr<AOutlineManager> CachedOutlineManager;
 	
 	UPROPERTY(EditAnywhere)
 	TWeakObjectPtr<UMaterialInstanceDynamic> EffectMaterial;
