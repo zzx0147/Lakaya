@@ -4,7 +4,7 @@
 #include "UI/RecordRow.h"
 
 #include "Components/TextBlock.h"
-#include "Occupation/PlayerTeam.h"
+#include "Occupation/Team.h"
 
 URecordRow::URecordRow(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -21,9 +21,9 @@ void URecordRow::NativeConstruct()
 	UpdateTextBlock();
 }
 
-void URecordRow::SetRecordRowData(const EPlayerTeam& InWinTeam, const FText& InStartTimeText, const FText& InDurationText)
+void URecordRow::SetRecordRowData(const ETeam& InWinTeam, const FText& InStartTimeText, const FText& InDurationText)
 {
-	WinText = FText::FromString(InWinTeam == EPlayerTeam::A ? TEXT("A") : TEXT("B"));
+	WinText = FText::FromString(InWinTeam == ETeam::Anti ? TEXT("A") : TEXT("B"));
 	StartTimeText = InStartTimeText;
 	DurationText = InDurationText;
 	UpdateTextBlock();

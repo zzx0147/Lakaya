@@ -21,8 +21,11 @@ void UCharacterAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(UCharacterAbility, EnableTime);
-	if (AbilityStartDelay > 0.f) DOREPLIFETIME(UCharacterAbility, DelayedAbilityStartTime);
-	if (AbilityStopDelay > 0.f) DOREPLIFETIME(UCharacterAbility, DelayedAbilityStopTime);
+	DOREPLIFETIME(UCharacterAbility, DelayedAbilityStartTime);
+	DOREPLIFETIME(UCharacterAbility, DelayedAbilityStopTime);
+
+	if (AbilityStartDelay <= 0.f) DISABLE_REPLICATED_PROPERTY(UCharacterAbility, DelayedAbilityStartTime);
+	if (AbilityStopDelay <= 0.f) DISABLE_REPLICATED_PROPERTY(UCharacterAbility, DelayedAbilityStopTime);
 }
 
 void UCharacterAbility::InitializeComponent()

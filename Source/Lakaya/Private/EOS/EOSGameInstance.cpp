@@ -690,7 +690,7 @@ TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 				if (ElementAsObject->HasField(TEXT("WinTeam")))
 				{
 					int32 WinTeamValue = ElementAsObject->GetIntegerField(TEXT("WinTeam"));
-					MatchResultStruct.WinTeam = WinTeamValue == 1 ? EPlayerTeam::A : EPlayerTeam::B;
+					MatchResultStruct.WinTeam = WinTeamValue == 1 ? ETeam::Anti : ETeam::Pro;
 				}
 
 				const auto ProPlayersJson = ElementAsObject->GetArrayField(TEXT("ProPlayers"));

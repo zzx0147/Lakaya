@@ -6,8 +6,8 @@
 
 AOccupationGameMode::AOccupationGameMode() : Super()
 {
-	ScoreUpdateDelay = 0.5f;
-	AdditiveScore = 0.1f;
+	// ScoreUpdateDelay = 0.5f;
+	// AdditiveScore = 0.1f;
 	// MatchStartDelay = 5.f;
 	// MatchEndDelay = 2.f;
 
@@ -26,7 +26,9 @@ void AOccupationGameMode::OnPlayerKilled(AController* VictimController, AControl
 
 void AOccupationGameMode::BeginPlay()
 {
+	Super::BeginPlay();
 	OccupationGameState = GetGameState<AOccupationGameState>();
+	UE_LOG(LogTemp, Warning, TEXT("Occupation Game Mode Begin Play"));
 }
 
 //TODO: 필요없는 함수 오버라이딩
@@ -63,7 +65,7 @@ void AOccupationGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 
-	GetWorldTimerManager().SetTimer(UpdateScoreTimer, this, &AOccupationGameMode::UpdateTeamScoreTick, ScoreUpdateDelay,true);
+	// GetWorldTimerManager().SetTimer(UpdateScoreTimer, this, &AOccupationGameMode::UpdateTeamScoreTick, ScoreUpdateDelay,true);
 
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasStarted"));
 }
@@ -71,7 +73,7 @@ void AOccupationGameMode::HandleMatchHasStarted()
 void AOccupationGameMode::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
-	GetWorldTimerManager().ClearTimer(UpdateScoreTimer);
+	// GetWorldTimerManager().ClearTimer(UpdateScoreTimer);
 	OccupationGameState->SetOccupationWinner();
 
 	// TODO : 이제는 게임이 끝나게 되면 자동으로 로비창으로 이동하는 것이 아닌, 플레이어의 입력에 따라 로비창으로 이동합니다.
@@ -95,7 +97,7 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
 				}
 
-				const auto Team = i % 2 == 0 ? EPlayerTeam::A : EPlayerTeam::B;
+				const auto Team = i % 2 == 0 ? ETeam::Anti : ETeam::Pro;
 				LakayaBasePlayerState->SetTeam(Team);
 				UE_LOG(LogTemp, Warning, TEXT("%s"), i % 2 == 0 ? TEXT("A팀에 배정 되었습니다.") : TEXT("B팀에 배정 되었습니다."));
 			}
@@ -108,22 +110,22 @@ void AOccupationGameMode::RespawnPlayer(AController* KilledController)
 	Super::RespawnPlayer(KilledController);
 }
 
-void AOccupationGameMode::UpdateTeamScoreTick()
-{
-	if (ATeamObjectCount > 0) OccupationGameState->AddTeamScore(EPlayerTeam::A, ATeamObjectCount * AdditiveScore);
-	if (BTeamObjectCount > 0) OccupationGameState->AddTeamScore(EPlayerTeam::B, BTeamObjectCount * AdditiveScore);
-}
+// void AOccupationGameMode::UpdateTeamScoreTick()
+// {
+// 	if (ATeamObjectCount > 0) OccupationGameState->AddTeamScore(ETeam::Anti, ATeamObjectCount * AdditiveScore);
+// 	if (BTeamObjectCount > 0) OccupationGameState->AddTeamScore(ETeam::Pro, BTeamObjectCount * AdditiveScore);
+// }
 
-void AOccupationGameMode::AddOccupyObject(const EPlayerTeam& Team)
-{
-	if (Team == EPlayerTeam::A) ++ATeamObjectCount;
-	else if (Team == EPlayerTeam::B) ++BTeamObjectCount;
-	else UE_LOG(LogScript, Warning, TEXT("Trying to AddOccupyObject with invalid value! it was %d"), Team);
-}
-
-void AOccupationGameMode::SubOccupyObject(const EPlayerTeam& Team)
-{
-	if (Team == EPlayerTeam::A && ATeamObjectCount > 0) --ATeamObjectCount;
-	else if (Team == EPlayerTeam::B && BTeamObjectCount > 0) --BTeamObjectCount;
-	else UE_LOG(LogScript, Warning, TEXT("Trying to SubOccupyObject with invalid value! it was %d"), Team);
-}
+// void AOccupationGameMode::AddOccupyObject(const ETeam& Team)
+// {
+// 	if (Team == ETeam::Anti) ++ATeamObjectCount;
+// 	else if (Team == ETeam::Pro) ++BTeamObjectCount;
+// 	else UE_LOG(LogScript, Warning, TEXT("Trying to AddOccupyObject with invalid value! it was %d"), Team);
+// }
+//
+// void AOccupationGameMode::SubOccupyObject(const ETeam& Team)
+// {
+// 	if (Team == ETeam::Anti && ATeamObjectCount > 0) --ATeamObjectCount;
+// 	else if (Team == ETeam::Pro && BTeamObjectCount > 0) --BTeamObjectCount;
+// 	else UE_LOG(LogScript, Warning, TEXT("Trying to SubOccupyObject with invalid value! it was %d"), Team);
+// }

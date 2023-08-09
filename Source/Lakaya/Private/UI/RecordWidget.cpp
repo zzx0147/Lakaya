@@ -53,7 +53,7 @@ void URecordWidget::SetVisibility(ESlateVisibility InVisibility)
 	FMatchResultStruct temp;
 	temp.StartTime = 1687291289;
 	temp.Duration = 180.0f;
-	temp.WinTeam = EPlayerTeam::A;
+	temp.WinTeam = ETeam::Anti;
 	temp.AntiPlayers.Emplace(a1);
 	temp.AntiPlayers.Emplace(a2);
 	temp.AntiPlayers.Emplace(a3);

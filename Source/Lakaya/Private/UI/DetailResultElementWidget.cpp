@@ -122,8 +122,8 @@ void UDetailResultElementWidget::NativeConstruct()
 void UDetailResultElementWidget::SetElementWidget(const ALakayaBasePlayerState* NewPlayerState, const uint8 Index)
 {
 	ESlateVisibility VisibilityType = ESlateVisibility::SelfHitTestInvisible;
-	bool bIsTeamA = (NewPlayerState->GetTeam() == EPlayerTeam::A);
-	bool bIsTeamB = (NewPlayerState->GetTeam() == EPlayerTeam::B);
+	bool bIsTeamA = (NewPlayerState->GetTeam() == ETeam::Anti);
+	bool bIsTeamB = (NewPlayerState->GetTeam() == ETeam::Pro);
 	bool bIsRena = (NewPlayerState->GetCharacterName() == TEXT("Rena"));
 	bool bIsWazi = (NewPlayerState->GetCharacterName() == TEXT("Wazi"));
 

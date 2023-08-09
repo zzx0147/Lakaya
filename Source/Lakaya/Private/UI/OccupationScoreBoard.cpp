@@ -33,7 +33,7 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 
 	switch (LakayaState->GetTeam())
 	{
-	case EPlayerTeam::A:
+	case ETeam::Anti:
 		if (ATeamBox.IsValid())
 		{
 			// TODO : 실행되지 않는 코드입니다.
@@ -41,7 +41,7 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 			// Element->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
 		break;
-	case EPlayerTeam::B:
+	case ETeam::Pro:
 		if (BTeamBox.IsValid())
 		{
 			// TODO : 실행되지 않는 코드입니다.
@@ -49,7 +49,7 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 			// Element->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
 		break;
-	case EPlayerTeam::None:
+	case ETeam::None:
 		Element->AddToViewport();
 		Element->SetVisibility(ESlateVisibility::Collapsed);
 		break;
@@ -60,10 +60,10 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 	}
 
 	// 엘리먼트 데이터 바인딩
-	LakayaState->OnTeamChanged.AddLambda([this, Element](const EPlayerTeam& ArgTeam)
+	LakayaState->OnTeamChanged.AddLambda([this, Element](const ETeam& ArgTeam)
 	{
 		// A팀으로 변경되면 B팀의 버티컬 박스에서 엘리먼트를 제거하고 A팀 버티컬 박스에 엘리먼트를 추가합니다.
-		if (ArgTeam == EPlayerTeam::A)
+		if (ArgTeam == ETeam::Anti)
 		{
 			if (BTeamBox.IsValid())
 				BTeamBox->RemoveChild(Element);
@@ -74,7 +74,7 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 			Element->Anti_BackGround_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
 		// B팀으로 변경되면 A팀의 버티컬 박스에서 엘리먼트를 제거하고 B팀 버티컬 박스에 엘리먼트를 추가합니다.
-		else if (ArgTeam == EPlayerTeam::B)
+		else if (ArgTeam == ETeam::Pro)
 		{
 			if (ATeamBox.IsValid())
 				ATeamBox->RemoveChild(Element);
