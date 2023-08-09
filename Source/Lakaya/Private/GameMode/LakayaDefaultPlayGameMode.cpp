@@ -26,7 +26,7 @@ ALakayaDefaultPlayGameMode::ALakayaDefaultPlayGameMode()
 	//PlayerRespawnTime = 3;
 	//bWaitToStart = false;
 	bDelayedStart = true;
-	MinRespawnDelay = 5.0f;
+	MinRespawnDelay = 4.0f;
 	CharacterSelectStartDelay = 3.0f;
 	//CharacterSelectTime = 10.0f;
 	AgonesSDK = CreateDefaultSubobject<UAgonesComponent>(TEXT("AgonesSDK"));

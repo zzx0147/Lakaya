@@ -153,12 +153,12 @@ void AOccupationObject::OnInteractionFinish(APawn* Caller)
 		if (OwnerPlayer != nullptr)
 		{
 			Cast<ALakayaBasePlayerState>(OwnerPlayer->GetPlayerState())->DecreaseCurrentCaptureCount();
-			OccupationGameMode->SubOccupyObject(ETeam::Pro);
+			// OccupationGameMode->SubOccupyObject(ETeam::Pro);
 		}
 		
 		SetTeamObject(ETeam::Anti);
 		OnOccupationStateSignature.Broadcast(ObjectTeam);
-		OccupationGameMode->AddOccupyObject(ETeam::Anti);
+		// OccupationGameMode->AddOccupyObject(ETeam::Anti);
 		OwnerPlayer = Caller;
 		Cast<ALakayaBasePlayerState>(OwnerPlayer->GetPlayerState())->IncreaseCurrentCaptureCount();
 
@@ -172,12 +172,12 @@ void AOccupationObject::OnInteractionFinish(APawn* Caller)
 		if (OwnerPlayer != nullptr)
 		{
 			Cast<ALakayaBasePlayerState>(OwnerPlayer->GetPlayerState())->DecreaseCurrentCaptureCount();
-			OccupationGameMode->SubOccupyObject(ETeam::Anti);
+			// OccupationGameMode->SubOccupyObject(ETeam::Anti);
 		}
 		
 		SetTeamObject(ETeam::Pro);
 		OnOccupationStateSignature.Broadcast(ObjectTeam);
-		OccupationGameMode->AddOccupyObject(ETeam::Pro);
+		// OccupationGameMode->AddOccupyObject(ETeam::Pro);
 		OwnerPlayer = Caller;
 		Cast<ALakayaBasePlayerState>(OwnerPlayer->GetPlayerState())->IncreaseCurrentCaptureCount();
 	}
