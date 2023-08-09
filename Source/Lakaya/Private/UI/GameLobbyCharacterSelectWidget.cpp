@@ -3,6 +3,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
@@ -63,6 +64,15 @@ void UGameLobbyCharacterSelectWidget::SetVisibility(ESlateVisibility InVisibilit
 	if (const auto PlayerController = GetOwningPlayer())
 	{
 		PlayerController->SetShowMouseCursor(InVisibility == ESlateVisibility::Visible);
+
+		if(InVisibility == ESlateVisibility::Visible)
+		{
+			UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(PlayerController);
+		}
+		else
+		{
+			UWidgetBlueprintLibrary::SetInputMode_GameOnly(PlayerController);
+		}
 	}
 }
 
