@@ -28,14 +28,19 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AOccupationGameState, ATeamScore);
-	DOREPLIFETIME(AOccupationGameState, BTeamScore);
+	DOREPLIFETIME(AOccupationGameState, AntiTeamScore);
+	DOREPLIFETIME(AOccupationGameState, ProTeamScore);
 	DOREPLIFETIME(AOccupationGameState, CurrentOccupationWinner);
+	DOREPLIFETIME(AOccupationGameState, AntiTeamCaptureAreaCount);
+	DOREPLIFETIME(AOccupationGameState, ProTeamCaptureAreaCount);
+	DOREPLIFETIME(AOccupationGameState, TeamToUpdate);
 }
 
 AOccupationGameState::AOccupationGameState()
 {
 	MaxScore = 100.f;
+	ScoreUpdateDelay = 1.0f;
+	AdditiveScore = 3.0f;
 	MatchDuration = 180.f;
 	MatchStartWaitWidgetLifeTime = 3.0f;
 	MatchStartWidgetLifeTime = 5.0f;
@@ -52,6 +57,8 @@ AOccupationGameState::AOccupationGameState()
 
 	ResultShortcutContext = ResultContextFinder.Object;
 	ResultSwitchingAction = ResultSwitchActionFinder.Object;
+
+	bTap = true;
 }
 
 void AOccupationGameState::BeginPlay()
@@ -252,7 +259,7 @@ void AOccupationGameState::HandleMatchHasEnded()
 		}
 	}
 
-	Tapbool = false;
+	bTap = false;
 	ShowEndResultWidget();
 	BindDetailResultWidget();
 	BindDetailResultElementWidget();
@@ -260,7 +267,7 @@ void AOccupationGameState::HandleMatchHasEnded()
 
 void AOccupationGameState::EndTimeCheck()
 {
-	if (ATeamScore >= MaxScore || BTeamScore >= MaxScore)
+	if (AntiTeamScore >= MaxScore || ProTeamScore >= MaxScore)
 	{
 		GetWorldTimerManager().ClearTimer(TimerHandle_GameTimeCheck);
 
@@ -290,22 +297,8 @@ void AOccupationGameState::ChangeResultWidget()
 
 void AOccupationGameState::SetOccupationWinner()
 {
-	CurrentOccupationWinner = ATeamScore > BTeamScore ? ETeam::Anti : ETeam::Pro;
+	CurrentOccupationWinner = AntiTeamScore > ProTeamScore ? ETeam::Anti : ETeam::Pro;
 	OnRep_OccupationWinner();
-}
-
-void AOccupationGameState::AddTeamScore(const ETeam& Team, const float& AdditiveScore)
-{
-	if (Team == ETeam::Anti)
-	{
-		ATeamScore += AdditiveScore;
-		OnRep_ATeamScore();
-	}
-	else if (Team == ETeam::Pro)
-	{
-		BTeamScore += AdditiveScore;
-		OnRep_BTeamScore();
-	}
 }
 
 void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
@@ -319,22 +312,14 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 	}
 }
 
-float AOccupationGameState::GetTeamScore(const ETeam& Team) const
+void AOccupationGameState::OnRep_AntiTeamScore()
 {
-	if (Team == ETeam::Anti) return ATeamScore;
-	if (Team == ETeam::Pro) return BTeamScore;
-	UE_LOG(LogScript, Warning, TEXT("Trying to GetTeamScore with not valid value! it was %d"), Team);
-	return 0.f;
+	OnTeamScoreSignature.Broadcast(ETeam::Anti, AntiTeamScore);
 }
 
-void AOccupationGameState::OnRep_ATeamScore()
+void AOccupationGameState::OnRep_ProTeamScore()
 {
-	OnTeamScoreSignature.Broadcast(ETeam::Anti, ATeamScore);
-}
-
-void AOccupationGameState::OnRep_BTeamScore()
-{
-	OnTeamScoreSignature.Broadcast(ETeam::Pro, BTeamScore);
+	OnTeamScoreSignature.Broadcast(ETeam::Pro, ProTeamScore);
 }
 
 void AOccupationGameState::OnRep_OccupationWinner()
@@ -381,10 +366,11 @@ void AOccupationGameState::DestroyShieldWallObject()
 		return;
 	}
 
-	TArray<AActor*> FoundActors;
+	// TArray<AActor*> FoundActors;
+	TArray<TObjectPtr<AActor>> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(World, AShieldWallObject::StaticClass(), FoundActors);
 
-	for (AActor* ShieldActor : FoundActors)
+	for (const auto& ShieldActor : FoundActors)
 		ShieldActor->Destroy();
 }
 
@@ -411,8 +397,8 @@ void AOccupationGameState::ShowEndResultWidget()
 				GameResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 			}
 
-			GameResultWidget->AntiScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), ATeamScore)));
-			GameResultWidget->ProScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), BTeamScore)));
+			GameResultWidget->AntiScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), AntiTeamScore)));
+			GameResultWidget->ProScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), ProTeamScore)));
 
 			ShowGradeResultWidget(LakayaPlayerState, LocalController);
 		}
@@ -450,7 +436,7 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 		}
 
 		ShowGradeResultElementWidget(PlayerState);
-		Tapbool = true;
+		bTap = true;
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
 }
@@ -695,6 +681,69 @@ void AOccupationGameState::AddPlayerStateToRecordResult(ETeam InTeam, TArray<ALa
 			MatchResult.ProPlayers.Emplace(BasePlayerState->GetPlayerStats());
 		}
 	}
+}
+
+void AOccupationGameState::AddCaptureAreaCount(const ETeam& Team)
+{
+	(Team == ETeam::Anti) ? ++AntiTeamCaptureAreaCount : ++ProTeamCaptureAreaCount;
+}
+
+void AOccupationGameState::SubCaptureAreaCount(const ETeam& Team)
+{
+	(Team == ETeam::Anti) ? --AntiTeamCaptureAreaCount : --ProTeamCaptureAreaCount;
+}
+
+void AOccupationGameState::UpdateTeamScoreTick()
+{
+	if (TeamToUpdate == ETeam::Anti)
+	{
+		// Anti팀 점수 업데이트
+		AntiTeamScore += AdditiveScore;
+		OnRep_AntiTeamScore();
+		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("AntiTeamScore : %f"), AntiTeamScore);
+		FString debugMessage = FString::Printf(TEXT("AntiTeamScore: %f"), AntiTeamScore);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, debugMessage);
+	}
+	else if (TeamToUpdate == ETeam::Pro)
+	{
+		// Pro팀 점수 업데이트
+		ProTeamScore += AdditiveScore;
+		OnRep_ProTeamScore();
+		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("ProTeamScore : %f"), ProTeamScore);
+		FString debugMessage = FString::Printf(TEXT("ProTeamScore: %f"), ProTeamScore);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, debugMessage);
+	}
+}
+
+void AOccupationGameState::StartScoreUpdate(const ETeam& Team, float UpdateDelay)
+{
+	if (GetWorldTimerManager().IsTimerActive(TimerHandle_UpdateScoreTimer))
+	{
+		StopScoreUpdate();
+	}
+	
+	TeamToUpdate = Team;
+	GetWorldTimerManager().SetTimer(TimerHandle_UpdateScoreTimer, this, &AOccupationGameState::UpdateTeamScoreTick, UpdateDelay, true);
+}
+
+void AOccupationGameState::StopScoreUpdate()
+{
+	GetWorldTimerManager().ClearTimer(TimerHandle_UpdateScoreTimer);
+	TeamToUpdate = ETeam::None;
+}
+
+bool AOccupationGameState::CheckCaptureAreaCount(const ETeam& Team)
+{
+	int AntiCaptureAreaCount = GetAntiTeamCaptureAreaCount();
+	int ProCaptureAreaCount = GetProTeamCaptureAreaCount();
+
+	if (AntiCaptureAreaCount == ProCaptureAreaCount)
+	{
+		StopScoreUpdate();
+		return false;
+	}
+	
+	return (Team == ETeam::Anti) ? (AntiCaptureAreaCount > ProCaptureAreaCount) : (AntiCaptureAreaCount < ProCaptureAreaCount);
 }
 
 void AOccupationGameState::SetupPlayerStateOnLocal(ALakayaBasePlayerState* PlayerState)

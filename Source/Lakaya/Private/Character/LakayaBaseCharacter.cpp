@@ -32,7 +32,7 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	BTeamObjectType = ECC_GameTraceChannel6;
 	bIsAlive = true;
 	bEnableLocalOutline = true;
-	ResurrectionDamageImmuneTime = 3.f;
+	ResurrectionDamageImmuneTime = 5.f;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
 	CharacterName = TEXT("Base");
