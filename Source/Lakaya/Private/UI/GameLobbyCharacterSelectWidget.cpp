@@ -42,6 +42,11 @@ UGameLobbyCharacterSelectWidget::UGameLobbyCharacterSelectWidget(const FObjectIn
 	GunTextureMap.Emplace(CharacterNameArray[1], nullptr);
 	GunTextureMap.Emplace(CharacterNameArray[2], nullptr);
 
+	
+	CharacterBackgroundTextureMap.Emplace(CharacterNameArray[0], nullptr);
+	CharacterBackgroundTextureMap.Emplace(CharacterNameArray[1], nullptr);
+	CharacterBackgroundTextureMap.Emplace(CharacterNameArray[2], nullptr);
+	
 	MagazineMap.Emplace(CharacterNameArray[0], 40);
 	MagazineMap.Emplace(CharacterNameArray[1], 30);
 	MagazineMap.Emplace(CharacterNameArray[2], 40);
@@ -74,20 +79,21 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 	{
 		Cast<UButton>(GetWidgetFromName(FName(TEXT("Rena_Btn")))),
 		Cast<UButton>(GetWidgetFromName(FName(TEXT("Wazi_Btn")))),
-		Cast<UButton>(GetWidgetFromName(FName(TEXT("Minami_Btn"))))
+		Cast<UButton>(GetWidgetFromName(FName(TEXT("Gangrim_Btn"))))
 	};
 
 	IntroductionText = Cast<URichTextBlock>(GetWidgetFromName(TEXT("Introduction_Text")));
 
 	GunImage = Cast<UImage>(GetWidgetFromName(TEXT("Gun_Img")));
 
+	CharacterBackgroundImage = Cast<UImage>(GetWidgetFromName(TEXT("Background_Img")));
+	
 	PlayerInfoWidget = Cast<UPlayerInfoWidget>(GetWidgetFromName(TEXT("MyPlayerInfo")));
 
 	MagazineInfoText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Magazine_Text")));
-
+	
 	check(SelectedCharacterImage != nullptr);
 	for (auto temp : CharacterButtonArray) { check(temp != nullptr) }
-
 
 #pragma endregion
 
@@ -195,6 +201,10 @@ void UGameLobbyCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum)
 		CharacterNameArray[CharacterNum]] != nullptr)
 		GunImage->SetBrushFromTexture(GunTextureMap[CharacterNameArray[CharacterNum]]);
 
+	if (CharacterBackgroundImage != nullptr && CharacterBackgroundTextureMap.Contains(CharacterNameArray[CharacterNum]) && CharacterBackgroundTextureMap[
+	CharacterNameArray[CharacterNum]] != nullptr)
+		CharacterBackgroundImage->SetBrushFromTexture(CharacterBackgroundTextureMap[CharacterNameArray[CharacterNum]]);
+	
 	if (PlayerInfoWidget != nullptr)
 		PlayerInfoWidget->SetCharacterName(CharacterNameArray[CharacterNum]);
 
