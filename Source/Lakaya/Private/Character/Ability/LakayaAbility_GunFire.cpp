@@ -3,6 +3,7 @@
 
 #include "Character/Ability/LakayaAbility_GunFire.h"
 
+#include "AbilitySystemComponent.h"
 #include "GameplayCueFunctionLibrary.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Character/Ability/AbilityGunFireInterface.h"
