@@ -154,7 +154,7 @@ void AGameLobbyPlayerController::ShowScoreBoard()
 	{
 		if (const auto NewGameState = Cast<AOccupationGameState>(OccupationGameState))
 		{
-			if (!NewGameState->Tapbool) return;
+			if (!NewGameState->bTap) return;
          
 			if (OccupationGameState->GetMatchState() == MatchState::WaitingPostMatch)
 			{

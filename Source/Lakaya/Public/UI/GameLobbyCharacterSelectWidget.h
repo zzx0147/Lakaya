@@ -77,8 +77,14 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FName, uint32> MagazineMap;
 
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FName, TObjectPtr<UTexture2D>> CharacterBackgroundTextureMap;
+	
+	
 	TObjectPtr<class UImage> GunImage;
 
+	TObjectPtr<class UImage> CharacterBackgroundImage;
+	
 	TObjectPtr<UImage> SelectedCharacterImage;
 
 	TObjectPtr<UButton> PrevCharacterButton;

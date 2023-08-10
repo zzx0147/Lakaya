@@ -44,15 +44,19 @@ void UClairvoyanceAbility::CreateClairvoyanceWidget(APlayerController* PlayerCon
 
 TObjectPtr<AOutlineManager> UClairvoyanceAbility::GetOutlineManager()
 {
-	if (OutlineManager.IsValid()) return OutlineManager.Get();
-	OutlineManager = Cast<AOutlineManager>(UGameplayStatics::GetActorOfClass(this, AOutlineManager::StaticClass()));
-	return OutlineManager.Get();
+	if (CachedOutlineManager.IsValid()) return CachedOutlineManager.Get();
+	CachedOutlineManager = Cast<AOutlineManager>(
+		UGameplayStatics::GetActorOfClass(this, AOutlineManager::StaticClass()));
+	return CachedOutlineManager.Get();
 }
 
 void UClairvoyanceAbility::DisableClairvoyance()
 {
 	if (GetOwner()->HasAuthority()) ApplyCoolTime();
-	GetOutlineManager()->UnRegisterClairvoyance(GetOwner<ALakayaBaseCharacter>());
+	if (const auto OutlineManager = GetOutlineManager(); ensure(OutlineManager))
+	{
+		OutlineManager->UnRegisterClairvoyance(GetOwner<ALakayaBaseCharacter>());
+	}
 	if (EffectMaterial.IsValid()) EffectMaterial->SetScalarParameterValue(TEXT("ClairvoyanceEffectOpacity"), 0.0f);
 	if (ClairvoyanceWidget.IsValid()) ClairvoyanceWidget->SetVisibility(ESlateVisibility::Hidden);
 }
@@ -65,7 +69,10 @@ bool UClairvoyanceAbility::ShouldStartRemoteCall()
 void UClairvoyanceAbility::StartDelayedAbility()
 {
 	Super::StartDelayedAbility();
-	GetOutlineManager()->RegisterClairvoyance(GetOwner<ALakayaBaseCharacter>());
+	if (const auto OutlineManager = GetOutlineManager(); ensure(OutlineManager))
+	{
+		OutlineManager->RegisterClairvoyance(GetOwner<ALakayaBaseCharacter>());
+	}
 	if (EffectMaterial.IsValid()) EffectMaterial->SetScalarParameterValue(TEXT("ClairvoyanceEffectOpacity"), 0.2f);
 	if (ClairvoyanceWidget.IsValid()) ClairvoyanceWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 	GetWorld()->GetTimerManager().SetTimer(ClairvoyanceTimer, this, &UClairvoyanceAbility::DisableClairvoyance,
