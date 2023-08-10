@@ -4,8 +4,8 @@
 #include "Character/Ability/LakayaAbility.h"
 
 #include "AbilitySystemLog.h"
-#include "Input/LakayaInputContext.h"
-#include "PlayerController/LakayaAbilityInputSet.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 
 void ULakayaAbility::InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
                                   const FGameplayAbilityActivationInfo ActivationInfo)
@@ -19,19 +19,11 @@ void ULakayaAbility::InputReleased(const FGameplayAbilitySpecHandle Handle, cons
 	Log(ActorInfo, TEXT("Input Released"));
 }
 
-void ULakayaAbility::AbilityInput(TAbilitySystemInputCallback Function, int32 InputID)
-{
-	const auto AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo();
-	if (!ensure(AbilitySystemComponent)) return;
-	(AbilitySystemComponent->*Function)(InputID);
-}
-
 void ULakayaAbility::NativeEndAbility(const FGameplayAbilitySpecHandle Handle,
                                       const FGameplayAbilityActorInfo* ActorInfo,
                                       const FGameplayAbilityActivationInfo ActivationInfo,
                                       bool bReplicateEndAbility, bool bWasCancelled)
 {
-	RemoveMappingContext(ActorInfo);
 	Log(ActorInfo, TEXT("End Ability"));
 }
 
@@ -95,30 +87,11 @@ void ULakayaAbility::Log(const FString& Message) const
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, Message);
 }
 
-void ULakayaAbility::AddMappingContext(const FGameplayAbilityActorInfo* ActorInfo)
-{
-	if (InputContext.IsNull()) return;
-	if (const auto InputSubsystem = GetEnhancedInputSubsystem(ActorInfo))
-	{
-		InputContext.LoadSynchronous()->AddMappingContext(InputSubsystem);
-	}
-}
-
-void ULakayaAbility::RemoveMappingContext(const FGameplayAbilityActorInfo* ActorInfo)
-{
-	if (InputContext.IsNull()) return;
-	if (const auto InputSubsystem = GetEnhancedInputSubsystem(ActorInfo))
-	{
-		InputContext.LoadSynchronous()->RemoveMappingContext(InputSubsystem);
-	}
-}
-
 void ULakayaAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                      const FGameplayAbilityActorInfo* ActorInfo,
                                      const FGameplayAbilityActivationInfo ActivationInfo,
                                      const FGameplayEventData* TriggerEventData)
 {
-	AddMappingContext(ActorInfo);
 	Log(ActorInfo, TEXT("Activate Ability"));
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
