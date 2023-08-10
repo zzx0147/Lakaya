@@ -31,10 +31,26 @@ void UEOSGameInstance::Init()
 	UE_LOG(LogTemp, Warning, TEXT("Init Start"));
 
 	OnlineSubsystem = IOnlineSubsystem::Get();
-	if (OnlineSubsystem) OnlineSessionPtr = OnlineSubsystem->GetSessionInterface();
+	if (ensure(OnlineSubsystem))
+	{
+		OnlineSessionPtr = OnlineSubsystem->GetSessionInterface();
+
+		if (ensure(OnlineSessionPtr))
+		{
+			UE_LOG_ONLINE(Log, TEXT("[%s]Found session interface"), *OnlineSubsystem->GetSubsystemName().ToString());
+		}
+	}
 
 	SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
-	SocketClient = SocketSubsystem->CreateSocket(NAME_Stream, TEXT("SocketClient"), false);
+	if (ensure(SocketSubsystem))
+	{
+		SocketClient = SocketSubsystem->CreateSocket(NAME_Stream, TEXT("SocketClient"), false);
+
+		if (ensure(SocketClient))
+		{
+			UE_LOG_ONLINE(Log, TEXT("SocketClient Created"));
+		}
+	}
 
 	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, *OnlineSubsystem->GetSubsystemName().ToString());
 }
@@ -55,17 +71,15 @@ void UEOSGameInstance::Shutdown()
 
 void UEOSGameInstance::Login()
 {
-	if (OnlineSubsystem == nullptr) return;
+	if (!ensure(OnlineSubsystem && OnlineSubsystem->GetSubsystemName() == STEAM_SUBSYSTEM)) return;
 
-	if (OnlineSubsystem->GetSubsystemName().ToString().Compare(TEXT("STEAM")) != 0) return;
-
-	if (const IOnlineIdentityPtr Identity = OnlineSubsystem->GetIdentityInterface())
+	if (const IOnlineIdentityPtr Identity = OnlineSubsystem->GetIdentityInterface(); ensure(Identity))
 	{
-		FOnlineAccountCredentials Credentials;
+		const FOnlineAccountCredentials Credentials(TEXT("accountportal"), TEXT(""),TEXT(""));
 
-		Credentials.Id = FString();
-		Credentials.Token = FString();
-		Credentials.Type = FString("accountportal");
+		// Credentials.Id = FString();
+		// Credentials.Token = FString();
+		// Credentials.Type = FString("accountportal");
 
 		//Credentials.Id = FString("127.0.0.1:8081");
 		//Credentials.Token = FString("Pollux");
@@ -80,21 +94,29 @@ void UEOSGameInstance::Login()
 void UEOSGameInstance::OnLoginComplete(int32 LocalUserNum, const bool bWasSuccessful, const FUniqueNetId& UserId,
                                        const FString& Error)
 {
-	UE_LOG(LogTemp, Warning, TEXT("LoggedIn: %d"), bWasSuccessful);
+	if (bWasSuccessful)
+	{
+		UE_LOG(LogTemp, Display, TEXT("LoggedIn: %s"), *UserId.ToDebugString());
+	}
+	else
+	{
+		UE_LOG(LogOnline, Error, TEXT("Login Failed: %s"), *Error);
+	}
+
+	// 로그인 상태를 캐싱하는 것은 좋긴 하지만, 로그인 상태가 이후에 변경될 수도 있으므로 로그인 상태는 필요할 때 체크하도록 하는 것이 어떨까 싶습니다
 	bIsLoggedIn = bWasSuccessful;
 	OnLoginCompleted.Broadcast(bIsLoggedIn);
 	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::White, TEXT("Login Compelete"));
-	if (OnlineSubsystem == nullptr) return;
 
-
-	if (const IOnlineIdentityPtr Identity = OnlineSubsystem->GetIdentityInterface())
+	if (!ensure(OnlineSubsystem)) return;
+	if (const IOnlineIdentityPtr Identity = OnlineSubsystem->GetIdentityInterface(); ensure(Identity))
 	{
-		Identity->ClearOnLoginCompleteDelegates(0, this);
+		Identity->ClearOnLoginCompleteDelegates(LocalUserNum, this);
 		if (bWasSuccessful)
 		{
-			ClientNetId = Identity->GetUniquePlayerId(0);
+			ClientNetId = Identity->GetUniquePlayerId(LocalUserNum);
 
-			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, ClientNetId->ToString());
+			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, ClientNetId->ToDebugString());
 		}
 	}
 }
