@@ -104,6 +104,7 @@ void ULakayaAbility_GunFire::ServerOnTargetDataReady(const FGameplayAbilityTarge
 {
 	// 클라이언트를 신뢰하기로 하는 경우 그냥 TargetDataHandle을 그대로 사용합니다.
 	const auto FixedTargetDataHandle = bTrustClientHitResult ? TargetDataHandle : SimulateFireTrace(TargetDataHandle);
+	ConsumeTargetData();
 
 	// 유효하지 않은 타겟 데이터가 전달되었다면 어빌리티를 종료합니다.
 	if (FixedTargetDataHandle.Num() <= 0)
@@ -114,7 +115,6 @@ void ULakayaAbility_GunFire::ServerOnTargetDataReady(const FGameplayAbilityTarge
 
 	ExecuteFireCue(FixedTargetDataHandle);
 	BP_ApplyGameplayEffectToTarget(FixedTargetDataHandle, DamageEffect);
-	ConsumeTargetData();
 }
 
 FGameplayAbilityTargetDataHandle ULakayaAbility_GunFire::FireTrace() const
