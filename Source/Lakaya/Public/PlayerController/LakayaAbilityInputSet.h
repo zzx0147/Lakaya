@@ -21,13 +21,13 @@ using TInputActionCallback = typename TMemFunPtrType<false, T, void(TAbilitySyst
 /** InputComponent에 Press, Release가 바인딩되고 생성된 Handle을 담은 구조체입니다. 바인딩을 다시 해제하는 기능을 구현합니다. */
 struct FLakayaInputHandle
 {
-	int32 Press, Release;
+	uint32 Press, Release;
 
 	/** 이 핸들에 대응되는 입력 바인딩을 제거합니다. 바인딩 제거가 성공적으로 이뤄진 경우 Handle값이 0이 됩니다. */
 	void RemoveBinding(UEnhancedInputComponent* InputComponent);
 
 private:
-	FORCEINLINE static void RemoveSingleBinding(int32& Binding, UEnhancedInputComponent* const& InputComp)
+	FORCEINLINE static void RemoveSingleBinding(uint32& Binding, UEnhancedInputComponent* const& InputComp)
 	{
 		if (InputComp->RemoveBindingByHandle(Binding))
 		{
