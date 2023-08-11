@@ -15,9 +15,15 @@ class LAKAYA_API UAbilityTask_WaitAbilityCooldown : public UAbilityTask
 	GENERATED_BODY()
 
 public:
-	/** 대상 어빌리티의 쿨다운을 기다리는 어빌리티 태스크를 생성합니다. */
+	/**
+	 * 대상 어빌리티의 쿨다운을 기다리는 어빌리티 태스크를 생성합니다.
+	 * @param InOwningAbility 태스크를 소유하는 어빌리티입니다.
+	 * @param InAbilityHandle 쿨다운을 기다릴 대상 어빌리티의 핸들입니다.
+	 * @param bInInvokeOnce 한번만 기다릴지 여부를 결정합니다. true라면 OnCooldownEnded는 한 번만 호출되고 이 태스크는 바로 종료됩니다.
+	 */
 	static UAbilityTask_WaitAbilityCooldown* WaitAbilityCooldown(UGameplayAbility* InOwningAbility,
-	                                                             const FGameplayAbilitySpecHandle& InAbilityHandle);
+	                                                             const FGameplayAbilitySpecHandle& InAbilityHandle,
+	                                                             const bool& bInInvokeOnce = false);
 
 	/** 대상 어빌리티의 쿨다운이 종료되면 호출되는 델리게이트입니다. */
 	FSimpleMulticastDelegate OnCooldownEnded;
@@ -32,4 +38,5 @@ private:
 
 	FDelegateHandle AbilityEndedDelegateHandle;
 	FGameplayAbilitySpecHandle AbilityHandle;
+	bool bInvokeOnce;
 };
