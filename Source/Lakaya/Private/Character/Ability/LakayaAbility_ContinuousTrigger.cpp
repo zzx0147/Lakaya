@@ -62,6 +62,7 @@ void ULakayaAbility_ContinuousTrigger::TryActivateTriggerAbility()
 {
 	if (!GetAbilitySystemComponentFromActorInfo_Checked()->TryActivateAbility(TriggerAbilityHandle))
 	{
+		Log(CurrentActorInfo, TEXT("Fail to Activate Trigger Ability. End this ability"));
 		// 어빌리티 시전에 실패했다면 어빌리티를 더이상 활성화할 수 없는 것으로 간주하고 이 어빌리티도 종료시킵니다.
 		K2_EndAbility();
 	}
