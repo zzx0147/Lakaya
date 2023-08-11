@@ -23,6 +23,7 @@ public:
 
 	FORCEINLINE const ETeam& GetCurrentCaptureAreaTeam() const { return CurrentCaptureAreaTeam; }
 	FORCEINLINE void SetCurrentCaptureAreaTeam(const ETeam& NewTeam) { CurrentCaptureAreaTeam = NewTeam; }
+
 	/**
 	 * @brief Enum타입을 String으로 바꿔줍니다.
 	 * @param EnumValue 타입을 String으로 바꿔줄 Enum입니다.
@@ -30,7 +31,6 @@ public:
 	 */
 	UFUNCTION()
 	FString GetEnumAsString(const ECaptureAreaState& EnumValue);
-	
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -62,21 +62,12 @@ private:
 	void RemoveFromOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePlayerState* Player);
 
 	/**
-	 * @brief 점령구역에 누군가가 나가거나 들어오게 되었을 때 실행되며, 점령구역에 인원수를 점검하여, 점령상태를 바꾸는 함수입니다.
-	 * @param PlayerTeam 체크할 대상의 팀입니다.
-	*/
-	UFUNCTION()
-	void CheckCaptureAreaInPlayer(const ETeam& PlayerTeam);
-
-	/**
-	 * @brief 점령구역 상태가 CheckCaptureAreaInPlayer함수를 통해 인원수를 체크하여 상태를 업데이트해주는 함수입니다.
-	 * @param AntiTeamPlayerCount 현재 점령구역에 있는 Anti팀의 플레이어 수 입니다.
-	 * @param ProTeamPlayerCount 현재 점령구역에 있는 Pro팀의 플레이어 수 입니다.
+	 * @brief 점령구역에 누군가가 나가거나 들어오게 되었을 때, 점령구역에 인원수를 체크하여, 점령상태를 업데이트 해주는 함수입니다.
 	 * @param CaptureAreaState 현재 점령구역의 상태를 나타냅니다.
 	 */
 	UFUNCTION()
-	void UpdateCaptureAreaState(const uint8& AntiTeamPlayerCount, const uint8& ProTeamPlayerCount, const ECaptureAreaState& CaptureAreaState);
-
+	void UpdateCaptureAreaState(const ECaptureAreaState& CaptureAreaState);
+	
 	/**
 	 * @brief 점령구역에 Anti팀의 인원이 1명이상 이며 Pro팀의 인원이 0명일 때 호출되는 함수입니다.
 	 * @param CaptureAreaState 현재 점령구역의 상태입니다.
