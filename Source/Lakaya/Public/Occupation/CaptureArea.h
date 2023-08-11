@@ -7,8 +7,8 @@
 #include "GameFramework/Actor.h"
 #include "CaptureArea.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FCaptureArenaStateOnChangedSignature, ECaptureArenaState);
-DECLARE_MULTICAST_DELEGATE_OneParam(FCaptureArenaTeamOnChangedSignature, ETeam);
+DECLARE_MULTICAST_DELEGATE_OneParam(FCaptureAreaStateOnChangedSignature, ECaptureAreaState);
+DECLARE_MULTICAST_DELEGATE_OneParam(FCaptureAreaTeamOnChangedSignature, ETeam);
 
 UCLASS()
 class LAKAYA_API ACaptureArea : public AActor
@@ -18,18 +18,18 @@ class LAKAYA_API ACaptureArea : public AActor
 public:	
 	ACaptureArea();
 
-	FORCEINLINE const ECaptureArenaState& GetCurrentCaptureArenaState() const { return CurrentCaptureArenaState; }
-	FORCEINLINE void SetCurrentCaptureArenaState(const ECaptureArenaState& NewState) { CurrentCaptureArenaState = NewState; }
+	FORCEINLINE const ECaptureAreaState& GetCurrentCaptureAreaState() const { return CurrentCaptureAreaState; }
+	FORCEINLINE void SetCurrentCaptureAreaState(const ECaptureAreaState& NewState) { CurrentCaptureAreaState = NewState; }
 
-	FORCEINLINE const ETeam& GetCurrentCaptureArenaTeam() const { return CurrentCaptureArenaTeam; }
-	FORCEINLINE void SetCurrentCaptureArenaTeam(const ETeam& NewTeam) { CurrentCaptureArenaTeam = NewTeam; }
+	FORCEINLINE const ETeam& GetCurrentCaptureAreaTeam() const { return CurrentCaptureAreaTeam; }
+	FORCEINLINE void SetCurrentCaptureAreaTeam(const ETeam& NewTeam) { CurrentCaptureAreaTeam = NewTeam; }
 	/**
 	 * @brief Enum타입을 String으로 바꿔줍니다.
 	 * @param EnumValue 타입을 String으로 바꿔줄 Enum입니다.
 	 * @return Enum타입이 String타입으로 바뀌어서 리턴합니다.
 	 */
 	UFUNCTION()
-	FString GetEnumAsString(const ECaptureArenaState& EnumValue);
+	FString GetEnumAsString(const ECaptureAreaState& EnumValue);
 	
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -66,49 +66,48 @@ private:
 	 * @param PlayerTeam 체크할 대상의 팀입니다.
 	*/
 	UFUNCTION()
-	void CheckCaptureArenaInPlayer(const ETeam& PlayerTeam);
+	void CheckCaptureAreaInPlayer(const ETeam& PlayerTeam);
 
 	/**
-	 * @brief 점령구역 상태가 CheckCaptureArenaInPlayer함수를 통해 인원수를 체크하여 상태를 업데이트해주는 함수입니다.
+	 * @brief 점령구역 상태가 CheckCaptureAreaInPlayer함수를 통해 인원수를 체크하여 상태를 업데이트해주는 함수입니다.
 	 * @param AntiTeamPlayerCount 현재 점령구역에 있는 Anti팀의 플레이어 수 입니다.
 	 * @param ProTeamPlayerCount 현재 점령구역에 있는 Pro팀의 플레이어 수 입니다.
-	 * @param CaptureArenaState 현재 점령구역의 상태를 나타냅니다.
+	 * @param CaptureAreaState 현재 점령구역의 상태를 나타냅니다.
 	 */
 	UFUNCTION()
-	void UpdateCaptureArenaState(const uint8& AntiTeamPlayerCount, const uint8& ProTeamPlayerCount, const ECaptureArenaState& CaptureArenaState);
+	void UpdateCaptureAreaState(const uint8& AntiTeamPlayerCount, const uint8& ProTeamPlayerCount, const ECaptureAreaState& CaptureAreaState);
 
 	/**
 	 * @brief 점령구역에 Anti팀의 인원이 1명이상 이며 Pro팀의 인원이 0명일 때 호출되는 함수입니다.
-	 * @param CaptureArenaState 현재 점령구역의 상태입니다.
+	 * @param CaptureAreaState 현재 점령구역의 상태입니다.
 	 */
 	UFUNCTION()
-	void CaptureArenaHandleAntiTeam(const ECaptureArenaState& CaptureArenaState);
+	void CaptureAreaHandleAntiTeam(const ECaptureAreaState& CaptureAreaState);
 
 	/**
 	 * @brief 점령구역에 Anti팀의 인원이 0명 이며 Pro팀의 인원이 1명이상일 때 호출되는 함수입니다.
-	 * @param CaptureArenaState 현재 점령구역의 상태입니다.
+	 * @param CaptureAreaState 현재 점령구역의 상태입니다.
 	 */
 	UFUNCTION()
-	void CaptureArenaHandleProTeam(const ECaptureArenaState& CaptureArenaState);
+	void CaptureAreaHandleProTeam(const ECaptureAreaState& CaptureAreaState);
 
 	/**
 	 * @brief 점령구역에 Anti팀의 인원과 Pro팀의 인원이 서로 1명이상 일 때 호출되는 함수입니다.
-	 * @param CaptureArenaState 현재 점령구역의 상태입니다.
+	 * @param CaptureAreaState 현재 점령구역의 상태입니다.
 	 */
 	UFUNCTION()
-	void CaptureArenaHandleOpposite(const ECaptureArenaState& CaptureArenaState);
+	void CaptureAreaHandleOpposite(const ECaptureAreaState& CaptureAreaState);
 
 	/**
 	 * @brief 점령구역에 Anti팀의 인원과 Pro팀의 인원이 서로 0명일 때 호출되는 함수입니다.
-	 * @param CaptureArenaState 현재 점령구역의 상태입니다.
+	 * @param CaptureAreaState 현재 점령구역의 상태입니다.
 	 */
 	UFUNCTION()
-	void CaptureArenaHandleNone(const ECaptureArenaState& CaptureArenaState);
+	void CaptureAreaHandleNone(const ECaptureAreaState& CaptureAreaState);
 
 	UFUNCTION()
 	void UpdateCaptureProgress();
 
-	
 private:
 	UPROPERTY(VisibleAnywhere, Category = Box)
 	TObjectPtr<class UBoxComponent> Trigger;
@@ -117,15 +116,15 @@ private:
 	FVector CaptureAreaRange;
 	
 	UPROPERTY(Replicated)
-	ECaptureArenaState CurrentCaptureArenaState = ECaptureArenaState::None;
+	ECaptureAreaState CurrentCaptureAreaState = ECaptureAreaState::None;
 
 	UPROPERTY(Replicated)
-	ETeam CurrentCaptureArenaTeam = ETeam::None;
+	ETeam CurrentCaptureAreaTeam = ETeam::None;
 	
 	TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> OccupyingPlayerList;
 	
-	FCaptureArenaStateOnChangedSignature CaptureArenaStateOnChangedSignature;
-	FCaptureArenaTeamOnChangedSignature CaptureArenaTeamOnChangedSignature;
+	FCaptureAreaStateOnChangedSignature CaptureAreaStateOnChangedSignature;
+	FCaptureAreaTeamOnChangedSignature CaptureAreaTeamOnChangedSignature;
 
 	UPROPERTY()
 	float AntiTeamCaptureProgress;
