@@ -34,6 +34,8 @@ protected:
 
 private:
 	void OnAbilityEnded(const FAbilityEndedData& AbilityEndedData);
+
+	UFUNCTION()
 	void InvokeOnCooldownEnded();
 
 	FDelegateHandle AbilityEndedDelegateHandle;
