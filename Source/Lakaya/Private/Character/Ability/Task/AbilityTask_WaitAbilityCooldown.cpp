@@ -47,8 +47,8 @@ void UAbilityTask_WaitAbilityCooldown::OnAbilityEnded(const FAbilityEndedData& A
 
 		// 쿨다운 태그 쿼리 태스크는 1회성으로 초기화합니다.
 		const auto TagTask = UAbilityTask_WaitGameplayTagQueryWrapper::WaitGameplayTagQuery(
-			Ability, FGameplayTagQuery::MakeQuery_MatchNoTags(*CooldownTags), nullptr,
-			EWaitGameplayTagQueryTriggerCondition::WhenTrue, true);
+			Ability, FGameplayTagQuery::MakeQuery_MatchAnyTags(*CooldownTags), nullptr,
+			EWaitGameplayTagQueryTriggerCondition::WhenFalse, true);
 		TagTask->OnTriggered().AddDynamic(this, &ThisClass::InvokeOnCooldownEnded);
 		TagTask->ReadyForActivation();
 	}
