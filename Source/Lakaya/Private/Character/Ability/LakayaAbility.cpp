@@ -17,6 +17,10 @@ void ULakayaAbility::InputReleased(const FGameplayAbilitySpecHandle Handle, cons
                                    const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	Log(ActorInfo, TEXT("Input Released"));
+	if (bEndOnInputRelease)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+	}
 }
 
 void ULakayaAbility::NativeEndAbility(const FGameplayAbilitySpecHandle Handle,

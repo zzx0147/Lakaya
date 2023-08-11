@@ -72,5 +72,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	uint8 bAddLogOnScreen : 1;
 
+	/** InputReleased에서 어빌리티를 종료시키도록 하는 기능입니다. */
+	UPROPERTY(EditAnywhere)
+	uint8 bEndOnInputRelease : 1;
+
 	TWeakObjectPtr<UEnhancedInputLocalPlayerSubsystem> CachedInputSubsystem;
 };
