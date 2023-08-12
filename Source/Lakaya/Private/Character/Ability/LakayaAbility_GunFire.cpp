@@ -45,13 +45,6 @@ void ULakayaAbility_GunFire::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 	{
 		const auto TargetDataHandle = FireTrace();
 
-		// 적중한 대상이 전혀 없더라도 충돌에 실패했다는 HitResult가 단 한 개라도 존재해야 합니다.
-		if (!ensure(TargetDataHandle.Num() > 0))
-		{
-			K2_EndAbility();
-			return;
-		}
-
 		FScopedPredictionWindow PredictionWindow((GetAbilitySystemComponentFromActorInfo_Checked()));
 
 		// 서버라면 그냥 곧바로 데미지 이펙트를 적용합니다.
@@ -66,9 +59,9 @@ void ULakayaAbility_GunFire::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 		}
 
 		ExecuteFireCue(TargetDataHandle);
+		ActivateFireMontageTask();
 	}
 
-	ActivateFireMontageTask();
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
@@ -106,15 +99,9 @@ void ULakayaAbility_GunFire::ServerOnTargetDataReady(const FGameplayAbilityTarge
 	const auto FixedTargetDataHandle = bTrustClientHitResult ? TargetDataHandle : SimulateFireTrace(TargetDataHandle);
 	ConsumeTargetData();
 
-	// 유효하지 않은 타겟 데이터가 전달되었다면 어빌리티를 종료합니다.
-	if (FixedTargetDataHandle.Num() <= 0)
-	{
-		K2_EndAbility();
-		return;
-	}
-
 	ExecuteFireCue(FixedTargetDataHandle);
 	BP_ApplyGameplayEffectToTarget(FixedTargetDataHandle, DamageEffect);
+	ActivateFireMontageTask();
 }
 
 FGameplayAbilityTargetDataHandle ULakayaAbility_GunFire::FireTrace() const
