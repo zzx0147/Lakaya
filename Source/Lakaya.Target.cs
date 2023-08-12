@@ -12,7 +12,7 @@ public class LakayaTarget : TargetRules
 		
 		bUsesSteam = true;
 
-		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_2;
 		ExtraModuleNames.Add("Lakaya");
 	}
 }

@@ -172,6 +172,7 @@ protected:
 
 	FOnlineSessionSettings SessionSettings;
 
+	// 댕글링 포인터가 우려됩니다 UPROPERTY나 TWeakObjectPtr로 선언되는 것이 좋을 것 같습니다
 	APlayerController* MyPlayerController;
 	//FName CurrentServerName;
 
