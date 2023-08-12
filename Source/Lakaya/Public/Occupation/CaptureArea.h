@@ -31,6 +31,14 @@ public:
 	 */
 	UFUNCTION()
 	FString GetEnumAsString(const ECaptureAreaState& EnumValue);
+
+	/**
+	 * @brief ETeam 열거형 타입의 값을 입력받아 해당하는 문자열을 반환하는 함수입니다.
+	 * @param Team FString형으로 반환할 ETeam 값입니다.
+	 * @return Eteam 열거형 타입을 받아서 FString형으로 반환합니다.
+	 */
+	UFUNCTION()
+	FString ETeamToString(const ETeam& Team);
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -96,9 +104,18 @@ private:
 	UFUNCTION()
 	void CaptureAreaHandleNone(const ECaptureAreaState& CaptureAreaState);
 
+	/**
+	 * @brief 점령을 시도할 때 점령 게이지를 올려주는 함수입니다.
+	 */
 	UFUNCTION()
-	void UpdateCaptureProgress();
+	void IncreaseCaptureProgress();
 
+	/**
+	 * @brief 점령을 실패했을 때 점령 게이지를 내려주는 함수입니다.
+	 */
+	// UFUNCTION()
+	// void DecreaseCaptureProgress();
+	
 private:
 	UPROPERTY(VisibleAnywhere, Category = Box)
 	TObjectPtr<class UBoxComponent> Trigger;
