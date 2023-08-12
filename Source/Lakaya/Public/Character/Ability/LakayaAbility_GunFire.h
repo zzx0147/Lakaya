@@ -54,13 +54,13 @@ private:
 	/** HitResult들을 타겟 데이터 핸들로 변환시킵니다. */
 	static void HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
 	                                         FGameplayAbilityTargetDataHandle& TargetDataHandle);
-	
+
 	void ActivateFireMontageTask();
 
 	void ExecuteFireCue(const FGameplayAbilityTargetDataHandle& TargetDataHandle);
 
 	void ConsumeTargetData() const;
-	
+
 	UFUNCTION()
 	void OnMontageEnded();
 
@@ -76,9 +76,12 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> DamageEffect;
 
-	/** 클라이언트가 전달한 사격의 결과를 신뢰하도록 설정합니다. 서버의 퍼포먼스가 향상될 수 있지만 핵 사용이 용이해집니다. */
+	/**
+	 * 클라이언트가 전달한 사격의 결과를 신뢰하도록 설정합니다.
+	 * 로컬 클라이언트에서 롤백이 발생할 여지가 사라지므로 어빌리티의 퍼포먼스는 향상되지만, 핵 사용이 용이해집니다.
+	 */
 	UPROPERTY(EditDefaultsOnly)
 	uint8 bTrustClientHitResult : 1;
-	
+
 	FDelegateHandle TargetDataDelegateHandle;
 };
