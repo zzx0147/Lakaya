@@ -113,8 +113,8 @@ private:
 	/**
 	 * @brief 점령을 실패했을 때 점령 게이지를 내려주는 함수입니다.
 	 */
-	// UFUNCTION()
-	// void DecreaseCaptureProgress();
+	UFUNCTION()
+	void DecreaseCaptureProgress();
 	
 private:
 	UPROPERTY(VisibleAnywhere, Category = Box)

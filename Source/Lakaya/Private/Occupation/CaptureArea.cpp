@@ -171,6 +171,11 @@ void ACaptureArea::CaptureAreaHandleAntiTeam(const ECaptureAreaState& CaptureAre
 	{
 		SetCurrentCaptureAreaState(ECaptureAreaState::Anti);
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Anti팀의 점령구역입니다."));
+		if (GetWorld()->GetTimerManager().IsTimerActive(CaptureProgressTimerHandle))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
+		}
+		GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::DecreaseCaptureProgress, 0.1f, true);
 	}
 	else if (CaptureAreaState == ECaptureAreaState::Anti)
 	{
@@ -196,6 +201,11 @@ void ACaptureArea::CaptureAreaHandleProTeam(const ECaptureAreaState& CaptureArea
 	{
 		SetCurrentCaptureAreaState(ECaptureAreaState::Pro);
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Pro팀의 점령구역입니다."));
+		if (GetWorld()->GetTimerManager().IsTimerActive(CaptureProgressTimerHandle))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
+		}
+		GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::DecreaseCaptureProgress, 0.1f, true);
 	}
 	else if (CaptureAreaState == ECaptureAreaState::Pro)
 	{
@@ -250,23 +260,11 @@ void ACaptureArea::CaptureAreaHandleNone(const ECaptureAreaState& CaptureAreaSta
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("점령구역이 Anti 상태입니다."));
 		SetCurrentCaptureAreaState(ECaptureAreaState::Anti);
-
-		// if (GetWorld()->GetTimerManager().IsTimerActive(CaptureProgressTimerHandle))
-		// {
-		// 	GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
-		// }
-		// GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::DecreaseCaptureProgress, 0.1f, true);
 	}
 	else if (CaptureAreaState == ECaptureAreaState::Pro || CaptureAreaState == ECaptureAreaState::AntiExtortion)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("점령구역이 Pro 상태입니다."));
 		SetCurrentCaptureAreaState(ECaptureAreaState::Pro);
-
-		// if (GetWorld()->GetTimerManager().IsTimerActive(CaptureProgressTimerHandle))
-		// {
-		// 	GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
-		// }
-		// GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::DecreaseCaptureProgress, 0.1f, true);
 	}
 	else if (CaptureAreaState == ECaptureAreaState::ProProgress || CaptureAreaState == ECaptureAreaState::AntiProgress)
 	{
@@ -285,9 +283,13 @@ void ACaptureArea::CaptureAreaHandleNone(const ECaptureAreaState& CaptureAreaSta
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("점령구역이 Pro 상태입니다."));
 			SetCurrentCaptureAreaState(ECaptureAreaState::Pro);
 		}
+	}
 
+	if (GetWorld()->GetTimerManager().IsTimerActive(CaptureProgressTimerHandle))
+	{
 		GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 	}
+	GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::DecreaseCaptureProgress, 0.1f, true);
 }
 
 // TODO: TeamCaptureProgress 하나로 게이지를 통일 해서 올리는  게 아닌 개별팀의 게이지를 올려줘야 함.
@@ -301,6 +303,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 		ETeam CurrentTeam = (CaptureAreaState == ECaptureAreaState::AntiProgress) ? ETeam::Anti : ETeam::Pro;
 		float& TeamCaptureProgress = (CurrentTeam == ETeam::Anti) ? AntiTeamCaptureProgress : ProTeamCaptureProgress;
 		TeamCaptureProgress += CaptureSpeed * 0.1f;
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Increase"));
 		
 		if (CurrentTeam == ETeam::Anti)
 		{
@@ -343,25 +346,20 @@ void ACaptureArea::IncreaseCaptureProgress()
 	}
 }
 
-// void ACaptureArea::DecreaseCaptureProgress()
-// {
-// 	ECaptureAreaState CaptureAreaState = GetCurrentCaptureAreaState();
-//
-// 	if (CaptureAreaState == ECaptureAreaState::Anti || CaptureAreaState == ECaptureAreaState::Pro || CaptureAreaState == ECaptureAreaState::None)
-// 	{
-// 		AntiTeamCaptureProgress -= CaptureSpeed * 0.1f;
-// 		ProTeamCaptureProgress -= CaptureSpeed * 0.1f;
-// 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("DecreaseCaptureProgress"));
-// 		
-// 		if (AntiTeamCaptureProgress <= 0.0f && ProTeamCaptureProgress <= 0.0f)
-// 		{
-// 			AntiTeamCaptureProgress = 0.0f;
-// 			ProTeamCaptureProgress = 0.0f;
-//
-// 			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
-// 		}
-// 	}
-// }
+void ACaptureArea::DecreaseCaptureProgress()
+{
+	AntiTeamCaptureProgress -= CaptureSpeed * 0.1f;
+	ProTeamCaptureProgress -= CaptureSpeed * 0.1f;
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Decrease"));
+	
+	if (AntiTeamCaptureProgress <= 0.0f && ProTeamCaptureProgress <= 0.0f)
+	{
+		AntiTeamCaptureProgress = 0.0f;
+		ProTeamCaptureProgress = 0.0f;
+
+		GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
+	}
+}
 
 FString ACaptureArea::GetEnumAsString(const ECaptureAreaState& EnumValue)
 {
