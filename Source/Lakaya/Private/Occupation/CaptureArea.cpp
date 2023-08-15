@@ -292,8 +292,6 @@ void ACaptureArea::CaptureAreaHandleNone(const ECaptureAreaState& CaptureAreaSta
 	GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::DecreaseCaptureProgress, 0.1f, true);
 }
 
-// TODO: TeamCaptureProgress 하나로 게이지를 통일 해서 올리는  게 아닌 개별팀의 게이지를 올려줘야 함.
-// TODO: 이렇게 구현해야 개별팀의 게이지를 내릴 수 있음.
 void ACaptureArea::IncreaseCaptureProgress()
 {
 	ECaptureAreaState CaptureAreaState = GetCurrentCaptureAreaState();
@@ -303,7 +301,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 		ETeam CurrentTeam = (CaptureAreaState == ECaptureAreaState::AntiProgress) ? ETeam::Anti : ETeam::Pro;
 		float& TeamCaptureProgress = (CurrentTeam == ETeam::Anti) ? AntiTeamCaptureProgress : ProTeamCaptureProgress;
 		TeamCaptureProgress += CaptureSpeed * 0.1f;
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Increase"));
+		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Increase"));
 		
 		if (CurrentTeam == ETeam::Anti)
 		{
@@ -350,7 +348,7 @@ void ACaptureArea::DecreaseCaptureProgress()
 {
 	AntiTeamCaptureProgress -= CaptureSpeed * 0.1f;
 	ProTeamCaptureProgress -= CaptureSpeed * 0.1f;
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Decrease"));
+	// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Decrease"));
 	
 	if (AntiTeamCaptureProgress <= 0.0f && ProTeamCaptureProgress <= 0.0f)
 	{
