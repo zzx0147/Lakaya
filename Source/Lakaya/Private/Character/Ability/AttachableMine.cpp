@@ -50,7 +50,7 @@ float AAttachableMine::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 	return Damage;
 }
 
-void AAttachableMine::SetTeam(const EPlayerTeam& Team)
+void AAttachableMine::SetTeam(const ETeam& Team)
 {
 	Super::SetTeam(Team);
 	if (HasAuthority()) SetTeamCollisionResponse(TriggerComponent, Team, bAllyExplode, bEnemyExplode);

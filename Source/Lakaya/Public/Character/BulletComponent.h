@@ -57,6 +57,9 @@ protected:
 	virtual void RemoveBulletWidget();
 
 public:
+	virtual void Clear() override;
+	virtual void Reset() override;
+
 	// 현재 총알이 변경되면 호출됩니다.
 	FBulletSignature OnBulletsChanged;
 

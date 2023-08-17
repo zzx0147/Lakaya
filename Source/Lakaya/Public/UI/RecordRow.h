@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Occupation/PlayerTeam.h"
+#include "Occupation/Team.h"
 #include "RecordRow.generated.h"
 
 UCLASS()
@@ -17,7 +17,7 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
-	void SetRecordRowData(const EPlayerTeam& InWinTeam, const FText& InStartTimeText, const FText& InDurationText);
+	void SetRecordRowData(const ETeam& InWinTeam, const FText& InStartTimeText, const FText& InDurationText);
 	void SetParentWidget(class URecordWidget* NewParent) { Parent = NewParent; }
 
 private:

@@ -20,7 +20,7 @@ public:
 	explicit ALinearProjectile(const FObjectInitializer& ObjectInitializer);
 	virtual void PostInitializeComponents() override;
 	virtual void Tick(float DeltaSeconds) override;
-	virtual void SetTeam(const EPlayerTeam& Team) override;
+	virtual void SetTeam(const ETeam& Team) override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -53,7 +53,7 @@ protected:
 	 * @param WithAlly 아군과 충돌할지 여부를 결정합니다.
 	 * @param WithEnemy 적과 충돌할지 여부를 결정합니다.
 	 */
-	void SetTeamCollisionResponse(UPrimitiveComponent* PrimitiveComponent, const EPlayerTeam& Team,
+	void SetTeamCollisionResponse(UPrimitiveComponent* PrimitiveComponent, const ETeam& Team,
 	                              const bool& WithAlly, const bool& WithEnemy) const;
 
 	void SetIgnoreInstigator(UPrimitiveComponent* PrimitiveComponent);
@@ -140,4 +140,7 @@ private:
 	FPredictProjectilePathResult ProjectilePathResult;
 	float RecentPathCalculateTime;
 	FPredictProjectilePathPointData RecentPointData;
+
+	UPROPERTY(EditAnywhere, Category = Debug)
+	uint8 EnableDebugDraw : 1;
 };

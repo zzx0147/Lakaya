@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
+#include "AgonesComponent.h"
 #include "LakayaDefaultPlayGameMode.generated.h"
 
 namespace MatchState
@@ -13,6 +14,7 @@ UCLASS()
 class LAKAYA_API ALakayaDefaultPlayGameMode : public AGameMode
 {
 	GENERATED_BODY()
+
 public:
 	const static FString ATeamSpawnTag;
 	const static FString BTeamSpawnTag;
@@ -24,6 +26,7 @@ public:
 public:
 	virtual void InitStartSpot_Implementation(AActor* StartSpot, AController* NewPlayer) override;
 	virtual AActor* FindPlayerStart_Implementation(AController* Player, const FString& IncomingName) override;
+	virtual UAgonesComponent* GetAgonesSDK() { return AgonesSDK; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -34,7 +37,7 @@ protected:
 
 	// 플레이어가 로그아웃 할 경우 호출
 	virtual void Logout(AController* Exiting) override;
-	
+
 	//SetMatchState()가 호출되서 MatchState가 변경된 직후 호출됨, HandleMatchIsWaitingToStart() 같은 MatchState에 맞는 HandleMatch~~ 함수를 호출함
 	virtual void OnMatchStateSet() override;
 
@@ -67,7 +70,7 @@ protected:
 	// 여기에 들어설 때 HandleLeavingMap()함수 호출
 	// 일반적인 흐름의 마지막 상태.
 	virtual void HandleLeavingMap() override;
-
+	
 public:
 	virtual void OnPlayerKilled(AController* VictimController, AController* InstigatorController, AActor* DamageCauser);
 	virtual void StartSelectCharacter();
@@ -77,9 +80,9 @@ protected:
 	virtual void PlayerInitializeSetLocation(uint8 PlayersNum);
 	virtual void RespawnPlayer(AController* KilledController);
 	virtual bool ShouldRespawn();
-	virtual void RegisterPlayer(AController* NewPlayer);//플레이어 혹은 AI 접속시 이벤트 바인딩 및 초기화 등을 실행합니다
+	virtual void RegisterPlayer(AController* NewPlayer); //플레이어 혹은 AI 접속시 이벤트 바인딩 및 초기화 등을 실행합니다
 	virtual void DelayedEndedGame();
-	
+
 public:
 	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 
@@ -95,7 +98,10 @@ protected:
 
 	FTimerHandle TimerHandle_DelayedEnded;
 	float MatchEndDelay = 5.0f;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAgonesComponent* AgonesSDK;
+
 private:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;

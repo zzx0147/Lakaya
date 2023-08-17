@@ -5,7 +5,7 @@
 #include "OnlineSessionSettings.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "OnlineSubsystem.h"
-#include "Occupation/PlayerTeam.h"
+#include "Occupation/Team.h"
 #include "EOSGameInstance.generated.h"
 
 //퀵 조인 완료시 콜백해주는 델리게이트
@@ -29,7 +29,7 @@ struct FMatchResultStruct
 
 	int64 StartTime;
 	float Duration;
-	EPlayerTeam WinTeam;
+	ETeam WinTeam;
 	TArray<FPlayerStats> AntiPlayers;
 	TArray<FPlayerStats> ProPlayers;
 };
@@ -172,6 +172,7 @@ protected:
 
 	FOnlineSessionSettings SessionSettings;
 
+	// 댕글링 포인터가 우려됩니다 UPROPERTY나 TWeakObjectPtr로 선언되는 것이 좋을 것 같습니다
 	APlayerController* MyPlayerController;
 	//FName CurrentServerName;
 

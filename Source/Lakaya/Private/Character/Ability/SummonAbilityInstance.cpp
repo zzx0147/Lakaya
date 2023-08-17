@@ -71,7 +71,7 @@ void ASummonAbilityInstance::SetStateTimer(const EAbilityInstanceState& HandlerK
 	}
 }
 
-void ASummonAbilityInstance::SetTeam(const EPlayerTeam& Team)
+void ASummonAbilityInstance::SetTeam(const ETeam& Team)
 {
 	RecentTeam = Team;
 }
