@@ -121,10 +121,10 @@ void UResultNotifyFireAbility::SingleFire()
 	const auto LineStart = BasisComponent ? BasisComponent->GetComponentLocation() : GetOwner()->GetActorLocation();
 	auto End = GetCameraForwardTracePoint(FireRange, CollisionQueryParams);
 
-	const auto addedVector = GetCameraComponent()->GetForwardVector() * 10.0f;
+	const auto CalibrationVector = (End - LineStart).GetSafeNormal() * 10.0f;
 	
 	FHitResult Result;
-	if (GetWorld()->LineTraceSingleByChannel(Result, LineStart, End + addedVector, ECC_Visibility, CollisionQueryParams))
+	if (GetWorld()->LineTraceSingleByChannel(Result, LineStart, End + CalibrationVector, ECC_Visibility, CollisionQueryParams))
 	{
 		End = Result.ImpactPoint;
 		const auto Pawn = GetOwner<APawn>();
