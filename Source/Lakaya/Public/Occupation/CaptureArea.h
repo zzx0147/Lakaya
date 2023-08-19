@@ -40,9 +40,8 @@ public:
 	UFUNCTION()
 	FString ETeamToString(const ETeam& Team);
 protected:
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-private:
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
 	/**
 	 * @brief 다른 액터와 충돌됐을 때, 실행되는 함수입니다.
 	 * @param OverlappedComp 겹친 컴포넌트를 나타내는 포인터입니다.
@@ -53,10 +52,10 @@ private:
 	 * @param SweepResult 겹친 결과를 반환하는 FHitResult 구조체로부터 상수입니다.
 	 */
 	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 
 	UFUNCTION()
-	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	virtual void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	/**
 	 * @brief 점령중인 플레이어 리스트에 플레이어를 넣어주는 함수입니다.
@@ -116,12 +115,15 @@ private:
 	UFUNCTION()
 	void DecreaseCaptureProgress();
 	
-private:
-	UPROPERTY(VisibleAnywhere, Category = Box)
-	TObjectPtr<class UBoxComponent> Trigger;
-
-	UPROPERTY(EditAnywhere)
-	FVector CaptureAreaRange;
+protected:
+	// UPROPERTY(VisibleAnywhere, Category = Box)
+	// TObjectPtr<class UBoxComponent> Trigger;
+	//
+	// UPROPERTY(VisibleAnywhere, Category = "StaticMesh")
+	// TObjectPtr<class UStaticMeshComponent> StaticMeshComponent;
+	//
+	// UPROPERTY(EditAnywhere)
+	// FVector CaptureAreaRange;
 	
 	UPROPERTY(Replicated)
 	ECaptureAreaState CurrentCaptureAreaState = ECaptureAreaState::None;

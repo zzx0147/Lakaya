@@ -14,15 +14,19 @@ ACaptureArea::ACaptureArea()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
-	CaptureAreaRange = FVector(1000.0f, 1000.0f, 1000.0f);
-	
-	RootComponent = Trigger;
-
-	Trigger->SetBoxExtent(CaptureAreaRange);
-	
-	Trigger->OnComponentBeginOverlap.AddDynamic(this, &ACaptureArea::OnOverlapBegin);
-	Trigger->OnComponentEndOverlap.AddDynamic(this, &ACaptureArea::OnOverlapEnd);
+	// Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
+	// CaptureAreaRange = FVector(1000.0f, 1000.0f, 1000.0f);
+	//
+	// StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
+	// StaticMeshComponent->SetupAttachment(Trigger);
+	//
+	// static ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh(TEXT("/Game/Dev/DoJun/CaptureArea/CaptureArea_Cylinder"));
+	// if (Mesh.Succeeded())
+	// {
+	// 	StaticMeshComponent->SetStaticMesh(Mesh.Object);
+	// }
+	//
+	// StaticMeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 
 	OccupyingPlayerList.Emplace(ETeam::Anti);
 	OccupyingPlayerList.Emplace(ETeam::Pro);
@@ -41,7 +45,7 @@ void ACaptureArea::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 }
 
 void ACaptureArea::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-                                   UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// 동일한 액터를 확인하여 self-overlaps를 무시합니다.
 	if (OtherActor && (OtherActor != this) && OtherComp)
