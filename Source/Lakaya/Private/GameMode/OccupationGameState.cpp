@@ -701,8 +701,8 @@ void AOccupationGameState::UpdateTeamScoreTick()
 		AntiTeamScore += AdditiveScore;
 		OnRep_AntiTeamScore();
 		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("AntiTeamScore : %f"), AntiTeamScore);
-		FString debugMessage = FString::Printf(TEXT("AntiTeamScore: %f"), AntiTeamScore);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, debugMessage);
+		// FString debugMessage = FString::Printf(TEXT("AntiTeamScore: %f"), AntiTeamScore);
+		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, debugMessage);
 	}
 	else if (TeamToUpdate == ETeam::Pro)
 	{
@@ -710,8 +710,8 @@ void AOccupationGameState::UpdateTeamScoreTick()
 		ProTeamScore += AdditiveScore;
 		OnRep_ProTeamScore();
 		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("ProTeamScore : %f"), ProTeamScore);
-		FString debugMessage = FString::Printf(TEXT("ProTeamScore: %f"), ProTeamScore);
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, debugMessage);
+		// FString debugMessage = FString::Printf(TEXT("ProTeamScore: %f"), ProTeamScore);
+		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, debugMessage);
 	}
 }
 
