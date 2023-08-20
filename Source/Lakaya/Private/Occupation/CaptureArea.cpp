@@ -14,20 +14,6 @@ ACaptureArea::ACaptureArea()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	// Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
-	// CaptureAreaRange = FVector(1000.0f, 1000.0f, 1000.0f);
-	//
-	// StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
-	// StaticMeshComponent->SetupAttachment(Trigger);
-	//
-	// static ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh(TEXT("/Game/Dev/DoJun/CaptureArea/CaptureArea_Cylinder"));
-	// if (Mesh.Succeeded())
-	// {
-	// 	StaticMeshComponent->SetStaticMesh(Mesh.Object);
-	// }
-	//
-	// StaticMeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
-
 	OccupyingPlayerList.Emplace(ETeam::Anti);
 	OccupyingPlayerList.Emplace(ETeam::Pro);
 
@@ -119,6 +105,24 @@ void ACaptureArea::AddToOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePla
 
 	UpdateCaptureAreaState(CurrentCaptureAreaState);
 }
+
+void ACaptureArea::SetCurrentCaptureAreaTeam(const ETeam& NewTeam)
+{
+	CurrentCaptureAreaTeam = NewTeam;
+	switch (NewTeam)
+	{
+	case ETeam::Anti:
+		StaticMeshComponent->SetMaterial(0, AntiMaterial);
+		break;
+	case ETeam::Pro:
+		StaticMeshComponent->SetMaterial(0, ProMaterial);
+		break;
+		default:
+			StaticMeshComponent->SetMaterial(0, NeutralMaterial);
+		break;
+	}
+}
+
 
 void ACaptureArea::RemoveFromOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePlayerState* Player)
 {

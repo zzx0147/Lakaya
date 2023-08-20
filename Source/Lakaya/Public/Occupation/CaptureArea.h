@@ -22,7 +22,7 @@ public:
 	FORCEINLINE void SetCurrentCaptureAreaState(const ECaptureAreaState& NewState) { CurrentCaptureAreaState = NewState; }
 
 	FORCEINLINE const ETeam& GetCurrentCaptureAreaTeam() const { return CurrentCaptureAreaTeam; }
-	FORCEINLINE void SetCurrentCaptureAreaTeam(const ETeam& NewTeam) { CurrentCaptureAreaTeam = NewTeam; }
+	FORCEINLINE void SetCurrentCaptureAreaTeam(const ETeam& NewTeam);
 
 	/**
 	 * @brief Enum타입을 String으로 바꿔줍니다.
@@ -116,20 +116,23 @@ protected:
 	void DecreaseCaptureProgress();
 	
 protected:
-	// UPROPERTY(VisibleAnywhere, Category = Box)
-	// TObjectPtr<class UBoxComponent> Trigger;
-	//
-	// UPROPERTY(VisibleAnywhere, Category = "StaticMesh")
-	// TObjectPtr<class UStaticMeshComponent> StaticMeshComponent;
-	//
-	// UPROPERTY(EditAnywhere)
-	// FVector CaptureAreaRange;
+	UPROPERTY(VisibleAnywhere, Category = StaticMesh)
+	TObjectPtr<class UStaticMeshComponent> StaticMeshComponent;
 	
 	UPROPERTY(Replicated)
 	ECaptureAreaState CurrentCaptureAreaState = ECaptureAreaState::None;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category = "Team")
 	ETeam CurrentCaptureAreaTeam = ETeam::None;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
+	TObjectPtr<class UMaterialInterface> NeutralMaterial;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
+	TObjectPtr<class UMaterialInterface> AntiMaterial;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
+	TObjectPtr<class UMaterialInterface> ProMaterial;
 	
 	TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> OccupyingPlayerList;
 	
