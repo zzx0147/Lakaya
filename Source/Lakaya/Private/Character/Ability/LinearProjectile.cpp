@@ -50,6 +50,8 @@ ALinearProjectile::ALinearProjectile(const FObjectInitializer& ObjectInitializer
 	TrailNiagaraComponent->SetAutoDestroy(false);
 
 	ProjectilePathParams.MaxSimTime = 5.f;
+	
+	EnableDebugDraw = true;
 }
 
 void ALinearProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -190,7 +192,7 @@ void ALinearProjectile::OnCollisionComponentBeginOverlap(UPrimitiveComponent* Ov
 		{
 			UGameplayStatics::ApplyRadialDamage(GetWorld(), BaseDamage, GetActorLocation(), DamageRange, nullptr, {},
 			                                    GetInstigator(), GetInstigatorController());
-			DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRange, 10, FColor::Red, false, 3);
+			if(EnableDebugDraw) DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRange, 10, FColor::Red, false, 3);
 		}
 		else if (DamageRange == 0.f)
 			UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, GetInstigatorController(), GetInstigator(), nullptr);

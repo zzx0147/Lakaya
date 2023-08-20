@@ -2,11 +2,11 @@
 
 #include "Occupation/CaptureArea.h"
 
+#include "AI/NavigationSystemBase.h"
 #include "Character/ArmedCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/BoxComponent.h"
 #include "GameMode/OccupationGameState.h"
-#include "Navigation/PathFollowingComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "ProfilingDebugging/BootProfiling.h"
 
@@ -36,8 +36,8 @@ void ACaptureArea::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ACaptureArea, CurrentCaptureArenaState);
-	DOREPLIFETIME(ACaptureArea, CurrentCaptureArenaTeam);
+	DOREPLIFETIME(ACaptureArea, CurrentCaptureAreaState);
+	DOREPLIFETIME(ACaptureArea, CurrentCaptureAreaTeam);
 }
 
 void ACaptureArea::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -113,7 +113,7 @@ void ACaptureArea::AddToOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePla
 		OccupyingPlayerList[PlayerTeam].Add(Player);
 	}
 
-	CheckCaptureArenaInPlayer(PlayerTeam);
+	UpdateCaptureAreaState(CurrentCaptureAreaState);
 }
 
 void ACaptureArea::RemoveFromOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePlayerState* Player)
@@ -123,219 +123,264 @@ void ACaptureArea::RemoveFromOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBa
 		OccupyingPlayerList[PlayerTeam].Remove(Player);
 	}
 
-	CheckCaptureArenaInPlayer(PlayerTeam);
+	UpdateCaptureAreaState(CurrentCaptureAreaState);
 }
 
-void ACaptureArea::CheckCaptureArenaInPlayer(const ETeam& PlayerTeam)
+void ACaptureArea::UpdateCaptureAreaState(const ECaptureAreaState& CaptureAreaState)
 {
-	UE_LOG(LogTemp, Warning, TEXT("AntiTeam Occupying Player Number : %d"), OccupyingPlayerList[ETeam::Anti].Num());
-	UE_LOG(LogTemp, Warning, TEXT("ProTeam Occupying Player Number : %d"), OccupyingPlayerList[ETeam::Pro].Num());
-
 	const uint8 AntiTeamPlayerCount = OccupyingPlayerList.Contains(ETeam::Anti) ? OccupyingPlayerList[ETeam::Anti].Num() : 0;
 	const uint8 ProTeamPlayerCount = OccupyingPlayerList.Contains(ETeam::Pro) ? OccupyingPlayerList[ETeam::Pro].Num() : 0;
-
-	UpdateCaptureArenaState(AntiTeamPlayerCount, ProTeamPlayerCount, CurrentCaptureArenaState);
-}
-
-void ACaptureArea::UpdateCaptureArenaState(const uint8& AntiTeamPlayerCount, const uint8& ProTeamPlayerCount, const ECaptureArenaState& CaptureArenaState)
-{
+	
 	if (AntiTeamPlayerCount > 0 && ProTeamPlayerCount == 0)
 	{
-		CaptureArenaHandleAntiTeam(CaptureArenaState);
+		CaptureAreaHandleAntiTeam(CaptureAreaState);
 	}
 	else if (AntiTeamPlayerCount == 0 && ProTeamPlayerCount > 0)
 	{
-		CaptureArenaHandleProTeam(CaptureArenaState);
+		CaptureAreaHandleProTeam(CaptureAreaState);
 	}
 	else if (AntiTeamPlayerCount > 0 && ProTeamPlayerCount > 0)
 	{
-		CaptureArenaHandleOpposite(CaptureArenaState);
+		CaptureAreaHandleOpposite(CaptureAreaState);
 	}
 	else if (AntiTeamPlayerCount == 0 && ProTeamPlayerCount == 0)
 	{
-		CaptureArenaHandleNone(CaptureArenaState);
+		CaptureAreaHandleNone(CaptureAreaState);
 	}
 
-	CaptureArenaStateOnChangedSignature.Broadcast(CurrentCaptureArenaState);
-	const FString EnumString = GetEnumAsString(CurrentCaptureArenaState);
+	CaptureAreaStateOnChangedSignature.Broadcast(CurrentCaptureAreaState);
+	const FString EnumString = GetEnumAsString(CurrentCaptureAreaState);
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, EnumString);
 }
 
 // Anti팀 1명이상, Pro팀 0명
-void ACaptureArea::CaptureArenaHandleAntiTeam(const ECaptureArenaState& CaptureArenaState)
+void ACaptureArea::CaptureAreaHandleAntiTeam(const ECaptureAreaState& CaptureAreaState)
 {
-	if (CaptureArenaState == ECaptureArenaState::None || CaptureArenaState == ECaptureArenaState::Pro || CaptureArenaState == ECaptureArenaState::Opposite
-		|| CaptureArenaState == ECaptureArenaState::AntiExtortion)
+	if (CaptureAreaState == ECaptureAreaState::None || CaptureAreaState == ECaptureAreaState::Pro || CaptureAreaState == ECaptureAreaState::Opposite
+		|| CaptureAreaState == ECaptureAreaState::AntiExtortion || CaptureAreaState == ECaptureAreaState::AntiProgress)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Anti팀이 점령을 시도하고 있는 상태입니다."));
-		SetCurrentCaptureArenaState(ECaptureArenaState::AntiProgress);
+		SetCurrentCaptureAreaState(ECaptureAreaState::AntiProgress);
 		if (GetWorld()->GetTimerManager().IsTimerActive(CaptureProgressTimerHandle))
 		{
 			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 		}
-		GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::UpdateCaptureProgress, 0.1f, true);
+		GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::IncreaseCaptureProgress, 0.1f, true);
 	}
-	else if (CaptureArenaState == ECaptureArenaState::Anti)
+	else if (CaptureAreaState == ECaptureAreaState::ProExtortion)
+	{
+		SetCurrentCaptureAreaState(ECaptureAreaState::Anti);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Anti팀의 점령구역입니다."));
+		if (GetWorld()->GetTimerManager().IsTimerActive(CaptureProgressTimerHandle))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
+		}
+		GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::DecreaseCaptureProgress, 0.1f, true);
+	}
+	else if (CaptureAreaState == ECaptureAreaState::Anti)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("이미 본인 소유의 점령구 입니다."));
 	}
 }
 
 // Anti팀 0명, Pro팀 1명이상
-void ACaptureArea::CaptureArenaHandleProTeam(const ECaptureArenaState& CaptureArenaState)
+void ACaptureArea::CaptureAreaHandleProTeam(const ECaptureAreaState& CaptureAreaState)
 {
-	if (CaptureArenaState == ECaptureArenaState::None || CaptureArenaState == ECaptureArenaState::Anti || CaptureArenaState == ECaptureArenaState::Opposite
-		|| CaptureArenaState == ECaptureArenaState::ProExtortion)
+	if (CaptureAreaState == ECaptureAreaState::None || CaptureAreaState == ECaptureAreaState::Anti || CaptureAreaState == ECaptureAreaState::Opposite
+		|| CaptureAreaState == ECaptureAreaState::ProExtortion || CaptureAreaState == ECaptureAreaState::ProProgress)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Pro팀이 점령을 시도하고 있는 상태입니다."));
-		SetCurrentCaptureArenaState(ECaptureArenaState::ProProgress);
+		SetCurrentCaptureAreaState(ECaptureAreaState::ProProgress);
 		if (GetWorld()->GetTimerManager().IsTimerActive(CaptureProgressTimerHandle))
 		{
 			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 		}
-		GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::UpdateCaptureProgress, 0.1f, true);
+		GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::IncreaseCaptureProgress, 0.1f, true);
 	}
-	else if (CaptureArenaState == ECaptureArenaState::Pro)
+	else if (CaptureAreaState == ECaptureAreaState::AntiExtortion)
+	{
+		SetCurrentCaptureAreaState(ECaptureAreaState::Pro);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Pro팀의 점령구역입니다."));
+		if (GetWorld()->GetTimerManager().IsTimerActive(CaptureProgressTimerHandle))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
+		}
+		GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::DecreaseCaptureProgress, 0.1f, true);
+	}
+	else if (CaptureAreaState == ECaptureAreaState::Pro)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("이미 본인 소유의 점령구역 입니다."));
 	}
 }
 
 // Anti팀 1명이상, Pro팀 1명이상
-void ACaptureArea::CaptureArenaHandleOpposite(const ECaptureArenaState& CaptureArenaState)
+void ACaptureArea::CaptureAreaHandleOpposite(const ECaptureAreaState& CaptureAreaState)
 {
-	if (CaptureArenaState == ECaptureArenaState::AntiProgress || CaptureArenaState == ECaptureArenaState::ProProgress)
+	if (CaptureAreaState == ECaptureAreaState::AntiProgress || CaptureAreaState == ECaptureAreaState::ProProgress)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Anti팀과 Pro팀이 서로 대치하고 있는 상태입니다."));
-		SetCurrentCaptureArenaState(ECaptureArenaState::Opposite);
+		switch (CurrentCaptureAreaTeam)
+		{
+		case ETeam::None:
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Anti팀과 Pro팀이 서로 대치하고 있는 상태입니다."));
+			SetCurrentCaptureAreaState(ECaptureAreaState::Opposite);
+			break;
+		case ETeam::Anti:
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Pro팀이 Anti팀의 점령구역을 탈취하려는 상태입니다."));
+			SetCurrentCaptureAreaState(ECaptureAreaState::ProExtortion);
+			break;
+		case ETeam::Pro:
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Anti팀이 Pro팀의 점령구역을 탈취하려는 상태입니다."));
+			SetCurrentCaptureAreaState(ECaptureAreaState::AntiExtortion);
+			break;
+		default:
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Switch case Error."));
+			break;
+		}
+			
 		GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 	}
-	else if (CaptureArenaState == ECaptureArenaState::Anti)
+	else if (CaptureAreaState == ECaptureAreaState::Anti)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Pro팀이 Anti팀의 점령구역을 탈취하려는 상태입니다."));
-		SetCurrentCaptureArenaState(ECaptureArenaState::ProExtortion);
+		SetCurrentCaptureAreaState(ECaptureAreaState::ProExtortion);
 		GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 	}
-	else if (CaptureArenaState == ECaptureArenaState::Pro)
+	else if (CaptureAreaState == ECaptureAreaState::Pro)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Anti팀이 Pro팀의 점령구역을 탈취하려는 상태입니다."));
-		SetCurrentCaptureArenaState(ECaptureArenaState::AntiExtortion);
+		SetCurrentCaptureAreaState(ECaptureAreaState::AntiExtortion);
 		GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 	}
 }
 
 // Anti팀 0명, Pro팀 0명
-void ACaptureArea::CaptureArenaHandleNone(const ECaptureArenaState& CaptureArenaState)
+void ACaptureArea::CaptureAreaHandleNone(const ECaptureAreaState& CaptureAreaState)
 {
-	if (CaptureArenaState == ECaptureArenaState::Anti || CaptureArenaState == ECaptureArenaState::ProExtortion)
+	if (CaptureAreaState == ECaptureAreaState::Anti || CaptureAreaState == ECaptureAreaState::ProExtortion)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("점령구역이 Anti 상태입니다."));
-		SetCurrentCaptureArenaState(ECaptureArenaState::Anti);
-		GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
+		SetCurrentCaptureAreaState(ECaptureAreaState::Anti);
 	}
-	else if (CaptureArenaState == ECaptureArenaState::Pro || CaptureArenaState == ECaptureArenaState::AntiExtortion)
+	else if (CaptureAreaState == ECaptureAreaState::Pro || CaptureAreaState == ECaptureAreaState::AntiExtortion)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("점령구역이 Pro 상태입니다."));
-		SetCurrentCaptureArenaState(ECaptureArenaState::Pro);
-		GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
+		SetCurrentCaptureAreaState(ECaptureAreaState::Pro);
 	}
-	else if (CaptureArenaState == ECaptureArenaState::ProProgress || CaptureArenaState == ECaptureArenaState::AntiProgress)
+	else if (CaptureAreaState == ECaptureAreaState::ProProgress || CaptureAreaState == ECaptureAreaState::AntiProgress)
 	{
-		if (GetCurrentCaptureArenaTeam() == ETeam::None) // 어느팀에서도 점령을 하지 않은 상태라면
+		if (GetCurrentCaptureAreaTeam() == ETeam::None) // 어느팀에서도 점령을 하지 않은 상태라면
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("점령구역이 None 상태입니다."));
-			SetCurrentCaptureArenaState(ECaptureArenaState::None);
+			SetCurrentCaptureAreaState(ECaptureAreaState::None);
 		}
-		else if (GetCurrentCaptureArenaTeam() == ETeam::Anti)
+		else if (GetCurrentCaptureAreaTeam() == ETeam::Anti)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("점령구역이 Anti 상태입니다."));
+			SetCurrentCaptureAreaState(ECaptureAreaState::Anti);
 		}
-		else if (GetCurrentCaptureArenaTeam() == ETeam::Pro)
+		else if (GetCurrentCaptureAreaTeam() == ETeam::Pro)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("점령구역이 Pro 상태입니다."));
+			SetCurrentCaptureAreaState(ECaptureAreaState::Pro);
 		}
+	}
+
+	if (GetWorld()->GetTimerManager().IsTimerActive(CaptureProgressTimerHandle))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
+	}
+	GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::DecreaseCaptureProgress, 0.1f, true);
+}
+
+void ACaptureArea::IncreaseCaptureProgress()
+{
+	ECaptureAreaState CaptureAreaState = GetCurrentCaptureAreaState();
+
+	if (CaptureAreaState == ECaptureAreaState::AntiProgress || CaptureAreaState == ECaptureAreaState::ProProgress)
+	{
+		ETeam CurrentTeam = (CaptureAreaState == ECaptureAreaState::AntiProgress) ? ETeam::Anti : ETeam::Pro;
+		float& TeamCaptureProgress = (CurrentTeam == ETeam::Anti) ? AntiTeamCaptureProgress : ProTeamCaptureProgress;
+		TeamCaptureProgress += CaptureSpeed * 0.1f;
+		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Increase"));
+		
+		if (CurrentTeam == ETeam::Anti)
+		{
+			AntiTeamCaptureProgress = TeamCaptureProgress;
+		}
+		else if (CurrentTeam == ETeam::Pro)
+		{
+			ProTeamCaptureProgress = TeamCaptureProgress;
+		}
+		
+		if (TeamCaptureProgress >= 4.0f)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("%sTeam Capture Success."), *ETeamToString(CurrentTeam)));
+			const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
+			if (OccupationGameState == nullptr)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("OccupationGameState is null."));
+				return;
+			}
+
+			ETeam OtherTeam = (CurrentTeam == ETeam::Anti) ? ETeam::Pro : ETeam::Anti;
+			if (GetCurrentCaptureAreaTeam() == OtherTeam)
+			{
+				OccupationGameState->SubCaptureAreaCount(OtherTeam);
+			}
+
+			OccupationGameState->AddCaptureAreaCount(CurrentTeam);
+			SetCurrentCaptureAreaState((CurrentTeam == ETeam::Anti)? ECaptureAreaState::Anti : ECaptureAreaState::Pro);
+			TeamCaptureProgress = 0.0f;
+			SetCurrentCaptureAreaTeam(CurrentTeam);
+			CaptureAreaTeamOnChangedSignature.Broadcast(GetCurrentCaptureAreaTeam());
+			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
+
+			if (OccupationGameState->CheckCaptureAreaCount(CurrentTeam))
+			{
+				OccupationGameState->SetTeamToUpdate(CurrentTeam);
+				OccupationGameState->StartScoreUpdate(CurrentTeam, 1.0f);
+			}
+		}
+	}
+}
+
+void ACaptureArea::DecreaseCaptureProgress()
+{
+	AntiTeamCaptureProgress -= CaptureSpeed * 0.1f;
+	ProTeamCaptureProgress -= CaptureSpeed * 0.1f;
+	// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Decrease"));
+	
+	if (AntiTeamCaptureProgress <= 0.0f && ProTeamCaptureProgress <= 0.0f)
+	{
+		AntiTeamCaptureProgress = 0.0f;
+		ProTeamCaptureProgress = 0.0f;
 
 		GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 	}
 }
 
-void ACaptureArea::UpdateCaptureProgress()
+FString ACaptureArea::GetEnumAsString(const ECaptureAreaState& EnumValue)
 {
-	if (GetCurrentCaptureArenaState() == ECaptureArenaState::AntiProgress)
-	{
-		AntiTeamCaptureProgress += CaptureSpeed * 0.1f;
-
-		if (AntiTeamCaptureProgress >= 4.0f)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("AntiTeam Capture Success."));
-			const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
-			if (OccupationGameState == nullptr)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("OccupationGameState is null."));
-			}
-
-			if (GetCurrentCaptureArenaTeam() == ETeam::Pro)
-			{
-				OccupationGameState->SubCaptureAreaCount(ETeam::Pro);
-			}
-
-			OccupationGameState->AddCaptureAreaCount(ETeam::Anti);
-			SetCurrentCaptureArenaState(ECaptureArenaState::Anti);
-			AntiTeamCaptureProgress = 0.0f;
-			SetCurrentCaptureArenaTeam(ETeam::Anti);
-			CaptureArenaTeamOnChangedSignature.Broadcast(GetCurrentCaptureArenaTeam());
-			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
-			
-			if (bool bIncrease = OccupationGameState->CheckCaptureAreaCount(ETeam::Anti))
-			{
-				OccupationGameState->SetTeamToUpdate(ETeam::Anti);
-				OccupationGameState->StartScoreUpdate(ETeam::Anti, 1.0f);
-			}
-		}
-	}
-	else if (GetCurrentCaptureArenaState() == ECaptureArenaState::ProProgress)
-	{
-		ProTeamCaptureProgress += CaptureSpeed * 0.1f;
-
-		if (ProTeamCaptureProgress >= 4.0f)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("ProTream Capture Success."));
-			const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
-			if (OccupationGameState == nullptr)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("OccupationGameState is null."));
-			}
-			
-			if (GetCurrentCaptureArenaTeam() == ETeam::Anti)
-			{
-				OccupationGameState->SubCaptureAreaCount(ETeam::Anti);
-			}
-
-			OccupationGameState->AddCaptureAreaCount(ETeam::Pro);
-			SetCurrentCaptureArenaState(ECaptureArenaState::Pro);
-			ProTeamCaptureProgress = 0.0f;
-			SetCurrentCaptureArenaTeam(ETeam::Pro);
-			CaptureArenaTeamOnChangedSignature.Broadcast(GetCurrentCaptureArenaTeam());
-			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
-			
-			if (bool bIncrease = OccupationGameState->CheckCaptureAreaCount(ETeam::Pro))
-			{
-				OccupationGameState->SetTeamToUpdate(ETeam::Pro);
-				OccupationGameState->StartScoreUpdate(ETeam::Pro, 1.0f);
-			}
-		}
-	}
-}
-
-FString ACaptureArea::GetEnumAsString(const ECaptureArenaState& EnumValue)
-{
-	const TObjectPtr<UEnum> EnumPtr = FindObject<UEnum>(nullptr, TEXT("/Script/Lakaya.ECaptureArenaState"));
+	const TObjectPtr<UEnum> EnumPtr = FindObject<UEnum>(nullptr, TEXT("/Script/Lakaya.ECaptureAreaState"));
 	if (EnumPtr)
 	{
 		return EnumPtr->GetNameStringByIndex(static_cast<uint8>(EnumValue));
 	}
-	else
+	
+	return FString("Casting Failed.");
+}
+
+FString ACaptureArea::ETeamToString(const ETeam& Team)
+{
+	switch (Team)
 	{
-		return FString("Casting Failed.");
+	case ETeam::Anti:
+		return TEXT("Anti");
+	case ETeam::Pro:
+		return TEXT("Pro");
+	case ETeam::None:
+		return TEXT("None");
+	default:
+		return TEXT("Unknown");
 	}
 }

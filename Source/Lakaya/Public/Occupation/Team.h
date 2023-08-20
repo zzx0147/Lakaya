@@ -26,7 +26,7 @@ enum class ETeam : uint8
 };
 
 UENUM()
-enum class ECaptureArenaState : uint8
+enum class ECaptureAreaState : uint8
 {
 	// 아무도 점령하지 않은 상태입니다.
 	None UMETA(DisplayerName = "None"),
@@ -34,7 +34,7 @@ enum class ECaptureArenaState : uint8
 	// Anti이 점령을 시도하고 있는 상태입니다.
 	AntiProgress UMETA(DisplayerName = "AntiProgress"),
 
-	// Anti이 Pro팀 점령구역을 탈취하려는 상태입니다.
+	// Anti팀이 Pro팀 점령구역을 탈취하려는 상태입니다.
 	AntiExtortion UMETA(DisplayerName = "AntiExtortion"),
 	
 	// Anti팀이 점령한 상태입니다.
@@ -62,14 +62,14 @@ inline bool JudgeSameTeam(const ETeam& First, const ETeam& Second)
 /**
  * @brief 점령구역의 소속팀과, 플레이어가 소속된 팀을 비교하는 함수입니다.
  * @param PlayerTeam 점령구역에 있는 플레이어의 팀 정보입니다.
- * @param CaptureArenaState 점령구역의 소속팀입니다.
+ * @param CaptureAreaState 점령구역의 소속팀입니다.
  * @return 같다면 true를 반환하고, 다르다면 false를 반환합니다.
  */
-inline bool JudgeSameTeam(const ETeam& PlayerTeam, const ECaptureArenaState& CaptureArenaState)
+inline bool JudgeSameTeam(const ETeam& PlayerTeam, const ECaptureAreaState& CaptureAreaState)
 {
 	if (PlayerTeam != ETeam::None && PlayerTeam != ETeam::Individual)
 	{
-		if (CompareEnums(PlayerTeam, CaptureArenaState))
+		if (CompareEnums(PlayerTeam, CaptureAreaState))
 		{
 			return true;
 		}
