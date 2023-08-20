@@ -123,7 +123,6 @@ void ACaptureArea::SetCurrentCaptureAreaTeam(const ETeam& NewTeam)
 	}
 }
 
-
 void ACaptureArea::RemoveFromOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePlayerState* Player)
 {
 	if (OccupyingPlayerList.Contains(PlayerTeam))
