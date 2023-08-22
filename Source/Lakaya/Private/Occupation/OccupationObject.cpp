@@ -130,7 +130,6 @@ void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller, EInt
 void AOccupationObject::OnCharacterDead(APawn* Caller)
 {
 	AInteractable::OnCharacterDead(Caller);
-	// TODO : 구현해야 함.
 }
 
 void AOccupationObject::OnInteractionFinish(APawn* Caller)

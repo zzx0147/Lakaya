@@ -14,16 +14,6 @@ ACaptureArea::ACaptureArea()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
-	CaptureAreaRange = FVector(1000.0f, 1000.0f, 1000.0f);
-	
-	RootComponent = Trigger;
-
-	Trigger->SetBoxExtent(CaptureAreaRange);
-	
-	Trigger->OnComponentBeginOverlap.AddDynamic(this, &ACaptureArea::OnOverlapBegin);
-	Trigger->OnComponentEndOverlap.AddDynamic(this, &ACaptureArea::OnOverlapEnd);
-
 	OccupyingPlayerList.Emplace(ETeam::Anti);
 	OccupyingPlayerList.Emplace(ETeam::Pro);
 
@@ -41,7 +31,7 @@ void ACaptureArea::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 }
 
 void ACaptureArea::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-                                   UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// 동일한 액터를 확인하여 self-overlaps를 무시합니다.
 	if (OtherActor && (OtherActor != this) && OtherComp)
@@ -114,6 +104,23 @@ void ACaptureArea::AddToOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePla
 	}
 
 	UpdateCaptureAreaState(CurrentCaptureAreaState);
+}
+
+void ACaptureArea::SetCurrentCaptureAreaTeam(const ETeam& NewTeam)
+{
+	CurrentCaptureAreaTeam = NewTeam;
+	switch (NewTeam)
+	{
+	case ETeam::Anti:
+		StaticMeshComponent->SetMaterial(0, AntiMaterial);
+		break;
+	case ETeam::Pro:
+		StaticMeshComponent->SetMaterial(0, ProMaterial);
+		break;
+		default:
+			StaticMeshComponent->SetMaterial(0, NeutralMaterial);
+		break;
+	}
 }
 
 void ACaptureArea::RemoveFromOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePlayerState* Player)
