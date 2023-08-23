@@ -140,4 +140,7 @@ private:
 	FPredictProjectilePathResult ProjectilePathResult;
 	float RecentPathCalculateTime;
 	FPredictProjectilePathPointData RecentPointData;
+
+	UPROPERTY(EditAnywhere, Category = Debug)
+	uint8 EnableDebugDraw : 1;
 };

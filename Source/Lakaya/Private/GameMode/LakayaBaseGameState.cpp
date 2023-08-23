@@ -151,7 +151,7 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	Super::HandleMatchHasStarted();
 	StartTimeStamp = FDateTime::UtcNow().ToUnixTimestamp();
 	StartTime = GetServerWorldTimeSeconds();
-	
+
 	// TODO : 개인전에서는 스킬을 사용하지 않습니다.
 	// if (const auto LocalPlayerState = Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
 	// 	LocalPlayerState != nullptr)
@@ -161,9 +161,9 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 
 	if (GetCharacterSelectWidget())
 	{
-		CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
-		CharacterSelectWidget->SetShortcutEnabled(true);
-		CharacterSelectWidget->EnableAutoHide(true);
+			CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
+			CharacterSelectWidget->SetShortcutEnabled(true);
+			CharacterSelectWidget->EnableAutoHide(true);
 	}
 
 	if (CharacterSelectTimeWidget.IsValid())
@@ -212,8 +212,8 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 
 	const auto GameInstance = GetGameInstance();
 	const auto EOSGameInstance = Cast<UEOSGameInstance>(GameInstance);
-	if(EOSGameInstance == nullptr) return;
-	if(HasAuthority())
+	if (EOSGameInstance == nullptr) return;
+	if (HasAuthority())
 	{
 		EOSGameInstance->DestroySession();
 	}
@@ -221,7 +221,6 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	{
 		EOSGameInstance->EndSession();
 	}
-	
 }
 
 void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
@@ -242,7 +241,7 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 void ALakayaBaseGameState::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if(bWantsSendRecordResult)
+	if (bWantsSendRecordResult)
 	{
 		bWantsSendRecordResult = !TrySendMatchResultData();
 	}
@@ -346,6 +345,7 @@ void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible)
 	if (!ScoreBoard.IsValid()) return;
 	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
 }
+
 bool ALakayaBaseGameState::HasMatchStarted() const
 {
 	if (GetMatchState() == MatchState::IsSelectCharacter)

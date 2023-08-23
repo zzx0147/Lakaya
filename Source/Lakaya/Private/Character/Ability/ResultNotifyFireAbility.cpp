@@ -5,6 +5,7 @@
 
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Camera/CameraComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -120,8 +121,10 @@ void UResultNotifyFireAbility::SingleFire()
 	const auto LineStart = BasisComponent ? BasisComponent->GetComponentLocation() : GetOwner()->GetActorLocation();
 	auto End = GetCameraForwardTracePoint(FireRange, CollisionQueryParams);
 
+	const auto CalibrationVector = (End - LineStart).GetSafeNormal() * 10.0f;
+	
 	FHitResult Result;
-	if (GetWorld()->LineTraceSingleByChannel(Result, LineStart, End, ECC_Visibility, CollisionQueryParams))
+	if (GetWorld()->LineTraceSingleByChannel(Result, LineStart, End + CalibrationVector, ECC_Visibility, CollisionQueryParams))
 	{
 		End = Result.ImpactPoint;
 		const auto Pawn = GetOwner<APawn>();

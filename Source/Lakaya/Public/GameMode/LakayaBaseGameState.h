@@ -156,6 +156,7 @@ protected:
 	FTimerHandle MatchWaitToStartTimer;
 
 	TObjectPtr<ULoadingWidget> LoadingWidget;
+	UPROPERTY()
 	TObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 	TObjectPtr<UGamePlayCrosshairWidget> CrosshairWidget;
 
