@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "LakayaAbilitySet.h"
 #include "GameFramework/PlayerState.h"
 #include "Occupation/PlayerTeam.h"
 #include "TimerManager.h"
@@ -268,6 +269,8 @@ public:
 
 	// 오너가 변경될 때 호출됩니다. 매개변수로 변경된 오너의 AActor 포인터를 받습니다.
 	FOwnerChangeSignature OnOwnerChanged;
+	
+
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -318,6 +321,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UAbilitySystemComponent> AbilitySystem;
+
+	UPROPERTY(VisibleAnywhere)
+	const ULakayaAbilitySet* AttributeSet;
 
 	FTimerHandle RespawnTimer;
 	FTimerHandle CurrentCaptureTimer;

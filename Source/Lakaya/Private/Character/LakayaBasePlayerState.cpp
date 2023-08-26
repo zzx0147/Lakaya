@@ -105,6 +105,18 @@ void ALakayaBasePlayerState::BeginPlay()
 		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(
 			LocalController, DirectionDamageIndicatorClass);
 		if (DirectionDamageIndicatorWidget) DirectionDamageIndicatorWidget->AddToViewport();
+
+
+	}
+
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	// AbilitySystemComponent가 유효한지 확인합니다. 실패를 허용할 수 없다면 if() 조건문을 check() 구문으로 대체합니다.
+	if (IsValid(ASC))
+	{
+		// 어빌리티 시스템 컴포넌트에서 UMyAttributeSet를 구합니다. 필요한 경우 어빌리티 시스템 컴포넌트가 UMyAttributeSet를 생성하고 등록할 것입니다.
+		AttributeSet = ASC->GetSet<ULakayaAbilitySet>();
+		
+		// 이제 새 UMyAttributeSet에 대한 포인터가 생겨 나중에 사용할 수 있습니다. 초기화 함수가 있는 경우 여기서 호출하면 좋습니다.
 	}
 }
 
