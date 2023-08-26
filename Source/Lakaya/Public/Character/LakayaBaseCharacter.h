@@ -181,10 +181,10 @@ private:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	class UResourceComponent* ResourceComponent;
 
-	UPROPERTY(VisibleAnywhere, Category = Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintGetter = GetSpringArm, Category = Camera)
 	USpringArmComponent* SpringArm;
 
-	UPROPERTY(VisibleAnywhere, Category = Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintGetter = GetCamera, Category = Camera)
 	UCameraComponent* Camera;
 
 	UPROPERTY(VisibleAnywhere)
