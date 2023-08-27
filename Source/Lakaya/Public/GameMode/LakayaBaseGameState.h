@@ -117,6 +117,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UHelpWidget> HelpWidgetClass;
 
+	// 에임에 있는 플레이어의 이름을 표기해주는 위젯입니다
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UPlayerNameDisplayerWidget> PlayerNameDisplayerWidgetClass;
+	
+	
 	// TODO : 개인전엣는 스킬을 사용하지 않기에 주석처리 해주었습니다.
 	// 게임중에 표시되는 스킬 위젯을 지정합니다.
 	// UPROPERTY(EditDefaultsOnly)
@@ -165,7 +170,8 @@ protected:
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
 	TWeakObjectPtr<UHelpWidget> HelpWidget;
 	TWeakObjectPtr<UGamePlayKillLogWidget> KillLogWidget;
-
+	TWeakObjectPtr<UPlayerNameDisplayerWidget> PlayerNameDisplayerWidget;
+	
 	// TODO : 개인전엣는 스킬을 사용하지 않기에 주석처리 해주었습니다.
 	// TWeakObjectPtr<USkillWidget> SkillWidget;
 

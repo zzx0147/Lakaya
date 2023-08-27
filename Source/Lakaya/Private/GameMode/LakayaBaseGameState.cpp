@@ -12,6 +12,7 @@
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
 #include "UI/LoadingWidget.h"
+#include "UI/PlayerNameDisplayerWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
@@ -124,6 +125,16 @@ void ALakayaBaseGameState::BeginPlay()
 			{
 				KillLogWidget->AddToViewport();
 				KillLogWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+			}
+		}
+		
+		if (PlayerNameDisplayerWidgetClass)
+		{
+			PlayerNameDisplayerWidget = CreateWidget<UPlayerNameDisplayerWidget>(LocalController, PlayerNameDisplayerWidgetClass);
+			if (PlayerNameDisplayerWidget.IsValid())
+			{
+				PlayerNameDisplayerWidget->AddToViewport();
+				PlayerNameDisplayerWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 			}
 		}
 
