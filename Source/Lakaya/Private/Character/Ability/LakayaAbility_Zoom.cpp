@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Character/Ability/LakayaAbilityZoom.h"
+#include "Character\Ability\LakayaAbility_Zoom.h"
 
 #include "ETC/LakayaPlayerCameraManager.h"
 
-ULakayaAbilityZoom::ULakayaAbilityZoom(): Super()
+ULakayaAbility_Zoom::ULakayaAbility_Zoom(): Super()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateNo;
@@ -13,14 +13,14 @@ ULakayaAbilityZoom::ULakayaAbilityZoom(): Super()
 	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ClientOrServer;
 }
 
-void ULakayaAbilityZoom::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+void ULakayaAbility_Zoom::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
 
 	Log(ActorInfo, TEXT("OnGiveAbility Zoom!"));
 }
 
-void ULakayaAbilityZoom::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
+void ULakayaAbility_Zoom::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
@@ -35,7 +35,7 @@ void ULakayaAbilityZoom::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	}
 }
 
-void ULakayaAbilityZoom::NativeEndAbility(const FGameplayAbilitySpecHandle Handle,
+void ULakayaAbility_Zoom::NativeEndAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	bool bReplicateEndAbility, bool bWasCancelled)
 {
@@ -51,7 +51,7 @@ void ULakayaAbilityZoom::NativeEndAbility(const FGameplayAbilitySpecHandle Handl
 	}
 }
 
-void ULakayaAbilityZoom::NativeCancelAbility(const FGameplayAbilitySpecHandle Handle,
+void ULakayaAbility_Zoom::NativeCancelAbility(const FGameplayAbilitySpecHandle Handle,
                                              const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
                                              bool bReplicateCancelAbility)
 {

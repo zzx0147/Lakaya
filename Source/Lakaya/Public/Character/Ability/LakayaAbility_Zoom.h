@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Character/Ability/LakayaAbility.h"
-#include "LakayaAbilityZoom.generated.h"
+#include "LakayaAbility_Zoom.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API ULakayaAbilityZoom : public ULakayaAbility
+class LAKAYA_API ULakayaAbility_Zoom : public ULakayaAbility
 {
 	GENERATED_BODY()
-	ULakayaAbilityZoom();
+	ULakayaAbility_Zoom();
 
 public:
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
