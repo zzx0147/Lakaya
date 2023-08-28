@@ -6,7 +6,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
-ALakayaProjectile::ALakayaProjectile(): Super()
+ALakayaProjectile::ALakayaProjectile()
 {
 	SetReplicates(true);
 
@@ -22,6 +22,13 @@ void ALakayaProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ALakayaProjectile, ProjectileState);
+	DOREPLIFETIME(ALakayaProjectile, CustomState);
+}
+
+void ALakayaProjectile::PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker)
+{
+	Super::PreReplication(ChangedPropertyTracker);
+	DOREPLIFETIME_ACTIVE_OVERRIDE(ALakayaProjectile, CustomState, IsCustomState());
 }
 
 void ALakayaProjectile::OnRep_ProjectileState()

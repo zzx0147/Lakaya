@@ -7,7 +7,7 @@
 #include "LakayaProjectile.generated.h"
 
 UENUM(BlueprintType)
-enum class EProjectileState
+enum class EProjectileState : uint8
 {
 	// 투사체가 게임에 아무런 개입도 하지 않고 숨겨져 있는 상태입니다.
 	Collapsed,
@@ -19,7 +19,7 @@ enum class EProjectileState
 	Custom
 };
 
-DECLARE_EVENT_OneParam(ALakayaProjectile, FProjectileStateChanged, EProjectileState)
+DECLARE_EVENT_TwoParams(ALakayaProjectile, FProjectileStateChanged, EProjectileState, const uint8&)
 
 UCLASS()
 class LAKAYA_API ALakayaProjectile : public AActor
@@ -33,6 +33,11 @@ public:
 
 	FProjectileStateChanged ProjectileStateChanged;
 
+	virtual void PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker) override;
+
+protected:
+	FORCEINLINE bool IsCustomState() const { return ProjectileState == EProjectileState::Custom; }
+
 private:
 	UFUNCTION()
 	void OnRep_ProjectileState();
@@ -40,6 +45,9 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class UProjectileMovementComponent* ProjectileMovementComponent;
 
-	UPROPERTY(ReplicatedUsing=OnRep_ProjectileState)
+	UPROPERTY(ReplicatedUsing=OnRep_ProjectileState, Transient)
 	EProjectileState ProjectileState;
+
+	UPROPERTY(Replicated, Transient)
+	uint8 CustomState;
 };
