@@ -19,7 +19,8 @@ enum class EProjectileState : uint8
 	Custom
 };
 
-DECLARE_EVENT_TwoParams(ALakayaProjectile, FProjectileStateChanged, EProjectileState, const uint8&)
+DECLARE_EVENT_ThreeParams(ALakayaProjectile, FProjectileStateChanged, class ALakayaProjectile*, const EProjectileState&,
+                          const uint8&)
 
 UCLASS()
 class LAKAYA_API ALakayaProjectile : public AActor
@@ -30,13 +31,15 @@ public:
 	ALakayaProjectile();
 
 	void ThrowProjectile();
+	FORCEINLINE bool IsCustomState() const { return ProjectileState == EProjectileState::Custom; }
+	FORCEINLINE bool IsCollapsed() const { return ProjectileState == EProjectileState::Collapsed; }
+	FORCEINLINE const EProjectileState& GetProjectileState() const { return ProjectileState; }
 
-	FProjectileStateChanged ProjectileStateChanged;
+	FProjectileStateChanged OnProjectileStateChanged;
 
 	virtual void PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker) override;
 
 protected:
-	FORCEINLINE bool IsCustomState() const { return ProjectileState == EProjectileState::Custom; }
 
 private:
 	UFUNCTION()
