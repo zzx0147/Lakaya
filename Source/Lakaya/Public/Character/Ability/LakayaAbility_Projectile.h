@@ -21,6 +21,8 @@ enum class EPoolNoObjectPolicy
 
 DECLARE_DELEGATE_RetVal(class ALakayaProjectile*, FProjectileSpawnDelegate)
 
+using FFreeProjectilesArrayType = TArray<TWeakObjectPtr<ALakayaProjectile>>;
+
 USTRUCT()
 struct FProjectilePoolItem : public FFastArraySerializerItem
 {
@@ -32,11 +34,12 @@ struct FProjectilePoolItem : public FFastArraySerializerItem
 
 	bool operator==(const FProjectilePoolItem& Other) const { return Projectile == Other.Projectile; }
 
+	void SetupProjectileItem(FFreeProjectilesArrayType& InFreeProjectiles);
+
 	UPROPERTY()
 	ALakayaProjectile* Projectile;
 
-	void PreReplicatedRemove(const struct FProjectilePool& InArray);
-	void PostReplicatedAdd(const FProjectilePool& InArray);
+	void PostReplicatedAdd(const struct FProjectilePool& InArray);
 
 private:
 	FDelegateHandle OnProjectileStateChangedHandle;
@@ -75,7 +78,7 @@ private:
 	EPoolNoObjectPolicy NoExtraPolicy;
 
 	FProjectileSpawnDelegate SpawnDelegate;
-	TArray<TWeakObjectPtr<ALakayaProjectile>> FreeProjectiles;
+	FFreeProjectilesArrayType FreeProjectiles;
 
 	friend struct FProjectilePoolItem;
 };
