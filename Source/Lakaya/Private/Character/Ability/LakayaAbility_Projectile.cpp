@@ -30,7 +30,7 @@ void FProjectilePoolItem::SetupProjectileItem(FFreeProjectilesArrayType& InFreeP
 				: InFreeProjectiles.Remove(InProjectile);
 		});
 
-	if (!Projectile->IsCollapsed())
+	if (Projectile->IsCollapsed())
 	{
 		InFreeProjectiles.AddUnique(Projectile);
 	}
