@@ -6,6 +6,12 @@
 #include "Character/Ability/Actor/LakayaProjectile.h"
 #include "Net/UnrealNetwork.h"
 
+FProjectilePoolItem::FProjectilePoolItem(ALakayaProjectile* InProjectile,
+                                         FFreeProjectilesArrayType& InFreeProjectiles) : Projectile(InProjectile)
+{
+	SetupProjectileItem(InFreeProjectiles);
+}
+
 FProjectilePoolItem::~FProjectilePoolItem()
 {
 	// 이동생성시 문제 가능성
@@ -80,10 +86,10 @@ void FProjectilePool::InternalAddNewObject()
 	{
 		return;
 	}
+	Instance->SetReplicates(true);
 
-	auto& Item = Items[Items.Emplace(Instance)];
+	auto& Item = Items[Items.Emplace(Instance, FreeProjectiles)];
 	MarkItemDirty(Item);
-	Item.SetupProjectileItem(FreeProjectiles);
 }
 
 void FProjectilePool::ReFeelExtraObjects()

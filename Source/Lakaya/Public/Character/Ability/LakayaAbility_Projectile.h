@@ -30,6 +30,7 @@ struct FProjectilePoolItem : public FFastArraySerializerItem
 
 	FProjectilePoolItem() = default;
 	FProjectilePoolItem(ALakayaProjectile* InProjectile) : Projectile(InProjectile) { return; }
+	FProjectilePoolItem(ALakayaProjectile* InProjectile, FFreeProjectilesArrayType& InFreeProjectiles);
 	~FProjectilePoolItem();
 
 	bool operator==(const FProjectilePoolItem& Other) const { return Projectile == Other.Projectile; }
