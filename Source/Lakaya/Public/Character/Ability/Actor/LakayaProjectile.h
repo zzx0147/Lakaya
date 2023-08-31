@@ -31,10 +31,15 @@ public:
 	ALakayaProjectile();
 
 	void ThrowProjectile();
+
 	FORCEINLINE bool IsCustomState() const { return ProjectileState == EProjectileState::Custom; }
 	FORCEINLINE bool IsCollapsed() const { return ProjectileState == EProjectileState::Collapsed; }
 	FORCEINLINE const EProjectileState& GetProjectileState() const { return ProjectileState; }
 
+	//TODO: 발사된 시각을 반환하도록 함
+	float GetRecentProjectilePerformedTime() const { return 0.0f; }
+
+	/** 투사체의 상태가 변경되면 호출되는 이벤트입니다. 로컬에서 예측적으로 투사체의 상태를 변경할 때에도 호출됩니다. */
 	FProjectileStateChanged OnProjectileStateChanged;
 
 	virtual void PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker) override;
