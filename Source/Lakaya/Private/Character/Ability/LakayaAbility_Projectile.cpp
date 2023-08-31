@@ -47,10 +47,7 @@ void FProjectilePool::Initialize(FProjectileSpawnDelegate InSpawnDelegate)
 {
 	check(InSpawnDelegate.IsBound());
 	SpawnDelegate = InSpawnDelegate;
-	for (auto Count = 0; Count < MaxExtraObjectCount; ++Count)
-	{
-		InternalAddNewObject();
-	}
+	ReFeelExtraObjects();
 }
 
 bool FProjectilePool::IsMaximumReached() const
@@ -87,6 +84,18 @@ void FProjectilePool::InternalAddNewObject()
 	auto& Item = Items[Items.Emplace(Instance)];
 	MarkItemDirty(Item);
 	Item.SetupProjectileItem(FreeProjectiles);
+}
+
+void FProjectilePool::ReFeelExtraObjects()
+{
+	const auto RemainExtraCount = MaxExtraObjectCount - FreeProjectiles.Num();
+	const auto RemainItemCount = MaxPoolSize - Items.Num();
+	const auto FixedSpawnCount = FMath::Min(RemainExtraCount, RemainItemCount);
+
+	for (auto Count = 0; Count < FixedSpawnCount; ++Count)
+	{
+		InternalAddNewObject();
+	}
 }
 
 ULakayaAbility_Projectile::ULakayaAbility_Projectile(): ProjectilePool()

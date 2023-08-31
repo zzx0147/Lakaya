@@ -64,6 +64,7 @@ struct FProjectilePool : public FFastArraySerializer
 
 private:
 	void InternalAddNewObject();
+	void ReFeelExtraObjects();
 
 	UPROPERTY(Transient)
 	TArray<FProjectilePoolItem> Items;
