@@ -55,7 +55,7 @@ struct FProjectilePool : public FFastArraySerializer
 {
 	GENERATED_BODY()
 
-	void Initialize(FProjectileSpawnDelegate InSpawnDelegate);
+	void Initialize(UWorld* InSpawnWorld, const FActorSpawnParameters& InActorSpawnParameters);
 	bool IsMaximumReached() const;
 	bool IsExtraObjectMaximumReached() const;
 	void AddNewObject();
@@ -96,6 +96,9 @@ private:
 	UPROPERTY(Transient)
 	TArray<FProjectilePoolItem> Items;
 
+	UPROPERTY(EditAnywhere, NotReplicated)
+	TSubclassOf<ALakayaProjectile> ProjectileClass;
+
 	/**
 	 * @brief 풀의 최대 크기를 나타냅니다. 최대 크기 제약이 필요없는 경우 0으로 지정하면 됩니다.
 	 * 
@@ -106,6 +109,7 @@ private:
 
 	/**
 	 * @brief 풀이 몇개의 여분 오브젝트를 보유하도록 할지 지정합니다.
+	 * 클라이언트에서 아주 빠른 간격으로 여러개의 투사체가 사용되는 경우 이 값을 높게 설정하는 것이 좋습니다.
 	 * 
 	 * 예를 들어 이 값이 2이고 현재 2개의 여유 오브젝트가 존재하는 상황에서
 	 * 1개의 오브젝트가 사용되어 여유 오브젝트가 1개로 줄어든다면
@@ -117,8 +121,8 @@ private:
 	UPROPERTY(EditAnywhere, NotReplicated)
 	EPoolNoObjectPolicy NoExtraPolicy;
 
-	/** 투사체를 스폰하는 함수를 참조하는 델리게이트입니다. */
-	FProjectileSpawnDelegate SpawnDelegate;
+	TWeakObjectPtr<UWorld> SpawnWorld;
+	FActorSpawnParameters ActorSpawnParameters;
 
 	/** Collapsed로 전환되어 언제든 사용할 수 있는 투사체들이 여기에 보관됩니다. */
 	FFreeProjectilesArrayType FreeProjectiles;
@@ -145,6 +149,7 @@ class LAKAYA_API ULakayaAbility_Projectile : public ULakayaAbility
 
 public:
 	ULakayaAbility_Projectile();
+	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
 private:
 	UPROPERTY(Replicated, EditAnywhere)

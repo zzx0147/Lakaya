@@ -45,10 +45,10 @@ void FProjectilePoolItem::PostReplicatedAdd(const FProjectilePool& InArray)
 	BindProjectileItem(CastedArray.CreateClientProjectileStateDelegate());
 }
 
-void FProjectilePool::Initialize(FProjectileSpawnDelegate InSpawnDelegate)
+void FProjectilePool::Initialize(UWorld* InSpawnWorld, const FActorSpawnParameters& InActorSpawnParameters)
 {
-	check(InSpawnDelegate.IsBound());
-	SpawnDelegate = InSpawnDelegate;
+	SpawnWorld = InSpawnWorld;
+	ActorSpawnParameters = InActorSpawnParameters;
 	ReFeelExtraObjects();
 }
 
@@ -80,12 +80,7 @@ FProjectilePool::~FProjectilePool()
 
 void FProjectilePool::InternalAddNewObject()
 {
-	if (!ensure(SpawnDelegate.IsBound()))
-	{
-		return;
-	}
-
-	const auto Instance = SpawnDelegate.Execute();
+	const auto Instance = SpawnWorld->SpawnActor<ALakayaProjectile>(ProjectileClass, ActorSpawnParameters);
 	if (!ensure(Instance))
 	{
 		return;
@@ -165,6 +160,19 @@ ALakayaProjectile* FProjectilePool::GetFreeProjectile()
 ULakayaAbility_Projectile::ULakayaAbility_Projectile(): ProjectilePool()
 {
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
+}
+
+void ULakayaAbility_Projectile::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo,
+                                              const FGameplayAbilitySpec& Spec)
+{
+	Super::OnGiveAbility(ActorInfo, Spec);
+	if (ActorInfo->IsNetAuthority())
+	{
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.Owner = ActorInfo->OwnerActor.Get();
+		SpawnParameters.Instigator = Cast<APawn>(ActorInfo->AvatarActor.Get());
+		ProjectilePool.Initialize(GetWorld(), SpawnParameters);
+	}
 }
 
 void ULakayaAbility_Projectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
