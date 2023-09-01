@@ -114,7 +114,7 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 		this, &UGameLobbyCharacterSelectWidget::OnClickedCharacter2Button);
 	CharacterButtonArray[2]->OnClicked.AddUniqueDynamic(
 		this, &UGameLobbyCharacterSelectWidget::OnClickedCharacter3Button);
-
+	
 	//최초 캐릭터를 1번 캐릭터로 설정
 	PrevCharacterButton = CharacterButtonArray[0];
 	OnClickedCharacter1Button();
