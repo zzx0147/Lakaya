@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "LakayaAbility.h"
+#include "Actor/LakayaProjectile.h"
 #include "LakayaAbility_Projectile.generated.h"
 
 /**
@@ -30,11 +31,11 @@ struct FProjectilePoolItem : public FFastArraySerializerItem
 
 	FProjectilePoolItem() = default;
 	FProjectilePoolItem(ALakayaProjectile* InProjectile) : Projectile(InProjectile) { return; }
-	FProjectilePoolItem(ALakayaProjectile* InProjectile, FFreeProjectilesArrayType& InFreeProjectiles);
+	FProjectilePoolItem(ALakayaProjectile* InProjectile, const FProjectileStateChanged::FDelegate& Delegate);
 
 	bool operator==(const FProjectilePoolItem& Other) const { return Projectile == Other.Projectile; }
 
-	void SetupProjectileItem(FFreeProjectilesArrayType& InFreeProjectiles);
+	void BindProjectileItem(const FProjectileStateChanged::FDelegate& Delegate);
 
 	void UnbindProjectileItem();
 
@@ -58,6 +59,7 @@ struct FProjectilePool : public FFastArraySerializer
 	bool IsMaximumReached() const;
 	bool IsExtraObjectMaximumReached() const;
 	void AddNewObject();
+	ALakayaProjectile* GetFreeProjectile();
 
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
 	{
@@ -69,7 +71,27 @@ struct FProjectilePool : public FFastArraySerializer
 private:
 	void InternalAddNewObject();
 	void ReFeelExtraObjects();
-	ALakayaProjectile* GetFreeProjectile();
+
+	FORCEINLINE auto CreateProjectileStateDelegate(
+		const FProjectileStateChanged::FDelegate::TMethodPtr<FProjectilePool>& MemberFunction)
+	{
+		return FProjectileStateChanged::FDelegate::CreateRaw(this, MemberFunction);
+	}
+
+	FORCEINLINE auto CreateClientProjectileStateDelegate()
+	{
+		return CreateProjectileStateDelegate(&FProjectilePool::ClientProjectileStateChanged);
+	}
+
+	FORCEINLINE auto CreateServerProjectileStateDelegate()
+	{
+		return CreateProjectileStateDelegate(&FProjectilePool::ServerProjectileStateChanged);
+	}
+
+	void ClientProjectileStateChanged(ALakayaProjectile* InProjectile, const EProjectileState& InState,
+	                                  const uint8& InCustomState);
+	void ServerProjectileStateChanged(ALakayaProjectile* InProjectile, const EProjectileState& InState,
+	                                  const uint8& InCustomState);
 
 	UPROPERTY(Transient)
 	TArray<FProjectilePoolItem> Items;

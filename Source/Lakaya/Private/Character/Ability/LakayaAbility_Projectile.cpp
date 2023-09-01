@@ -8,30 +8,22 @@
 #include "Net/UnrealNetwork.h"
 
 FProjectilePoolItem::FProjectilePoolItem(ALakayaProjectile* InProjectile,
-                                         FFreeProjectilesArrayType& InFreeProjectiles) : Projectile(InProjectile)
+                                         const FProjectileStateChanged::FDelegate& Delegate) : Projectile(InProjectile)
 {
-	SetupProjectileItem(InFreeProjectiles);
+	BindProjectileItem(Delegate);
 }
 
-void FProjectilePoolItem::SetupProjectileItem(FFreeProjectilesArrayType& InFreeProjectiles)
+void FProjectilePoolItem::BindProjectileItem(const FProjectileStateChanged::FDelegate& Delegate)
 {
-	if (!ensure(Projectile))
+	if (!ensure(Projectile && Delegate.IsBound()))
 	{
 		return;
 	}
 
-	OnProjectileStateChangedHandle = Projectile->OnProjectileStateChanged.AddLambda(
-		[&InFreeProjectiles](ALakayaProjectile* InProjectile, const EProjectileState& NewState, const uint8&)
-		{
-			NewState == EProjectileState::Collapsed
-				? InFreeProjectiles.AddUnique(InProjectile)
-				: InFreeProjectiles.Remove(InProjectile);
-		});
+	OnProjectileStateChangedHandle = Projectile->OnProjectileStateChanged.Add(Delegate);
 
-	if (Projectile->IsCollapsed())
-	{
-		InFreeProjectiles.AddUnique(Projectile);
-	}
+	// Execute for initial state
+	Delegate.Execute(Projectile, Projectile->GetProjectileState(), Projectile->GetCustomState());
 }
 
 void FProjectilePoolItem::UnbindProjectileItem()
@@ -49,8 +41,8 @@ void FProjectilePoolItem::UnbindProjectileItem()
 void FProjectilePoolItem::PostReplicatedAdd(const FProjectilePool& InArray)
 {
 	// We does not modify 'Items' so It's safe to cast away const.
-	auto& TargetArray = const_cast<FFreeProjectilesArrayType&>(InArray.FreeProjectiles);
-	SetupProjectileItem(TargetArray);
+	auto& CastedArray = const_cast<FProjectilePool&>(InArray);
+	BindProjectileItem(CastedArray.CreateClientProjectileStateDelegate());
 }
 
 void FProjectilePool::Initialize(FProjectileSpawnDelegate InSpawnDelegate)
@@ -62,7 +54,7 @@ void FProjectilePool::Initialize(FProjectileSpawnDelegate InSpawnDelegate)
 
 bool FProjectilePool::IsMaximumReached() const
 {
-	return Items.Num() >= MaxPoolSize;
+	return MaxPoolSize != 0 && Items.Num() >= MaxPoolSize;
 }
 
 bool FProjectilePool::IsExtraObjectMaximumReached() const
@@ -100,7 +92,7 @@ void FProjectilePool::InternalAddNewObject()
 	}
 	Instance->SetReplicates(true);
 
-	auto& Item = Items[Items.Emplace(Instance, FreeProjectiles)];
+	auto& Item = Items[Items.Emplace(Instance, CreateServerProjectileStateDelegate())];
 	MarkItemDirty(Item);
 }
 
@@ -117,18 +109,40 @@ void FProjectilePool::ReFeelExtraObjects()
 	}
 }
 
+void FProjectilePool::ClientProjectileStateChanged(ALakayaProjectile* InProjectile, const EProjectileState& InState,
+                                                   const uint8& InCustomState)
+{
+	InState == EProjectileState::Collapsed
+		? FreeProjectiles.AddUnique(InProjectile)
+		: FreeProjectiles.Remove(InProjectile);
+}
+
+void FProjectilePool::ServerProjectileStateChanged(ALakayaProjectile* InProjectile, const EProjectileState& InState,
+                                                   const uint8& InCustomState)
+{
+	if (InState == EProjectileState::Collapsed)
+	{
+		FreeProjectiles.AddUnique(InProjectile);
+	}
+	else
+	{
+		FreeProjectiles.Remove(InProjectile);
+		AddNewObject();
+	}
+}
+
 ALakayaProjectile* FProjectilePool::GetFreeProjectile()
 {
 	static const auto GetOlderProjectile = [](ALakayaProjectile* A, ALakayaProjectile* B)
 	{
 		return A->GetRecentProjectilePerformedTime() < B->GetRecentProjectilePerformedTime() ? A : B;
 	};
-	
+
 	static const auto ProjectileReduce = [](ALakayaProjectile* Recent, const FProjectilePoolItem& Item)
 	{
 		return !Recent ? Item.Projectile : !Item.Projectile ? Recent : GetOlderProjectile(Recent, Item.Projectile);
 	};
-	
+
 	ALakayaProjectile* Projectile = nullptr;
 
 	if (FreeProjectiles.IsEmpty())

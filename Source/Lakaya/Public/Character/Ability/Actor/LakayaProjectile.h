@@ -35,6 +35,7 @@ public:
 	FORCEINLINE bool IsCustomState() const { return ProjectileState == EProjectileState::Custom; }
 	FORCEINLINE bool IsCollapsed() const { return ProjectileState == EProjectileState::Collapsed; }
 	FORCEINLINE const EProjectileState& GetProjectileState() const { return ProjectileState; }
+	FORCEINLINE const uint8& GetCustomState() const { return CustomState; }
 
 	//TODO: 발사된 시각을 반환하도록 함
 	float GetRecentProjectilePerformedTime() const { return 0.0f; }
