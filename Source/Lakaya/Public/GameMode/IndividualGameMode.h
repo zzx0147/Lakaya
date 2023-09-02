@@ -25,7 +25,8 @@ protected:
 	virtual bool ReadyToEndMatch_Implementation() override;
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
-	virtual void HandleMatchIsSelectCharacter() override;
+	// TODO : 캐릭터 선택상태는 개인전에서만 존재
+	virtual void HandleMatchIsSelectCharacter();
 
 protected:
 	virtual void RespawnPlayer(AController* KilledController) override;

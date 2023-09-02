@@ -189,6 +189,10 @@ void AOccupationGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 
+	// TODO : HandleMatchIsCharacterSelect() 함수에 있는 기능들을 옮겨야 합니다.
+	
+	
+	// TODO: 캐릭터 선택 후에 아래의 위젯들을 활성화 시켜줘야 합니다.
 	if (SkillWidget.IsValid())
 		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
@@ -201,7 +205,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 	if (MatchStartWaitWidget.IsValid())
 		MatchStartWaitWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-	// MatchStartWaitWidget위젯을 띄우고, 3초 뒤에 비활성화 해줍니다.
+	// MatchStartWaitWidget위젯을 띄우고, N초(MatchStartWaitWidgetLifeTime) 뒤에 비활성화 해줍니다.
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindLambda([this]
 	{
@@ -697,21 +701,13 @@ void AOccupationGameState::UpdateTeamScoreTick()
 {
 	if (TeamToUpdate == ETeam::Anti)
 	{
-		// Anti팀 점수 업데이트
 		AntiTeamScore += AdditiveScore;
 		OnRep_AntiTeamScore();
-		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("AntiTeamScore : %f"), AntiTeamScore);
-		// FString debugMessage = FString::Printf(TEXT("AntiTeamScore: %f"), AntiTeamScore);
-		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, debugMessage);
 	}
 	else if (TeamToUpdate == ETeam::Pro)
 	{
-		// Pro팀 점수 업데이트
 		ProTeamScore += AdditiveScore;
 		OnRep_ProTeamScore();
-		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("ProTeamScore : %f"), ProTeamScore);
-		// FString debugMessage = FString::Printf(TEXT("ProTeamScore: %f"), ProTeamScore);
-		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, debugMessage);
 	}
 }
 

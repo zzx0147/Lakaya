@@ -3,9 +3,9 @@
 #include "AI/AiCharacterController.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
-#include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "PlayerController/InteractablePlayerController.h"
+#include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/IndividualWidget/IndividualGameResultWidget.h"
 #include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
 
