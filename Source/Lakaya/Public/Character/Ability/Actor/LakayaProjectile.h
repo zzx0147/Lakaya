@@ -32,10 +32,11 @@ public:
 
 	void ThrowProjectile();
 
-	FORCEINLINE bool IsCustomState() const { return ProjectileState == EProjectileState::Custom; }
 	FORCEINLINE bool IsCollapsed() const { return ProjectileState == EProjectileState::Collapsed; }
+	FORCEINLINE bool IsPerforming() const { return ProjectileState == EProjectileState::Perform; }
+	FORCEINLINE bool IsCustomState() const { return ProjectileState == EProjectileState::Custom; }
 	FORCEINLINE const EProjectileState& GetProjectileState() const { return ProjectileState; }
-	FORCEINLINE const uint8& GetCustomState() const { return CustomState; }
+	FORCEINLINE const uint8& GetCustomState() const { return CachedCustomState; }
 
 	//TODO: 발사된 시각을 반환하도록 함
 	float GetRecentProjectilePerformedTime() const { return 0.0f; }
@@ -46,6 +47,8 @@ public:
 	virtual void PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker) override;
 
 protected:
+	UFUNCTION(BlueprintNativeEvent)
+	void CustomStateChanged(const uint8& OldState);
 
 private:
 	UFUNCTION()
@@ -57,6 +60,9 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_ProjectileState, Transient)
 	EProjectileState ProjectileState;
 
-	UPROPERTY(Replicated, Transient)
+	/** 투사체에서 추가적인 더 다양한 상태가 필요한 경우 사용됩니다. ProjectileState가 Custom일 때만 리플리케이트됩니다. */
+	UPROPERTY(ReplicatedUsing=OnRep_ProjectileState, Transient)
 	uint8 CustomState;
+
+	uint8 CachedCustomState;
 };

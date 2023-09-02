@@ -31,6 +31,27 @@ void ALakayaProjectile::PreReplication(IRepChangedPropertyTracker& ChangedProper
 	DOREPLIFETIME_ACTIVE_OVERRIDE(ALakayaProjectile, CustomState, IsCustomState());
 }
 
+void ALakayaProjectile::CustomStateChanged_Implementation(const uint8& OldState)
+{
+	UE_LOG(LogActor, Log, TEXT("[%s] Projectile custom state changed from %d to %d"), *GetName(), OldState,
+	       GetCustomState());
+}
+
 void ALakayaProjectile::OnRep_ProjectileState()
 {
+	if (IsCustomState())
+	{
+		if (CachedCustomState == CustomState)
+		{
+			// ProjectileStated와 CustomState가 동시에 업데이트되어 두번 호출된 경우이므로 스킵합니다.
+			return;
+		}
+		const auto OldCustomState = CachedCustomState;
+		CachedCustomState = CustomState;
+		CustomStateChanged(OldCustomState);
+	}
+	else
+	{
+		CachedCustomState = 0;
+	}
 }
