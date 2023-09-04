@@ -260,7 +260,7 @@ void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
 UGameLobbyCharacterSelectWidget* ALakayaBaseGameState::GetCharacterSelectWidget()
 {
 	// 캐릭터 위젯이 존재하지 않는 경우 생성합니다.
-	if (!GetCharacterSelectWidget() && CharacterSelectWidgetClass)
+	if (!CharacterSelectWidget.IsValid() && CharacterSelectWidgetClass)
 	{
 		CharacterSelectWidget = CreateWidget<UGameLobbyCharacterSelectWidget>(GetWorld(), CharacterSelectWidgetClass);
 		if (CharacterSelectWidget != nullptr)
@@ -269,7 +269,7 @@ UGameLobbyCharacterSelectWidget* ALakayaBaseGameState::GetCharacterSelectWidget(
 			CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
-	return GetCharacterSelectWidget();
+	return CharacterSelectWidget.Get();
 }
 
 void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* VictimPlayer,
