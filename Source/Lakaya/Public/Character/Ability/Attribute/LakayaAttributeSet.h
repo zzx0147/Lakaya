@@ -19,6 +19,8 @@ class LAKAYA_API ULakayaAttributeSet : public UAttributeSet
 	GENERATED_BODY()
 
 public:
+	ULakayaAttributeSet();
+	
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxHealth);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, Health);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxAmmo);

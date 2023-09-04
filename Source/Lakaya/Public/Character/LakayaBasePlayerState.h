@@ -47,7 +47,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void CopyProperties(APlayerState* PlayerState) override;
 	virtual void OnRep_Owner() override;
-
+	virtual void Tick(float DeltaSeconds) override;
 public:
 	bool IsSameTeam(const ALakayaBasePlayerState* Other) const;
 
@@ -321,9 +321,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UAbilitySystemComponent> AbilitySystem;
-
-	UPROPERTY(VisibleAnywhere)
-	const ULakayaAbilitySet* AttributeSet;
+	
+	UPROPERTY()
+	const class ULakayaAttributeSet* AttributeSet;
 
 	FTimerHandle RespawnTimer;
 	FTimerHandle CurrentCaptureTimer;

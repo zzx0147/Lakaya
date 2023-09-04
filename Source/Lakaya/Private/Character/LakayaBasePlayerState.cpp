@@ -5,6 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "Character/LakayaBaseCharacter.h"
+#include "Character/Ability/Attribute/LakayaAttributeSet.h"
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/DirectionalDamageIndicator.h"
@@ -32,6 +33,7 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	CharacterName = TEXT("Rena");
 	bRecentAliveState = true;
 	OnPawnSet.AddUniqueDynamic(this, &ALakayaBasePlayerState::OnPawnSetCallback);
+	PrimaryActorTick.bCanEverTick = true;
 
 	static ConstructorHelpers::FClassFinder<UGamePlayHealthWidget> HealthFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
@@ -47,6 +49,8 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	PortraitWidgetClass = PortraitFinder.Class;
 
 	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
+
+	AttributeSet = CreateDefaultSubobject<ULakayaAttributeSet>(TEXT("LakayaAttributeSet"));
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -105,18 +109,6 @@ void ALakayaBasePlayerState::BeginPlay()
 		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(
 			LocalController, DirectionDamageIndicatorClass);
 		if (DirectionDamageIndicatorWidget) DirectionDamageIndicatorWidget->AddToViewport();
-
-
-	}
-
-	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
-	// AbilitySystemComponent가 유효한지 확인합니다. 실패를 허용할 수 없다면 if() 조건문을 check() 구문으로 대체합니다.
-	if (IsValid(ASC))
-	{
-		// 어빌리티 시스템 컴포넌트에서 UMyAttributeSet를 구합니다. 필요한 경우 어빌리티 시스템 컴포넌트가 UMyAttributeSet를 생성하고 등록할 것입니다.
-		AttributeSet = ASC->GetSet<ULakayaAbilitySet>();
-		
-		// 이제 새 UMyAttributeSet에 대한 포인터가 생겨 나중에 사용할 수 있습니다. 초기화 함수가 있는 경우 여기서 호출하면 좋습니다.
 	}
 }
 
@@ -139,6 +131,20 @@ void ALakayaBasePlayerState::OnRep_Owner()
 {
 	Super::OnRep_Owner();
 	OnOwnerChanged.Broadcast(Owner);
+}
+
+void ALakayaBasePlayerState::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	// UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+
+	if (GetAbilitySystemComponent())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow,
+			                                 *FString::Printf(TEXT("::%f"), GetAbilitySystemComponent()->GetSet<ULakayaAttributeSet>()->GetCurrentAmmo() ));
+	}
+	
 }
 
 bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) const
