@@ -6,15 +6,6 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
-bool FGameplayAbilityTargetData_LocationWithTime::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
-{
-	ThrowLocation.NetSerialize(Ar, Map, bOutSuccess);
-	Ar << ServerTime;
-
-	bOutSuccess = true;
-	return true;
-}
-
 ALakayaProjectile::ALakayaProjectile()
 {
 	SetReplicates(true);
@@ -23,14 +14,8 @@ ALakayaProjectile::ALakayaProjectile()
 		TEXT("ProjectileMovementComponent"));
 }
 
-void ALakayaProjectile::ThrowProjectilePredictive(const FPredictionKey& Key)
+void ALakayaProjectile::ThrowProjectile()
 {
-	if (!IsCollapsed())
-	{
-		UE_LOG(LogActor, Error, TEXT("[%s] Try to throw projectile predictive when it's not collapsed!"), *GetName());
-		return;
-	}
-	
 }
 
 void ALakayaProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

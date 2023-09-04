@@ -3,11 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/GameplayAbilityTargetTypes.h"
 #include "GameFramework/Actor.h"
 #include "LakayaProjectile.generated.h"
-
-struct FPredictionKey;
 
 UENUM(BlueprintType)
 enum class EProjectileState : uint8
@@ -25,38 +22,6 @@ enum class EProjectileState : uint8
 DECLARE_EVENT_ThreeParams(ALakayaProjectile, FProjectileStateChanged,
                           class ALakayaProjectile*, const EProjectileState&, const uint8&)
 
-USTRUCT(BlueprintType)
-struct FGameplayAbilityTargetData_LocationWithTime : public FGameplayAbilityTargetData
-{
-	GENERATED_BODY()
-
-	/** 투사체가 투척된 위치를 나타냅니다. */
-	UPROPERTY(BlueprintReadWrite)
-	FGameplayAbilityTargetingLocationInfo ThrowLocation;
-
-	/** 투사체가 투척된 서버 시각을 나타냅니다. */
-	UPROPERTY(BlueprintReadWrite)
-	float ServerTime;
-
-	virtual bool HasOrigin() const override { return true; }
-	virtual FTransform GetOrigin() const override { return ThrowLocation.GetTargetingTransform(); }
-	virtual UScriptStruct* GetScriptStruct() const override { return StaticStruct(); }
-	virtual FString ToString() const override { return TEXT("FGameplayAbilityTargetData_LocationWithTime"); }
-
-	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
-};
-
-template <>
-struct TStructOpsTypeTraits<FGameplayAbilityTargetData_LocationWithTime>
-	: public TStructOpsTypeTraitsBase2<FGameplayAbilityTargetData_LocationWithTime>
-{
-	enum
-	{
-		// For now this is REQUIRED for FGameplayAbilityTargetDataHandle net serialization to work
-		WithNetSerializer = true
-	};
-};
-
 UCLASS()
 class LAKAYA_API ALakayaProjectile : public AActor
 {
@@ -65,7 +30,7 @@ class LAKAYA_API ALakayaProjectile : public AActor
 public:
 	ALakayaProjectile();
 
-	void ThrowProjectilePredictive(const FPredictionKey& Key);
+	void ThrowProjectile();
 
 	FORCEINLINE bool IsCollapsed() const { return ProjectileState == EProjectileState::Collapsed; }
 	FORCEINLINE bool IsPerforming() const { return ProjectileState == EProjectileState::Perform; }
