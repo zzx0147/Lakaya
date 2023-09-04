@@ -11,10 +11,11 @@
 #include "GameMode/LakayaBaseGameState.h"
 #include "Kismet/GameplayStatics.h"
 
-namespace MatchState
-{
-	 const FName IsSelectCharacter = FName(TEXT("IsSelectCharacter"));
-}
+// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
+// namespace MatchState
+// {
+// 	 const FName IsSelectCharacter = FName(TEXT("IsSelectCharacter"));
+// }
 
 const FString ALakayaDefaultPlayGameMode::ATeamSpawnTag = FString(TEXT("ATeamSpawnZone"));
 const FString ALakayaDefaultPlayGameMode::BTeamSpawnTag = FString(TEXT("BTeamSpawnZone"));
@@ -23,7 +24,8 @@ ALakayaDefaultPlayGameMode::ALakayaDefaultPlayGameMode()
 {
 	bDelayedStart = true;
 	MinRespawnDelay = 4.0f;
-	CharacterSelectStartDelay = 3.0f;
+	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
+	// CharacterSelectStartDelay = 3.0f;
 	AgonesSDK = CreateDefaultSubobject<UAgonesComponent>(TEXT("AgonesSDK"));
 	AgonesSDK->bDisableAutoConnect = false;
 }
@@ -155,36 +157,38 @@ void ALakayaDefaultPlayGameMode::PostLogin(APlayerController* NewPlayer)
 void ALakayaDefaultPlayGameMode::OnMatchStateSet()
 {
 	Super::OnMatchStateSet();
-	if (MatchState == MatchState::IsSelectCharacter)
-	{
-		HandleMatchIsSelectCharacter();
-	}
+	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
+	// if (MatchState == MatchState::IsSelectCharacter)
+	// {
+		// HandleMatchIsSelectCharacter();
+	// }
 }
 
-//TODO: 사용되지 않는 오버라이딩 제거
+// TODO : 캐릭터 선택 상태가 사라져서 캐릭터 선택 창에서 이루어 졌던 기능들을 옮겨야 합니다.
+// TODO : 캐릭터가 생성이 되고 나서 캐릭터가 선택이 되기 때문에 여기서 진행하기 보다는 HandleMatchHasStarted에서 진행해야 합니다.
 void ALakayaDefaultPlayGameMode::HandleMatchIsWaitingToStart()
 {
 	Super::HandleMatchIsWaitingToStart();
 }
 
-//TODO: 사용되지 않는 오버라이딩 제거
+// TODO : 위의 내용과 동일합니다.
 bool ALakayaDefaultPlayGameMode::ReadyToStartMatch_Implementation()
 {
 	return Super::ReadyToStartMatch_Implementation();
 }
 
-void ALakayaDefaultPlayGameMode::HandleMatchIsSelectCharacter()
-{
-	FTimerHandle TimerHandler;
-	//GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 10.0f, false);
-}
+// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
+// void ALakayaDefaultPlayGameMode::HandleMatchIsSelectCharacter()
+// {
+// 	FTimerHandle TimerHandler;
+// 	//GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 10.0f, false);
+// }
 
 void ALakayaDefaultPlayGameMode::HandleMatchHasStarted()
 {
 	// 게임 시작 후, 서버 측 클라에게 UI바인딩.
 	Super::HandleMatchHasStarted();
 	
-	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasStarted"));
 }
 
@@ -206,7 +210,6 @@ void ALakayaDefaultPlayGameMode::HandleLeavingMap()
 {
 	Super::HandleLeavingMap();
 
-	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleLeavingMap"));
 }
 
@@ -229,8 +232,8 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 	const auto VictimPlayerState = VictimController->GetPlayerState<ALakayaBasePlayerState>();
 	if (VictimPlayerState != nullptr) VictimPlayerState->IncreaseDeathCount();
 
-	if (const auto BaseGameState = GetGameState<ALakayaBaseGameState>())
-		BaseGameState->NotifyPlayerKilled(VictimController->GetPlayerState<APlayerState>(), InstigatorController->GetPlayerState<APlayerState>(), DamageCauser);
+	if (const auto LakayaBaseGameState = GetGameState<ALakayaBaseGameState>())
+		LakayaBaseGameState->NotifyPlayerKilled(VictimController->GetPlayerState<APlayerState>(), InstigatorController->GetPlayerState<APlayerState>(), DamageCauser);
 
 	//TODO: ShouldRespawn 함수는 사망한 플레이어가 부활할 수 있는지 여부를 검사하기 위해 기획되었습니다. 따라서 매개변수로 플레이어 스테이트나 컨트롤러를 받아야 합니다.
 	if (ShouldRespawn())
@@ -247,12 +250,13 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 	}
 } 
 
-void ALakayaDefaultPlayGameMode::StartSelectCharacter()
-{
-	if (MatchState != MatchState::WaitingToStart) return;
-
-	SetMatchState(MatchState::IsSelectCharacter);
-}
+// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
+// void ALakayaDefaultPlayGameMode::StartSelectCharacter()
+// {
+// 	if (MatchState != MatchState::WaitingToStart) return;
+//
+// 	SetMatchState(MatchState::IsSelectCharacter);
+// }
 
 void ALakayaDefaultPlayGameMode::DelayedEndedGame()
 {
@@ -262,9 +266,9 @@ void ALakayaDefaultPlayGameMode::DelayedEndedGame()
 
 bool ALakayaDefaultPlayGameMode::HasMatchStarted() const
 {
-	//TODO: 취향차이지만 아래의 주석과 같이 간단히 표현할 수도 있습니다.
+	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
 	// return MatchState == MatchState::IsSelectCharacter ? false : Super::HasMatchStarted();
-	if (MatchState == MatchState::IsSelectCharacter) return false;
+	// if (MatchState == MatchState::IsSelectCharacter) return false;
 
 	return Super::HasMatchStarted();
 }
@@ -319,18 +323,20 @@ void ALakayaDefaultPlayGameMode::RegisterPlayer(AController* NewPlayer)
 		BasePlayerState->OnPlayerKilled.AddUObject(this, &ALakayaDefaultPlayGameMode::OnPlayerKilled);
 	}
 
-	const auto BaseGameState = GetWorld()->GetGameState<ALakayaBaseGameState>();
+	BaseGameState = GetWorld()->GetGameState<ALakayaBaseGameState>();
 	if (BaseGameState == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_OccupationGameState is null."));
-		return;
 	}
 
-	const int32 CurrentPlayerNum = BaseGameState->PlayerArray.Num();
+	CurrentPlayerNum = BaseGameState->PlayerArray.Num();
 
-	if (CurrentPlayerNum == BaseGameState->GetMaximumPlayers())
-	{
-		GetWorldTimerManager().SetTimer(TimerHandle_DelayedCharacterSelectStart, this, &ALakayaDefaultPlayGameMode::StartSelectCharacter,
-			CharacterSelectStartDelay, false);
-	}
+	// TODO : 플레이어가 다 모이게 되면 N초 (DelayedMatchStart)뒤에 MatchStart로 넘어가게 해야 합니다.
+	// TODO : 여기서 진행하기 보다는 개인전과 별개로, OccupationGameMode에서 진행해야 합니다.
+	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
+	// if (CurrentPlayerNum == BaseGameState->GetMaximumPlayers())
+	// {
+	// 	GetWorldTimerManager().SetTimer(TimerHandle_DelayedCharacterSelectStart, this, &ALakayaDefaultPlayGameMode::StartSelectCharacter,
+	// 		CharacterSelectStartDelay, false);
+	// }
 }

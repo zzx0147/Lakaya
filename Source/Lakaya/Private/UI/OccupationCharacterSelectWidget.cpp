@@ -5,18 +5,28 @@
 #include "Components/VerticalBox.h"
 #include "UI/ImageTextWidget.h"
 #include "Character/LakayaBasePlayerState.h"
+#include "Components/Button.h"
 #include "UI/PlayerInfoWidget.h"
 
 UOccupationCharacterSelectWidget::UOccupationCharacterSelectWidget(const FObjectInitializer& ObjectInitializer) : Super(
 	ObjectInitializer)
 {
-
 }
 
 void UOccupationCharacterSelectWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
 	PlayerInfoVerticalBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("PlayerInfoPanel")));
+	CharacterSelectButton = Cast<UButton>(GetWidgetFromName(TEXT("CharSelect_Btn")));
+
+	CharacterSelectButton->OnClicked.AddUniqueDynamic(this, &UOccupationCharacterSelectWidget::OnClickedCharacterSelectButton);
+}
+
+void UOccupationCharacterSelectWidget::OnClickedCharacterSelectButton()
+{
+	// TODO : 캐릭터 선택 버튼 누를 시, 캐릭터 선택 위젯 창 제거.
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("OnClickedCharacterSelectButton"));
 }
 
 void UOccupationCharacterSelectWidget::RegisterPlayer(APlayerState* PlayerState)
@@ -25,7 +35,6 @@ void UOccupationCharacterSelectWidget::RegisterPlayer(APlayerState* PlayerState)
 	if (PlayerState == GetOwningPlayer()->GetPlayerState<APlayerState>()) return; //로컬 플레이어가 아닐 때에만 따진다
 
 	//위젯을 생성하고 등록시킨다.
-
 	if (const auto BasePlayerState = Cast<ALakayaBasePlayerState>(PlayerState))
 	{
 		const auto PlayerNameWidget = CreateWidget<UPlayerInfoWidget>(this, PlayerInfoWidgetClass);
