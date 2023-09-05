@@ -23,7 +23,7 @@ void FProjectilePoolItem::BindProjectileItem(const FProjectileStateChanged::FDel
 	OnProjectileStateChangedHandle = Projectile->OnProjectileStateChanged.Add(Delegate);
 
 	// Execute for initial state
-	Delegate.Execute(Projectile, Projectile->GetProjectileState(), Projectile->GetCustomState());
+	Delegate.Execute(Projectile, {}, Projectile->GetProjectileState());
 }
 
 void FProjectilePoolItem::UnbindProjectileItem()
@@ -104,18 +104,16 @@ void FProjectilePool::ReFeelExtraObjects()
 	}
 }
 
-void FProjectilePool::ClientProjectileStateChanged(ALakayaProjectile* InProjectile, const EProjectileState& InState,
-                                                   const uint8& InCustomState)
+void FProjectilePool::ClientProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
+                                                   const FProjectileState& NewState)
 {
-	InState == EProjectileState::Collapsed
-		? FreeProjectiles.AddUnique(InProjectile)
-		: FreeProjectiles.Remove(InProjectile);
+	NewState.IsCollapsed() ? FreeProjectiles.AddUnique(InProjectile) : FreeProjectiles.Remove(InProjectile);
 }
 
-void FProjectilePool::ServerProjectileStateChanged(ALakayaProjectile* InProjectile, const EProjectileState& InState,
-                                                   const uint8& InCustomState)
+void FProjectilePool::ServerProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
+                                                   const FProjectileState& NewState)
 {
-	if (InState == EProjectileState::Collapsed)
+	if (NewState.IsCollapsed())
 	{
 		FreeProjectiles.AddUnique(InProjectile);
 	}

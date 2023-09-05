@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Abilities/GameplayAbilityTargetTypes.h"
 #include "GameFramework/Actor.h"
 #include "LakayaProjectile.generated.h"
 
@@ -19,8 +20,99 @@ enum class EProjectileState : uint8
 	Custom
 };
 
-DECLARE_EVENT_ThreeParams(ALakayaProjectile, FProjectileStateChanged,
-                          class ALakayaProjectile*, const EProjectileState&, const uint8&)
+USTRUCT()
+struct FProjectileState
+{
+	GENERATED_BODY()
+
+	FProjectileState() = default;
+
+	FORCEINLINE const EProjectileState& GetProjectileState() const { return ProjectileState; }
+	FORCEINLINE bool IsCollapsed() const { return GetProjectileState() == EProjectileState::Collapsed; }
+	FORCEINLINE bool IsPerforming() const { return GetProjectileState() == EProjectileState::Perform; }
+	FORCEINLINE bool IsCustomState() const { return GetProjectileState() == EProjectileState::Custom; }
+	FORCEINLINE const uint8& GetCustomState() const { return CustomState; }
+
+	/**
+	 * @brief 투사체의 상태를 변경합니다.
+	 * @return 변경된 내용이 있는 경우 true를 반환합니다.
+	 */
+	bool SetProjectileState(const EProjectileState& InProjectileState);
+
+	/**
+	 * @brief 투사체의 커스텀 상태를 변경합니다.
+	 * @return 변경된 내용이 있는 경우 true를 반환합니다.
+	 */
+	bool SetCustomState(const uint8& InCustomState);
+
+	bool operator==(const FProjectileState& Other) const
+	{
+		return ProjectileState == Other.ProjectileState && CustomState == Other.CustomState;
+	}
+
+	bool operator!=(const FProjectileState& Other) const { return !operator==(Other); }
+
+	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
+
+private:
+	UPROPERTY()
+	EProjectileState ProjectileState;
+
+	UPROPERTY()
+	uint8 CustomState;
+};
+
+template <>
+struct TStructOpsTypeTraits<FProjectileState> : public TStructOpsTypeTraitsBase2<FProjectileState>
+{
+	enum
+	{
+		WithNetSerializer = true,
+	};
+};
+
+DECLARE_EVENT_ThreeParams(ALakayaProjectile, FProjectileStateChanged, class ALakayaProjectile*,
+                          const FProjectileState& /* OldState */, const FProjectileState& /* NewState */);
+
+USTRUCT()
+struct FProjectileThrowData
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FVector_NetQuantize100 ThrowLocation;
+
+	UPROPERTY()
+	FVector_NetQuantizeNormal ThrowDirection;
+
+	UPROPERTY()
+	float ServerTime;
+};
+
+USTRUCT()
+struct FGameplayAbilityTargetData_ThrowProjectile : public FGameplayAbilityTargetData
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FProjectileThrowData ThrowData;
+
+	UPROPERTY()
+	ALakayaProjectile* Projectile;
+
+	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
+};
+
+template <>
+struct TStructOpsTypeTraits<FGameplayAbilityTargetData_ThrowProjectile>
+	: public TStructOpsTypeTraitsBase2<FGameplayAbilityTargetData_ThrowProjectile>
+{
+	enum
+	{
+		// For now this is REQUIRED for FGameplayAbilityTargetDataHandle net serialization to work
+		WithNetSerializer = true
+	};
+};
 
 UCLASS()
 class LAKAYA_API ALakayaProjectile : public AActor
@@ -30,16 +122,20 @@ class LAKAYA_API ALakayaProjectile : public AActor
 public:
 	ALakayaProjectile();
 
-	void ThrowProjectile();
+	void ThrowProjectilePredictive(const FProjectileThrowData& InThrowData);
+	void ThrowProjectileAuthoritative(FProjectileThrowData&& InThrowData);
 
-	FORCEINLINE bool IsCollapsed() const { return ProjectileState == EProjectileState::Collapsed; }
-	FORCEINLINE bool IsPerforming() const { return ProjectileState == EProjectileState::Perform; }
-	FORCEINLINE bool IsCustomState() const { return ProjectileState == EProjectileState::Custom; }
-	FORCEINLINE const EProjectileState& GetProjectileState() const { return ProjectileState; }
-	FORCEINLINE const uint8& GetCustomState() const { return CachedCustomState; }
+	FORCEINLINE const FProjectileState& GetProjectileState() const
+	{
+		return HasAuthority() ? ProjectileState : LocalState;
+	}
 
-	//TODO: 발사된 시각을 반환하도록 함
-	float GetRecentProjectilePerformedTime() const { return 0.0f; }
+	FORCEINLINE FProjectileState& GetProjectileState() { return HasAuthority() ? ProjectileState : LocalState; }
+	FORCEINLINE bool IsCollapsed() const { return GetProjectileState().IsCollapsed(); }
+	FORCEINLINE bool IsPerforming() const { return GetProjectileState().IsPerforming(); }
+	FORCEINLINE bool IsCustomState() const { return GetProjectileState().IsCustomState(); }
+
+	const float& GetRecentProjectilePerformedTime() const { return RecentProjectilePerformedTime; }
 
 	/** 투사체의 상태가 변경되면 호출되는 이벤트입니다. 로컬에서 예측적으로 투사체의 상태를 변경할 때에도 호출됩니다. */
 	FProjectileStateChanged OnProjectileStateChanged;
@@ -47,10 +143,21 @@ public:
 	virtual void PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker) override;
 
 protected:
+	FORCEINLINE bool IsActualCollapsed() const { return ProjectileState.IsCollapsed(); }
+	FORCEINLINE bool IsActualPerforming() const { return ProjectileState.IsPerforming(); }
+	FORCEINLINE bool IsActualCustomState() const { return ProjectileState.IsCustomState(); }
+
+	virtual void ThrowProjectile(const FProjectileThrowData& InThrowData);
+	void SetCustomState(const uint8& InCustomState);
+
+	virtual void OnRep_CustomState();
+	
 	UFUNCTION(BlueprintNativeEvent)
-	void CustomStateChanged(const uint8& OldState);
+	void OnCollapsed();
 
 private:
+	void SetProjectileState(const EProjectileState& InProjectileState);
+
 	UFUNCTION()
 	void OnRep_ProjectileState();
 
@@ -58,11 +165,11 @@ private:
 	class UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY(ReplicatedUsing=OnRep_ProjectileState, Transient)
-	EProjectileState ProjectileState;
+	FProjectileState ProjectileState;
 
-	/** 투사체에서 추가적인 더 다양한 상태가 필요한 경우 사용됩니다. ProjectileState가 Custom일 때만 리플리케이트됩니다. */
-	UPROPERTY(ReplicatedUsing=OnRep_ProjectileState, Transient)
-	uint8 CustomState;
+	UPROPERTY(Replicated)
+	FProjectileThrowData ThrowData;
 
-	uint8 CachedCustomState;
+	FProjectileState LocalState;
+	float RecentProjectilePerformedTime;
 };
