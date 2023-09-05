@@ -81,6 +81,21 @@ void ALakayaProjectile::ThrowProjectileAuthoritative(FProjectileThrowData&& InTh
 	}
 }
 
+void ALakayaProjectile::CollapseProjectile()
+{
+	if (!HasAuthority())
+	{
+		UE_LOG(LogActor, Warning, TEXT("[%s] Only server can collapse projectile"), *GetName());
+		return;
+	}
+
+	if (!IsCollapsed())
+	{
+		SetProjectileState(EProjectileState::Collapsed);
+		OnCollapsed();
+	}
+}
+
 void ALakayaProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
