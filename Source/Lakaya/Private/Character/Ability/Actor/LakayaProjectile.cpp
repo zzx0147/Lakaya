@@ -51,7 +51,7 @@ bool FProjectileState::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSu
 
 bool FGameplayAbilityTargetData_ThrowProjectile::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
 {
-	Ar << Projectile << ThrowData.ThrowLocation << ThrowData.ThrowDirection << ThrowData.ServerTime;
+	Ar << Projectile << ThrowData;
 	bOutSuccess = true;
 	return true;
 }

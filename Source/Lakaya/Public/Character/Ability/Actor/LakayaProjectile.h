@@ -88,6 +88,12 @@ struct FProjectileThrowData
 
 	UPROPERTY(BlueprintReadWrite)
 	float ServerTime;
+
+	FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FProjectileThrowData& ThrowData)
+	{
+		Ar << ThrowData.ThrowLocation << ThrowData.ThrowDirection << ThrowData.ServerTime;
+		return Ar;
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -125,6 +131,7 @@ public:
 
 	void ThrowProjectilePredictive(const FProjectileThrowData& InThrowData);
 	void ThrowProjectileAuthoritative(FProjectileThrowData&& InThrowData);
+	void CollapseProjectile();
 
 	FORCEINLINE const FProjectileState& GetProjectileState() const
 	{
@@ -148,7 +155,6 @@ protected:
 	FORCEINLINE bool IsActualPerforming() const { return ProjectileState.IsPerforming(); }
 	FORCEINLINE bool IsActualCustomState() const { return ProjectileState.IsCustomState(); }
 
-	virtual void ThrowProjectile(const FProjectileThrowData& InThrowData);
 	void SetCustomState(const uint8& InCustomState);
 
 	virtual void OnRep_CustomState();
@@ -157,6 +163,7 @@ protected:
 	void OnCollapsed();
 
 private:
+	void ThrowProjectile(const FProjectileThrowData& InThrowData);
 	void SetProjectileState(const EProjectileState& InProjectileState);
 	void BroadcastOnProjectileStateChanged(const FProjectileState& OldState, const FProjectileState& NewState);
 
