@@ -54,12 +54,12 @@ void FProjectilePool::Initialize(UWorld* InSpawnWorld, const FActorSpawnParamete
 
 bool FProjectilePool::IsMaximumReached() const
 {
-	return MaxPoolSize != 0 && Items.Num() >= MaxPoolSize;
+	return MaxPoolSize != 0 && (uint32)Items.Num() >= MaxPoolSize;
 }
 
 bool FProjectilePool::IsExtraObjectMaximumReached() const
 {
-	return FreeProjectiles.Num() >= MaxExtraObjectCount;
+	return (uint32)FreeProjectiles.Num() >= MaxExtraObjectCount;
 }
 
 void FProjectilePool::AddNewObject()
@@ -98,7 +98,7 @@ void FProjectilePool::ReFeelExtraObjects()
 		                             ? FMath::Min(RemainExtraCount, MaxPoolSize - Items.Num())
 		                             : RemainExtraCount;
 
-	for (auto Count = 0; Count < FixedSpawnCount; ++Count)
+	for (uint32 Count = 0; Count < FixedSpawnCount; ++Count)
 	{
 		InternalAddNewObject();
 	}
