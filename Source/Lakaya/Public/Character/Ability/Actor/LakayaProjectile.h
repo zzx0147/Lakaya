@@ -158,6 +158,7 @@ protected:
 
 private:
 	void SetProjectileState(const EProjectileState& InProjectileState);
+	void BroadcastOnProjectileStateChanged(const FProjectileState& OldState, const FProjectileState& NewState);
 
 	UFUNCTION()
 	void OnRep_ProjectileState();
@@ -173,4 +174,5 @@ private:
 
 	FProjectileState LocalState;
 	float RecentProjectilePerformedTime;
+	bool bIsStateChanging;
 };

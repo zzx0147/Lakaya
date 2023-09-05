@@ -106,7 +106,7 @@ void ALakayaProjectile::SetCustomState(const uint8& InCustomState)
 	const auto OldState = StateRef;
 	if (StateRef.SetCustomState(InCustomState))
 	{
-		OnProjectileStateChanged.Broadcast(this, OldState, StateRef);
+		BroadcastOnProjectileStateChanged(OldState, StateRef);
 	}
 }
 
@@ -126,8 +126,17 @@ void ALakayaProjectile::SetProjectileState(const EProjectileState& InProjectileS
 	const auto OldState = StateRef;
 	if (StateRef.SetProjectileState(InProjectileState))
 	{
-		OnProjectileStateChanged.Broadcast(this, OldState, StateRef);
+		BroadcastOnProjectileStateChanged(OldState, StateRef);
 	}
+}
+
+void ALakayaProjectile::BroadcastOnProjectileStateChanged(const FProjectileState& OldState,
+                                                          const FProjectileState& NewState)
+{
+	ensure(!bIsStateChanging);
+	bIsStateChanging = true;
+	OnProjectileStateChanged.Broadcast(this, OldState, NewState);
+	bIsStateChanging = false;
 }
 
 void ALakayaProjectile::OnRep_ProjectileState()
@@ -136,7 +145,7 @@ void ALakayaProjectile::OnRep_ProjectileState()
 	{
 		const auto OldState = LocalState;
 		LocalState = ProjectileState;
-		OnProjectileStateChanged.Broadcast(this, OldState, LocalState);
+		BroadcastOnProjectileStateChanged(OldState, LocalState);
 
 		switch (LocalState.GetProjectileState())
 		{
