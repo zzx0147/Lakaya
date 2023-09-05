@@ -24,6 +24,9 @@ public:
 	 */
 	void SetOccupationWinner();
 
+	/**
+	 * @brief 게임이 끝나고 나서 출력되는 GradeResult, DetailResult를 전환합니다.
+	 */
 	void ChangeResultWidget();
 
 	/**
@@ -196,8 +199,8 @@ private:
 	FTimerHandle TimerHandle_StartMessageHidden;
 	FTimerHandle TimerHandle_WaitTimerHandle;
 	FTimerHandle TimerHandle_GameResultHandle;
-	FTimerHandle TimerHandle_ShowGradeResultElementHandle;
 	FTimerHandle TimerHandle_UpdateScoreTimer;
+	FTimerHandle TimerHandle_MatchStartWaitWidget;
 	
 #pragma region Widget
 	// 게임중에 표시되는 스킬 위젯을 지정합니다.
