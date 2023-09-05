@@ -20,13 +20,14 @@ enum class EProjectileState : uint8
 	Custom
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FProjectileState
 {
 	GENERATED_BODY()
 
 	FProjectileState() = default;
 
+	//TODO: 필요시 BlueprintLibrary 만들어야함
 	FORCEINLINE const EProjectileState& GetProjectileState() const { return ProjectileState; }
 	FORCEINLINE bool IsCollapsed() const { return GetProjectileState() == EProjectileState::Collapsed; }
 	FORCEINLINE bool IsPerforming() const { return GetProjectileState() == EProjectileState::Perform; }
@@ -74,30 +75,30 @@ struct TStructOpsTypeTraits<FProjectileState> : public TStructOpsTypeTraitsBase2
 DECLARE_EVENT_ThreeParams(ALakayaProjectile, FProjectileStateChanged, class ALakayaProjectile*,
                           const FProjectileState& /* OldState */, const FProjectileState& /* NewState */);
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FProjectileThrowData
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	FVector_NetQuantize100 ThrowLocation;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	FVector_NetQuantizeNormal ThrowDirection;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	float ServerTime;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FGameplayAbilityTargetData_ThrowProjectile : public FGameplayAbilityTargetData
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	FProjectileThrowData ThrowData;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	ALakayaProjectile* Projectile;
 
 	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
@@ -167,7 +168,7 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_ProjectileState, Transient)
 	FProjectileState ProjectileState;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, Transient)
 	FProjectileThrowData ThrowData;
 
 	FProjectileState LocalState;
