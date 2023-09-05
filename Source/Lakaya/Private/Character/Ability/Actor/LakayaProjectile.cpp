@@ -6,11 +6,52 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
-bool FGameplayAbilityTargetData_LocationWithTime::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
+bool FProjectileState::SetProjectileState(const EProjectileState& InProjectileState)
 {
-	ThrowLocation.NetSerialize(Ar, Map, bOutSuccess);
-	Ar << ServerTime;
+	// (Custom, 0) 상태가 될 수 없도록 합니다.
+	if (ensure(InProjectileState != EProjectileState::Custom) && InProjectileState != ProjectileState)
+	{
+		CustomState = 0;
+		ProjectileState = InProjectileState;
+		return true;
+	}
+	return false;
+}
 
+bool FProjectileState::SetCustomState(const uint8& InCustomState)
+{
+	// (Custom, 0) 상태가 될 수 없도록 합니다.
+	if (ensure(InCustomState != 0) && InCustomState != CustomState)
+	{
+		ProjectileState = EProjectileState::Custom;
+		CustomState = InCustomState;
+		return true;
+	}
+	return false;
+}
+
+bool FProjectileState::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
+{
+	Ar << ProjectileState;
+
+	if (ProjectileState == EProjectileState::Custom)
+	{
+		// ProjectileState가 Custom일 때만 전송되도록 합니다.
+		Ar << CustomState;
+	}
+	else if (!Ar.IsSaving())
+	{
+		// 받는 쪽이고 ProjectileState가 Custom이 아닌 경우 CustomState를 0으로 초기화합니다.
+		CustomState = 0;
+	}
+
+	bOutSuccess = true;
+	return true;
+}
+
+bool FGameplayAbilityTargetData_ThrowProjectile::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
+{
+	Ar << Projectile << ThrowData.ThrowLocation << ThrowData.ThrowDirection << ThrowData.ServerTime;
 	bOutSuccess = true;
 	return true;
 }
@@ -23,50 +64,93 @@ ALakayaProjectile::ALakayaProjectile()
 		TEXT("ProjectileMovementComponent"));
 }
 
-void ALakayaProjectile::ThrowProjectilePredictive(const FPredictionKey& Key)
+void ALakayaProjectile::ThrowProjectilePredictive(const FProjectileThrowData& InThrowData)
 {
-	if (!IsCollapsed())
+	SetProjectileState(EProjectileState::Perform);
+	ThrowProjectile(InThrowData);
+}
+
+void ALakayaProjectile::ThrowProjectileAuthoritative(FProjectileThrowData&& InThrowData)
+{
+	if (ensure(HasAuthority()))
 	{
-		UE_LOG(LogActor, Error, TEXT("[%s] Try to throw projectile predictive when it's not collapsed!"), *GetName());
-		return;
+		ThrowData = MoveTemp(InThrowData);
+		SetProjectileState(EProjectileState::Perform);
+		ThrowProjectile(ThrowData);
+		//TODO: 서버에서는 충돌검사를 수행하므로 충돌검사를 활성화시키는 로직도 필요합니다.
 	}
-	
 }
 
 void ALakayaProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ALakayaProjectile, ProjectileState);
-	DOREPLIFETIME(ALakayaProjectile, CustomState);
+	DOREPLIFETIME_CONDITION(ALakayaProjectile, ThrowData, COND_Custom);
 }
 
 void ALakayaProjectile::PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker)
 {
 	Super::PreReplication(ChangedPropertyTracker);
-	DOREPLIFETIME_ACTIVE_OVERRIDE(ALakayaProjectile, CustomState, IsCustomState());
+	DOREPLIFETIME_ACTIVE_OVERRIDE(ALakayaProjectile, ThrowData, IsActualPerforming());
 }
 
-void ALakayaProjectile::CustomStateChanged_Implementation(const uint8& OldState)
+void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 {
-	UE_LOG(LogActor, Log, TEXT("[%s] Projectile custom state changed from %d to %d"), *GetName(), OldState,
-	       GetCustomState());
+	RecentProjectilePerformedTime = InThrowData.ServerTime;
+}
+
+void ALakayaProjectile::SetCustomState(const uint8& InCustomState)
+{
+	auto& StateRef = GetProjectileState();
+	const auto OldState = StateRef;
+	if (StateRef.SetCustomState(InCustomState))
+	{
+		OnProjectileStateChanged.Broadcast(this, OldState, StateRef);
+	}
+}
+
+void ALakayaProjectile::OnRep_CustomState()
+{
+	UE_LOG(LogActor, Log, TEXT("[%s] Custom state replicated : %d"), *GetName(), GetProjectileState().GetCustomState());
+}
+
+void ALakayaProjectile::OnCollapsed_Implementation()
+{
+	//TODO
+}
+
+void ALakayaProjectile::SetProjectileState(const EProjectileState& InProjectileState)
+{
+	auto& StateRef = GetProjectileState();
+	const auto OldState = StateRef;
+	if (StateRef.SetProjectileState(InProjectileState))
+	{
+		OnProjectileStateChanged.Broadcast(this, OldState, StateRef);
+	}
 }
 
 void ALakayaProjectile::OnRep_ProjectileState()
 {
-	if (IsCustomState())
+	if (LocalState != ProjectileState)
 	{
-		if (CachedCustomState == CustomState)
+		const auto OldState = LocalState;
+		LocalState = ProjectileState;
+		OnProjectileStateChanged.Broadcast(this, OldState, LocalState);
+
+		switch (LocalState.GetProjectileState())
 		{
-			// ProjectileStated와 CustomState가 동시에 업데이트되어 두번 호출된 경우이므로 스킵합니다.
-			return;
+		case EProjectileState::Collapsed:
+			OnCollapsed();
+			break;
+		case EProjectileState::Perform:
+			ThrowProjectile(ThrowData);
+			break;
+		case EProjectileState::Custom:
+			OnRep_CustomState();
+			break;
+		default:
+			UE_LOG(LogActor, Fatal, TEXT("[%s] Invalid ProjectileState has replicated: %d"), *GetName(),
+			       LocalState.GetProjectileState());
 		}
-		const auto OldCustomState = CachedCustomState;
-		CachedCustomState = CustomState;
-		CustomStateChanged(OldCustomState);
-	}
-	else
-	{
-		CachedCustomState = 0;
 	}
 }

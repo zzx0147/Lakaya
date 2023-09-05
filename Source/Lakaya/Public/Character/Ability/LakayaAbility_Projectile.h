@@ -88,10 +88,10 @@ private:
 		return CreateProjectileStateDelegate(&FProjectilePool::ServerProjectileStateChanged);
 	}
 
-	void ClientProjectileStateChanged(ALakayaProjectile* InProjectile, const EProjectileState& InState,
-	                                  const uint8& InCustomState);
-	void ServerProjectileStateChanged(ALakayaProjectile* InProjectile, const EProjectileState& InState,
-	                                  const uint8& InCustomState);
+	void ClientProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
+	                                  const FProjectileState& NewState);
+	void ServerProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
+									  const FProjectileState& NewState);
 
 	UPROPERTY(Transient)
 	TArray<FProjectilePoolItem> Items;
