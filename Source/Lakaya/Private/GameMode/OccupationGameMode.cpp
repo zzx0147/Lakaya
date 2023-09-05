@@ -41,7 +41,7 @@ void AOccupationGameMode::RegisterPlayer(AController* NewPlayer)
 
 	if (CurrentPlayerNum == BaseGameState->GetMaximumPlayers())
 	{
-		GetWorldTimerManager().SetTimer(TimerHandle_DelayedMatchStart, this, &AOccupationGameMode::HandleMatchHasStarted,
+		GetWorldTimerManager().SetTimer(TimerHandle_DelayedMatchStart, this, &AOccupationGameMode::StartMatch,
 			MatchStartDelay, false);
 	}
 }

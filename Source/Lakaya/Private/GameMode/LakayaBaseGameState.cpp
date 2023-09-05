@@ -1,5 +1,7 @@
 #include "GameMode/LakayaBaseGameState.h"
 
+#include <filesystem>
+
 #include "Character/LakayaBasePlayerState.h"
 #include "EOS/EOSGameInstance.h"
 #include "ETC/OutlineManager.h"
@@ -28,8 +30,6 @@ void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ALakayaBaseGameState, MatchEndingTime);
-	// TODO : 팀전에는 더이상 캐릭터 선택상태는 존재하지 않습니다.
-	// DOREPLIFETIME(ALakayaBaseGameState, CharacterSelectEndingTime);
 	DOREPLIFETIME(ALakayaBaseGameState, MatchWaitEndingTime);
 }
 
@@ -73,17 +73,6 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 
-		// TODO : 더이상 팀전에서는 캐릭터 선택상태는 존재하지 않습니다.
-		// if (CharacterSelectTimerWidgetClass)
-		// {
-		// 	CharacterSelectTimeWidget = CreateWidget<UGameTimeWidget>(LocalController, CharacterSelectTimerWidgetClass);
-		// 	if (CharacterSelectTimeWidget.IsValid())
-		// 	{
-		// 		CharacterSelectTimeWidget->AddToViewport(10);
-		// 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
-		// 	}
-		// }
-
 		if (CrosshairWidgetClass)
 		{
 			CrosshairWidget = CreateWidget<UGamePlayCrosshairWidget>(LocalController, CrosshairWidgetClass);
@@ -93,18 +82,6 @@ void ALakayaBaseGameState::BeginPlay()
 				CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
-
-		// TODO : 아직 구현이 되지 않아 비활성화 합니다.
-		// if (HelpWidgetClass)
-		// {
-		// 	HelpWidget = CreateWidget<UHelpWidget>(LocalController, HelpWidgetClass);
-		// 	if (HelpWidget.IsValid())
-		// 	{
-		// 		HelpWidget->AddToViewport();
-		// 		HelpWidget->SetVisibility(ESlateVisibility::Hidden);
-		// 	}
-		// }
-
 
 		if (KillLogWidgetClass)
 		{
@@ -126,7 +103,22 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 
+		// TODO : 아직 구현이 되지 않아 비활성화 합니다.
+		// if (HelpWidgetClass)
+		// {
+		// 	HelpWidget = CreateWidget<UHelpWidget>(LocalController, HelpWidgetClass);
+		// 	if (HelpWidget.IsValid())
+		// 	{
+		// 		HelpWidget->AddToViewport();
+		// 		HelpWidget->SetVisibility(ESlateVisibility::Hidden);
+		// 	}
+		// }
+		
 		SpawnOutlineManager();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LakayaBaseGameState_LocalPlayerController is null."));
 	}
 }
 
@@ -153,17 +145,20 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 
 	if (GetCharacterSelectWidget())
 	{
-			CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
-			CharacterSelectWidget->SetShortcutEnabled(true);
-			CharacterSelectWidget->EnableAutoHide(true);
+		CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
+		// CharacterSelectWidget->SetShortcutEnabled(true);
+		// CharacterSelectWidget->EnableAutoHide(true);
 	}
 
-	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다. (캐릭터 선택시간도 동일)
-	// if (CharacterSelectTimeWidget.IsValid())
-		// CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
-
+	if (LoadingWidget.IsValid())
+		LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
+	
 	if (InGameTimeWidget.IsValid())
+	{
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		// TODO : InGameTimeWidget은 CharacterSelectWidget보다 위에 있어야 합니다. (ZOrder)
+		// InGameTimeWidget->AddToViewport(10);
+	}
 
 	if (CrosshairWidget != nullptr)
 		CrosshairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -201,7 +196,6 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<AGameLobbyPlayerController>();
 		LocalController && LocalController->IsLocalController())
 		LocalController->SetEnableExitShortcut(true);
-
 
 	const auto GameInstance = GetGameInstance();
 	const auto EOSGameInstance = Cast<UEOSGameInstance>(GameInstance);
@@ -326,10 +320,9 @@ void ALakayaBaseGameState::SetupTimerWidget(FTimerHandle& TimerHandle, const flo
                                             std::function<void(void)> Callback,
                                             TWeakObjectPtr<UGameTimeWidget> TimeWidget)
 {
+	GetWorldTimerManager().SetTimer(TimerHandle, Callback, Duration, false);
 	if (HasAuthority())
 	{
-		GetWorldTimerManager().SetTimer(TimerHandle, Callback, Duration, false);
-
 		EndingTime = GetServerWorldTimeSeconds() + Duration;
 		if (TimeWidget.IsValid()) TimeWidget->SetWidgetTimer(EndingTime);
 	}
