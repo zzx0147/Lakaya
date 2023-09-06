@@ -21,7 +21,7 @@ ALakayaBaseGameState::ALakayaBaseGameState()
 	PrimaryActorTick.bCanEverTick = true;
 	MaximumPlayers = 6;
 	MatchDuration = 180.f;
-	MatchWaitDuration = 10.0f;
+	MatchWaitDuration = 30.0f;
 	bWantsSendRecordResult = false;
 }
 
@@ -68,7 +68,7 @@ void ALakayaBaseGameState::BeginPlay()
 			InGameTimeWidget = CreateWidget<UGameTimeWidget>(LocalController, InGameTimerWidgetClass);
 			if (InGameTimeWidget.IsValid())
 			{
-				InGameTimeWidget->AddToViewport();
+				InGameTimeWidget->AddToViewport(10);
 				InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
@@ -146,8 +146,6 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	if (GetCharacterSelectWidget())
 	{
 		CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
-		// CharacterSelectWidget->SetShortcutEnabled(true);
-		// CharacterSelectWidget->EnableAutoHide(true);
 	}
 
 	if (LoadingWidget.IsValid())
@@ -156,8 +154,6 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	if (InGameTimeWidget.IsValid())
 	{
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		// TODO : InGameTimeWidget은 CharacterSelectWidget보다 위에 있어야 합니다. (ZOrder)
-		// InGameTimeWidget->AddToViewport(10);
 	}
 
 	if (CrosshairWidget != nullptr)
@@ -210,23 +206,6 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	}
 }
 
-// TODO : 팀전에서는 더이상 캐릭터 선택상태는 존재하지 않습니다.
-// TODO : 캐릭터 선택 창과 게임대기중과 통일되어 따로 작업해야 합니다.
-// void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
-// {
-	// if (GetCharacterSelectWidget()) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
-
-	// if (LoadingWidget) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
-
-	// if (CharacterSelectTimeWidget.IsValid())
-		// CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-	// SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]()
-	// {
-	// 	if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->StartMatch();
-	// }, CharacterSelectTimeWidget);
-// }
-
 void ALakayaBaseGameState::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -239,11 +218,14 @@ void ALakayaBaseGameState::Tick(float DeltaSeconds)
 void ALakayaBaseGameState::OnRep_MatchState()
 {
 	Super::OnRep_MatchState();
+
+#pragma region CharacterSelect
 	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
 	// if (MatchState == MatchState::IsSelectCharacter)
 	// {
 		// HandleMatchIsCharacterSelect();
 	// }
+#pragma endregion CharacterSelect
 }
 
 void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
@@ -280,12 +262,6 @@ void ALakayaBaseGameState::OnRep_MatchEndingTime()
 {
 	if (InGameTimeWidget.IsValid()) InGameTimeWidget->SetWidgetTimer(MatchEndingTime);
 }
-
-// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-// void ALakayaBaseGameState::OnRep_CharacterSelectEndingTime()
-// {
-// 	if (CharacterSelectTimeWidget.IsValid()) CharacterSelectTimeWidget->SetWidgetTimer(CharacterSelectEndingTime);
-// }
 
 void ALakayaBaseGameState::OnRep_MatchWaitEndingTime()
 {
@@ -338,9 +314,36 @@ bool ALakayaBaseGameState::HasMatchStarted() const
 {
 	return Super::HasMatchStarted();
 
+#pragma region CharacterSelect
 	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
 	// if (GetMatchState() == MatchState::IsSelectCharacter)
 	// {
 		// return false;
 	// }
+#pragma endregion CharacterSelect
 }
+
+#pragma region CharacterSelect
+// TODO : 팀전에서는 더이상 캐릭터 선택상태는 존재하지 않습니다.
+// TODO : 캐릭터 선택 창과 게임대기중과 통일되어 따로 작업해야 합니다.
+// void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
+// {
+// if (GetCharacterSelectWidget()) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
+
+// if (LoadingWidget) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
+
+// if (CharacterSelectTimeWidget.IsValid())
+// CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+// SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]()
+// {
+// 	if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->StartMatch();
+// }, CharacterSelectTimeWidget);
+// }
+
+// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
+// void ALakayaBaseGameState::OnRep_CharacterSelectEndingTime()
+// {
+// 	if (CharacterSelectTimeWidget.IsValid()) CharacterSelectTimeWidget->SetWidgetTimer(CharacterSelectEndingTime);
+// }
+#pragma endregion CharacterSelect

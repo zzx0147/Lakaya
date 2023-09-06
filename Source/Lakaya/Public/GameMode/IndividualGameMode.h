@@ -30,7 +30,5 @@ protected:
 
 protected:
 	virtual void RespawnPlayer(AController* KilledController) override;
-	virtual void PlayerInitializeSetLocation(uint8 PlayersNum) override;
-
 	
 };

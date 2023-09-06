@@ -66,28 +66,3 @@ void AOccupationGameMode::HandleMatchHasStarted()
 		}
 	}
 }
-
-// TODO : MatchStart에서 팀 배정을 해줘야 함.
-// void AOccupationGameMode::HandleMatchIsSelectCharacter()
-// {
-// 	Super::HandleMatchIsSelectCharacter();
-// 	
-// 	if (OccupationGameState->GetMaximumPlayers() == OccupationGameState->PlayerArray.Num())
-// 	{
-// 		for (int i = 0; i < OccupationGameState->GetMaximumPlayers(); i++)
-// 		{
-// 			if (OccupationGameState->PlayerArray.IsValidIndex(i))
-// 			{
-// 				auto* LakayaBasePlayerState = Cast<ALakayaBasePlayerState>(OccupationGameState->PlayerArray[i]);
-// 				if (LakayaBasePlayerState == nullptr)
-// 				{
-// 					UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_CollectorPlayerState is null."));
-// 				}
-//
-// 				const auto Team = i % 2 == 0 ? ETeam::Anti : ETeam::Pro;
-// 				LakayaBasePlayerState->SetTeam(Team);
-// 				UE_LOG(LogTemp, Warning, TEXT("%s"), i % 2 == 0 ? TEXT("A팀에 배정 되었습니다.") : TEXT("B팀에 배정 되었습니다."));
-// 			}
-// 		}
-// 	}
-// }
