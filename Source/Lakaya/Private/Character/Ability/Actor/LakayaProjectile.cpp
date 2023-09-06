@@ -49,9 +49,17 @@ bool FProjectileState::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSu
 	return true;
 }
 
+void FProjectileThrowData::SetupPredictedProjectileParams(FPredictProjectilePathParams& OutParams,
+                                                          const float& Velocity) const
+{
+	OutParams.StartLocation = ThrowLocation;
+	OutParams.LaunchVelocity = ThrowDirection * Velocity;
+	OutParams.MaxSimTime = ServerTime;
+}
+
 bool FGameplayAbilityTargetData_ThrowProjectile::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
 {
-	Ar << Projectile << ThrowData.ThrowLocation << ThrowData.ThrowDirection << ThrowData.ServerTime;
+	Ar << Projectile << ThrowData;
 	bOutSuccess = true;
 	return true;
 }
@@ -62,10 +70,22 @@ ALakayaProjectile::ALakayaProjectile()
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(
 		TEXT("ProjectileMovementComponent"));
+
+	ProjectileLaunchVelocity = 1000.f;
 }
 
-void ALakayaProjectile::ThrowProjectilePredictive(const FProjectileThrowData& InThrowData)
+void ALakayaProjectile::ThrowProjectilePredictive(FPredictionKey& Key, const FProjectileThrowData& InThrowData)
 {
+	if (!Key.IsValidKey())
+	{
+		UE_LOG(LogActor, Log, TEXT("[%s] ThrowProjectilePredictive has ignored because of invalid prediction key"),
+		       *GetName());
+		return;
+	}
+
+	// 예측 키가 Reject되는 경우 다시 서버로부터 리플리케이트되는 정보를 바탕으로 동작하도록 합니다. 
+	Key.NewRejectedDelegate().BindUObject(this, &ALakayaProjectile::RejectProjectile);
+
 	SetProjectileState(EProjectileState::Perform);
 	ThrowProjectile(InThrowData);
 }
@@ -78,6 +98,21 @@ void ALakayaProjectile::ThrowProjectileAuthoritative(FProjectileThrowData&& InTh
 		SetProjectileState(EProjectileState::Perform);
 		ThrowProjectile(ThrowData);
 		//TODO: 서버에서는 충돌검사를 수행하므로 충돌검사를 활성화시키는 로직도 필요합니다.
+	}
+}
+
+void ALakayaProjectile::CollapseProjectile()
+{
+	if (!HasAuthority())
+	{
+		UE_LOG(LogActor, Warning, TEXT("[%s] Only server can collapse projectile"), *GetName());
+		return;
+	}
+
+	if (!IsCollapsed())
+	{
+		SetProjectileState(EProjectileState::Collapsed);
+		OnCollapsed();
 	}
 }
 
@@ -97,6 +132,20 @@ void ALakayaProjectile::PreReplication(IRepChangedPropertyTracker& ChangedProper
 void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 {
 	RecentProjectilePerformedTime = InThrowData.ServerTime;
+	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity);
+
+	static FPredictProjectilePathResult Result;
+	UGameplayStatics::PredictProjectilePath(this, PredictedProjectileParams, Result);
+	const auto& Destination = Result.LastTraceDestination;
+
+	//TODO: 서버에서는 충돌 검사가 필요합니다.
+	SetActorLocation(Destination.Location);
+	if (ProjectileMovementComponent->bRotationFollowsVelocity)
+	{
+		SetActorRotation(Destination.Velocity.Rotation());
+	}
+
+	ProjectileMovementComponent->Velocity = Destination.Velocity;
 }
 
 void ALakayaProjectile::SetCustomState(const uint8& InCustomState)
@@ -105,7 +154,7 @@ void ALakayaProjectile::SetCustomState(const uint8& InCustomState)
 	const auto OldState = StateRef;
 	if (StateRef.SetCustomState(InCustomState))
 	{
-		OnProjectileStateChanged.Broadcast(this, OldState, StateRef);
+		BroadcastOnProjectileStateChanged(OldState, StateRef);
 	}
 }
 
@@ -125,8 +174,24 @@ void ALakayaProjectile::SetProjectileState(const EProjectileState& InProjectileS
 	const auto OldState = StateRef;
 	if (StateRef.SetProjectileState(InProjectileState))
 	{
-		OnProjectileStateChanged.Broadcast(this, OldState, StateRef);
+		BroadcastOnProjectileStateChanged(OldState, StateRef);
 	}
+}
+
+void ALakayaProjectile::BroadcastOnProjectileStateChanged(const FProjectileState& OldState,
+                                                          const FProjectileState& NewState)
+{
+	FScopedLock RecursiveLock(bIsStateChanging);
+
+	//TODO: 투사체의 상태가 변경되면서 OnProjectileStateChanged에서 이벤트 바인딩을 해제하는 경우 문제가 될 수 있으므로 복사해서 실행해야할 수 있습니다.
+	OnProjectileStateChanged.Broadcast(this, OldState, NewState);
+}
+
+void ALakayaProjectile::RejectProjectile()
+{
+	// 예측적으로 투척되며 변경되었던 데이터들을 다시 서버로부터 리플리케이트된 데이터들로 바꿉니다.
+	RecentProjectilePerformedTime = ThrowData.ServerTime;
+	OnRep_ProjectileState();
 }
 
 void ALakayaProjectile::OnRep_ProjectileState()
@@ -135,7 +200,7 @@ void ALakayaProjectile::OnRep_ProjectileState()
 	{
 		const auto OldState = LocalState;
 		LocalState = ProjectileState;
-		OnProjectileStateChanged.Broadcast(this, OldState, LocalState);
+		BroadcastOnProjectileStateChanged(OldState, LocalState);
 
 		switch (LocalState.GetProjectileState())
 		{

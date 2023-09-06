@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTargetTypes.h"
 #include "GameFramework/Actor.h"
+#include "Kismet/GameplayStatics.h"
 #include "LakayaProjectile.generated.h"
 
 UENUM(BlueprintType)
@@ -20,13 +21,14 @@ enum class EProjectileState : uint8
 	Custom
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FProjectileState
 {
 	GENERATED_BODY()
 
 	FProjectileState() = default;
 
+	//TODO: 필요시 BlueprintLibrary 만들어야함
 	FORCEINLINE const EProjectileState& GetProjectileState() const { return ProjectileState; }
 	FORCEINLINE bool IsCollapsed() const { return GetProjectileState() == EProjectileState::Collapsed; }
 	FORCEINLINE bool IsPerforming() const { return GetProjectileState() == EProjectileState::Perform; }
@@ -74,30 +76,38 @@ struct TStructOpsTypeTraits<FProjectileState> : public TStructOpsTypeTraitsBase2
 DECLARE_EVENT_ThreeParams(ALakayaProjectile, FProjectileStateChanged, class ALakayaProjectile*,
                           const FProjectileState& /* OldState */, const FProjectileState& /* NewState */);
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FProjectileThrowData
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	FVector_NetQuantize100 ThrowLocation;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	FVector_NetQuantizeNormal ThrowDirection;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	float ServerTime;
+
+	void SetupPredictedProjectileParams(FPredictProjectilePathParams& OutParams, const float& Velocity) const;
+
+	FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FProjectileThrowData& ThrowData)
+	{
+		Ar << ThrowData.ThrowLocation << ThrowData.ThrowDirection << ThrowData.ServerTime;
+		return Ar;
+	}
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FGameplayAbilityTargetData_ThrowProjectile : public FGameplayAbilityTargetData
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	FProjectileThrowData ThrowData;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	ALakayaProjectile* Projectile;
 
 	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
@@ -122,8 +132,21 @@ class LAKAYA_API ALakayaProjectile : public AActor
 public:
 	ALakayaProjectile();
 
-	void ThrowProjectilePredictive(const FProjectileThrowData& InThrowData);
+	/**
+	 * @brief 투사체를 예측적으로 투척합니다.
+	 * @param Key 투사체가 사용할 예측 키입니다. 이 예측 키가 Reject되면 투사체가 롤백됩니다.
+	 * @param InThrowData 투사체를 투척하기 위한 데이터입니다.
+	 */
+	void ThrowProjectilePredictive(FPredictionKey& Key, const FProjectileThrowData& InThrowData);
+
+	/**
+	 * @brief 투사체를 Authority를 체크하고 투척합니다. 서버에서만 동작합니다.
+	 * @param InThrowData 투사체를 투척하기 위한 데이터입니다.
+	 */
 	void ThrowProjectileAuthoritative(FProjectileThrowData&& InThrowData);
+
+	/** 투사체를 비활성화합니다. 서버에서만 사용할 수 있습니다. */
+	void CollapseProjectile();
 
 	FORCEINLINE const FProjectileState& GetProjectileState() const
 	{
@@ -147,16 +170,38 @@ protected:
 	FORCEINLINE bool IsActualPerforming() const { return ProjectileState.IsPerforming(); }
 	FORCEINLINE bool IsActualCustomState() const { return ProjectileState.IsCustomState(); }
 
-	virtual void ThrowProjectile(const FProjectileThrowData& InThrowData);
 	void SetCustomState(const uint8& InCustomState);
 
 	virtual void OnRep_CustomState();
-	
+
 	UFUNCTION(BlueprintNativeEvent)
 	void OnCollapsed();
 
 private:
+	struct FScopedLock
+	{
+		explicit FScopedLock(bool& InLockObject) : bLockRef(InLockObject)
+		{
+			if (ensureMsgf(!bLockRef, TEXT("Recursive call detected")))
+			{
+				bLockRef = true;
+			}
+		}
+
+		~FScopedLock()
+		{
+			ensure(bLockRef);
+			bLockRef = false;
+		}
+
+	private:
+		bool& bLockRef;
+	};
+
+	void ThrowProjectile(const FProjectileThrowData& InThrowData);
 	void SetProjectileState(const EProjectileState& InProjectileState);
+	void BroadcastOnProjectileStateChanged(const FProjectileState& OldState, const FProjectileState& NewState);
+	void RejectProjectile();
 
 	UFUNCTION()
 	void OnRep_ProjectileState();
@@ -167,9 +212,18 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_ProjectileState, Transient)
 	FProjectileState ProjectileState;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, Transient)
 	FProjectileThrowData ThrowData;
+
+	UPROPERTY(EditAnywhere)
+	float ProjectileLaunchVelocity;
+
+	UPROPERTY(EditAnywhere)
+	FPredictProjectilePathParams PredictedProjectileParams;
 
 	FProjectileState LocalState;
 	float RecentProjectilePerformedTime;
+	bool bIsStateChanging;
+
+	friend struct FScopedLock;
 };
