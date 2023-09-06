@@ -23,8 +23,6 @@ protected:
 	virtual void HandleMatchHasEnded() override;
 	virtual void RegisterPlayer(AController* NewPlayer) override;
 	virtual void HandleMatchHasStarted() override;
-	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-	// virtual void HandleMatchIsSelectCharacter() override;
 	
 private:
 	float MatchStartDelay;

@@ -29,16 +29,13 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 	virtual void OnRep_MatchState() override;
-
-#pragma region CharacterSelect
-	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-	// virtual void HandleMatchIsCharacterSelect();
-#pragma endregion CharacterSelect
 	
 public:
+	// 플레이가능한 최대 인원 수를 가져옵니다.
 	UFUNCTION(BlueprintGetter)
 	const uint8& GetMaximumPlayers() const { return MaximumPlayers; }
 
+	// 현재의 인원 수를 가져옵니다.
 	UFUNCTION(BlueprintGetter)
 	uint8 GetPlayersNumber() const { return PlayerArray.Num(); }
 
@@ -70,12 +67,6 @@ protected:
 	virtual void ReserveSendRecord();
 
 	virtual bool TrySendMatchResultData();
-
-#pragma region CharacterSelect
-	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-	// UFUNCTION()
-	// virtual void OnRep_CharacterSelectEndingTime();
-#pragma endregion CharacterSelect
 	
 private:
 	void SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,
@@ -130,13 +121,6 @@ protected:
 	// 게임중에 표시되는 도움말 위젯을 지정합니다.
 	// UPROPERTY(EditDefaultsOnly)
 	// TSubclassOf<class UHelpWidget> HelpWidgetClass;
-
-#pragma region CharacterSelect
-	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-	// 캐릭터 선택 중에 표시되는 타이머 위젯 클래스를 지정합니다.
-	// UPROPERTY(EditDefaultsOnly)
-	// TSubclassOf<UGameTimeWidget> CharacterSelectTimerWidgetClass;
-#pragma endregion CharacterSelect
 	
 	// 게임이 최대 몇초간 진행될지 정의합니다.
 	UPROPERTY(EditAnywhere)
@@ -146,32 +130,20 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float MatchWaitDuration;
 
+	// 플레이가능한 최대 인원 수를 정의합니다.
 	UPROPERTY(EditDefaultsOnly)
 	uint8 MaximumPlayers;
 
+	// 매치가 몇초간 지속될 지를 정의합니다.
 	UPROPERTY(ReplicatedUsing=OnRep_MatchEndingTime)
 	float MatchEndingTime;
 
+	// 게임시작대기가 몇초간 지속될 지를 정의합니다.
 	UPROPERTY(ReplicatedUsing=OnRep_MatchWaitEndingTime)
 	float MatchWaitEndingTime;
-
-#pragma region CharacterSelect
-	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-	// UPROPERTY(EditDefaultsOnly)
-	// float CharacterSelectDuration;
-	
-	// TODO : 더이상 캐릭터선택상태는 존재하지 않습니다.
-	// UPROPERTY(ReplicatedUsing = OnRep_CharacterSelectEndingTime)
-	// float CharacterSelectEndingTime;
-#pragma endregion 
 	
 	FTimerHandle EndingTimer;
 	FTimerHandle MatchWaitToStartTimer;
-
-#pragma region CharacterSelect
-	// TODO : 더이상 캐릭터선택상태는 존재하지 않습니다. (캐릭터선택타이머 또한 존재하지 않습니다.)
-	// FTimerHandle CharacterSelectTimer;
-#pragma endregion CharacterSelect
 
 	TWeakObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 	TWeakObjectPtr<UGamePlayCrosshairWidget> CrosshairWidget;
@@ -180,20 +152,14 @@ protected:
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
 	TWeakObjectPtr<UGamePlayKillLogWidget> KillLogWidget;
 	TWeakObjectPtr<UPlayerNameDisplayerWidget> PlayerNameDisplayerWidget;
+	TWeakObjectPtr<AOutlineManager> OutlineManager;
 
-#pragma region CharacterSelect
-	// TODO : 더이상 캐릭터선택상태는 존재하지 않습니다.
-	// TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;
-	
 	// TODO : 아직 구현되어 있지 않아 주석처리합니다.
 	// TWeakObjectPtr<UHelpWidget> HelpWidget;
 	
-	// TODO : 개인전엣는 스킬을 사용하지 않기에 주석처리 해주었습니다.
+	// TODO : 개인전에서는 스킬을 사용하지 않기에 주석처리 해주었습니다.
 	// TWeakObjectPtr<USkillWidget> SkillWidget;
-#pragma endregion CharacterSelect
 	
-	TWeakObjectPtr<AOutlineManager> OutlineManager;
-
 private:
 	bool bWantsSendRecordResult;
 };

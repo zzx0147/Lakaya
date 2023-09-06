@@ -174,10 +174,6 @@ void AOccupationGameState::BeginPlay()
 			}
 		}
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_LocalPlayerController is null."));
-	}
 
 	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this,
 	                                &AOccupationGameState::EndTimeCheck, 1.0f, true);
