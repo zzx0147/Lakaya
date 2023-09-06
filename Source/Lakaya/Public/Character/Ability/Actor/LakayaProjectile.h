@@ -165,6 +165,26 @@ protected:
 	void OnCollapsed();
 
 private:
+	struct FScopedLock
+	{
+		explicit FScopedLock(bool& InLockObject) : bLockRef(InLockObject)
+		{
+			if (ensureMsgf(!bLockRef, TEXT("Recursive call detected")))
+			{
+				bLockRef = true;
+			}
+		}
+
+		~FScopedLock()
+		{
+			ensure(bLockRef);
+			bLockRef = false;
+		}
+
+	private:
+		bool& bLockRef;
+	};
+	
 	void ThrowProjectile(const FProjectileThrowData& InThrowData);
 	void SetProjectileState(const EProjectileState& InProjectileState);
 	void BroadcastOnProjectileStateChanged(const FProjectileState& OldState, const FProjectileState& NewState);
@@ -184,4 +204,6 @@ private:
 	FProjectileState LocalState;
 	float RecentProjectilePerformedTime;
 	bool bIsStateChanging;
+
+	friend struct FScopedLock;
 };
