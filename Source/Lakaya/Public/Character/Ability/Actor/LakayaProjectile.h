@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTargetTypes.h"
 #include "GameFramework/Actor.h"
+#include "Kismet/GameplayStatics.h"
 #include "LakayaProjectile.generated.h"
 
 UENUM(BlueprintType)
@@ -89,6 +90,8 @@ struct FProjectileThrowData
 	UPROPERTY(BlueprintReadWrite)
 	float ServerTime;
 
+	void SetupPredictedProjectileParams(FPredictProjectilePathParams& OutParams, const float& Velocity) const;
+
 	FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FProjectileThrowData& ThrowData)
 	{
 		Ar << ThrowData.ThrowLocation << ThrowData.ThrowDirection << ThrowData.ServerTime;
@@ -170,7 +173,7 @@ protected:
 	void SetCustomState(const uint8& InCustomState);
 
 	virtual void OnRep_CustomState();
-	
+
 	UFUNCTION(BlueprintNativeEvent)
 	void OnCollapsed();
 
@@ -194,7 +197,7 @@ private:
 	private:
 		bool& bLockRef;
 	};
-	
+
 	void ThrowProjectile(const FProjectileThrowData& InThrowData);
 	void SetProjectileState(const EProjectileState& InProjectileState);
 	void BroadcastOnProjectileStateChanged(const FProjectileState& OldState, const FProjectileState& NewState);
@@ -211,6 +214,12 @@ private:
 
 	UPROPERTY(Replicated, Transient)
 	FProjectileThrowData ThrowData;
+
+	UPROPERTY(EditAnywhere)
+	float ProjectileLaunchVelocity;
+
+	UPROPERTY(EditAnywhere)
+	FPredictProjectilePathParams PredictedProjectileParams;
 
 	FProjectileState LocalState;
 	float RecentProjectilePerformedTime;

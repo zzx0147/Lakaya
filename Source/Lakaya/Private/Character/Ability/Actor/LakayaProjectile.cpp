@@ -49,6 +49,14 @@ bool FProjectileState::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSu
 	return true;
 }
 
+void FProjectileThrowData::SetupPredictedProjectileParams(FPredictProjectilePathParams& OutParams,
+                                                          const float& Velocity) const
+{
+	OutParams.StartLocation = ThrowLocation;
+	OutParams.LaunchVelocity = ThrowDirection * Velocity;
+	OutParams.MaxSimTime = ServerTime;
+}
+
 bool FGameplayAbilityTargetData_ThrowProjectile::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
 {
 	Ar << Projectile << ThrowData;
@@ -62,6 +70,8 @@ ALakayaProjectile::ALakayaProjectile()
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(
 		TEXT("ProjectileMovementComponent"));
+
+	ProjectileLaunchVelocity = 1000.f;
 }
 
 void ALakayaProjectile::ThrowProjectilePredictive(FPredictionKey& Key, const FProjectileThrowData& InThrowData)
@@ -122,7 +132,20 @@ void ALakayaProjectile::PreReplication(IRepChangedPropertyTracker& ChangedProper
 void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 {
 	RecentProjectilePerformedTime = InThrowData.ServerTime;
-	//TODO
+	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity);
+
+	static FPredictProjectilePathResult Result;
+	UGameplayStatics::PredictProjectilePath(this, PredictedProjectileParams, Result);
+	const auto& Destination = Result.LastTraceDestination;
+
+	//TODO: 서버에서는 충돌 검사가 필요합니다.
+	SetActorLocation(Destination.Location);
+	if (ProjectileMovementComponent->bRotationFollowsVelocity)
+	{
+		SetActorRotation(Destination.Velocity.Rotation());
+	}
+
+	ProjectileMovementComponent->Velocity = Destination.Velocity;
 }
 
 void ALakayaProjectile::SetCustomState(const uint8& InCustomState)
