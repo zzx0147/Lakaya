@@ -129,7 +129,17 @@ class LAKAYA_API ALakayaProjectile : public AActor
 public:
 	ALakayaProjectile();
 
+	/**
+	 * @brief 투사체를 예측적으로 투척합니다.
+	 * @param Key 투사체가 사용할 예측 키입니다. 이 예측 키가 Reject되면 투사체가 롤백됩니다.
+	 * @param InThrowData 투사체를 투척하기 위한 데이터입니다.
+	 */
 	void ThrowProjectilePredictive(FPredictionKey& Key, const FProjectileThrowData& InThrowData);
+
+	/**
+	 * @brief 투사체를 Authority를 체크하고 투척합니다. 서버에서만 동작합니다.
+	 * @param InThrowData 투사체를 투척하기 위한 데이터입니다.
+	 */
 	void ThrowProjectileAuthoritative(FProjectileThrowData&& InThrowData);
 
 	/** 투사체를 비활성화합니다. 서버에서만 사용할 수 있습니다. */
@@ -188,6 +198,7 @@ private:
 	void ThrowProjectile(const FProjectileThrowData& InThrowData);
 	void SetProjectileState(const EProjectileState& InProjectileState);
 	void BroadcastOnProjectileStateChanged(const FProjectileState& OldState, const FProjectileState& NewState);
+	void RejectProjectile();
 
 	UFUNCTION()
 	void OnRep_ProjectileState();

@@ -74,7 +74,7 @@ void ALakayaProjectile::ThrowProjectilePredictive(FPredictionKey& Key, const FPr
 	}
 
 	// 예측 키가 Reject되는 경우 다시 서버로부터 리플리케이트되는 정보를 바탕으로 동작하도록 합니다. 
-	Key.NewRejectedDelegate().BindUObject(this, &ALakayaProjectile::OnRep_ProjectileState);
+	Key.NewRejectedDelegate().BindUObject(this, &ALakayaProjectile::RejectProjectile);
 
 	SetProjectileState(EProjectileState::Perform);
 	ThrowProjectile(InThrowData);
@@ -162,6 +162,13 @@ void ALakayaProjectile::BroadcastOnProjectileStateChanged(const FProjectileState
 
 	//TODO: 투사체의 상태가 변경되면서 OnProjectileStateChanged에서 이벤트 바인딩을 해제하는 경우 문제가 될 수 있으므로 복사해서 실행해야할 수 있습니다.
 	OnProjectileStateChanged.Broadcast(this, OldState, NewState);
+}
+
+void ALakayaProjectile::RejectProjectile()
+{
+	// 예측적으로 투척되며 변경되었던 데이터들을 다시 서버로부터 리플리케이트된 데이터들로 바꿉니다.
+	RecentProjectilePerformedTime = ThrowData.ServerTime;
+	OnRep_ProjectileState();
 }
 
 void ALakayaProjectile::OnRep_ProjectileState()
