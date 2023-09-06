@@ -64,8 +64,18 @@ ALakayaProjectile::ALakayaProjectile()
 		TEXT("ProjectileMovementComponent"));
 }
 
-void ALakayaProjectile::ThrowProjectilePredictive(const FProjectileThrowData& InThrowData)
+void ALakayaProjectile::ThrowProjectilePredictive(FPredictionKey& Key, const FProjectileThrowData& InThrowData)
 {
+	if (!Key.IsValidKey())
+	{
+		UE_LOG(LogActor, Log, TEXT("[%s] ThrowProjectilePredictive has ignored because of invalid prediction key"),
+		       *GetName());
+		return;
+	}
+
+	// 예측 키가 Reject되는 경우 다시 서버로부터 리플리케이트되는 정보를 바탕으로 동작하도록 합니다. 
+	Key.NewRejectedDelegate().BindUObject(this, &ALakayaProjectile::OnRep_ProjectileState);
+	
 	SetProjectileState(EProjectileState::Perform);
 	ThrowProjectile(InThrowData);
 }

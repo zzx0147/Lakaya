@@ -129,7 +129,7 @@ class LAKAYA_API ALakayaProjectile : public AActor
 public:
 	ALakayaProjectile();
 
-	void ThrowProjectilePredictive(const FProjectileThrowData& InThrowData);
+	void ThrowProjectilePredictive(FPredictionKey& Key, const FProjectileThrowData& InThrowData);
 	void ThrowProjectileAuthoritative(FProjectileThrowData&& InThrowData);
 
 	/** 투사체를 비활성화합니다. 서버에서만 사용할 수 있습니다. */
