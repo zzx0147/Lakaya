@@ -6,14 +6,14 @@
 #include "AbilitySystemInterface.h"
 #include "LakayaAbilitySet.h"
 #include "GameFramework/PlayerState.h"
-#include "Occupation/PlayerTeam.h"
+#include "Occupation/Team.h"
 #include "TimerManager.h"
 #include "EOS/EOSGameInstance.h"
 #include "LakayaBasePlayerState.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FHealthChangeSignature, const float&)
 
-DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FTeamSignature, const EPlayerTeam&)
+DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FTeamSignature, const ETeam&)
 
 DECLARE_EVENT_ThreeParams(ALakayaBasePlayerState, FPlayerKillSignature, AController*, AController*, AActor*)
 
@@ -52,14 +52,14 @@ public:
 	bool IsSameTeam(const ALakayaBasePlayerState* Other) const;
 
 	UFUNCTION(BlueprintGetter)
-	bool IsSameTeam(const EPlayerTeam& Other) const;
+	bool IsSameTeam(const ETeam& Other) const;
 
 	// 플레이어의 팀을 설정합니다.
-	virtual void SetTeam(const EPlayerTeam& DesireTeam);
+	virtual void SetTeam(const ETeam& DesireTeam);
 
 	// 플레이어의 현재 팀 정보를 가져옵니다.
 	UFUNCTION(BlueprintCallable)
-	const EPlayerTeam& GetTeam() const { return Team; }
+	const ETeam& GetTeam() const { return Team; }
 
 	/**
 	 * @brief 플레이어가 예약된 시간에 부활하도록 합니다.
@@ -288,7 +288,7 @@ private:
 	float Health;
 
 	UPROPERTY(ReplicatedUsing=OnRep_Team, Transient)
-	EPlayerTeam Team;
+	ETeam Team;
 
 	UPROPERTY(ReplicatedUsing=OnRep_RespawnTime, Transient)
 	float RespawnTime;

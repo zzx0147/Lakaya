@@ -152,12 +152,12 @@ bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) con
 	return Other && IsSameTeam(Other->Team);
 }
 
-bool ALakayaBasePlayerState::IsSameTeam(const EPlayerTeam& Other) const
+bool ALakayaBasePlayerState::IsSameTeam(const ETeam& Other) const
 {
 	return JudgeSameTeam(Team, Other);
 }
 
-void ALakayaBasePlayerState::SetTeam(const EPlayerTeam& DesireTeam)
+void ALakayaBasePlayerState::SetTeam(const ETeam& DesireTeam)
 {
 	if (Team == DesireTeam) return;
 	Team = DesireTeam;
@@ -320,7 +320,7 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 {
 	if (const auto OldCharacter = Cast<ALakayaBaseCharacter>(OldPawn))
 	{
-		OldCharacter->SetTeam(EPlayerTeam::None);
+		OldCharacter->SetTeam(ETeam::None);
 		OnAliveStateChanged.RemoveAll(OldCharacter);
 	}
 
@@ -340,7 +340,7 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 
 	if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
 	{
-		if (Team != EPlayerTeam::None) Character->SetTeam(Team);
+		if (Team != ETeam::None) Character->SetTeam(Team);
 		if (HealthWidget.IsValid()) HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);

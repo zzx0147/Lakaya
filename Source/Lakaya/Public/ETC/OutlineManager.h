@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Occupation/PlayerTeam.h"
+#include "Occupation/Team.h"
 #include "OutlineManager.generated.h"
 
 class ALakayaBaseCharacter;
@@ -23,12 +23,12 @@ protected:
 	void SetClairvoyance(const bool& bIsClairvoyance);
 
 public:
-	void SetTeam(const EPlayerTeam& NewTeam);
+	void SetTeam(const ETeam& NewTeam);
 	void RegisterClairvoyance(const ALakayaBaseCharacter* Character);
 	void UnRegisterClairvoyance(const ALakayaBaseCharacter* Character);
 
 private:
-	EPlayerTeam ClientTeam;
+	ETeam ClientTeam;
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UBoxComponent> BoxComponent;
 

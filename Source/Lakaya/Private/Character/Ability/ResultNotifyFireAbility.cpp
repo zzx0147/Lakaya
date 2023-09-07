@@ -5,6 +5,7 @@
 
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Camera/CameraComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -19,6 +20,19 @@ UResultNotifyFireAbility::UResultNotifyFireAbility()
 	DecalShowingTime = 10.f;
 	bCanEverStopRemoteCall = bCanEverStartRemoteCall = true;
 	CollapsedLocation = FVector(-9999.f,-9999.f,-9999.f);
+	
+	OnSingleFire.AddWeakLambda(this,[&](const FVector& Start, const FVector& End, const FVector& Normal, const EFireResult& Kind)
+	{
+		if(!FireCameraShake) return;
+		
+		if(const auto OwnerPawn = Cast<ALakayaBaseCharacter>(GetOwner()))
+		{
+			if(const auto PlayerController = Cast<APlayerController>(OwnerPawn->GetController()))
+			{
+				PlayerController->ClientStartCameraShake(FireCameraShake);
+			}
+		}
+	});
 }
 
 bool UResultNotifyFireAbility::ShouldStartRemoteCall()
@@ -120,8 +134,10 @@ void UResultNotifyFireAbility::SingleFire()
 	const auto LineStart = BasisComponent ? BasisComponent->GetComponentLocation() : GetOwner()->GetActorLocation();
 	auto End = GetCameraForwardTracePoint(FireRange, CollisionQueryParams);
 
+	const auto CalibrationVector = (End - LineStart).GetSafeNormal() * 10.0f;
+	
 	FHitResult Result;
-	if (GetWorld()->LineTraceSingleByChannel(Result, LineStart, End, ECC_Visibility, CollisionQueryParams))
+	if (GetWorld()->LineTraceSingleByChannel(Result, LineStart, End + CalibrationVector, ECC_Visibility, CollisionQueryParams))
 	{
 		End = Result.ImpactPoint;
 		const auto Pawn = GetOwner<APawn>();

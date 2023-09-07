@@ -1,13 +1,15 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
 #include "LakayaBaseGameState.h"
 #include "EOS/EOSGameInstance.h"
-#include "Occupation/PlayerTeam.h"
+#include "Occupation/Team.h"
 #include "OccupationGameState.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeOccupationWinner, const EPlayerTeam&)
-DECLARE_EVENT_TwoParams(AOccupationGameState, FTeamScoreSignature, const EPlayerTeam&, const float&)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeOccupationWinner, const ETeam&)
+DECLARE_EVENT_TwoParams(AOccupationGameState, FTeamScoreSignature, const ETeam&, const float&)
 
 UCLASS()
 class LAKAYA_API AOccupationGameState : public ALakayaBaseGameState
@@ -17,56 +19,102 @@ class LAKAYA_API AOccupationGameState : public ALakayaBaseGameState
 public:
 	AOccupationGameState();
 
-protected:
-	virtual void BeginPlay() override;
-	virtual void HandleMatchHasStarted() override;
-	virtual void HandleMatchHasEnded() override;
-	virtual void AddPlayerState(APlayerState* PlayerState) override;
-
-public:
-	// 현재 두 팀의 점수를 기준으로 승자를 정합니다.
+	/**
+	 * @brief 게임이 끝났을 때, 현재 두 팀의 점수를 비교하여 승자를 결정하는 함수입니다.
+	 */
 	void SetOccupationWinner();
 
 	/**
-	 * @brief 팀에 점수를 부여합니다.
-	 * @param Team 점수를 부여할 팀입니다.
-	 * @param AdditiveScore 추가될 점수입니다.
+	 * @brief 게임이 끝나고 나서 출력되는 GradeResult, DetailResult를 전환합니다.
 	 */
-	void AddTeamScore(const EPlayerTeam& Team, const float& AdditiveScore);
-
-	// 해당 팀의 점수를 받아옵니다.
-	float GetTeamScore(const EPlayerTeam& Team) const;
-
-	// 최대 점수를 가져옵니다.
-	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }
-
-	// 승리자의 정보를 가져옵니다.
-	FORCEINLINE const EPlayerTeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
-
-	// 어떤 팀이든 최대 점수에 도달한 팀이 있는지 여부를 조사합니다.
-	FORCEINLINE bool GetSomeoneReachedMaxScore() const
-	{
-		return ATeamScore >= MaxScore || BTeamScore >= MaxScore;
-	}
-
-	void EndTimeCheck();
-
 	void ChangeResultWidget();
 
+	/**
+	* @brief 점령에 성공한 팀이 상대편의 점령구역 개수가 많은지 판별합니다.
+	* @param Team 점령에 성공한 팀입니다.
+	*/
+	UFUNCTION()
+	bool CheckCaptureAreaCount(const ETeam& Team);
+
+	/**
+	 * @brief 팀에서 점령중인 점령구역 개수를 추가해주는 함수입니다.
+	 * @param Team 점령구역 개수를 늘린 팀입니다.
+	 */
+	void AddCaptureAreaCount(const ETeam& Team);
+
+	/**
+	 * @brief 팀에서 점령중인 점령구역 개수를 감소해주는 함수입니다.
+	 * @param Team 점령구역 개수를 줄일 팀입니다.
+	 */
+	void SubCaptureAreaCount(const ETeam& Team);
+
+	/**
+	 * @brief 스코어 업데이트 타이머를 시작하는 함수입니다.
+	 * @param Team 우세한 팀입니다.
+	 * @param UpdateDelay 딜레이입니다.
+	 */
+	void StartScoreUpdate(const ETeam& Team, float UpdateDelay);
+
+	/**
+	 * @brief 타이머를 중지시키는 함수입니다.
+	 */
+	void StopScoreUpdate();
+	
+	FORCEINLINE const float& GetTeamScore(const ETeam& Team) const { return (Team == ETeam::Anti) ? AntiTeamScore : ProTeamScore; }
+	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }
+	FORCEINLINE const ETeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
+	FORCEINLINE bool GetSomeoneReachedMaxScore() const { return AntiTeamScore >= MaxScore || ProTeamScore >= MaxScore; }
+	FORCEINLINE const uint8& GetAntiTeamCaptureAreaCount() const { return AntiTeamCaptureAreaCount; }
+	FORCEINLINE const uint8& GetProTeamCaptureAreaCount() const { return ProTeamCaptureAreaCount; }
+	FORCEINLINE TArray<TObjectPtr<ALakayaBasePlayerState>>& GetAllyArray() { return PlayersByTeamMap[ClientTeam]; }
+	FORCEINLINE TArray<TObjectPtr<ALakayaBasePlayerState>>& GetEnemyArray() { return PlayersByTeamMap[ClientTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti]; }
+	FORCEINLINE const ETeam& GetTeamToUpdate() const { return TeamToUpdate; }
+	
+	FORCEINLINE void SetAntiTeamCaptureAreaCount(const uint8& NewCaptureCount) { AntiTeamCaptureAreaCount = NewCaptureCount; }
+	FORCEINLINE void SetProTeamCaptureAreaCount(const uint8& NewCaptureCount) { ProTeamCaptureAreaCount = NewCaptureCount; }
+	FORCEINLINE void SetTeamToUpdate(const ETeam& NewTeam) { TeamToUpdate = NewTeam; }
 protected:
-	virtual void SetClientTeam(const EPlayerTeam& NewTeam);
+	virtual void BeginPlay() override;
+
+	/**
+	 * @brief 게임 내에서 매치가 시작했을 때, 호출되는 함수입니다.
+	 */
+	virtual void HandleMatchHasStarted() override;
+
+	/**
+	 * @brief 게임 내에서 매치가 끝났을 때, 호출되는 함수입니다.
+	 */
+	virtual void HandleMatchHasEnded() override;
+
+	/**
+	 * @brief 게임에 참가중인 플레이 리스트에 새로 들어온 참가자를 추가하는 함수입니다.
+	 * @param PlayerState 새로 참가한 플레이어의 PlayerState 정보입니다.
+	 */
+	virtual void AddPlayerState(APlayerState* PlayerState) override;
+	
 	virtual bool TrySendMatchResultData() override;
+	
 private:
-	UFUNCTION()
-	void OnRep_ATeamScore();
-
-	UFUNCTION()
-	void OnRep_BTeamScore();
-
-	UFUNCTION()
-	void OnRep_OccupationWinner();
-
+	virtual void SetClientTeam(const ETeam& NewTeam);
+	
+	void EndTimeCheck();
+	
 	void DestroyShieldWallObject();
+
+	void UpdatePlayerByTeamMap(const ETeam& Team, ALakayaBasePlayerState* PlayerState);
+
+	void SetupPlayerStateOnLocal(ALakayaBasePlayerState* PlayerState);
+
+	static ERendererStencilMask GetUniqueStencilMask(const bool& IsAlly, const uint8& Index);
+
+	void OnPlayerStateOwnerChanged(AActor* Owner);
+
+	void AddPlayerStateToRecordResult(ETeam InTeam ,TArray<ALakayaBasePlayerState*> InPlayers);
+
+	/**
+	 * @brief 스코어를 업데이트 해주는 함수입니다.
+	 */
+	void UpdateTeamScoreTick();
 
 	// 게임 승패여부를 띄워줍니다.
 	void ShowEndResultWidget();
@@ -89,44 +137,46 @@ private:
 	// 모든 인원들의 정보를 담은 위젯을 바인딩합니다.
 	void BindDetailResultElementWidget();
 
-	FORCEINLINE TArray<TObjectPtr<ALakayaBasePlayerState>>& GetAllyArray()
-	{
-		return PlayersByTeamMap[ClientTeam];
-	}
+	UFUNCTION()
+	void OnRep_AntiTeamScore();
 
-	FORCEINLINE TArray<TObjectPtr<ALakayaBasePlayerState>>& GetEnemyArray()
-	{
-		return PlayersByTeamMap[ClientTeam == EPlayerTeam::Anti ? EPlayerTeam::Pro : EPlayerTeam::Anti];
-	}
+	UFUNCTION()
+	void OnRep_ProTeamScore();
 
-	void UpdatePlayerByTeamMap(const EPlayerTeam& Team, ALakayaBasePlayerState* PlayerState);
-	void SetupPlayerStateOnLocal(ALakayaBasePlayerState* PlayerState);
-	static ERendererStencilMask GetUniqueStencilMask(const bool& IsAlly, const uint8& Index);
-	void OnPlayerStateOwnerChanged(AActor* Owner);
-
-	void AddPlayerStateToRecordResult(EPlayerTeam InTeam ,TArray<ALakayaBasePlayerState*> InPlayers);
+	UFUNCTION()
+	void OnRep_OccupationWinner();
 	
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;
 	
-
-private:
+	bool bTap;
 	
+private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
-	EPlayerTeam CurrentOccupationWinner;
+	ETeam CurrentOccupationWinner;
 
-	// Anti
-	UPROPERTY(ReplicatedUsing = OnRep_ATeamScore, Transient)
-	float ATeamScore;
+	UPROPERTY(ReplicatedUsing = OnRep_AntiTeamScore, Transient)
+	float AntiTeamScore;
 
-	// Pro
-	UPROPERTY(ReplicatedUsing = OnRep_BTeamScore, Transient)
-	float BTeamScore;
+	UPROPERTY(ReplicatedUsing = OnRep_ProTeamScore, Transient)
+	float ProTeamScore;
 
+	UPROPERTY(Replicated)
+	uint8 AntiTeamCaptureAreaCount;
+
+	UPROPERTY(Replicated)
+	uint8 ProTeamCaptureAreaCount;
+	
 	UPROPERTY(EditAnywhere)
 	float MaxScore;
 
+	UPROPERTY(EditAnywhere)
+	float ScoreUpdateDelay;
+
+	UPROPERTY(EditAnywhere)
+	float AdditiveScore;
+	
 	UPROPERTY(EditAnywhere)
 	float MatchStartWaitWidgetLifeTime;
 
@@ -135,17 +185,24 @@ private:
 
 	bool ResultBool = false;
 
-	TMap<EPlayerTeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> PlayersByTeamMap;
+	TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> PlayersByTeamMap;
 
-	EPlayerTeam ClientTeam;
+	ETeam ClientTeam;
+
+	UPROPERTY(Replicated)
+	ETeam TeamToUpdate = ETeam::None;
+	
+	FMatchResultStruct MatchResult;
 
 	FTimerHandle TimerHandle_GameTimeCheck;
 	FTimerHandle TimerHandle_StartMessageVisible;
 	FTimerHandle TimerHandle_StartMessageHidden;
 	FTimerHandle TimerHandle_WaitTimerHandle;
 	FTimerHandle TimerHandle_GameResultHandle;
-	FTimerHandle TimerHandle_ShowGradeResultElementHandle;
-
+	FTimerHandle TimerHandle_UpdateScoreTimer;
+	FTimerHandle TimerHandle_MatchStartWaitWidget;
+	
+#pragma region Widget
 	// 게임중에 표시되는 스킬 위젯을 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<USkillWidget> SkillWidgetClass;
@@ -221,9 +278,5 @@ private:
 
 	// 게임 디테일 Element 결과 위젯입니다.
 	TWeakObjectPtr<UDetailResultElementWidget> DetailResultElementWidget;
-
-	FMatchResultStruct MatchResult;
-	
-public:
-	bool Tapbool = true;
+#pragma endregion
 };

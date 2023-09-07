@@ -130,7 +130,6 @@ void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller, EInt
 void AOccupationObject::OnCharacterDead(APawn* Caller)
 {
 	AInteractable::OnCharacterDead(Caller);
-	// TODO : 구현해야 함.
 }
 
 void AOccupationObject::OnInteractionFinish(APawn* Caller)
@@ -145,7 +144,7 @@ void AOccupationObject::OnInteractionFinish(APawn* Caller)
 	const auto CallerState = Cast<ALakayaBasePlayerState>(Caller->GetPlayerState());
 
 	// 만약 성공한 플레이어 팀이 A라면
-	if (CallerState->IsSameTeam(EPlayerTeam::Anti))
+	if (CallerState->IsSameTeam(ETeam::Anti))
 	{
 		// 기존에 이미 다른 팀에서 점령을 했던 상활이라면, 점령했던 플레이어의 현재 점령한 오브젝트 갯수를 줄여줍니다.
 		// 다른 팀의 ObjectCount 또한 줄여줍니다.
@@ -153,12 +152,12 @@ void AOccupationObject::OnInteractionFinish(APawn* Caller)
 		if (OwnerPlayer != nullptr)
 		{
 			Cast<ALakayaBasePlayerState>(OwnerPlayer->GetPlayerState())->DecreaseCurrentCaptureCount();
-			OccupationGameMode->SubOccupyObject(EPlayerTeam::Pro);
+			// OccupationGameMode->SubOccupyObject(ETeam::Pro);
 		}
 		
-		SetTeamObject(EPlayerTeam::Anti);
+		SetTeamObject(ETeam::Anti);
 		OnOccupationStateSignature.Broadcast(ObjectTeam);
-		OccupationGameMode->AddOccupyObject(EPlayerTeam::Anti);
+		// OccupationGameMode->AddOccupyObject(ETeam::Anti);
 		OwnerPlayer = Caller;
 		Cast<ALakayaBasePlayerState>(OwnerPlayer->GetPlayerState())->IncreaseCurrentCaptureCount();
 
@@ -172,12 +171,12 @@ void AOccupationObject::OnInteractionFinish(APawn* Caller)
 		if (OwnerPlayer != nullptr)
 		{
 			Cast<ALakayaBasePlayerState>(OwnerPlayer->GetPlayerState())->DecreaseCurrentCaptureCount();
-			OccupationGameMode->SubOccupyObject(EPlayerTeam::Anti);
+			// OccupationGameMode->SubOccupyObject(ETeam::Anti);
 		}
 		
-		SetTeamObject(EPlayerTeam::Pro);
+		SetTeamObject(ETeam::Pro);
 		OnOccupationStateSignature.Broadcast(ObjectTeam);
-		OccupationGameMode->AddOccupyObject(EPlayerTeam::Pro);
+		// OccupationGameMode->AddOccupyObject(ETeam::Pro);
 		OwnerPlayer = Caller;
 		Cast<ALakayaBasePlayerState>(OwnerPlayer->GetPlayerState())->IncreaseCurrentCaptureCount();
 	}
@@ -189,7 +188,7 @@ void AOccupationObject::OnRep_BroadCastTeamObject()
 	OnOccupationStateSignature.Broadcast(ObjectTeam);
 }
 
-void AOccupationObject::SetTeamObject(const EPlayerTeam& Team)
+void AOccupationObject::SetTeamObject(const ETeam& Team)
 {
 	ObjectTeam = Team;
 }

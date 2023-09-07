@@ -64,3 +64,28 @@ void AAiCharacterController::AIRemainBulletCheck(AArmedCharacter* ArmCharacter, 
 		RemainBullet = BulletComponent->GetBullets();
 	}
 }
+
+void AAiCharacterController::AIPrimarySkillStart(AArmedCharacter* ArmCharacter)
+{
+	if (ArmCharacter) ArmCharacter->StartAbility(Primary);
+}
+
+void AAiCharacterController::AISecondarySkillStart(AArmedCharacter* ArmCharacter)
+{
+	if (ArmCharacter) ArmCharacter->StartAbility(Secondary);
+}
+
+void AAiCharacterController::AIWeaponSkillStart(AArmedCharacter* ArmCharacter)
+{
+	if (ArmCharacter) ArmCharacter->StartAbility(WeaponAbility);
+}
+
+void AAiCharacterController::AIPrimarySkillStop(AArmedCharacter* ArmCharacter)
+{
+	if (ArmCharacter) ArmCharacter->StopAbility(Primary);
+}
+
+void AAiCharacterController::AISecondarySkillStop(AArmedCharacter* ArmCharacter)
+{
+	if (ArmCharacter) ArmCharacter->StopAbility(Secondary);
+}

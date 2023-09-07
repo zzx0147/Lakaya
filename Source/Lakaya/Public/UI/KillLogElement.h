@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Occupation/PlayerTeam.h"
+#include "Occupation/Team.h"
 #include "functional"
 #include "KillLogElement.generated.h"
 
@@ -58,7 +58,7 @@ private:
 	TMap<FName, TObjectPtr<class UTexture2D>> CharacterImageMap;
 
 	UPROPERTY(EditDefaultsOnly)
-	TMap<EPlayerTeam, TObjectPtr<class UTexture2D>> BackgroundImageMap;
+	TMap<ETeam, TObjectPtr<class UTexture2D>> BackgroundImageMap;
 
 	UPROPERTY(EditAnywhere)
 	float ShowingTime;

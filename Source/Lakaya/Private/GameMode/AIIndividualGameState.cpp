@@ -3,9 +3,9 @@
 #include "AI/AiCharacterController.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
-#include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "PlayerController/InteractablePlayerController.h"
+#include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/IndividualWidget/IndividualGameResultWidget.h"
 #include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
 
@@ -42,7 +42,7 @@ void AAIIndividualGameState::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (SpawnOutlineManager()) OutlineManager->SetTeam(EPlayerTeam::Individual);
+	if (SpawnOutlineManager()) OutlineManager->SetTeam(ETeam::Individual);
 
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{

@@ -8,7 +8,7 @@
 #include "RegisterAbilityInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
-#include "Occupation/PlayerTeam.h"
+#include "Occupation/Team.h"
 #include "LakayaBaseCharacter.generated.h"
 
 struct FGameplayAbilitySpec;
@@ -89,13 +89,13 @@ public:
 
 	// 캐릭터에게 팀을 설정해줍니다.
 	UFUNCTION(BlueprintNativeEvent)
-	void SetTeam(const EPlayerTeam& Team);
+	void SetTeam(const ETeam& Team);
 
 	// 캐릭터의 생존 상태를 변경합니다.
 	UFUNCTION(BlueprintNativeEvent)
 	void SetAliveState(bool IsAlive);
 
-	bool IsSameTeam(const EPlayerTeam& Team) const;
+	bool IsSameTeam(const ETeam& Team) const;
 
 	void PlayHitScreen();
 
@@ -111,7 +111,7 @@ public:
 	void SetAlly(const bool& IsAlly);
 
 protected:
-	virtual void SetTeam_Implementation(const EPlayerTeam& Team);
+	virtual void SetTeam_Implementation(const ETeam& Team);
 	virtual void SetAliveState_Implementation(bool IsAlive);
 
 	// 현재 시점의 서버 시간을 가져옵니다.
@@ -194,10 +194,10 @@ private:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	class UResourceComponent* ResourceComponent;
 
-	UPROPERTY(VisibleAnywhere, Category = Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintGetter = GetSpringArm, Category = Camera)
 	USpringArmComponent* SpringArm;
 
-	UPROPERTY(VisibleAnywhere, Category = Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintGetter = GetCamera, Category = Camera)
 	UCameraComponent* Camera;
 
 	UPROPERTY(VisibleAnywhere)
@@ -221,7 +221,7 @@ private:
 	FPlayerRotationPacket PrevPlayerRotation;
 	FPlayerRotationPacket LatestPlayerRotation;
 	FQuat LatestUpdateRotation;
-	EPlayerTeam RecentTeam;
+	ETeam RecentTeam;
 	FVector MeshRelativeLocation;
 	FRotator MeshRelativeRotation;
 	FName MeshCollisionProfile;

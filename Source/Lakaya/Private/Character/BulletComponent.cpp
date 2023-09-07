@@ -108,3 +108,13 @@ void UBulletComponent::RemoveBulletWidget()
 	OnBulletsChanged.RemoveAll(BulletWidget.Get());
 	BulletWidget->RemoveFromParent();
 }
+
+void UBulletComponent::Clear()
+{
+	
+}
+
+void UBulletComponent::Reset()
+{
+	
+}

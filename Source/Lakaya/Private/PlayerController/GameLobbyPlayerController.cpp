@@ -123,7 +123,7 @@ void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSu
 	}
 }
 
-AGameLobbyPlayerController::AGameLobbyPlayerController(): APlayerController()
+AGameLobbyPlayerController::AGameLobbyPlayerController()
 {
 	OnPossessedPawnChanged.AddUniqueDynamic(this, &AGameLobbyPlayerController::OnPossessedPawnChangedCallback);
 	if (IsRunningDedicatedServer()) return;
@@ -181,7 +181,8 @@ void AGameLobbyPlayerController::ShowScoreBoard()
 	{
 		if (const auto NewGameState = Cast<AOccupationGameState>(OccupationGameState))
 		{
-			if (!NewGameState->Tapbool) return;
+
+			if (!NewGameState->bTap) return;
 
 			if (OccupationGameState->GetMatchState() == MatchState::WaitingPostMatch)
 			{
