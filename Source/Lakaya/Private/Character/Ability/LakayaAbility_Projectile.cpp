@@ -128,7 +128,7 @@ ALakayaProjectile* FProjectilePool::GetFreeProjectile()
 {
 	static const auto GetOlderProjectile = [](ALakayaProjectile* A, ALakayaProjectile* B)
 	{
-		return A->GetRecentProjectilePerformedTime() < B->GetRecentProjectilePerformedTime() ? A : B;
+		return A->GetRecentPerformedTime() < B->GetRecentPerformedTime() ? A : B;
 	};
 
 	static const auto ProjectileReduce = [](ALakayaProjectile* Recent, const FProjectilePoolItem& Item)

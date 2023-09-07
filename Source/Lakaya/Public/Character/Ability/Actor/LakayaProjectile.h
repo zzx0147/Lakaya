@@ -47,12 +47,12 @@ struct FProjectileState
 	 */
 	bool SetCustomState(const uint8& InCustomState);
 
-	bool operator==(const FProjectileState& Other) const
+	FORCEINLINE bool operator==(const FProjectileState& Other) const
 	{
 		return ProjectileState == Other.ProjectileState && CustomState == Other.CustomState;
 	}
 
-	bool operator!=(const FProjectileState& Other) const { return !operator==(Other); }
+	FORCEINLINE bool operator!=(const FProjectileState& Other) const { return !operator==(Other); }
 
 	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
 
@@ -90,7 +90,8 @@ struct FProjectileThrowData
 	UPROPERTY(BlueprintReadWrite)
 	float ServerTime;
 
-	void SetupPredictedProjectileParams(FPredictProjectilePathParams& OutParams, const float& Velocity) const;
+	void SetupPredictedProjectileParams(FPredictProjectilePathParams& OutParams, const float& Velocity,
+	                                    const float& CurrentTime) const;
 
 	FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FProjectileThrowData& ThrowData)
 	{
@@ -153,12 +154,11 @@ public:
 		return HasAuthority() ? ProjectileState : LocalState;
 	}
 
-	FORCEINLINE FProjectileState& GetProjectileState() { return HasAuthority() ? ProjectileState : LocalState; }
 	FORCEINLINE bool IsCollapsed() const { return GetProjectileState().IsCollapsed(); }
 	FORCEINLINE bool IsPerforming() const { return GetProjectileState().IsPerforming(); }
 	FORCEINLINE bool IsCustomState() const { return GetProjectileState().IsCustomState(); }
 
-	const float& GetRecentProjectilePerformedTime() const { return RecentProjectilePerformedTime; }
+	FORCEINLINE float GetRecentPerformedTime() const { return FMath::Max(ThrowData.ServerTime, RecentPerformedTime); }
 
 	/** 투사체의 상태가 변경되면 호출되는 이벤트입니다. 로컬에서 예측적으로 투사체의 상태를 변경할 때에도 호출됩니다. */
 	FProjectileStateChanged OnProjectileStateChanged;
@@ -166,6 +166,7 @@ public:
 	virtual void PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker) override;
 
 protected:
+	FORCEINLINE FProjectileState& InternalGetProjectileState() { return HasAuthority() ? ProjectileState : LocalState; }
 	FORCEINLINE bool IsActualCollapsed() const { return ProjectileState.IsCollapsed(); }
 	FORCEINLINE bool IsActualPerforming() const { return ProjectileState.IsPerforming(); }
 	FORCEINLINE bool IsActualCustomState() const { return ProjectileState.IsCustomState(); }
@@ -177,20 +178,25 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void OnCollapsed();
 
+	UFUNCTION(BlueprintNativeEvent)
+	void OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	                         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+	                         const FHitResult& SweepResult);
+
+	virtual void BeginPlay() override;
+
 private:
 	struct FScopedLock
 	{
 		explicit FScopedLock(bool& InLockObject) : bLockRef(InLockObject)
 		{
-			if (ensureMsgf(!bLockRef, TEXT("Recursive call detected")))
-			{
-				bLockRef = true;
-			}
+			check(!bLockRef);
+			bLockRef = true;
 		}
 
 		~FScopedLock()
 		{
-			ensure(bLockRef);
+			check(bLockRef);
 			bLockRef = false;
 		}
 
@@ -209,6 +215,9 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class UProjectileMovementComponent* ProjectileMovementComponent;
 
+	UPROPERTY(VisibleAnywhere)
+	class USphereComponent* CollisionComponent;
+
 	UPROPERTY(ReplicatedUsing=OnRep_ProjectileState, Transient)
 	FProjectileState ProjectileState;
 
@@ -222,7 +231,7 @@ private:
 	FPredictProjectilePathParams PredictedProjectileParams;
 
 	FProjectileState LocalState;
-	float RecentProjectilePerformedTime;
+	float RecentPerformedTime;
 	bool bIsStateChanging;
 
 	friend struct FScopedLock;

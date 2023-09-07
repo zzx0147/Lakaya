@@ -3,6 +3,8 @@
 
 #include "Character/Ability/Actor/LakayaProjectile.h"
 
+#include "Components/SphereComponent.h"
+#include "GameFramework/GameStateBase.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
@@ -50,11 +52,11 @@ bool FProjectileState::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSu
 }
 
 void FProjectileThrowData::SetupPredictedProjectileParams(FPredictProjectilePathParams& OutParams,
-                                                          const float& Velocity) const
+                                                          const float& Velocity, const float& CurrentTime) const
 {
 	OutParams.StartLocation = ThrowLocation;
 	OutParams.LaunchVelocity = ThrowDirection * Velocity;
-	OutParams.MaxSimTime = ServerTime;
+	OutParams.MaxSimTime = CurrentTime - ServerTime;
 }
 
 bool FGameplayAbilityTargetData_ThrowProjectile::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
@@ -67,6 +69,16 @@ bool FGameplayAbilityTargetData_ThrowProjectile::NetSerialize(FArchive& Ar, UPac
 ALakayaProjectile::ALakayaProjectile()
 {
 	SetReplicates(true);
+
+	// PredictProjectilePath가 radius 속성을 갖는 투사체만 지원하므로 투사체는 구체여야 합니다..
+	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
+	SetRootComponent(CollisionComponent);
+
+	// 정적 오브젝트에 대해서만 충돌이 가능하도록 설정합니다. 하위 클래스에서 필요한 콜리전 채널에 대해 Overlap을 설정하는 것은 가능합니다.
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	CollisionComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &ThisClass::OnProjectileOverlap);
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(
 		TEXT("ProjectileMovementComponent"));
@@ -84,7 +96,7 @@ void ALakayaProjectile::ThrowProjectilePredictive(FPredictionKey& Key, const FPr
 	}
 
 	// 예측 키가 Reject되는 경우 다시 서버로부터 리플리케이트되는 정보를 바탕으로 동작하도록 합니다. 
-	Key.NewRejectedDelegate().BindUObject(this, &ALakayaProjectile::RejectProjectile);
+	Key.NewRejectedDelegate().BindUObject(this, &ThisClass::RejectProjectile);
 
 	SetProjectileState(EProjectileState::Perform);
 	ThrowProjectile(InThrowData);
@@ -103,6 +115,7 @@ void ALakayaProjectile::ThrowProjectileAuthoritative(FProjectileThrowData&& InTh
 
 void ALakayaProjectile::CollapseProjectile()
 {
+	//TODO: 클라이언트에서는 예측적으로 Collapse되도록 할까? 일정시간 뒤에 폭발하는 투사체라면 클라이언트에서 예측적으로 터져도 문제가 없긴 할텐데..
 	if (!HasAuthority())
 	{
 		UE_LOG(LogActor, Warning, TEXT("[%s] Only server can collapse projectile"), *GetName());
@@ -131,26 +144,51 @@ void ALakayaProjectile::PreReplication(IRepChangedPropertyTracker& ChangedProper
 
 void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 {
-	RecentProjectilePerformedTime = InThrowData.ServerTime;
-	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity);
+	RecentPerformedTime = InThrowData.ServerTime;
+	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity,
+	                                           GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
+	
 
 	static FPredictProjectilePathResult Result;
-	UGameplayStatics::PredictProjectilePath(this, PredictedProjectileParams, Result);
-	const auto& Destination = Result.LastTraceDestination;
+	static TArray<AActor*> IgnoredActors;
+	while (UGameplayStatics::PredictProjectilePath(this, PredictedProjectileParams, Result)
+		&& PredictedProjectileParams.MaxSimTime > Result.LastTraceDestination.Time)
+	{
+		const auto& HitResult = Result.HitResult;
+		const auto HitObjectType = HitResult.GetComponent()->GetCollisionObjectType();
+		const auto HitResponse = CollisionComponent->GetCollisionResponseToChannel(HitObjectType);
 
-	//TODO: 서버에서는 충돌 검사가 필요합니다.
+		if (HitResponse == ECR_Block)
+		{
+			//TODO: bStartPenetrating이 true인 경우에 대한 처리가 필요합니다.
+			
+			const auto MirroredVelocity = -Result.LastTraceDestination.Velocity.MirrorByVector(HitResult.ImpactNormal);
+			//TODO: 반사 벡터를 LaunchVelocity로 지정하여 다시 예측을 시작합니다.
+		}
+		else
+		{
+			//TODO: 서버에서는 오버랩 이벤트를 처리해야 합니다.
+			// Overlap된 액터는 클라이언트에서는 무시합니다.
+			const auto Actor = HitResult.GetActor();
+			PredictedProjectileParams.ActorsToIgnore.Emplace(Actor);
+			IgnoredActors.Emplace(Actor);
+			//TODO: 시간과 LaunchVelocity, Location을 갱신하고 다시 예측을 시작합니다.
+		}
+	}
+
+
+	const auto& Destination = Result.LastTraceDestination;
 	SetActorLocation(Destination.Location);
 	if (ProjectileMovementComponent->bRotationFollowsVelocity)
 	{
 		SetActorRotation(Destination.Velocity.Rotation());
 	}
-
 	ProjectileMovementComponent->Velocity = Destination.Velocity;
 }
 
 void ALakayaProjectile::SetCustomState(const uint8& InCustomState)
 {
-	auto& StateRef = GetProjectileState();
+	auto& StateRef = InternalGetProjectileState();
 	const auto OldState = StateRef;
 	if (StateRef.SetCustomState(InCustomState))
 	{
@@ -160,17 +198,32 @@ void ALakayaProjectile::SetCustomState(const uint8& InCustomState)
 
 void ALakayaProjectile::OnRep_CustomState()
 {
-	UE_LOG(LogActor, Log, TEXT("[%s] Custom state replicated : %d"), *GetName(), GetProjectileState().GetCustomState());
+	UE_LOG(LogActor, Log, TEXT("[%s] Custom state replicated : %d"), *GetName(), LocalState.GetCustomState());
+}
+
+void ALakayaProjectile::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// 서버에서만 오버랩 이벤트를 수신할 수 있도록 합니다.
+	CollisionComponent->SetGenerateOverlapEvents(HasAuthority());
+}
+
+void ALakayaProjectile::OnProjectileOverlap_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                                                           UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+                                                           bool bFromSweep, const FHitResult& SweepResult)
+{
 }
 
 void ALakayaProjectile::OnCollapsed_Implementation()
 {
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	//TODO
 }
 
 void ALakayaProjectile::SetProjectileState(const EProjectileState& InProjectileState)
 {
-	auto& StateRef = GetProjectileState();
+	auto& StateRef = InternalGetProjectileState();
 	const auto OldState = StateRef;
 	if (StateRef.SetProjectileState(InProjectileState))
 	{
@@ -190,7 +243,7 @@ void ALakayaProjectile::BroadcastOnProjectileStateChanged(const FProjectileState
 void ALakayaProjectile::RejectProjectile()
 {
 	// 예측적으로 투척되며 변경되었던 데이터들을 다시 서버로부터 리플리케이트된 데이터들로 바꿉니다.
-	RecentProjectilePerformedTime = ThrowData.ServerTime;
+	RecentPerformedTime = ThrowData.ServerTime;
 	OnRep_ProjectileState();
 }
 
