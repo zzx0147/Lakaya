@@ -3,7 +3,9 @@
 
 #include "Character/LakayaBasePlayerState.h"
 
+#include "AbilitySystemComponent.h"
 #include "Character/LakayaBaseCharacter.h"
+#include "Character/Ability/Attribute/LakayaAttributeSet.h"
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/DirectionalDamageIndicator.h"
@@ -31,6 +33,7 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	CharacterName = TEXT("Rena");
 	bRecentAliveState = true;
 	OnPawnSet.AddUniqueDynamic(this, &ALakayaBasePlayerState::OnPawnSetCallback);
+	PrimaryActorTick.bCanEverTick = true;
 
 	static ConstructorHelpers::FClassFinder<UGamePlayHealthWidget> HealthFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
@@ -44,6 +47,10 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	HealthWidgetClass = HealthFinder.Class;
 	DirectionDamageIndicatorClass = DirectionDamageFinder.Class;
 	PortraitWidgetClass = PortraitFinder.Class;
+
+	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
+
+	AttributeSet = CreateDefaultSubobject<ULakayaAttributeSet>(TEXT("LakayaAttributeSet"));
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -86,7 +93,7 @@ void ALakayaBasePlayerState::BeginPlay()
 					Widget->ChangePortrait(Name);
 				});
 		}
-		
+
 		HealthWidget = CreateWidget<UGamePlayHealthWidget>(LocalController, HealthWidgetClass);
 		if (HealthWidget.IsValid())
 		{
@@ -124,6 +131,20 @@ void ALakayaBasePlayerState::OnRep_Owner()
 {
 	Super::OnRep_Owner();
 	OnOwnerChanged.Broadcast(Owner);
+}
+
+void ALakayaBasePlayerState::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	// UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+
+	if (GetAbilitySystemComponent())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow,
+			                                 *FString::Printf(TEXT("::%f"), GetAbilitySystemComponent()->GetSet<ULakayaAttributeSet>()->GetCurrentAmmo() ));
+	}
+	
 }
 
 bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) const
@@ -222,9 +243,9 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 	{
 		if (TimerManager.IsTimerActive(CurrentCaptureTimer))
 			TimerManager.ClearTimer(CurrentCaptureTimer);
-		
+
 		FTimerDelegate TimerDelegate;
-		TimerDelegate.BindWeakLambda(this,[this]
+		TimerDelegate.BindWeakLambda(this, [this]
 		{
 			if (this == nullptr) return;
 			if (const auto World = GetWorld())
@@ -241,9 +262,8 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 
 			AddTotalScoreCount(CurrentCaptureCount * 50);
 			OccupationTickCount += CurrentCaptureCount;
-			
 		});
-		
+
 		TimerManager.SetTimer(CurrentCaptureTimer, TimerDelegate, 1.0f, true);
 	}
 }
@@ -302,6 +322,20 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 	{
 		OldCharacter->SetTeam(ETeam::None);
 		OnAliveStateChanged.RemoveAll(OldCharacter);
+	}
+
+	if (const auto OldAbilityInterface = Cast<IRegisterAbilityInterface>(OldPawn);
+		HasAuthority() && OldAbilityInterface)
+	{
+		OldAbilityInterface->ClearAbilities();
+	}
+
+	if (HasAuthority()) AbilitySystem->SetAvatarActor(NewPawn);
+
+	if (const auto NewAbilityInterface = Cast<IRegisterAbilityInterface>(NewPawn);
+		HasAuthority() && NewAbilityInterface)
+	{
+		NewAbilityInterface->GiveAbilities(AbilitySystem);
 	}
 
 	if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
@@ -444,4 +478,9 @@ void ALakayaBasePlayerState::SetOwner(AActor* NewOwner)
 {
 	Super::SetOwner(NewOwner);
 	OnOwnerChanged.Broadcast(Owner);
+}
+
+UAbilitySystemComponent* ALakayaBasePlayerState::GetAbilitySystemComponent() const
+{
+	return AbilitySystem;
 }

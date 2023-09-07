@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
+#include "LakayaAbilitySet.h"
 #include "GameFramework/PlayerState.h"
 #include "Occupation/Team.h"
 #include "TimerManager.h"
@@ -28,7 +30,7 @@ DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOwnerChangeSignature, AActor*)
 DECLARE_DELEGATE_OneParam(FRespawnTimerDelegate, AController*)
 
 UCLASS()
-class LAKAYA_API ALakayaBasePlayerState : public APlayerState
+class LAKAYA_API ALakayaBasePlayerState : public APlayerState, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -39,12 +41,13 @@ public:
 	                         AActor* DamageCauser) override;
 	virtual void OnRep_PlayerName() override;
 	virtual void SetOwner(AActor* NewOwner) override;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void CopyProperties(APlayerState* PlayerState) override;
 	virtual void OnRep_Owner() override;
-
+	virtual void Tick(float DeltaSeconds) override;
 public:
 	bool IsSameTeam(const ALakayaBasePlayerState* Other) const;
 
@@ -137,7 +140,7 @@ public:
 	void SetAlly(const bool& Ally);
 
 	FPlayerStats GetPlayerStats();
-	
+
 protected:
 	// 현재 서버의 시간을 가져옵니다.
 	float GetServerTime() const;
@@ -266,6 +269,8 @@ public:
 
 	// 오너가 변경될 때 호출됩니다. 매개변수로 변경된 오너의 AActor 포인터를 받습니다.
 	FOwnerChangeSignature OnOwnerChanged;
+	
+
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -301,7 +306,7 @@ private:
 	uint16 CurrentCaptureCount;
 
 	uint16 OccupationTickCount;
-	
+
 	UPROPERTY(ReplicatedUsing=OnRep_SuccessCaptureCount, Transient)
 	uint16 SuccessCaptureCount;
 
@@ -313,6 +318,12 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_KillStreak, Transient)
 	uint16 KillStreak;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UAbilitySystemComponent> AbilitySystem;
+	
+	UPROPERTY()
+	const class ULakayaAttributeSet* AttributeSet;
 
 	FTimerHandle RespawnTimer;
 	FTimerHandle CurrentCaptureTimer;

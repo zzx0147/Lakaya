@@ -1,6 +1,5 @@
 #include "PlayerController/GameLobbyPlayerController.h"
 
-#include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "GameFramework/GameMode.h"
@@ -8,6 +7,7 @@
 #include "GameFramework/PlayerState.h"
 #include "GameMode/LakayaBaseGameState.h"
 #include "GameMode/OccupationGameState.h"
+#include "Input/LakayaInputContext.h"
 #include "Interfaces/NetworkPredictionInterface.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -17,11 +17,11 @@ void AGameLobbyPlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 
 	const auto CastedComponent = Cast<UEnhancedInputComponent>(InputComponent);
-	if (!CastedComponent) UE_LOG(LogInit, Fatal, TEXT("InputComponent was not UEnhancedInputComponent!"));
+	check(CastedComponent)
 	SetupEnhancedInputComponent(CastedComponent);
 
 	const auto InputSubsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	if (!InputSubsystem) UE_LOG(LogInit, Fatal, TEXT("UEnhancedInputLocalPlayerSubsystem was not exist!"));
+	check(InputSubsystem)
 	SetupMappingContext(InputSubsystem);
 }
 
@@ -90,30 +90,40 @@ void AGameLobbyPlayerController::SetEnableExitShortcut(const bool& Enable)
 void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
 	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
-								   &AGameLobbyPlayerController::MenuHandler);
+	                                   &AGameLobbyPlayerController::MenuHandler);
 	EnhancedInputComponent->BindAction(ShowScoreAction, ETriggerEvent::Triggered, this,
-									   &AGameLobbyPlayerController::ShowScoreBoard);
+	                                   &AGameLobbyPlayerController::ShowScoreBoard);
 	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
-									   &AGameLobbyPlayerController::HideScoreBoard);
+	                                   &AGameLobbyPlayerController::HideScoreBoard);
+
+	if (!AbilityInputSet.IsNull())
+	{
+		AbilityInputSet.LoadSynchronous()->BindActions(EnhancedInputComponent, this,
+		                                               &AGameLobbyPlayerController::AbilityInput, InputHandleContainer);
+	}
 }
 
 void AGameLobbyPlayerController::UnbindAllAndBindMenu(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
 	EnhancedInputComponent->ClearActionBindings();
 	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
-									   &AGameLobbyPlayerController::MenuHandler);
+	                                   &AGameLobbyPlayerController::MenuHandler);
 	EnhancedInputComponent->BindAction(ShowScoreAction, ETriggerEvent::Triggered, this,
-									   &AGameLobbyPlayerController::ShowScoreBoard);
+	                                   &AGameLobbyPlayerController::ShowScoreBoard);
 	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
-									   &AGameLobbyPlayerController::HideScoreBoard);
+	                                   &AGameLobbyPlayerController::HideScoreBoard);
 }
 
 void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
 {
 	InputSubsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
+	if (!AbilityInputContext.IsNull())
+	{
+		AbilityInputContext.LoadSynchronous()->AddMappingContext(InputSubsystem);
+	}
 }
 
-AGameLobbyPlayerController::AGameLobbyPlayerController(): APlayerController()
+AGameLobbyPlayerController::AGameLobbyPlayerController()
 {
 	OnPossessedPawnChanged.AddUniqueDynamic(this, &AGameLobbyPlayerController::OnPossessedPawnChangedCallback);
 	if (IsRunningDedicatedServer()) return;
@@ -140,32 +150,50 @@ AGameLobbyPlayerController::AGameLobbyPlayerController(): APlayerController()
 	ExitLevel = FSoftObjectPath(TEXT("/Script/Engine.World'/Game/Levels/MainLobbyLevel.MainLobbyLevel'"));
 }
 
+UAbilitySystemComponent* AGameLobbyPlayerController::GetAbilitySystemComponent() const
+{
+	if (AbilitySystem.IsValid()) return AbilitySystem.Get();
+	const auto CastedState = GetPlayerState<IAbilitySystemInterface>();
+	return ensure(CastedState) ? CastedState->GetAbilitySystemComponent() : nullptr;
+}
+
 void AGameLobbyPlayerController::MenuHandler()
 {
 	if (bEnableExitShortcut) UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ExitLevel);
 }
 
+void AGameLobbyPlayerController::AbilityInput(TAbilitySystemInputCallback Function, int32 InputID)
+{
+	if (!AbilitySystem.IsValid())
+	{
+		AbilitySystem = GetAbilitySystemComponent();
+		if (!ensure(AbilitySystem.IsValid())) return;
+	}
+	(AbilitySystem.Get()->*Function)(InputID);
+}
+
 void AGameLobbyPlayerController::ShowScoreBoard()
 {
 	UE_LOG(LogTemp, Warning, TEXT("ShowScoreBoard"));
-	
+
 	// 팀전일 때
 	if (const auto OccupationGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 	{
 		if (const auto NewGameState = Cast<AOccupationGameState>(OccupationGameState))
 		{
+
 			if (!NewGameState->bTap) return;
-         
+
 			if (OccupationGameState->GetMatchState() == MatchState::WaitingPostMatch)
 			{
 				// 게임이 종료되고 결과창에 어떠한 위젯이 띄워지고 있느냐에 따라서 위젯들이 보여지는게 달라집니다.
 				NewGameState->ChangeResultWidget();
 			}
-			
+
 			OccupationGameState->SetScoreBoardVisibility(true);
 		}
 	}
-	
+
 	// 개인전일 때
 }
 
@@ -174,4 +202,3 @@ void AGameLobbyPlayerController::HideScoreBoard()
 	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 		GameState->SetScoreBoardVisibility(false);
 }
-

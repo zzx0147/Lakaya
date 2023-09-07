@@ -16,15 +16,20 @@ class LAKAYA_API UOccupationCharacterSelectWidget : public UGameLobbyCharacterSe
 public:
 	explicit UOccupationCharacterSelectWidget(const FObjectInitializer& ObjectInitializer);
 
+	virtual void RegisterPlayer(APlayerState* PlayerState) override;
+
 protected:
 	virtual void NativeConstruct() override;
 
-public:
-	virtual void RegisterPlayer(APlayerState* PlayerState) override;
+private:
+	UFUNCTION()
+	void OnClickedCharacterSelectButton();
 	
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UPlayerInfoWidget> PlayerInfoWidgetClass;
 
 	TObjectPtr<class UVerticalBox> PlayerInfoVerticalBox;
+
+	TObjectPtr<UButton> CharacterSelectButton;
 };

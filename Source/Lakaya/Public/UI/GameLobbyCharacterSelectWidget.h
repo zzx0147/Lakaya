@@ -5,7 +5,6 @@
 #include "Blueprint/UserWidget.h"
 #include "GameLobbyCharacterSelectWidget.generated.h"
 
-
 //선택한 캐릭터가 변경되었을 때 작동하는 델리게이트, 해당 캐릭터의 이름을 넘겨줍니다
 //param1 캐릭터 이름
 DECLARE_EVENT_OneParam(UGameLobbyCharacterSelectWidget, OnChangeSelectedCharacterSignature, const FName&)

@@ -105,7 +105,7 @@ void AOccupationGameState::BeginPlay()
 			MatchStartWaitWidget = CreateWidget<UMatchStartWaitWidget>(LocalController, MatchStartWaitWidgetClass);
 			if (MatchStartWaitWidget.IsValid())
 			{
-				MatchStartWaitWidget->AddToViewport();
+				MatchStartWaitWidget->AddToViewport(1);
 				MatchStartWaitWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 			else UE_LOG(LogTemp, Warning, TEXT("MatchStartWaitWidget is null."));
@@ -116,7 +116,7 @@ void AOccupationGameState::BeginPlay()
 			StartMessageWidget = CreateWidget<UStartMessageWidget>(LocalController, StartMessageWidgetClass);
 			if (StartMessageWidget.IsValid())
 			{
-				StartMessageWidget->AddToViewport();
+				StartMessageWidget->AddToViewport(1);
 				StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 			else UE_LOG(LogTemp, Warning, TEXT("StartMessageWidget is null."));
@@ -174,10 +174,6 @@ void AOccupationGameState::BeginPlay()
 			}
 		}
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_LocalPlayerController is null."));
-	}
 
 	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this,
 	                                &AOccupationGameState::EndTimeCheck, 1.0f, true);
@@ -188,7 +184,7 @@ void AOccupationGameState::BeginPlay()
 void AOccupationGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-
+	
 	if (SkillWidget.IsValid())
 		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
@@ -198,17 +194,23 @@ void AOccupationGameState::HandleMatchHasStarted()
 	if (IsValid(WeaponOutLineWidget))
 		WeaponOutLineWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-	if (MatchStartWaitWidget.IsValid())
-		MatchStartWaitWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-	// MatchStartWaitWidget위젯을 띄우고, 3초 뒤에 비활성화 해줍니다.
+	FTimerDelegate TimerDelegate_MatchStartWaitWidget;
+	TimerDelegate_MatchStartWaitWidget.BindLambda([this]
+	{
+		if (this == nullptr) return;
+		if (MatchStartWaitWidget.IsValid())
+			MatchStartWaitWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	});
+	GetWorldTimerManager().SetTimer(TimerHandle_MatchStartWaitWidget, TimerDelegate_MatchStartWaitWidget, MatchWaitDuration - 10,false);
+	
+	// MatchStartWaitWidget위젯을 띄우고, N초(MatchStartWaitWidgetLifeTime) 뒤에 비활성화 해줍니다.
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindLambda([this]
 	{
 		if (this == nullptr) return;
 		if (MatchStartWaitWidget.IsValid()) MatchStartWaitWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
-	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate, MatchStartWaitWidgetLifeTime, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate,   (MatchWaitDuration - 10 + MatchStartWaitWidgetLifeTime), false);
 
 	// 게임이 본격적으로 시작이 되면 StartMessage위젯을 띄워줍니다.
 	TimerDelegate.BindLambda([this]
@@ -697,21 +699,13 @@ void AOccupationGameState::UpdateTeamScoreTick()
 {
 	if (TeamToUpdate == ETeam::Anti)
 	{
-		// Anti팀 점수 업데이트
 		AntiTeamScore += AdditiveScore;
 		OnRep_AntiTeamScore();
-		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("AntiTeamScore : %f"), AntiTeamScore);
-		// FString debugMessage = FString::Printf(TEXT("AntiTeamScore: %f"), AntiTeamScore);
-		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, debugMessage);
 	}
 	else if (TeamToUpdate == ETeam::Pro)
 	{
-		// Pro팀 점수 업데이트
 		ProTeamScore += AdditiveScore;
 		OnRep_ProTeamScore();
-		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("ProTeamScore : %f"), ProTeamScore);
-		// FString debugMessage = FString::Printf(TEXT("ProTeamScore: %f"), ProTeamScore);
-		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, debugMessage);
 	}
 }
 

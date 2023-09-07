@@ -3,12 +3,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
 #include "AgonesComponent.h"
+#include "LakayaBaseGameState.h"
 #include "LakayaDefaultPlayGameMode.generated.h"
-
-namespace MatchState
-{
-	extern const FName IsSelectCharacter; //캐릭터를 선택할때의 상태입니다, WaitingToStart 다음 상태이며, 이 상태가 끝나면 InProgress로 넘어갑니다
-}
 
 UCLASS()
 class LAKAYA_API ALakayaDefaultPlayGameMode : public AGameMode
@@ -40,7 +36,7 @@ protected:
 
 	//SetMatchState()가 호출되서 MatchState가 변경된 직후 호출됨, HandleMatchIsWaitingToStart() 같은 MatchState에 맞는 HandleMatch~~ 함수를 호출함
 	virtual void OnMatchStateSet() override;
-
+	
 	// EnteringMap (맵 진입)
 	// 액터 틱은 아직 이루어지지 않으며, 월드는 제대로 초기화 되지 않은 상태.
 	// 모두 완전히 로드되면 다음 상태로 전환.
@@ -53,7 +49,7 @@ protected:
 	virtual bool ReadyToStartMatch_Implementation() override;
 
 	// 캐릭터 선택 스테이스로 넘어갈 때 호출되는 함수
-	virtual void HandleMatchIsSelectCharacter();
+	// virtual void HandleMatchIsSelectCharacter();
 
 	// InProgress (진행중)
 	// 여기에 들어갈 때 HandleMatchHasStarted()함수 호출
@@ -73,11 +69,9 @@ protected:
 	
 public:
 	virtual void OnPlayerKilled(AController* VictimController, AController* InstigatorController, AActor* DamageCauser);
-	virtual void StartSelectCharacter();
 	virtual bool HasMatchStarted() const override;
 
 protected:
-	virtual void PlayerInitializeSetLocation(uint8 PlayersNum);
 	virtual void RespawnPlayer(AController* KilledController);
 	virtual bool ShouldRespawn();
 	virtual void RegisterPlayer(AController* NewPlayer); //플레이어 혹은 AI 접속시 이벤트 바인딩 및 초기화 등을 실행합니다
@@ -86,25 +80,22 @@ protected:
 public:
 	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 
-	//uint8 GetPlayerRespawnTime() { return PlayerRespawnTime; }
-	//bool GetbWaitToStart() { return bWaitToStart; }
-
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FName, TSubclassOf<class AInteractableCharacter>> CharacterClasses;
 
-	UPROPERTY(EditDefaultsOnly)
-	float CharacterSelectStartDelay;
-
 	FTimerHandle TimerHandle_DelayedEnded;
-	float MatchEndDelay = 5.0f;
+	float MatchEndDelay = 10.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAgonesComponent* AgonesSDK;
 
+protected:
+	uint8 CurrentPlayerNum;
+	TObjectPtr<ALakayaBaseGameState> BaseGameState;
+	
 private:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;
 	FTimerHandle TimerHandle_Respawn;
-	FTimerHandle TimerHandle_DelayedCharacterSelectStart;
 };

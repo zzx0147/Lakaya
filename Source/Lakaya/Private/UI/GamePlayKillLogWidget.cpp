@@ -39,9 +39,6 @@ void UGamePlayKillLogWidget::NativeConstruct()
 		Result->SetVisibility(ESlateVisibility::Collapsed);
 		return Result;
 	});
-
-	// if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
-		// GameState->OnPlayerKillNotified.AddUObject(this, &UGamePlayKillLogWidget::OnKillCharacterNotify);
 }
 
 void UGamePlayKillLogWidget::OnKillCharacterNotify(APlayerState* KilledController,

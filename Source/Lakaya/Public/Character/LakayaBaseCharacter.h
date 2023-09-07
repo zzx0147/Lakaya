@@ -3,10 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
+#include "LakayaAbilitySet.h"
+#include "RegisterAbilityInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "Occupation/Team.h"
 #include "LakayaBaseCharacter.generated.h"
+
+struct FGameplayAbilitySpec;
 
 USTRUCT()
 struct FPlayerRotationPacket
@@ -21,7 +26,8 @@ struct FPlayerRotationPacket
 };
 
 UCLASS()
-class LAKAYA_API ALakayaBaseCharacter : public ACharacter
+class LAKAYA_API ALakayaBaseCharacter : public ACharacter, public IAbilitySystemInterface,
+                                        public IRegisterAbilityInterface
 {
 	GENERATED_BODY()
 
@@ -40,6 +46,9 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual void GiveAbilities(UAbilitySystemComponent* InAbilitySystem) override;
+	virtual void ClearAbilities() override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -177,6 +186,10 @@ protected:
 	//캐릭터의 이름입니다
 	FName CharacterName;
 
+	/** 이 캐릭터가 사용할 어빌리티들을 지정하는 데이터 에셋입니다. */
+	UPROPERTY(EditAnywhere)
+	TSoftObjectPtr<ULakayaAbilitySet> CharacterAbilities;
+
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	class UResourceComponent* ResourceComponent;
@@ -214,4 +227,5 @@ private:
 	FName MeshCollisionProfile;
 	TWeakObjectPtr<UMaterialInstanceDynamic> CharacterOverlayMaterial;
 	FTimerHandle DamageImmuneTimer;
+	FLakayaAbilityHandleContainer AbilityHandleContainer;
 };
