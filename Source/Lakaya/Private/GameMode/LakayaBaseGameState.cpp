@@ -177,10 +177,6 @@ void ALakayaBaseGameState::BeginPlay()
 		
 		SpawnOutlineManager();
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("LakayaBaseGameState_LocalPlayerController is null."));
-	}
 }
 
 void ALakayaBaseGameState::AddPlayerState(APlayerState* PlayerState)
@@ -374,37 +370,4 @@ void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible)
 bool ALakayaBaseGameState::HasMatchStarted() const
 {
 	return Super::HasMatchStarted();
-
-#pragma region CharacterSelect
-	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-	// if (GetMatchState() == MatchState::IsSelectCharacter)
-	// {
-		// return false;
-	// }
-#pragma endregion CharacterSelect
 }
-
-#pragma region CharacterSelect
-// TODO : 팀전에서는 더이상 캐릭터 선택상태는 존재하지 않습니다.
-// TODO : 캐릭터 선택 창과 게임대기중과 통일되어 따로 작업해야 합니다.
-// void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
-// {
-// if (GetCharacterSelectWidget()) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
-
-// if (LoadingWidget) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
-
-// if (CharacterSelectTimeWidget.IsValid())
-// CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-// SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]()
-// {
-// 	if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->StartMatch();
-// }, CharacterSelectTimeWidget);
-// }
-
-// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-// void ALakayaBaseGameState::OnRep_CharacterSelectEndingTime()
-// {
-// 	if (CharacterSelectTimeWidget.IsValid()) CharacterSelectTimeWidget->SetWidgetTimer(CharacterSelectEndingTime);
-// }
-#pragma endregion CharacterSelect

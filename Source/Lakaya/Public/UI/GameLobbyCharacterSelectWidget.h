@@ -44,6 +44,9 @@ protected:
 
 	void SelectCharacter(const uint8& CharacterNum);
 
+	UFUNCTION()
+	void OnClickedCharacterSelectButton();
+	
 public:
 	OnChangeSelectedCharacterSignature OnChangeSelectedCharacter;
 
@@ -79,6 +82,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FName, TObjectPtr<UTexture2D>> CharacterBackgroundTextureMap;
 	
+	TObjectPtr<UButton> CharacterSelectButton;
 	
 	TObjectPtr<class UImage> GunImage;
 

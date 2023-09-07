@@ -22,8 +22,8 @@ protected:
 	virtual void NativeConstruct() override;
 
 private:
-	UFUNCTION()
-	void OnClickedCharacterSelectButton();
+	// UFUNCTION()
+	// void OnClickedCharacterSelectButton();
 	
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -31,5 +31,5 @@ private:
 
 	TObjectPtr<class UVerticalBox> PlayerInfoVerticalBox;
 
-	TObjectPtr<UButton> CharacterSelectButton;
+	// TObjectPtr<UButton> CharacterSelectButton;
 };

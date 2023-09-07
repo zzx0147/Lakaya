@@ -20,6 +20,7 @@ ALakayaDefaultPlayGameMode::ALakayaDefaultPlayGameMode()
 	MinRespawnDelay = 4.0f;
 	AgonesSDK = CreateDefaultSubobject<UAgonesComponent>(TEXT("AgonesSDK"));
 	AgonesSDK->bDisableAutoConnect = false;
+	MatchStartDelay = 3.0f;
 }
 
 void ALakayaDefaultPlayGameMode::RestartPlayer(AController* NewPlayer)
@@ -129,7 +130,6 @@ AActor* ALakayaDefaultPlayGameMode::FindPlayerStart_Implementation(AController* 
 void ALakayaDefaultPlayGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	UE_LOG(LogTemp, Warning, TEXT("Occupation Game Mode Begin Play"));
 }
 
 void ALakayaDefaultPlayGameMode::PostInitializeComponents()
@@ -282,7 +282,7 @@ void ALakayaDefaultPlayGameMode::RegisterPlayer(AController* NewPlayer)
 	BaseGameState = GetWorld()->GetGameState<ALakayaBaseGameState>();
 	if (BaseGameState == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_OccupationGameState is null."));
+		UE_LOG(LogTemp, Warning, TEXT("LakayaDefaultPlayGameMode_BaseGameState is null."));
 	}
 
 	CurrentPlayerNum = BaseGameState->PlayerArray.Num();

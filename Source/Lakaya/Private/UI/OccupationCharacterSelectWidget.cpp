@@ -18,17 +18,17 @@ void UOccupationCharacterSelectWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	PlayerInfoVerticalBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("PlayerInfoPanel")));
-	CharacterSelectButton = Cast<UButton>(GetWidgetFromName(TEXT("CharSelect_Btn")));
+	// CharacterSelectButton = Cast<UButton>(GetWidgetFromName(TEXT("CharSelect_Btn")));
 
-	CharacterSelectButton->OnClicked.AddUniqueDynamic(this, &UOccupationCharacterSelectWidget::OnClickedCharacterSelectButton);
+	// CharacterSelectButton->OnClicked.AddUniqueDynamic(this, &UOccupationCharacterSelectWidget::OnClickedCharacterSelectButton);
 }
 
-void UOccupationCharacterSelectWidget::OnClickedCharacterSelectButton()
-{
-	// TODO : 캐릭터 선택 버튼 누를 시, 캐릭터 선택 위젯 창 제거.
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("OnClickedCharacterSelectButton"));
-	SetVisibility(ESlateVisibility::Hidden);
-}
+// void UOccupationCharacterSelectWidget::OnClickedCharacterSelectButton()
+// {
+// 	// TODO : 캐릭터 선택 버튼 누를 시, 캐릭터 선택 위젯 창 제거.
+// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("OnClickedCharacterSelectButton"));
+// 	SetVisibility(ESlateVisibility::Hidden);
+// }
 
 void UOccupationCharacterSelectWidget::RegisterPlayer(APlayerState* PlayerState)
 {
