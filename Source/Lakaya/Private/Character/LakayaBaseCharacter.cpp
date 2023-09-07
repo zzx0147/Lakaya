@@ -3,11 +3,15 @@
 
 #include "Character/LakayaBaseCharacter.h"
 
+#include "NavigationSystemTypes.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Character/ResourceComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/Image.h"
+#include "Components/SceneCaptureComponent2D.h"
+#include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
@@ -37,6 +41,7 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
 	CharacterName = TEXT("Base");
 
+	
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(SpringArmComponentName);
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->bUsePawnControlRotation = true;

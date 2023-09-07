@@ -6,6 +6,7 @@
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "Occupation/Team.h"
+#include "UI/MiniMapWidget.h"
 #include "LakayaBaseCharacter.generated.h"
 
 USTRUCT()
@@ -45,7 +46,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual float InternalTakeRadialDamage(float Damage, FRadialDamageEvent const& RadialDamageEvent,
 	                                       AController* EventInstigator, AActor* DamageCauser) override;
-
+	
 public:
 	// 캐릭터에 부착된 스프링암 컴포넌트를 가져옵니다.
 	UFUNCTION(BlueprintGetter)
@@ -77,7 +78,7 @@ public:
 
 	UFUNCTION(BlueprintGetter)
 	const FName& GetCharacterName() const { return CharacterName; }
-
+	
 	// 캐릭터에게 팀을 설정해줍니다.
 	UFUNCTION(BlueprintNativeEvent)
 	void SetTeam(const ETeam& Team);
@@ -176,7 +177,7 @@ protected:
 
 	//캐릭터의 이름입니다
 	FName CharacterName;
-
+	
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	class UResourceComponent* ResourceComponent;
@@ -205,6 +206,8 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_DamageImmuneEndingTime, Transient)
 	float DamageImmuneEndingTime;
 
+	TWeakObjectPtr<UMiniMapWidget> MiniMapWidget;
+	
 	FPlayerRotationPacket PrevPlayerRotation;
 	FPlayerRotationPacket LatestPlayerRotation;
 	FQuat LatestUpdateRotation;

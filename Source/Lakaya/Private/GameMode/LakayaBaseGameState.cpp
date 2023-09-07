@@ -3,6 +3,8 @@
 #include <filesystem>
 
 #include "Character/LakayaBasePlayerState.h"
+#include "Components/SceneCaptureComponent2D.h"
+#include "Engine/TextureRenderTarget2D.h"
 #include "EOS/EOSGameInstance.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
@@ -103,6 +105,65 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 
+		if (MiniMapWidgetClass)
+		{
+			MiniMapWidget = CreateWidget<UMiniMapWidget>(LocalController, MiniMapWidgetClass);
+			if (MiniMapWidget.IsValid())
+			{
+				UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>(this);
+				if (RenderTarget)
+				{
+					RenderTarget->InitAutoFormat(1024, 1024);
+					RenderTarget->UpdateResource();
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("RenderTarget is null."));
+				}
+				
+				USceneCaptureComponent2D* SceneCapture = NewObject<USceneCaptureComponent2D>(this);
+				if (SceneCapture)
+				{
+					SceneCapture->TextureTarget = RenderTarget;
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("SceneCapture is null."));
+				}
+				
+				UMaterial* BaseMaterial = LoadObject<UMaterial>(NULL, TEXT("'/Game/Characters/RenderTarget/MiniMap/M_Test.M_Test'"));
+				if (BaseMaterial)
+				{
+					UMaterialInstanceDynamic* DynamicMaterialInstance = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+					
+					if (DynamicMaterialInstance)
+					{
+						UImage* MiniMapImage = MiniMapWidget->GetImageElement();
+						if (MiniMapImage)
+						{
+							MiniMapImage->SetBrushFromMaterial(DynamicMaterialInstance);
+						}
+						else
+						{
+							UE_LOG(LogTemp, Warning, TEXT("MiniMapImage is null."));
+						}
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("DynamicMaterialInstance is null."));
+					}
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("BaseMaterial is null."));
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("MiniMapWidgetClass is null"));
+			}
+		}
+		
 		// TODO : 아직 구현이 되지 않아 비활성화 합니다.
 		// if (HelpWidgetClass)
 		// {
