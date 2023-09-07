@@ -24,6 +24,9 @@ public:
 	 */
 	void SetOccupationWinner();
 
+	/**
+	 * @brief 게임이 끝나고 나서 출력되는 GradeResult, DetailResult를 전환합니다.
+	 */
 	void ChangeResultWidget();
 
 	/**
@@ -113,7 +116,6 @@ private:
 	 */
 	void UpdateTeamScoreTick();
 
-#pragma region Widget
 	// 게임 승패여부를 띄워줍니다.
 	void ShowEndResultWidget();
 
@@ -134,9 +136,7 @@ private:
 
 	// 모든 인원들의 정보를 담은 위젯을 바인딩합니다.
 	void BindDetailResultElementWidget();
-#pragma endregion
 
-#pragma region OnRep
 	UFUNCTION()
 	void OnRep_AntiTeamScore();
 
@@ -145,12 +145,13 @@ private:
 
 	UFUNCTION()
 	void OnRep_OccupationWinner();
-#pragma endregion
+	
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;
 	
 	bool bTap;
+	
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
 	ETeam CurrentOccupationWinner;
@@ -198,8 +199,9 @@ private:
 	FTimerHandle TimerHandle_StartMessageHidden;
 	FTimerHandle TimerHandle_WaitTimerHandle;
 	FTimerHandle TimerHandle_GameResultHandle;
-	FTimerHandle TimerHandle_ShowGradeResultElementHandle;
 	FTimerHandle TimerHandle_UpdateScoreTimer;
+	FTimerHandle TimerHandle_MatchStartWaitWidget;
+	
 #pragma region Widget
 	// 게임중에 표시되는 스킬 위젯을 지정합니다.
 	UPROPERTY(EditDefaultsOnly)

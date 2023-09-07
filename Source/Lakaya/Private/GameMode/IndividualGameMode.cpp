@@ -55,9 +55,3 @@ void AIndividualGameMode::RespawnPlayer(AController* KilledController)
 {
 	Super::RespawnPlayer(KilledController);
 }
-
-void AIndividualGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
-{
-	Super::PlayerInitializeSetLocation(PlayersNum);
-}
-

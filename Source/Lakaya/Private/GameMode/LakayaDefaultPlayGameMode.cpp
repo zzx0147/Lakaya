@@ -11,12 +11,6 @@
 #include "GameMode/LakayaBaseGameState.h"
 #include "Kismet/GameplayStatics.h"
 
-// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-// namespace MatchState
-// {
-// 	 const FName IsSelectCharacter = FName(TEXT("IsSelectCharacter"));
-// }
-
 const FString ALakayaDefaultPlayGameMode::ATeamSpawnTag = FString(TEXT("ATeamSpawnZone"));
 const FString ALakayaDefaultPlayGameMode::BTeamSpawnTag = FString(TEXT("BTeamSpawnZone"));
 
@@ -24,8 +18,6 @@ ALakayaDefaultPlayGameMode::ALakayaDefaultPlayGameMode()
 {
 	bDelayedStart = true;
 	MinRespawnDelay = 4.0f;
-	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-	// CharacterSelectStartDelay = 3.0f;
 	AgonesSDK = CreateDefaultSubobject<UAgonesComponent>(TEXT("AgonesSDK"));
 	AgonesSDK->bDisableAutoConnect = false;
 }
@@ -140,7 +132,6 @@ void ALakayaDefaultPlayGameMode::BeginPlay()
 	UE_LOG(LogTemp, Warning, TEXT("Occupation Game Mode Begin Play"));
 }
 
-//TODO: 사용되지 않는 오버라이딩 제거
 void ALakayaDefaultPlayGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -157,32 +148,17 @@ void ALakayaDefaultPlayGameMode::PostLogin(APlayerController* NewPlayer)
 void ALakayaDefaultPlayGameMode::OnMatchStateSet()
 {
 	Super::OnMatchStateSet();
-	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-	// if (MatchState == MatchState::IsSelectCharacter)
-	// {
-		// HandleMatchIsSelectCharacter();
-	// }
 }
 
-// TODO : 캐릭터 선택 상태가 사라져서 캐릭터 선택 창에서 이루어 졌던 기능들을 옮겨야 합니다.
-// TODO : 캐릭터가 생성이 되고 나서 캐릭터가 선택이 되기 때문에 여기서 진행하기 보다는 HandleMatchHasStarted에서 진행해야 합니다.
 void ALakayaDefaultPlayGameMode::HandleMatchIsWaitingToStart()
 {
 	Super::HandleMatchIsWaitingToStart();
 }
 
-// TODO : 위의 내용과 동일합니다.
 bool ALakayaDefaultPlayGameMode::ReadyToStartMatch_Implementation()
 {
 	return Super::ReadyToStartMatch_Implementation();
 }
-
-// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-// void ALakayaDefaultPlayGameMode::HandleMatchIsSelectCharacter()
-// {
-// 	FTimerHandle TimerHandler;
-// 	//GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 10.0f, false);
-// }
 
 void ALakayaDefaultPlayGameMode::HandleMatchHasStarted()
 {
@@ -201,7 +177,6 @@ void ALakayaDefaultPlayGameMode::HandleMatchHasEnded()
 		GameInstance->EndSession();
 	}
 
-	// TODO
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasEnded"));
 }
 
@@ -242,21 +217,12 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 		Delegate.BindUObject(this, &ALakayaDefaultPlayGameMode::RespawnPlayer);
 		VictimPlayerState->SetRespawnTimer(GetGameState<AGameState>()->GetServerWorldTimeSeconds() + MinRespawnDelay,
 		                                   Delegate);
-		// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("RespawnTimerSetted!!!"));
 	}
 	else
 	{
 		VictimPlayerState->SetRespawnTimer(-1.0f);
 	}
 } 
-
-// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-// void ALakayaDefaultPlayGameMode::StartSelectCharacter()
-// {
-// 	if (MatchState != MatchState::WaitingToStart) return;
-//
-// 	SetMatchState(MatchState::IsSelectCharacter);
-// }
 
 void ALakayaDefaultPlayGameMode::DelayedEndedGame()
 {
@@ -266,17 +232,7 @@ void ALakayaDefaultPlayGameMode::DelayedEndedGame()
 
 bool ALakayaDefaultPlayGameMode::HasMatchStarted() const
 {
-	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-	// return MatchState == MatchState::IsSelectCharacter ? false : Super::HasMatchStarted();
-	// if (MatchState == MatchState::IsSelectCharacter) return false;
-
 	return Super::HasMatchStarted();
-}
-
-//TODO: 사용되지 않는 함수
-void ALakayaDefaultPlayGameMode::PlayerInitializeSetLocation(uint8 PlayersNum)
-{
-	// TODO
 }
 
 UClass* ALakayaDefaultPlayGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
@@ -330,13 +286,4 @@ void ALakayaDefaultPlayGameMode::RegisterPlayer(AController* NewPlayer)
 	}
 
 	CurrentPlayerNum = BaseGameState->PlayerArray.Num();
-
-	// TODO : 플레이어가 다 모이게 되면 N초 (DelayedMatchStart)뒤에 MatchStart로 넘어가게 해야 합니다.
-	// TODO : 여기서 진행하기 보다는 개인전과 별개로, OccupationGameMode에서 진행해야 합니다.
-	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-	// if (CurrentPlayerNum == BaseGameState->GetMaximumPlayers())
-	// {
-	// 	GetWorldTimerManager().SetTimer(TimerHandle_DelayedCharacterSelectStart, this, &ALakayaDefaultPlayGameMode::StartSelectCharacter,
-	// 		CharacterSelectStartDelay, false);
-	// }
 }
