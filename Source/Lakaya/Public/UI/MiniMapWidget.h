@@ -16,10 +16,6 @@ class LAKAYA_API UMiniMapWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	virtual void NativeConstruct() override;
-	
-	UImage* GetImageElement() const { return MiniMap_Image.Get(); }
-	
-private:
-	TWeakObjectPtr<UImage> MiniMap_Image;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	TWeakObjectPtr<UImage> MiniMap_Img;
 };

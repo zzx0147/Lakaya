@@ -105,65 +105,85 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 
-		if (MiniMapWidgetClass)
-		{
-			MiniMapWidget = CreateWidget<UMiniMapWidget>(LocalController, MiniMapWidgetClass);
-			if (MiniMapWidget.IsValid())
-			{
-				UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>(this);
-				if (RenderTarget)
-				{
-					RenderTarget->InitAutoFormat(1024, 1024);
-					RenderTarget->UpdateResource();
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("RenderTarget is null."));
-				}
-				
-				USceneCaptureComponent2D* SceneCapture = NewObject<USceneCaptureComponent2D>(this);
-				if (SceneCapture)
-				{
-					SceneCapture->TextureTarget = RenderTarget;
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("SceneCapture is null."));
-				}
-				
-				UMaterial* BaseMaterial = LoadObject<UMaterial>(NULL, TEXT("'/Game/Characters/RenderTarget/MiniMap/M_Test.M_Test'"));
-				if (BaseMaterial)
-				{
-					UMaterialInstanceDynamic* DynamicMaterialInstance = UMaterialInstanceDynamic::Create(BaseMaterial, this);
-					
-					if (DynamicMaterialInstance)
-					{
-						UImage* MiniMapImage = MiniMapWidget->GetImageElement();
-						if (MiniMapImage)
-						{
-							MiniMapImage->SetBrushFromMaterial(DynamicMaterialInstance);
-						}
-						else
-						{
-							UE_LOG(LogTemp, Warning, TEXT("MiniMapImage is null."));
-						}
-					}
-					else
-					{
-						UE_LOG(LogTemp, Warning, TEXT("DynamicMaterialInstance is null."));
-					}
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("BaseMaterial is null."));
-				}
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("MiniMapWidgetClass is null"));
-			}
-		}
-		
+		// if (MiniMapWidgetClass)
+		// {
+		// 	MiniMapWidget = CreateWidget<UMiniMapWidget>(LocalController, MiniMapWidgetClass);
+		// 	if (MiniMapWidget.IsValid())
+		// 	{
+		// 		MiniMapWidget->AddToViewport();
+		// 		MiniMapWidget->SetVisibility(ESlateVisibility::Hidden);
+		//         
+		// 		UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>(this);
+		// 		if (RenderTarget)
+		// 		{
+		// 			RenderTarget->InitAutoFormat(1024, 1024);
+		// 			RenderTarget->UpdateResource();
+		//
+		// 			UE_LOG(LogTemp, Warning, TEXT("RenderTarget Initialized successfully."));
+		//
+		// 			USceneCaptureComponent2D* SceneCapture = NewObject<USceneCaptureComponent2D>(this);
+		// 			if (SceneCapture)
+		// 			{
+		// 				SceneCapture->TextureTarget = RenderTarget;
+		// 				SceneCapture->RegisterComponent();
+		//
+		// 				UE_LOG(LogTemp, Warning, TEXT("SceneCapture Initialized successfully."));
+		//
+		// 				UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(NULL, TEXT("'/Game/Characters/RenderTarget/MiniMap/M_Test.M_Test'"));
+		// 				if (BaseMaterial)
+		// 				{
+		// 					UMaterialInstanceDynamic* DynamicMaterialInstance = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+		//
+		// 					if (DynamicMaterialInstance)
+		// 					{
+		// 						DynamicMaterialInstance->SetTextureParameterValue(FName(TEXT("SceneTexture")), RenderTarget);
+		//
+		// 						UImage* MiniMapImage = MiniMapWidget->GetImageElement();
+		// 						if (MiniMapImage)
+		// 						{
+		// 							FSlateBrush Brush;
+		// 							Brush.SetResourceObject(DynamicMaterialInstance);
+		// 							Brush.ImageSize.X = 1024.0f;
+		// 							Brush.ImageSize.Y = 1024.0f;
+		//
+		// 							MiniMapImage->SetBrush(Brush);
+		// 						}
+		// 						else
+		// 						{
+		// 							UE_LOG(LogTemp, Warning, TEXT("MiniMapImage is null."));
+		// 						}
+		// 					}
+		// 					else
+		// 					{
+		// 						UE_LOG(LogTemp, Warning, TEXT("DynamicMaterialInstance is null."));
+		// 					}
+		// 				}
+		// 				else
+		// 				{
+		// 					UE_LOG(LogTemp, Warning, TEXT("BaseMaterial is null."));
+		// 				}
+		// 			}
+		// 			else
+		// 			{
+		// 				UE_LOG(LogTemp, Warning, TEXT("SceneCapture is null."));
+		// 			}
+		// 		}
+		// 		else
+		// 		{
+		// 			UE_LOG(LogTemp, Warning, TEXT("RenderTarget is null."));
+		// 		}
+		//
+		// 	}
+		// 	else
+		// 	{
+		// 		UE_LOG(LogTemp, Warning ,TEXT("Mini Map Widget is not valid."));
+		// 	}    
+		// }
+		// else
+		// {
+		// 	UE_LOG(LogTemp ,Warning ,TEXT ("Minimap widget class is null"));
+		// }
+
 		// TODO : 아직 구현이 되지 않아 비활성화 합니다.
 		// if (HelpWidgetClass)
 		// {
@@ -174,9 +194,9 @@ void ALakayaBaseGameState::BeginPlay()
 		// 		HelpWidget->SetVisibility(ESlateVisibility::Hidden);
 		// 	}
 		// }
-		
-		SpawnOutlineManager();
 	}
+		
+	SpawnOutlineManager();
 }
 
 void ALakayaBaseGameState::AddPlayerState(APlayerState* PlayerState)
@@ -216,6 +236,15 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	if (CrosshairWidget != nullptr)
 		CrosshairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
+	if (MiniMapWidget.IsValid())
+	{
+		MiniMapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MiniMapWidget is null."));
+	}
+	
 	// TODO : 아직 구현이 되지 않아 비활성화 합니다.
 	// if (HelpWidget.IsValid())
 	// 	HelpWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);

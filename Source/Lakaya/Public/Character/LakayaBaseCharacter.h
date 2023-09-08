@@ -206,8 +206,6 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_DamageImmuneEndingTime, Transient)
 	float DamageImmuneEndingTime;
 
-	TWeakObjectPtr<UMiniMapWidget> MiniMapWidget;
-	
 	FPlayerRotationPacket PrevPlayerRotation;
 	FPlayerRotationPacket LatestPlayerRotation;
 	FQuat LatestUpdateRotation;

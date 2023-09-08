@@ -119,7 +119,7 @@ protected:
 
 	// 미니맵위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UMiniMapWidget> MiniMapWidgetClass;
+	TSubclassOf<UMiniMapWidget> MiniMapWidgetClass;
 	
 	// TODO : 구현되어 있지 않아 주석처리 합니다.
 	// 게임중에 표시되는 도움말 위젯을 지정합니다.
