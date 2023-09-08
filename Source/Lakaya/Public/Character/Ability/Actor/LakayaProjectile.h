@@ -183,6 +183,12 @@ protected:
 	                         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 	                         const FHitResult& SweepResult);
 
+	UFUNCTION(BlueprintNativeEvent)
+	void OnProjectilePathOverlap(const FPredictProjectilePathResult& PredictResult);
+	
+	UFUNCTION(BlueprintNativeEvent)
+	void OnProjectilePathBlock(const FPredictProjectilePathResult& PredictResult);
+
 	virtual void BeginPlay() override;
 
 private:

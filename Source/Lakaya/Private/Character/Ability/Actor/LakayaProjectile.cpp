@@ -155,33 +155,37 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 		&& PredictedProjectileParams.MaxSimTime > Result.LastTraceDestination.Time)
 	{
 		const auto& HitResult = Result.HitResult;
-		const auto HitObjectType = HitResult.GetComponent()->GetCollisionObjectType();
-		const auto HitResponse = CollisionComponent->GetCollisionResponseToChannel(HitObjectType);
+		const auto HitResponse = HitResult.GetComponent()->GetCollisionResponseToComponent(CollisionComponent);
 
 		if (HitResponse == ECR_Block)
 		{
 			if (HitResult.bStartPenetrating)
 			{
-				//TODO: bStartPenetrating이 true인 경우에 대한 처리가 필요합니다.
+				//TODO: 벽이나 바닥과 같은 오브젝트에 투사체가 걸쳐져있거나, 그 안에 있습니다. 이 투사체를 꺼내서 다시 투사체를 던지도록 합니다.
 			}
+
+			// 투사체는 정적인 오브젝트에 대해서만 Block으로 설정되므로 Block 이벤트는 클라이언트에서 실행되어도 안전합니다.
+			OnProjectilePathBlock(Result);
 
 			const auto MirroredVelocity = -Result.LastTraceDestination.Velocity.MirrorByVector(HitResult.ImpactNormal);
 			PredictedProjectileParams.LaunchVelocity = MirroredVelocity;
 		}
 		else
 		{
-			const auto Actor = HitResult.GetActor();
 			if (HitResponse == ECR_Overlap && HasAuthority())
 			{
-				//TODO: 서버에서는 오버랩 이벤트를 처리해야 합니다.
+				// 오버랩 이벤트는 서버에서만 처리할 수 있도록 합니다.
+				OnProjectilePathOverlap(Result);
 			}
 
 			// Overlap된 액터는 클라이언트에서는 무시합니다.
+			const auto Actor = HitResult.GetActor();
 			PredictedProjectileParams.ActorsToIgnore.Emplace(Actor);
 			IgnoredActors.Emplace(Actor);
 
 			PredictedProjectileParams.LaunchVelocity = Result.LastTraceDestination.Velocity;
 		}
+
 		PredictedProjectileParams.StartLocation = Result.LastTraceDestination.Location;
 		PredictedProjectileParams.MaxSimTime -= Result.LastTraceDestination.Time;
 	}
@@ -214,6 +218,14 @@ void ALakayaProjectile::SetCustomState(const uint8& InCustomState)
 void ALakayaProjectile::OnRep_CustomState()
 {
 	UE_LOG(LogActor, Log, TEXT("[%s] Custom state replicated : %d"), *GetName(), LocalState.GetCustomState());
+}
+
+void ALakayaProjectile::OnProjectilePathOverlap_Implementation(const FPredictProjectilePathResult& PredictResult)
+{
+}
+
+void ALakayaProjectile::OnProjectilePathBlock_Implementation(const FPredictProjectilePathResult& PredictResult)
+{
 }
 
 void ALakayaProjectile::BeginPlay()
