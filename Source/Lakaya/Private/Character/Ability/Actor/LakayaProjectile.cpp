@@ -147,10 +147,10 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 	RecentPerformedTime = InThrowData.ServerTime;
 	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity,
 	                                           GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
-	
 
 	static FPredictProjectilePathResult Result;
-	static TArray<AActor*> IgnoredActors;
+	TArray<AActor*> IgnoredActors;
+
 	while (UGameplayStatics::PredictProjectilePath(this, PredictedProjectileParams, Result)
 		&& PredictedProjectileParams.MaxSimTime > Result.LastTraceDestination.Time)
 	{
@@ -160,22 +160,37 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 
 		if (HitResponse == ECR_Block)
 		{
-			//TODO: bStartPenetrating이 true인 경우에 대한 처리가 필요합니다.
-			
+			if (HitResult.bStartPenetrating)
+			{
+				//TODO: bStartPenetrating이 true인 경우에 대한 처리가 필요합니다.
+			}
+
 			const auto MirroredVelocity = -Result.LastTraceDestination.Velocity.MirrorByVector(HitResult.ImpactNormal);
-			//TODO: 반사 벡터를 LaunchVelocity로 지정하여 다시 예측을 시작합니다.
+			PredictedProjectileParams.LaunchVelocity = MirroredVelocity;
 		}
 		else
 		{
-			//TODO: 서버에서는 오버랩 이벤트를 처리해야 합니다.
-			// Overlap된 액터는 클라이언트에서는 무시합니다.
 			const auto Actor = HitResult.GetActor();
+			if (HitResponse == ECR_Overlap && HasAuthority())
+			{
+				//TODO: 서버에서는 오버랩 이벤트를 처리해야 합니다.
+			}
+
+			// Overlap된 액터는 클라이언트에서는 무시합니다.
 			PredictedProjectileParams.ActorsToIgnore.Emplace(Actor);
 			IgnoredActors.Emplace(Actor);
-			//TODO: 시간과 LaunchVelocity, Location을 갱신하고 다시 예측을 시작합니다.
+
+			PredictedProjectileParams.LaunchVelocity = Result.LastTraceDestination.Velocity;
 		}
+		PredictedProjectileParams.StartLocation = Result.LastTraceDestination.Location;
+		PredictedProjectileParams.MaxSimTime -= Result.LastTraceDestination.Time;
 	}
 
+	// 무시됐던 액터들을 다시 목록에서 제거합니다.
+	for (auto&& IgnoredActor : IgnoredActors)
+	{
+		PredictedProjectileParams.ActorsToIgnore.Remove(IgnoredActor);
+	}
 
 	const auto& Destination = Result.LastTraceDestination;
 	SetActorLocation(Destination.Location);
