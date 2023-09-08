@@ -3,6 +3,8 @@
 #include <filesystem>
 
 #include "Character/LakayaBasePlayerState.h"
+#include "Components/SceneCaptureComponent2D.h"
+#include "Engine/TextureRenderTarget2D.h"
 #include "EOS/EOSGameInstance.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
@@ -103,6 +105,85 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 
+		// if (MiniMapWidgetClass)
+		// {
+		// 	MiniMapWidget = CreateWidget<UMiniMapWidget>(LocalController, MiniMapWidgetClass);
+		// 	if (MiniMapWidget.IsValid())
+		// 	{
+		// 		MiniMapWidget->AddToViewport();
+		// 		MiniMapWidget->SetVisibility(ESlateVisibility::Hidden);
+		//         
+		// 		UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>(this);
+		// 		if (RenderTarget)
+		// 		{
+		// 			RenderTarget->InitAutoFormat(1024, 1024);
+		// 			RenderTarget->UpdateResource();
+		//
+		// 			UE_LOG(LogTemp, Warning, TEXT("RenderTarget Initialized successfully."));
+		//
+		// 			USceneCaptureComponent2D* SceneCapture = NewObject<USceneCaptureComponent2D>(this);
+		// 			if (SceneCapture)
+		// 			{
+		// 				SceneCapture->TextureTarget = RenderTarget;
+		// 				SceneCapture->RegisterComponent();
+		//
+		// 				UE_LOG(LogTemp, Warning, TEXT("SceneCapture Initialized successfully."));
+		//
+		// 				UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(NULL, TEXT("'/Game/Characters/RenderTarget/MiniMap/M_Test.M_Test'"));
+		// 				if (BaseMaterial)
+		// 				{
+		// 					UMaterialInstanceDynamic* DynamicMaterialInstance = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+		//
+		// 					if (DynamicMaterialInstance)
+		// 					{
+		// 						DynamicMaterialInstance->SetTextureParameterValue(FName(TEXT("SceneTexture")), RenderTarget);
+		//
+		// 						UImage* MiniMapImage = MiniMapWidget->GetImageElement();
+		// 						if (MiniMapImage)
+		// 						{
+		// 							FSlateBrush Brush;
+		// 							Brush.SetResourceObject(DynamicMaterialInstance);
+		// 							Brush.ImageSize.X = 1024.0f;
+		// 							Brush.ImageSize.Y = 1024.0f;
+		//
+		// 							MiniMapImage->SetBrush(Brush);
+		// 						}
+		// 						else
+		// 						{
+		// 							UE_LOG(LogTemp, Warning, TEXT("MiniMapImage is null."));
+		// 						}
+		// 					}
+		// 					else
+		// 					{
+		// 						UE_LOG(LogTemp, Warning, TEXT("DynamicMaterialInstance is null."));
+		// 					}
+		// 				}
+		// 				else
+		// 				{
+		// 					UE_LOG(LogTemp, Warning, TEXT("BaseMaterial is null."));
+		// 				}
+		// 			}
+		// 			else
+		// 			{
+		// 				UE_LOG(LogTemp, Warning, TEXT("SceneCapture is null."));
+		// 			}
+		// 		}
+		// 		else
+		// 		{
+		// 			UE_LOG(LogTemp, Warning, TEXT("RenderTarget is null."));
+		// 		}
+		//
+		// 	}
+		// 	else
+		// 	{
+		// 		UE_LOG(LogTemp, Warning ,TEXT("Mini Map Widget is not valid."));
+		// 	}    
+		// }
+		// else
+		// {
+		// 	UE_LOG(LogTemp ,Warning ,TEXT ("Minimap widget class is null"));
+		// }
+
 		// TODO : 아직 구현이 되지 않아 비활성화 합니다.
 		// if (HelpWidgetClass)
 		// {
@@ -113,13 +194,9 @@ void ALakayaBaseGameState::BeginPlay()
 		// 		HelpWidget->SetVisibility(ESlateVisibility::Hidden);
 		// 	}
 		// }
+	}
 		
-		SpawnOutlineManager();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("LakayaBaseGameState_LocalPlayerController is null."));
-	}
+	SpawnOutlineManager();
 }
 
 void ALakayaBaseGameState::AddPlayerState(APlayerState* PlayerState)
@@ -159,6 +236,15 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	if (CrosshairWidget != nullptr)
 		CrosshairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
+	if (MiniMapWidget.IsValid())
+	{
+		MiniMapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MiniMapWidget is null."));
+	}
+	
 	// TODO : 아직 구현이 되지 않아 비활성화 합니다.
 	// if (HelpWidget.IsValid())
 	// 	HelpWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -313,37 +399,4 @@ void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible)
 bool ALakayaBaseGameState::HasMatchStarted() const
 {
 	return Super::HasMatchStarted();
-
-#pragma region CharacterSelect
-	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-	// if (GetMatchState() == MatchState::IsSelectCharacter)
-	// {
-		// return false;
-	// }
-#pragma endregion CharacterSelect
 }
-
-#pragma region CharacterSelect
-// TODO : 팀전에서는 더이상 캐릭터 선택상태는 존재하지 않습니다.
-// TODO : 캐릭터 선택 창과 게임대기중과 통일되어 따로 작업해야 합니다.
-// void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
-// {
-// if (GetCharacterSelectWidget()) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
-
-// if (LoadingWidget) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
-
-// if (CharacterSelectTimeWidget.IsValid())
-// CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-// SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]()
-// {
-// 	if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->StartMatch();
-// }, CharacterSelectTimeWidget);
-// }
-
-// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-// void ALakayaBaseGameState::OnRep_CharacterSelectEndingTime()
-// {
-// 	if (CharacterSelectTimeWidget.IsValid()) CharacterSelectTimeWidget->SetWidgetTimer(CharacterSelectEndingTime);
-// }
-#pragma endregion CharacterSelect

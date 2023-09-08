@@ -86,6 +86,17 @@ void AAIIndividualGameMode::HandleMatchHasEnded()
 	UE_LOG(LogTemp, Warning, TEXT("AI HandleMatchHasEnded was called"));
 }
 
+void AAIIndividualGameMode::RegisterPlayer(AController* NewPlayer)
+{
+	Super::RegisterPlayer(NewPlayer);
+
+	if (CurrentPlayerNum == BaseGameState->GetMaximumPlayers())
+	{
+		GetWorldTimerManager().SetTimer(TimerHandle_DelayedMatchStart, this, &AAIIndividualGameMode::StartMatch,
+			MatchStartDelay, false);
+	}
+}
+
 void AAIIndividualGameMode::HandleKillCountChanged(const uint16& NewKillCount)
 {
 	if (NewKillCount >= TargetKills)

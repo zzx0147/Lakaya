@@ -289,7 +289,7 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_Team, Transient)
 	ETeam Team;
-
+	
 	UPROPERTY(ReplicatedUsing=OnRep_RespawnTime, Transient)
 	float RespawnTime;
 

@@ -25,7 +25,5 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	
 private:
-	float MatchStartDelay;
-	FTimerHandle TimerHandle_DelayedMatchStart;
 	TObjectPtr<AOccupationGameState> OccupationGameState;
 };

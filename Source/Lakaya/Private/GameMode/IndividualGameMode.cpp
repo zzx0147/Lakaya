@@ -46,11 +46,6 @@ void AIndividualGameMode::HandleMatchHasEnded()
 	Super::HandleMatchHasEnded();
 }
 
-void AIndividualGameMode::HandleMatchIsSelectCharacter()
-{
-	// Super::HandleMatchIsSelectCharacter();
-}
-
 void AIndividualGameMode::RespawnPlayer(AController* KilledController)
 {
 	Super::RespawnPlayer(KilledController);

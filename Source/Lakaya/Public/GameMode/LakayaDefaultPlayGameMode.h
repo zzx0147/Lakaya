@@ -76,7 +76,7 @@ protected:
 	virtual bool ShouldRespawn();
 	virtual void RegisterPlayer(AController* NewPlayer); //플레이어 혹은 AI 접속시 이벤트 바인딩 및 초기화 등을 실행합니다
 	virtual void DelayedEndedGame();
-
+	
 public:
 	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 
@@ -90,12 +90,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAgonesComponent* AgonesSDK;
 
+	float MatchStartDelay;
 protected:
 	uint8 CurrentPlayerNum;
 	TObjectPtr<ALakayaBaseGameState> BaseGameState;
+	FTimerHandle TimerHandle_DelayedMatchStart;
 	
 private:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;
-	FTimerHandle TimerHandle_Respawn;
 };

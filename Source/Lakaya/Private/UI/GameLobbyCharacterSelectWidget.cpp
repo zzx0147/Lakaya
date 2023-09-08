@@ -135,6 +135,11 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 		}
 	}
 	if (bAutoShortcutEnable) SetShortcutEnabled(true);
+
+	CharacterSelectButton = Cast<UButton>(GetWidgetFromName(TEXT("CharSelect_Btn")));
+	
+	CharacterSelectButton->OnClicked.AddUniqueDynamic(this, &UGameLobbyCharacterSelectWidget::OnClickedCharacterSelectButton);
+
 }
 
 void UGameLobbyCharacterSelectWidget::NativeDestruct()
@@ -226,4 +231,10 @@ void UGameLobbyCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum)
 		SetVisibility(ESlateVisibility::Hidden);
 		GetOwningPlayer()->SetShowMouseCursor(false);
 	}
+}
+
+void UGameLobbyCharacterSelectWidget::OnClickedCharacterSelectButton()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("OnClickedCharacterSelectButton"));
+	SetVisibility(ESlateVisibility::Hidden);
 }

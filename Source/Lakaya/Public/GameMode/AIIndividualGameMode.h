@@ -18,7 +18,7 @@ protected:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
-
+	virtual void RegisterPlayer(AController* NewPlayer) override;
 	void HandleKillCountChanged(const uint16& NewKillCount);
 	
 private:

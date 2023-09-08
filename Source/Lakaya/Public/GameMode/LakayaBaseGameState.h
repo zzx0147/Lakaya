@@ -117,6 +117,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class AOutlineManager> OutlineManagerClass;
 
+	// 미니맵위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UMiniMapWidget> MiniMapWidgetClass;
+	
 	// TODO : 구현되어 있지 않아 주석처리 합니다.
 	// 게임중에 표시되는 도움말 위젯을 지정합니다.
 	// UPROPERTY(EditDefaultsOnly)
@@ -153,7 +157,8 @@ protected:
 	TWeakObjectPtr<UGamePlayKillLogWidget> KillLogWidget;
 	TWeakObjectPtr<UPlayerNameDisplayerWidget> PlayerNameDisplayerWidget;
 	TWeakObjectPtr<AOutlineManager> OutlineManager;
-
+	TWeakObjectPtr<UMiniMapWidget> MiniMapWidget;
+	
 	// TODO : 아직 구현되어 있지 않아 주석처리합니다.
 	// TWeakObjectPtr<UHelpWidget> HelpWidget;
 	
