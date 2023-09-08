@@ -109,13 +109,11 @@ void ALakayaProjectile::ThrowProjectileAuthoritative(FProjectileThrowData&& InTh
 		ThrowData = MoveTemp(InThrowData);
 		SetProjectileState(EProjectileState::Perform);
 		ThrowProjectile(ThrowData);
-		//TODO: 서버에서는 충돌검사를 수행하므로 충돌검사를 활성화시키는 로직도 필요합니다.
 	}
 }
 
 void ALakayaProjectile::CollapseProjectile()
 {
-	//TODO: 클라이언트에서는 예측적으로 Collapse되도록 할까? 일정시간 뒤에 폭발하는 투사체라면 클라이언트에서 예측적으로 터져도 문제가 없긴 할텐데..
 	if (!HasAuthority())
 	{
 		UE_LOG(LogActor, Warning, TEXT("[%s] Only server can collapse projectile"), *GetName());
@@ -149,10 +147,11 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 	                                           GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
 
 	static FPredictProjectilePathResult Result;
-	TArray<AActor*> IgnoredActors;
+	static const auto& LastPoint = Result.LastTraceDestination;
+	static TArray<AActor*> IgnoredActors;
 
 	while (UGameplayStatics::PredictProjectilePath(this, PredictedProjectileParams, Result)
-		&& PredictedProjectileParams.MaxSimTime > Result.LastTraceDestination.Time)
+		&& PredictedProjectileParams.MaxSimTime > LastPoint.Time)
 	{
 		const auto& HitResult = Result.HitResult;
 		const auto HitResponse = HitResult.GetComponent()->GetCollisionResponseToComponent(CollisionComponent);
@@ -167,7 +166,7 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 			// 투사체는 정적인 오브젝트에 대해서만 Block으로 설정되므로 Block 이벤트는 클라이언트에서 실행되어도 안전합니다.
 			OnProjectilePathBlock(Result);
 
-			const auto MirroredVelocity = -Result.LastTraceDestination.Velocity.MirrorByVector(HitResult.ImpactNormal);
+			const auto MirroredVelocity = -LastPoint.Velocity.MirrorByVector(HitResult.ImpactNormal);
 			PredictedProjectileParams.LaunchVelocity = MirroredVelocity;
 		}
 		else
@@ -183,26 +182,26 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 			PredictedProjectileParams.ActorsToIgnore.Emplace(Actor);
 			IgnoredActors.Emplace(Actor);
 
-			PredictedProjectileParams.LaunchVelocity = Result.LastTraceDestination.Velocity;
+			PredictedProjectileParams.LaunchVelocity = LastPoint.Velocity;
 		}
 
-		PredictedProjectileParams.StartLocation = Result.LastTraceDestination.Location;
-		PredictedProjectileParams.MaxSimTime -= Result.LastTraceDestination.Time;
+		PredictedProjectileParams.StartLocation = LastPoint.Location;
+		PredictedProjectileParams.MaxSimTime -= LastPoint.Time;
 	}
 
 	// 무시됐던 액터들을 다시 목록에서 제거합니다.
 	for (auto&& IgnoredActor : IgnoredActors)
 	{
-		PredictedProjectileParams.ActorsToIgnore.Remove(IgnoredActor);
+		PredictedProjectileParams.ActorsToIgnore.RemoveSwap(IgnoredActor);
 	}
+	IgnoredActors.Reset();
 
-	const auto& Destination = Result.LastTraceDestination;
-	SetActorLocation(Destination.Location);
+	SetActorLocation(LastPoint.Location);
 	if (ProjectileMovementComponent->bRotationFollowsVelocity)
 	{
-		SetActorRotation(Destination.Velocity.Rotation());
+		SetActorRotation(LastPoint.Velocity.Rotation());
 	}
-	ProjectileMovementComponent->Velocity = Destination.Velocity;
+	ProjectileMovementComponent->Velocity = LastPoint.Velocity;
 }
 
 void ALakayaProjectile::SetCustomState(const uint8& InCustomState)
