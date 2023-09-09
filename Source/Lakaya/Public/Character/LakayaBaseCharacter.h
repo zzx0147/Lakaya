@@ -139,9 +139,17 @@ private:
 
 protected:
 	// 이 캐릭터의 고유한 최대 체력을 나타냅니다.
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
 	float MaxHealth;
 
+	//TODO: 캐릭터가 가진 기본 스탯을 어빌리티 셋에 설정하도록 로직을 추가하여야 합니다
+	// 이 캐릭터의 최대 총알 갯수의 기본값입니다. AttributeSet의 기본 값을 설정하는데 사용됩니다. 런타임중에 변경하지 마십시오
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
+	float MaxAmmo;
+
+	// 이 캐릭터의 공격력의 기본값입니다. AttributeSet의 기본 값을 설정하는데 사용됩니다. 런타임중에 변경하지 마십시오
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
+	float AttackPoint;
 	// 연속처치시 플레이어에게 적용될 버프를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TArray<FName> KillStreakBuffs;
