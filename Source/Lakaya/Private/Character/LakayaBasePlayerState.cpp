@@ -142,7 +142,7 @@ void ALakayaBasePlayerState::Tick(float DeltaSeconds)
 	if (GetAbilitySystemComponent())
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow,
-			                                 *FString::Printf(TEXT("::%f"), GetAbilitySystemComponent()->GetSet<ULakayaAttributeSet>()->GetCurrentAmmo() ));
+			                                 *FString::Printf(TEXT("::%f"), GetAbilitySystemComponent()->GetSet<ULakayaAttributeSet>()->GetHealth() ));
 	}
 	
 }
