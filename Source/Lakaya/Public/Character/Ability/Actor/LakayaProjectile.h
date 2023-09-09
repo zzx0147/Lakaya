@@ -146,9 +146,6 @@ public:
 	 */
 	void ThrowProjectileAuthoritative(FProjectileThrowData&& InThrowData);
 
-	/** 투사체를 비활성화합니다. 서버에서만 사용할 수 있습니다. */
-	void CollapseProjectile();
-
 	FORCEINLINE const FProjectileState& GetProjectileState() const
 	{
 		return HasAuthority() ? ProjectileState : LocalState;
@@ -160,7 +157,10 @@ public:
 
 	FORCEINLINE float GetRecentPerformedTime() const { return FMath::Max(ThrowData.ServerTime, RecentPerformedTime); }
 
-	/** 투사체의 상태가 변경되면 호출되는 이벤트입니다. 로컬에서 예측적으로 투사체의 상태를 변경할 때에도 호출됩니다. */
+	/**
+	 * 투사체의 상태가 변경되면 호출되는 이벤트입니다. 로컬에서 예측적으로 투사체의 상태를 변경할 때에도 호출됩니다.
+	 * 이 이벤트에서 투사체의 상태를 변경할만한 함수를 호출하면 예기치 못한 버그가 발생할 수 있습니다. (예: ThrowProjectile)
+	 */
 	FProjectileStateChanged OnProjectileStateChanged;
 
 	virtual void PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker) override;
@@ -173,19 +173,42 @@ protected:
 
 	void SetCustomState(const uint8& InCustomState);
 
-	virtual void OnRep_CustomState();
-
+	/** OnRep_ProjectileState에서 커스텀 스테이트에서 탈출할 때 호출됩니다. 0에 대해서는 호출되지 않습니다. */
 	UFUNCTION(BlueprintNativeEvent)
-	void OnCollapsed();
+	void OnReplicatedCustomStateExit(const uint8& OldState);
 
+	/** OnRep_ProjectileState에서 커스텀 스테이트로 진입할 때 호출됩니다. 0에 대해서는 호출되지 않습니다. */
+	UFUNCTION(BlueprintNativeEvent)
+	void OnReplicatedCustomStateEnter(const uint8& NewState);
+
+	/**
+	 * CollisionComponent의 오버랩 이벤트에 바인딩된 함수입니다.
+	 * 하위 클래스의 구현에 따라 클라이언트에서도 호출될 수 있지만, 클라이언트에서의 충돌 결과는 신뢰할 수 없으므로 그러지 않는 편이 좋습니다.
+	 */
 	UFUNCTION(BlueprintNativeEvent)
 	void OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	                         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 	                         const FHitResult& SweepResult);
 
+	/**
+	 * CollisionComponent의 Hit 이벤트에 바인딩된 함수입니다.
+	 * Block 이벤트는 정적 오브젝트에 대해서만 발동하므로 안전합니다. 따라서 클라이언트에서도 호출됩니다.
+	 */
+	UFUNCTION(BlueprintNativeEvent)
+	void OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	                     FVector NormalImpulse, const FHitResult& Hit);
+
+	/**
+	 * 투사체 경로 예측중에 오버랩 이벤트가 발생하면 호출됩니다. 서버에서만 실행됩니다. 
+	 * @return false를 반환하면 투사체의 진행을 멈추고 Collapse시킵니다.
+	 */
 	UFUNCTION(BlueprintNativeEvent)
 	void OnProjectilePathOverlap(const FPredictProjectilePathResult& PredictResult);
-	
+
+	/**
+	 * 투사체 경로 예측중에 Block 이벤트가 발생하면 호출됩니다. 클라이언트에서도 실행됩니다.
+	 * @return 서버에서 false를 반환하면 투사체의 진행을 멈추고 Collapse시킵니다. 클라이언트에서는 반환값이 사용되지 않습니다.
+	 */
 	UFUNCTION(BlueprintNativeEvent)
 	void OnProjectilePathBlock(const FPredictProjectilePathResult& PredictResult);
 
@@ -239,6 +262,7 @@ private:
 	FProjectileState LocalState;
 	float RecentPerformedTime;
 	bool bIsStateChanging;
+	TArray<TWeakObjectPtr<AActor>> IgnoredByPredictActors;
 
 	friend struct FScopedLock;
 };
