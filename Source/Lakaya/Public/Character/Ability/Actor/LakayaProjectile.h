@@ -237,6 +237,7 @@ private:
 	void SetProjectileState(const EProjectileState& InProjectileState);
 	void BroadcastOnProjectileStateChanged(const FProjectileState& OldState, const FProjectileState& NewState);
 	void RejectProjectile();
+	void StopThrowProjectile();
 
 	UFUNCTION()
 	void OnRep_ProjectileState();

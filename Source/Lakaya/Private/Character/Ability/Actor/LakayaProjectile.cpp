@@ -144,9 +144,11 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity,
 	                                           GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
 
+	//TODO: 코드 흐름이 지저분합니다. 재귀함수로 바꿔서 좀 더 최적화해봅시당...
 	static FPredictProjectilePathResult Result;
 	static const auto& LastPoint = Result.LastTraceDestination;
 
+	bool bThrowStopped = false;
 	while (UGameplayStatics::PredictProjectilePath(this, PredictedProjectileParams, Result)
 		&& PredictedProjectileParams.MaxSimTime > LastPoint.Time)
 	{
@@ -166,6 +168,13 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 			// 투사체는 정적인 오브젝트에 대해서만 Block으로 설정되므로 Block 이벤트는 클라이언트에서 실행되어도 안전합니다.
 			OnProjectilePathBlock(Result);
 
+			// 하위 클래스에서 투사체의 상태를 변경했습니다. 투사체의 발사를 중단합니다.
+			if (!GetProjectileState().IsPerforming())
+			{
+				bThrowStopped = true;
+				break;
+			}
+
 			//TODO: 충돌이 감지된 지점에서 다시 시작하므로 bStartPenetrating이 감지될 수도 있습니다. 이러한 경우 무한루프에 빠질 수 있습니다.
 			const auto MirroredVelocity = -LastPoint.Velocity.MirrorByVector(HitResult.ImpactNormal);
 			PredictedProjectileParams.LaunchVelocity = MirroredVelocity;
@@ -176,7 +185,13 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 			{
 				// 오버랩 이벤트는 서버에서만 처리할 수 있도록 합니다.
 				OnProjectilePathOverlap(Result);
-				//TODO: 하위 클래스에서 투사체의 상태를 변경하는 경우 투사체의 발사를 종료시켜야 합니다.
+
+				// 하위 클래스에서 투사체의 상태를 변경했습니다. 투사체의 발사를 중단합니다.
+				if (!GetProjectileState().IsPerforming())
+				{
+					bThrowStopped = true;
+					break;
+				}
 			}
 
 			// Overlap된 액터는 클라이언트에서는 무시합니다.
@@ -196,6 +211,12 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 	for (auto&& IgnoredActor : IgnoredByPredictActors)
 	{
 		PredictedProjectileParams.ActorsToIgnore.RemoveSwap(IgnoredActor.Get());
+	}
+
+	if (bThrowStopped)
+	{
+		StopThrowProjectile();
+		return;
 	}
 
 	SetActorLocation(LastPoint.Location);
@@ -266,8 +287,22 @@ void ALakayaProjectile::BroadcastOnProjectileStateChanged(const FProjectileState
 void ALakayaProjectile::RejectProjectile()
 {
 	// 예측적으로 투척되며 변경되었던 데이터들을 다시 서버로부터 리플리케이트된 데이터들로 바꿉니다.
+	//TODO: 키가 Reject되고 서버의 ThrowData를 사용해서 투척을 하도록 지시하는 것일 수도 있습니다.
 	RecentPerformedTime = ThrowData.ServerTime;
 	OnRep_ProjectileState();
+}
+
+void ALakayaProjectile::StopThrowProjectile()
+{
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	for (auto&& IgnoredActor : IgnoredByPredictActors)
+	{
+		CollisionComponent->IgnoreActorWhenMoving(IgnoredActor.Get(), false);
+	}
+	IgnoredByPredictActors.Reset();
+
+	ProjectileMovementComponent->StopMovementImmediately();
 }
 
 void ALakayaProjectile::OnRep_ProjectileState()
@@ -282,15 +317,7 @@ void ALakayaProjectile::OnRep_ProjectileState()
 		{
 		case EProjectileState::Collapsed: break;
 		case EProjectileState::Perform:
-			CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-			for (auto&& IgnoredActor : IgnoredByPredictActors)
-			{
-				CollisionComponent->IgnoreActorWhenMoving(IgnoredActor.Get(), false);
-			}
-			IgnoredByPredictActors.Reset();
-
-			ProjectileMovementComponent->StopMovementImmediately();
+			StopThrowProjectile();
 			break;
 		case EProjectileState::Custom:
 			OnReplicatedCustomStateExit(OldState.GetCustomState());
