@@ -101,7 +101,7 @@ void ALakayaProjectile::ThrowProjectilePredictive(FPredictionKey& Key, const FPr
 	Key.NewRejectedDelegate().BindUObject(this, &ThisClass::RejectProjectile);
 
 	SetProjectileState(EProjectileState::Perform);
-	ThrowProjectile(InThrowData);
+	ThrowProjectile(InThrowData, ECollisionEnabled::PhysicsOnly);
 }
 
 void ALakayaProjectile::ThrowProjectileAuthoritative(FProjectileThrowData&& InThrowData)
@@ -110,7 +110,7 @@ void ALakayaProjectile::ThrowProjectileAuthoritative(FProjectileThrowData&& InTh
 	{
 		ThrowData = MoveTemp(InThrowData);
 		SetProjectileState(EProjectileState::Perform);
-		ThrowProjectile(ThrowData);
+		ThrowProjectile(ThrowData, ECollisionEnabled::QueryAndPhysics);
 	}
 }
 
@@ -138,38 +138,35 @@ void ALakayaProjectile::BeginPlay()
 	//TODO: 오너나 인스티게이터 액터에 대한 충돌을 무시하도록 설정해야할 수 있습니다.
 }
 
-void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
+void ALakayaProjectile::SetProjectileState(const EProjectileState& InProjectileState)
+{
+	InternalSetProjectileState(&FProjectileState::SetProjectileState, InProjectileState);
+}
+
+void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData,
+                                        ECollisionEnabled::Type&& CollisionEnabled)
 {
 	RecentPerformedTime = InThrowData.ServerTime;
 	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity,
 	                                           GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
 
 	static FPredictProjectilePathResult Result;
-	const bool bIsMarchSuccess = MarchProjectileRecursive(Result);
-
-	// 무시됐던 액터들을 다시 목록에서 제거합니다.
-	for (auto&& IgnoredActor : IgnoredByPredictActors)
-	{
-		PredictedProjectileParams.ActorsToIgnore.RemoveSwap(IgnoredActor.Get());
-	}
-
-	if (bIsMarchSuccess)
+	if (MarchProjectileRecursive(Result, CollisionEnabled))
 	{
 		SetActorLocation(Result.LastTraceDestination.Location);
 		ProjectileMovementComponent->Velocity = Result.LastTraceDestination.Velocity;
-		CollisionComponent->SetCollisionEnabled(
-			HasAuthority() ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::PhysicsOnly);
+		CollisionComponent->SetCollisionEnabled(CollisionEnabled);
 	}
 }
 
 void ALakayaProjectile::SetCustomState(const uint8& InCustomState)
 {
-	auto& StateRef = InternalGetProjectileState();
-	const auto OldState = StateRef;
-	if (StateRef.SetCustomState(InCustomState))
-	{
-		BroadcastOnProjectileStateChanged(OldState, StateRef);
-	}
+	InternalSetProjectileState(&FProjectileState::SetCustomState, InCustomState);
+}
+
+void ALakayaProjectile::SetProjectileStateCollapsed()
+{
+	SetProjectileState(EProjectileState::Collapsed);
 }
 
 void ALakayaProjectile::OnReplicatedCustomStateEnter_Implementation(const uint8& NewState)
@@ -188,28 +185,20 @@ void ALakayaProjectile::OnProjectileHit_Implementation(UPrimitiveComponent* HitC
 {
 }
 
-void ALakayaProjectile::OnProjectilePathOverlap_Implementation(const FPredictProjectilePathResult& PredictResult)
+bool ALakayaProjectile::OnProjectilePathOverlap_Implementation(const FPredictProjectilePathResult& PredictResult)
 {
+	return true;
 }
 
-void ALakayaProjectile::OnProjectilePathBlock_Implementation(const FPredictProjectilePathResult& PredictResult)
+bool ALakayaProjectile::OnProjectilePathBlock_Implementation(const FPredictProjectilePathResult& PredictResult)
 {
+	return true;
 }
 
 void ALakayaProjectile::OnProjectileOverlap_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                                            UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
                                                            bool bFromSweep, const FHitResult& SweepResult)
 {
-}
-
-void ALakayaProjectile::SetProjectileState(const EProjectileState& InProjectileState)
-{
-	auto& StateRef = InternalGetProjectileState();
-	const auto OldState = StateRef;
-	if (StateRef.SetProjectileState(InProjectileState))
-	{
-		BroadcastOnProjectileStateChanged(OldState, StateRef);
-	}
 }
 
 void ALakayaProjectile::BroadcastOnProjectileStateChanged(const FProjectileState& OldState,
@@ -223,32 +212,40 @@ void ALakayaProjectile::BroadcastOnProjectileStateChanged(const FProjectileState
 
 void ALakayaProjectile::RejectProjectile()
 {
-	// 예측적으로 투척되며 변경되었던 데이터들을 다시 서버로부터 리플리케이트된 데이터들로 바꿉니다.
-	//TODO: 키가 Reject되고 서버의 ThrowData를 사용해서 투척을 하도록 지시하는 것일 수도 있습니다.
-	RecentPerformedTime = ThrowData.ServerTime;
-	OnRep_ProjectileState();
+	if (LocalState == ProjectileState && LocalState.IsPerforming() && RecentPerformedTime != ThrowData.ServerTime)
+	{
+		// 서버에서 타겟 데이터를 거부하고 새로 투사체를 투척한 경우이므로, 간단히 투사체를 껐다가 다시 켜줍니다.
+		StopThrowProjectile();
+		ThrowProjectile(ThrowData, ECollisionEnabled::PhysicsOnly);
+	}
+	else
+	{
+		// 예측적으로 투척되며 변경되었던 데이터들을 다시 서버로부터 리플리케이트된 데이터들로 바꿉니다.
+		OnRep_ProjectileState();
+	}
 }
 
 void ALakayaProjectile::StopThrowProjectile()
 {
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	for (auto&& IgnoredActor : IgnoredByPredictActors)
-	{
-		CollisionComponent->IgnoreActorWhenMoving(IgnoredActor.Get(), false);
-	}
-	IgnoredByPredictActors.Reset();
-
 	ProjectileMovementComponent->StopMovementImmediately();
+	ClearIgnoredInPerformActors();
 }
 
-bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& OutResult)
+bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& OutResult,
+                                                 const ECollisionEnabled::Type& CollisionEnabled)
 {
 	if (!UGameplayStatics::PredictProjectilePath(this, PredictedProjectileParams, OutResult))
 	{
+		// PredictedProjectileParams에서 무시되었던 액터들을 제거합니다.
+		// CollisionComponent에서 제거하지 않는 것은 아직 투사체의 Perform이 끝난 것은 아니기 때문입니다.
+		for (auto&& IgnoredActor : IgnoredInPerformActors)
+		{
+			PredictedProjectileParams.ActorsToIgnore.RemoveSwap(IgnoredActor.Get());
+		}
 		return true;
 	}
-	
+
 	const auto& HitResult = OutResult.HitResult;
 	if (const auto HitResponse = CollisionComponent->GetCollisionResponseToComponent(HitResult.GetComponent());
 		HitResponse == ECR_Block)
@@ -257,18 +254,13 @@ bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& O
 		{
 			// 너무 가까운 곳에서 투척이 발생하지 않도록 하기위한 로그입니다.
 			UE_LOG(LogActor, Error, TEXT("[%s] Projectile is penetrating at start location"), *GetName());
-			SetProjectileState(EProjectileState::Collapsed);
+			SetProjectileStateCollapsed();
 			return false;
 
 			//TODO: 벽이나 바닥과 같은 오브젝트에 투사체가 걸쳐져있거나, 그 안에 있습니다. 이 투사체를 꺼내서 다시 투사체를 던지도록 합니다.
 		}
 
-		// 투사체는 정적인 오브젝트에 대해서만 Block으로 설정되므로 Block 이벤트는 클라이언트에서 실행되어도 안전합니다.
-		//TODO: 만약 하위 클래스에서 투사체의 상태를 변경한다면 StopThrowProjectile이 이 함수 스코프 내에서 호출되어야 합니다..
-		OnProjectilePathBlock(OutResult);
-
-		// 하위 클래스에서 투사체의 상태를 변경했습니다. 투사체의 발사를 중단합니다.
-		if (!GetProjectileState().IsPerforming())
+		if (CollisionEnabledHasPhysics(CollisionEnabled) && !OnProjectilePathBlock(OutResult))
 		{
 			return false;
 		}
@@ -280,65 +272,78 @@ bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& O
 	}
 	else
 	{
-		if (HitResponse == ECR_Overlap && HasAuthority())
+		if (HitResponse == ECR_Overlap && CollisionEnabledHasQuery(CollisionEnabled)
+			&& !OnProjectilePathOverlap(OutResult))
 		{
-			// 오버랩 이벤트는 서버에서만 처리할 수 있도록 합니다.
-			OnProjectilePathOverlap(OutResult);
-
-			// 하위 클래스에서 투사체의 상태를 변경했습니다. 투사체의 발사를 중단합니다.
-			if (!GetProjectileState().IsPerforming())
-			{
-				return false;
-			}
+			return false;
 		}
 
-		// Overlap된 액터는 클라이언트에서는 무시합니다.
-		const auto Actor = HitResult.GetActor();
-		PredictedProjectileParams.ActorsToIgnore.Emplace(Actor);
-		CollisionComponent->IgnoreActorWhenMoving(Actor, true);
-		IgnoredByPredictActors.Emplace(Actor);
+		// 한번 Overlap 이벤트가 실행된 액터는 무시합니다.
+		AddIgnoredInPerformActor(HitResult.GetActor());
 
 		PredictedProjectileParams.LaunchVelocity = OutResult.LastTraceDestination.Velocity;
 	}
 
 	PredictedProjectileParams.StartLocation = OutResult.LastTraceDestination.Location;
 	PredictedProjectileParams.MaxSimTime -= OutResult.LastTraceDestination.Time;
-	return MarchProjectileRecursive(OutResult);
+	return MarchProjectileRecursive(OutResult, CollisionEnabled);
+}
+
+void ALakayaProjectile::AddIgnoredInPerformActor(AActor* InActor)
+{
+	if (IsValid(InActor))
+	{
+		PredictedProjectileParams.ActorsToIgnore.Emplace(InActor);
+		CollisionComponent->IgnoreActorWhenMoving(InActor, true);
+		IgnoredInPerformActors.Emplace(InActor);
+	}
+}
+
+void ALakayaProjectile::ClearIgnoredInPerformActors()
+{
+	for (auto&& IgnoredActor : IgnoredInPerformActors)
+	{
+		CollisionComponent->IgnoreActorWhenMoving(IgnoredActor.Get(), false);
+		PredictedProjectileParams.ActorsToIgnore.RemoveSwap(IgnoredActor.Get());
+	}
+	IgnoredInPerformActors.Reset();
 }
 
 void ALakayaProjectile::OnRep_ProjectileState()
 {
-	if (LocalState != ProjectileState)
+	if (LocalState == ProjectileState)
 	{
-		const auto OldState = LocalState;
-		LocalState = ProjectileState;
-		BroadcastOnProjectileStateChanged(OldState, LocalState);
+		return;
+	}
 
-		switch (const auto& OldProjectileState = OldState.GetProjectileState())
-		{
-		case EProjectileState::Collapsed: break;
-		case EProjectileState::Perform:
-			StopThrowProjectile();
-			break;
-		case EProjectileState::Custom:
-			OnReplicatedCustomStateExit(OldState.GetCustomState());
-			break;
-		default:
-			UE_LOG(LogActor, Fatal, TEXT("[%s] Exit from Invalid ProjectileState: %d"), *GetName(), OldProjectileState);
-		}
+	const auto OldState = LocalState;
+	LocalState = ProjectileState;
+	BroadcastOnProjectileStateChanged(OldState, LocalState);
 
-		switch (const auto& NewProjectileState = LocalState.GetProjectileState())
-		{
-		case EProjectileState::Collapsed: break;
-		case EProjectileState::Perform:
-			ThrowProjectile(ThrowData);
-			break;
-		case EProjectileState::Custom:
-			OnReplicatedCustomStateEnter(LocalState.GetCustomState());
-			break;
-		default:
-			UE_LOG(LogActor, Fatal, TEXT("[%s] Invalid ProjectileState has replicated: %d"), *GetName(),
-			       NewProjectileState);
-		}
+	switch (const auto& OldProjectileState = OldState.GetProjectileState())
+	{
+	case EProjectileState::Collapsed: break;
+	case EProjectileState::Perform:
+		StopThrowProjectile();
+		break;
+	case EProjectileState::Custom:
+		OnReplicatedCustomStateExit(OldState.GetCustomState());
+		break;
+	default:
+		UE_LOG(LogActor, Fatal, TEXT("[%s] Exit from Invalid ProjectileState: %d"), *GetName(), OldProjectileState);
+	}
+
+	switch (const auto& NewProjectileState = LocalState.GetProjectileState())
+	{
+	case EProjectileState::Collapsed: break;
+	case EProjectileState::Perform:
+		ThrowProjectile(ThrowData, ECollisionEnabled::PhysicsOnly);
+		break;
+	case EProjectileState::Custom:
+		OnReplicatedCustomStateEnter(LocalState.GetCustomState());
+		break;
+	default:
+		UE_LOG(LogActor, Fatal, TEXT("[%s] Invalid ProjectileState has replicated: %d"), *GetName(),
+		       NewProjectileState);
 	}
 }

@@ -171,7 +171,13 @@ protected:
 	FORCEINLINE bool IsActualPerforming() const { return ProjectileState.IsPerforming(); }
 	FORCEINLINE bool IsActualCustomState() const { return ProjectileState.IsCustomState(); }
 
+	/** 커스텀 스테이트를 해당 값으로 변경합니다. */
+	UFUNCTION(BlueprintCallable)
 	void SetCustomState(const uint8& InCustomState);
+
+	/** 투사체의 상태를 Collapsed로 변경합니다. */
+	UFUNCTION(BlueprintCallable)
+	void SetProjectileStateCollapsed();
 
 	/** OnRep_ProjectileState에서 커스텀 스테이트에서 탈출할 때 호출됩니다. 0에 대해서는 호출되지 않습니다. */
 	UFUNCTION(BlueprintNativeEvent)
@@ -199,18 +205,26 @@ protected:
 	                     FVector NormalImpulse, const FHitResult& Hit);
 
 	/**
-	 * 투사체 경로 예측중에 오버랩 이벤트가 발생하면 호출됩니다. 서버에서만 실행됩니다. 
-	 * @return false를 반환하면 투사체의 진행을 멈추고 Collapse시킵니다.
+	 * 투사체 경로 예측중에 오버랩 이벤트가 발생하면 호출됩니다. 서버에서만 실행됩니다.
+	 * @return false를 반환하면 투사체의 진행을 멈춥니다.
 	 */
 	UFUNCTION(BlueprintNativeEvent)
-	void OnProjectilePathOverlap(const FPredictProjectilePathResult& PredictResult);
+	bool OnProjectilePathOverlap(const FPredictProjectilePathResult& PredictResult);
 
 	/**
 	 * 투사체 경로 예측중에 Block 이벤트가 발생하면 호출됩니다. 클라이언트에서도 실행됩니다.
-	 * @return 서버에서 false를 반환하면 투사체의 진행을 멈추고 Collapse시킵니다. 클라이언트에서는 반환값이 사용되지 않습니다.
+	 * @return false를 반환하면 투사체의 진행을 멈춥니다.
 	 */
 	UFUNCTION(BlueprintNativeEvent)
-	void OnProjectilePathBlock(const FPredictProjectilePathResult& PredictResult);
+	bool OnProjectilePathBlock(const FPredictProjectilePathResult& PredictResult);
+
+	/** 이번 투사체 투척에서 해당 액터에 대한 Overlap 이벤트가 더이상 생성되지 않도록 합니다. */
+	UFUNCTION(BlueprintCallable)
+	void AddIgnoredInPerformActor(AActor* InActor);
+
+	/** 이번 투사체 투척에서 Ignore되었던 액터들을 다시 Ignore되지 않도록 하고 목록을 비웁니다. */
+	UFUNCTION(BlueprintCallable)
+	void ClearIgnoredInPerformActors();
 
 	virtual void BeginPlay() override;
 
@@ -233,12 +247,16 @@ private:
 		bool& bLockRef;
 	};
 
-	void ThrowProjectile(const FProjectileThrowData& InThrowData);
+	void ThrowProjectile(const FProjectileThrowData& InThrowData, ECollisionEnabled::Type&& CollisionEnabled);
 	void SetProjectileState(const EProjectileState& InProjectileState);
 	void BroadcastOnProjectileStateChanged(const FProjectileState& OldState, const FProjectileState& NewState);
 	void RejectProjectile();
 	void StopThrowProjectile();
-	bool MarchProjectileRecursive(FPredictProjectilePathResult& OutResult);
+	bool MarchProjectileRecursive(FPredictProjectilePathResult& OutResult,
+	                              const ECollisionEnabled::Type& CollisionEnabled);
+
+	template <class ArgType, class FunType = typename TMemFunPtrType<false, FProjectileState, bool(ArgType)>::Type>
+	void InternalSetProjectileState(FunType&& FunPtr, ArgType&& Arg);
 
 	UFUNCTION()
 	void OnRep_ProjectileState();
@@ -264,7 +282,21 @@ private:
 	FProjectileState LocalState;
 	float RecentPerformedTime;
 	bool bIsStateChanging;
-	TArray<TWeakObjectPtr<AActor>> IgnoredByPredictActors;
-
-	friend struct FScopedLock;
+	TArray<TWeakObjectPtr<AActor>> IgnoredInPerformActors;
 };
+
+template <class ArgType, class FunType>
+void ALakayaProjectile::InternalSetProjectileState(FunType&& FunPtr, ArgType&& Arg)
+{
+	auto& StateRef = InternalGetProjectileState();
+	const auto OldState = StateRef;
+	if ((StateRef.*FunPtr)(Arg))
+	{
+		BroadcastOnProjectileStateChanged(OldState, StateRef);
+	}
+
+	if (OldState.IsPerforming())
+	{
+		StopThrowProjectile();
+	}
+}
