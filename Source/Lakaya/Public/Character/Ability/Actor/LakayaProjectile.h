@@ -238,6 +238,7 @@ private:
 	void BroadcastOnProjectileStateChanged(const FProjectileState& OldState, const FProjectileState& NewState);
 	void RejectProjectile();
 	void StopThrowProjectile();
+	bool MarchProjectileRecursive(FPredictProjectilePathResult& OutResult);
 
 	UFUNCTION()
 	void OnRep_ProjectileState();

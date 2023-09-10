@@ -144,68 +144,8 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity,
 	                                           GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
 
-	//TODO: 코드 흐름이 지저분합니다. 재귀함수로 바꿔서 좀 더 최적화해봅시당...
 	static FPredictProjectilePathResult Result;
-	static const auto& LastPoint = Result.LastTraceDestination;
-
-	bool bThrowStopped = false;
-	while (UGameplayStatics::PredictProjectilePath(this, PredictedProjectileParams, Result)
-		&& PredictedProjectileParams.MaxSimTime > LastPoint.Time)
-	{
-		const auto& HitResult = Result.HitResult;
-		const auto HitResponse = HitResult.GetComponent()->GetCollisionResponseToComponent(CollisionComponent);
-
-		if (HitResponse == ECR_Block)
-		{
-			if (HitResult.bStartPenetrating)
-			{
-				// 너무 가까운 곳에서 투척이 발생하지 않도록 하기위한 로그입니다.
-				UE_LOG(LogActor, Error, TEXT("[%s] Projectile is penetrating at start location"), *GetName());
-
-				//TODO: 벽이나 바닥과 같은 오브젝트에 투사체가 걸쳐져있거나, 그 안에 있습니다. 이 투사체를 꺼내서 다시 투사체를 던지도록 합니다.
-			}
-
-			// 투사체는 정적인 오브젝트에 대해서만 Block으로 설정되므로 Block 이벤트는 클라이언트에서 실행되어도 안전합니다.
-			OnProjectilePathBlock(Result);
-
-			// 하위 클래스에서 투사체의 상태를 변경했습니다. 투사체의 발사를 중단합니다.
-			if (!GetProjectileState().IsPerforming())
-			{
-				bThrowStopped = true;
-				break;
-			}
-
-			//TODO: 충돌이 감지된 지점에서 다시 시작하므로 bStartPenetrating이 감지될 수도 있습니다. 이러한 경우 무한루프에 빠질 수 있습니다.
-			const auto MirroredVelocity = -LastPoint.Velocity.MirrorByVector(HitResult.ImpactNormal);
-			PredictedProjectileParams.LaunchVelocity = MirroredVelocity;
-		}
-		else
-		{
-			if (HitResponse == ECR_Overlap && HasAuthority())
-			{
-				// 오버랩 이벤트는 서버에서만 처리할 수 있도록 합니다.
-				OnProjectilePathOverlap(Result);
-
-				// 하위 클래스에서 투사체의 상태를 변경했습니다. 투사체의 발사를 중단합니다.
-				if (!GetProjectileState().IsPerforming())
-				{
-					bThrowStopped = true;
-					break;
-				}
-			}
-
-			// Overlap된 액터는 클라이언트에서는 무시합니다.
-			const auto Actor = HitResult.GetActor();
-			PredictedProjectileParams.ActorsToIgnore.Emplace(Actor);
-			CollisionComponent->IgnoreActorWhenMoving(Actor, true);
-			IgnoredByPredictActors.Emplace(Actor);
-
-			PredictedProjectileParams.LaunchVelocity = LastPoint.Velocity;
-		}
-
-		PredictedProjectileParams.StartLocation = LastPoint.Location;
-		PredictedProjectileParams.MaxSimTime -= LastPoint.Time;
-	}
+	const bool bIsMarchSuccess = MarchProjectileRecursive(Result);
 
 	// 무시됐던 액터들을 다시 목록에서 제거합니다.
 	for (auto&& IgnoredActor : IgnoredByPredictActors)
@@ -213,16 +153,13 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 		PredictedProjectileParams.ActorsToIgnore.RemoveSwap(IgnoredActor.Get());
 	}
 
-	if (bThrowStopped)
+	if (bIsMarchSuccess)
 	{
-		StopThrowProjectile();
-		return;
+		SetActorLocation(Result.LastTraceDestination.Location);
+		ProjectileMovementComponent->Velocity = Result.LastTraceDestination.Velocity;
+		CollisionComponent->SetCollisionEnabled(
+			HasAuthority() ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::PhysicsOnly);
 	}
-
-	SetActorLocation(LastPoint.Location);
-	ProjectileMovementComponent->Velocity = LastPoint.Velocity;
-	CollisionComponent->SetCollisionEnabled(
-		HasAuthority() ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::PhysicsOnly);
 }
 
 void ALakayaProjectile::SetCustomState(const uint8& InCustomState)
@@ -303,6 +240,70 @@ void ALakayaProjectile::StopThrowProjectile()
 	IgnoredByPredictActors.Reset();
 
 	ProjectileMovementComponent->StopMovementImmediately();
+}
+
+bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& OutResult)
+{
+	if (!UGameplayStatics::PredictProjectilePath(this, PredictedProjectileParams, OutResult))
+	{
+		return true;
+	}
+	
+	const auto& HitResult = OutResult.HitResult;
+	if (const auto HitResponse = CollisionComponent->GetCollisionResponseToComponent(HitResult.GetComponent());
+		HitResponse == ECR_Block)
+	{
+		if (HitResult.bStartPenetrating)
+		{
+			// 너무 가까운 곳에서 투척이 발생하지 않도록 하기위한 로그입니다.
+			UE_LOG(LogActor, Error, TEXT("[%s] Projectile is penetrating at start location"), *GetName());
+			SetProjectileState(EProjectileState::Collapsed);
+			return false;
+
+			//TODO: 벽이나 바닥과 같은 오브젝트에 투사체가 걸쳐져있거나, 그 안에 있습니다. 이 투사체를 꺼내서 다시 투사체를 던지도록 합니다.
+		}
+
+		// 투사체는 정적인 오브젝트에 대해서만 Block으로 설정되므로 Block 이벤트는 클라이언트에서 실행되어도 안전합니다.
+		//TODO: 만약 하위 클래스에서 투사체의 상태를 변경한다면 StopThrowProjectile이 이 함수 스코프 내에서 호출되어야 합니다..
+		OnProjectilePathBlock(OutResult);
+
+		// 하위 클래스에서 투사체의 상태를 변경했습니다. 투사체의 발사를 중단합니다.
+		if (!GetProjectileState().IsPerforming())
+		{
+			return false;
+		}
+
+		//TODO: 충돌이 감지된 지점에서 다시 시작하므로 bStartPenetrating이 감지될 수도 있습니다. 이러한 경우 무한루프에 빠질 수 있습니다.
+		// 반사 벡터 방향으로 나아가도록 설정합니다.
+		PredictedProjectileParams.LaunchVelocity =
+			-OutResult.LastTraceDestination.Velocity.MirrorByVector(HitResult.ImpactNormal);
+	}
+	else
+	{
+		if (HitResponse == ECR_Overlap && HasAuthority())
+		{
+			// 오버랩 이벤트는 서버에서만 처리할 수 있도록 합니다.
+			OnProjectilePathOverlap(OutResult);
+
+			// 하위 클래스에서 투사체의 상태를 변경했습니다. 투사체의 발사를 중단합니다.
+			if (!GetProjectileState().IsPerforming())
+			{
+				return false;
+			}
+		}
+
+		// Overlap된 액터는 클라이언트에서는 무시합니다.
+		const auto Actor = HitResult.GetActor();
+		PredictedProjectileParams.ActorsToIgnore.Emplace(Actor);
+		CollisionComponent->IgnoreActorWhenMoving(Actor, true);
+		IgnoredByPredictActors.Emplace(Actor);
+
+		PredictedProjectileParams.LaunchVelocity = OutResult.LastTraceDestination.Velocity;
+	}
+
+	PredictedProjectileParams.StartLocation = OutResult.LastTraceDestination.Location;
+	PredictedProjectileParams.MaxSimTime -= OutResult.LastTraceDestination.Time;
+	return MarchProjectileRecursive(OutResult);
 }
 
 void ALakayaProjectile::OnRep_ProjectileState()
