@@ -111,6 +111,11 @@ struct FGameplayAbilityTargetData_ThrowProjectile : public FGameplayAbilityTarge
 	UPROPERTY(BlueprintReadWrite)
 	ALakayaProjectile* Projectile;
 
+	FGameplayAbilityTargetData_ThrowProjectile() = default;
+	FGameplayAbilityTargetData_ThrowProjectile(
+		FProjectileThrowData&& InThrowData, ALakayaProjectile* const& InProjectile)
+		: ThrowData(MoveTemp(InThrowData)), Projectile(InProjectile) { return; }
+
 	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
 };
 
