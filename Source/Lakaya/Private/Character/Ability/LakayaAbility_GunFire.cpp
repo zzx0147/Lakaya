@@ -15,6 +15,7 @@ ULakayaAbility_GunFire::ULakayaAbility_GunFire()
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ClientOrServer;
+	bTrustClientHitResult = true;
 }
 
 void ULakayaAbility_GunFire::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo,
@@ -87,15 +88,6 @@ FAbilityTargetDataSetDelegate& ULakayaAbility_GunFire::GetTargetDataDelegate() c
 {
 	return GetAbilitySystemComponentFromActorInfo_Checked()->AbilityTargetDataSetDelegate(
 		GetCurrentAbilitySpecHandle(), GetCurrentActivationInfo().GetActivationPredictionKey());
-}
-
-void ULakayaAbility_GunFire::ServerSetReplicatedTargetData(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
-                                                           const FGameplayTag& GameplayTag) const
-{
-	const auto AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo_Checked();
-	AbilitySystemComponent->CallServerSetReplicatedTargetData(
-		GetCurrentAbilitySpecHandle(), GetCurrentActivationInfo().GetActivationPredictionKey(), TargetDataHandle,
-		GameplayTag, AbilitySystemComponent->ScopedPredictionKey);
 }
 
 void ULakayaAbility_GunFire::ServerOnTargetDataReady(const FGameplayAbilityTargetDataHandle& TargetDataHandle,

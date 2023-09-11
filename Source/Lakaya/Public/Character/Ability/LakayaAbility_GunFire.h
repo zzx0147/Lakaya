@@ -32,10 +32,6 @@ private:
 	/** 현재 어빌리티 핸들과 ActivationInfo를 통해 타겟 데이터 이벤트를 가져옵니다. */
 	FAbilityTargetDataSetDelegate& GetTargetDataDelegate() const;
 
-	/** 서버에게 타겟 데이터를 전달합니다. */
-	void ServerSetReplicatedTargetData(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
-	                                   const FGameplayTag& GameplayTag = FGameplayTag()) const;
-
 	/** 클라이언트로 타겟 데이터가 전달되면 호출되는 이벤트 함수입니다. */
 	void ServerOnTargetDataReady(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag GameplayTag);
 

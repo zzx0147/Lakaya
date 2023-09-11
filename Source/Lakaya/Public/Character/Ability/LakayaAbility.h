@@ -54,6 +54,10 @@ protected:
 		Log(LogFormat(ActorInfo, Message));
 	}
 
+	/** 서버에게 타겟 데이터를 전달합니다. */
+	void ServerSetReplicatedTargetData(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
+	                                   const FGameplayTag& GameplayTag = FGameplayTag()) const;
+
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	                             const FGameplayAbilityActivationInfo ActivationInfo,
 	                             const FGameplayEventData* TriggerEventData) override;
