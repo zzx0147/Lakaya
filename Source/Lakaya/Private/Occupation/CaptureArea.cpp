@@ -308,7 +308,6 @@ void ACaptureArea::IncreaseCaptureProgress()
 		ETeam CurrentTeam = (CaptureAreaState == ECaptureAreaState::AntiProgress) ? ETeam::Anti : ETeam::Pro;
 		float& TeamCaptureProgress = (CurrentTeam == ETeam::Anti) ? AntiTeamCaptureProgress : ProTeamCaptureProgress;
 		TeamCaptureProgress += CaptureSpeed * 0.1f;
-		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Increase"));
 		
 		if (CurrentTeam == ETeam::Anti)
 		{
