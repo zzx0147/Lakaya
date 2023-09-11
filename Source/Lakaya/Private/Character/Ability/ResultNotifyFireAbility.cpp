@@ -20,6 +20,19 @@ UResultNotifyFireAbility::UResultNotifyFireAbility()
 	DecalShowingTime = 10.f;
 	bCanEverStopRemoteCall = bCanEverStartRemoteCall = true;
 	CollapsedLocation = FVector(-9999.f,-9999.f,-9999.f);
+	
+	OnSingleFire.AddWeakLambda(this,[&](const FVector& Start, const FVector& End, const FVector& Normal, const EFireResult& Kind)
+	{
+		if(!FireCameraShake) return;
+		
+		if(const auto OwnerPawn = Cast<ALakayaBaseCharacter>(GetOwner()))
+		{
+			if(const auto PlayerController = Cast<APlayerController>(OwnerPawn->GetController()))
+			{
+				PlayerController->ClientStartCameraShake(FireCameraShake);
+			}
+		}
+	});
 }
 
 bool UResultNotifyFireAbility::ShouldStartRemoteCall()

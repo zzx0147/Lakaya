@@ -12,7 +12,7 @@ public class Lakaya : ModuleRules
 		{
 			"Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput", "OnlineSubsystem",
 			"OnlineSubsystemNull", "UMG", "AIModule", "NavigationSystem", "Niagara", "SlateCore", "Sockets",
-			"Networking", "Json", "Agones", "GameplayAbilities", "GameplayTags", "GameplayTasks"
+			"Networking", "Json", "Agones", "GameplayAbilities", "GameplayTags", "GameplayTasks", "NetCore"
 		});
 		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
 	}

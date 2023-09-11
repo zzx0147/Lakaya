@@ -3,15 +3,13 @@
 
 #include "Character/LakayaBaseCharacter.h"
 
-#include "NavigationSystemTypes.h"
+#include "AbilitySystemComponent.h"
+#include "Character/LakayaAbilitySet.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Character/ResourceComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/Image.h"
-#include "Components/SceneCaptureComponent2D.h"
-#include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
@@ -41,7 +39,6 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
 	CharacterName = TEXT("Base");
 
-	
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(SpringArmComponentName);
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->bUsePawnControlRotation = true;
@@ -137,6 +134,33 @@ void ALakayaBaseCharacter::Tick(float DeltaSeconds)
 		//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + LatestUpdateRotation.Vector() * 100.f,
 		//              FColor::Green, false, 0.3f);
 	}
+}
+
+UAbilitySystemComponent* ALakayaBaseCharacter::GetAbilitySystemComponent() const
+{
+	// 어빌리티 핸들 컨테이너에 캐싱된 어빌리티 시스템이 유효한 경우 해당 어빌리티 시스템을 반환합니다.
+	if (AbilityHandleContainer.AbilitySystem.IsValid())
+	{
+		return AbilityHandleContainer.AbilitySystem.Get();
+	}
+
+	// 마지막으로 플레이어 스테이트를 타입캐스팅하여 플레이어 스테이트의 어빌리티 시스템 컴포넌트를 사용합니다.
+	const auto CastedState = GetPlayerState<IAbilitySystemInterface>();
+	return ensure(CastedState) ? CastedState->GetAbilitySystemComponent() : nullptr;
+}
+
+void ALakayaBaseCharacter::GiveAbilities(UAbilitySystemComponent* InAbilitySystem)
+{
+	if (!ensure(InAbilitySystem) || CharacterAbilities.IsNull()) return;
+	CharacterAbilities.LoadSynchronous()->GiveAbilities(InAbilitySystem, AbilityHandleContainer);
+	UE_LOG(LogTemp, Log, TEXT("%s Give Abilities"), *GetName());
+}
+
+void ALakayaBaseCharacter::ClearAbilities()
+{
+	if (!CharacterAbilities.IsValid()) return;
+	AbilityHandleContainer.ClearAbilities();
+	UE_LOG(LogTemp, Log, TEXT("%s Clear Abilities"), *GetName());
 }
 
 void ALakayaBaseCharacter::BeginPlay()

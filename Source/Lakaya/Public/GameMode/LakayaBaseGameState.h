@@ -6,6 +6,7 @@
 #include "Character/LakayaBasePlayerState.h"
 #include "GameFramework/GameState.h"
 #include "UI/SkillWidget.h"
+#include "UI/MiniMapWidget.h"
 #include "functional"
 #include "LakayaBaseGameState.generated.h"
 

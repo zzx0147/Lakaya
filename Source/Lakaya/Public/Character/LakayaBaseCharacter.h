@@ -3,11 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
+#include "LakayaAbilitySet.h"
+#include "RegisterAbilityInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "Occupation/Team.h"
-#include "UI/MiniMapWidget.h"
 #include "LakayaBaseCharacter.generated.h"
+
+struct FGameplayAbilitySpec;
 
 USTRUCT()
 struct FPlayerRotationPacket
@@ -22,7 +26,8 @@ struct FPlayerRotationPacket
 };
 
 UCLASS()
-class LAKAYA_API ALakayaBaseCharacter : public ACharacter
+class LAKAYA_API ALakayaBaseCharacter : public ACharacter, public IAbilitySystemInterface,
+                                        public IRegisterAbilityInterface
 {
 	GENERATED_BODY()
 
@@ -41,12 +46,15 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual void GiveAbilities(UAbilitySystemComponent* InAbilitySystem) override;
+	virtual void ClearAbilities() override;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual float InternalTakeRadialDamage(float Damage, FRadialDamageEvent const& RadialDamageEvent,
 	                                       AController* EventInstigator, AActor* DamageCauser) override;
-	
+
 public:
 	// 캐릭터에 부착된 스프링암 컴포넌트를 가져옵니다.
 	UFUNCTION(BlueprintGetter)
@@ -78,7 +86,7 @@ public:
 
 	UFUNCTION(BlueprintGetter)
 	const FName& GetCharacterName() const { return CharacterName; }
-	
+
 	// 캐릭터에게 팀을 설정해줍니다.
 	UFUNCTION(BlueprintNativeEvent)
 	void SetTeam(const ETeam& Team);
@@ -131,9 +139,17 @@ private:
 
 protected:
 	// 이 캐릭터의 고유한 최대 체력을 나타냅니다.
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
 	float MaxHealth;
 
+	//TODO: 캐릭터가 가진 기본 스탯을 어빌리티 셋에 설정하도록 로직을 추가하여야 합니다
+	// 이 캐릭터의 최대 총알 갯수의 기본값입니다. AttributeSet의 기본 값을 설정하는데 사용됩니다. 런타임중에 변경하지 마십시오
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
+	float MaxAmmo;
+
+	// 이 캐릭터의 공격력의 기본값입니다. AttributeSet의 기본 값을 설정하는데 사용됩니다. 런타임중에 변경하지 마십시오
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
+	float AttackPoint;
 	// 연속처치시 플레이어에게 적용될 버프를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TArray<FName> KillStreakBuffs;
@@ -177,7 +193,11 @@ protected:
 
 	//캐릭터의 이름입니다
 	FName CharacterName;
-	
+
+	/** 이 캐릭터가 사용할 어빌리티들을 지정하는 데이터 에셋입니다. */
+	UPROPERTY(EditAnywhere)
+	TSoftObjectPtr<ULakayaAbilitySet> CharacterAbilities;
+
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	class UResourceComponent* ResourceComponent;
@@ -215,4 +235,5 @@ private:
 	FName MeshCollisionProfile;
 	TWeakObjectPtr<UMaterialInstanceDynamic> CharacterOverlayMaterial;
 	FTimerHandle DamageImmuneTimer;
+	FLakayaAbilityHandleContainer AbilityHandleContainer;
 };
