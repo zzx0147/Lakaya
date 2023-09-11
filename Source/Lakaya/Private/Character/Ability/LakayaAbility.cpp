@@ -101,6 +101,18 @@ void ULakayaAbility::ServerSetReplicatedTargetData(const FGameplayAbilityTargetD
 		GameplayTag, AbilitySystemComponent->ScopedPredictionKey);
 }
 
+FAbilityTargetDataSetDelegate& ULakayaAbility::GetTargetDataDelegate() const
+{
+	return GetAbilitySystemComponentFromActorInfo_Checked()->AbilityTargetDataSetDelegate(
+		GetCurrentAbilitySpecHandle(), GetCurrentActivationInfoRef().GetActivationPredictionKey());
+}
+
+const FGameplayAbilityActivationInfo& ULakayaAbility::GetCurrentActivationInfoRef() const
+{
+	checkf(IsInstantiated(), TEXT("%s: GetCurrentActivationInfoRef cannot be called on a non-instanced ability. Check the instancing policy."), *GetPathName());
+	return CurrentActivationInfo;
+}
+
 void ULakayaAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                      const FGameplayAbilityActorInfo* ActorInfo,
                                      const FGameplayAbilityActivationInfo ActivationInfo,

@@ -84,12 +84,6 @@ void ULakayaAbility_GunFire::NativeEndAbility(const FGameplayAbilitySpecHandle H
 	}
 }
 
-FAbilityTargetDataSetDelegate& ULakayaAbility_GunFire::GetTargetDataDelegate() const
-{
-	return GetAbilitySystemComponentFromActorInfo_Checked()->AbilityTargetDataSetDelegate(
-		GetCurrentAbilitySpecHandle(), GetCurrentActivationInfo().GetActivationPredictionKey());
-}
-
 void ULakayaAbility_GunFire::ServerOnTargetDataReady(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
                                                      FGameplayTag GameplayTag)
 {
