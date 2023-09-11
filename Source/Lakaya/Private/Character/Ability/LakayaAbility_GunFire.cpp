@@ -34,6 +34,12 @@ void ULakayaAbility_GunFire::ActivateAbility(const FGameplayAbilitySpecHandle Ha
                                              const FGameplayAbilityActivationInfo ActivationInfo,
                                              const FGameplayEventData* TriggerEventData)
 {
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	{
+		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
+		return;
+	}
+
 	const auto bAuthority = ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Authority;
 
 	// 리모트 서버에서는 클라이언트로부터 전달될 타겟 데이터를 기다립니다.
