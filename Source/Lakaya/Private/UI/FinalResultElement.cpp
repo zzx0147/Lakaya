@@ -15,6 +15,10 @@ UFinalResultElement::UFinalResultElement(const FObjectInitializer& ObjectInitial
 	UserInfoImageMap.Emplace(ETeam::Anti,nullptr);
 	UserInfoOutlineImageMap.Emplace(ETeam::Pro,nullptr);
 	UserInfoOutlineImageMap.Emplace(ETeam::Anti,nullptr);
+	Character3DImageMaterialMap.Emplace( FName(TEXT("Rena")),nullptr);
+	Character3DImageMaterialMap.Emplace( FName(TEXT("Wazi")),nullptr);
+	Character3DImageMaterialMap.Emplace( FName(TEXT("Gangrim")),nullptr);
+	
 }
 
 void UFinalResultElement::SetGrade(const uint32& NewGrade)
@@ -46,6 +50,11 @@ void UFinalResultElement::SetPlayer(TObjectPtr<ALakayaBasePlayerState> NewPlayer
 	
 	ScoreText->SetText(FText::AsNumber(NewPlayer->GetTotalScore()));
 	UserIdText->SetText(FText::FromString(NewPlayer->GetPlayerName()));
+
+	if(Character3DImageMaterialMap.Contains(NewPlayer->GetCharacterName()))
+	{
+		Character3DImage->SetBrushFromMaterial(Character3DImageMaterialMap[NewPlayer->GetCharacterName()]);
+	}
 }
 
 void UFinalResultElement::NativeConstruct()
