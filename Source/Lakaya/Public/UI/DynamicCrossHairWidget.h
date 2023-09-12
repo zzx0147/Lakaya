@@ -13,5 +13,6 @@ UCLASS()
 class LAKAYA_API UDynamicCrossHairWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
 	
 };
