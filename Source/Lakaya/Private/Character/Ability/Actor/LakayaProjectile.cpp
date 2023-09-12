@@ -92,8 +92,7 @@ void ALakayaProjectile::ThrowProjectilePredictive(FPredictionKey& Key, const FPr
 {
 	if (!Key.IsValidKey())
 	{
-		UE_LOG(LogActor, Log, TEXT("[%s] ThrowProjectilePredictive has ignored because of invalid prediction key"),
-		       *GetName());
+		UE_LOG(LogActor, Log, TEXT("[%s] ThrowProjectilePredictive has ignored : invalid prediction key"), *GetName());
 		return;
 	}
 

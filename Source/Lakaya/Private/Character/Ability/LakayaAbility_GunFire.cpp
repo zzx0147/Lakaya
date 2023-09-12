@@ -41,12 +41,10 @@ void ULakayaAbility_GunFire::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 		return;
 	}
 
-	const auto bAuthority = ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Authority;
-
 	// 리모트 서버에서는 클라이언트로부터 전달될 타겟 데이터를 기다립니다.
-	if (bAuthority && !ActorInfo->IsLocallyControlled())
+	if (ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Authority && !ActorInfo->IsLocallyControlled())
 	{
-		TargetDataDelegateHandle = GetTargetDataDelegate().AddUObject(this, &ThisClass::ServerOnTargetDataReady);
+		TargetDataDelegateHandle = GetTargetDataDelegate().AddUObject(this, &ThisClass::OnTargetDataReceived);
 	}
 	else
 	{
@@ -54,13 +52,9 @@ void ULakayaAbility_GunFire::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 
 		FScopedPredictionWindow PredictionWindow((GetAbilitySystemComponentFromActorInfo_Checked()));
 
-		// 서버라면 그냥 곧바로 데미지 이펙트를 적용합니다.
-		if (bAuthority)
-		{
-			BP_ApplyGameplayEffectToTarget(TargetDataHandle, DamageEffect);
-		}
-		// 클라이언트라면 타겟 데이터를 서버로 전송합니다.
-		else
+		BP_ApplyGameplayEffectToTarget(TargetDataHandle, DamageEffect);
+
+		if (ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting)
 		{
 			ServerSetReplicatedTargetData(TargetDataHandle);
 		}
@@ -84,7 +78,7 @@ void ULakayaAbility_GunFire::NativeEndAbility(const FGameplayAbilitySpecHandle H
 	}
 }
 
-void ULakayaAbility_GunFire::ServerOnTargetDataReady(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
+void ULakayaAbility_GunFire::OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
                                                      FGameplayTag GameplayTag)
 {
 	// 클라이언트를 신뢰하기로 하는 경우 그냥 TargetDataHandle을 그대로 사용합니다.

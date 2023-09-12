@@ -30,7 +30,7 @@ protected:
 
 private:
 	/** 클라이언트로 타겟 데이터가 전달되면 호출되는 이벤트 함수입니다. */
-	void ServerOnTargetDataReady(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag GameplayTag);
+	void OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag GameplayTag);
 
 	/** 사격 판정을 수행하여 타겟 데이터 핸들을 생성합니다. */
 	FGameplayAbilityTargetDataHandle FireTrace() const;
