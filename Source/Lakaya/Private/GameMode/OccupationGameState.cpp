@@ -15,6 +15,7 @@
 #include "PlayerController/BattlePlayerController.h"
 #include "UI/DetailResultElementWidget.h"
 #include "UI/DetailResultWidget.h"
+#include "UI/FinalResultWidget.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/GameResultWidget.h"
 #include "UI/GradeResultElementWidget.h"
@@ -173,6 +174,18 @@ void AOccupationGameState::BeginPlay()
 				DetailResultElementWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
+
+		if (FinalResultWidgetClass)
+		{
+			FinalResultWidget = CreateWidget<UFinalResultWidget>(
+				LocalController, FinalResultWidgetClass);
+			if (FinalResultWidget)
+			{
+				FinalResultWidget->AddToViewport(30);
+				FinalResultWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+		
 	}
 
 	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this,
@@ -262,6 +275,10 @@ void AOccupationGameState::HandleMatchHasEnded()
 	}
 
 	bTap = false;
+
+	FinalResultWidget->SetTeam(ClientTeam);
+	FinalResultWidget->SetMatchResultData(GetOccupationWinner(),ProTeamScore,AntiTeamScore, PlayersByTeamMap);
+	
 	ShowEndResultWidget();
 	BindDetailResultWidget();
 	BindDetailResultElementWidget();
@@ -416,8 +433,9 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 	{
 		if (this == nullptr || !GameResultWidget.IsValid() || !GradeResultWidget.IsValid()) return;
 		GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
-		GradeResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
+		GradeResultWidget->SetVisibility(ESlateVisibility::Hidden);
+		FinalResultWidget->SetVisibility(ESlateVisibility::Visible);
+		
 		if (PlayerState->GetTeam() == ETeam::Anti)
 			GradeResultWidget->AntiTextBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		if (PlayerState->GetTeam() == ETeam::Pro)
@@ -445,7 +463,7 @@ void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerS
 
 void AOccupationGameState::ShowGradeResultElementWidget(ALakayaBasePlayerState* NewPlayerState) const
 {
-	if (GradeResultElementWidget.IsValid()) GradeResultElementWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+	if (GradeResultElementWidget.IsValid()) GradeResultElementWidget->SetVisibility(ESlateVisibility::Hidden);
 
 	if (NewPlayerState->GetTeam() == ETeam::Anti)
 	{
