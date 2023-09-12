@@ -45,6 +45,7 @@ void ULakayaAbility_GunFire::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 	if (ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Authority && !ActorInfo->IsLocallyControlled())
 	{
 		TargetDataDelegateHandle = GetTargetDataDelegate().AddUObject(this, &ThisClass::OnTargetDataReceived);
+		TargetDataTimerHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ThisClass::K2_CancelAbility);
 	}
 	else
 	{
@@ -82,6 +83,7 @@ void ULakayaAbility_GunFire::OnTargetDataReceived(const FGameplayAbilityTargetDa
                                                      FGameplayTag GameplayTag)
 {
 	// 클라이언트를 신뢰하기로 하는 경우 그냥 TargetDataHandle을 그대로 사용합니다.
+	GetWorld()->GetTimerManager().ClearTimer(TargetDataTimerHandle);
 	const auto FixedTargetDataHandle = bTrustClientHitResult ? TargetDataHandle : SimulateFireTrace(TargetDataHandle);
 	ConsumeTargetData();
 

@@ -77,4 +77,5 @@ private:
 	uint8 bTrustClientHitResult : 1;
 
 	FDelegateHandle TargetDataDelegateHandle;
+	FTimerHandle TargetDataTimerHandle;
 };
