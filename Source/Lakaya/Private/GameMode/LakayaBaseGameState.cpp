@@ -3,15 +3,15 @@
 #include <filesystem>
 
 #include "Character/LakayaBasePlayerState.h"
-#include "Components/SceneCaptureComponent2D.h"
-#include "Engine/TextureRenderTarget2D.h"
 #include "EOS/EOSGameInstance.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "Net/UnrealNetwork.h"
 #include "PlayerController/BattlePlayerController.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
-#include "UI/GamePlayCrossHairWidget.h"
+// #include "UI/GamePlayCrossHairWidget.h"
+#include "NavigationSystemTypes.h"
+#include "UI/DynamicCrossHairWidget.h"
 #include "UI/GamePlayKillLogWidget.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
@@ -75,16 +75,26 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 
-		if (CrosshairWidgetClass)
-		{
-			CrosshairWidget = CreateWidget<UGamePlayCrosshairWidget>(LocalController, CrosshairWidgetClass);
-			if (CrosshairWidget != nullptr)
-			{
-				CrosshairWidget->AddToViewport();
-				CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
-			}
-		}
+		// if (CrosshairWidgetClass)
+		// {
+		// 	CrosshairWidget = CreateWidget<UGamePlayCrosshairWidget>(LocalController, CrosshairWidgetClass);
+		// 	if (CrosshairWidget != nullptr)
+		// 	{
+		// 		CrosshairWidget->AddToViewport();
+		// 		CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
+		// 	}
+		// }
 
+		// if (DynamicCrossHairWidgetClass)
+		// {
+		// 	DynamicCrossHairWidget = CreateWidget<UDynamicCrossHairWidget>(LocalController, DynamicCrossHairWidgetClass);
+		// 	if (DynamicCrossHairWidget != nullptr)
+		// 	{
+		// 		DynamicCrossHairWidget->AddToViewport();
+		// 		DynamicCrossHairWidget->SetVisibility(ESlateVisibility::Hidden);
+		// 	}
+		// }
+			
 		if (KillLogWidgetClass)
 		{
 			KillLogWidget = CreateWidget<UGamePlayKillLogWidget>(LocalController, KillLogWidgetClass);
@@ -105,6 +115,7 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 
+#pragma region MiniMap
 		// if (MiniMapWidgetClass)
 		// {
 		// 	MiniMapWidget = CreateWidget<UMiniMapWidget>(LocalController, MiniMapWidgetClass);
@@ -194,6 +205,7 @@ void ALakayaBaseGameState::BeginPlay()
 		// 		HelpWidget->SetVisibility(ESlateVisibility::Hidden);
 		// 	}
 		// }
+#pragma endregion
 	}
 		
 	SpawnOutlineManager();
@@ -233,9 +245,12 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 
-	if (CrosshairWidget != nullptr)
-		CrosshairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	// if (CrosshairWidget != nullptr)
+		// CrosshairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
+	// if (DynamicCrossHairWidget != nullptr)
+	// 	DynamicCrossHairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	
 	if (MiniMapWidget.IsValid())
 	{
 		MiniMapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
