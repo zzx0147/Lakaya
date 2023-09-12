@@ -8,6 +8,7 @@
 #include "UI/SkillWidget.h"
 #include "UI/MiniMapWidget.h"
 #include "functional"
+#include "UI/DynamicCrossHairWidget.h"
 #include "LakayaBaseGameState.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBaseGameState, OnChangePlayerNumberSignature, const uint8&)
@@ -54,6 +55,9 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void NotifyPlayerKilled(APlayerState* VictimPlayer, APlayerState* InstigatorPlayer, AActor* DamageCauser);
 
+	UFUNCTION(BlueprintCallable)
+	UDynamicCrossHairWidget* GetDynamicCrossHairFun() const { return DynamicCrossHairWidget.Get(); } 
+	
 protected:
 	virtual class UGameLobbyCharacterSelectWidget* GetCharacterSelectWidget();
 
@@ -109,8 +113,8 @@ protected:
 	// TSubclassOf<class UGamePlayCrosshairWidget> CrosshairWidgetClass;
 
 	// 게임중에 표시되는 크로스헤어 위젯을 지정합니다.
-	// UPROPERTY(EditDefaultsOnly)
-	// TSubclassOf<class UDynamicCrossHairWidget> DynamicCrossHairWidgetClass;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UDynamicCrossHairWidget> DynamicCrossHairWidgetClass;
 	
 	// 에임에 있는 플레이어의 이름을 표기해주는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
@@ -156,7 +160,7 @@ protected:
 
 	TWeakObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 	// TWeakObjectPtr<UGamePlayCrosshairWidget> CrosshairWidget;
-	// TWeakObjectPtr<UDynamicCrossHairWidget> DynamicCrossHairWidget;
+	TWeakObjectPtr<UDynamicCrossHairWidget> DynamicCrossHairWidget;
 	TWeakObjectPtr<ULoadingWidget> LoadingWidget;
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;

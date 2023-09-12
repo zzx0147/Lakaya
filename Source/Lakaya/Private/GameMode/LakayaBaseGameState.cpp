@@ -85,15 +85,15 @@ void ALakayaBaseGameState::BeginPlay()
 		// 	}
 		// }
 
-		// if (DynamicCrossHairWidgetClass)
-		// {
-		// 	DynamicCrossHairWidget = CreateWidget<UDynamicCrossHairWidget>(LocalController, DynamicCrossHairWidgetClass);
-		// 	if (DynamicCrossHairWidget != nullptr)
-		// 	{
-		// 		DynamicCrossHairWidget->AddToViewport();
-		// 		DynamicCrossHairWidget->SetVisibility(ESlateVisibility::Hidden);
-		// 	}
-		// }
+		if (DynamicCrossHairWidgetClass)
+		{
+			DynamicCrossHairWidget = CreateWidget<UDynamicCrossHairWidget>(LocalController, DynamicCrossHairWidgetClass);
+			if (DynamicCrossHairWidget != nullptr)
+			{
+				DynamicCrossHairWidget->AddToViewport();
+				DynamicCrossHairWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
 			
 		if (KillLogWidgetClass)
 		{
@@ -248,8 +248,8 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	// if (CrosshairWidget != nullptr)
 		// CrosshairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-	// if (DynamicCrossHairWidget != nullptr)
-	// 	DynamicCrossHairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (DynamicCrossHairWidget != nullptr)
+		DynamicCrossHairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	
 	if (MiniMapWidget.IsValid())
 	{
