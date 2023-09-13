@@ -280,7 +280,8 @@ bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& O
 		//TODO: 충돌이 감지된 지점에서 다시 시작하므로 bStartPenetrating이 감지될 수도 있습니다. 이러한 경우 무한루프에 빠질 수 있습니다.
 		// 반사 벡터 방향으로 나아가도록 설정합니다.
 		PredictedProjectileParams.LaunchVelocity =
-			-OutResult.LastTraceDestination.Velocity.MirrorByVector(HitResult.ImpactNormal);
+			-OutResult.LastTraceDestination.Velocity.MirrorByVector(HitResult.ImpactNormal) *
+			ProjectileMovementComponent->Bounciness;
 	}
 	else
 	{
