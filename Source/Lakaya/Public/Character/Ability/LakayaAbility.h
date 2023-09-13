@@ -73,7 +73,7 @@ protected:
 	void OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag GameplayTag);
 
 	UFUNCTION(BlueprintNativeEvent)
-	FGameplayAbilityTargetDataHandle GenerateTargetData();
+	FGameplayAbilityTargetDataHandle MakeTargetData();
 
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	                             const FGameplayAbilityActivationInfo ActivationInfo,

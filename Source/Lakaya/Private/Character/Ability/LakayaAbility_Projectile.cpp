@@ -202,7 +202,7 @@ void ULakayaAbility_Projectile::OnTargetDataReceived_Implementation(
 	K2_CancelAbility();
 }
 
-FGameplayAbilityTargetDataHandle ULakayaAbility_Projectile::GenerateTargetData_Implementation()
+FGameplayAbilityTargetDataHandle ULakayaAbility_Projectile::MakeTargetData_Implementation()
 {
 	const auto NewProjectile = ProjectilePool.GetFreeProjectile();
 	check(IsValid(NewProjectile))

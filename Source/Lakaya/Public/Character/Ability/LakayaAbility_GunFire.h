@@ -20,7 +20,7 @@ public:
 	ULakayaAbility_GunFire();
 
 protected:
-	virtual FGameplayAbilityTargetDataHandle GenerateTargetData_Implementation() override;
+	virtual FGameplayAbilityTargetDataHandle MakeTargetData_Implementation() override;
 	virtual void OnTargetDataReceived_Implementation(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
 	                                                 FGameplayTag GameplayTag) override;
 

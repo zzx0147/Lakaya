@@ -154,7 +154,7 @@ public:
 protected:
 	virtual void OnTargetDataReceived_Implementation(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
 	                                                 FGameplayTag GameplayTag) override;
-	virtual FGameplayAbilityTargetDataHandle GenerateTargetData_Implementation() override;
+	virtual FGameplayAbilityTargetDataHandle MakeTargetData_Implementation() override;
 
 	UFUNCTION(BlueprintNativeEvent)
 	void MakeProjectileThrowLocation(FVector& OutLocation, FVector& OutDirection);

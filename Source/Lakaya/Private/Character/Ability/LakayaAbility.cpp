@@ -158,7 +158,7 @@ void ULakayaAbility::TargetDataScope()
 	{
 		FScopedPredictionWindow PredictionWindow((GetAbilitySystemComponentFromActorInfo_Checked()));
 
-		const auto TargetDataHandle = GenerateTargetData();
+		const auto TargetDataHandle = MakeTargetData();
 
 		if (ActivationMode == EGameplayAbilityActivationMode::Predicting)
 		{
@@ -173,7 +173,7 @@ void ULakayaAbility::OnTargetDataReceived_Implementation(const FGameplayAbilityT
 	GetWorld()->GetTimerManager().ClearTimer(TargetDataTimerHandle);
 }
 
-FGameplayAbilityTargetDataHandle ULakayaAbility::GenerateTargetData_Implementation()
+FGameplayAbilityTargetDataHandle ULakayaAbility::MakeTargetData_Implementation()
 {
 	return {};
 }

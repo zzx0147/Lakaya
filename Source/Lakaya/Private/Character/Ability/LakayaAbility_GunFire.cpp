@@ -17,7 +17,7 @@ ULakayaAbility_GunFire::ULakayaAbility_GunFire()
 	bTrustClientHitResult = true;
 }
 
-FGameplayAbilityTargetDataHandle ULakayaAbility_GunFire::GenerateTargetData_Implementation()
+FGameplayAbilityTargetDataHandle ULakayaAbility_GunFire::MakeTargetData_Implementation()
 {
 	const auto TargetDataHandle = FireTrace();
 	BP_ApplyGameplayEffectToTarget(TargetDataHandle, DamageEffect);
