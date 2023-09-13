@@ -63,6 +63,18 @@ protected:
 
 	const FGameplayAbilityActivationInfo& GetCurrentActivationInfoRef() const;
 
+	void ConsumeTargetData() const;
+
+	UFUNCTION(BlueprintCallable)
+	void TargetDataScope();
+
+	/** 클라이언트로 타겟 데이터가 전달되면 호출되는 이벤트 함수입니다. */
+	UFUNCTION(BlueprintNativeEvent)
+	void OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag GameplayTag);
+
+	UFUNCTION(BlueprintNativeEvent)
+	FGameplayAbilityTargetDataHandle GenerateTargetData();
+
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	                             const FGameplayAbilityActivationInfo ActivationInfo,
 	                             const FGameplayEventData* TriggerEventData) override;
@@ -85,5 +97,10 @@ private:
 	UPROPERTY(EditAnywhere)
 	uint8 bEndOnInputRelease : 1;
 
+	UPROPERTY(EditAnywhere)
+	float ServerTargetDataTimeOut;
+
 	TWeakObjectPtr<UEnhancedInputLocalPlayerSubsystem> CachedInputSubsystem;
+	FDelegateHandle TargetDataDelegateHandle;
+	FTimerHandle TargetDataTimerHandle;
 };

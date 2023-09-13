@@ -88,11 +88,17 @@ ALakayaProjectile::ALakayaProjectile()
 	ProjectileLaunchVelocity = 1000.f;
 }
 
-void ALakayaProjectile::ThrowProjectilePredictive(FPredictionKey& Key, const FProjectileThrowData& InThrowData)
+void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData, FPredictionKey Key)
 {
+	if (HasAuthority())
+	{
+		ThrowProjectileAuthoritative(InThrowData);
+		return;
+	}
+
 	if (!Key.IsValidKey())
 	{
-		UE_LOG(LogActor, Log, TEXT("[%s] ThrowProjectilePredictive has ignored : invalid prediction key"), *GetName());
+		UE_LOG(LogActor, Log, TEXT("[%s] ThrowProjectile has ignored : invalid prediction key"), *GetName());
 		return;
 	}
 
@@ -103,13 +109,11 @@ void ALakayaProjectile::ThrowProjectilePredictive(FPredictionKey& Key, const FPr
 	ThrowProjectile(InThrowData, ECollisionEnabled::PhysicsOnly);
 }
 
-void ALakayaProjectile::ThrowProjectileAuthoritative(FProjectileThrowData&& InThrowData)
+void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 {
 	if (ensure(HasAuthority()))
 	{
-		ThrowData = MoveTemp(InThrowData);
-		SetProjectileState(EProjectileState::Perform);
-		ThrowProjectile(ThrowData, ECollisionEnabled::QueryAndPhysics);
+		ThrowProjectileAuthoritative(InThrowData);
 	}
 }
 
@@ -123,7 +127,9 @@ void ALakayaProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 void ALakayaProjectile::PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker)
 {
 	Super::PreReplication(ChangedPropertyTracker);
-	DOREPLIFETIME_ACTIVE_OVERRIDE(ALakayaProjectile, ThrowData, IsActualPerforming());
+
+	// Collapsed에서는 RecentPerformedTime이 필요없지만 다른 상태에서는 필요합니다.
+	DOREPLIFETIME_ACTIVE_OVERRIDE(ALakayaProjectile, ThrowData, !IsActualCollapsed());
 }
 
 void ALakayaProjectile::BeginPlay()
@@ -140,6 +146,13 @@ void ALakayaProjectile::BeginPlay()
 void ALakayaProjectile::SetProjectileState(const EProjectileState& InProjectileState)
 {
 	InternalSetProjectileState(&FProjectileState::SetProjectileState, InProjectileState);
+}
+
+void ALakayaProjectile::ThrowProjectileAuthoritative(const FProjectileThrowData& InThrowData)
+{
+	ThrowData = InThrowData;
+	SetProjectileState(EProjectileState::Perform);
+	ThrowProjectile(ThrowData, ECollisionEnabled::QueryAndPhysics);
 }
 
 void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData,

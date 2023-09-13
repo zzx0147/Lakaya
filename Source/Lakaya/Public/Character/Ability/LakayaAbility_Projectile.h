@@ -91,7 +91,7 @@ private:
 	void ClientProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
 	                                  const FProjectileState& NewState);
 	void ServerProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
-									  const FProjectileState& NewState);
+	                                  const FProjectileState& NewState);
 
 	UPROPERTY(Transient)
 	TArray<FProjectilePoolItem> Items;
@@ -150,6 +150,17 @@ class LAKAYA_API ULakayaAbility_Projectile : public ULakayaAbility
 public:
 	ULakayaAbility_Projectile();
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+
+protected:
+	virtual void OnTargetDataReceived_Implementation(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
+	                                                 FGameplayTag GameplayTag) override;
+	virtual FGameplayAbilityTargetDataHandle GenerateTargetData_Implementation() override;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void MakeProjectileThrowLocation(FVector& OutLocation, FVector& OutDirection);
+
+	void MakeProjectileThrowLocation_Implementation(FVector& OutLocation, FVector& OutDirection)
+	PURE_VIRTUAL(&ThisClass::MakeProjectileThrowLocation_Implementation,)
 
 private:
 	UPROPERTY(Replicated, EditAnywhere)

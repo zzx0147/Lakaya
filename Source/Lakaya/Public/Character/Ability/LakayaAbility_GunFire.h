@@ -18,20 +18,13 @@ class LAKAYA_API ULakayaAbility_GunFire : public ULakayaAbility
 
 public:
 	ULakayaAbility_GunFire();
-	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
 protected:
-	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-	                             const FGameplayAbilityActivationInfo ActivationInfo,
-	                             const FGameplayEventData* TriggerEventData) override;
-	virtual void NativeEndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-	                              const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
-	                              bool bWasCancelled) override;
+	virtual FGameplayAbilityTargetDataHandle GenerateTargetData_Implementation() override;
+	virtual void OnTargetDataReceived_Implementation(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
+	                                                 FGameplayTag GameplayTag) override;
 
 private:
-	/** 클라이언트로 타겟 데이터가 전달되면 호출되는 이벤트 함수입니다. */
-	void OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag GameplayTag);
-
 	/** 사격 판정을 수행하여 타겟 데이터 핸들을 생성합니다. */
 	FGameplayAbilityTargetDataHandle FireTrace() const;
 
@@ -46,24 +39,7 @@ private:
 
 	/** HitResult들을 타겟 데이터 핸들로 변환시킵니다. */
 	static void HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
-	                                         FGameplayAbilityTargetDataHandle& TargetDataHandle);
-
-	void ActivateFireMontageTask();
-
-	void ExecuteFireCue(const FGameplayAbilityTargetDataHandle& TargetDataHandle);
-
-	void ConsumeTargetData() const;
-
-	UFUNCTION()
-	void OnMontageEnded();
-
-	/** 사격시에 적용될 게임플레이 큐입니다. */
-	UPROPERTY(EditDefaultsOnly)
-	FGameplayCueTag FireCueTag;
-
-	/** 사격시에 재생될 애니메이션 몽타주입니다. */
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UAnimMontage> FireMontage;
+	                                         FGameplayAbilityTargetDataHandle& OutTargetDataHandle);
 
 	/** 피격된 대상에게 적용할 게임플레이 이펙트입니다. */
 	UPROPERTY(EditDefaultsOnly)
@@ -75,7 +51,4 @@ private:
 	 */
 	UPROPERTY(EditDefaultsOnly)
 	uint8 bTrustClientHitResult : 1;
-
-	FDelegateHandle TargetDataDelegateHandle;
-	FTimerHandle TargetDataTimerHandle;
 };

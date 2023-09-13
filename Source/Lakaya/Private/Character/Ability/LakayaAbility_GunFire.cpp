@@ -4,7 +4,6 @@
 #include "Character/Ability/LakayaAbility_GunFire.h"
 
 #include "AbilitySystemComponent.h"
-#include "GameplayCueFunctionLibrary.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Character/Ability/AbilityGunFireInterface.h"
 
@@ -18,78 +17,22 @@ ULakayaAbility_GunFire::ULakayaAbility_GunFire()
 	bTrustClientHitResult = true;
 }
 
-void ULakayaAbility_GunFire::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo,
-                                           const FGameplayAbilitySpec& Spec)
+FGameplayAbilityTargetDataHandle ULakayaAbility_GunFire::GenerateTargetData_Implementation()
 {
-	Super::OnGiveAbility(ActorInfo, Spec);
-	if (!ensureMsgf(InstancingPolicy != EGameplayAbilityInstancingPolicy::NonInstanced,
-	                TEXT("사격 어빌리티는 반드시 인스턴싱되어야 합니다.")))
-	{
-		ActorInfo->AbilitySystemComponent->ClearAbility(Spec.Handle);
-		return;
-	}
+	const auto TargetDataHandle = FireTrace();
+	BP_ApplyGameplayEffectToTarget(TargetDataHandle, DamageEffect);
+	return TargetDataHandle;
 }
 
-void ULakayaAbility_GunFire::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
-                                             const FGameplayAbilityActorInfo* ActorInfo,
-                                             const FGameplayAbilityActivationInfo ActivationInfo,
-                                             const FGameplayEventData* TriggerEventData)
+void ULakayaAbility_GunFire::OnTargetDataReceived_Implementation(
+	const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag GameplayTag)
 {
-	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
-	{
-		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
-		return;
-	}
+	Super::OnTargetDataReceived_Implementation(TargetDataHandle, GameplayTag);
 
-	// 리모트 서버에서는 클라이언트로부터 전달될 타겟 데이터를 기다립니다.
-	if (ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Authority && !ActorInfo->IsLocallyControlled())
-	{
-		TargetDataDelegateHandle = GetTargetDataDelegate().AddUObject(this, &ThisClass::OnTargetDataReceived);
-		TargetDataTimerHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ThisClass::K2_CancelAbility);
-	}
-	else
-	{
-		const auto TargetDataHandle = FireTrace();
-
-		FScopedPredictionWindow PredictionWindow((GetAbilitySystemComponentFromActorInfo_Checked()));
-
-		BP_ApplyGameplayEffectToTarget(TargetDataHandle, DamageEffect);
-
-		if (ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting)
-		{
-			ServerSetReplicatedTargetData(TargetDataHandle);
-		}
-
-		ExecuteFireCue(TargetDataHandle);
-		ActivateFireMontageTask();
-	}
-
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-}
-
-void ULakayaAbility_GunFire::NativeEndAbility(const FGameplayAbilitySpecHandle Handle,
-                                              const FGameplayAbilityActorInfo* ActorInfo,
-                                              const FGameplayAbilityActivationInfo ActivationInfo,
-                                              bool bReplicateEndAbility, bool bWasCancelled)
-{
-	Super::NativeEndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-	if (TargetDataDelegateHandle.IsValid())
-	{
-		GetTargetDataDelegate().Remove(TargetDataDelegateHandle);
-	}
-}
-
-void ULakayaAbility_GunFire::OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
-                                                     FGameplayTag GameplayTag)
-{
 	// 클라이언트를 신뢰하기로 하는 경우 그냥 TargetDataHandle을 그대로 사용합니다.
-	GetWorld()->GetTimerManager().ClearTimer(TargetDataTimerHandle);
 	const auto FixedTargetDataHandle = bTrustClientHitResult ? TargetDataHandle : SimulateFireTrace(TargetDataHandle);
 	ConsumeTargetData();
-
-	ExecuteFireCue(FixedTargetDataHandle);
 	BP_ApplyGameplayEffectToTarget(FixedTargetDataHandle, DamageEffect);
-	ActivateFireMontageTask();
 }
 
 FGameplayAbilityTargetDataHandle ULakayaAbility_GunFire::FireTrace() const
@@ -112,7 +55,7 @@ FGameplayAbilityTargetDataHandle ULakayaAbility_GunFire::SimulateFireTrace(
 	FGameplayAbilityTargetDataHandle ResultDataHandle;
 
 	if (const auto FireInterface = FindGunFireInterface();
-		ensure(TargetDataHandle.Num() > 0 && FireInterface))
+		ensure(TargetDataHandle.IsValid(0) && FireInterface))
 	{
 		TArray<FHitResult> HitResults;
 		FireInterface->SimulateFireTrace(TargetDataHandle.Get(0)->GetOrigin(), HitResults);
@@ -135,45 +78,11 @@ IAbilityGunFireInterface* ULakayaAbility_GunFire::FindGunFireInterface() const
 }
 
 void ULakayaAbility_GunFire::HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
-                                                          FGameplayAbilityTargetDataHandle& TargetDataHandle)
+                                                          FGameplayAbilityTargetDataHandle& OutTargetDataHandle)
 {
 	static auto Transform = [](const FHitResult& HitResult)
 	{
 		return new FGameplayAbilityTargetData_SingleTargetHit(HitResult);
 	};
-	Algo::Transform(HitResults, TargetDataHandle, Transform);
-}
-
-void ULakayaAbility_GunFire::OnMontageEnded()
-{
-	// 애니메이션 몽타주가 종료되었을 때 아직 어빌리티가 실행중인 경우 어빌리티를 종료합니다.
-	if (IsActive())
-	{
-		K2_EndAbility();
-	}
-}
-
-void ULakayaAbility_GunFire::ActivateFireMontageTask()
-{
-	const auto MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
-		this, NAME_None, FireMontage);
-	MontageTask->OnCompleted.AddDynamic(this, &ThisClass::OnMontageEnded);
-	MontageTask->OnCancelled.AddDynamic(this, &ThisClass::OnMontageEnded);
-	MontageTask->OnInterrupted.AddDynamic(this, &ThisClass::OnMontageEnded);
-	MontageTask->OnBlendOut.AddDynamic(this, &ThisClass::OnMontageEnded);
-	MontageTask->ReadyForActivation();
-}
-
-void ULakayaAbility_GunFire::ExecuteFireCue(const FGameplayAbilityTargetDataHandle& TargetDataHandle)
-{
-	if (TargetDataHandle.Num() <= 0) return;
-	K2_ExecuteGameplayCueWithParams(
-		FireCueTag.GameplayCueTag,
-		UGameplayCueFunctionLibrary::MakeGameplayCueParametersFromHitResult(*TargetDataHandle.Get(0)->GetHitResult()));
-}
-
-void ULakayaAbility_GunFire::ConsumeTargetData() const
-{
-	GetAbilitySystemComponentFromActorInfo_Checked()->ConsumeClientReplicatedTargetData(
-		GetCurrentAbilitySpecHandle(), GetCurrentActivationInfo().GetActivationPredictionKey());
+	Algo::Transform(HitResults, OutTargetDataHandle, Transform);
 }

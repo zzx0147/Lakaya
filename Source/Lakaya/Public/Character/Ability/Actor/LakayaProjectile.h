@@ -111,7 +111,10 @@ struct FGameplayAbilityTargetData_ThrowProjectile : public FGameplayAbilityTarge
 	UPROPERTY(BlueprintReadWrite)
 	ALakayaProjectile* Projectile;
 
+	virtual UScriptStruct* GetScriptStruct() const override { return StaticStruct(); }
+
 	FGameplayAbilityTargetData_ThrowProjectile() = default;
+
 	FGameplayAbilityTargetData_ThrowProjectile(
 		FProjectileThrowData&& InThrowData, ALakayaProjectile* const& InProjectile)
 		: ThrowData(MoveTemp(InThrowData)), Projectile(InProjectile) { return; }
@@ -139,17 +142,17 @@ public:
 	ALakayaProjectile();
 
 	/**
-	 * @brief 투사체를 예측적으로 투척합니다.
-	 * @param Key 투사체가 사용할 예측 키입니다. 이 예측 키가 Reject되면 투사체가 롤백됩니다.
+	 * @brief 투사체를 투척합니다.
 	 * @param InThrowData 투사체를 투척하기 위한 데이터입니다.
+	 * @param Key 클라이언트에서 투사체가 사용할 예측 키입니다. 이 예측 키가 Reject되면 투사체가 롤백됩니다.
 	 */
-	void ThrowProjectilePredictive(FPredictionKey& Key, const FProjectileThrowData& InThrowData);
+	void ThrowProjectile(const FProjectileThrowData& InThrowData, FPredictionKey Key);
 
 	/**
 	 * @brief 투사체를 Authority를 체크하고 투척합니다. 서버에서만 동작합니다.
 	 * @param InThrowData 투사체를 투척하기 위한 데이터입니다.
 	 */
-	void ThrowProjectileAuthoritative(FProjectileThrowData&& InThrowData);
+	void ThrowProjectile(const FProjectileThrowData& InThrowData);
 
 	FORCEINLINE const FProjectileState& GetProjectileState() const
 	{
@@ -252,6 +255,7 @@ private:
 		bool& bLockRef;
 	};
 
+	void ThrowProjectileAuthoritative(const FProjectileThrowData& InThrowData);
 	void ThrowProjectile(const FProjectileThrowData& InThrowData, ECollisionEnabled::Type&& CollisionEnabled);
 	void SetProjectileState(const EProjectileState& InProjectileState);
 	void BroadcastOnProjectileStateChanged(const FProjectileState& OldState, const FProjectileState& NewState);
