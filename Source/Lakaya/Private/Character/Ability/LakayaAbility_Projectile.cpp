@@ -3,8 +3,10 @@
 
 #include "Character/Ability/LakayaAbility_Projectile.h"
 
+#include "AbilitySystemComponent.h"
 #include "Algo/Accumulate.h"
 #include "Character/Ability/Actor/LakayaProjectile.h"
+#include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 
 FProjectilePoolItem::FProjectilePoolItem(ALakayaProjectile* InProjectile,
@@ -128,7 +130,7 @@ ALakayaProjectile* FProjectilePool::GetFreeProjectile()
 {
 	static const auto GetOlderProjectile = [](ALakayaProjectile* A, ALakayaProjectile* B)
 	{
-		return A->GetRecentProjectilePerformedTime() < B->GetRecentProjectilePerformedTime() ? A : B;
+		return A->GetRecentPerformedTime() < B->GetRecentPerformedTime() ? A : B;
 	};
 
 	static const auto ProjectileReduce = [](ALakayaProjectile* Recent, const FProjectilePoolItem& Item)
@@ -158,6 +160,9 @@ ALakayaProjectile* FProjectilePool::GetFreeProjectile()
 ULakayaAbility_Projectile::ULakayaAbility_Projectile(): ProjectilePool()
 {
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
+	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ClientOrServer;
 }
 
 void ULakayaAbility_Projectile::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo,
@@ -171,6 +176,49 @@ void ULakayaAbility_Projectile::OnGiveAbility(const FGameplayAbilityActorInfo* A
 		SpawnParameters.Instigator = Cast<APawn>(ActorInfo->AvatarActor.Get());
 		ProjectilePool.Initialize(GetWorld(), SpawnParameters);
 	}
+}
+
+void ULakayaAbility_Projectile::OnTargetDataReceived_Implementation(
+	const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag GameplayTag)
+{
+	Super::OnTargetDataReceived_Implementation(TargetDataHandle, GameplayTag);
+
+	const static auto StructName = FGameplayAbilityTargetData_ThrowProjectile::StaticStruct()->GetStructCPPName();
+
+	if (ensure(TargetDataHandle.IsValid(0)))
+	{
+		const auto RawTargetDataPtr = TargetDataHandle.Get(0);
+		if (ensure(RawTargetDataPtr->GetScriptStruct()->GetStructCPPName() == StructName))
+		{
+			const auto TargetData = static_cast<const FGameplayAbilityTargetData_ThrowProjectile*>(RawTargetDataPtr);
+			if (ensure(TargetData->Projectile))
+			{
+				TargetData->Projectile->ThrowProjectile(TargetData->ThrowData);
+				return;
+			}
+		}
+	}
+
+	K2_CancelAbility();
+}
+
+FGameplayAbilityTargetDataHandle ULakayaAbility_Projectile::MakeTargetData_Implementation()
+{
+	const auto NewProjectile = ProjectilePool.GetFreeProjectile();
+	check(IsValid(NewProjectile))
+
+	static FVector ThrowLocation, ThrowDirection;
+	MakeProjectileThrowLocation(ThrowLocation, ThrowDirection);
+
+	const auto TargetData = new FGameplayAbilityTargetData_ThrowProjectile(
+		{ThrowLocation, ThrowDirection, static_cast<float>(GetWorld()->GetGameState()->GetServerWorldTimeSeconds())},
+		NewProjectile);
+
+	NewProjectile->
+		ThrowProjectile(TargetData->ThrowData, GetAbilitySystemComponentFromActorInfo_Checked()->ScopedPredictionKey);
+
+	FGameplayAbilityTargetDataHandle TargetDataHandle(TargetData);
+	return TargetDataHandle;
 }
 
 void ULakayaAbility_Projectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
