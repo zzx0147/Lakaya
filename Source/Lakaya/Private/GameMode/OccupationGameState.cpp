@@ -276,12 +276,16 @@ void AOccupationGameState::HandleMatchHasEnded()
 
 	bTap = false;
 
-	FinalResultWidget->SetTeam(ClientTeam);
-	FinalResultWidget->SetMatchResultData(GetOccupationWinner(),ProTeamScore,AntiTeamScore, PlayersByTeamMap);
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
+	LocalController && LocalController->IsLocalController())
+	{
+		FinalResultWidget->SetTeam(ClientTeam);
+		FinalResultWidget->SetMatchResultData(GetOccupationWinner(),ProTeamScore,AntiTeamScore, PlayersByTeamMap);
 	
-	ShowEndResultWidget();
-	BindDetailResultWidget();
-	BindDetailResultElementWidget();
+		ShowEndResultWidget();
+		BindDetailResultWidget();
+		BindDetailResultElementWidget();
+	}
 }
 
 void AOccupationGameState::EndTimeCheck()
