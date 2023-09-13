@@ -76,13 +76,3 @@ IAbilityGunFireInterface* ULakayaAbility_GunFire::FindGunFireInterface() const
 	ensureMsgf(FireInterface, TEXT("[%s] 아바타 액터 또는 오너 액터가 IAbilityGunFireInterface를 구현하지 않습니다."), *GetName());
 	return FireInterface;
 }
-
-void ULakayaAbility_GunFire::HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
-                                                          FGameplayAbilityTargetDataHandle& OutTargetDataHandle)
-{
-	static auto Transform = [](const FHitResult& HitResult)
-	{
-		return new FGameplayAbilityTargetData_SingleTargetHit(HitResult);
-	};
-	Algo::Transform(HitResults, OutTargetDataHandle, Transform);
-}

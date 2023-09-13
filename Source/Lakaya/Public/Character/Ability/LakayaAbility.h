@@ -75,6 +75,10 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	FGameplayAbilityTargetDataHandle MakeTargetData();
 
+	/** HitResult들을 타겟 데이터 핸들로 변환시킵니다. */
+	static void HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
+											 FGameplayAbilityTargetDataHandle& OutTargetDataHandle);
+
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	                             const FGameplayAbilityActivationInfo ActivationInfo,
 	                             const FGameplayEventData* TriggerEventData) override;

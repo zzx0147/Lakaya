@@ -37,10 +37,6 @@ private:
 	/** 아바타 액터나 오너 액터를 IAbilityGunFireInterface로 캐스트하여 반환합니다. */
 	IAbilityGunFireInterface* FindGunFireInterface() const;
 
-	/** HitResult들을 타겟 데이터 핸들로 변환시킵니다. */
-	static void HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
-	                                         FGameplayAbilityTargetDataHandle& OutTargetDataHandle);
-
 	/** 피격된 대상에게 적용할 게임플레이 이펙트입니다. */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> DamageEffect;
