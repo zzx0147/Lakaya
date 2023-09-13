@@ -139,12 +139,12 @@ void ALakayaBasePlayerState::Tick(float DeltaSeconds)
 
 	// UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 
-	if (GetAbilitySystemComponent())
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow,
-			                                 *FString::Printf(TEXT("::%f"), GetAbilitySystemComponent()->GetSet<ULakayaAttributeSet>()->GetHealth() ));
-	}
-	
+	// if (GetAbilitySystemComponent())
+	// {
+	// 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow,
+	// 		                                 *FString::Printf(TEXT("::%f"), GetAbilitySystemComponent()->GetSet<ULakayaAttributeSet>()->GetHealth() ));
+	// }
+	//
 }
 
 bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) const
