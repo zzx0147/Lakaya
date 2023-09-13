@@ -273,6 +273,11 @@ private:
 	// 게임 팀내 등수 결과 위젯입니다.
 	TWeakObjectPtr<UGradeResultElementWidget> GradeResultElementWidget;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UFinalResultWidget> FinalResultWidgetClass;
+	
+	TObjectPtr<UFinalResultWidget> FinalResultWidget;
+
 	// 게임 디테일 결과 위젯입니다.
 	TWeakObjectPtr<UDetailResultWidget> DetailResultWidget;
 
