@@ -9,8 +9,6 @@
 #include "Net/UnrealNetwork.h"
 #include "PlayerController/BattlePlayerController.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
-// #include "UI/GamePlayCrossHairWidget.h"
-#include "NavigationSystemTypes.h"
 #include "UI/DynamicCrossHairWidget.h"
 #include "UI/GamePlayKillLogWidget.h"
 #include "UI/GameScoreBoardWidget.h"
@@ -75,16 +73,6 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 
-		// if (CrosshairWidgetClass)
-		// {
-		// 	CrosshairWidget = CreateWidget<UGamePlayCrosshairWidget>(LocalController, CrosshairWidgetClass);
-		// 	if (CrosshairWidget != nullptr)
-		// 	{
-		// 		CrosshairWidget->AddToViewport();
-		// 		CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
-		// 	}
-		// }
-
 		if (DynamicCrossHairWidgetClass)
 		{
 			DynamicCrossHairWidget = CreateWidget<UDynamicCrossHairWidget>(LocalController, DynamicCrossHairWidgetClass);
@@ -94,7 +82,7 @@ void ALakayaBaseGameState::BeginPlay()
 				DynamicCrossHairWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
-			
+		
 		if (KillLogWidgetClass)
 		{
 			KillLogWidget = CreateWidget<UGamePlayKillLogWidget>(LocalController, KillLogWidgetClass);
@@ -245,20 +233,18 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 
-	// if (CrosshairWidget != nullptr)
-		// CrosshairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
 	if (DynamicCrossHairWidget != nullptr)
 		DynamicCrossHairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	
-	if (MiniMapWidget.IsValid())
-	{
-		MiniMapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("MiniMapWidget is null."));
-	}
+
+	// TODO
+	// if (MiniMapWidget.IsValid())
+	// {
+	// 	MiniMapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("MiniMapWidget is null."));
+	// }
 	
 	// TODO : 아직 구현이 되지 않아 비활성화 합니다.
 	// if (HelpWidget.IsValid())

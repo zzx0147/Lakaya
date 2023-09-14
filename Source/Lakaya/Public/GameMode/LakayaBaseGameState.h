@@ -109,10 +109,6 @@ protected:
 	TSubclassOf<UGameTimeWidget> InGameTimerWidgetClass;
 
 	// 게임중에 표시되는 크로스헤어 위젯을 지정합니다.
-	// UPROPERTY(EditDefaultsOnly)
-	// TSubclassOf<class UGamePlayCrosshairWidget> CrosshairWidgetClass;
-
-	// 게임중에 표시되는 크로스헤어 위젯을 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UDynamicCrossHairWidget> DynamicCrossHairWidgetClass;
 	

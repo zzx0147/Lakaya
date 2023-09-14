@@ -197,6 +197,20 @@ void AOccupationGameState::BeginPlay()
 void AOccupationGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
+
+	// 캐릭터가 바뀔 때마다, 캐릭터에게 적합한 DynamicCrossHair 위젯을 생성합니다.
+	if (auto BasePlayerState = GetWorld()->GetFirstPlayerController()->GetPlayerState<ALakayaBasePlayerState>())
+	{
+			BasePlayerState->OnCharacterNameChanged.AddLambda([this](ALakayaBasePlayerState* , const FName&)
+			{
+				// TODO : 캐릭터의 이름을 가져와서 그에 맞는 DynamicCrosshair 위젯을 생성해줍니다.
+				
+			});
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BasePlayerState is null."));
+	}
 	
 	if (SkillWidget.IsValid())
 		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
