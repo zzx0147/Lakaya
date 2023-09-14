@@ -13,6 +13,9 @@ GAMEPLAYATTRIBUTE_VALUE_GETTER(PropertyName) \
 GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
 GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDashStackFullOrNot,const bool, bIsFull);
+
 UCLASS()
 class LAKAYA_API ULakayaAttributeSet : public UAttributeSet
 {
@@ -20,22 +23,28 @@ class LAKAYA_API ULakayaAttributeSet : public UAttributeSet
 
 public:
 	ULakayaAttributeSet();
-	
+
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxHealth);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, Health);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxAmmo);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, CurrentAmmo);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, AttackPoint);
+	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, DashStack);
+	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxDashStack);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnDashStackFullOrNot OnDashStackFullOrNot;
+	
 protected:
 	virtual bool PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data) override;
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 	virtual void PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const override;
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealth)
 	FGameplayAttributeData MaxHealth;
 
@@ -51,6 +60,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_AttackPoint)
 	FGameplayAttributeData AttackPoint;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_DashStack)
+	FGameplayAttributeData DashStack;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_MaxDashStack)
+	FGameplayAttributeData MaxDashStack;
+
 protected:
 	UFUNCTION()
 	virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldValue);
@@ -62,4 +77,8 @@ protected:
 	virtual void OnRep_CurrentAmmo(const FGameplayAttributeData& OldValue);
 	UFUNCTION()
 	virtual void OnRep_AttackPoint(const FGameplayAttributeData& OldValue);
+	UFUNCTION()
+	virtual void OnRep_DashStack(const FGameplayAttributeData& OldValue);
+	UFUNCTION()
+	virtual void OnRep_MaxDashStack(const FGameplayAttributeData& OldValue);
 };
