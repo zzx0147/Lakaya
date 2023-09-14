@@ -3,19 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "GameFramework/MovementComponent.h"
-#include "AiDronePawn.generated.h"
+#include "AiDroneCharacter.generated.h"
 
 UCLASS()
-class LAKAYA_API AAiDronePawn : public APawn
+class LAKAYA_API AAiDroneCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this pawn's properties
-	AAiDronePawn();
+	AAiDroneCharacter();
 
 protected:
 	// Called when the game starts or when spawned
@@ -23,9 +23,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UMovementComponent* MovementComponent; // Movement 컴포넌트 선언
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UFloatingPawnMovement* FloatingMovementComponent;
 	
 public:	
 	// Called every frame
