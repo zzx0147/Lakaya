@@ -24,6 +24,8 @@ UResultNotifyFireAbility::UResultNotifyFireAbility()
 	OnSingleFire.AddWeakLambda(this,[&](const FVector& Start, const FVector& End, const FVector& Normal, const EFireResult& Kind)
 	{
 		if(!FireCameraShake) return;
+
+		OnSingleFireDynamic.Broadcast(Start,End,Normal);
 		
 		if(const auto OwnerPawn = Cast<ALakayaBaseCharacter>(GetOwner()))
 		{
@@ -33,6 +35,8 @@ UResultNotifyFireAbility::UResultNotifyFireAbility()
 			}
 		}
 	});
+
+	
 }
 
 bool UResultNotifyFireAbility::ShouldStartRemoteCall()

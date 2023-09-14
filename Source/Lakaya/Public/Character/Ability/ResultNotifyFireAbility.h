@@ -7,7 +7,7 @@
 #include "SimpleObjectPool.h"
 #include "ResultNotifyFireAbility.generated.h"
 
-UENUM()
+UENUM(BlueprintType)
 enum class EFireResult
 {
 	// 충돌하지 못했음을 의미합니다.
@@ -23,7 +23,10 @@ enum class EFireResult
 DECLARE_EVENT_OneParam(UResultNotifyFireAbility, FWantsToFireSignature, bool);
 
 DECLARE_EVENT_FourParams(UResultNotifyFireAbility, FSingleFireSignature, const FVector&, const FVector&, const FVector&,
-                         const EFireResult&)
+                         const EFireResult&);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSingleFireDynamicSignature, const FVector&, Start, const FVector&, End,
+                                              const FVector&, Normal);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UResultNotifyFireAbility : public UCharacterAbility
@@ -93,6 +96,10 @@ public:
 	
 	// 캐릭터가 사격을 실행한 후 호출됩니다. 매개변수로 사격 궤적 시작위치, 끝 위치, 충돌한 지점의 노멀벡터, 충돌한 물체의 종류를 받습니다.
 	FSingleFireSignature OnSingleFire;
+
+	//싱글 파이어의 블루프린트용
+	UPROPERTY(BlueprintAssignable)
+	FSingleFireDynamicSignature OnSingleFireDynamic;
 
 protected:
 	UPROPERTY(EditAnywhere)

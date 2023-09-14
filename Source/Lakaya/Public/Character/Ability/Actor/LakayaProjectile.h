@@ -47,12 +47,12 @@ struct FProjectileState
 	 */
 	bool SetCustomState(const uint8& InCustomState);
 
-	bool operator==(const FProjectileState& Other) const
+	FORCEINLINE bool operator==(const FProjectileState& Other) const
 	{
 		return ProjectileState == Other.ProjectileState && CustomState == Other.CustomState;
 	}
 
-	bool operator!=(const FProjectileState& Other) const { return !operator==(Other); }
+	FORCEINLINE bool operator!=(const FProjectileState& Other) const { return !operator==(Other); }
 
 	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
 
@@ -90,7 +90,8 @@ struct FProjectileThrowData
 	UPROPERTY(BlueprintReadWrite)
 	float ServerTime;
 
-	void SetupPredictedProjectileParams(FPredictProjectilePathParams& OutParams, const float& Velocity) const;
+	void SetupPredictedProjectileParams(FPredictProjectilePathParams& OutParams, const float& Velocity,
+	                                    const float& CurrentTime) const;
 
 	FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FProjectileThrowData& ThrowData)
 	{
@@ -109,6 +110,14 @@ struct FGameplayAbilityTargetData_ThrowProjectile : public FGameplayAbilityTarge
 
 	UPROPERTY(BlueprintReadWrite)
 	ALakayaProjectile* Projectile;
+
+	virtual UScriptStruct* GetScriptStruct() const override { return StaticStruct(); }
+
+	FGameplayAbilityTargetData_ThrowProjectile() = default;
+
+	FGameplayAbilityTargetData_ThrowProjectile(
+		FProjectileThrowData&& InThrowData, ALakayaProjectile* const& InProjectile)
+		: ThrowData(MoveTemp(InThrowData)), Projectile(InProjectile) { return; }
 
 	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
 };
@@ -133,64 +142,112 @@ public:
 	ALakayaProjectile();
 
 	/**
-	 * @brief 투사체를 예측적으로 투척합니다.
-	 * @param Key 투사체가 사용할 예측 키입니다. 이 예측 키가 Reject되면 투사체가 롤백됩니다.
+	 * @brief 투사체를 투척합니다.
 	 * @param InThrowData 투사체를 투척하기 위한 데이터입니다.
+	 * @param Key 클라이언트에서 투사체가 사용할 예측 키입니다. 이 예측 키가 Reject되면 투사체가 롤백됩니다.
 	 */
-	void ThrowProjectilePredictive(FPredictionKey& Key, const FProjectileThrowData& InThrowData);
+	void ThrowProjectile(const FProjectileThrowData& InThrowData, FPredictionKey Key);
 
 	/**
 	 * @brief 투사체를 Authority를 체크하고 투척합니다. 서버에서만 동작합니다.
 	 * @param InThrowData 투사체를 투척하기 위한 데이터입니다.
 	 */
-	void ThrowProjectileAuthoritative(FProjectileThrowData&& InThrowData);
-
-	/** 투사체를 비활성화합니다. 서버에서만 사용할 수 있습니다. */
-	void CollapseProjectile();
+	void ThrowProjectile(const FProjectileThrowData& InThrowData);
 
 	FORCEINLINE const FProjectileState& GetProjectileState() const
 	{
 		return HasAuthority() ? ProjectileState : LocalState;
 	}
 
-	FORCEINLINE FProjectileState& GetProjectileState() { return HasAuthority() ? ProjectileState : LocalState; }
 	FORCEINLINE bool IsCollapsed() const { return GetProjectileState().IsCollapsed(); }
 	FORCEINLINE bool IsPerforming() const { return GetProjectileState().IsPerforming(); }
 	FORCEINLINE bool IsCustomState() const { return GetProjectileState().IsCustomState(); }
 
-	const float& GetRecentProjectilePerformedTime() const { return RecentProjectilePerformedTime; }
+	FORCEINLINE float GetRecentPerformedTime() const { return FMath::Max(ThrowData.ServerTime, RecentPerformedTime); }
 
-	/** 투사체의 상태가 변경되면 호출되는 이벤트입니다. 로컬에서 예측적으로 투사체의 상태를 변경할 때에도 호출됩니다. */
+	/**
+	 * 투사체의 상태가 변경되면 호출되는 이벤트입니다. 로컬에서 예측적으로 투사체의 상태를 변경할 때에도 호출됩니다.
+	 * 이 이벤트에서 투사체의 상태를 변경할만한 함수를 호출하면 예기치 못한 버그가 발생할 수 있습니다. (예: ThrowProjectile)
+	 */
 	FProjectileStateChanged OnProjectileStateChanged;
 
 	virtual void PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker) override;
 
 protected:
+	FORCEINLINE FProjectileState& InternalGetProjectileState() { return HasAuthority() ? ProjectileState : LocalState; }
 	FORCEINLINE bool IsActualCollapsed() const { return ProjectileState.IsCollapsed(); }
 	FORCEINLINE bool IsActualPerforming() const { return ProjectileState.IsPerforming(); }
 	FORCEINLINE bool IsActualCustomState() const { return ProjectileState.IsCustomState(); }
 
+	/** 커스텀 스테이트를 해당 값으로 변경합니다. */
+	UFUNCTION(BlueprintCallable)
 	void SetCustomState(const uint8& InCustomState);
 
-	virtual void OnRep_CustomState();
+	/** 투사체의 상태를 Collapsed로 변경합니다. */
+	UFUNCTION(BlueprintCallable)
+	void SetProjectileStateCollapsed();
 
+	/** OnRep_ProjectileState에서 커스텀 스테이트에서 탈출할 때 호출됩니다. 0에 대해서는 호출되지 않습니다. */
 	UFUNCTION(BlueprintNativeEvent)
-	void OnCollapsed();
+	void OnReplicatedCustomStateExit(const uint8& OldState);
+
+	/** OnRep_ProjectileState에서 커스텀 스테이트로 진입할 때 호출됩니다. 0에 대해서는 호출되지 않습니다. */
+	UFUNCTION(BlueprintNativeEvent)
+	void OnReplicatedCustomStateEnter(const uint8& NewState);
+
+	/**
+	 * CollisionComponent의 오버랩 이벤트에 바인딩된 함수입니다.
+	 * 하위 클래스의 구현에 따라 클라이언트에서도 호출될 수 있지만, 클라이언트에서의 충돌 결과는 신뢰할 수 없으므로 그러지 않는 편이 좋습니다.
+	 */
+	UFUNCTION(BlueprintNativeEvent)
+	void OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	                         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+	                         const FHitResult& SweepResult);
+
+	/**
+	 * CollisionComponent의 Hit 이벤트에 바인딩된 함수입니다.
+	 * Block 이벤트는 정적 오브젝트에 대해서만 발동하므로 안전합니다. 따라서 클라이언트에서도 호출됩니다.
+	 */
+	UFUNCTION(BlueprintNativeEvent)
+	void OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	                     FVector NormalImpulse, const FHitResult& Hit);
+
+	/**
+	 * 투사체 경로 예측중에 오버랩 이벤트가 발생하면 호출됩니다. 서버에서만 실행됩니다.
+	 * @return false를 반환하면 투사체의 진행을 멈춥니다.
+	 */
+	UFUNCTION(BlueprintNativeEvent)
+	bool OnProjectilePathOverlap(const FPredictProjectilePathResult& PredictResult);
+
+	/**
+	 * 투사체 경로 예측중에 Block 이벤트가 발생하면 호출됩니다. 클라이언트에서도 실행됩니다.
+	 * @return false를 반환하면 투사체의 진행을 멈춥니다.
+	 */
+	UFUNCTION(BlueprintNativeEvent)
+	bool OnProjectilePathBlock(const FPredictProjectilePathResult& PredictResult);
+
+	/** 이번 투사체 투척에서 해당 액터에 대한 Overlap 이벤트가 더이상 생성되지 않도록 합니다. */
+	UFUNCTION(BlueprintCallable)
+	void AddIgnoredInPerformActor(AActor* InActor);
+
+	/** 이번 투사체 투척에서 Ignore되었던 액터들을 다시 Ignore되지 않도록 하고 목록을 비웁니다. */
+	UFUNCTION(BlueprintCallable)
+	void ClearIgnoredInPerformActors();
+
+	virtual void BeginPlay() override;
 
 private:
 	struct FScopedLock
 	{
 		explicit FScopedLock(bool& InLockObject) : bLockRef(InLockObject)
 		{
-			if (ensureMsgf(!bLockRef, TEXT("Recursive call detected")))
-			{
-				bLockRef = true;
-			}
+			check(!bLockRef);
+			bLockRef = true;
 		}
 
 		~FScopedLock()
 		{
-			ensure(bLockRef);
+			check(bLockRef);
 			bLockRef = false;
 		}
 
@@ -198,16 +255,26 @@ private:
 		bool& bLockRef;
 	};
 
-	void ThrowProjectile(const FProjectileThrowData& InThrowData);
+	void ThrowProjectileAuthoritative(const FProjectileThrowData& InThrowData);
+	void ThrowProjectile(const FProjectileThrowData& InThrowData, ECollisionEnabled::Type&& CollisionEnabled);
 	void SetProjectileState(const EProjectileState& InProjectileState);
 	void BroadcastOnProjectileStateChanged(const FProjectileState& OldState, const FProjectileState& NewState);
 	void RejectProjectile();
+	void StopThrowProjectile();
+	bool MarchProjectileRecursive(FPredictProjectilePathResult& OutResult,
+	                              const ECollisionEnabled::Type& CollisionEnabled);
+
+	template <class ArgType, class FunType = typename TMemFunPtrType<false, FProjectileState, bool(ArgType)>::Type>
+	void InternalSetProjectileState(FunType&& FunPtr, ArgType&& Arg);
 
 	UFUNCTION()
 	void OnRep_ProjectileState();
 
 	UPROPERTY(VisibleAnywhere)
 	class UProjectileMovementComponent* ProjectileMovementComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	class USphereComponent* CollisionComponent;
 
 	UPROPERTY(ReplicatedUsing=OnRep_ProjectileState, Transient)
 	FProjectileState ProjectileState;
@@ -222,8 +289,23 @@ private:
 	FPredictProjectilePathParams PredictedProjectileParams;
 
 	FProjectileState LocalState;
-	float RecentProjectilePerformedTime;
+	float RecentPerformedTime;
 	bool bIsStateChanging;
-
-	friend struct FScopedLock;
+	TArray<TWeakObjectPtr<AActor>> IgnoredInPerformActors;
 };
+
+template <class ArgType, class FunType>
+void ALakayaProjectile::InternalSetProjectileState(FunType&& FunPtr, ArgType&& Arg)
+{
+	auto& StateRef = InternalGetProjectileState();
+	const auto OldState = StateRef;
+	if ((StateRef.*FunPtr)(Arg))
+	{
+		BroadcastOnProjectileStateChanged(OldState, StateRef);
+	}
+
+	if (OldState.IsPerforming())
+	{
+		StopThrowProjectile();
+	}
+}

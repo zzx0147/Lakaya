@@ -244,6 +244,9 @@ private:
 	TSubclassOf<class UDetailResultElementWidget> DetailResultElementWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UFinalResultWidget> FinalResultWidgetClass;
+	
+	UPROPERTY(EditDefaultsOnly)
 	class UInputMappingContext* ResultShortcutContext;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -272,9 +275,6 @@ private:
 
 	// 게임 팀내 등수 결과 위젯입니다.
 	TWeakObjectPtr<UGradeResultElementWidget> GradeResultElementWidget;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UFinalResultWidget> FinalResultWidgetClass;
 	
 	TObjectPtr<UFinalResultWidget> FinalResultWidget;
 
