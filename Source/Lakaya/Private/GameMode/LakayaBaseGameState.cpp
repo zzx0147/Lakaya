@@ -36,7 +36,7 @@ void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 void ALakayaBaseGameState::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController();
 		LocalController && LocalController->IsLocalController())
 	{
@@ -72,16 +72,6 @@ void ALakayaBaseGameState::BeginPlay()
 				InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
-
-		if (DynamicCrossHairWidgetClass)
-		{
-			DynamicCrossHairWidget = CreateWidget<UDynamicCrossHairWidget>(LocalController, DynamicCrossHairWidgetClass);
-			if (DynamicCrossHairWidget != nullptr)
-			{
-				DynamicCrossHairWidget->AddToViewport();
-				DynamicCrossHairWidget->SetVisibility(ESlateVisibility::Hidden);
-			}
-		}
 		
 		if (KillLogWidgetClass)
 		{
@@ -102,6 +92,41 @@ void ALakayaBaseGameState::BeginPlay()
 				PlayerNameDisplayerWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 			}
 		}
+
+		if (WaziDynamicCrossHairClass)
+		{
+			WaziDynamicCrossHairWidget = CreateWidget<UDynamicCrossHairWidget>(LocalController, WaziDynamicCrossHairClass);
+			if (WaziDynamicCrossHairWidget.IsValid())
+			{
+				WaziDynamicCrossHairWidget->AddToViewport();
+				WaziDynamicCrossHairWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+
+		if (RenaDynamicCrossHairClass)
+		{
+			RenaDynamicCrossHairWidget = CreateWidget<UDynamicCrossHairWidget>(LocalController, RenaDynamicCrossHairClass);
+			if (RenaDynamicCrossHairWidget.IsValid())
+			{
+				RenaDynamicCrossHairWidget->AddToViewport();
+				RenaDynamicCrossHairWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+			}
+		}
+
+		if (GangRimDynamicCrossHairClass)
+		{
+			GangRimDynamicCrossHairWidget = CreateWidget<UDynamicCrossHairWidget>(LocalController, GangRimDynamicCrossHairClass);
+			if (GangRimDynamicCrossHairWidget.IsValid())
+			{
+				GangRimDynamicCrossHairWidget->AddToViewport();
+				GangRimDynamicCrossHairWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+
+		// 크로스헤어 위젯들은 생성하고 Map에 담습니다.
+		CharacterToDynamicCrossHairWidgets.Add("Wazi", WaziDynamicCrossHairWidget.Get());
+		CharacterToDynamicCrossHairWidgets.Add("Rena", RenaDynamicCrossHairWidget.Get());
+		CharacterToDynamicCrossHairWidgets.Add("GangRim", GangRimDynamicCrossHairWidget.Get());
 
 #pragma region MiniMap
 		// if (MiniMapWidgetClass)
@@ -219,7 +244,34 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	Super::HandleMatchHasStarted();
 	StartTimeStamp = FDateTime::UtcNow().ToUnixTimestamp();
 	StartTime = GetServerWorldTimeSeconds();
+	
+	// 캐릭터가 바뀔 때마다, 캐릭터에게 적합한 DynamicCrossHair 위젯을 생성합니다.
+	if (auto BasePlayerState = GetWorld()->GetFirstPlayerController()->GetPlayerState<ALakayaBasePlayerState>())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BasePlayerState is valid."));
 
+		BasePlayerState->OnCharacterNameChanged.AddLambda([this, BasePlayerState](ALakayaBasePlayerState* , const FName&)
+		{
+			// 모든 위젯들을 숨겨줍니다.
+			for (auto& Pair : CharacterToDynamicCrossHairWidgets)
+			{
+				Pair.Value->SetVisibility(ESlateVisibility::Hidden);
+			}
+
+			FName CharName = BasePlayerState->GetCharacterName();
+
+			// 현재 캐릭터의 이름을 찾아 캐릭터에 맞는 에임 위젯을 찾아서 활성화 시켜줍니다.
+			if (UDynamicCrossHairWidget** WidgetPtr = CharacterToDynamicCrossHairWidgets.Find(CharName))
+			{
+				(*WidgetPtr)->SetVisibility(ESlateVisibility::Visible);
+			}
+		});
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BasePlayerState is not valid."));
+	}
+	
 	if (GetCharacterSelectWidget())
 	{
 		CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
@@ -232,9 +284,6 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	{
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
-
-	if (DynamicCrossHairWidget != nullptr)
-		DynamicCrossHairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 	// TODO
 	// if (MiniMapWidget.IsValid())

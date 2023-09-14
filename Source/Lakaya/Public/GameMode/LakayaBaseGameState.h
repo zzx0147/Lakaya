@@ -56,8 +56,13 @@ public:
 	void NotifyPlayerKilled(APlayerState* VictimPlayer, APlayerState* InstigatorPlayer, AActor* DamageCauser);
 
 	UFUNCTION(BlueprintCallable)
-	UDynamicCrossHairWidget* GetDynamicCrossHairFun() const { return DynamicCrossHairWidget.Get(); } 
-	
+	UDynamicCrossHairWidget* GetWaziDynamicCrossHairFun() const { return WaziDynamicCrossHairWidget.Get(); } 
+
+	UFUNCTION(BlueprintCallable)
+	UDynamicCrossHairWidget* GetRenaDynamicCrossHairFun() const { return RenaDynamicCrossHairWidget.Get(); }
+
+	UFUNCTION(BlueprintCallable)
+	UDynamicCrossHairWidget* GetGangRimDynamicCrossHairFun() const { return GangRimDynamicCrossHairWidget.Get(); } 
 protected:
 	virtual class UGameLobbyCharacterSelectWidget* GetCharacterSelectWidget();
 
@@ -109,8 +114,8 @@ protected:
 	TSubclassOf<UGameTimeWidget> InGameTimerWidgetClass;
 
 	// 게임중에 표시되는 크로스헤어 위젯을 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UDynamicCrossHairWidget> DynamicCrossHairWidgetClass;
+	// UPROPERTY(EditDefaultsOnly)
+	// TSubclassOf<class UDynamicCrossHairWidget> DynamicCrossHairWidgetClass;
 	
 	// 에임에 있는 플레이어의 이름을 표기해주는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
@@ -125,6 +130,15 @@ protected:
 	// 미니맵위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UMiniMapWidget> MiniMapWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDynamicCrossHairWidget> WaziDynamicCrossHairClass;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDynamicCrossHairWidget> RenaDynamicCrossHairClass;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDynamicCrossHairWidget> GangRimDynamicCrossHairClass;
 	
 	// TODO : 구현되어 있지 않아 주석처리 합니다.
 	// 게임중에 표시되는 도움말 위젯을 지정합니다.
@@ -155,8 +169,9 @@ protected:
 	FTimerHandle MatchWaitToStartTimer;
 
 	TWeakObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
-	// TWeakObjectPtr<UGamePlayCrosshairWidget> CrosshairWidget;
-	TWeakObjectPtr<UDynamicCrossHairWidget> DynamicCrossHairWidget;
+	TWeakObjectPtr<UDynamicCrossHairWidget> WaziDynamicCrossHairWidget;
+	TWeakObjectPtr<UDynamicCrossHairWidget> RenaDynamicCrossHairWidget;
+	TWeakObjectPtr<UDynamicCrossHairWidget> GangRimDynamicCrossHairWidget;
 	TWeakObjectPtr<ULoadingWidget> LoadingWidget;
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
@@ -173,4 +188,7 @@ protected:
 	
 private:
 	bool bWantsSendRecordResult;
+
+	// 캐릭터에 맞는 크로스헤어위젯들입니다.
+	TMap<FName, UDynamicCrossHairWidget*> CharacterToDynamicCrossHairWidgets;
 };
