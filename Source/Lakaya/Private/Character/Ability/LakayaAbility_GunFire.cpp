@@ -5,7 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
-#include "Character/Ability/AbilityGunFireInterface.h"
+#include "Character/Ability/Component/AbilityComponent_FireTrace.h"
 
 
 ULakayaAbility_GunFire::ULakayaAbility_GunFire()
@@ -14,12 +14,68 @@ ULakayaAbility_GunFire::ULakayaAbility_GunFire()
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ClientOrServer;
-	bTrustClientHitResult = true;
+	bIsFireTraceComponentAdded = false;
+}
+
+void ULakayaAbility_GunFire::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+	Super::OnGiveAbility(ActorInfo, Spec);
+
+	const auto TargetActor = ActorInfo->OwnerActor;
+	check(TargetActor.IsValid());
+
+	FireTraceComponent = Cast<UAbilityComponent_FireTrace>(TargetActor->FindComponentByClass(FireTraceComponentClass));
+	if (FireTraceComponent.IsValid())
+	{
+		UE_LOG(LogTemp, Log, TEXT("[%s] FireTraceComponent found : %s"), *GetName(), *FireTraceComponent->GetName());
+	}
+	else
+	{
+		FireTraceComponent = Cast<UAbilityComponent_FireTrace>(
+			TargetActor->AddComponentByClass(FireTraceComponentClass, false, FTransform::Identity, false));
+
+		if (FireTraceComponent.IsValid())
+		{
+			bIsFireTraceComponentAdded = true;
+			UE_LOG(LogTemp, Log, TEXT("[%s] FireTraceComponent added : %s"), *GetName(),
+			       *FireTraceComponent->GetName());
+		}
+		else
+		{
+			ActorInfo->AbilitySystemComponent->ClearAbility(Spec.Handle);
+			UE_LOG(LogTemp, Error, TEXT("[%s] Failed to add FireTraceComponent. Ability has been removed"), *GetName());
+			return;
+		}
+	}
+
+	FireTraceComponent->SetOwningAbility(this);
+}
+
+void ULakayaAbility_GunFire::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo,
+                                             const FGameplayAbilitySpec& Spec)
+{
+	Super::OnRemoveAbility(ActorInfo, Spec);
+
+	if (bIsFireTraceComponentAdded)
+	{
+		const auto TargetActor = ActorInfo->OwnerActor;
+		if (TargetActor.IsValid())
+		{
+			TargetActor->RemoveInstanceComponent(FireTraceComponent.Get());
+		}
+	}
 }
 
 FGameplayAbilityTargetDataHandle ULakayaAbility_GunFire::MakeTargetData_Implementation()
 {
-	const auto TargetDataHandle = FireTrace();
+	check(FireTraceComponent.IsValid())
+
+	TArray<FHitResult> HitResults;
+	FireTraceComponent->FireTrace(HitResults);
+
+	FGameplayAbilityTargetDataHandle TargetDataHandle;
+	HitResultsToTargetDataHandle(HitResults, TargetDataHandle);
+
 	BP_ApplyGameplayEffectToTarget(TargetDataHandle, DamageEffect);
 	return TargetDataHandle;
 }
@@ -29,50 +85,6 @@ void ULakayaAbility_GunFire::OnTargetDataReceived_Implementation(
 {
 	Super::OnTargetDataReceived_Implementation(TargetDataHandle, GameplayTag);
 
-	// 클라이언트를 신뢰하기로 하는 경우 그냥 TargetDataHandle을 그대로 사용합니다.
-	const auto FixedTargetDataHandle = bTrustClientHitResult ? TargetDataHandle : SimulateFireTrace(TargetDataHandle);
+	BP_ApplyGameplayEffectToTarget(TargetDataHandle, DamageEffect);
 	ConsumeTargetData();
-	BP_ApplyGameplayEffectToTarget(FixedTargetDataHandle, DamageEffect);
-}
-
-FGameplayAbilityTargetDataHandle ULakayaAbility_GunFire::FireTrace() const
-{
-	FGameplayAbilityTargetDataHandle TargetDataHandle;
-
-	if (const auto FireInterface = FindGunFireInterface())
-	{
-		TArray<FHitResult> HitResults;
-		FireInterface->FireTrace(HitResults);
-		HitResultsToTargetDataHandle(HitResults, TargetDataHandle);
-	}
-
-	return TargetDataHandle;
-}
-
-FGameplayAbilityTargetDataHandle ULakayaAbility_GunFire::SimulateFireTrace(
-	const FGameplayAbilityTargetDataHandle& TargetDataHandle) const
-{
-	FGameplayAbilityTargetDataHandle ResultDataHandle;
-
-	if (const auto FireInterface = FindGunFireInterface();
-		ensure(TargetDataHandle.IsValid(0) && FireInterface))
-	{
-		TArray<FHitResult> HitResults;
-		FireInterface->SimulateFireTrace(TargetDataHandle.Get(0)->GetOrigin(), HitResults);
-		HitResultsToTargetDataHandle(HitResults, ResultDataHandle);
-	}
-
-	return ResultDataHandle;
-}
-
-IAbilityGunFireInterface* ULakayaAbility_GunFire::FindGunFireInterface() const
-{
-	auto FireInterface = Cast<IAbilityGunFireInterface>(GetAvatarActorFromActorInfo());
-	if (!FireInterface)
-	{
-		FireInterface = Cast<IAbilityGunFireInterface>(GetOwningActorFromActorInfo());
-	}
-
-	ensureMsgf(FireInterface, TEXT("[%s] 아바타 액터 또는 오너 액터가 IAbilityGunFireInterface를 구현하지 않습니다."), *GetName());
-	return FireInterface;
 }
