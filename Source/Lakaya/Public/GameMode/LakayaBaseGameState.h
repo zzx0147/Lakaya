@@ -30,6 +30,7 @@ protected:
 	virtual void RemovePlayerState(APlayerState* PlayerState) override;
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
+	virtual void HandleMatchIsCharacterSelect();
 	virtual void OnRep_MatchState() override;
 	
 public:
@@ -56,14 +57,22 @@ public:
 	void NotifyPlayerKilled(APlayerState* VictimPlayer, APlayerState* InstigatorPlayer, AActor* DamageCauser);
 
 	UFUNCTION(BlueprintCallable)
-	UDynamicCrossHairWidget* GetDynamicCrossHairFun() const { return DynamicCrossHairWidget.Get(); } 
-	
+	UDynamicCrossHairWidget* GetWaziDynamicCrossHairFun() const { return WaziDynamicCrossHairWidget.Get(); } 
+
+	UFUNCTION(BlueprintCallable)
+	UDynamicCrossHairWidget* GetRenaDynamicCrossHairFun() const { return RenaDynamicCrossHairWidget.Get(); }
+
+	UFUNCTION(BlueprintCallable)
+	UDynamicCrossHairWidget* GetGangRimDynamicCrossHairFun() const { return GangRimDynamicCrossHairWidget.Get(); } 
 protected:
 	virtual class UGameLobbyCharacterSelectWidget* GetCharacterSelectWidget();
 
 	UFUNCTION()
 	virtual void OnRep_MatchEndingTime();
 
+	UFUNCTION()
+	virtual void OnRep_CharacterSelectEndingTime();
+	
 	UFUNCTION()
 	virtual void OnRep_MatchWaitEndingTime();
 
@@ -108,13 +117,13 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UGameTimeWidget> InGameTimerWidgetClass;
 
+	// 캐릭터 선택 중에 표시되는 타이머 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameTimeWidget> CharacterSelectTimerWidgetClass;
+	
 	// 게임중에 표시되는 크로스헤어 위젯을 지정합니다.
 	// UPROPERTY(EditDefaultsOnly)
-	// TSubclassOf<class UGamePlayCrosshairWidget> CrosshairWidgetClass;
-
-	// 게임중에 표시되는 크로스헤어 위젯을 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UDynamicCrossHairWidget> DynamicCrossHairWidgetClass;
+	// TSubclassOf<class UDynamicCrossHairWidget> DynamicCrossHairWidgetClass;
 	
 	// 에임에 있는 플레이어의 이름을 표기해주는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
@@ -129,6 +138,15 @@ protected:
 	// 미니맵위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UMiniMapWidget> MiniMapWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDynamicCrossHairWidget> WaziDynamicCrossHairClass;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDynamicCrossHairWidget> RenaDynamicCrossHairClass;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDynamicCrossHairWidget> GangRimDynamicCrossHairClass;
 	
 	// TODO : 구현되어 있지 않아 주석처리 합니다.
 	// 게임중에 표시되는 도움말 위젯을 지정합니다.
@@ -139,6 +157,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float MatchDuration;
 
+	UPROPERTY(EditDefaultsOnly)
+	float CharacterSelectDuration;
+	
 	// 게임시작 후 몇초간 대기할 지 정의합니다.
 	UPROPERTY(EditAnywhere)
 	float MatchWaitDuration;
@@ -151,18 +172,24 @@ protected:
 	UPROPERTY(ReplicatedUsing=OnRep_MatchEndingTime)
 	float MatchEndingTime;
 
+	UPROPERTY(ReplicatedUsing = OnRep_CharacterSelectEndingTime)
+	float CharacterSelectEndingTime;
+	
 	// 게임시작대기가 몇초간 지속될 지를 정의합니다.
 	UPROPERTY(ReplicatedUsing=OnRep_MatchWaitEndingTime)
 	float MatchWaitEndingTime;
 	
 	FTimerHandle EndingTimer;
+	FTimerHandle CharacterSelectTimer;
 	FTimerHandle MatchWaitToStartTimer;
 
 	TWeakObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
-	// TWeakObjectPtr<UGamePlayCrosshairWidget> CrosshairWidget;
-	TWeakObjectPtr<UDynamicCrossHairWidget> DynamicCrossHairWidget;
+	TWeakObjectPtr<UDynamicCrossHairWidget> WaziDynamicCrossHairWidget;
+	TWeakObjectPtr<UDynamicCrossHairWidget> RenaDynamicCrossHairWidget;
+	TWeakObjectPtr<UDynamicCrossHairWidget> GangRimDynamicCrossHairWidget;
 	TWeakObjectPtr<ULoadingWidget> LoadingWidget;
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
+	TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
 	TWeakObjectPtr<UGamePlayKillLogWidget> KillLogWidget;
 	TWeakObjectPtr<UPlayerNameDisplayerWidget> PlayerNameDisplayerWidget;
@@ -177,4 +204,7 @@ protected:
 	
 private:
 	bool bWantsSendRecordResult;
+
+	// 캐릭터에 맞는 크로스헤어위젯들입니다.
+	TMap<FName, UDynamicCrossHairWidget*> CharacterToDynamicCrossHairWidgets;
 };

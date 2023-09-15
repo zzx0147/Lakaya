@@ -11,6 +11,11 @@
 #include "GameMode/LakayaBaseGameState.h"
 #include "Kismet/GameplayStatics.h"
 
+namespace MatchState
+{
+	const FName IsSelectCharacter = FName(TEXT("IsSelectCharacter"));
+}
+
 const FString ALakayaDefaultPlayGameMode::ATeamSpawnTag = FString(TEXT("ATeamSpawnZone"));
 const FString ALakayaDefaultPlayGameMode::BTeamSpawnTag = FString(TEXT("BTeamSpawnZone"));
 
@@ -148,6 +153,10 @@ void ALakayaDefaultPlayGameMode::PostLogin(APlayerController* NewPlayer)
 void ALakayaDefaultPlayGameMode::OnMatchStateSet()
 {
 	Super::OnMatchStateSet();
+	if (MatchState == MatchState::IsSelectCharacter)
+	{
+		HandleMatchIsSelectCharacter();
+	}
 }
 
 void ALakayaDefaultPlayGameMode::HandleMatchIsWaitingToStart()
@@ -158,6 +167,12 @@ void ALakayaDefaultPlayGameMode::HandleMatchIsWaitingToStart()
 bool ALakayaDefaultPlayGameMode::ReadyToStartMatch_Implementation()
 {
 	return Super::ReadyToStartMatch_Implementation();
+}
+
+void ALakayaDefaultPlayGameMode::HandleMatchIsSelectCharacter()
+{
+	FTimerHandle TimerHandler;
+	//GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 10.0f, false);
 }
 
 void ALakayaDefaultPlayGameMode::HandleMatchHasStarted()
@@ -222,7 +237,14 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 	{
 		VictimPlayerState->SetRespawnTimer(-1.0f);
 	}
-} 
+}
+
+void ALakayaDefaultPlayGameMode::StartSelectCharacter()
+{
+	if (MatchState != MatchState::WaitingToStart) return;
+
+	SetMatchState(MatchState::IsSelectCharacter);
+}
 
 void ALakayaDefaultPlayGameMode::DelayedEndedGame()
 {
@@ -232,6 +254,10 @@ void ALakayaDefaultPlayGameMode::DelayedEndedGame()
 
 bool ALakayaDefaultPlayGameMode::HasMatchStarted() const
 {
+	//TODO: 취향차이지만 아래의 주석과 같이 간단히 표현할 수도 있습니다.
+	// return MatchState == MatchState::IsSelectCharacter ? false : Super::HasMatchStarted();
+	if (MatchState == MatchState::IsSelectCharacter) return false;
+
 	return Super::HasMatchStarted();
 }
 
@@ -286,4 +312,10 @@ void ALakayaDefaultPlayGameMode::RegisterPlayer(AController* NewPlayer)
 	}
 
 	CurrentPlayerNum = BaseGameState->PlayerArray.Num();
+	
+	if (CurrentPlayerNum >= BaseGameState->GetMaximumPlayers())
+	{
+		GetWorldTimerManager().SetTimer(TimerHandle_DelayedCharacterSelectStart, this, &ALakayaDefaultPlayGameMode::StartSelectCharacter,
+			CharacterSelectStartDelay, false);
+	}
 }
