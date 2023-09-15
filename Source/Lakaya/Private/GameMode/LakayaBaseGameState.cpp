@@ -31,6 +31,7 @@ void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 	DOREPLIFETIME(ALakayaBaseGameState, MatchEndingTime);
 	DOREPLIFETIME(ALakayaBaseGameState, MatchWaitEndingTime);
+	DOREPLIFETIME(ALakayaBaseGameState, CharacterSelectEndingTime);
 }
 
 void ALakayaBaseGameState::BeginPlay()
@@ -70,6 +71,16 @@ void ALakayaBaseGameState::BeginPlay()
 			{
 				InGameTimeWidget->AddToViewport(10);
 				InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+
+		if (CharacterSelectTimerWidgetClass)
+		{
+			CharacterSelectTimeWidget = CreateWidget<UGameTimeWidget>(LocalController, CharacterSelectTimerWidgetClass);
+			if (CharacterSelectTimeWidget.IsValid())
+			{
+				CharacterSelectTimeWidget->AddToViewport(10);
+				CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
 		
@@ -274,17 +285,19 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	
 	if (GetCharacterSelectWidget())
 	{
-		CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
+		CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
 	}
 
-	if (LoadingWidget.IsValid())
-		LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
+	if (CharacterSelectTimeWidget.IsValid())
+		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 	
 	if (InGameTimeWidget.IsValid())
 	{
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 
+	
+	
 	// TODO
 	// if (MiniMapWidget.IsValid())
 	// {
@@ -333,6 +346,26 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	}
 }
 
+void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
+{
+	if (GetCharacterSelectWidget()) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
+
+	if (LoadingWidget.IsValid()) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
+
+	if (CharacterSelectTimeWidget.IsValid())
+		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]()
+	{
+		if (!HasAuthority()) return;
+		
+		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
+		{
+			AuthGameMode->StartMatch();
+		}
+	}, CharacterSelectTimeWidget);
+}
+
 void ALakayaBaseGameState::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -345,14 +378,10 @@ void ALakayaBaseGameState::Tick(float DeltaSeconds)
 void ALakayaBaseGameState::OnRep_MatchState()
 {
 	Super::OnRep_MatchState();
-
-#pragma region CharacterSelect
-	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-	// if (MatchState == MatchState::IsSelectCharacter)
-	// {
-		// HandleMatchIsCharacterSelect();
-	// }
-#pragma endregion CharacterSelect
+	if (MatchState == MatchState::IsSelectCharacter)
+	{
+		HandleMatchIsCharacterSelect();
+	}
 }
 
 void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
@@ -388,6 +417,11 @@ void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* Victi
 void ALakayaBaseGameState::OnRep_MatchEndingTime()
 {
 	if (InGameTimeWidget.IsValid()) InGameTimeWidget->SetWidgetTimer(MatchEndingTime);
+}
+
+void ALakayaBaseGameState::OnRep_CharacterSelectEndingTime()
+{
+	if (CharacterSelectTimeWidget.IsValid()) CharacterSelectTimeWidget->SetWidgetTimer(CharacterSelectEndingTime);
 }
 
 void ALakayaBaseGameState::OnRep_MatchWaitEndingTime()
@@ -439,5 +473,10 @@ void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible)
 
 bool ALakayaBaseGameState::HasMatchStarted() const
 {
+	if (GetMatchState() == MatchState::IsSelectCharacter)
+	{
+		return false;
+	}
+	
 	return Super::HasMatchStarted();
 }

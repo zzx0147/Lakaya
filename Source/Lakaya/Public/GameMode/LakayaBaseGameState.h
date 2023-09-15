@@ -30,6 +30,7 @@ protected:
 	virtual void RemovePlayerState(APlayerState* PlayerState) override;
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
+	virtual void HandleMatchIsCharacterSelect();
 	virtual void OnRep_MatchState() override;
 	
 public:
@@ -69,6 +70,9 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_MatchEndingTime();
 
+	UFUNCTION()
+	virtual void OnRep_CharacterSelectEndingTime();
+	
 	UFUNCTION()
 	virtual void OnRep_MatchWaitEndingTime();
 
@@ -113,6 +117,10 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UGameTimeWidget> InGameTimerWidgetClass;
 
+	// 캐릭터 선택 중에 표시되는 타이머 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameTimeWidget> CharacterSelectTimerWidgetClass;
+	
 	// 게임중에 표시되는 크로스헤어 위젯을 지정합니다.
 	// UPROPERTY(EditDefaultsOnly)
 	// TSubclassOf<class UDynamicCrossHairWidget> DynamicCrossHairWidgetClass;
@@ -149,6 +157,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float MatchDuration;
 
+	UPROPERTY(EditDefaultsOnly)
+	float CharacterSelectDuration;
+	
 	// 게임시작 후 몇초간 대기할 지 정의합니다.
 	UPROPERTY(EditAnywhere)
 	float MatchWaitDuration;
@@ -161,11 +172,15 @@ protected:
 	UPROPERTY(ReplicatedUsing=OnRep_MatchEndingTime)
 	float MatchEndingTime;
 
+	UPROPERTY(ReplicatedUsing = OnRep_CharacterSelectEndingTime)
+	float CharacterSelectEndingTime;
+	
 	// 게임시작대기가 몇초간 지속될 지를 정의합니다.
 	UPROPERTY(ReplicatedUsing=OnRep_MatchWaitEndingTime)
 	float MatchWaitEndingTime;
 	
 	FTimerHandle EndingTimer;
+	FTimerHandle CharacterSelectTimer;
 	FTimerHandle MatchWaitToStartTimer;
 
 	TWeakObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
@@ -174,6 +189,7 @@ protected:
 	TWeakObjectPtr<UDynamicCrossHairWidget> GangRimDynamicCrossHairWidget;
 	TWeakObjectPtr<ULoadingWidget> LoadingWidget;
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
+	TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
 	TWeakObjectPtr<UGamePlayKillLogWidget> KillLogWidget;
 	TWeakObjectPtr<UPlayerNameDisplayerWidget> PlayerNameDisplayerWidget;

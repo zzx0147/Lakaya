@@ -39,16 +39,23 @@ void AOccupationGameMode::RegisterPlayer(AController* NewPlayer)
 {
 	Super::RegisterPlayer(NewPlayer);
 
-	if (CurrentPlayerNum == BaseGameState->GetMaximumPlayers())
-	{
-		GetWorldTimerManager().SetTimer(TimerHandle_DelayedMatchStart, this, &AOccupationGameMode::StartMatch,
-			MatchStartDelay, false);
-	}
+	// if (CurrentPlayerNum == BaseGameState->GetMaximumPlayers())
+	// {
+	// 	GetWorldTimerManager().SetTimer(TimerHandle_DelayedMatchStart, this, &AOccupationGameMode::StartMatch,
+	// 		MatchStartDelay, false);
+	// }
 }
 
 void AOccupationGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
+
+
+}
+
+void AOccupationGameMode::HandleMatchIsSelectCharacter()
+{
+	Super::HandleMatchIsSelectCharacter();
 
 	if (OccupationGameState->GetMaximumPlayers() == OccupationGameState->PlayerArray.Num())
 	{
