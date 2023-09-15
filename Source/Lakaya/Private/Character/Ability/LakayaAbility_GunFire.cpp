@@ -20,7 +20,7 @@ void ULakayaAbility_GunFire::OnGiveAbility(const FGameplayAbilityActorInfo* Acto
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
 
-	const auto TargetActor = ActorInfo->OwnerActor;
+	const auto TargetActor = ActorInfo->AvatarActor.IsValid() ? ActorInfo->AvatarActor : ActorInfo->OwnerActor;
 	check(TargetActor.IsValid());
 
 	FireTraceComponent = Cast<UAbilityComponent_FireTrace>(TargetActor->FindComponentByClass(FireTraceComponentClass));

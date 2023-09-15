@@ -32,6 +32,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> DamageEffect;
 
+	/** 사격 트레이스를 구현하는 액터 컴포넌트 클래스를 지정합니다. 이 클래스가 아바타 액터에 있다면 그것을 사용하고, 없다면 추가합니다. */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UAbilityComponent_FireTrace> FireTraceComponentClass;
 
