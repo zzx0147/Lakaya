@@ -4,7 +4,6 @@
 #include "Character/Ability/LakayaAbility_GunFire.h"
 
 #include "AbilitySystemComponent.h"
-#include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Character/Ability/Component/AbilityComponent_FireTrace.h"
 
 

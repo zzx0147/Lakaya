@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayCueInterface.h"
 #include "LakayaAbility.h"
 #include "LakayaAbility_GunFire.generated.h"
 
