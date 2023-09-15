@@ -16,6 +16,12 @@ AAIIndividualGameMode::AAIIndividualGameMode()
 void AAIIndividualGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+
+	FVector SpawnLocation(-600.f, -850.f, 500.f); // 스폰 위치 설정
+	FRotator SpawnRotation(0.f, 0.f, 0.f); // 스폰 회전 설정
+	
+	AAiDroneCharacter* Drones = GetWorld()->SpawnActor<AAiDroneCharacter>(AIDroneClass, SpawnLocation, SpawnRotation);
+	
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
 		PlayerController = It->Get();
