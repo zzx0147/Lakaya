@@ -94,7 +94,6 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 		if (PlayerCharacterName == TEXT("Rena"))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("On_Rena"));
-			//TODO: 캐릭터 변경시 여기에서 Element또는 이미지에 대한 nullptr 참조 에러가 남
 			Element->Character_Rena_Image->SetVisibility(ESlateVisibility::HitTestInvisible);
 			Element->Character_Wazi_Image->SetVisibility(ESlateVisibility::Hidden);
 		}
