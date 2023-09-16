@@ -35,8 +35,6 @@ UResultNotifyFireAbility::UResultNotifyFireAbility()
 			}
 		}
 	});
-
-	
 }
 
 bool UResultNotifyFireAbility::ShouldStartRemoteCall()

@@ -16,7 +16,6 @@ class LAKAYA_API ULakayaAbility_Jump : public ULakayaAbility
 
 public:
 	ULakayaAbility_Jump(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-	virtual void SetCurrentActorInfo(const FGameplayAbilityActorInfo* ActorInfo,const FGameplayAbilitySpecHandle Handle) const;
 
 protected:
 

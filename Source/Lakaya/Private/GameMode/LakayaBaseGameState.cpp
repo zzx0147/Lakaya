@@ -9,8 +9,6 @@
 #include "Net/UnrealNetwork.h"
 #include "PlayerController/BattlePlayerController.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
-// #include "UI/GamePlayCrossHairWidget.h"
-#include "NavigationSystemTypes.h"
 #include "UI/DynamicCrossHairWidget.h"
 #include "UI/GamePlayKillLogWidget.h"
 #include "UI/GameScoreBoardWidget.h"
@@ -33,12 +31,13 @@ void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 	DOREPLIFETIME(ALakayaBaseGameState, MatchEndingTime);
 	DOREPLIFETIME(ALakayaBaseGameState, MatchWaitEndingTime);
+	DOREPLIFETIME(ALakayaBaseGameState, CharacterSelectEndingTime);
 }
 
 void ALakayaBaseGameState::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController();
 		LocalController && LocalController->IsLocalController())
 	{
@@ -75,26 +74,16 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 
-		// if (CrosshairWidgetClass)
-		// {
-		// 	CrosshairWidget = CreateWidget<UGamePlayCrosshairWidget>(LocalController, CrosshairWidgetClass);
-		// 	if (CrosshairWidget != nullptr)
-		// 	{
-		// 		CrosshairWidget->AddToViewport();
-		// 		CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
-		// 	}
-		// }
-
-		if (DynamicCrossHairWidgetClass)
+		if (CharacterSelectTimerWidgetClass)
 		{
-			DynamicCrossHairWidget = CreateWidget<UDynamicCrossHairWidget>(LocalController, DynamicCrossHairWidgetClass);
-			if (DynamicCrossHairWidget != nullptr)
+			CharacterSelectTimeWidget = CreateWidget<UGameTimeWidget>(LocalController, CharacterSelectTimerWidgetClass);
+			if (CharacterSelectTimeWidget.IsValid())
 			{
-				DynamicCrossHairWidget->AddToViewport();
-				DynamicCrossHairWidget->SetVisibility(ESlateVisibility::Hidden);
+				CharacterSelectTimeWidget->AddToViewport(10);
+				CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
-			
+		
 		if (KillLogWidgetClass)
 		{
 			KillLogWidget = CreateWidget<UGamePlayKillLogWidget>(LocalController, KillLogWidgetClass);
@@ -114,6 +103,41 @@ void ALakayaBaseGameState::BeginPlay()
 				PlayerNameDisplayerWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 			}
 		}
+
+		if (WaziDynamicCrossHairClass)
+		{
+			WaziDynamicCrossHairWidget = CreateWidget<UDynamicCrossHairWidget>(LocalController, WaziDynamicCrossHairClass);
+			if (WaziDynamicCrossHairWidget.IsValid())
+			{
+				WaziDynamicCrossHairWidget->AddToViewport();
+				WaziDynamicCrossHairWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+
+		if (RenaDynamicCrossHairClass)
+		{
+			RenaDynamicCrossHairWidget = CreateWidget<UDynamicCrossHairWidget>(LocalController, RenaDynamicCrossHairClass);
+			if (RenaDynamicCrossHairWidget.IsValid())
+			{
+				RenaDynamicCrossHairWidget->AddToViewport();
+				RenaDynamicCrossHairWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+			}
+		}
+
+		if (GangRimDynamicCrossHairClass)
+		{
+			GangRimDynamicCrossHairWidget = CreateWidget<UDynamicCrossHairWidget>(LocalController, GangRimDynamicCrossHairClass);
+			if (GangRimDynamicCrossHairWidget.IsValid())
+			{
+				GangRimDynamicCrossHairWidget->AddToViewport();
+				GangRimDynamicCrossHairWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+
+		// 크로스헤어 위젯들은 생성하고 Map에 담습니다.
+		CharacterToDynamicCrossHairWidgets.Add("Wazi", WaziDynamicCrossHairWidget.Get());
+		CharacterToDynamicCrossHairWidgets.Add("Rena", RenaDynamicCrossHairWidget.Get());
+		CharacterToDynamicCrossHairWidgets.Add("GangRim", GangRimDynamicCrossHairWidget.Get());
 
 #pragma region MiniMap
 		// if (MiniMapWidgetClass)
@@ -226,39 +250,83 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 	OnChangePlayerNumber.Broadcast(PlayerArray.Num());
 }
 
+void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
+{
+	if (GetCharacterSelectWidget()) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
+
+	if (LoadingWidget.IsValid()) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
+
+	if (CharacterSelectTimeWidget.IsValid())
+		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]()
+	{
+		if (!HasAuthority()) return;
+		
+		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
+		{
+			AuthGameMode->StartMatch();
+		}
+	}, CharacterSelectTimeWidget);
+
+	// 캐릭터가 바뀔 때마다, 캐릭터에게 적합한 DynamicCrossHair 위젯을 생성합니다.
+	if (auto BasePlayerState = GetWorld()->GetFirstPlayerController()->GetPlayerState<ALakayaBasePlayerState>())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BasePlayerState is valid."));
+
+		BasePlayerState->OnCharacterNameChanged.AddLambda([this, BasePlayerState](ALakayaBasePlayerState* , const FName&)
+		{
+			// 모든 위젯들을 숨겨줍니다.
+			for (auto& Pair : CharacterToDynamicCrossHairWidgets)
+			{
+				Pair.Value->SetVisibility(ESlateVisibility::Hidden);
+			}
+
+			FName CharName = BasePlayerState->GetCharacterName();
+
+			// 현재 캐릭터의 이름을 찾아 캐릭터에 맞는 에임 위젯을 찾아서 활성화 시켜줍니다.
+			if (UDynamicCrossHairWidget** WidgetPtr = CharacterToDynamicCrossHairWidgets.Find(CharName))
+			{
+				(*WidgetPtr)->SetVisibility(ESlateVisibility::Visible);
+			}
+		});
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BasePlayerState is not valid."));
+	}
+}
+
 void ALakayaBaseGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 	StartTimeStamp = FDateTime::UtcNow().ToUnixTimestamp();
 	StartTime = GetServerWorldTimeSeconds();
-
+	
+	
+	
 	if (GetCharacterSelectWidget())
 	{
-		CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
+		CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
 	}
 
-	if (LoadingWidget.IsValid())
-		LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
+	if (CharacterSelectTimeWidget.IsValid())
+		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 	
 	if (InGameTimeWidget.IsValid())
 	{
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
-
-	// if (CrosshairWidget != nullptr)
-		// CrosshairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-	if (DynamicCrossHairWidget != nullptr)
-		DynamicCrossHairWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	
-	if (MiniMapWidget.IsValid())
-	{
-		MiniMapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("MiniMapWidget is null."));
-	}
+	// TODO
+	// if (MiniMapWidget.IsValid())
+	// {
+	// 	MiniMapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("MiniMapWidget is null."));
+	// }
 	
 	// TODO : 아직 구현이 되지 않아 비활성화 합니다.
 	// if (HelpWidget.IsValid())
@@ -298,6 +366,8 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	}
 }
 
+
+
 void ALakayaBaseGameState::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -310,14 +380,10 @@ void ALakayaBaseGameState::Tick(float DeltaSeconds)
 void ALakayaBaseGameState::OnRep_MatchState()
 {
 	Super::OnRep_MatchState();
-
-#pragma region CharacterSelect
-	// TODO : 더이상 캐릭터 선택상태는 존재하지 않습니다.
-	// if (MatchState == MatchState::IsSelectCharacter)
-	// {
-		// HandleMatchIsCharacterSelect();
-	// }
-#pragma endregion CharacterSelect
+	if (MatchState == MatchState::IsSelectCharacter)
+	{
+		HandleMatchIsCharacterSelect();
+	}
 }
 
 void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
@@ -353,6 +419,11 @@ void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* Victi
 void ALakayaBaseGameState::OnRep_MatchEndingTime()
 {
 	if (InGameTimeWidget.IsValid()) InGameTimeWidget->SetWidgetTimer(MatchEndingTime);
+}
+
+void ALakayaBaseGameState::OnRep_CharacterSelectEndingTime()
+{
+	if (CharacterSelectTimeWidget.IsValid()) CharacterSelectTimeWidget->SetWidgetTimer(CharacterSelectEndingTime);
 }
 
 void ALakayaBaseGameState::OnRep_MatchWaitEndingTime()
@@ -404,5 +475,10 @@ void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible)
 
 bool ALakayaBaseGameState::HasMatchStarted() const
 {
+	if (GetMatchState() == MatchState::IsSelectCharacter)
+	{
+		return false;
+	}
+	
 	return Super::HasMatchStarted();
 }

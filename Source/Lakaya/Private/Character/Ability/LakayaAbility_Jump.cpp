@@ -11,16 +11,6 @@ ULakayaAbility_Jump::ULakayaAbility_Jump(const FObjectInitializer& ObjectInitial
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 }
 
-void ULakayaAbility_Jump::SetCurrentActorInfo(const FGameplayAbilityActorInfo* ActorInfo,
-                                              FGameplayAbilitySpecHandle Handle) const
-{
-	if (IsInstantiated())
-	{
-		CurrentActorInfo = ActorInfo;
-		CurrentSpecHandle = Handle;
-	}
-}
-
 bool ULakayaAbility_Jump::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                              const FGameplayAbilityActorInfo* ActorInfo,
                                              const FGameplayTagContainer* SourceTags,
@@ -57,7 +47,6 @@ void ULakayaAbility_Jump::NativeEndAbility(const FGameplayAbilitySpecHandle Hand
 
 void ULakayaAbility_Jump::CharacterJumpStart()
 {
-	
 	if (ALakayaBaseCharacter* LakayaBaseCharacter = Cast<ALakayaBaseCharacter>(GetAvatarActorFromActorInfo()))
 	{
 		if (LakayaBaseCharacter->IsLocallyControlled() && !LakayaBaseCharacter->bPressedJump)

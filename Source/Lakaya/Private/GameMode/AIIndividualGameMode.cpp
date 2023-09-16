@@ -5,7 +5,6 @@
 #include "GameMode/AIIndividualGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "AI/AiCharacterController.h"
-#include "AI/AiDroneController.h"
 
 AAIIndividualGameMode::AAIIndividualGameMode()
 {
@@ -22,14 +21,6 @@ void AAIIndividualGameMode::BeginPlay()
 	FRotator SpawnRotation(0.f, 0.f, 0.f); // 스폰 회전 설정
 	
 	AAiDroneCharacter* Drones = GetWorld()->SpawnActor<AAiDroneCharacter>(AIDroneClass, SpawnLocation, SpawnRotation);
-	
-	AAiDroneController* DroneAiController;
-	DroneAiController = GetWorld()->SpawnActor<AAiDroneController>(AAiDroneController::StaticClass(), SpawnLocation, SpawnRotation);
-	if(DroneAiController)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("드론 스포오오오오오오오오오오오온"));
-	}
-	UE_LOG(LogTemp, Warning, TEXT("드론 스폰뒤 넘어감"));
 	
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{

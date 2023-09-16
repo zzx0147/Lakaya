@@ -37,6 +37,18 @@ void ULakayaAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute
 void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
 {
 	Super::PostAttributeChange(Attribute, OldValue, NewValue);
+
+	if (Attribute == GetDashStackAttribute())
+	{
+		if(FMath::IsNearlyEqual(MaxDashStack.GetCurrentValue(),NewValue, 0.01f))//대시 갯수가 꽉 참, 대쉬 갯수 리젠 이펙트를 꺼야 함
+		{
+			OnDashStackFullOrNot.Broadcast(true);
+		}
+		else if(FMath::IsNearlyEqual(MaxDashStack.GetCurrentValue(), OldValue, 0.01f) && NewValue < OldValue)//최대치에서 감소함, 이때부터 대쉬 갯수 리젠 이펙트를 켜야 함
+		{
+			OnDashStackFullOrNot.Broadcast(false);
+		}
+	}
 }
 
 void ULakayaAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldValue)
@@ -64,7 +76,17 @@ void ULakayaAttributeSet::OnRep_AttackPoint(const FGameplayAttributeData& OldVal
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, AttackPoint, OldValue);
 }
 
-ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(40.0f), CurrentAmmo(40.0f), AttackPoint(40.0f)
+void ULakayaAttributeSet::OnRep_DashStack(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, DashStack, OldValue);
+}
+
+void ULakayaAttributeSet::OnRep_MaxDashStack(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, MaxDashStack, OldValue);
+}
+
+ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(40.0f), CurrentAmmo(40.0f), AttackPoint(40.0f), DashStack(3.0f), MaxDashStack(3.0f)
 {
 }
 
@@ -76,5 +98,7 @@ void ULakayaAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, MaxAmmo, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, CurrentAmmo, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, AttackPoint, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, DashStack, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, MaxDashStack, COND_None, REPNOTIFY_Always);
 }
 
