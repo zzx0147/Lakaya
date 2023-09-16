@@ -11,7 +11,7 @@
 class UAbilitySystemComponent;
 class UGameplayAbility;
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API UAbilityComponent : public UActorComponent
 {
 	GENERATED_BODY()
