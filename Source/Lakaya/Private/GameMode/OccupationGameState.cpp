@@ -24,6 +24,7 @@
 #include "UI/StartMessageWidget.h"
 #include "UI/TeamScoreWidget.h"
 #include "UI/WeaponOutLineWidget.h"
+#include "UI/OccupyExpressWidget.h"
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -185,7 +186,17 @@ void AOccupationGameState::BeginPlay()
 				FinalResultWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
-		
+
+		if (OccupyExpressWidgetClass)
+		{
+			OccupyExpressWidget = CreateWidget<UOccupyExpressWidget>(
+				LocalController, OccupyExpressWidgetClass);
+			if (OccupyExpressWidget.IsValid())
+			{
+				OccupyExpressWidget->AddToViewport();
+				OccupyExpressWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
 	}
 
 	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this,
@@ -197,8 +208,6 @@ void AOccupationGameState::BeginPlay()
 void AOccupationGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-
-	
 	
 	if (SkillWidget.IsValid())
 		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -209,6 +218,9 @@ void AOccupationGameState::HandleMatchHasStarted()
 	if (IsValid(WeaponOutLineWidget))
 		WeaponOutLineWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
+	if (OccupyExpressWidget.IsValid())
+		OccupyExpressWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	
 	FTimerDelegate TimerDelegate_MatchStartWaitWidget;
 	TimerDelegate_MatchStartWaitWidget.BindLambda([this]
 	{

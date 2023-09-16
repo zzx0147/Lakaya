@@ -23,6 +23,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UScoreBoardElement> ElementClass;
 
-	TWeakObjectPtr<class UVerticalBox> ATeamBox;
-	TWeakObjectPtr<UVerticalBox> BTeamBox;
+	TWeakObjectPtr<class UVerticalBox> AntiTeamBox;
+	TWeakObjectPtr<UVerticalBox> ProTeamBox;
 };
