@@ -2,6 +2,7 @@
 
 
 #include "AI/AiDroneController.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AAiDroneController::AAiDroneController()
 {
@@ -21,5 +22,23 @@ void AAiDroneController::OnPossess(APawn* InPawn)
 	{
 		BlackboardComp->InitializeBlackboard(*(BehaviorTreeAsset->BlackboardAsset));
 		BehaviorTreeComp->StartTree(*(BehaviorTreeAsset));
+	}
+}
+
+void AAiDroneController::UpdateControlRotation(float DeltaTime, bool bUpdatePawn)
+{
+	Super::UpdateControlRotation(DeltaTime, false);
+
+	//AI 의 적군 포커싱을 부드럽게 회전하게끔 하는 함수입니당.
+	if (bUpdatePawn)
+	{
+		APawn* const MyPawn = GetPawn();
+		const FRotator CurrentPawnRotation = MyPawn->GetActorRotation();
+		SmoothTargetRotation = UKismetMathLibrary::RInterpTo_Constant(MyPawn->GetActorRotation(), ControlRotation, DeltaTime, SmoothFocusInterpSpeed);
+		
+		if (CurrentPawnRotation.Equals(SmoothTargetRotation, 1e-3f) == false)
+		{
+			MyPawn->FaceRotation(SmoothTargetRotation, DeltaTime);
+		}
 	}
 }
