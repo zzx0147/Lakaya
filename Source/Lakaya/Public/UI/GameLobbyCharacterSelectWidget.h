@@ -42,7 +42,7 @@ protected:
 	UFUNCTION()
 	void OnClickedCharacter3Button();
 
-	void SelectCharacter(const uint8& CharacterNum);
+	virtual void SelectCharacter(const uint8& CharacterNum);
 
 	UFUNCTION()
 	void OnClickedCharacterSelectButton();
@@ -63,12 +63,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	bool bAutoShortcutEnable;
 
-private:
 	TArray<TObjectPtr<class UButton>> CharacterButtonArray;
+	
+	TArray<FName> CharacterNameArray;
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FName, TObjectPtr<UTexture2D>> CharacterNameTextureMap;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UImage> CharacterNameImage;
+private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TObjectPtr<UMaterialInterface>> CharacterRenderTargetMaterialArray;
-	TArray<FName> CharacterNameArray;
 
 	UPROPERTY(EditDefaultsOnly, meta=( MultiLine="true" ))
 	TMap<FName, FText> CharacterIntroductionMap;
@@ -86,7 +93,7 @@ private:
 	
 	TObjectPtr<class UImage> GunImage;
 
-	TObjectPtr<class UImage> CharacterBackgroundImage;
+	TObjectPtr<UImage> CharacterBackgroundImage;
 	
 	TObjectPtr<UImage> SelectedCharacterImage;
 
@@ -101,4 +108,5 @@ private:
 	TObjectPtr<class UPlayerInfoWidget> PlayerInfoWidget;
 
 	bool bAutoHide;
+	
 };

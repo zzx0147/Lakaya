@@ -21,6 +21,7 @@
 #include "UI/GradeResultElementWidget.h"
 #include "UI/GradeResultWidget.h"
 #include "UI/MatchStartWaitWidget.h"
+#include "UI/OccupationCharacterSelectWidget.h"
 #include "UI/StartMessageWidget.h"
 #include "UI/TeamScoreWidget.h"
 #include "UI/WeaponOutLineWidget.h"
@@ -360,6 +361,12 @@ void AOccupationGameState::SetClientTeam(const ETeam& NewTeam)
 	for (const auto& Pair : PlayersByTeamMap)
 		for (const auto& Player : Pair.Value)
 			SetupPlayerStateOnLocal(Player);
+
+	if(UOccupationCharacterSelectWidget* const OccupationCharacterSelectWidget = Cast<UOccupationCharacterSelectWidget>(
+		CharacterSelectWidget))
+	{
+		OccupationCharacterSelectWidget->SetTeam(NewTeam);
+	}
 }
 
 bool AOccupationGameState::TrySendMatchResultData()
