@@ -354,7 +354,6 @@ void ACaptureArea::DecreaseCaptureProgress()
 {
 	AntiTeamCaptureProgress -= CaptureSpeed * 0.1f;
 	ProTeamCaptureProgress -= CaptureSpeed * 0.1f;
-	// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Decrease"));
 	
 	if (AntiTeamCaptureProgress <= 0.0f && ProTeamCaptureProgress <= 0.0f)
 	{
