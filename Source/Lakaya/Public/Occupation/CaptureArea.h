@@ -133,6 +133,15 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
 	TObjectPtr<class UMaterialInterface> ProMaterial;
+
+	/**
+	 * @brief 점령 구역은 총 3개가 있습니다. Anti구역(Anti팀에 가까운), Pro구역(Pro팀에 가까운), Center구역(가운데)
+	 * Anti구역의 점령 아이디는 '1'입니다.
+	 * Center구역의 점령 아이디는 '2'입니다.
+	 * Pro구역의 점령 아이디는 '3'입니다.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CaptureID")
+	uint8 CaptureAreaId;
 	
 	TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> OccupyingPlayerList;
 	
