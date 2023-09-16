@@ -7,6 +7,11 @@
 #include "AI/AiDroneCharacter.h"
 #include "LakayaDefaultPlayGameMode.generated.h"
 
+namespace MatchState
+{
+	extern const FName IsSelectCharacter; //캐릭터를 선택할때의 상태입니다, WaitingToStart 다음 상태이며, 이 상태가 끝나면 InProgress로 넘어갑니다
+}
+
 UCLASS()
 class LAKAYA_API ALakayaDefaultPlayGameMode : public AGameMode
 {
@@ -49,6 +54,9 @@ protected:
 	virtual void HandleMatchIsWaitingToStart() override;
 	virtual bool ReadyToStartMatch_Implementation() override;
 
+	// 캐릭터 선택 스테이트로 넘어갈 때 호출되는 함수
+	virtual void HandleMatchIsSelectCharacter();
+
 	// 캐릭터 선택 스테이스로 넘어갈 때 호출되는 함수
 	// virtual void HandleMatchIsSelectCharacter();
 
@@ -70,6 +78,7 @@ protected:
 	
 public:
 	virtual void OnPlayerKilled(AController* VictimController, AController* InstigatorController, AActor* DamageCauser);
+	virtual void StartSelectCharacter();
 	virtual bool HasMatchStarted() const override;
 
 protected:
@@ -88,6 +97,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FName, TSubclassOf<class AInteractableCharacter>> CharacterClasses;
 
+	UPROPERTY(EditDefaultsOnly)
+	float CharacterSelectStartDelay;
+	
 	FTimerHandle TimerHandle_DelayedEnded;
 	float MatchEndDelay = 10.0f;
 
@@ -103,4 +115,6 @@ protected:
 private:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;
+	FTimerHandle TimerHandle_Respawn;
+	FTimerHandle TimerHandle_DelayedCharacterSelectStart;
 };

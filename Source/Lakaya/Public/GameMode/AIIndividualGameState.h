@@ -36,8 +36,6 @@ public:
 	TArray<TWeakObjectPtr<ALakayaBasePlayerState>> AllPlayersArray;
 	
 private:
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UGameTimeWidget> CharacterSelectTimerWidgetClass;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UIndividualGameResultWidget> GameResultWidgetClass;

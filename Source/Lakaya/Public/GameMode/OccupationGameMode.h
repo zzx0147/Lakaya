@@ -23,6 +23,7 @@ protected:
 	virtual void HandleMatchHasEnded() override;
 	virtual void RegisterPlayer(AController* NewPlayer) override;
 	virtual void HandleMatchHasStarted() override;
+	virtual void HandleMatchIsSelectCharacter() override;
 	
 private:
 	TObjectPtr<AOccupationGameState> OccupationGameState;
