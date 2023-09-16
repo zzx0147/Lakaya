@@ -21,6 +21,7 @@ public:
 	AAiDroneController();
 	
 	virtual void OnPossess(APawn* InPawn) override;
+	virtual void UpdateControlRotation(float DeltaTime, bool bUpdatePawn) override;
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AI, meta = (AllowPrivateAccess = "true"))
@@ -35,5 +36,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	bool bIsBehaviorTreeStart;
 
+protected:
+	FRotator SmoothTargetRotation;
+ 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float SmoothFocusInterpSpeed = 30.0f;
 	
 };
