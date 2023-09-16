@@ -16,8 +16,8 @@ namespace MatchState
 	const FName IsSelectCharacter = FName(TEXT("IsSelectCharacter"));
 }
 
-const FString ALakayaDefaultPlayGameMode::ATeamSpawnTag = FString(TEXT("ATeamSpawnZone"));
-const FString ALakayaDefaultPlayGameMode::BTeamSpawnTag = FString(TEXT("BTeamSpawnZone"));
+const FString ALakayaDefaultPlayGameMode::AntiTeamSpawnTag = FString(TEXT("AntiTeamSpawnZone"));
+const FString ALakayaDefaultPlayGameMode::ProTeamSpawnTag = FString(TEXT("ProTeamSpawnZone"));
 
 ALakayaDefaultPlayGameMode::ALakayaDefaultPlayGameMode()
 {
@@ -41,10 +41,10 @@ void ALakayaDefaultPlayGameMode::RestartPlayer(AController* NewPlayer)
 		switch (BasePlayerState->GetTeam())
 		{
 		case ETeam::Anti:
-			SpawnTag = ATeamSpawnTag;
+			SpawnTag = AntiTeamSpawnTag;
 			break;
 		case ETeam::Pro:
-			SpawnTag = BTeamSpawnTag;
+			SpawnTag = ProTeamSpawnTag;
 			break;
 		default:
 			SpawnTag = TEXT("");
