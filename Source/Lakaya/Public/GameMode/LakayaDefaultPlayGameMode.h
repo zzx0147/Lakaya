@@ -112,7 +112,7 @@ protected:
 	TObjectPtr<ALakayaBaseGameState> BaseGameState;
 	FTimerHandle TimerHandle_DelayedMatchStart;
 	
-private:
+protected:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;
 	FTimerHandle TimerHandle_Respawn;
