@@ -250,12 +250,25 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 	OnChangePlayerNumber.Broadcast(PlayerArray.Num());
 }
 
-void ALakayaBaseGameState::HandleMatchHasStarted()
+void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 {
-	Super::HandleMatchHasStarted();
-	StartTimeStamp = FDateTime::UtcNow().ToUnixTimestamp();
-	StartTime = GetServerWorldTimeSeconds();
-	
+	if (GetCharacterSelectWidget()) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
+
+	if (LoadingWidget.IsValid()) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
+
+	if (CharacterSelectTimeWidget.IsValid())
+		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]()
+	{
+		if (!HasAuthority()) return;
+		
+		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
+		{
+			AuthGameMode->StartMatch();
+		}
+	}, CharacterSelectTimeWidget);
+
 	// 캐릭터가 바뀔 때마다, 캐릭터에게 적합한 DynamicCrossHair 위젯을 생성합니다.
 	if (auto BasePlayerState = GetWorld()->GetFirstPlayerController()->GetPlayerState<ALakayaBasePlayerState>())
 	{
@@ -282,6 +295,15 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BasePlayerState is not valid."));
 	}
+}
+
+void ALakayaBaseGameState::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+	StartTimeStamp = FDateTime::UtcNow().ToUnixTimestamp();
+	StartTime = GetServerWorldTimeSeconds();
+	
+	
 	
 	if (GetCharacterSelectWidget())
 	{
@@ -295,8 +317,6 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	{
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
-
-	
 	
 	// TODO
 	// if (MiniMapWidget.IsValid())
@@ -346,25 +366,7 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	}
 }
 
-void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
-{
-	if (GetCharacterSelectWidget()) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
 
-	if (LoadingWidget.IsValid()) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
-
-	if (CharacterSelectTimeWidget.IsValid())
-		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]()
-	{
-		if (!HasAuthority()) return;
-		
-		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
-		{
-			AuthGameMode->StartMatch();
-		}
-	}, CharacterSelectTimeWidget);
-}
 
 void ALakayaBaseGameState::Tick(float DeltaSeconds)
 {
