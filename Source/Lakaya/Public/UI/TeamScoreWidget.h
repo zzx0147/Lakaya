@@ -16,10 +16,10 @@ protected:
 	
 private:
 	UFUNCTION()
-	void OnChangeATeamScore(const float& NewScore) const;
+	void OnChangeAntiTeamScore(const float& NewScore) const;
 
 	UFUNCTION()
-	void OnChangeBTeamScore(const float& NewScore) const;
+	void OnChangeProTeamScore(const float& NewScore) const;
 
 	UFUNCTION()
 	void OnTeamScoreChanged(const ETeam& Team, const float& Score) const;

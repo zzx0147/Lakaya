@@ -18,8 +18,8 @@ class LAKAYA_API ALakayaDefaultPlayGameMode : public AGameMode
 	GENERATED_BODY()
 
 public:
-	const static FString ATeamSpawnTag;
-	const static FString BTeamSpawnTag;
+	const static FString AntiTeamSpawnTag;
+	const static FString ProTeamSpawnTag;
 
 public:
 	ALakayaDefaultPlayGameMode();
@@ -112,7 +112,7 @@ protected:
 	TObjectPtr<ALakayaBaseGameState> BaseGameState;
 	FTimerHandle TimerHandle_DelayedMatchStart;
 	
-private:
+protected:
 	UPROPERTY()
 	TMap<AController*, FTimerHandle> RespawnTimers;
 	FTimerHandle TimerHandle_Respawn;
