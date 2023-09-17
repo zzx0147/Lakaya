@@ -6,7 +6,7 @@
 #include "Character/LakayaBasePlayerState.h"
 #include "GameFramework/GameState.h"
 #include "UI/SkillWidget.h"
-#include "UI/MiniMapWidget.h"
+// #include "UI/MiniMapWidget.h"
 #include "functional"
 #include "UI/DynamicCrossHairWidget.h"
 #include "LakayaBaseGameState.generated.h"
@@ -136,8 +136,8 @@ protected:
 	TSubclassOf<class AOutlineManager> OutlineManagerClass;
 
 	// 미니맵위젯 클래스를 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UMiniMapWidget> MiniMapWidgetClass;
+	// UPROPERTY(EditDefaultsOnly)
+	// TSubclassOf<UMiniMapWidget> MiniMapWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UDynamicCrossHairWidget> WaziDynamicCrossHairClass;
@@ -194,7 +194,7 @@ protected:
 	TWeakObjectPtr<UGamePlayKillLogWidget> KillLogWidget;
 	TWeakObjectPtr<UPlayerNameDisplayerWidget> PlayerNameDisplayerWidget;
 	TWeakObjectPtr<AOutlineManager> OutlineManager;
-	TWeakObjectPtr<UMiniMapWidget> MiniMapWidget;
+	// TWeakObjectPtr<UMiniMapWidget> MiniMapWidget;
 	
 	// TODO : 아직 구현되어 있지 않아 주석처리합니다.
 	// TWeakObjectPtr<UHelpWidget> HelpWidget;
