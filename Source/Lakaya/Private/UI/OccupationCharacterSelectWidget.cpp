@@ -6,11 +6,34 @@
 #include "UI/ImageTextWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/Button.h"
+#include "Components/Image.h"
 #include "UI/PlayerInfoWidget.h"
 
 UOccupationCharacterSelectWidget::UOccupationCharacterSelectWidget(const FObjectInitializer& ObjectInitializer) : Super(
 	ObjectInitializer)
 {
+	TeamInfoTextTextureMap.Emplace(ETeam::Anti, nullptr);
+	TeamInfoTextTextureMap.Emplace(ETeam::Pro, nullptr);
+
+	CharacterSelectTextTextureMap.Emplace(ETeam::Anti, nullptr);
+	CharacterSelectTextTextureMap.Emplace(ETeam::Pro, nullptr);
+
+	GangrimButtonDisabledTextureMap.Emplace(ETeam::Anti, nullptr);
+	GangrimButtonDisabledTextureMap.Emplace(ETeam::Pro, nullptr);
+
+	RenaButtonDisabledTextureMap.Emplace(ETeam::Anti, nullptr);
+	RenaButtonDisabledTextureMap.Emplace(ETeam::Pro, nullptr);
+
+	WaziButtonDisabledTextureMap.Emplace(ETeam::Anti, nullptr);
+	WaziButtonDisabledTextureMap.Emplace(ETeam::Pro, nullptr);
+
+	AntiCharacterNameTextureMap.Emplace(CharacterNameArray[0],nullptr);
+	AntiCharacterNameTextureMap.Emplace(CharacterNameArray[1],nullptr);
+	AntiCharacterNameTextureMap.Emplace(CharacterNameArray[2],nullptr);
+
+	ProCharacterNameTextureMap.Emplace(CharacterNameArray[0],nullptr);
+	ProCharacterNameTextureMap.Emplace(CharacterNameArray[1],nullptr);
+	ProCharacterNameTextureMap.Emplace(CharacterNameArray[2],nullptr);
 }
 
 void UOccupationCharacterSelectWidget::NativeConstruct()
@@ -18,17 +41,22 @@ void UOccupationCharacterSelectWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	PlayerInfoVerticalBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("PlayerInfoPanel")));
-	// CharacterSelectButton = Cast<UButton>(GetWidgetFromName(TEXT("CharSelect_Btn")));
 
-	// CharacterSelectButton->OnClicked.AddUniqueDynamic(this, &UOccupationCharacterSelectWidget::OnClickedCharacterSelectButton);
 }
 
-// void UOccupationCharacterSelectWidget::OnClickedCharacterSelectButton()
-// {
-// 	// TODO : 캐릭터 선택 버튼 누를 시, 캐릭터 선택 위젯 창 제거.
-// 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("OnClickedCharacterSelectButton"));
-// 	SetVisibility(ESlateVisibility::Hidden);
-// }
+void UOccupationCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum)
+{
+	Super::SelectCharacter(CharacterNum);
+
+	if(MyTeam == ETeam::Anti)
+	{
+		CharacterNameImage->SetBrushFromTexture(AntiCharacterNameTextureMap[CharacterNameArray[CharacterNum]]);
+	}
+	else
+	{
+		CharacterNameImage->SetBrushFromTexture(ProCharacterNameTextureMap[CharacterNameArray[CharacterNum]]);
+	}
+}
 
 void UOccupationCharacterSelectWidget::RegisterPlayer(APlayerState* PlayerState)
 {
@@ -39,10 +67,11 @@ void UOccupationCharacterSelectWidget::RegisterPlayer(APlayerState* PlayerState)
 	if (const auto BasePlayerState = Cast<ALakayaBasePlayerState>(PlayerState))
 	{
 		const auto PlayerNameWidget = CreateWidget<UPlayerInfoWidget>(this, PlayerInfoWidgetClass);
+		OtherPlayerInfoArray.Emplace(PlayerNameWidget);
 		PlayerInfoVerticalBox->AddChildToVerticalBox(PlayerNameWidget);
 		PlayerNameWidget->SetPlayerName(PlayerState->GetPlayerName());
 		PlayerNameWidget->SetPadding(FMargin(0.0f,50.0f,0.0f,0.0f));
-		
+		PlayerNameWidget->SetTeam(MyTeam);
 		BasePlayerState->OnPlayerNameChanged.AddLambda([PlayerNameWidget](const FString& NewName)
 		{
 			PlayerNameWidget->SetPlayerName(NewName);
@@ -57,5 +86,34 @@ void UOccupationCharacterSelectWidget::RegisterPlayer(APlayerState* PlayerState)
 				PlayerNameWidget->SetCharacterName(ArgCharacterName);
 			}
 		);
+	}
+}
+
+void UOccupationCharacterSelectWidget::SetTeam(const ETeam& NewTeam)
+{
+	MyTeam = NewTeam;
+
+	TeamInfoTextImage->SetBrushFromTexture(TeamInfoTextTextureMap[MyTeam]);
+	CharacterSelectTextImage->SetBrushFromTexture(CharacterSelectTextTextureMap[MyTeam]);
+	
+	FButtonStyle ButtonStyle = CharacterButtonArray[0]->GetStyle();
+	ButtonStyle.Disabled.SetResourceObject(RenaButtonDisabledTextureMap[MyTeam]);
+	CharacterButtonArray[0]->SetStyle(ButtonStyle);
+
+	ButtonStyle = CharacterButtonArray[1]->GetStyle();
+	ButtonStyle.Disabled.SetResourceObject(WaziButtonDisabledTextureMap[MyTeam]);
+	CharacterButtonArray[1]->SetStyle(ButtonStyle);
+
+	ButtonStyle = CharacterButtonArray[2]->GetStyle();
+	ButtonStyle.Disabled.SetResourceObject(GangrimButtonDisabledTextureMap[MyTeam]);
+	CharacterButtonArray[2]->SetStyle(ButtonStyle);
+	
+	OnClickedCharacter1Button();
+
+	PlayerInfoWidget->SetTeam(MyTeam);
+
+	for(const auto OtherPlayerInfoWidget : OtherPlayerInfoArray)
+	{
+		OtherPlayerInfoWidget->SetTeam(MyTeam);
 	}
 }

@@ -52,6 +52,10 @@ UGameLobbyCharacterSelectWidget::UGameLobbyCharacterSelectWidget(const FObjectIn
 	MagazineMap.Emplace(CharacterNameArray[1], 30);
 	MagazineMap.Emplace(CharacterNameArray[2], 40);
 
+	CharacterNameTextureMap.Emplace(CharacterNameArray[0], nullptr);
+	CharacterNameTextureMap.Emplace(CharacterNameArray[1], nullptr);
+	CharacterNameTextureMap.Emplace(CharacterNameArray[2], nullptr);
+	
 	MagazineTextFormat = FText::FromString(TEXT("{0}/{0}"));
 	ShortcutPriority = 10;
 	ShortcutContext = ContextFinder.Object;
@@ -231,6 +235,8 @@ void UGameLobbyCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum)
 		SetVisibility(ESlateVisibility::Hidden);
 		GetOwningPlayer()->SetShowMouseCursor(false);
 	}
+
+	CharacterNameImage->SetBrushFromTexture(CharacterNameTextureMap[CharacterNameArray[CharacterNum]]);
 }
 
 void UGameLobbyCharacterSelectWidget::OnClickedCharacterSelectButton()
