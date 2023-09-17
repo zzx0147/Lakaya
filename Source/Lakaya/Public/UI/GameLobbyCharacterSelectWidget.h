@@ -72,6 +72,8 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> CharacterNameImage;
+	
+	TObjectPtr<class UPlayerInfoWidget> PlayerInfoWidget;
 private:
 
 	UPROPERTY(EditDefaultsOnly)
@@ -105,7 +107,6 @@ private:
 
 	TObjectPtr<class URichTextBlock> IntroductionText;
 
-	TObjectPtr<class UPlayerInfoWidget> PlayerInfoWidget;
 
 	bool bAutoHide;
 	

@@ -58,6 +58,9 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> CharacterSelectTextImage;
+
+	UPROPERTY()
+	TArray<TObjectPtr<UPlayerInfoWidget>> OtherPlayerInfoArray;
 	
 	ETeam MyTeam;
 };

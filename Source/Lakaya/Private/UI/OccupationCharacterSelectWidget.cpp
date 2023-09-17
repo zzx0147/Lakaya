@@ -67,10 +67,11 @@ void UOccupationCharacterSelectWidget::RegisterPlayer(APlayerState* PlayerState)
 	if (const auto BasePlayerState = Cast<ALakayaBasePlayerState>(PlayerState))
 	{
 		const auto PlayerNameWidget = CreateWidget<UPlayerInfoWidget>(this, PlayerInfoWidgetClass);
+		OtherPlayerInfoArray.Emplace(PlayerNameWidget);
 		PlayerInfoVerticalBox->AddChildToVerticalBox(PlayerNameWidget);
 		PlayerNameWidget->SetPlayerName(PlayerState->GetPlayerName());
 		PlayerNameWidget->SetPadding(FMargin(0.0f,50.0f,0.0f,0.0f));
-		
+		PlayerNameWidget->SetTeam(MyTeam);
 		BasePlayerState->OnPlayerNameChanged.AddLambda([PlayerNameWidget](const FString& NewName)
 		{
 			PlayerNameWidget->SetPlayerName(NewName);
@@ -106,6 +107,13 @@ void UOccupationCharacterSelectWidget::SetTeam(const ETeam& NewTeam)
 	ButtonStyle = CharacterButtonArray[2]->GetStyle();
 	ButtonStyle.Disabled.SetResourceObject(GangrimButtonDisabledTextureMap[MyTeam]);
 	CharacterButtonArray[2]->SetStyle(ButtonStyle);
-
+	
 	OnClickedCharacter1Button();
+
+	PlayerInfoWidget->SetTeam(MyTeam);
+
+	for(const auto OtherPlayerInfoWidget : OtherPlayerInfoArray)
+	{
+		OtherPlayerInfoWidget->SetTeam(MyTeam);
+	}
 }
