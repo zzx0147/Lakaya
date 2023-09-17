@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "LakayaBaseGameState.h"
+#include "Components/ProgressBar.h"
 #include "EOS/EOSGameInstance.h"
 #include "Occupation/Team.h"
 #include "OccupationGameState.generated.h"
@@ -40,7 +41,7 @@ public:
 	 * @brief 팀에서 점령중인 점령구역 개수를 추가해주는 함수입니다.
 	 * @param Team 점령구역 개수를 늘린 팀입니다.
 	 */
-	void AddCaptureAreaCount(const ETeam& Team);
+	void AddCaptureAreaCount(const ETeam& Team, const uint8 Id);
 
 	/**
 	 * @brief 팀에서 점령중인 점령구역 개수를 감소해주는 함수입니다.
@@ -151,6 +152,8 @@ public:
 	FTeamScoreSignature OnTeamScoreSignature;
 	
 	bool bTap;
+
+	TMap<uint8, UProgressBar*> OccupyBarMaps;
 	
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
@@ -186,7 +189,7 @@ private:
 	bool ResultBool = false;
 
 	TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> PlayersByTeamMap;
-
+	
 	ETeam ClientTeam;
 
 	UPROPERTY(Replicated)

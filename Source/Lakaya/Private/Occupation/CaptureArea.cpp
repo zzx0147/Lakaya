@@ -6,6 +6,7 @@
 #include "Character/ArmedCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/BoxComponent.h"
+#include "Components/ProgressBar.h"
 #include "GameMode/OccupationGameState.h"
 #include "Net/UnrealNetwork.h"
 #include "ProfilingDebugging/BootProfiling.h"
@@ -109,16 +110,21 @@ void ACaptureArea::AddToOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePla
 void ACaptureArea::SetCurrentCaptureAreaTeam(const ETeam& NewTeam)
 {
 	CurrentCaptureAreaTeam = NewTeam;
+	
 	switch (NewTeam)
 	{
 	case ETeam::Anti:
 		StaticMeshComponent->SetMaterial(0, AntiMaterial);
+		// TODO : 점령 시 점령 표시 UI를 업데이트 해줍니다.
+		
 		break;
 	case ETeam::Pro:
 		StaticMeshComponent->SetMaterial(0, ProMaterial);
+		
 		break;
 		default:
 			StaticMeshComponent->SetMaterial(0, NeutralMaterial);
+		
 		break;
 	}
 }
@@ -305,7 +311,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 
 	if (CaptureAreaState == ECaptureAreaState::AntiProgress || CaptureAreaState == ECaptureAreaState::ProProgress)
 	{
-		ETeam CurrentTeam = (CaptureAreaState == ECaptureAreaState::AntiProgress) ? ETeam::Anti : ETeam::Pro;
+		const ETeam CurrentTeam = (CaptureAreaState == ECaptureAreaState::AntiProgress) ? ETeam::Anti : ETeam::Pro;
 		float& TeamCaptureProgress = (CurrentTeam == ETeam::Anti) ? AntiTeamCaptureProgress : ProTeamCaptureProgress;
 		TeamCaptureProgress += CaptureSpeed * 0.1f;
 		
@@ -328,13 +334,13 @@ void ACaptureArea::IncreaseCaptureProgress()
 				return;
 			}
 
-			ETeam OtherTeam = (CurrentTeam == ETeam::Anti) ? ETeam::Pro : ETeam::Anti;
+			const ETeam OtherTeam = (CurrentTeam == ETeam::Anti) ? ETeam::Pro : ETeam::Anti;
 			if (GetCurrentCaptureAreaTeam() == OtherTeam)
 			{
 				OccupationGameState->SubCaptureAreaCount(OtherTeam);
 			}
 
-			OccupationGameState->AddCaptureAreaCount(CurrentTeam);
+			OccupationGameState->AddCaptureAreaCount(CurrentTeam, CaptureAreaId);
 			SetCurrentCaptureAreaState((CurrentTeam == ETeam::Anti)? ECaptureAreaState::Anti : ECaptureAreaState::Pro);
 			TeamCaptureProgress = 0.0f;
 			SetCurrentCaptureAreaTeam(CurrentTeam);
