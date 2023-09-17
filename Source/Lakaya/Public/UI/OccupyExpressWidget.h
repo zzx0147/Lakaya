@@ -6,7 +6,6 @@
 #include "SNodePanel.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/ProgressBar.h"
-#include "Occupation/Team.h"
 #include "OccupyExpressWidget.generated.h"
 
 /**

@@ -2,5 +2,3 @@
 
 
 #include "UI/OccupyExpressWidget.h"
-
-#include "GameMode/OccupationGameState.h"
