@@ -98,7 +98,7 @@ void AAIIndividualGameMode::RegisterPlayer(AController* NewPlayer)
 
 	if (CurrentPlayerNum == BaseGameState->GetMaximumPlayers())
 	{
-		GetWorldTimerManager().SetTimer(TimerHandle_DelayedMatchStart, this, &AAIIndividualGameMode::StartMatch,
+		GetWorldTimerManager().SetTimer(TimerHandle_DelayedMatchStart, this, &AAIIndividualGameMode::StartSelectCharacter,
 			MatchStartDelay, false);
 	}
 }

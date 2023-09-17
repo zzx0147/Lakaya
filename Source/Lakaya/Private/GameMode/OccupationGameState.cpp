@@ -21,9 +21,11 @@
 #include "UI/GradeResultElementWidget.h"
 #include "UI/GradeResultWidget.h"
 #include "UI/MatchStartWaitWidget.h"
+#include "UI/OccupationCharacterSelectWidget.h"
 #include "UI/StartMessageWidget.h"
 #include "UI/TeamScoreWidget.h"
 #include "UI/WeaponOutLineWidget.h"
+#include "UI/OccupyExpressWidget.h"
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -185,7 +187,17 @@ void AOccupationGameState::BeginPlay()
 				FinalResultWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
-		
+
+		if (OccupyExpressWidgetClass)
+		{
+			OccupyExpressWidget = CreateWidget<UOccupyExpressWidget>(
+				LocalController, OccupyExpressWidgetClass);
+			if (OccupyExpressWidget.IsValid())
+			{
+				OccupyExpressWidget->AddToViewport();
+				OccupyExpressWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
 	}
 
 	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this,
@@ -197,8 +209,6 @@ void AOccupationGameState::BeginPlay()
 void AOccupationGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-
-	
 	
 	if (SkillWidget.IsValid())
 		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -209,6 +219,9 @@ void AOccupationGameState::HandleMatchHasStarted()
 	if (IsValid(WeaponOutLineWidget))
 		WeaponOutLineWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
+	if (OccupyExpressWidget.IsValid())
+		OccupyExpressWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	
 	FTimerDelegate TimerDelegate_MatchStartWaitWidget;
 	TimerDelegate_MatchStartWaitWidget.BindLambda([this]
 	{
@@ -360,6 +373,12 @@ void AOccupationGameState::SetClientTeam(const ETeam& NewTeam)
 	for (const auto& Pair : PlayersByTeamMap)
 		for (const auto& Player : Pair.Value)
 			SetupPlayerStateOnLocal(Player);
+
+	if(UOccupationCharacterSelectWidget* const OccupationCharacterSelectWidget = Cast<UOccupationCharacterSelectWidget>(
+		CharacterSelectWidget))
+	{
+		OccupationCharacterSelectWidget->SetTeam(NewTeam);
+	}
 }
 
 bool AOccupationGameState::TrySendMatchResultData()

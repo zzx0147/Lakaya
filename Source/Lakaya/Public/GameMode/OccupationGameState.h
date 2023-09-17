@@ -245,6 +245,10 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UFinalResultWidget> FinalResultWidgetClass;
+
+	// 점령 표시 위젯 클래스를 지정합니다.
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UOccupyExpressWidget> OccupyExpressWidgetClass;
 	
 	UPROPERTY(EditDefaultsOnly)
 	class UInputMappingContext* ResultShortcutContext;
@@ -283,5 +287,8 @@ private:
 
 	// 게임 디테일 Element 결과 위젯입니다.
 	TWeakObjectPtr<UDetailResultElementWidget> DetailResultElementWidget;
+
+	// 점령 표시 위젯입니다.
+	TWeakObjectPtr<UOccupyExpressWidget> OccupyExpressWidget;
 #pragma endregion
 };

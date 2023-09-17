@@ -252,6 +252,8 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 
 void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 {
+	UE_LOG(LogTemp, Error, TEXT("HandleMatchIsCharacterSelect."));
+	
 	if (GetCharacterSelectWidget()) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
 
 	if (LoadingWidget.IsValid()) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
