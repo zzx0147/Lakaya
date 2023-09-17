@@ -19,12 +19,7 @@ void UAbilityComponent::SetOwningAbility(UGameplayAbility* InOwningAbility)
 	}
 
 	OwningAbility = InOwningAbility;
-	AbilitySystemComponent = OwningAbility->GetAbilitySystemComponentFromActorInfo();
-
-	if (!ensure(AbilitySystemComponent.IsValid()))
-	{
-		return;
-	}
+	AbilitySystemComponent = OwningAbility->GetAbilitySystemComponentFromActorInfo_Checked();
 
 	if (!DisableGameplayTags.IsEmpty())
 	{
