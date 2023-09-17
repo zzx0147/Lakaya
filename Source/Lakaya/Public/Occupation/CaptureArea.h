@@ -116,6 +116,7 @@ protected:
 	 */
 	UFUNCTION()
 	void DecreaseCaptureProgress();
+
 	
 protected:
 	UPROPERTY(VisibleAnywhere, Category = StaticMesh)

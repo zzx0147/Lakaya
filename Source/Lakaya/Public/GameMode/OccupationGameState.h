@@ -60,6 +60,14 @@ public:
 	 * @brief 타이머를 중지시키는 함수입니다.
 	 */
 	void StopScoreUpdate();
+
+	/**
+	 * @brief 점령에 성공하게 됐을 때, 점령 표시 위젯을 업데이트시켜주는 함수입니다.
+	 * @param Team 점령에 성공한 팀 입니다.
+	 * @param Id 점령한 점령 구역의 Id입니다.
+	 */
+	UFUNCTION()
+	void UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id);
 	
 	FORCEINLINE const float& GetTeamScore(const ETeam& Team) const { return (Team == ETeam::Anti) ? AntiTeamScore : ProTeamScore; }
 	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }
