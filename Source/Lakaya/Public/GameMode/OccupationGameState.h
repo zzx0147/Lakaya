@@ -260,6 +260,9 @@ private:
 	// 점령 표시 위젯 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UOccupyExpressWidget> OccupyExpressWidgetClass;
+
+	// 팀전 미니맵 위젯 클래스를 지정합니다.
+	// TSubclassOf<>
 	
 	UPROPERTY(EditDefaultsOnly)
 	class UInputMappingContext* ResultShortcutContext;
