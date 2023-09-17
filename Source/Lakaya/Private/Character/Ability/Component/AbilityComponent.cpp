@@ -6,6 +6,11 @@
 #include "AbilitySystemComponent.h"
 #include "Abilities/GameplayAbility.h"
 
+UAbilityComponent::UAbilityComponent()
+{
+	PrimaryComponentTick.bCanEverTick = true;
+}
+
 void UAbilityComponent::SetOwningAbility(UGameplayAbility* InOwningAbility)
 {
 	if (!ensure(IsValid(InOwningAbility)))
