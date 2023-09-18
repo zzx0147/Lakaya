@@ -138,98 +138,6 @@ void ALakayaBaseGameState::BeginPlay()
 		CharacterToDynamicCrossHairWidgets.Add("Wazi", WaziDynamicCrossHairWidget.Get());
 		CharacterToDynamicCrossHairWidgets.Add("Rena", RenaDynamicCrossHairWidget.Get());
 		CharacterToDynamicCrossHairWidgets.Add("GangRim", GangRimDynamicCrossHairWidget.Get());
-
-#pragma region MiniMap
-		// if (MiniMapWidgetClass)
-		// {
-		// 	MiniMapWidget = CreateWidget<UMiniMapWidget>(LocalController, MiniMapWidgetClass);
-		// 	if (MiniMapWidget.IsValid())
-		// 	{
-		// 		MiniMapWidget->AddToViewport();
-		// 		MiniMapWidget->SetVisibility(ESlateVisibility::Hidden);
-		//         
-		// 		UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>(this);
-		// 		if (RenderTarget)
-		// 		{
-		// 			RenderTarget->InitAutoFormat(1024, 1024);
-		// 			RenderTarget->UpdateResource();
-		//
-		// 			UE_LOG(LogTemp, Warning, TEXT("RenderTarget Initialized successfully."));
-		//
-		// 			USceneCaptureComponent2D* SceneCapture = NewObject<USceneCaptureComponent2D>(this);
-		// 			if (SceneCapture)
-		// 			{
-		// 				SceneCapture->TextureTarget = RenderTarget;
-		// 				SceneCapture->RegisterComponent();
-		//
-		// 				UE_LOG(LogTemp, Warning, TEXT("SceneCapture Initialized successfully."));
-		//
-		// 				UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(NULL, TEXT("'/Game/Characters/RenderTarget/MiniMap/M_Test.M_Test'"));
-		// 				if (BaseMaterial)
-		// 				{
-		// 					UMaterialInstanceDynamic* DynamicMaterialInstance = UMaterialInstanceDynamic::Create(BaseMaterial, this);
-		//
-		// 					if (DynamicMaterialInstance)
-		// 					{
-		// 						DynamicMaterialInstance->SetTextureParameterValue(FName(TEXT("SceneTexture")), RenderTarget);
-		//
-		// 						UImage* MiniMapImage = MiniMapWidget->GetImageElement();
-		// 						if (MiniMapImage)
-		// 						{
-		// 							FSlateBrush Brush;
-		// 							Brush.SetResourceObject(DynamicMaterialInstance);
-		// 							Brush.ImageSize.X = 1024.0f;
-		// 							Brush.ImageSize.Y = 1024.0f;
-		//
-		// 							MiniMapImage->SetBrush(Brush);
-		// 						}
-		// 						else
-		// 						{
-		// 							UE_LOG(LogTemp, Warning, TEXT("MiniMapImage is null."));
-		// 						}
-		// 					}
-		// 					else
-		// 					{
-		// 						UE_LOG(LogTemp, Warning, TEXT("DynamicMaterialInstance is null."));
-		// 					}
-		// 				}
-		// 				else
-		// 				{
-		// 					UE_LOG(LogTemp, Warning, TEXT("BaseMaterial is null."));
-		// 				}
-		// 			}
-		// 			else
-		// 			{
-		// 				UE_LOG(LogTemp, Warning, TEXT("SceneCapture is null."));
-		// 			}
-		// 		}
-		// 		else
-		// 		{
-		// 			UE_LOG(LogTemp, Warning, TEXT("RenderTarget is null."));
-		// 		}
-		//
-		// 	}
-		// 	else
-		// 	{
-		// 		UE_LOG(LogTemp, Warning ,TEXT("Mini Map Widget is not valid."));
-		// 	}    
-		// }
-		// else
-		// {
-		// 	UE_LOG(LogTemp ,Warning ,TEXT ("Minimap widget class is null"));
-		// }
-
-		// TODO : 아직 구현이 되지 않아 비활성화 합니다.
-		// if (HelpWidgetClass)
-		// {
-		// 	HelpWidget = CreateWidget<UHelpWidget>(LocalController, HelpWidgetClass);
-		// 	if (HelpWidget.IsValid())
-		// 	{
-		// 		HelpWidget->AddToViewport();
-		// 		HelpWidget->SetVisibility(ESlateVisibility::Hidden);
-		// 	}
-		// }
-#pragma endregion
 	}
 		
 	SpawnOutlineManager();
@@ -250,12 +158,27 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 	OnChangePlayerNumber.Broadcast(PlayerArray.Num());
 }
 
-void ALakayaBaseGameState::HandleMatchHasStarted()
+void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 {
-	Super::HandleMatchHasStarted();
-	StartTimeStamp = FDateTime::UtcNow().ToUnixTimestamp();
-	StartTime = GetServerWorldTimeSeconds();
+	UE_LOG(LogTemp, Error, TEXT("HandleMatchIsCharacterSelect."));
 	
+	if (GetCharacterSelectWidget()) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
+
+	if (LoadingWidget.IsValid()) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
+
+	if (CharacterSelectTimeWidget.IsValid())
+		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]()
+	{
+		if (!HasAuthority()) return;
+		
+		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
+		{
+			AuthGameMode->StartMatch();
+		}
+	}, CharacterSelectTimeWidget);
+
 	// 캐릭터가 바뀔 때마다, 캐릭터에게 적합한 DynamicCrossHair 위젯을 생성합니다.
 	if (auto BasePlayerState = GetWorld()->GetFirstPlayerController()->GetPlayerState<ALakayaBasePlayerState>())
 	{
@@ -282,6 +205,15 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BasePlayerState is not valid."));
 	}
+}
+
+void ALakayaBaseGameState::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+	StartTimeStamp = FDateTime::UtcNow().ToUnixTimestamp();
+	StartTime = GetServerWorldTimeSeconds();
+	
+	
 	
 	if (GetCharacterSelectWidget())
 	{
@@ -295,8 +227,6 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	{
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
-
-	
 	
 	// TODO
 	// if (MiniMapWidget.IsValid())
@@ -346,25 +276,7 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	}
 }
 
-void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
-{
-	if (GetCharacterSelectWidget()) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
 
-	if (LoadingWidget.IsValid()) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
-
-	if (CharacterSelectTimeWidget.IsValid())
-		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]()
-	{
-		if (!HasAuthority()) return;
-		
-		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
-		{
-			AuthGameMode->StartMatch();
-		}
-	}, CharacterSelectTimeWidget);
-}
 
 void ALakayaBaseGameState::Tick(float DeltaSeconds)
 {

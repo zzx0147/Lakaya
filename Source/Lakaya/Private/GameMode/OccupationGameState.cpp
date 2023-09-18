@@ -21,9 +21,11 @@
 #include "UI/GradeResultElementWidget.h"
 #include "UI/GradeResultWidget.h"
 #include "UI/MatchStartWaitWidget.h"
+#include "UI/OccupationCharacterSelectWidget.h"
 #include "UI/StartMessageWidget.h"
 #include "UI/TeamScoreWidget.h"
 #include "UI/WeaponOutLineWidget.h"
+#include "UI/OccupyExpressWidget.h"
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -185,7 +187,20 @@ void AOccupationGameState::BeginPlay()
 				FinalResultWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
-		
+
+		if (OccupyExpressWidgetClass)
+		{
+			OccupyExpressWidget = CreateWidget<UOccupyExpressWidget>(
+				LocalController, OccupyExpressWidgetClass);
+			if (OccupyExpressWidget.IsValid())
+			{
+				OccupyExpressWidget->AddToViewport();
+				OccupyExpressWidget->SetVisibility(ESlateVisibility::Hidden);
+				OccupyBarMaps.Emplace(1, OccupyExpressWidget->GetAntiBar());
+				OccupyBarMaps.Emplace(2, OccupyExpressWidget->GetCenterBar());
+				OccupyBarMaps.Emplace(3, OccupyExpressWidget->GetProBar());
+			}
+		}
 	}
 
 	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this,
@@ -197,8 +212,6 @@ void AOccupationGameState::BeginPlay()
 void AOccupationGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-
-	
 	
 	if (SkillWidget.IsValid())
 		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -209,6 +222,9 @@ void AOccupationGameState::HandleMatchHasStarted()
 	if (IsValid(WeaponOutLineWidget))
 		WeaponOutLineWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
+	if (OccupyExpressWidget.IsValid())
+		OccupyExpressWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	
 	FTimerDelegate TimerDelegate_MatchStartWaitWidget;
 	TimerDelegate_MatchStartWaitWidget.BindLambda([this]
 	{
@@ -360,6 +376,12 @@ void AOccupationGameState::SetClientTeam(const ETeam& NewTeam)
 	for (const auto& Pair : PlayersByTeamMap)
 		for (const auto& Player : Pair.Value)
 			SetupPlayerStateOnLocal(Player);
+
+	if(UOccupationCharacterSelectWidget* const OccupationCharacterSelectWidget = Cast<UOccupationCharacterSelectWidget>(
+		CharacterSelectWidget))
+	{
+		OccupationCharacterSelectWidget->SetTeam(NewTeam);
+	}
 }
 
 bool AOccupationGameState::TrySendMatchResultData()
@@ -709,9 +731,10 @@ void AOccupationGameState::AddPlayerStateToRecordResult(ETeam InTeam, TArray<ALa
 	}
 }
 
-void AOccupationGameState::AddCaptureAreaCount(const ETeam& Team)
+void AOccupationGameState::AddCaptureAreaCount(const ETeam& Team, const uint8 Id)
 {
 	(Team == ETeam::Anti) ? ++AntiTeamCaptureAreaCount : ++ProTeamCaptureAreaCount;
+	UpdateOccupyExpressWidget(Team, Id);
 }
 
 void AOccupationGameState::SubCaptureAreaCount(const ETeam& Team)
@@ -748,6 +771,38 @@ void AOccupationGameState::StopScoreUpdate()
 {
 	GetWorldTimerManager().ClearTimer(TimerHandle_UpdateScoreTimer);
 	TeamToUpdate = ETeam::None;
+}
+
+void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id)
+{
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
+		LocalController && LocalController->IsLocalController())
+	{
+		if (UProgressBar** ProgressBar = OccupyBarMaps.Find(Id))
+		{
+			FSlateBrush BackGroundImageBrush;
+	
+			switch (Team)
+			{
+			case ETeam::Anti:
+				BackGroundImageBrush.SetResourceObject(OccupyExpressWidget->GetOccupyAntiImage());
+				break;
+			case ETeam::Pro:
+				BackGroundImageBrush.SetResourceObject(OccupyExpressWidget->GetOccupyProImage());
+				break;
+			default:
+				UE_LOG(LogTemp, Warning, TEXT("Invalid Team."));
+				return;
+			}
+		
+			// ReSharper disable once CppDeprecatedEntity
+			(*ProgressBar)->WidgetStyle.BackgroundImage = BackGroundImageBrush;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ProgressBar is not Found for Id : %d"), Id);
+		}
+	}
 }
 
 bool AOccupationGameState::CheckCaptureAreaCount(const ETeam& Team)

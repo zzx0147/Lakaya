@@ -281,6 +281,8 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGamePlayPortraitWidget> PortraitWidgetClass;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UOccupationMinimapWidget> OccupationMinimapWidgetClass;
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Health, Transient)
 	float Health;
@@ -332,4 +334,8 @@ private:
 	TWeakObjectPtr<UGamePlayHealthWidget> HealthWidget;
 	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;
 	TWeakObjectPtr<UGamePlayPortraitWidget> PortraitWidget;
+	TWeakObjectPtr<UOccupationMinimapWidget> OccupationMinimapWidget;
+
+	bool HasInitalizedPawn = false;
+	void InitalizeWithPawn();
 };

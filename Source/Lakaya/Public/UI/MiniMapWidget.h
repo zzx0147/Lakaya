@@ -4,18 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/Image.h"
 #include "MiniMapWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API UMiniMapWidget : public UUserWidget
+class LAKAYA_API UMinimapWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
-public:
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	TWeakObjectPtr<UImage> MiniMap_Img;
+	
 };

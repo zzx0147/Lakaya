@@ -13,11 +13,11 @@ void UOccupationScoreBoard::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	ATeamBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("ATeamVerticalBox")));
-	BTeamBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("BTeamVerticalBox")));
+	AntiTeamBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("AntiTeamVerticalBox")));
+	ProTeamBox = Cast<UVerticalBox>(GetWidgetFromName(TEXT("ProTeamVerticalBox")));
 
-	if (!ATeamBox.IsValid()) UE_LOG(LogInit, Error, TEXT("UOccupationScoreBoard::ATeamBox was nullptr!"));
-	if (!BTeamBox.IsValid()) UE_LOG(LogInit, Error, TEXT("UOccupationScoreBoard::BTeamBox was nullptr!"));
+	if (!AntiTeamBox.IsValid()) UE_LOG(LogInit, Error, TEXT("UOccupationScoreBoard::AntiTeamBox was nullptr!"));
+	if (!ProTeamBox.IsValid()) UE_LOG(LogInit, Error, TEXT("UOccupationScoreBoard::ProTeamBox was nullptr!"));
 	if (!ElementClass) UE_LOG(LogInit, Error, TEXT("UOccupationScoreBoard::ElementClass was nullptr!"));
 }
 
@@ -34,7 +34,7 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 	switch (LakayaState->GetTeam())
 	{
 	case ETeam::Anti:
-		if (ATeamBox.IsValid())
+		if (AntiTeamBox.IsValid())
 		{
 			// TODO : 실행되지 않는 코드입니다.
 			// ATeamBox->AddChildToVerticalBox(Element);
@@ -42,7 +42,7 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 		}
 		break;
 	case ETeam::Pro:
-		if (BTeamBox.IsValid())
+		if (ProTeamBox.IsValid())
 		{
 			// TODO : 실행되지 않는 코드입니다.
 			// BTeamBox->AddChildToVerticalBox(Element);
@@ -65,10 +65,10 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 		// A팀으로 변경되면 B팀의 버티컬 박스에서 엘리먼트를 제거하고 A팀 버티컬 박스에 엘리먼트를 추가합니다.
 		if (ArgTeam == ETeam::Anti)
 		{
-			if (BTeamBox.IsValid())
-				BTeamBox->RemoveChild(Element);
-			if (ATeamBox.IsValid() && !ATeamBox->HasChild(Element))
-				ATeamBox->AddChildToVerticalBox(Element);
+			if (ProTeamBox.IsValid())
+				ProTeamBox->RemoveChild(Element);
+			if (AntiTeamBox.IsValid() && !AntiTeamBox->HasChild(Element))
+				AntiTeamBox->AddChildToVerticalBox(Element);
 			
 			Element->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 			Element->Anti_BackGround_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -76,10 +76,10 @@ void UOccupationScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 		// B팀으로 변경되면 A팀의 버티컬 박스에서 엘리먼트를 제거하고 B팀 버티컬 박스에 엘리먼트를 추가합니다.
 		else if (ArgTeam == ETeam::Pro)
 		{
-			if (ATeamBox.IsValid())
-				ATeamBox->RemoveChild(Element);
-			if (BTeamBox.IsValid() && !BTeamBox->HasChild(Element))
-				BTeamBox->AddChildToVerticalBox(Element);
+			if (AntiTeamBox.IsValid())
+				AntiTeamBox->RemoveChild(Element);
+			if (ProTeamBox.IsValid() && !ProTeamBox->HasChild(Element))
+				ProTeamBox->AddChildToVerticalBox(Element);
 			
 			Element->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 			Element->Pro_BackGround_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);

@@ -5,6 +5,7 @@
 
 #include "Character/ArmedCharacter.h"
 #include "Character/BulletComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AAiCharacterController::AAiCharacterController() // 생성자
 {
@@ -33,6 +34,24 @@ void AAiCharacterController::OnPossess(APawn* InPawn)
 	SpringArm = GetPawn()->FindComponentByClass<USpringArmComponent>();
 	if (SpringArm)
 		SpringArm->SocketOffset = AISpringArmOffset;
+}
+
+void AAiCharacterController::UpdateControlRotation(float DeltaTime, bool bUpdatePawn)
+{
+	Super::UpdateControlRotation(DeltaTime, false);
+
+	//AI 의 적군 포커싱을 부드럽게 회전하게끔 하는 함수입니당.
+	if (bUpdatePawn)
+	{
+		APawn* const MyPawn = GetPawn();
+		const FRotator CurrentPawnRotation = MyPawn->GetActorRotation();
+		SmoothTargetRotation = UKismetMathLibrary::RInterpTo_Constant(MyPawn->GetActorRotation(), ControlRotation, DeltaTime, SmoothFocusInterpSpeed);
+		
+		if (CurrentPawnRotation.Equals(SmoothTargetRotation, 1e-3f) == false)
+		{
+			MyPawn->FaceRotation(SmoothTargetRotation, DeltaTime);
+		}
+	}
 }
 
 void AAiCharacterController::AIFireStart(AArmedCharacter* ArmCharacter)

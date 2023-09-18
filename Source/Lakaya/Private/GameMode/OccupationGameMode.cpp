@@ -49,8 +49,6 @@ void AOccupationGameMode::RegisterPlayer(AController* NewPlayer)
 void AOccupationGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-
-
 }
 
 void AOccupationGameMode::HandleMatchIsSelectCharacter()
