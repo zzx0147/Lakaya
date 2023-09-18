@@ -2,8 +2,3 @@
 
 
 #include "UI/OccupyExpressWidget.h"
-
-void UOccupyExpressWidget::SetBarImage(const ETeam& Team)
-{
-	
-}

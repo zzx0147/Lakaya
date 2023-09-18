@@ -93,7 +93,7 @@ void ULakayaAbility::Log(const FString& Message) const
 {
 	UE_LOG(LogTemp, Log, TEXT("%s"), *Message);
 	if (!bAddLogOnScreen || !GEngine) return;
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, Message);
+	// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, Message);
 }
 
 void ULakayaAbility::ServerSetReplicatedTargetData(const FGameplayAbilityTargetDataHandle& TargetDataHandle,

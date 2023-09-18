@@ -17,6 +17,7 @@ class LAKAYA_API UAbilityComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
+	UAbilityComponent();
 	void SetOwningAbility(UGameplayAbility* InOwningAbility);
 
 protected:
