@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/Image.h"
-#include "UI/MinimapWidget.h"
+#include "UI/MiniMapWidget.h"
 #include "OccupationMinimapWidget.generated.h"
 
 /**
