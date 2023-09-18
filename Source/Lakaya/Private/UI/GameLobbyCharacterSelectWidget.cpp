@@ -241,6 +241,6 @@ void UGameLobbyCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum)
 
 void UGameLobbyCharacterSelectWidget::OnClickedCharacterSelectButton()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("OnClickedCharacterSelectButton"));
+	// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("OnClickedCharacterSelectButton"));
 	SetVisibility(ESlateVisibility::Hidden);
 }
