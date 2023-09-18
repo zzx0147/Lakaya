@@ -20,7 +20,8 @@ void ULakayaAbility_GunFire::OnAvatarSet(const FGameplayAbilityActorInfo* ActorI
 {
 	Super::OnAvatarSet(ActorInfo, Spec);
 
-	if (!ActorInfo->AvatarActor.IsValid() || !ActorInfo->IsLocallyControlled())
+	check(IsInstantiated())
+	if (!ActorInfo->IsLocallyControlled())
 	{
 		return;
 	}
