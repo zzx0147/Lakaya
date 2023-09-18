@@ -6,6 +6,11 @@
 #include "AbilitySystemComponent.h"
 #include "Abilities/GameplayAbility.h"
 
+UAbilityComponent::UAbilityComponent()
+{
+	PrimaryComponentTick.bCanEverTick = true;
+}
+
 void UAbilityComponent::SetOwningAbility(UGameplayAbility* InOwningAbility)
 {
 	if (!ensure(IsValid(InOwningAbility)))
@@ -14,12 +19,7 @@ void UAbilityComponent::SetOwningAbility(UGameplayAbility* InOwningAbility)
 	}
 
 	OwningAbility = InOwningAbility;
-	AbilitySystemComponent = OwningAbility->GetAbilitySystemComponentFromActorInfo();
-
-	if (!ensure(AbilitySystemComponent.IsValid()))
-	{
-		return;
-	}
+	AbilitySystemComponent = OwningAbility->GetAbilitySystemComponentFromActorInfo_Checked();
 
 	if (!DisableGameplayTags.IsEmpty())
 	{

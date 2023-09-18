@@ -24,6 +24,8 @@ public:
 	FORCEINLINE const ETeam& GetCurrentCaptureAreaTeam() const { return CurrentCaptureAreaTeam; }
 	FORCEINLINE void SetCurrentCaptureAreaTeam(const ETeam& NewTeam);
 
+	FORCEINLINE const uint8& GetCaptureAreaID() const { return CaptureAreaId; }
+	
 	/**
 	 * @brief Enum타입을 String으로 바꿔줍니다.
 	 * @param EnumValue 타입을 String으로 바꿔줄 Enum입니다.
@@ -114,6 +116,7 @@ protected:
 	 */
 	UFUNCTION()
 	void DecreaseCaptureProgress();
+
 	
 protected:
 	UPROPERTY(VisibleAnywhere, Category = StaticMesh)

@@ -196,6 +196,9 @@ void AOccupationGameState::BeginPlay()
 			{
 				OccupyExpressWidget->AddToViewport();
 				OccupyExpressWidget->SetVisibility(ESlateVisibility::Hidden);
+				OccupyBarMaps.Emplace(1, OccupyExpressWidget->GetAntiBar());
+				OccupyBarMaps.Emplace(2, OccupyExpressWidget->GetCenterBar());
+				OccupyBarMaps.Emplace(3, OccupyExpressWidget->GetProBar());
 			}
 		}
 	}
@@ -728,9 +731,10 @@ void AOccupationGameState::AddPlayerStateToRecordResult(ETeam InTeam, TArray<ALa
 	}
 }
 
-void AOccupationGameState::AddCaptureAreaCount(const ETeam& Team)
+void AOccupationGameState::AddCaptureAreaCount(const ETeam& Team, const uint8 Id)
 {
 	(Team == ETeam::Anti) ? ++AntiTeamCaptureAreaCount : ++ProTeamCaptureAreaCount;
+	UpdateOccupyExpressWidget(Team, Id);
 }
 
 void AOccupationGameState::SubCaptureAreaCount(const ETeam& Team)
@@ -767,6 +771,38 @@ void AOccupationGameState::StopScoreUpdate()
 {
 	GetWorldTimerManager().ClearTimer(TimerHandle_UpdateScoreTimer);
 	TeamToUpdate = ETeam::None;
+}
+
+void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id)
+{
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
+		LocalController && LocalController->IsLocalController())
+	{
+		if (UProgressBar** ProgressBar = OccupyBarMaps.Find(Id))
+		{
+			FSlateBrush BackGroundImageBrush;
+	
+			switch (Team)
+			{
+			case ETeam::Anti:
+				BackGroundImageBrush.SetResourceObject(OccupyExpressWidget->GetOccupyAntiImage());
+				break;
+			case ETeam::Pro:
+				BackGroundImageBrush.SetResourceObject(OccupyExpressWidget->GetOccupyProImage());
+				break;
+			default:
+				UE_LOG(LogTemp, Warning, TEXT("Invalid Team."));
+				return;
+			}
+		
+			// ReSharper disable once CppDeprecatedEntity
+			(*ProgressBar)->WidgetStyle.BackgroundImage = BackGroundImageBrush;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ProgressBar is not Found for Id : %d"), Id);
+		}
+	}
 }
 
 bool AOccupationGameState::CheckCaptureAreaCount(const ETeam& Team)

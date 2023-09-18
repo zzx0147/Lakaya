@@ -33,12 +33,15 @@ void AAiDroneController::UpdateControlRotation(float DeltaTime, bool bUpdatePawn
 	if (bUpdatePawn)
 	{
 		APawn* const MyPawn = GetPawn();
-		const FRotator CurrentPawnRotation = MyPawn->GetActorRotation();
-		SmoothTargetRotation = UKismetMathLibrary::RInterpTo_Constant(MyPawn->GetActorRotation(), ControlRotation, DeltaTime, SmoothFocusInterpSpeed);
-		
-		if (CurrentPawnRotation.Equals(SmoothTargetRotation, 1e-3f) == false)
+		if(MyPawn)
 		{
-			MyPawn->FaceRotation(SmoothTargetRotation, DeltaTime);
+			const FRotator CurrentPawnRotation = MyPawn->GetActorRotation();
+			SmoothTargetRotation = UKismetMathLibrary::RInterpTo_Constant(MyPawn->GetActorRotation(), ControlRotation, DeltaTime, SmoothFocusInterpSpeed);
+		
+			if (CurrentPawnRotation.Equals(SmoothTargetRotation, 1e-3f) == false)
+			{
+				MyPawn->FaceRotation(SmoothTargetRotation, DeltaTime);
+			}
 		}
 	}
 }
