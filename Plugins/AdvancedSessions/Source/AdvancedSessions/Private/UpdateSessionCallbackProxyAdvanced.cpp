@@ -7,12 +7,16 @@
 
 UUpdateSessionCallbackProxyAdvanced::UUpdateSessionCallbackProxyAdvanced(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
-	, OnUpdateSessionCompleteDelegate(FOnUpdateSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnUpdateCompleted))
-	, NumPublicConnections(1)
+	  , OnUpdateSessionCompleteDelegate(
+		  FOnUpdateSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnUpdateCompleted))
+	  , NumPublicConnections(1)
 {
-}	
+}
 
-UUpdateSessionCallbackProxyAdvanced* UUpdateSessionCallbackProxyAdvanced::UpdateSession(UObject* WorldContextObject, const TArray<FSessionPropertyKeyPair> &ExtraSettings, int32 PublicConnections, int32 PrivateConnections, bool bUseLAN, bool bAllowInvites, bool bAllowJoinInProgress, bool bRefreshOnlineData, bool bIsDedicatedServer)
+UUpdateSessionCallbackProxyAdvanced* UUpdateSessionCallbackProxyAdvanced::UpdateSession(
+	UObject* WorldContextObject, const TArray<FSessionPropertyKeyPair>& ExtraSettings, int32 PublicConnections,
+	int32 PrivateConnections, bool bUseLAN, bool bAllowInvites, bool bAllowJoinInProgress, bool bRefreshOnlineData,
+	bool bIsDedicatedServer)
 {
 	UUpdateSessionCallbackProxyAdvanced* Proxy = NewObject<UUpdateSessionCallbackProxyAdvanced>();
 	Proxy->NumPublicConnections = PublicConnections;
@@ -24,12 +28,14 @@ UUpdateSessionCallbackProxyAdvanced* UUpdateSessionCallbackProxyAdvanced::Update
 	Proxy->bRefreshOnlineData = bRefreshOnlineData;
 	Proxy->bAllowJoinInProgress = bAllowJoinInProgress;
 	Proxy->bDedicatedServer = bIsDedicatedServer;
-	return Proxy;	
+	return Proxy;
 }
 
 void UUpdateSessionCallbackProxyAdvanced::Activate()
 {
-	const FOnlineSubsystemBPCallHelperAdvanced Helper(TEXT("UpdateSession"), GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull));
+	const FOnlineSubsystemBPCallHelperAdvanced Helper(
+		TEXT("UpdateSession"),
+		GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull));
 
 	if (Helper.OnlineSub != nullptr)
 	{
@@ -39,7 +45,7 @@ void UUpdateSessionCallbackProxyAdvanced::Activate()
 			if (Sessions->GetNumSessions() < 1)
 			{
 				OnFailure.Broadcast();
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("NO REGISTERED SESSIONS!"));
+				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("NO REGISTERED SESSIONS!"));
 				return;
 			}
 
@@ -54,9 +60,10 @@ void UUpdateSessionCallbackProxyAdvanced::Activate()
 				return;
 			}
 
-			OnUpdateSessionCompleteDelegateHandle = Sessions->AddOnUpdateSessionCompleteDelegate_Handle(OnUpdateSessionCompleteDelegate);
+			OnUpdateSessionCompleteDelegateHandle = Sessions->AddOnUpdateSessionCompleteDelegate_Handle(
+				OnUpdateSessionCompleteDelegate);
 
-		//	FOnlineSessionSettings Settings;
+			//	FOnlineSessionSettings Settings;
 			//Settings->BuildUniqueId = GetBuildUniqueId();
 			Settings->NumPublicConnections = NumPublicConnections;
 			Settings->NumPrivateConnections = NumPrivateConnections;
@@ -69,7 +76,7 @@ void UUpdateSessionCallbackProxyAdvanced::Activate()
 			Settings->bAllowJoinInProgress = bAllowJoinInProgress;
 			Settings->bIsDedicated = bDedicatedServer;
 
-			FOnlineSessionSetting * fSetting = NULL;
+			FOnlineSessionSetting* fSetting = NULL;
 			FOnlineSessionSetting ExtraSetting;
 			for (int i = 0; i < ExtraSettings.Num(); i++)
 			{
@@ -99,12 +106,14 @@ void UUpdateSessionCallbackProxyAdvanced::Activate()
 	}
 	// Fail immediately
 	OnFailure.Broadcast();
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Sessions not supported"));
+	// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Sessions not supported"));
 }
 
 void UUpdateSessionCallbackProxyAdvanced::OnUpdateCompleted(FName SessionName, bool bWasSuccessful)
 {
-	const FOnlineSubsystemBPCallHelperAdvanced Helper(TEXT("UpdateSessionCallback"), GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull));
+	const FOnlineSubsystemBPCallHelperAdvanced Helper(
+		TEXT("UpdateSessionCallback"),
+		GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull));
 
 	if (Helper.OnlineSub != nullptr)
 	{
@@ -112,7 +121,7 @@ void UUpdateSessionCallbackProxyAdvanced::OnUpdateCompleted(FName SessionName, b
 		if (Sessions.IsValid())
 		{
 			Sessions->ClearOnUpdateSessionCompleteDelegate_Handle(OnUpdateSessionCompleteDelegateHandle);
-				
+
 			if (bWasSuccessful)
 			{
 				OnSuccess.Broadcast();
@@ -124,6 +133,6 @@ void UUpdateSessionCallbackProxyAdvanced::OnUpdateCompleted(FName SessionName, b
 	if (!bWasSuccessful)
 	{
 		OnFailure.Broadcast();
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("WAS NOT SUCCESSFUL"));
+		// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("WAS NOT SUCCESSFUL"));
 	}
 }
