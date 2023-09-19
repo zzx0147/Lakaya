@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Character/Ability/Attribute/LakayaAttributeSet.h"
+#include "Character/Ability/Component/LakayaAbilitySystemComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/GameStateBase.h"
@@ -55,7 +56,7 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	PortraitWidgetClass = PortraitFinder.Class;
 	OccupationMinimapWidgetClass = OccupationMinimapFinder.Class;
 	
-	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
+	AbilitySystem = CreateDefaultSubobject<ULakayaAbilitySystemComponent>(TEXT("AbilitySystem"));
 
 	AttributeSet = CreateDefaultSubobject<ULakayaAttributeSet>(TEXT("LakayaAttributeSet"));
 }

@@ -320,7 +320,7 @@ private:
 	uint16 KillStreak;
 
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<class UAbilitySystemComponent> AbilitySystem;
+	TObjectPtr<class ULakayaAbilitySystemComponent> AbilitySystem;
 	
 	UPROPERTY()
 	const class ULakayaAttributeSet* AttributeSet;
