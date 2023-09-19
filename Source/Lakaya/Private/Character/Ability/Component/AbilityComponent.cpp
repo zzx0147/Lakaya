@@ -6,6 +6,11 @@
 #include "AbilitySystemComponent.h"
 #include "Abilities/GameplayAbility.h"
 
+UAbilityComponent::UAbilityComponent()
+{
+	PrimaryComponentTick.bCanEverTick = true;
+}
+
 void UAbilityComponent::SetOwningAbility(UGameplayAbility* InOwningAbility)
 {
 	if (!ensure(IsValid(InOwningAbility)))
@@ -14,12 +19,7 @@ void UAbilityComponent::SetOwningAbility(UGameplayAbility* InOwningAbility)
 	}
 
 	OwningAbility = InOwningAbility;
-	AbilitySystemComponent = OwningAbility->GetAbilitySystemComponentFromActorInfo();
-
-	if (!ensure(AbilitySystemComponent.IsValid()))
-	{
-		return;
-	}
+	AbilitySystemComponent = OwningAbility->GetAbilitySystemComponentFromActorInfo_Checked();
 
 	if (!DisableGameplayTags.IsEmpty())
 	{
@@ -35,25 +35,14 @@ void UAbilityComponent::SetOwningAbility(UGameplayAbility* InOwningAbility)
 
 void UAbilityComponent::OnGameplayTagEvent(FGameplayTag Tag, int32 NewCount)
 {
-	if (!ensure(AbilitySystemComponent.IsValid()))
+	if (ensure(AbilitySystemComponent.IsValid()))
 	{
-		return;
-	}
-
-	if ((NewCount == 0) == bIsDisabled
-		&& bIsDisabled != AbilitySystemComponent->HasAnyMatchingGameplayTags(DisableGameplayTags))
-	{
-		bIsDisabled = !bIsDisabled;
-		bIsDisabled ? OnDisabled() : OnEnabled();
+		SetActive(NewCount == 0);
 	}
 }
 
-void UAbilityComponent::OnEnabled_Implementation()
+bool UAbilityComponent::ShouldActivate() const
 {
-	UE_LOG(LogTemp, Log, TEXT("%s enabled "), *GetName());
-}
-
-void UAbilityComponent::OnDisabled_Implementation()
-{
-	UE_LOG(LogTemp, Log, TEXT("%s disabled"), *GetName());
+	return Super::ShouldActivate() && AbilitySystemComponent.IsValid()
+		&& AbilitySystemComponent->HasAnyMatchingGameplayTags(DisableGameplayTags);
 }

@@ -17,16 +17,13 @@ class LAKAYA_API UAbilityComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
+	UAbilityComponent();
 	void SetOwningAbility(UGameplayAbility* InOwningAbility);
 
 protected:
 	void OnGameplayTagEvent(FGameplayTag Tag, int32 NewCount);
 
-	UFUNCTION(BlueprintNativeEvent)
-	void OnEnabled();
-
-	UFUNCTION(BlueprintNativeEvent)
-	void OnDisabled();
+	virtual bool ShouldActivate() const override;
 
 private:
 	UPROPERTY(EditAnywhere)
@@ -34,5 +31,4 @@ private:
 
 	TWeakObjectPtr<UGameplayAbility> OwningAbility;
 	TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
-	bool bIsDisabled;
 };

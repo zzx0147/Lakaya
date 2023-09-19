@@ -16,12 +16,16 @@ ULakayaAbility_GunFire::ULakayaAbility_GunFire()
 	bIsFireTraceComponentAdded = false;
 }
 
-void ULakayaAbility_GunFire::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+void ULakayaAbility_GunFire::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
-	Super::OnGiveAbility(ActorInfo, Spec);
+	Super::OnAvatarSet(ActorInfo, Spec);
 
-	const auto TargetActor = ActorInfo->AvatarActor.IsValid() ? ActorInfo->AvatarActor : ActorInfo->OwnerActor;
-	check(TargetActor.IsValid());
+	if (!ActorInfo->AvatarActor.IsValid() || !ActorInfo->IsLocallyControlled())
+	{
+		return;
+	}
+
+	const auto TargetActor = ActorInfo->AvatarActor.Get();
 
 	FireTraceComponent = Cast<UAbilityComponent_FireTrace>(TargetActor->FindComponentByClass(FireTraceComponentClass));
 	if (FireTraceComponent.IsValid())
@@ -57,8 +61,7 @@ void ULakayaAbility_GunFire::OnRemoveAbility(const FGameplayAbilityActorInfo* Ac
 
 	if (bIsFireTraceComponentAdded)
 	{
-		const auto TargetActor = ActorInfo->OwnerActor;
-		if (TargetActor.IsValid())
+		if (const auto& TargetActor = ActorInfo->AvatarActor; TargetActor.IsValid())
 		{
 			TargetActor->RemoveInstanceComponent(FireTraceComponent.Get());
 		}

@@ -116,7 +116,7 @@ void UEOSGameInstance::OnLoginComplete(int32 LocalUserNum, const bool bWasSucces
 		{
 			ClientNetId = Identity->GetUniquePlayerId(LocalUserNum);
 
-			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, ClientNetId->ToDebugString());
+			// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, ClientNetId->ToDebugString());
 		}
 	}
 }
@@ -600,11 +600,11 @@ void UEOSGameInstance::Connect()
 	//연결
 	if (bool bConnected = SocketClient->Connect(*Addr))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Socket Connect Success"));
+		// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Socket Connect Success"));
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Socket Connect Fail"));
+		// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Socket Connect Fail"));
 	}
 	//연결 이후부터는 논블로킹으로 작동
 	SocketClient->SetNonBlocking(true);
@@ -672,7 +672,7 @@ TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 	//서버로부터 수신한 데이터가 있는지 확인 후 수신
 	if (SocketClient->HasPendingData(PendingDataSize))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Start Recv Match Result Record"));
+		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Start Recv Match Result Record"));
 		//데이터 수신
 		SocketClient->Recv(Buffer, 10000, Size, ESocketReceiveFlags::None);
 		
@@ -697,7 +697,7 @@ TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 				
 				if (ElementAsObject->HasField(TEXT("StartTime")))
 				{
-					GEngine->AddOnScreenDebugMessage(-1, 300, FColor::Red, FString::Printf(TEXT("asefasefasefef")));
+					// GEngine->AddOnScreenDebugMessage(-1, 300, FColor::Red, FString::Printf(TEXT("asefasefasefef")));
 					const double DoubleValue = ElementAsObject->GetNumberField(TEXT("StartTime"));
 					int64 Int64Value = static_cast<int64>(DoubleValue);
 					MatchResultStruct.StartTime = Int64Value;
@@ -755,7 +755,7 @@ TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Fail Deserialize Json"));
+			// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Fail Deserialize Json"));
 		}
 	}
 
@@ -781,7 +781,7 @@ bool UEOSGameInstance::SendMatchResultData(const FMatchResultStruct& NewRecordRe
 	{
 		TSharedRef<FJsonObject> PlayerJsonObject = MakeShared<FJsonObject>();
 		PlayerJsonObject->SetStringField(TEXT("PlayerID"), PlayerStat.PlayerID);
-		GEngine->AddOnScreenDebugMessage(-1, 300, FColor::Green, *PlayerStat.PlayerID);
+		// GEngine->AddOnScreenDebugMessage(-1, 300, FColor::Green, *PlayerStat.PlayerID);
 		PlayerJsonObject->SetStringField(TEXT("PlayerName"), PlayerStat.PlayerName);
 		PlayerJsonObject->SetNumberField(TEXT("Kill"), PlayerStat.Kill);
 		PlayerJsonObject->SetNumberField(TEXT("Death"), PlayerStat.Death);
@@ -816,7 +816,7 @@ bool UEOSGameInstance::SendMatchResultData(const FMatchResultStruct& NewRecordRe
 		// UTF-8로 인코딩된 JSON 문자열 변환
 		FTCHARToUTF8 Utf8JsonString(*JsonRequestString);
 
-		GEngine->AddOnScreenDebugMessage(-1, 300, FColor::Green, *JsonRequestString);
+		// GEngine->AddOnScreenDebugMessage(-1, 300, FColor::Green, *JsonRequestString);
 
 		// JSON 문자열을 TArray<uint8>로 변환
 		TArray<uint8> DataToSend;
@@ -828,13 +828,13 @@ bool UEOSGameInstance::SendMatchResultData(const FMatchResultStruct& NewRecordRe
 		int32 BytesSent;
 		if (SocketClient->Send(DataToSend.GetData(), DataToSend.Num(), BytesSent))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("RecordDataSend Success"));
+			// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("RecordDataSend Success"));
 			// 데이터 전송 성공
 			return true;
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("RecordDataSend Fail"));
+			// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("RecordDataSend Fail"));
 			// 데이터 전송 실패
 			return false;
 		}
