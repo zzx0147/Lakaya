@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "MinimapWidget.generated.h"
+#include "MiniMapWidget.generated.h"
 
 /**
  * 
