@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
-#include "GameFramework/FloatingPawnMovement.h"
 #include "GameFramework/MovementComponent.h"
 #include "AiDroneCharacter.generated.h"
 
@@ -18,6 +17,7 @@ public:
 	// Sets default values for this pawn's properties
 	AAiDroneCharacter();
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
