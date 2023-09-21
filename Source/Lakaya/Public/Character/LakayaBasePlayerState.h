@@ -336,6 +336,7 @@ private:
 	TWeakObjectPtr<UGamePlayPortraitWidget> PortraitWidget;
 	TWeakObjectPtr<UOccupationMinimapWidget> OccupationMinimapWidget;
 
-	bool HasInitalizedPawn = false;
-	void InitalizeWithPawn();
+	// bool HasInitalizedPawn = false;
+
+	// void InitalizeWithPawn();
 };
