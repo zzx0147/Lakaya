@@ -4,8 +4,10 @@
 #include "Character/LakayaBasePlayerState.h"
 
 #include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Character/Ability/Attribute/LakayaAttributeSet.h"
+#include "Character/Ability/Component/LakayaAbilitySystemComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/GameStateBase.h"
@@ -55,7 +57,7 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	PortraitWidgetClass = PortraitFinder.Class;
 	OccupationMinimapWidgetClass = OccupationMinimapFinder.Class;
 	
-	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
+	AbilitySystem = CreateDefaultSubobject<ULakayaAbilitySystemComponent>(TEXT("AbilitySystem"));
 
 	AttributeSet = CreateDefaultSubobject<ULakayaAttributeSet>(TEXT("LakayaAttributeSet"));
 }
@@ -87,7 +89,13 @@ void ALakayaBasePlayerState::OnRep_PlayerName()
 void ALakayaBasePlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	// 일단 어빌리티 시스템 컴포넌트를 직접 사용하는건 플레이어 스테이트라서 여기에 넣었지만, GameInstance::Init()에서 하는 게 더 나을 수도 있음.
+	if (auto& AbilitySystemGlobals = UAbilitySystemGlobals::Get();
+		!AbilitySystemGlobals.IsAbilitySystemGlobalsInitialized())
+	{
+		AbilitySystemGlobals.InitGlobalData();
+	}
 }
 
 void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
@@ -109,6 +117,34 @@ void ALakayaBasePlayerState::OnRep_Owner()
 {
 	Super::OnRep_Owner();
 	OnOwnerChanged.Broadcast(Owner);
+
+	if (const auto LocalController = GetPlayerController(); LocalController && LocalController->IsLocalController())
+	{
+		PortraitWidget = CreateWidget<UGamePlayPortraitWidget>(LocalController, PortraitWidgetClass);
+		if (PortraitWidget.IsValid())
+		{
+			PortraitWidget->AddToViewport(-2);
+			PortraitWidget->ChangePortrait(GetCharacterName());
+			OnCharacterNameChanged.AddWeakLambda(
+				PortraitWidget.Get(), [Widget = PortraitWidget](auto, const FName& Name)
+				{
+					Widget->ChangePortrait(Name);
+				});
+		}
+
+		HealthWidget = CreateWidget<UGamePlayHealthWidget>(LocalController, HealthWidgetClass);
+		if (HealthWidget.IsValid())
+		{
+			HealthWidget->AddToViewport();
+
+			OnHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetCurrentHealth);
+			OnMaxHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetMaximumHealth);
+
+			HealthWidget->SetMaximumHealth(GetMaxHealth());
+			HealthWidget->SetCurrentHealth(Health);
+		}
+	}
+	
 }
 
 void ALakayaBasePlayerState::Tick(float DeltaSeconds)
@@ -124,11 +160,12 @@ void ALakayaBasePlayerState::Tick(float DeltaSeconds)
 	// }
 	//
 
-	if (!HasInitalizedPawn && GetPlayerController() && GetPlayerController()->GetPawn())
-	{
-		HasInitalizedPawn = true;
-		InitalizeWithPawn();
-	}
+	// TODO : 미니맵 방식은 RenderTarget -> 정적 이미지 으로 바뀌었습니다.
+	// if (!HasInitalizedPawn && GetPlayerController() && GetPlayerController()->GetPawn())
+	// {
+		// HasInitalizedPawn = true;
+		// InitalizeWithPawn();
+	// }
 }
 
 bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) const
@@ -433,76 +470,47 @@ void ALakayaBasePlayerState::RespawnTimerCallback(FRespawnTimerDelegate Callback
 	Callback.Execute(GetOwningController());
 }
 
-void ALakayaBasePlayerState::InitalizeWithPawn()
-{
-	if (const auto LocalController = GetPlayerController(); LocalController && LocalController->IsLocalController())
-	{
-		PortraitWidget = CreateWidget<UGamePlayPortraitWidget>(LocalController, PortraitWidgetClass);
-		if (PortraitWidget.IsValid())
-		{
-			PortraitWidget->AddToViewport(-2);
-			PortraitWidget->ChangePortrait(GetCharacterName());
-			OnCharacterNameChanged.AddWeakLambda(
-				PortraitWidget.Get(), [Widget = PortraitWidget](auto, const FName& Name)
-				{
-					Widget->ChangePortrait(Name);
-				});
-		}
-
-		HealthWidget = CreateWidget<UGamePlayHealthWidget>(LocalController, HealthWidgetClass);
-		if (HealthWidget.IsValid())
-		{
-			HealthWidget->AddToViewport();
-
-			OnHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetCurrentHealth);
-			OnMaxHealthChanged.AddUObject(HealthWidget.Get(), &UGamePlayHealthWidget::SetMaximumHealth);
-
-			HealthWidget->SetMaximumHealth(GetMaxHealth());
-			HealthWidget->SetCurrentHealth(Health);
-		}
-
-		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(
-			LocalController, DirectionDamageIndicatorClass);
-		if (DirectionDamageIndicatorWidget) DirectionDamageIndicatorWidget->AddToViewport();
-
-		OccupationMinimapWidget = CreateWidget<UOccupationMinimapWidget>(LocalController, OccupationMinimapWidgetClass);
-		if (OccupationMinimapWidget.IsValid())
-		{
-			OccupationMinimapWidget->AddToViewport();
-		}
-
-		FVector PlayerLocation = LocalController->GetPawn()->GetActorLocation();
-		FVector CaptureLocation = PlayerLocation + FVector(0.0f, 0.0f, 500.0f);
-		FRotator CaptureRotation = FRotator(-90.0f, 0.0f, 0.0f);
-		
-		USceneCaptureComponent2D* MiniMapCapture = NewObject<USceneCaptureComponent2D>(this);
-		// MiniMapCapture->SetupAttachment(RootComponent);
-		// MiniMapCapture->SetupAttachment(LocalController->GetCharacter()->GetRootComponent());
-		MiniMapCapture->SetupAttachment(LocalController->GetPawn()->GetRootComponent());
-		
-		MiniMapCapture->SetWorldLocation(CaptureLocation);
-		MiniMapCapture->SetWorldRotation(CaptureRotation);
-		MiniMapCapture->ProjectionType = ECameraProjectionMode::Orthographic;
-		MiniMapCapture->OrthoWidth = 1000;
-
-		MiniMapCapture->CaptureScene();
-		MiniMapCapture->RegisterComponent();
-		
-		UTextureRenderTarget2D* MiniMapRenderTarget = NewObject<UTextureRenderTarget2D>(this);
-		MiniMapRenderTarget->InitAutoFormat(512, 512);
-		MiniMapRenderTarget->UpdateResource();
-		
-		MiniMapCapture->TextureTarget = MiniMapRenderTarget;
-
-		UMaterial* BaseMaterial = LoadObject<UMaterial>(nullptr, TEXT("/Game/Characters/RenderTarget/M_Minimap"));
-	
-		UMaterialInstanceDynamic* DynamicMaterialInstance = UMaterialInstanceDynamic::Create(BaseMaterial, this);
-	
-		DynamicMaterialInstance->SetTextureParameterValue(FName("MiniMapTexture"), MiniMapRenderTarget);
-	
-		OccupationMinimapWidget->MinimapImage->SetBrushFromMaterial(DynamicMaterialInstance);
-	}
-}
+// void ALakayaBasePlayerState::InitalizeWithPawn()
+// {
+// 	DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(
+// 		LocalController, DirectionDamageIndicatorClass);
+// 	if (DirectionDamageIndicatorWidget) DirectionDamageIndicatorWidget->AddToViewport();
+//
+// 	OccupationMinimapWidget = CreateWidget<UOccupationMinimapWidget>(LocalController, OccupationMinimapWidgetClass);
+// 	if (OccupationMinimapWidget.IsValid())
+// 	{
+// 		OccupationMinimapWidget->AddToViewport();
+// 	}
+//
+// 	FVector PlayerLocation = LocalController->GetPawn()->GetActorLocation();
+// 	FVector CaptureLocation = PlayerLocation + FVector(0.0f, 0.0f, 500.0f);
+// 	FRotator CaptureRotation = FRotator(-90.0f, 0.0f, 0.0f);
+// 	
+// 	USceneCaptureComponent2D* MiniMapCapture = NewObject<USceneCaptureComponent2D>(this);
+// 	MiniMapCapture->SetupAttachment(LocalController->GetPawn()->GetRootComponent());
+// 	
+// 	MiniMapCapture->SetWorldLocation(CaptureLocation);
+// 	MiniMapCapture->SetWorldRotation(CaptureRotation);
+// 	MiniMapCapture->ProjectionType = ECameraProjectionMode::Orthographic;
+// 	MiniMapCapture->OrthoWidth = 1000;
+//
+// 	MiniMapCapture->CaptureScene();
+// 	MiniMapCapture->RegisterComponent();
+// 	
+// 	UTextureRenderTarget2D* MiniMapRenderTarget = NewObject<UTextureRenderTarget2D>(this);
+// 	MiniMapRenderTarget->InitAutoFormat(512, 512);
+// 	MiniMapRenderTarget->UpdateResource();
+//
+// 	MiniMapCapture->TextureTarget = MiniMapRenderTarget;
+// 	
+// 	UMaterial* BaseMaterial = LoadObject<UMaterial>(nullptr, TEXT("/Game/Characters/RenderTarget/M_Minimap"));
+// 	
+// 	UMaterialInstanceDynamic* DynamicMaterialInstance = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+// 	
+// 	DynamicMaterialInstance->SetTextureParameterValue(FName("MiniMapTexture"), MiniMapRenderTarget);
+// 	
+// 	OccupationMinimapWidget->MinimapImage->SetBrushFromMaterial(DynamicMaterialInstance);
+// }
 
 void ALakayaBasePlayerState::RequestCharacterChange_Implementation(const FName& Name)
 {

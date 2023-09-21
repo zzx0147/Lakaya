@@ -68,7 +68,7 @@ bool FGameplayAbilityTargetData_ThrowProjectile::NetSerialize(FArchive& Ar, UPac
 
 ALakayaProjectile::ALakayaProjectile()
 {
-	SetReplicates(true);
+	bReplicates = true;
 
 	// PredictProjectilePath가 radius 속성을 갖는 투사체만 지원하므로 투사체는 구체여야 합니다..
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));

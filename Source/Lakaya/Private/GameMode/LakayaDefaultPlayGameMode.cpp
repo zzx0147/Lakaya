@@ -47,7 +47,7 @@ void ALakayaDefaultPlayGameMode::RestartPlayer(AController* NewPlayer)
 			SpawnTag = ProTeamSpawnTag;
 			break;
 		default:
-			SpawnTag = TEXT("");
+			SpawnTag = TEXT("IndividualSpawnZone");
 			break;
 		}
 	}
