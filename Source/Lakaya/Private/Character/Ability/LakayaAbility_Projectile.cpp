@@ -183,12 +183,10 @@ void ULakayaAbility_Projectile::OnTargetDataReceived_Implementation(
 {
 	Super::OnTargetDataReceived_Implementation(TargetDataHandle, GameplayTag);
 
-	const static auto StructName = FGameplayAbilityTargetData_ThrowProjectile::StaticStruct()->GetStructCPPName();
-
 	if (ensure(TargetDataHandle.IsValid(0)))
 	{
 		const auto RawTargetDataPtr = TargetDataHandle.Get(0);
-		if (ensure(RawTargetDataPtr->GetScriptStruct()->GetStructCPPName() == StructName))
+		if (ensure(RawTargetDataPtr->GetScriptStruct() == FGameplayAbilityTargetData_ThrowProjectile::StaticStruct()))
 		{
 			const auto TargetData = static_cast<const FGameplayAbilityTargetData_ThrowProjectile*>(RawTargetDataPtr);
 			if (ensure(TargetData->Projectile))
