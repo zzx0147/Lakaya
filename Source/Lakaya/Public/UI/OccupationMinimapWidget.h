@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Occupation/Team.h"
 #include "UI/MiniMapWidget.h"
 #include "OccupationMinimapWidget.generated.h"
 
@@ -16,10 +17,12 @@ class LAKAYA_API UOccupationMinimapWidget : public UMinimapWidget
 
 protected:
 	virtual void NativeConstruct() override;
-	
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	
+
 public:
+	// UImage* CreatePlayerImage(const ETeam& NewTeam);
+
+private:
 	/**
 	 * @brief 월드를 미니맵 좌표로 변환합니다.
 	 * @param PlayerLocation 현재 본인의 위치입니다.
@@ -33,7 +36,7 @@ public:
 	 * @param PlayerPosition 미니맵에서 플레이어의 위치를 업데이트 해줍니다.
 	 */
 	void UpdatePlayerPosition(const FVector2D& PlayerPosition);
-
+	
 public:
 	// 미니맵을 업데이트 여부입니다.
 	bool UpdateMinimap;
@@ -41,5 +44,24 @@ public:
 private:
 	TWeakObjectPtr<class UImage> MinimapImage;
 
-	TWeakObjectPtr<class UImage> PlayerImage;
+	// TODO : 이미지를 미리 생성해서, 위치를 업데이트 하는 게 아닌
+	// 동적으로 플레이어가 입장할 때 본인의 팀 색깔에 맞는 아이콘 이미지를 만들어서,
+	// 위치를 업데이트 하는 방식으로 변경해야 합니다.
+	TWeakObjectPtr<UImage> PlayerImage;
+
+	UPROPERTY(EditAnywhere)
+	UTexture2D* MinimapAntiIcon;
+	
+	UPROPERTY(EditAnywhere)
+	UTexture2D* MinimapProIcon;
+
+	// TODO : 아직 리소스가 나오지 않았습니다.
+	UPROPERTY(EditAnywhere)
+	UTexture2D* MinimapOwnIcon;
+
+	// TODO : 아직 리소스가 나오지 않았습니다.
+	UPROPERTY(EditAnywhere)
+	UTexture2D* MinimapDeathIcon;
+
+	TMap<ETeam, TArray<TWeakObjectPtr<UImage>>> MinimapByPlayers;
 };

@@ -26,7 +26,7 @@ public:
 private:
 	UPROPERTY(EditAnywhere, Category = "Image")
 	UTexture* OccupyAntiImage;
-
+	
 	UPROPERTY(EditAnywhere, Category = "Image")
 	UTexture* OccupyProImage;
 	

@@ -41,13 +41,38 @@ void UOccupationMinimapWidget::UpdatePlayerPosition(const FVector2D& PlayerPosit
 	// 월드 상에 존재하는 본인의 위치를 미니맵 좌표로 전환합니다.
 	const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MiniMapSize);
 
+	// TODO : 테스트를 위해 주석처리 했습니다.
 	// 전환된 좌표로 플레이어의 위치를 옮겨줍니다.
 	// FVector2D = ((MinimapPosition.x + MinimapSize / 2), (MinimapPosition.y + MinimapSize / 2)
 	PlayerImage->SetRenderTranslation(NewPlayerPosition + FVector2D(225.0f, 250.5f));
 }
 
+// UImage* UOccupationMinimapWidget::CreatePlayerImage(const ETeam& NewTeam)
+// {
+// 	const auto NewImage = NewObject<UImage>(this);
+// 	const auto Team = NewTeam == ETeam::Anti ? ETeam::Anti : ETeam::Anti;
+//
+// 	if (Team == ETeam::Anti)
+// 	{
+// 		NewImage->SetBrushFromTexture(MinimapAntiIcon);
+// 	}
+// 	else if (Team == ETeam::Pro)
+// 	{
+// 		NewImage->SetBrushFromTexture(MinimapProIcon);	
+// 	}
+//
+// 	// 미니맵의 가운데 좌표 : FVector(225,0f, 250.0f)
+// 	NewImage->SetRenderTranslation(FVector2D(225.0f, 250.0f));
+//
+// 	MinimapByPlayers.Emplace(Team, NewImage);
+// 	
+// 	NewImage->SetVisibility(ESlateVisibility::Visible);
+// 	
+// 	return NewImage;
+// }
+
 FVector2D UOccupationMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
-	const FVector2D& MiniMapSize)
+                                                                     const FVector2D& MiniMapSize)
 {
 	// WorldMap Size.
 	const FVector2D WorldMapSize(7560.0f, 10600.0f);
