@@ -179,7 +179,7 @@ FGameplayAbilityTargetDataHandle ULakayaAbility::MakeTargetData_Implementation()
 }
 
 void ULakayaAbility::HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
-	FGameplayAbilityTargetDataHandle& OutTargetDataHandle)
+                                                  FGameplayAbilityTargetDataHandle& OutTargetDataHandle)
 {
 	static auto Transform = [](const FHitResult& HitResult)
 	{
