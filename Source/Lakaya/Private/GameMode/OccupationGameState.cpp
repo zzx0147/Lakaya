@@ -334,6 +334,9 @@ void AOccupationGameState::HandleMatchHasEnded()
 		BindDetailResultWidget();
 		BindDetailResultElementWidget();
 	}
+
+	if (OccupationMinimapWidget.IsValid())
+		OccupationMinimapWidget->UpdateMinimap = false;
 }
 
 void AOccupationGameState::EndTimeCheck()
