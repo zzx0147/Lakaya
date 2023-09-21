@@ -15,7 +15,21 @@ class LAKAYA_API UOccupationMinimapWidget : public UMinimapWidget
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void NativeConstruct() override;
+	
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	
 public:
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	FVector2D ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation, const FVector2D& MiniMapSize);
+
+	void UpdatePlayerPosition(const FVector2D& PlayerPosition);
+
+public:
+	bool UpdateMinimap;
+	
+private:
 	UImage* MinimapImage;
+
+	UImage* PlayerImage;
 };

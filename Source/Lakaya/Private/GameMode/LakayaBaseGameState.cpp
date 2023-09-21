@@ -160,8 +160,6 @@ void ALakayaBaseGameState::RemovePlayerState(APlayerState* PlayerState)
 
 void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 {
-	UE_LOG(LogTemp, Error, TEXT("HandleMatchIsCharacterSelect."));
-	
 	if (GetCharacterSelectWidget()) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
 
 	if (LoadingWidget.IsValid()) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -182,7 +180,7 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 	// 캐릭터가 바뀔 때마다, 캐릭터에게 적합한 DynamicCrossHair 위젯을 생성합니다.
 	if (auto BasePlayerState = GetWorld()->GetFirstPlayerController()->GetPlayerState<ALakayaBasePlayerState>())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BasePlayerState is valid."));
+		// UE_LOG(LogTemp, Warning, TEXT("BasePlayerState is valid."));
 
 		BasePlayerState->OnCharacterNameChanged.AddLambda([this, BasePlayerState](ALakayaBasePlayerState* , const FName&)
 		{
