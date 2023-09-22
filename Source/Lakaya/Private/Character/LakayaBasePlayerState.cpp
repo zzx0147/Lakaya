@@ -8,8 +8,6 @@
 #include "Character/LakayaBaseCharacter.h"
 #include "Character/Ability/Attribute/LakayaAttributeSet.h"
 #include "Character/Ability/Component/LakayaAbilitySystemComponent.h"
-#include "Components/SceneCaptureComponent2D.h"
-#include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/DirectionalDamageIndicator.h"
@@ -49,14 +47,10 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	static ConstructorHelpers::FClassFinder<UGamePlayPortraitWidget> PortraitFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_Portrait"));
 
-	static ConstructorHelpers::FClassFinder<UOccupationMinimapWidget> OccupationMinimapFinder(
-		TEXT("/Game/Blueprints/UMG/WBP_OccupationMinimapWidget"));
-	
 	HealthWidgetClass = HealthFinder.Class;
 	DirectionDamageIndicatorClass = DirectionDamageFinder.Class;
 	PortraitWidgetClass = PortraitFinder.Class;
-	OccupationMinimapWidgetClass = OccupationMinimapFinder.Class;
-	
+
 	AbilitySystem = CreateDefaultSubobject<ULakayaAbilitySystemComponent>(TEXT("AbilitySystem"));
 
 	AttributeSet = CreateDefaultSubobject<ULakayaAttributeSet>(TEXT("LakayaAttributeSet"));
