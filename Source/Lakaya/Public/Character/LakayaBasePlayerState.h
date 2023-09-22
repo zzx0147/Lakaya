@@ -7,7 +7,6 @@
 #include "LakayaAbilitySet.h"
 #include "GameFramework/PlayerState.h"
 #include "Occupation/Team.h"
-#include "TimerManager.h"
 #include "EOS/EOSGameInstance.h"
 #include "LakayaBasePlayerState.generated.h"
 
@@ -281,8 +280,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGamePlayPortraitWidget> PortraitWidgetClass;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UOccupationMinimapWidget> OccupationMinimapWidgetClass;
+
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Health, Transient)
 	float Health;
@@ -334,9 +332,6 @@ private:
 	TWeakObjectPtr<UGamePlayHealthWidget> HealthWidget;
 	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;
 	TWeakObjectPtr<UGamePlayPortraitWidget> PortraitWidget;
-	TWeakObjectPtr<UOccupationMinimapWidget> OccupationMinimapWidget;
-
 	// bool HasInitalizedPawn = false;
-
 	// void InitalizeWithPawn();
 };
