@@ -75,9 +75,15 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	FGameplayAbilityTargetDataHandle MakeTargetData();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnInputPressed();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnInputReleased();
+
 	/** HitResult들을 타겟 데이터 핸들로 변환시킵니다. */
 	static void HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
-											 FGameplayAbilityTargetDataHandle& OutTargetDataHandle);
+	                                         FGameplayAbilityTargetDataHandle& OutTargetDataHandle);
 
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	                             const FGameplayAbilityActivationInfo ActivationInfo,
@@ -96,10 +102,6 @@ private:
 	/** 로그가 PIE에서도 표시되도록 하는 기능입니다. */
 	UPROPERTY(EditAnywhere)
 	uint8 bAddLogOnScreen : 1;
-
-	/** InputReleased에서 어빌리티를 종료시키도록 하는 기능입니다. */
-	UPROPERTY(EditAnywhere)
-	uint8 bEndOnInputRelease : 1;
 
 	UPROPERTY(EditAnywhere)
 	float ServerTargetDataTimeOut;
