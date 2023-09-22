@@ -66,7 +66,8 @@ UEnhancedInputLocalPlayerSubsystem* ULakayaAbility::GetEnhancedInputSubsystem(
 	}
 
 	// 서브시스템이 유효하지 않는 경우 업데이트합니다.
-	if (CachedInputSubsystem.IsValid())
+	// TODO(HyunBin) : 여기 if (CachedInputSubsystem.IsValid()) 이렇게 되어있었는데 이러면 유효하지 않을때만 업데이트 한다는데 유효해도 계속 업데이트 하게 되어있어서 바꿉니당.
+	if (!CachedInputSubsystem.IsValid())
 	{
 		CachedInputSubsystem = InternalGetEnhancedInputSubsystem(ActorInfo);
 	}
