@@ -77,6 +77,7 @@ public:
 	UFUNCTION(BlueprintGetter)
 	const TArray<FName>& GetKillStreakBuffs() const { return KillStreakBuffs; }
 
+	// 캐릭터의 생존 여부 상태를 가져옵니다.
 	UFUNCTION(BlueprintGetter)
 	const bool& GetAliveState() const { return bIsAlive; }
 

@@ -155,13 +155,12 @@ private:
 	UFUNCTION()
 	void OnRep_OccupationWinner();
 
-	// FVector GetWorldBoundsMin();
-	//
-	// FVector GetWorldBoundsMax();
-	//
-	// FVector2D ConvertWorldToMiniMapCoordinates(const FVector& WorldPosition, const FVector2D& MiniMapSize);
-	//
-	// void UpdatePlayerPosition(FVector NewPosition);
+	/**
+	 * @brief PlayerByMinimap Tmap을 업데이트 해줍니다.
+	 * @param Team 업데이트시켜줄 팀입니다.
+	 */
+	void UpdatePlayerByMinimap(const ETeam& Team);
+	
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;

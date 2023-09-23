@@ -255,19 +255,11 @@ void AOccupationGameState::HandleMatchHasStarted()
 			if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 				OccupationMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
 		}
-
-
+		
 		// 와지가 스킬을 쓰게 되면 상대방의 위치도 미니맵 상에 업데이트 해줘야 하기 때문에
 		// 일단은 본인의 팀과 상대방의 팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
-		for (auto& Players : PlayersByTeamMap[ETeam::Anti])
-		{
-			OccupationMinimapWidget->PlayersByMinimap[ETeam::Anti].Emplace(Players, OccupationMinimapWidget->CreatePlayerImage(ETeam::Anti));
-		}
-
-		for (auto& Players : PlayersByTeamMap[ETeam::Pro])
-		{
-			OccupationMinimapWidget->PlayersByMinimap[ETeam::Pro].Emplace(Players, OccupationMinimapWidget->CreatePlayerImage(ETeam::Pro));
-		}
+		UpdatePlayerByMinimap(ETeam::Anti);
+		UpdatePlayerByMinimap(ETeam::Pro);
 	}
 	
 	FTimerDelegate TimerDelegate_MatchStartWaitWidget;
@@ -414,6 +406,14 @@ void AOccupationGameState::OnRep_ProTeamScore()
 void AOccupationGameState::OnRep_OccupationWinner()
 {
 	OnChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
+}
+
+void AOccupationGameState::UpdatePlayerByMinimap(const ETeam& Team)
+{
+	for (auto& Players : PlayersByTeamMap[Team])
+	{
+		OccupationMinimapWidget->PlayersByMinimap[Team].Emplace(Players, OccupationMinimapWidget->CreatePlayerImage(Team));
+	}
 }
 
 void AOccupationGameState::SetClientTeam(const ETeam& NewTeam)
