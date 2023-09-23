@@ -4,7 +4,6 @@
 #include "Character/LakayaBasePlayerState.h"
 
 #include "AbilitySystemComponent.h"
-#include "AbilitySystemGlobals.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Character/Ability/Attribute/LakayaAttributeSet.h"
 #include "Character/Ability/Component/LakayaAbilitySystemComponent.h"
@@ -83,13 +82,7 @@ void ALakayaBasePlayerState::OnRep_PlayerName()
 void ALakayaBasePlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// 일단 어빌리티 시스템 컴포넌트를 직접 사용하는건 플레이어 스테이트라서 여기에 넣었지만, GameInstance::Init()에서 하는 게 더 나을 수도 있음.
-	if (auto& AbilitySystemGlobals = UAbilitySystemGlobals::Get();
-		!AbilitySystemGlobals.IsAbilitySystemGlobalsInitialized())
-	{
-		AbilitySystemGlobals.InitGlobalData();
-	}
+	
 }
 
 void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)

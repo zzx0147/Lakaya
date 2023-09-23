@@ -12,16 +12,14 @@ void ULakayaAbility::InputPressed(const FGameplayAbilitySpecHandle Handle, const
                                   const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	Log(ActorInfo, TEXT("Input Pressed"));
+	OnInputPressed();
 }
 
 void ULakayaAbility::InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
                                    const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	Log(ActorInfo, TEXT("Input Released"));
-	if (bEndOnInputRelease)
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
-	}
+	OnInputReleased();
 }
 
 void ULakayaAbility::NativeEndAbility(const FGameplayAbilitySpecHandle Handle,
@@ -68,7 +66,7 @@ UEnhancedInputLocalPlayerSubsystem* ULakayaAbility::GetEnhancedInputSubsystem(
 	}
 
 	// 서브시스템이 유효하지 않는 경우 업데이트합니다.
-	if (CachedInputSubsystem.IsValid())
+	if (!CachedInputSubsystem.IsValid())
 	{
 		CachedInputSubsystem = InternalGetEnhancedInputSubsystem(ActorInfo);
 	}

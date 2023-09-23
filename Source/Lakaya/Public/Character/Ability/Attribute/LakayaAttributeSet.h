@@ -14,7 +14,7 @@ GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
 GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDashStackFullOrNot,const bool, bIsFull);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDashStackFullOrNot, const bool, bIsFull);
 
 UCLASS()
 class LAKAYA_API ULakayaAttributeSet : public UAttributeSet
@@ -31,13 +31,15 @@ public:
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, AttackPoint);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, DashStack);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxDashStack);
-
+	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, EnergyHaste);
+	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, UltimateGauge);
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDashStackFullOrNot OnDashStackFullOrNot;
-	
+
 protected:
 	virtual bool PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data) override;
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
@@ -62,9 +64,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_DashStack)
 	FGameplayAttributeData DashStack;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_MaxDashStack)
 	FGameplayAttributeData MaxDashStack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_EnergyHaste)
+	FGameplayAttributeData EnergyHaste;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_UltimateGauge)
+	FGameplayAttributeData UltimateGauge;
 
 protected:
 	UFUNCTION()
@@ -81,4 +89,8 @@ protected:
 	virtual void OnRep_DashStack(const FGameplayAttributeData& OldValue);
 	UFUNCTION()
 	virtual void OnRep_MaxDashStack(const FGameplayAttributeData& OldValue);
+	UFUNCTION()
+	virtual void OnRep_EnergyHaste(const FGameplayAttributeData& OldValue);
+	UFUNCTION()
+	virtual void OnRep_UltimateGauge(const FGameplayAttributeData& OldValue);
 };
