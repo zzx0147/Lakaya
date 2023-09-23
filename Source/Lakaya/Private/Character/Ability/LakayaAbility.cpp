@@ -3,10 +3,14 @@
 
 #include "Character/Ability/LakayaAbility.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
 #include "AbilitySystemLog.h"
+#include "AbilitySystemStats.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GameplayCue_Types.h"
 
 void ULakayaAbility::InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
                                   const FGameplayAbilityActivationInfo ActivationInfo)
@@ -66,7 +70,7 @@ UEnhancedInputLocalPlayerSubsystem* ULakayaAbility::GetEnhancedInputSubsystem(
 	}
 
 	// 서브시스템이 유효하지 않는 경우 업데이트합니다.
-	if (CachedInputSubsystem.IsValid())
+	if (!CachedInputSubsystem.IsValid())
 	{
 		CachedInputSubsystem = InternalGetEnhancedInputSubsystem(ActorInfo);
 	}
@@ -91,7 +95,7 @@ void ULakayaAbility::Log(const FString& Message) const
 {
 	UE_LOG(LogTemp, Log, TEXT("%s"), *Message);
 	if (!bAddLogOnScreen || !GEngine) return;
-	// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, Message);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, Message);
 }
 
 void ULakayaAbility::ServerSetReplicatedTargetData(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
@@ -121,6 +125,127 @@ void ULakayaAbility::ConsumeTargetData() const
 {
 	GetAbilitySystemComponentFromActorInfo_Checked()->ConsumeClientReplicatedTargetData(
 		GetCurrentAbilitySpecHandle(), GetCurrentActivationInfo().GetActivationPredictionKey());
+}
+
+TArray<FActiveGameplayEffectHandle> ULakayaAbility::ApplyGameplayEffectOrCueToTarget(
+	const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayAbilityTargetDataHandle& Target,
+	FGameplayTag GameplayCueTag, TSubclassOf<UGameplayEffect> GameplayEffectClass, float GameplayEffectLevel,
+	int32 Stacks) const
+{
+	//bug: Undefined symbols:0> _StatPtr_STAT_ApplyGameplayEffectToTarget
+	// SCOPE_CYCLE_COUNTER(STAT_ApplyGameplayEffectToTarget);
+
+	SCOPE_CYCLE_UOBJECT(This, this);
+	SCOPE_CYCLE_UOBJECT(Effect, GameplayEffectClass);
+
+	TArray<FActiveGameplayEffectHandle> EffectHandles;
+
+	if (HasAuthority(&ActivationInfo) == false && !UAbilitySystemGlobals::Get().ShouldPredictTargetGameplayEffects())
+	{
+		// Early out to avoid making effect specs that we can't apply
+		return EffectHandles;
+	}
+
+	// This batches all created cues together
+	FScopedGameplayCueSendContext GameplayCueSendContext;
+
+	if (GameplayEffectClass == nullptr)
+	{
+		ABILITY_LOG(Error, TEXT("ApplyGameplayEffectToTarget called on ability %s with no GameplayEffect."),
+		            *GetName());
+	}
+	else if (HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
+	{
+		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(
+			Handle, ActorInfo, ActivationInfo, GameplayEffectClass, GameplayEffectLevel);
+
+		if (SpecHandle.Data.IsValid())
+		{
+			SpecHandle.Data->StackCount = Stacks;
+
+			SCOPE_CYCLE_UOBJECT(Source, SpecHandle.Data->GetContext().GetSourceObject());
+			EffectHandles.Append(ApplyGameplayEffectSpecOrCueToTarget(
+				Handle, ActorInfo, ActivationInfo, SpecHandle, Target, GameplayCueTag));
+		}
+		else
+		{
+			ABILITY_LOG(
+				Warning,
+				TEXT("UGameplayAbility::ApplyGameplayEffectToTarget failed to create valid spec handle. Ability: %s"),
+				*GetPathName());
+		}
+	}
+
+	return EffectHandles;
+}
+
+TArray<FActiveGameplayEffectHandle> ULakayaAbility::ApplyGameplayEffectSpecOrCueToTarget(
+	const FGameplayAbilitySpecHandle AbilityHandle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEffectSpecHandle SpecHandle,
+	const FGameplayAbilityTargetDataHandle& TargetData, FGameplayTag GameplayCueTag) const
+{
+	if (!SpecHandle.IsValid() || !HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
+	{
+		return {};
+	}
+
+	TArray<FActiveGameplayEffectHandle> EffectHandles;
+
+	TARGETLIST_SCOPE_LOCK(*ActorInfo->AbilitySystemComponent);
+
+	for (TSharedPtr<FGameplayAbilityTargetData> Data : TargetData.Data)
+	{
+		if (!Data.IsValid())
+		{
+			ABILITY_LOG(
+				Warning,
+				TEXT("UGameplayAbility::ApplyGameplayEffectSpecToTarget invalid target data passed in. Ability: %s"),
+				*GetPathName());
+			continue;
+		}
+
+		const auto AbilitySystemComponent = ActorInfo->AbilitySystemComponent;
+		const auto PredictionKey = AbilitySystemComponent->GetPredictionKeyForNewAction();
+
+		for (auto&& TargetActor : Data->GetActors())
+		{
+			FGameplayEffectSpec SpecToApply(*SpecHandle.Data);
+			FGameplayEffectContextHandle EffectContext = SpecToApply.GetContext().Duplicate();
+			SpecToApply.SetContext(EffectContext);
+
+			Data->AddTargetDataToContext(EffectContext, false);
+
+			if (const auto TargetComponent =
+				UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor.Get()))
+			{
+				EffectHandles.Emplace(AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(
+					SpecToApply, TargetComponent, PredictionKey));
+			}
+			else
+			{
+				AbilitySystemComponent->ExecuteGameplayCue(GameplayCueTag, EffectContext);
+			}
+		}
+	}
+
+	return EffectHandles;
+}
+
+TArray<FActiveGameplayEffectHandle> ULakayaAbility::BP_ApplyGameplayEffectOrCueToTarget(
+	FGameplayAbilityTargetDataHandle TargetData, TSubclassOf<UGameplayEffect> GameplayEffectClass,
+	FGameplayTag GameplayCueTag, int32 GameplayEffectLevel, int32 Stacks)
+{
+	return ApplyGameplayEffectOrCueToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, TargetData,
+	                                        GameplayCueTag, GameplayEffectClass, GameplayEffectLevel, Stacks);
+}
+
+TArray<FActiveGameplayEffectHandle> ULakayaAbility::K2_ApplyGameplayEffectSpecOrCueToTarget(
+	const FGameplayEffectSpecHandle EffectSpecHandle, FGameplayTag GameplayCueTag,
+	FGameplayAbilityTargetDataHandle TargetData)
+{
+	return ApplyGameplayEffectSpecOrCueToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo,
+	                                            EffectSpecHandle, TargetData, GameplayCueTag);
 }
 
 void ULakayaAbility::TargetDataScope()

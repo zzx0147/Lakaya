@@ -1,5 +1,6 @@
 #include "GameMode/OccupationGameState.h"
 
+#include "EngineUtils.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
@@ -22,6 +23,7 @@
 #include "UI/GradeResultWidget.h"
 #include "UI/MatchStartWaitWidget.h"
 #include "UI/OccupationCharacterSelectWidget.h"
+#include "UI/OccupationMinimapWidget.h"
 #include "UI/StartMessageWidget.h"
 #include "UI/TeamScoreWidget.h"
 #include "UI/WeaponOutLineWidget.h"
@@ -201,6 +203,25 @@ void AOccupationGameState::BeginPlay()
 				OccupyBarMaps.Emplace(3, OccupyExpressWidget->GetProBar());
 			}
 		}
+
+		if (OccupationMinimapWidgetClass)
+		{
+			OccupationMinimapWidget = CreateWidget<UOccupationMinimapWidget>(
+				LocalController, OccupationMinimapWidgetClass);
+			if (OccupationMinimapWidget.IsValid())
+			{
+				OccupationMinimapWidget->AddToViewport();
+				OccupationMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("OccupationMinimapWidget is null."));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("OccupationMinimapWidgetClass is null."));
+		}
 	}
 
 	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this,
@@ -224,6 +245,13 @@ void AOccupationGameState::HandleMatchHasStarted()
 
 	if (OccupyExpressWidget.IsValid())
 		OccupyExpressWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+	if (OccupationMinimapWidget.IsValid())
+	{
+		OccupationMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		OccupationMinimapWidget->UpdateMinimap = true;
+	}
+
 	
 	FTimerDelegate TimerDelegate_MatchStartWaitWidget;
 	TimerDelegate_MatchStartWaitWidget.BindLambda([this]
@@ -260,6 +288,8 @@ void AOccupationGameState::HandleMatchHasStarted()
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, TimerDelegate,
 	                                MatchWaitDuration + MatchStartWidgetLifeTime, false);
+
+	
 }
 
 void AOccupationGameState::HandleMatchHasEnded()
@@ -304,6 +334,9 @@ void AOccupationGameState::HandleMatchHasEnded()
 		BindDetailResultWidget();
 		BindDetailResultElementWidget();
 	}
+
+	if (OccupationMinimapWidget.IsValid())
+		OccupationMinimapWidget->UpdateMinimap = false;
 }
 
 void AOccupationGameState::EndTimeCheck()
@@ -367,6 +400,70 @@ void AOccupationGameState::OnRep_OccupationWinner()
 {
 	OnChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
 }
+
+// FVector AOccupationGameState::GetWorldBoundsMin()
+// {
+// 	FVector MinBounds(FLT_MAX, FLT_MAX, FLT_MAX);
+//
+// 	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+// 	{
+// 		AActor* Actor = *ActorItr;
+// 		if (Actor && !Actor->IsPendingKill())
+// 		{
+// 			FVector ActorLocation = Actor->GetActorLocation();
+// 			MinBounds.X = FMath::Min(MinBounds.X, ActorLocation.X);
+// 			MinBounds.Y = FMath::Min(MinBounds.Y, ActorLocation.Y);
+// 			MinBounds.Z = FMath::Min(MinBounds.Z, ActorLocation.Z);
+// 		}
+// 	}
+//
+// 	return MinBounds;
+// }
+//
+// FVector AOccupationGameState::GetWorldBoundsMax()
+// {
+// 	FVector MaxBounds(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+//
+// 	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+// 	{
+// 		AActor* Actor = *ActorItr;
+// 		if (Actor && !Actor->IsPendingKill())
+// 		{
+// 			FVector ActorLocation = Actor->GetActorLocation();
+// 			MaxBounds.X = FMath::Max(MaxBounds.X, ActorLocation.X);
+// 			MaxBounds.Y = FMath::Max(MaxBounds.Y, ActorLocation.Y);
+// 			MaxBounds.Z = FMath::Max(MaxBounds.Z, ActorLocation.Z);
+// 		}
+// 	}
+//
+// 	return MaxBounds;
+// }
+//
+// FVector2D AOccupationGameState::ConvertWorldToMiniMapCoordinates(const FVector& WorldPosition,
+// 	const FVector2D& MiniMapSize)
+// {
+// 	FVector WorldBoundsMin = GetWorldBoundsMin();
+// 	FVector WorldBoundsMax = GetWorldBoundsMax();
+//
+// 	float XRatio = (WorldPosition.X - WorldBoundsMin.X) / (WorldBoundsMax.X - WorldBoundsMin.X);
+// 	float YRatio = (WorldPosition.Y - WorldBoundsMin.Y) / (WorldBoundsMax.Y - WorldBoundsMin.Y);
+//
+// 	FVector2D MiniMapCoordinates;
+//     
+// 	MiniMapCoordinates.X = XRatio * MiniMapSize.X;
+// 	MiniMapCoordinates.Y = YRatio * MiniMapSize.Y;
+//
+// 	return MiniMapCoordinates;
+// }
+//
+// void AOccupationGameState::UpdatePlayerPosition(FVector NewPosition)
+// {
+// 	FVector2D MiniMapSize = OccupationMinimapWidget->MinimapImage->GetDesiredSize();
+//
+// 	FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(NewPosition, MiniMapSize);
+//
+// 	OccupationMinimapWidget->PlayerImage->SetRenderTranslation(NewPlayerPosition - (OccupationMinimapWidget->PlayerImage->GetDesiredSize() * 0.5f));
+// }
 
 void AOccupationGameState::SetClientTeam(const ETeam& NewTeam)
 {

@@ -31,6 +31,7 @@ public:
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, AttackPoint);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, DashStack);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxDashStack);
+	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, EnergyHaste);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -66,6 +67,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_MaxDashStack)
 	FGameplayAttributeData MaxDashStack;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_EnergyHaste)
+	FGameplayAttributeData EnergyHaste;
+	
 protected:
 	UFUNCTION()
 	virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldValue);
@@ -81,4 +85,6 @@ protected:
 	virtual void OnRep_DashStack(const FGameplayAttributeData& OldValue);
 	UFUNCTION()
 	virtual void OnRep_MaxDashStack(const FGameplayAttributeData& OldValue);
+	UFUNCTION()
+	virtual void OnRep_EnergyHaste(const FGameplayAttributeData& OldValue);
 };
