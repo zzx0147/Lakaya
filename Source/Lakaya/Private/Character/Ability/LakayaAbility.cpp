@@ -66,7 +66,7 @@ UEnhancedInputLocalPlayerSubsystem* ULakayaAbility::GetEnhancedInputSubsystem(
 	}
 
 	// 서브시스템이 유효하지 않는 경우 업데이트합니다.
-	if (CachedInputSubsystem.IsValid())
+	if (!CachedInputSubsystem.IsValid())
 	{
 		CachedInputSubsystem = InternalGetEnhancedInputSubsystem(ActorInfo);
 	}
