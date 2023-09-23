@@ -212,15 +212,9 @@ void AOccupationGameState::BeginPlay()
 			{
 				OccupationMinimapWidget->AddToViewport();
 				OccupationMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
+				OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
+				OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
 			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("OccupationMinimapWidget is null."));
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("OccupationMinimapWidgetClass is null."));
 		}
 	}
 
@@ -250,8 +244,21 @@ void AOccupationGameState::HandleMatchHasStarted()
 	{
 		OccupationMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		OccupationMinimapWidget->UpdateMinimap = true;
-	}
 
+		// TODO : PlayersByTeamMap의 정보를 가져와서 OccupationMinimap의 PlayersByMinimap으로 복사하면서, Image를 생성해서 넣어주어야 함.
+		OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
+		OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
+
+		for (auto& Players : PlayersByTeamMap[ETeam::Anti])
+		{
+			OccupationMinimapWidget->PlayersByMinimap[ETeam::Anti].Emplace(Players, OccupationMinimapWidget->CreatePlayerImage(ETeam::Anti));
+		}
+
+		for (auto& Players : PlayersByTeamMap[ETeam::Pro])
+		{
+			OccupationMinimapWidget->PlayersByMinimap[ETeam::Pro].Emplace(Players, OccupationMinimapWidget->CreatePlayerImage(ETeam::Pro));
+		}
+	}
 	
 	FTimerDelegate TimerDelegate_MatchStartWaitWidget;
 	TimerDelegate_MatchStartWaitWidget.BindLambda([this]
@@ -288,8 +295,6 @@ void AOccupationGameState::HandleMatchHasStarted()
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, TimerDelegate,
 	                                MatchWaitDuration + MatchStartWidgetLifeTime, false);
-
-	
 }
 
 void AOccupationGameState::HandleMatchHasEnded()
@@ -383,6 +388,9 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 	{
 		UpdatePlayerByTeamMap(BasePlayerState->GetTeam(), BasePlayerState);
 		BasePlayerState->OnTeamChanged.AddUObject(this, &AOccupationGameState::UpdatePlayerByTeamMap, BasePlayerState);
+
+		// TODO : 현재 시점에서는 OccupationMinimapWidget이 null일 수 있습니다.
+		// OccupationMinimapWidget->UpdatePlayersByMinimap(BasePlayerState->GetTeam(), BasePlayerState);
 	}
 }
 
@@ -400,70 +408,6 @@ void AOccupationGameState::OnRep_OccupationWinner()
 {
 	OnChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
 }
-
-// FVector AOccupationGameState::GetWorldBoundsMin()
-// {
-// 	FVector MinBounds(FLT_MAX, FLT_MAX, FLT_MAX);
-//
-// 	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
-// 	{
-// 		AActor* Actor = *ActorItr;
-// 		if (Actor && !Actor->IsPendingKill())
-// 		{
-// 			FVector ActorLocation = Actor->GetActorLocation();
-// 			MinBounds.X = FMath::Min(MinBounds.X, ActorLocation.X);
-// 			MinBounds.Y = FMath::Min(MinBounds.Y, ActorLocation.Y);
-// 			MinBounds.Z = FMath::Min(MinBounds.Z, ActorLocation.Z);
-// 		}
-// 	}
-//
-// 	return MinBounds;
-// }
-//
-// FVector AOccupationGameState::GetWorldBoundsMax()
-// {
-// 	FVector MaxBounds(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-//
-// 	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
-// 	{
-// 		AActor* Actor = *ActorItr;
-// 		if (Actor && !Actor->IsPendingKill())
-// 		{
-// 			FVector ActorLocation = Actor->GetActorLocation();
-// 			MaxBounds.X = FMath::Max(MaxBounds.X, ActorLocation.X);
-// 			MaxBounds.Y = FMath::Max(MaxBounds.Y, ActorLocation.Y);
-// 			MaxBounds.Z = FMath::Max(MaxBounds.Z, ActorLocation.Z);
-// 		}
-// 	}
-//
-// 	return MaxBounds;
-// }
-//
-// FVector2D AOccupationGameState::ConvertWorldToMiniMapCoordinates(const FVector& WorldPosition,
-// 	const FVector2D& MiniMapSize)
-// {
-// 	FVector WorldBoundsMin = GetWorldBoundsMin();
-// 	FVector WorldBoundsMax = GetWorldBoundsMax();
-//
-// 	float XRatio = (WorldPosition.X - WorldBoundsMin.X) / (WorldBoundsMax.X - WorldBoundsMin.X);
-// 	float YRatio = (WorldPosition.Y - WorldBoundsMin.Y) / (WorldBoundsMax.Y - WorldBoundsMin.Y);
-//
-// 	FVector2D MiniMapCoordinates;
-//     
-// 	MiniMapCoordinates.X = XRatio * MiniMapSize.X;
-// 	MiniMapCoordinates.Y = YRatio * MiniMapSize.Y;
-//
-// 	return MiniMapCoordinates;
-// }
-//
-// void AOccupationGameState::UpdatePlayerPosition(FVector NewPosition)
-// {
-// 	FVector2D MiniMapSize = OccupationMinimapWidget->MinimapImage->GetDesiredSize();
-//
-// 	FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(NewPosition, MiniMapSize);
-//
-// 	OccupationMinimapWidget->PlayerImage->SetRenderTranslation(NewPlayerPosition - (OccupationMinimapWidget->PlayerImage->GetDesiredSize() * 0.5f));
-// }
 
 void AOccupationGameState::SetClientTeam(const ETeam& NewTeam)
 {
