@@ -3,6 +3,7 @@
 
 #include "EOS/EOSGameInstance.h"
 
+#include "AbilitySystemGlobals.h"
 #include "OnlineSessionSettings.h"
 #include "Sockets.h"
 #include "SocketSubsystem.h"
@@ -50,6 +51,12 @@ void UEOSGameInstance::Init()
 		{
 			UE_LOG_ONLINE(Log, TEXT("SocketClient Created"));
 		}
+	}
+
+	if (auto& AbilitySystemGlobals = UAbilitySystemGlobals::Get();
+		!AbilitySystemGlobals.IsAbilitySystemGlobalsInitialized())
+	{
+		AbilitySystemGlobals.InitGlobalData();
 	}
 
 	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, *OnlineSubsystem->GetSubsystemName().ToString());

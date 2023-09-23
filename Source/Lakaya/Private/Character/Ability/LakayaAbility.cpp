@@ -12,16 +12,14 @@ void ULakayaAbility::InputPressed(const FGameplayAbilitySpecHandle Handle, const
                                   const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	Log(ActorInfo, TEXT("Input Pressed"));
+	OnInputPressed();
 }
 
 void ULakayaAbility::InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
                                    const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	Log(ActorInfo, TEXT("Input Released"));
-	if (bEndOnInputRelease)
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
-	}
+	OnInputReleased();
 }
 
 void ULakayaAbility::NativeEndAbility(const FGameplayAbilitySpecHandle Handle,
@@ -179,7 +177,7 @@ FGameplayAbilityTargetDataHandle ULakayaAbility::MakeTargetData_Implementation()
 }
 
 void ULakayaAbility::HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
-	FGameplayAbilityTargetDataHandle& OutTargetDataHandle)
+                                                  FGameplayAbilityTargetDataHandle& OutTargetDataHandle)
 {
 	static auto Transform = [](const FHitResult& HitResult)
 	{

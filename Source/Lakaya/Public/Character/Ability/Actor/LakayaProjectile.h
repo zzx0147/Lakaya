@@ -113,6 +113,8 @@ struct FGameplayAbilityTargetData_ThrowProjectile : public FGameplayAbilityTarge
 
 	virtual UScriptStruct* GetScriptStruct() const override { return StaticStruct(); }
 
+	virtual FString ToString() const override { return TEXT("FGameplayAbilityTargetData_ThrowProjectile"); }
+
 	FGameplayAbilityTargetData_ThrowProjectile() = default;
 
 	FGameplayAbilityTargetData_ThrowProjectile(
