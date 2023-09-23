@@ -214,6 +214,8 @@ void AOccupationGameState::BeginPlay()
 				OccupationMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
 				OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
 				OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
+
+				
 			}
 		}
 	}
@@ -244,11 +246,19 @@ void AOccupationGameState::HandleMatchHasStarted()
 	{
 		OccupationMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		OccupationMinimapWidget->UpdateMinimap = true;
-
-		// TODO : PlayersByTeamMap의 정보를 가져와서 OccupationMinimap의 PlayersByMinimap으로 복사하면서, Image를 생성해서 넣어주어야 함.
 		OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
 		OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
 
+		if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
+		LocalController && LocalController->IsLocalController())
+		{
+			if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
+				OccupationMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
+		}
+
+
+		// 와지가 스킬을 쓰게 되면 상대방의 위치도 미니맵 상에 업데이트 해줘야 하기 때문에
+		// 일단은 본인의 팀과 상대방의 팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
 		for (auto& Players : PlayersByTeamMap[ETeam::Anti])
 		{
 			OccupationMinimapWidget->PlayersByMinimap[ETeam::Anti].Emplace(Players, OccupationMinimapWidget->CreatePlayerImage(ETeam::Anti));
@@ -388,9 +398,6 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 	{
 		UpdatePlayerByTeamMap(BasePlayerState->GetTeam(), BasePlayerState);
 		BasePlayerState->OnTeamChanged.AddUObject(this, &AOccupationGameState::UpdatePlayerByTeamMap, BasePlayerState);
-
-		// TODO : 현재 시점에서는 OccupationMinimapWidget이 null일 수 있습니다.
-		// OccupationMinimapWidget->UpdatePlayersByMinimap(BasePlayerState->GetTeam(), BasePlayerState);
 	}
 }
 

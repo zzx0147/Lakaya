@@ -27,8 +27,14 @@ void UOccupationMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InD
 	if (UpdateMinimap)
 	{
 		// TODO : 자기 자신의 팀만을 업데이트 해줘야합니다. (예외로 와지 궁을 사용했을 시에는 모두의 팀을 업데이트 해줘야합니다.)
-		UpdatePlayerPosition(ETeam::Anti);
-		UpdatePlayerPosition(ETeam::Pro);
+		if (CurrentTeam == ETeam::Anti)
+		{
+			UpdatePlayerPosition(ETeam::Anti);
+		}
+		else if (CurrentTeam == ETeam::Pro)
+		{
+			UpdatePlayerPosition(ETeam::Pro);
+		}
 	}
 }
 
@@ -48,6 +54,9 @@ void UOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 
 		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
 
+		if (Image->GetVisibility() == ESlateVisibility::Hidden)
+			Image->SetVisibility(ESlateVisibility::Visible);
+		
 		Image->SetRenderTranslation(NewPlayerPosition + FVector2D(225.0f, 250.5f));
 	}
 }
@@ -62,8 +71,9 @@ UImage* UOccupationMinimapWidget::CreatePlayerImage(const ETeam& NewTeam)
 	PanelSlot->SetAlignment(FVector2D(0.5f, 0.5f));
 	PanelSlot->SetSize(FVector2D(12.0f, 12.0f));
 	
-	NewImage->SetVisibility(ESlateVisibility::Visible);
-
+	// NewImage->SetVisibility(ESlateVisibility::Visible);
+	NewImage->SetVisibility(ESlateVisibility::Hidden);
+	
 	// 이미지를 생성한 플레이어의 팀에 따라 아이콘을 바꿔줍니다.
 	if (Team == ETeam::Anti)
 	{

@@ -30,6 +30,9 @@ public:
 	 */
 	UImage* CreatePlayerImage(const ETeam& NewTeam);
 
+	FORCEINLINE const ETeam& GetTeam() const { return CurrentTeam; }
+
+	FORCEINLINE void SetTeam(const ETeam& Team) { CurrentTeam = Team; }
 private:
 	/**
 	 * @brief 월드를 미니맵 좌표로 변환합니다.
@@ -52,7 +55,8 @@ public:
 	// 미니맵에서 Anti팀과 Pro팀의 위치에 따라 이미지를 업데이트 해줘야 합니다.
 	// 이를 관리 해주는 TMap입니다.
 	TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>> PlayersByMinimap;
-	
+
+
 private:
 	TWeakObjectPtr<UCanvasPanel> CanvasPanel;
 	
@@ -71,4 +75,7 @@ private:
 	// TODO : 아직 리소스가 나오지 않았습니다.
 	UPROPERTY(EditAnywhere)
 	UTexture2D* MinimapDeathIcon;
+
+	// Onwer의 소속 팀 입니다.
+	ETeam CurrentTeam;
 };
