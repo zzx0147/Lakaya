@@ -158,8 +158,10 @@ private:
 	/**
 	 * @brief PlayerByMinimap Tmap을 업데이트 해줍니다.
 	 * @param Team 업데이트시켜줄 팀입니다.
+	 * @param PlayerState PlayersByMinimap에 업데이트 시켜줄 플레이어의 정보입니다.
+	 * PlayerState에서는 팀의 정보, 자기 자신 여부를 알기 위해서 사용됩니다.
 	 */
-	void UpdatePlayerByMinimap(const ETeam& Team);
+	void UpdatePlayerByMinimap(const ETeam& Team, ALakayaBasePlayerState* PlayerState);
 	
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
