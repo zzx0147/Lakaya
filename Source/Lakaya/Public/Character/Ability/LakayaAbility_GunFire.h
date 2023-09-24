@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayCueInterface.h"
 #include "LakayaAbility.h"
 #include "LakayaAbility_GunFire.generated.h"
 
@@ -31,6 +32,10 @@ private:
 	/** 피격된 대상에게 적용할 게임플레이 이펙트입니다. */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> DamageEffect;
+
+	/** 피격된 대상이 어빌리티 시스템이 없는 경우 실행할 게임플레이 큐를 지정합니다. */
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayCueTag EnvironmentCue;
 
 	/** 사격 트레이스를 구현하는 액터 컴포넌트 클래스를 지정합니다. 이 클래스가 아바타 액터에 있다면 그것을 사용하고, 없다면 추가합니다. */
 	UPROPERTY(EditDefaultsOnly)
