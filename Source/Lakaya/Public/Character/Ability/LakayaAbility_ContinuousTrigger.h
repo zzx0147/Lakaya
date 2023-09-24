@@ -24,6 +24,9 @@ protected:
 	                             const FGameplayAbilityActivationInfo ActivationInfo,
 	                             const FGameplayEventData* TriggerEventData) override;
 
+	UFUNCTION(BlueprintNativeEvent)
+	void OnFailToActivateTriggerAbility();
+
 private:
 	UFUNCTION()
 	void TryActivateTriggerAbility();
