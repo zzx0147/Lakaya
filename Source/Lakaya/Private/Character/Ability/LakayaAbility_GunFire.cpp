@@ -79,7 +79,7 @@ FGameplayAbilityTargetDataHandle ULakayaAbility_GunFire::MakeTargetData_Implemen
 	FGameplayAbilityTargetDataHandle TargetDataHandle;
 	HitResultsToTargetDataHandle(HitResults, TargetDataHandle);
 
-	BP_ApplyGameplayEffectToTarget(TargetDataHandle, DamageEffect);
+	BP_ApplyGameplayEffectOrCueToTarget(TargetDataHandle, DamageEffect, EnvironmentCue.GameplayCueTag);
 	return TargetDataHandle;
 }
 
@@ -88,6 +88,6 @@ void ULakayaAbility_GunFire::OnTargetDataReceived_Implementation(
 {
 	Super::OnTargetDataReceived_Implementation(TargetDataHandle, GameplayTag);
 
-	BP_ApplyGameplayEffectToTarget(TargetDataHandle, DamageEffect);
+	BP_ApplyGameplayEffectOrCueToTarget(TargetDataHandle, DamageEffect, EnvironmentCue.GameplayCueTag);
 	ConsumeTargetData();
 }

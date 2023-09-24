@@ -332,6 +332,4 @@ private:
 	TWeakObjectPtr<UGamePlayHealthWidget> HealthWidget;
 	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;
 	TWeakObjectPtr<UGamePlayPortraitWidget> PortraitWidget;
-	// bool HasInitalizedPawn = false;
-	// void InitalizeWithPawn();
 };
