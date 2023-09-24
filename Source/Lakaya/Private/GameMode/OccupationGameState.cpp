@@ -212,15 +212,11 @@ void AOccupationGameState::BeginPlay()
 			{
 				OccupationMinimapWidget->AddToViewport();
 				OccupationMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
+				OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
+				OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
+
+				
 			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("OccupationMinimapWidget is null."));
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("OccupationMinimapWidgetClass is null."));
 		}
 	}
 
@@ -250,8 +246,21 @@ void AOccupationGameState::HandleMatchHasStarted()
 	{
 		OccupationMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		OccupationMinimapWidget->UpdateMinimap = true;
-	}
+		OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
+		OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
 
+		if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
+		LocalController && LocalController->IsLocalController())
+		{
+			if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
+				OccupationMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
+		}
+		
+		// 와지가 스킬을 쓰게 되면 상대방의 위치도 미니맵 상에 업데이트 해줘야 하기 때문에
+		// 일단은 본인의 팀과 상대방의 팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
+		UpdatePlayerByMinimap(ETeam::Anti);
+		UpdatePlayerByMinimap(ETeam::Pro);
+	}
 	
 	FTimerDelegate TimerDelegate_MatchStartWaitWidget;
 	TimerDelegate_MatchStartWaitWidget.BindLambda([this]
@@ -288,8 +297,6 @@ void AOccupationGameState::HandleMatchHasStarted()
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, TimerDelegate,
 	                                MatchWaitDuration + MatchStartWidgetLifeTime, false);
-
-	
 }
 
 void AOccupationGameState::HandleMatchHasEnded()
@@ -401,69 +408,13 @@ void AOccupationGameState::OnRep_OccupationWinner()
 	OnChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
 }
 
-// FVector AOccupationGameState::GetWorldBoundsMin()
-// {
-// 	FVector MinBounds(FLT_MAX, FLT_MAX, FLT_MAX);
-//
-// 	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
-// 	{
-// 		AActor* Actor = *ActorItr;
-// 		if (Actor && !Actor->IsPendingKill())
-// 		{
-// 			FVector ActorLocation = Actor->GetActorLocation();
-// 			MinBounds.X = FMath::Min(MinBounds.X, ActorLocation.X);
-// 			MinBounds.Y = FMath::Min(MinBounds.Y, ActorLocation.Y);
-// 			MinBounds.Z = FMath::Min(MinBounds.Z, ActorLocation.Z);
-// 		}
-// 	}
-//
-// 	return MinBounds;
-// }
-//
-// FVector AOccupationGameState::GetWorldBoundsMax()
-// {
-// 	FVector MaxBounds(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-//
-// 	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
-// 	{
-// 		AActor* Actor = *ActorItr;
-// 		if (Actor && !Actor->IsPendingKill())
-// 		{
-// 			FVector ActorLocation = Actor->GetActorLocation();
-// 			MaxBounds.X = FMath::Max(MaxBounds.X, ActorLocation.X);
-// 			MaxBounds.Y = FMath::Max(MaxBounds.Y, ActorLocation.Y);
-// 			MaxBounds.Z = FMath::Max(MaxBounds.Z, ActorLocation.Z);
-// 		}
-// 	}
-//
-// 	return MaxBounds;
-// }
-//
-// FVector2D AOccupationGameState::ConvertWorldToMiniMapCoordinates(const FVector& WorldPosition,
-// 	const FVector2D& MiniMapSize)
-// {
-// 	FVector WorldBoundsMin = GetWorldBoundsMin();
-// 	FVector WorldBoundsMax = GetWorldBoundsMax();
-//
-// 	float XRatio = (WorldPosition.X - WorldBoundsMin.X) / (WorldBoundsMax.X - WorldBoundsMin.X);
-// 	float YRatio = (WorldPosition.Y - WorldBoundsMin.Y) / (WorldBoundsMax.Y - WorldBoundsMin.Y);
-//
-// 	FVector2D MiniMapCoordinates;
-//     
-// 	MiniMapCoordinates.X = XRatio * MiniMapSize.X;
-// 	MiniMapCoordinates.Y = YRatio * MiniMapSize.Y;
-//
-// 	return MiniMapCoordinates;
-// }
-//
-// void AOccupationGameState::UpdatePlayerPosition(FVector NewPosition)
-// {
-// 	FVector2D MiniMapSize = OccupationMinimapWidget->MinimapImage->GetDesiredSize();
-//
-// 	FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(NewPosition, MiniMapSize);
-//
-// 	OccupationMinimapWidget->PlayerImage->SetRenderTranslation(NewPlayerPosition - (OccupationMinimapWidget->PlayerImage->GetDesiredSize() * 0.5f));
-// }
+void AOccupationGameState::UpdatePlayerByMinimap(const ETeam& Team)
+{
+	for (auto& Players : PlayersByTeamMap[Team])
+	{
+		OccupationMinimapWidget->PlayersByMinimap[Team].Emplace(Players, OccupationMinimapWidget->CreatePlayerImage(Team));
+	}
+}
 
 void AOccupationGameState::SetClientTeam(const ETeam& NewTeam)
 {

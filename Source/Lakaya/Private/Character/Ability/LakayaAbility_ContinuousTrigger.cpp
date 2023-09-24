@@ -25,10 +25,11 @@ void ULakayaAbility_ContinuousTrigger::OnGiveAbility(const FGameplayAbilityActor
                                                      const FGameplayAbilitySpec& Spec)
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
-	const auto AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo_Checked();
+
 	if (ActorInfo->IsNetAuthority())
 	{
-		TriggerAbilityHandle = AbilitySystemComponent->K2_GiveAbility(TriggerAbilityClass);
+		TriggerAbilityHandle =
+			GetAbilitySystemComponentFromActorInfo_Checked()->K2_GiveAbility(TriggerAbilityClass);
 	}
 }
 
@@ -58,12 +59,16 @@ void ULakayaAbility_ContinuousTrigger::ActivateAbility(const FGameplayAbilitySpe
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
+void ULakayaAbility_ContinuousTrigger::OnFailToActivateTriggerAbility_Implementation()
+{
+	K2_EndAbility();
+}
+
 void ULakayaAbility_ContinuousTrigger::TryActivateTriggerAbility()
 {
 	if (!GetAbilitySystemComponentFromActorInfo_Checked()->TryActivateAbility(TriggerAbilityHandle))
 	{
-		Log(CurrentActorInfo, TEXT("Fail to Activate Trigger Ability. End this ability"));
-		// 어빌리티 시전에 실패했다면 어빌리티를 더이상 활성화할 수 없는 것으로 간주하고 이 어빌리티도 종료시킵니다.
-		K2_EndAbility();
+		Log(CurrentActorInfo, TEXT("Fail to Activate Trigger Ability"));
+		OnFailToActivateTriggerAbility();
 	}
 }
