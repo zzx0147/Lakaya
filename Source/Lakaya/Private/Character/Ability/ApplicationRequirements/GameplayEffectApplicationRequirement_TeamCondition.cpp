@@ -16,7 +16,8 @@ bool UGameplayEffectApplicationRequirement_TeamCondition::CanApplyGameplayEffect
 		{
 			return IsValid(Object) && Object->Implements<UTeamObjectInterface>();
 		};
-		return Cast<ITeamObjectInterface>(Objects.FindByPredicate(Pred));
+		const auto Found = Objects.FindByPredicate(Pred);
+		return Found ? Cast<ITeamObjectInterface>(*Found) : nullptr;
 	};
 
 	const auto ASCTeamObject = FindTeamObject({ASC->GetOwnerActor(), ASC->GetAvatarActor()});
