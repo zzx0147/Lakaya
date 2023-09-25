@@ -52,7 +52,7 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 
 	AbilitySystem = CreateDefaultSubobject<ULakayaAbilitySystemComponent>(TEXT("AbilitySystem"));
 
-	AttributeSet = CreateDefaultSubobject<ULakayaAttributeSet>(TEXT("LakayaAttributeSet"));
+	LakayaAttributeSet = CreateDefaultSubobject<ULakayaAttributeSet>(TEXT("LakayaAttributeSet"));
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -365,12 +365,19 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 
 	BroadcastMaxHealthChanged();
 
+	if (HealthWidget.IsValid())
+	{
+		LakayaAttributeSet->OnHealthChanged.AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetCurrentHealth);
+		LakayaAttributeSet->OnMaxHealthChanged.AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetMaximumHealth);
+	}
+	InitializeStatus();
+	
 	if (HasAuthority())
 	{
 		// 캐릭터가 변경된 경우 그 캐릭터에 맞는 체력으로 재설정합니다.
-		InitializeStatus();
 		Health = GetMaxHealth();
 		OnHealthChanged.Broadcast(Health);
+		
 	}
 }
 

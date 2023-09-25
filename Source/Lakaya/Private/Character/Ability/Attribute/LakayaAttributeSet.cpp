@@ -50,16 +50,26 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 			OnDashStackFullOrNot.Broadcast(false);
 		}
 	}
+	else if(Attribute == GetHealthAttribute())
+	{
+		OnHealthChanged.Broadcast(NewValue);
+	}
+	else if(Attribute == GetMaxHealthAttribute())
+	{
+		OnMaxHealthChanged.Broadcast(NewValue);
+	}
 }
 
 void ULakayaAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, MaxHealth, OldValue);
+	OnMaxHealthChanged.Broadcast(MaxHealth.GetCurrentValue());
 }
 
 void ULakayaAttributeSet::OnRep_Health(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, Health, OldValue);
+	OnHealthChanged.Broadcast(Health.GetCurrentValue());
 }
 
 void ULakayaAttributeSet::OnRep_MaxAmmo(const FGameplayAttributeData& OldValue)

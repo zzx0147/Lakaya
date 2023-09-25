@@ -43,6 +43,7 @@ public:
 	virtual void SetOwner(AActor* NewOwner) override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	// virtual void PostInitializeComponents() override;
 protected:
 	virtual void BeginPlay() override;
 	virtual void CopyProperties(APlayerState* PlayerState) override;
@@ -322,7 +323,7 @@ private:
 	TSubclassOf<class UGameplayEffect> StatusInitializeEffect;
 
 	UPROPERTY()
-	const class ULakayaAttributeSet* AttributeSet;
+	TObjectPtr<const class ULakayaAttributeSet> LakayaAttributeSet;
 
 	FTimerHandle RespawnTimer;
 	FTimerHandle CurrentCaptureTimer;

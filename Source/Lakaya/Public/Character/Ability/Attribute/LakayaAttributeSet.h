@@ -16,6 +16,8 @@ GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDashStackFullOrNot, const bool, bIsFull);
 
+DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FAttributeChangeSignature, const float&)
+
 UCLASS()
 class LAKAYA_API ULakayaAttributeSet : public UAttributeSet
 {
@@ -39,7 +41,10 @@ public:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDashStackFullOrNot OnDashStackFullOrNot;
-
+	
+	mutable FAttributeChangeSignature OnHealthChanged;
+	
+	mutable FAttributeChangeSignature OnMaxHealthChanged;
 protected:
 	virtual bool PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data) override;
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
