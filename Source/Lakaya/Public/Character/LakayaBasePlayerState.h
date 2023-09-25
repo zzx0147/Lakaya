@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
-#include "LakayaAbilitySet.h"
 #include "GameFramework/PlayerState.h"
 #include "Occupation/Team.h"
 #include "EOS/EOSGameInstance.h"
+#include "Interface/TeamObjectInterface.h"
 #include "LakayaBasePlayerState.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FHealthChangeSignature, const float&)
@@ -29,7 +29,8 @@ DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOwnerChangeSignature, AActor*)
 DECLARE_DELEGATE_OneParam(FRespawnTimerDelegate, AController*)
 
 UCLASS()
-class LAKAYA_API ALakayaBasePlayerState : public APlayerState, public IAbilitySystemInterface
+class LAKAYA_API ALakayaBasePlayerState : public APlayerState, public IAbilitySystemInterface,
+                                          public ITeamObjectInterface
 {
 	GENERATED_BODY()
 
@@ -42,23 +43,21 @@ public:
 	virtual void SetOwner(AActor* NewOwner) override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	// virtual void PostInitializeComponents() override;
 protected:
 	virtual void BeginPlay() override;
 	virtual void CopyProperties(APlayerState* PlayerState) override;
 	virtual void OnRep_Owner() override;
 	virtual void Tick(float DeltaSeconds) override;
+
 public:
-	bool IsSameTeam(const ALakayaBasePlayerState* Other) const;
-
-	UFUNCTION(BlueprintGetter)
-	bool IsSameTeam(const ETeam& Other) const;
-
 	// 플레이어의 팀을 설정합니다.
 	virtual void SetTeam(const ETeam& DesireTeam);
 
-	// 플레이어의 현재 팀 정보를 가져옵니다.
-	UFUNCTION(BlueprintCallable)
-	const ETeam& GetTeam() const { return Team; }
+	virtual ETeam GetTeam() const override { return Team; }
+
+	UFUNCTION(BlueprintGetter)
+	const ETeam& BP_GetTeam() const { return Team; }
 
 	/**
 	 * @brief 플레이어가 예약된 시간에 부활하도록 합니다.
@@ -153,6 +152,7 @@ protected:
 	 */
 	virtual bool ShouldTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                              AActor* DamageCauser);
+	void InitializeStatus();
 
 	/**
 	 * @brief 이 플레이어 스테이트의 폰이 변경되는 경우 호출됩니다.
@@ -268,7 +268,7 @@ public:
 
 	// 오너가 변경될 때 호출됩니다. 매개변수로 변경된 오너의 AActor 포인터를 받습니다.
 	FOwnerChangeSignature OnOwnerChanged;
-	
+
 protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGamePlayHealthWidget> HealthWidgetClass;
@@ -280,14 +280,13 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGamePlayPortraitWidget> PortraitWidgetClass;
 
-
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Health, Transient)
 	float Health;
 
-	UPROPERTY(ReplicatedUsing=OnRep_Team, Transient)
+	UPROPERTY(ReplicatedUsing=OnRep_Team, Transient, BlueprintGetter=BP_GetTeam)
 	ETeam Team;
-	
+
 	UPROPERTY(ReplicatedUsing=OnRep_RespawnTime, Transient)
 	float RespawnTime;
 
@@ -319,9 +318,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class ULakayaAbilitySystemComponent> AbilitySystem;
-	
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGameplayEffect> StatusInitializeEffect;
+
 	UPROPERTY()
-	const class ULakayaAttributeSet* AttributeSet;
+	TObjectPtr<const class ULakayaAttributeSet> LakayaAttributeSet;
 
 	FTimerHandle RespawnTimer;
 	FTimerHandle CurrentCaptureTimer;
