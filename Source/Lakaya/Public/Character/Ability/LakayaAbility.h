@@ -54,6 +54,9 @@ protected:
 		Log(LogFormat(ActorInfo, Message));
 	}
 
+	UFUNCTION(BlueprintCallable)
+	void BP_Log(const FString& Message) const;
+
 	/** 서버에게 타겟 데이터를 전달합니다. */
 	void ServerSetReplicatedTargetData(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
 	                                   const FGameplayTag& GameplayTag = FGameplayTag()) const;
