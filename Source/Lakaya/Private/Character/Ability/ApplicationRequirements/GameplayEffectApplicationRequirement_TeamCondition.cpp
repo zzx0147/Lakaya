@@ -10,7 +10,7 @@ bool UGameplayEffectApplicationRequirement_TeamCondition::CanApplyGameplayEffect
 	const UGameplayEffect* GameplayEffect, const FGameplayEffectSpec& Spec, UAbilitySystemComponent* ASC) const
 {
 	// 팀 오브젝트 인터페이스를 구현할만한 UObject 목록을 통해 팀 오브젝트를 찾습니다.
-	static const auto FindTeamObject = [](const TArray<UObject*>& Objects)
+	static const auto FindTeamObject = [](const TArray<const UObject*>& Objects)
 	{
 		static const auto Pred = [](const UObject* Object)
 		{

@@ -155,16 +155,6 @@ void ALakayaBasePlayerState::Tick(float DeltaSeconds)
 	// }
 }
 
-bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) const
-{
-	return Other && IsSameTeam(Other->Team);
-}
-
-bool ALakayaBasePlayerState::IsSameTeam(const ETeam& Other) const
-{
-	return JudgeSameTeam(Team, Other);
-}
-
 void ALakayaBasePlayerState::SetTeam(const ETeam& DesireTeam)
 {
 	if (Team == DesireTeam) return;
