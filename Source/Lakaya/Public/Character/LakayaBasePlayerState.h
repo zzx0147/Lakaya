@@ -151,6 +151,7 @@ protected:
 	 */
 	virtual bool ShouldTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                              AActor* DamageCauser);
+	void InitializeStatus();
 
 	/**
 	 * @brief 이 플레이어 스테이트의 폰이 변경되는 경우 호출됩니다.
@@ -316,6 +317,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class ULakayaAbilitySystemComponent> AbilitySystem;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UGameplayEffect> StatusInitializeEffect;
 
 	UPROPERTY()
 	const class ULakayaAttributeSet* AttributeSet;

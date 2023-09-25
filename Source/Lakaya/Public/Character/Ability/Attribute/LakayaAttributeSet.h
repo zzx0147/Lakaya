@@ -29,8 +29,8 @@ public:
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxAmmo);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, CurrentAmmo);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, AttackPoint);
-	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, DashStack);
-	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxDashStack);
+	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, SkillStack);
+	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxSkillStack);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, EnergyHaste);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, UltimateGauge);
 	
@@ -62,11 +62,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_AttackPoint)
 	FGameplayAttributeData AttackPoint;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_DashStack)
-	FGameplayAttributeData DashStack;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_SkillStack)
+	FGameplayAttributeData SkillStack;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_MaxDashStack)
-	FGameplayAttributeData MaxDashStack;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_MaxSkillStack)
+	FGameplayAttributeData MaxSkillStack;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_EnergyHaste)
 	FGameplayAttributeData EnergyHaste;
@@ -86,9 +86,9 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_AttackPoint(const FGameplayAttributeData& OldValue);
 	UFUNCTION()
-	virtual void OnRep_DashStack(const FGameplayAttributeData& OldValue);
+	virtual void OnRep_SkillStack(const FGameplayAttributeData& OldValue);
 	UFUNCTION()
-	virtual void OnRep_MaxDashStack(const FGameplayAttributeData& OldValue);
+	virtual void OnRep_MaxSkillStack(const FGameplayAttributeData& OldValue);
 	UFUNCTION()
 	virtual void OnRep_EnergyHaste(const FGameplayAttributeData& OldValue);
 	UFUNCTION()
