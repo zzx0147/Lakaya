@@ -26,9 +26,10 @@ public:
 	/**
 	 * @brief 미니맵에 모든 플레이어들의 아이콘(이미지)으로 띄우기 위해, 플레이어 인원 수만큼 이미지를 동적 생성합니다.
 	 * @param NewTeam 팀에 따라, 아이콘의 이미지가 달라지는데, 생성된 팀의 정보입니다.
+	 * @param bMyPlayer 나 자신인지 아닌지의 여부입니다.
 	 * @return 동적으로 생성한 이미지를 리턴합니다.
 	 */
-	UImage* CreatePlayerImage(const ETeam& NewTeam);
+	UImage* CreatePlayerImage(const ETeam& NewTeam, bool bMyPlayer = false);
 
 	FORCEINLINE const ETeam& GetTeam() const { return CurrentTeam; }
 

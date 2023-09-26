@@ -23,6 +23,15 @@ class LAKAYA_API ITeamObjectInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	virtual ETeam GetTeam() const = 0;
 
-	virtual ETeam GetTeam() = 0;
+	FORCEINLINE bool IsSameTeam(const ETeam& InTeam) const
+	{
+		return JudgeSameTeam(GetTeam(), InTeam);
+	}
+
+	FORCEINLINE bool IsSameTeam(const ITeamObjectInterface* InTeamObject) const
+	{
+		return ensure(InTeamObject) && JudgeSameTeam(GetTeam(), InTeamObject->GetTeam());
+	}
 };

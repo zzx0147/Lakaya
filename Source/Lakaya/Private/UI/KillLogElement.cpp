@@ -7,7 +7,6 @@
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
-#include "GameFramework/Character.h"
 #include "GameFramework/PlayerState.h"
 #include "GameMode/AIIndividualGameState.h"
 
@@ -125,11 +124,11 @@ UKillLogElement::UKillLogElement(const FObjectInitializer& ObjectInitializer):Su
 {
 	WeaponImageMap.Emplace(FName(TEXT("Rena")));
 	WeaponImageMap.Emplace(FName(TEXT("Wazi")));
-	WeaponImageMap.Emplace(FName(TEXT("Minami")));
+	WeaponImageMap.Emplace(FName(TEXT("Gangrim")));
 
 	CharacterImageMap.Emplace(FName(TEXT("Rena")));
 	CharacterImageMap.Emplace(FName(TEXT("Wazi")));
-	CharacterImageMap.Emplace(FName(TEXT("Minami")));
+	CharacterImageMap.Emplace(FName(TEXT("Gangrim")));
 
 	BackgroundImageMap.Emplace(ETeam::Anti);
 	BackgroundImageMap.Emplace(ETeam::Pro);
