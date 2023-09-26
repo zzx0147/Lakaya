@@ -18,8 +18,8 @@ UGameLobbyCharacterSelectWidget::UGameLobbyCharacterSelectWidget(const FObjectIn
 		TEXT("/Game/Characters/RenderTarget/MI_Rena"));
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> RenderTargetWaziFinder(
 		TEXT("/Game/Characters/RenderTarget/MI_Wazi"));
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> RenderTargetMinamiFinder(
-		TEXT("/Game/Characters/RenderTarget/MI_Minami"));
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> RenderTargetGangrimFinder(
+		TEXT("/Game/Characters/RenderTarget/MI_Gangrim"));
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> ContextFinder(TEXT(
 		"/Script/EnhancedInput.InputMappingContext'/Game/Input/IC_SelectWidgetControl.IC_SelectWidgetControl'"));
 	static ConstructorHelpers::FObjectFinder<UInputAction> ToggleFinder(
@@ -29,10 +29,10 @@ UGameLobbyCharacterSelectWidget::UGameLobbyCharacterSelectWidget(const FObjectIn
 	{
 		RenderTargetRenaFinder.Object,
 		RenderTargetWaziFinder.Object,
-		RenderTargetMinamiFinder.Object,
+		RenderTargetGangrimFinder.Object,
 	};
 
-	CharacterNameArray = {TEXT("Rena"), TEXT("Wazi"), TEXT("Minami")};
+	CharacterNameArray = {TEXT("Rena"), TEXT("Wazi"), TEXT("Gangrim")};
 	for (auto temp : CharacterRenderTargetMaterialArray) { check(temp != nullptr) }
 
 	CharacterIntroductionMap.Emplace(CharacterNameArray[0], FText::GetEmpty());

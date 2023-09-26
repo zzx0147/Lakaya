@@ -52,7 +52,7 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 
 	AbilitySystem = CreateDefaultSubobject<ULakayaAbilitySystemComponent>(TEXT("AbilitySystem"));
 
-	AttributeSet = CreateDefaultSubobject<ULakayaAttributeSet>(TEXT("LakayaAttributeSet"));
+	LakayaAttributeSet = CreateDefaultSubobject<ULakayaAttributeSet>(TEXT("LakayaAttributeSet"));
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -314,6 +314,19 @@ bool ALakayaBasePlayerState::ShouldTakeDamage(float DamageAmount, FDamageEvent c
 	return (DamageAmount > 0.f && !IsSameTeam(Other)) || (DamageAmount < 0.f && IsSameTeam(Other));
 }
 
+void ALakayaBasePlayerState::InitializeStatus()
+{
+	if (const auto Character = GetPawn<ALakayaBaseCharacter>())
+	{
+		FGameplayEffectSpecHandle SpecHandle = AbilitySystem->MakeOutgoingSpec(StatusInitializeEffect,0,AbilitySystem->MakeEffectContext());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxHealth")),Character->GetCharacterMaxHealth());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxAmmo")),Character->GetCharacterMaxAmmo());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.AttackPoint")),Character->GetCharacterAttackPoint());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxSkillStack")), Character->GetCharacterMaxSkillStack());
+		AbilitySystem->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	}
+}
+
 void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
 {
 	if (const auto OldCharacter = Cast<ALakayaBaseCharacter>(OldPawn))
@@ -352,11 +365,19 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 
 	BroadcastMaxHealthChanged();
 
+	if (HealthWidget.IsValid())
+	{
+		LakayaAttributeSet->OnHealthChanged.AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetCurrentHealth);
+		LakayaAttributeSet->OnMaxHealthChanged.AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetMaximumHealth);
+	}
+	InitializeStatus();
+	
 	if (HasAuthority())
 	{
 		// 캐릭터가 변경된 경우 그 캐릭터에 맞는 체력으로 재설정합니다.
 		Health = GetMaxHealth();
 		OnHealthChanged.Broadcast(Health);
+		
 	}
 }
 
