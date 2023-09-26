@@ -7,8 +7,10 @@
 #include "GameFramework/PlayerState.h"
 #include "Occupation/Team.h"
 #include "EOS/EOSGameInstance.h"
+#include "Character/Ability/Attribute/LakayaAttributeSet.h"
 #include "Interface/TeamObjectInterface.h"
 #include "LakayaBasePlayerState.generated.h"
+
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FHealthChangeSignature, const float&)
 
@@ -56,6 +58,8 @@ public:
 
 	virtual ETeam GetTeam() const override { return Team; }
 
+	virtual const ULakayaAttributeSet* GetLakayaAttributeSet() {return LakayaAttributeSet;}
+	
 	UFUNCTION(BlueprintGetter)
 	const ETeam& BP_GetTeam() const { return Team; }
 

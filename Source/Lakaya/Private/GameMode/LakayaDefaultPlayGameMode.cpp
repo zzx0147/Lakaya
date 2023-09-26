@@ -10,6 +10,7 @@
 #include "GameFramework/PlayerStart.h"
 #include "GameMode/LakayaBaseGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include "Character/Ability/Attribute/LakayaAttributeSet.h"
 
 namespace MatchState
 {
@@ -302,7 +303,9 @@ void ALakayaDefaultPlayGameMode::RegisterPlayer(AController* NewPlayer)
 				}
 			});
 
-		BasePlayerState->OnPlayerKilled.AddUObject(this, &ALakayaDefaultPlayGameMode::OnPlayerKilled);
+		
+		BasePlayerState->GetLakayaAttributeSet()->OnPlayerKill.AddUObject(this, &ALakayaDefaultPlayGameMode::OnPlayerKilled);
+		// BasePlayerState->OnPlayerKilled.AddUObject(this, &ALakayaDefaultPlayGameMode::OnPlayerKilled);
 	}
 
 	BaseGameState = GetWorld()->GetGameState<ALakayaBaseGameState>();
