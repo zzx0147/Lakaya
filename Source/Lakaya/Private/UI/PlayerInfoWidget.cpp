@@ -7,7 +7,7 @@ UPlayerInfoWidget::UPlayerInfoWidget(const FObjectInitializer& ObjectInitializer
 {
 	CharacterPortraitMap.Emplace(FName(TEXT("Rena")));
 	CharacterPortraitMap.Emplace(FName(TEXT("Wazi")));
-	CharacterPortraitMap.Emplace(FName(TEXT("Minami")));
+	CharacterPortraitMap.Emplace(FName(TEXT("Gangrim")));
 
 	BackgroundTextureMap.Emplace(ETeam::Pro);
 	BackgroundTextureMap.Emplace(ETeam::Anti);

@@ -98,6 +98,11 @@ void ULakayaAbility::Log(const FString& Message) const
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, Message);
 }
 
+void ULakayaAbility::BP_Log(const FString& Message) const
+{
+	Log(CurrentActorInfo, Message);
+}
+
 void ULakayaAbility::ServerSetReplicatedTargetData(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
                                                    const FGameplayTag& GameplayTag) const
 {

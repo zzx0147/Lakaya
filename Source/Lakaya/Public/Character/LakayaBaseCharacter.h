@@ -73,6 +73,15 @@ public:
 	UFUNCTION(BlueprintGetter)
 	const float& GetCharacterMaxHealth() const { return MaxHealth; }
 
+	UFUNCTION(BlueprintGetter)
+	const float& GetCharacterMaxAmmo() const { return MaxAmmo; }
+
+	UFUNCTION(BlueprintGetter)
+	const float& GetCharacterAttackPoint() const { return AttackPoint; }
+
+	UFUNCTION(BlueprintGetter)
+	const float& GetCharacterMaxSkillStack() const { return MaxSkillStack; }
+	
 	// 연속처치시 적용될 버프 목록을 가져옵니다.
 	UFUNCTION(BlueprintGetter)
 	const TArray<FName>& GetKillStreakBuffs() const { return KillStreakBuffs; }
@@ -148,6 +157,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
 	float MaxAmmo;
 
+	//스택형 스킬의 리소스입니다. 각각 레나는 지뢰, 와지는 연막탄, 강림은 대쉬의 스택입니다
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
+	float MaxSkillStack;
+	
 	// 이 캐릭터의 공격력의 기본값입니다. AttributeSet의 기본 값을 설정하는데 사용됩니다. 런타임중에 변경하지 마십시오
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
 	float AttackPoint;
