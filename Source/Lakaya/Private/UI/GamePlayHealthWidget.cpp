@@ -43,6 +43,16 @@ void UGamePlayHealthWidget::SetMaximumHealth(const float& NewMaximumHealth)
 	UpdateHealthProgressBar();
 }
 
+void UGamePlayHealthWidget::SetCurrentHealthAttribute(const FOnAttributeChangeData& NewHealth)
+{
+	SetCurrentHealth(NewHealth.NewValue);
+}
+
+void UGamePlayHealthWidget::SetMaximumHealthAttribute(const FOnAttributeChangeData& NewMaximumHealth)
+{
+	SetMaximumHealth(NewMaximumHealth.NewValue);
+}
+
 void UGamePlayHealthWidget::UpdateHealthProgressBar() const
 {
 	//체력 바 업데이트
