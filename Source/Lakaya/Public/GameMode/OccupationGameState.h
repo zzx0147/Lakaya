@@ -84,7 +84,7 @@ public:
 	FORCEINLINE void SetTeamToUpdate(const ETeam& NewTeam) { TeamToUpdate = NewTeam; }
 protected:
 	virtual void BeginPlay() override;
-
+	
 	/**
 	 * @brief 게임 내에서 매치가 시작했을 때, 호출되는 함수입니다.
 	 */
@@ -154,6 +154,12 @@ private:
 
 	UFUNCTION()
 	void OnRep_OccupationWinner();
+
+	/**
+	 * @brief PlayerByMinimap Tmap을 업데이트 해줍니다.
+	 * @param Team 업데이트시켜줄 팀입니다.
+	 */
+	void UpdatePlayerByMinimap(const ETeam& Team);
 	
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
@@ -261,8 +267,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UOccupyExpressWidget> OccupyExpressWidgetClass;
 
-	// 팀전 미니맵 위젯 클래스를 지정합니다.
-	// TSubclassOf<>
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UOccupationMinimapWidget> OccupationMinimapWidgetClass;
 	
 	UPROPERTY(EditDefaultsOnly)
 	class UInputMappingContext* ResultShortcutContext;
@@ -304,5 +310,7 @@ private:
 
 	// 점령 표시 위젯입니다.
 	TWeakObjectPtr<UOccupyExpressWidget> OccupyExpressWidget;
+
+	TWeakObjectPtr<UOccupationMinimapWidget> OccupationMinimapWidget;
 #pragma endregion
 };

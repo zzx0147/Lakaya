@@ -1,5 +1,6 @@
 #include "GameMode/OccupationGameState.h"
 
+#include "EngineUtils.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
@@ -22,6 +23,7 @@
 #include "UI/GradeResultWidget.h"
 #include "UI/MatchStartWaitWidget.h"
 #include "UI/OccupationCharacterSelectWidget.h"
+#include "UI/OccupationMinimapWidget.h"
 #include "UI/StartMessageWidget.h"
 #include "UI/TeamScoreWidget.h"
 #include "UI/WeaponOutLineWidget.h"
@@ -201,6 +203,21 @@ void AOccupationGameState::BeginPlay()
 				OccupyBarMaps.Emplace(3, OccupyExpressWidget->GetProBar());
 			}
 		}
+
+		if (OccupationMinimapWidgetClass)
+		{
+			OccupationMinimapWidget = CreateWidget<UOccupationMinimapWidget>(
+				LocalController, OccupationMinimapWidgetClass);
+			if (OccupationMinimapWidget.IsValid())
+			{
+				OccupationMinimapWidget->AddToViewport();
+				OccupationMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
+				OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
+				OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
+
+				
+			}
+		}
 	}
 
 	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this,
@@ -224,6 +241,26 @@ void AOccupationGameState::HandleMatchHasStarted()
 
 	if (OccupyExpressWidget.IsValid())
 		OccupyExpressWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+	if (OccupationMinimapWidget.IsValid())
+	{
+		OccupationMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		OccupationMinimapWidget->UpdateMinimap = true;
+		OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
+		OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
+
+		if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
+		LocalController && LocalController->IsLocalController())
+		{
+			if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
+				OccupationMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
+		}
+		
+		// 와지가 스킬을 쓰게 되면 상대방의 위치도 미니맵 상에 업데이트 해줘야 하기 때문에
+		// 일단은 본인의 팀과 상대방의 팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
+		UpdatePlayerByMinimap(ETeam::Anti);
+		UpdatePlayerByMinimap(ETeam::Pro);
+	}
 	
 	FTimerDelegate TimerDelegate_MatchStartWaitWidget;
 	TimerDelegate_MatchStartWaitWidget.BindLambda([this]
@@ -304,6 +341,9 @@ void AOccupationGameState::HandleMatchHasEnded()
 		BindDetailResultWidget();
 		BindDetailResultElementWidget();
 	}
+
+	if (OccupationMinimapWidget.IsValid())
+		OccupationMinimapWidget->UpdateMinimap = false;
 }
 
 void AOccupationGameState::EndTimeCheck()
@@ -366,6 +406,14 @@ void AOccupationGameState::OnRep_ProTeamScore()
 void AOccupationGameState::OnRep_OccupationWinner()
 {
 	OnChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
+}
+
+void AOccupationGameState::UpdatePlayerByMinimap(const ETeam& Team)
+{
+	for (auto& Players : PlayersByTeamMap[Team])
+	{
+		OccupationMinimapWidget->PlayersByMinimap[Team].Emplace(Players, OccupationMinimapWidget->CreatePlayerImage(Team));
+	}
 }
 
 void AOccupationGameState::SetClientTeam(const ETeam& NewTeam)

@@ -65,6 +65,29 @@ protected:
 
 	void ConsumeTargetData() const;
 
+	/** 타겟 데이터를 통해 게임플레이 이펙트를 적용하거나, 적용할 수 없는 경우 게임플레이 큐를 실행하도록 합니다. */
+	TArray<FActiveGameplayEffectHandle> ApplyGameplayEffectOrCueToTarget(
+		const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayAbilityTargetDataHandle& Target,
+		FGameplayTag GameplayCueTag, TSubclassOf<UGameplayEffect> GameplayEffectClass, float GameplayEffectLevel,
+		int32 Stacks = 1) const;
+
+	/** 타겟 데이터를 통해 게임플레이 이펙트를 적용하거나, 적용할 수 없는 경우 게임플레이 큐를 실행하도록 합니다. */
+	TArray<FActiveGameplayEffectHandle> ApplyGameplayEffectSpecOrCueToTarget(
+		const FGameplayAbilitySpecHandle AbilityHandle, const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEffectSpecHandle SpecHandle,
+		const FGameplayAbilityTargetDataHandle& TargetData, FGameplayTag GameplayCueTag) const;
+
+	UFUNCTION(BlueprintCallable, DisplayName="ApplyGameplayEffectOrCueToTarget")
+	TArray<FActiveGameplayEffectHandle> BP_ApplyGameplayEffectOrCueToTarget(
+		FGameplayAbilityTargetDataHandle TargetData, TSubclassOf<UGameplayEffect> GameplayEffectClass,
+		FGameplayTag GameplayCueTag, int32 GameplayEffectLevel = 1, int32 Stacks = 1);
+
+	UFUNCTION(BlueprintCallable, DisplayName="ApplyGameplayEffectSpecOrCueToTarget")
+	TArray<FActiveGameplayEffectHandle> K2_ApplyGameplayEffectSpecOrCueToTarget(
+		const FGameplayEffectSpecHandle EffectSpecHandle, FGameplayTag GameplayCueTag,
+		FGameplayAbilityTargetDataHandle TargetData);
+
 	UFUNCTION(BlueprintCallable)
 	void TargetDataScope();
 
