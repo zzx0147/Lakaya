@@ -234,7 +234,7 @@ void ALakayaBaseCharacter::SetTeam_Implementation(const ETeam& Team)
 void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 {
 	bIsAlive = IsAlive;
-	ResourceComponent->OnAliveStateChanged(IsAlive);
+	// ResourceComponent->OnAliveStateChanged(IsAlive);
 	if (IsAlive)
 	{
 		GetMesh()->SetAllBodiesSimulatePhysics(false);

@@ -367,13 +367,15 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 
 	if (HealthWidget.IsValid())
 	{
-		LakayaAttributeSet->OnHealthChanged.AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetCurrentHealth);
-		LakayaAttributeSet->OnMaxHealthChanged.AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetMaximumHealth);
+		AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetHealthAttribute()).AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetCurrentHealthAttribute);
+		AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxHealthAttribute()).AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetMaximumHealthAttribute);
+		// LakayaAttributeSet->OnHealthChanged.AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetCurrentHealth);
+		// LakayaAttributeSet->OnMaxHealthChanged.AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetMaximumHealth);
 	}
-	InitializeStatus();
 	
 	if (HasAuthority())
 	{
+		InitializeStatus();
 		// 캐릭터가 변경된 경우 그 캐릭터에 맞는 체력으로 재설정합니다.
 		Health = GetMaxHealth();
 		OnHealthChanged.Broadcast(Health);

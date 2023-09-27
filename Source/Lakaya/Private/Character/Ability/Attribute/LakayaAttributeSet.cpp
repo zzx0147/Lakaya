@@ -4,6 +4,7 @@
 #include "Character/Ability/Attribute/LakayaAttributeSet.h"
 
 #include "GameplayEffectExtension.h"
+#include "GameFramework/PlayerState.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -22,6 +23,26 @@ void ULakayaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 		// 이 경우 Health 베이스 값은 음수가 아니어야 합니다.
 		SetHealth(FMath::Max(GetHealth(), 0.0f));
 	}
+
+	if ((GetHealth() <= 0.0f) && !bOutOfHealth)
+	{
+		if (OnPlayerKill.IsBound())
+		{
+			const FGameplayEffectContextHandle& EffectContext = Data.EffectSpec.GetEffectContext();
+			AActor* Instigator = EffectContext.GetOriginalInstigator();
+			AActor* Causer = EffectContext.GetEffectCauser();
+
+			const auto VictimPlayerState = Cast<APlayerState>(GetOwningActor());
+			const auto InstigatorPlayerState = Cast<APlayerState>(Instigator);
+			if(VictimPlayerState != nullptr && InstigatorPlayerState != nullptr)
+			{
+				OnPlayerKill.Broadcast(VictimPlayerState->GetPlayerController(),InstigatorPlayerState->GetPlayerController(),Causer);
+			}
+			//피해자 컨트롤러 가해자 컨트롤러 가해자 액터
+		}
+	}
+
+	bOutOfHealth = (GetHealth() <= 0.0f);
 }
 
 void ULakayaAttributeSet::PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const
@@ -40,23 +61,33 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 
 	if (Attribute == GetSkillStackAttribute())
 	{
-		if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), NewValue, 0.01f)) //대시 갯수가 꽉 참, 대쉬 갯수 리젠 이펙트를 꺼야 함
-		{
-			OnDashStackFullOrNot.Broadcast(true);
-		}
-		else if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), OldValue, 0.01f) && NewValue < OldValue)
-		//최대치에서 감소함, 이때부터 대쉬 갯수 리젠 이펙트를 켜야 함
-		{
-			OnDashStackFullOrNot.Broadcast(false);
-		}
+		// if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), NewValue, 0.01f)) //대시 갯수가 꽉 참, 대쉬 갯수 리젠 이펙트를 꺼야 함
+		// {
+		// 	OnDashStackFullOrNot.Broadcast(true);
+		// }
+		// else if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), OldValue, 0.01f) && NewValue < OldValue)
+		// //최대치에서 감소함, 이때부터 대쉬 갯수 리젠 이펙트를 켜야 함
+		// {
+		// 	OnDashStackFullOrNot.Broadcast(false);
+		// }
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("SkillStack: %f"), NewValue));
+		const auto MaxReached = NewValue > GetMaxSkillStack() || FMath::IsNearlyEqual(NewValue, GetMaxSkillStack());
+		GetOwningAbilitySystemComponentChecked()->SetLooseGameplayTagCount(MaxSkillStackTag, MaxReached ? 1 : 0);
 	}
 	else if(Attribute == GetHealthAttribute())
 	{
 		OnHealthChanged.Broadcast(NewValue);
+
 	}
 	else if(Attribute == GetMaxHealthAttribute())
 	{
 		OnMaxHealthChanged.Broadcast(NewValue);
+	}
+
+	if (bOutOfHealth && (GetHealth() > 0.0f))
+	{
+		bOutOfHealth = false;
 	}
 }
 
@@ -110,6 +141,7 @@ void ULakayaAttributeSet::OnRep_UltimateGauge(const FGameplayAttributeData& OldV
 ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(40.0f), CurrentAmmo(40.0f),
                                              AttackPoint(40.0f), SkillStack(3.0f), MaxSkillStack(3.0f)
 {
+	bOutOfHealth = false;
 }
 
 void ULakayaAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

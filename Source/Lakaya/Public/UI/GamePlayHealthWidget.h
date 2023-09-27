@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Character/Ability/Attribute/LakayaAttributeSet.h"
 #include "GamePlayHealthWidget.generated.h"
 
 class UTextBlock;
@@ -23,6 +24,12 @@ public:
 
 	// 위젯에 표시되는 전체 체력 수치를 업데이트합니다.
 	void SetMaximumHealth(const float& NewMaximumHealth);
+
+	// 위젯에 표시되는 현재 체력 수치를 업데이트합니다.
+	void SetCurrentHealthAttribute(const FOnAttributeChangeData& NewHealth);
+
+	// 위젯에 표시되는 전체 체력 수치를 업데이트합니다.
+	void SetMaximumHealthAttribute(const FOnAttributeChangeData& NewMaximumHealth);
 
 private:
 	//체력 프로그래스 바를 업데이트하는 함수
