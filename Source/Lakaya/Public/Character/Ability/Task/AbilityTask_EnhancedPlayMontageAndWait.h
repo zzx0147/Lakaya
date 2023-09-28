@@ -36,6 +36,9 @@ public:
 
 	virtual void Activate() override;
 
+protected:
+	virtual void OnDestroy(bool bInOwnerFinished) override;
+
 private:
 	UFUNCTION()
 	void OnNotifyBeginReceived(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointNotifyPayload);

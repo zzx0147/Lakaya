@@ -98,6 +98,23 @@ void UAbilityTask_EnhancedPlayMontageAndWait::Activate()
 	SetWaitingOnAvatar();
 }
 
+void UAbilityTask_EnhancedPlayMontageAndWait::OnDestroy(bool bInOwnerFinished)
+{
+	Super::OnDestroy(bInOwnerFinished);
+
+	if (Ability)
+	{
+		if (const auto ActorInfo = Ability->GetCurrentActorInfo())
+		{
+			if (const auto AnimInstance = ActorInfo->GetAnimInstance())
+			{
+				AnimInstance->OnPlayMontageNotifyBegin.RemoveAll(this);
+				AnimInstance->OnPlayMontageNotifyEnd.RemoveAll(this);
+			}
+		}
+	}
+}
+
 void UAbilityTask_EnhancedPlayMontageAndWait::OnNotifyBeginReceived(
 	FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointNotifyPayload)
 {
