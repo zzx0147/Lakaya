@@ -61,15 +61,19 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 
 	if (Attribute == GetSkillStackAttribute())
 	{
-		if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), NewValue, 0.01f)) //대시 갯수가 꽉 참, 대쉬 갯수 리젠 이펙트를 꺼야 함
-		{
-			OnDashStackFullOrNot.Broadcast(true);
-		}
-		else if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), OldValue, 0.01f) && NewValue < OldValue)
-		//최대치에서 감소함, 이때부터 대쉬 갯수 리젠 이펙트를 켜야 함
-		{
-			OnDashStackFullOrNot.Broadcast(false);
-		}
+		// if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), NewValue, 0.01f)) //대시 갯수가 꽉 참, 대쉬 갯수 리젠 이펙트를 꺼야 함
+		// {
+		// 	OnDashStackFullOrNot.Broadcast(true);
+		// }
+		// else if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), OldValue, 0.01f) && NewValue < OldValue)
+		// //최대치에서 감소함, 이때부터 대쉬 갯수 리젠 이펙트를 켜야 함
+		// {
+		// 	OnDashStackFullOrNot.Broadcast(false);
+		// }
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("SkillStack: %f"), NewValue));
+		const auto MaxReached = NewValue > GetMaxSkillStack() || FMath::IsNearlyEqual(NewValue, GetMaxSkillStack());
+		GetOwningAbilitySystemComponentChecked()->SetLooseGameplayTagCount(MaxSkillStackTag, MaxReached ? 1 : 0);
 	}
 	else if(Attribute == GetHealthAttribute())
 	{

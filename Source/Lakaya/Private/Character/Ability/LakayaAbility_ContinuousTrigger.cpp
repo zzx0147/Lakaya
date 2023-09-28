@@ -4,7 +4,8 @@
 #include "Character/Ability/LakayaAbility_ContinuousTrigger.h"
 
 #include "AbilitySystemComponent.h"
-#include "Character/Ability/Task/AbilityTask_WaitAbilityCooldown.h"
+#include "Character/Ability/Task/AbilityTask_WaitAbilityEnd.h"
+#include "Character/Ability/Task/AbilityTask_WaitGameplayTagQueryWrapper.h"
 #include "Net/UnrealNetwork.h"
 
 ULakayaAbility_ContinuousTrigger::ULakayaAbility_ContinuousTrigger()
@@ -43,18 +44,30 @@ void ULakayaAbility_ContinuousTrigger::OnRemoveAbility(const FGameplayAbilityAct
 	}
 }
 
+void ULakayaAbility_ContinuousTrigger::InputReleased(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+{
+	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
+	if (!GetAbilitySystemComponentFromActorInfo_Checked()->FindAbilitySpecFromHandle(TriggerAbilityHandle)->IsActive())
+	{
+		K2_EndAbility();
+	}
+}
+
 void ULakayaAbility_ContinuousTrigger::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                                        const FGameplayAbilityActorInfo* ActorInfo,
                                                        const FGameplayAbilityActivationInfo ActivationInfo,
                                                        const FGameplayEventData* TriggerEventData)
 {
-	// 트리거 대상 어빌리티의 쿨다운을 기다리는 태스크를 실행합니다.
-	const auto CooldownTask = UAbilityTask_WaitAbilityCooldown::WaitAbilityCooldown(this, TriggerAbilityHandle);
-	CooldownTask->OnCooldownEnded.AddUObject(this, &ThisClass::TryActivateTriggerAbility);
-	CooldownTask->ReadyForActivation();
+	const auto AbilityEndTask = UAbilityTask_WaitAbilityEnd::WaitAbilityEnd(this, TriggerAbilityHandle);
+	AbilityEndTask->OnAbilityEnded.AddUniqueDynamic(this, &ThisClass::OnTriggerAbilityEnded);
+	AbilityEndTask->ReadyForActivation();
 
-	// 트리거 대상 어빌리티에 대해 활성화를 시도합니다.
-	TryActivateTriggerAbility();
+	const auto ASC = GetAbilitySystemComponentFromActorInfo_Checked();
+	if (!ASC->FindAbilitySpecFromHandle(TriggerAbilityHandle)->IsActive())
+	{
+		WaitCooldown(ASC->FindAbilitySpecFromHandle(TriggerAbilityHandle)->Ability->GetCooldownTags());
+	}
 
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
@@ -64,11 +77,35 @@ void ULakayaAbility_ContinuousTrigger::OnFailToActivateTriggerAbility_Implementa
 	K2_EndAbility();
 }
 
+void ULakayaAbility_ContinuousTrigger::OnTriggerAbilityEnded(const FAbilityEndedData& AbilityEndedData)
+{
+	GetCurrentAbilitySpec()->InputPressed
+		? WaitCooldown(AbilityEndedData.AbilityThatEnded->GetCooldownTags())
+		: K2_EndAbility();
+}
+
+void ULakayaAbility_ContinuousTrigger::WaitCooldown(const FGameplayTagContainer* CooldownTags)
+{
+	// 쿨다운이 없다면 바로 트리거 어빌리티를 활성화합니다. 
+	if (!CooldownTags)
+	{
+		TryActivateTriggerAbility();
+		return;
+	}
+
+	// 쿨다운 종료를 기다립니다.
+	const auto TagTask = UAbilityTask_WaitGameplayTagQueryWrapper::WaitGameplayTagQuery(
+		this, FGameplayTagQuery::MakeQuery_MatchAnyTags(*CooldownTags), nullptr,
+		EWaitGameplayTagQueryTriggerCondition::WhenFalse, true);
+	TagTask->OnTriggered().AddDynamic(this, &ThisClass::TryActivateTriggerAbility);
+	TagTask->ReadyForActivation();
+}
+
 void ULakayaAbility_ContinuousTrigger::TryActivateTriggerAbility()
 {
 	if (!GetAbilitySystemComponentFromActorInfo_Checked()->TryActivateAbility(TriggerAbilityHandle))
 	{
-		Log(CurrentActorInfo, TEXT("Fail to Activate Trigger Ability"));
+		BP_Log(TEXT("Fail to Activate Trigger Ability"));
 		OnFailToActivateTriggerAbility();
 	}
 }

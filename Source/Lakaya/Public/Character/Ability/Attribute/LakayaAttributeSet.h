@@ -20,7 +20,7 @@ DECLARE_EVENT_ThreeParams(ALakayaBasePlayerState, FPlayerKilledSignature, AContr
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FAttributeChangeSignature, const float&)
 
-UCLASS()
+UCLASS(Config=Game)
 class LAKAYA_API ULakayaAttributeSet : public UAttributeSet
 {
 	GENERATED_BODY()
@@ -37,15 +37,15 @@ public:
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxSkillStack);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, EnergyHaste);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, UltimateGauge);
-	
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDashStackFullOrNot OnDashStackFullOrNot;
-	
+
 	mutable FAttributeChangeSignature OnHealthChanged;
-	
+
 	mutable FAttributeChangeSignature OnMaxHealthChanged;
 
 	mutable FPlayerKilledSignature OnPlayerKill;
@@ -102,6 +102,10 @@ protected:
 	virtual void OnRep_EnergyHaste(const FGameplayAttributeData& OldValue);
 	UFUNCTION()
 	virtual void OnRep_UltimateGauge(const FGameplayAttributeData& OldValue);
+
+private:
+	UPROPERTY(GlobalConfig)
+	FGameplayTag MaxSkillStackTag;
 private:
 	bool bOutOfHealth;
 };
