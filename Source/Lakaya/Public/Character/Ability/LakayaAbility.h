@@ -92,7 +92,16 @@ protected:
 		FGameplayAbilityTargetDataHandle TargetData);
 
 	UFUNCTION(BlueprintCallable)
-	void TargetDataScope();
+	void InitiateInstantTargetDataScope();
+
+	UFUNCTION(BlueprintCallable)
+	void CallMakeTargetData();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+	void WaitForInstantTargetData();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+	void WaitForDelayedTargetData(const float& Delay);
 
 	/** 클라이언트로 타겟 데이터가 전달되면 호출되는 이벤트 함수입니다. */
 	UFUNCTION(BlueprintNativeEvent)
@@ -125,12 +134,11 @@ private:
 	static UEnhancedInputLocalPlayerSubsystem* InternalGetEnhancedInputSubsystem(
 		const FGameplayAbilityActorInfo* ActorInfo);
 
+	void BindTargetDataDelegate();
+
 	/** 로그가 PIE에서도 표시되도록 하는 기능입니다. */
 	UPROPERTY(EditAnywhere)
 	uint8 bAddLogOnScreen : 1;
-
-	UPROPERTY(EditAnywhere)
-	float ServerTargetDataTimeOut;
 
 	TWeakObjectPtr<UEnhancedInputLocalPlayerSubsystem> CachedInputSubsystem;
 	FDelegateHandle TargetDataDelegateHandle;
