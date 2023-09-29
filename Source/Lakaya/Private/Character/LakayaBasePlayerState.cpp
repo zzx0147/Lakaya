@@ -13,6 +13,7 @@
 #include "UI/GamePlayHealthWidget.h"
 #include "UI/GamePlayPortraitWidget.h"
 #include "UI/OccupationMinimapWidget.h"
+#include "UI/SkillWidget.h"
 
 void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -82,7 +83,6 @@ void ALakayaBasePlayerState::OnRep_PlayerName()
 void ALakayaBasePlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
@@ -110,7 +110,7 @@ void ALakayaBasePlayerState::OnRep_Owner()
 		PortraitWidget = CreateWidget<UGamePlayPortraitWidget>(LocalController, PortraitWidgetClass);
 		if (PortraitWidget.IsValid())
 		{
-			PortraitWidget->AddToViewport(-2);
+			PortraitWidget->AddToViewport(1);
 			PortraitWidget->ChangePortrait(GetCharacterName());
 			OnCharacterNameChanged.AddWeakLambda(
 				PortraitWidget.Get(), [Widget = PortraitWidget](auto, const FName& Name)
@@ -130,8 +130,18 @@ void ALakayaBasePlayerState::OnRep_Owner()
 			HealthWidget->SetMaximumHealth(GetMaxHealth());
 			HealthWidget->SetCurrentHealth(Health);
 		}
+
+		SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
+		if (SkillWidget)
+		{
+			SkillWidget->AddToViewport();
+			OnCharacterNameChanged.AddWeakLambda(
+				SkillWidget.Get(), [Widget = SkillWidget](auto, const FName& Name)
+				{
+					Widget->SetCharacter(Name);
+				});
+		}
 	}
-	
 }
 
 void ALakayaBasePlayerState::Tick(float DeltaSeconds)
@@ -150,8 +160,8 @@ void ALakayaBasePlayerState::Tick(float DeltaSeconds)
 	// TODO : 미니맵 방식은 RenderTarget -> 정적 이미지 으로 바뀌었습니다.
 	// if (!HasInitalizedPawn && GetPlayerController() && GetPlayerController()->GetPawn())
 	// {
-		// HasInitalizedPawn = true;
-		// InitalizeWithPawn();
+	// HasInitalizedPawn = true;
+	// InitalizeWithPawn();
 	// }
 }
 
@@ -318,11 +328,16 @@ void ALakayaBasePlayerState::InitializeStatus()
 {
 	if (const auto Character = GetPawn<ALakayaBaseCharacter>())
 	{
-		FGameplayEffectSpecHandle SpecHandle = AbilitySystem->MakeOutgoingSpec(StatusInitializeEffect,0,AbilitySystem->MakeEffectContext());
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxHealth")),Character->GetCharacterMaxHealth());
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxAmmo")),Character->GetCharacterMaxAmmo());
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.AttackPoint")),Character->GetCharacterAttackPoint());
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxSkillStack")), Character->GetCharacterMaxSkillStack());
+		FGameplayEffectSpecHandle SpecHandle = AbilitySystem->MakeOutgoingSpec(
+			StatusInitializeEffect, 0, AbilitySystem->MakeEffectContext());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxHealth")),
+		                                               Character->GetCharacterMaxHealth());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxAmmo")),
+		                                               Character->GetCharacterMaxAmmo());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.AttackPoint")),
+		                                               Character->GetCharacterAttackPoint());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxSkillStack")),
+		                                               Character->GetCharacterMaxSkillStack());
 		AbilitySystem->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 	}
 }
@@ -357,6 +372,11 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);
 		Character->SetStencilMask(UniqueRenderMask);
 		Character->SetAlly(bIsAlly);
+		
+		if(SkillWidget)
+		{
+			SkillWidget->SetCharacter(Character->GetCharacterName());
+		}
 	}
 	else
 	{
@@ -367,20 +387,23 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 
 	if (HealthWidget.IsValid())
 	{
-		AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetHealthAttribute()).AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetCurrentHealthAttribute);
-		AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxHealthAttribute()).AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetMaximumHealthAttribute);
+		AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetHealthAttribute()).AddUObject(
+			HealthWidget.Get(), &UGamePlayHealthWidget::SetCurrentHealthAttribute);
+		AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxHealthAttribute()).AddUObject(
+			HealthWidget.Get(), &UGamePlayHealthWidget::SetMaximumHealthAttribute);
 		// LakayaAttributeSet->OnHealthChanged.AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetCurrentHealth);
 		// LakayaAttributeSet->OnMaxHealthChanged.AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetMaximumHealth);
 	}
-	
+
 	if (HasAuthority())
 	{
 		InitializeStatus();
 		// 캐릭터가 변경된 경우 그 캐릭터에 맞는 체력으로 재설정합니다.
 		Health = GetMaxHealth();
 		OnHealthChanged.Broadcast(Health);
-		
 	}
+
+
 }
 
 float ALakayaBasePlayerState::GetMaxHealth() const

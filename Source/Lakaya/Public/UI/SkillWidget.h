@@ -23,12 +23,11 @@ struct FSkillWidgetTextureStruct
 	UTexture2D* ESkillTextureBackgroundImage;
 	
 	UPROPERTY(EditAnywhere)
-	UTexture2D* RButtonSkillTextureFillImage;
+	UTexture2D* RMBSkillTextureFillImage;
 
 	UPROPERTY(EditAnywhere)
-	UTexture2D* RButtonSkillTextureBackgroundImage;
+	UTexture2D* RMBSkillTextureBackgroundImage;
 };
-
 
 UCLASS()
 class LAKAYA_API USkillWidget : public UUserWidget
@@ -44,9 +43,14 @@ public:
 	
 	
 private:
-	TWeakObjectPtr<class USkillProgressBar> QSkillProgressBar;			// 레나 Q 스킬
-	TWeakObjectPtr<USkillProgressBar> ESkillProgressBar;			// 레나 E 스킬
-	TWeakObjectPtr<USkillProgressBar> RButtonSkillProgressBar;	// 레나 우클릭 스킬
+	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<USkillProgressBar> QSkillProgressBar;//Q 스킬
+	
+	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<USkillProgressBar> ESkillProgressBar;//E 스킬
+	
+	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<USkillProgressBar> RMBSkillProgressBar;//우클릭 스킬
 
 	UPROPERTY(EditAnywhere)
 	TMap<FName, FSkillWidgetTextureStruct> SkillWidgetTextureMap;
