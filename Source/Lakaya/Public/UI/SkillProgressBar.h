@@ -18,6 +18,8 @@ public:
 	void UpdateWidget();
 	void SetMaxCoolTime(const float& NewMaxCoolTime) { MaxCoolTime = NewMaxCoolTime; }
 
+	void StartProgressBar(const float& StartTime,const float& Duration);
+	
 protected:
 	UFUNCTION(BlueprintCallable)
 	virtual void NativePreConstruct() override;

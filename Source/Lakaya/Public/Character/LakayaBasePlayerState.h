@@ -230,6 +230,10 @@ private:
 
 	void RespawnTimerCallback(FRespawnTimerDelegate Callback);
 
+	void BindAllSkillToWidget();
+
+	void OnActiveGameplayEffectAddedDelegateToSelfCallback(UAbilitySystemComponent* ArgAbilitySystemComponent, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle);
+	
 public:
 	// 현재 체력이 변경되는 경우 호출됩니다. 매개변수로 변경된 현재 체력을 받습니다.
 	FHealthChangeSignature OnHealthChanged;

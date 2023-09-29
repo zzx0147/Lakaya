@@ -1,11 +1,5 @@
-#define DO_CHECK 1
-
 #include "UI/SkillWidget.h"
-
-#include <filesystem>
-
 #include "Character/ArmedCharacter.h"
-#include "Character/LakayaBasePlayerState.h"
 #include "UI/SkillProgressBar.h"
 
 void USkillWidget::NativeConstruct()
@@ -24,17 +18,17 @@ void USkillWidget::SetCharacter(const FName& CharacterName)
 	}
 }
 
-USkillProgressBar* USkillWidget::GetSkillProgressBar(const EAbilityKind AbilityKind)
+USkillProgressBar* USkillWidget::GetSkillProgressBar(const ESkillKey& SkillKey) const
 {
-	switch (AbilityKind)
+	switch (SkillKey)
 	{
-	case Primary:
+	case Q:
 		return QSkillProgressBar.Get();
-	case Secondary:
+	case E:
 		return ESkillProgressBar.Get();
-	case WeaponAbility:
+	case RMB:
 		return RMBSkillProgressBar.Get();
+	default:
+		return nullptr;
 	}
-	
-	return nullptr;
 }

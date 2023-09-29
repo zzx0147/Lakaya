@@ -29,6 +29,15 @@ struct FSkillWidgetTextureStruct
 	UTexture2D* RMBSkillTextureBackgroundImage;
 };
 
+UENUM()
+enum ESkillKey
+{
+	None,
+	Q,
+	E,
+	RMB
+};
+
 UCLASS()
 class LAKAYA_API USkillWidget : public UUserWidget
 {
@@ -39,7 +48,7 @@ protected:
 
 public:
 	void SetCharacter(const FName& CharacterName);
-	class USkillProgressBar* GetSkillProgressBar(EAbilityKind AbilityKind);
+	class USkillProgressBar* GetSkillProgressBar(const ESkillKey& SkillKey) const;
 	
 	
 private:

@@ -3,6 +3,8 @@
 
 #include "UI/SkillProgressBar.h"
 
+#include <chrono>
+
 #include "Components/ProgressBar.h"
 #include "GameFramework/GameStateBase.h"
 #include "Styling/SlateBrush.h"
@@ -65,6 +67,13 @@ void USkillProgressBar::UpdateWidget()
 	}
 }
 
+void USkillProgressBar::StartProgressBar(const float& StartTime, const float& Duration)
+{
+	EnableTime = StartTime + Duration;
+	MaxCoolTime = Duration;
+	if(EnableTime > GetWorld()->GetGameState()->GetServerWorldTimeSeconds()) bUpdateProgressBar = true;
+}
+
 void USkillProgressBar::NativePreConstruct()
 {
 	Super::NativePreConstruct();
@@ -77,13 +86,17 @@ void USkillProgressBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 	Super::NativeTick(MyGeometry, InDeltaTime);
 	if(!bUpdateProgressBar || SkillProgressBar == nullptr) return;
 
-	const float RemainCoolTime = EnableTime - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+	// const float RemainCoolTime = EnableTime - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+	const float RemainCoolTime = EnableTime - GetWorld()->GetTimeSeconds();
 	if(RemainCoolTime < 0)
 	{
 		SkillProgressBar->SetPercent(1.0f);
 		bUpdateProgressBar = false;
 		return;
 	}
+
+	// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("%f"),1.0f - RemainCoolTime / MaxCoolTime));
+	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("%f : %f"),RemainCoolTime,MaxCoolTime));
 	
-	SkillProgressBar->SetPercent(1.0f - RemainCoolTime / MaxCoolTime);
+	SkillProgressBar->SetPercent(1.0f - (RemainCoolTime / MaxCoolTime));
 }
