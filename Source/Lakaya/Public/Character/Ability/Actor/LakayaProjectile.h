@@ -242,6 +242,16 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	bool OnProjectilePathBlock(const FPredictProjectilePathResult& PredictResult);
 
+	/**
+	 * 투사체 경로 예측중에 FromThrow 이벤트가 트리거되면 호출됩니다. 서버, 클라이언트 모두에서 호출됩니다.
+	 * 이 이벤트에서 EventTriggerDelayFromThrow값을 업데이트해서 또 다시 일정시간 뒤에 이벤트가 트리거되도록 할 수 있습니다.
+	 * @param Location 이벤트가 트리거되는 시점에서 투사체의 위치입니다.
+	 * @param Velocity 이벤트가 트리거되는 시점에서 투사체의 속도입니다.
+	 * @return false가 반환되면 투사체의 진행을 멈춥니다.
+	 */
+	UFUNCTION(BlueprintNativeEvent)
+	bool OnEventFromThrowTriggeredInPathPredict(const FVector& Location, const FVector& Velocity);
+
 	/** 이번 투사체 투척에서 해당 액터에 대한 Overlap 이벤트가 더이상 생성되지 않도록 합니다. */
 	UFUNCTION(BlueprintCallable)
 	void AddIgnoredInPerformActor(AActor* InActor);
@@ -249,6 +259,9 @@ protected:
 	/** 이번 투사체 투척에서 Ignore되었던 액터들을 다시 Ignore되지 않도록 하고 목록을 비웁니다. */
 	UFUNCTION(BlueprintCallable)
 	void ClearIgnoredInPerformActors();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float EventTriggerDelayFromThrow;
 
 	virtual void BeginPlay() override;
 
