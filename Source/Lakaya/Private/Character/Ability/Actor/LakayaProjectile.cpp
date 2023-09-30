@@ -165,7 +165,7 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData,
 {
 	RecentPerformedTime = InThrowData.ServerTime;
 	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity,
-	                                           GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
+	                                           GetServerWorldTimeSeconds());
 
 	OnThrowStarted(InThrowData);
 
@@ -176,6 +176,11 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData,
 		ProjectileMovementComponent->Velocity = Result.LastTraceDestination.Velocity;
 		CollisionComponent->SetCollisionEnabled(CollisionEnabled);
 	}
+}
+
+float ALakayaProjectile::GetServerWorldTimeSeconds() const
+{
+	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 }
 
 void ALakayaProjectile::SetCustomState(const uint8& InCustomState)
@@ -270,8 +275,8 @@ bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& O
 	}
 
 	const auto& HitResult = OutResult.HitResult;
-	if (const auto HitResponse = CollisionComponent->GetCollisionResponseToComponent(HitResult.GetComponent());
-		HitResponse == ECR_Block)
+	const auto HitResponse = CollisionComponent->GetCollisionResponseToComponent(HitResult.GetComponent());
+	if (HitResponse == ECR_Block)
 	{
 		if (HitResult.bStartPenetrating)
 		{
@@ -293,12 +298,11 @@ bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& O
 			OutResult.LastTraceDestination.Velocity = FVector::ZeroVector;
 			return true;
 		}
-		
-		//TODO: 충돌이 감지된 지점에서 다시 시작하므로 bStartPenetrating이 감지될 수도 있습니다. 이러한 경우 무한루프에 빠질 수 있습니다.
+
 		// 반사 벡터 방향으로 나아가도록 설정합니다.
 		PredictedProjectileParams.LaunchVelocity =
-			-OutResult.LastTraceDestination.Velocity.MirrorByVector(HitResult.ImpactNormal) *
-			ProjectileMovementComponent->Bounciness;
+			-OutResult.LastTraceDestination.Velocity.MirrorByVector(HitResult.ImpactNormal)
+			* ProjectileMovementComponent->Bounciness;
 	}
 	else
 	{

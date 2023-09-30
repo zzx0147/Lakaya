@@ -189,6 +189,9 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsActualCustomState() const { return ProjectileState.IsCustomState(); }
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetServerWorldTimeSeconds() const;
+
 	/** 커스텀 스테이트를 해당 값으로 변경합니다. */
 	UFUNCTION(BlueprintCallable)
 	void SetCustomState(const uint8& InCustomState);
