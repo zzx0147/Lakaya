@@ -22,11 +22,11 @@ USkillProgressBar* USkillWidget::GetSkillProgressBar(const ESkillKey& SkillKey) 
 {
 	switch (SkillKey)
 	{
-	case Q:
+	case ESkillKey::Q:
 		return QSkillProgressBar.Get();
-	case E:
+	case ESkillKey::E:
 		return ESkillProgressBar.Get();
-	case RMB:
+	case ESkillKey::RMB:
 		return RMBSkillProgressBar.Get();
 	default:
 		return nullptr;

@@ -4,6 +4,16 @@
 #include "Blueprint/UserWidget.h"
 #include "SkillProgressBar.generated.h"
 
+UENUM()
+enum class ESkillProgressBarState : uint8
+{
+	None,
+	CoolTime,
+	StackingRegen,
+	Ultimate
+};
+
+
 UCLASS()
 class LAKAYA_API USkillProgressBar : public UUserWidget
 {
@@ -16,10 +26,11 @@ public:
 
 	void SetTexture(UTexture2D* NewBackgroundImageTexture, UTexture2D* NewFillImageTexture);
 	void UpdateWidget();
-	void SetMaxCoolTime(const float& NewMaxCoolTime) { MaxCoolTime = NewMaxCoolTime; }
+	FORCEINLINE void SetMaxCoolTime(const float& NewMaxCoolTime) { MaxCoolTime = NewMaxCoolTime; }
 
-	void StartProgressBar(const float& StartTime,const float& Duration);
-	
+	void StartCoolTime(const float& ArgStartTime, const float& Duration);
+	void StartStackingRegen(const float& ArgStartTime, const float& Duration, const bool& ArgShowProgressOnlyZeroStack = false);
+
 protected:
 	UFUNCTION(BlueprintCallable)
 	virtual void NativePreConstruct() override;
@@ -40,7 +51,13 @@ protected:
 private:
 	float EnableTime;
 
+	float StartTime;
+	
 	float MaxCoolTime;
 
 	bool bUpdateProgressBar;
+
+	ESkillProgressBarState CurrentState;
+
+	uint8 bShowProgressOnlyZeroStack : 1;
 };

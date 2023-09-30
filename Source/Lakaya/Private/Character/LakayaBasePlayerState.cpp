@@ -57,6 +57,8 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	LakayaAttributeSet = CreateDefaultSubobject<ULakayaAttributeSet>(TEXT("LakayaAttributeSet"));
 
 	AbilitySystem->OnActiveGameplayEffectAddedDelegateToSelf.AddUObject(this,&ALakayaBasePlayerState::OnActiveGameplayEffectAddedDelegateToSelfCallback);
+	AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetSkillStackAttribute()).AddUObject(this,&ALakayaBasePlayerState::OnSkillStackChange);
+	// AbilitySystem->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -591,7 +593,7 @@ void ALakayaBasePlayerState::OnActiveGameplayEffectAddedDelegateToSelfCallback(U
 	{
 		if(const auto SkillProgressBar = SkillWidget->GetSkillProgressBar(TargetSkillKey))
 		{
-			SkillProgressBar->StartProgressBar(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->StartWorldTime,SpecApplied.Duration);
+			SkillProgressBar->StartCoolTime(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->StartWorldTime,SpecApplied.Duration);
 		}
 	}
 	//적용된 이펙트가 스킬 스택 리젠 이펙트일 경우
@@ -599,8 +601,17 @@ void ALakayaBasePlayerState::OnActiveGameplayEffectAddedDelegateToSelfCallback(U
 	{
 		if(const auto SkillProgressBar = SkillWidget->GetSkillProgressBar(TargetSkillKey))
 		{
-			
+			SkillProgressBar->StartStackingRegen(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->StartWorldTime,SpecApplied.Period);
 		}
+	}
+}
+
+void ALakayaBasePlayerState::OnSkillStackChange(const FOnAttributeChangeData& ChangedAttributeData)
+{
+	if(ChangedAttributeData.Attribute == LakayaAttributeSet->GetSkillStackAttribute())
+	{
+		const auto MaxReached = ChangedAttributeData.NewValue > LakayaAttributeSet->GetMaxSkillStack() || FMath::IsNearlyEqual(ChangedAttributeData.NewValue, LakayaAttributeSet->GetMaxSkillStack());
+		AbilitySystem->SetLooseGameplayTagCount(FGameplayTag::RequestGameplayTag(TEXT("AttributeEvent.ReachMaxSkillStack")), MaxReached ? 1 : 0);
 	}
 }
 

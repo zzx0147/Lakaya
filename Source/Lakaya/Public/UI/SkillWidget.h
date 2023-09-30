@@ -30,7 +30,7 @@ struct FSkillWidgetTextureStruct
 };
 
 UENUM()
-enum ESkillKey
+enum class ESkillKey : uint8
 {
 	None,
 	Q,
