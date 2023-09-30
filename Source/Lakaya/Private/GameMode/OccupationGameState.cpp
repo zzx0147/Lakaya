@@ -1,6 +1,5 @@
 #include "GameMode/OccupationGameState.h"
 
-#include "EngineUtils.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
@@ -323,10 +322,10 @@ void AOccupationGameState::HandleMatchHasEnded()
 	{
 		FinalResultWidget->SetTeam(ClientTeam);
 		FinalResultWidget->SetMatchResultData(GetOccupationWinner(),ProTeamScore,AntiTeamScore, PlayersByTeamMap);
-	
-		ShowEndResultWidget();
-		BindDetailResultWidget();
-		BindDetailResultElementWidget();
+		FinalResultWidget->SetVisibility(ESlateVisibility::Visible);
+		// ShowEndResultWidget();
+		// BindDetailResultWidget();
+		// BindDetailResultElementWidget();
 	}
 
 	if (OccupationMinimapWidget.IsValid())
