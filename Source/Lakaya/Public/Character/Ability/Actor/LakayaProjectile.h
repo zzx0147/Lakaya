@@ -156,16 +156,20 @@ public:
 	 */
 	void ThrowProjectile(const FProjectileThrowData& InThrowData);
 
-	FORCEINLINE const FProjectileState& GetProjectileState() const
-	{
-		return HasAuthority() ? ProjectileState : LocalState;
-	}
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const FProjectileState& GetProjectileState() const;
 
-	FORCEINLINE bool IsCollapsed() const { return GetProjectileState().IsCollapsed(); }
-	FORCEINLINE bool IsPerforming() const { return GetProjectileState().IsPerforming(); }
-	FORCEINLINE bool IsCustomState() const { return GetProjectileState().IsCustomState(); }
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsCollapsed() const { return GetProjectileState().IsCollapsed(); }
 
-	FORCEINLINE float GetRecentPerformedTime() const { return FMath::Max(ThrowData.ServerTime, RecentPerformedTime); }
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsPerforming() const { return GetProjectileState().IsPerforming(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsCustomState() const { return GetProjectileState().IsCustomState(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetRecentPerformedTime() const { return FMath::Max(ThrowData.ServerTime, RecentPerformedTime); }
 
 	/**
 	 * 투사체의 상태가 변경되면 호출되는 이벤트입니다. 로컬에서 예측적으로 투사체의 상태를 변경할 때에도 호출됩니다.
@@ -176,10 +180,14 @@ public:
 	virtual void PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker) override;
 
 protected:
-	FORCEINLINE FProjectileState& InternalGetProjectileState() { return HasAuthority() ? ProjectileState : LocalState; }
-	FORCEINLINE bool IsActualCollapsed() const { return ProjectileState.IsCollapsed(); }
-	FORCEINLINE bool IsActualPerforming() const { return ProjectileState.IsPerforming(); }
-	FORCEINLINE bool IsActualCustomState() const { return ProjectileState.IsCustomState(); }
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsActualCollapsed() const { return ProjectileState.IsCollapsed(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsActualPerforming() const { return ProjectileState.IsPerforming(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsActualCustomState() const { return ProjectileState.IsCustomState(); }
 
 	/** 커스텀 스테이트를 해당 값으로 변경합니다. */
 	UFUNCTION(BlueprintCallable)
@@ -260,6 +268,7 @@ private:
 		bool& bLockRef;
 	};
 
+	FORCEINLINE FProjectileState& InternalGetProjectileState() { return HasAuthority() ? ProjectileState : LocalState; }
 	void ThrowProjectileAuthoritative(const FProjectileThrowData& InThrowData);
 	void ThrowProjectile(const FProjectileThrowData& InThrowData, ECollisionEnabled::Type&& CollisionEnabled);
 	void SetProjectileState(const EProjectileState& InProjectileState);

@@ -117,6 +117,11 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 	}
 }
 
+const FProjectileState& ALakayaProjectile::GetProjectileState() const
+{
+	return HasAuthority() ? ProjectileState : LocalState;
+}
+
 void ALakayaProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
