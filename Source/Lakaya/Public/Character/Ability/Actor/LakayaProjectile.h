@@ -189,6 +189,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SetProjectileStateCollapsed();
 
+	UFUNCTION(BlueprintNativeEvent)
+	void OnThrowStarted(const FProjectileThrowData& InThrowData);
+
 	/** OnRep_ProjectileState에서 커스텀 스테이트에서 탈출할 때 호출됩니다. 0에 대해서는 호출되지 않습니다. */
 	UFUNCTION(BlueprintNativeEvent)
 	void OnReplicatedCustomStateExit(const uint8& OldState);

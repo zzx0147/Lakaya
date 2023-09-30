@@ -162,6 +162,8 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData,
 	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity,
 	                                           GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
 
+	OnThrowStarted(InThrowData);
+
 	static FPredictProjectilePathResult Result;
 	if (MarchProjectileRecursive(Result, CollisionEnabled))
 	{
@@ -179,6 +181,10 @@ void ALakayaProjectile::SetCustomState(const uint8& InCustomState)
 void ALakayaProjectile::SetProjectileStateCollapsed()
 {
 	SetProjectileState(EProjectileState::Collapsed);
+}
+
+void ALakayaProjectile::OnThrowStarted_Implementation(const FProjectileThrowData& InThrowData)
+{
 }
 
 void ALakayaProjectile::OnReplicatedCustomStateEnter_Implementation(const uint8& NewState)
