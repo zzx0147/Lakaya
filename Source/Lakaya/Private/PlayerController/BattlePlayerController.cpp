@@ -68,11 +68,6 @@ ABattlePlayerController::ABattlePlayerController()
 	if (DashStopFinder.Succeeded()) DashStopAction = DashStopFinder.Object;
 }
 
-void ABattlePlayerController::SetSkillWidget(USkillWidget* NewSkillWidget)
-{
-	SkillWidget = NewSkillWidget;
-}
-
 void ABattlePlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
 	Super::SetupEnhancedInputComponent(EnhancedInputComponent);
@@ -108,35 +103,11 @@ void ABattlePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsy
 	InputSubsystem->AddMappingContext(WeaponControlContext, WeaponContextPriority);
 }
 
-void ABattlePlayerController::BindSkillProgressBar(const EAbilityKind& TargetSkill)
-{
-	if (const auto SkillProgressBar = SkillWidget->GetSkillProgressBar(TargetSkill); SkillProgressBar != nullptr)
-	{
-		const auto Ability = ArmedCharacter->FindAbility(TargetSkill);
-		Ability->OnEnableTimeChanged.AddUObject(SkillProgressBar,
-		                                        &USkillProgressBar::OnEnableTimeChange);
-		SkillProgressBar->SetMaxCoolTime(Ability->GetCoolTime());
-	}
-}
-
-void ABattlePlayerController::SkillWidgetBind()
-{
-	if (SkillWidget.IsValid() && ArmedCharacter.IsValid())
-	{
-		SkillWidget->SetCharacter(ArmedCharacter->GetCharacterName());
-
-		BindSkillProgressBar(Primary);
-		BindSkillProgressBar(Secondary);
-		BindSkillProgressBar(WeaponAbility);
-	}
-}
-
 void ABattlePlayerController::OnPossessedPawnChangedCallback(APawn* ArgOldPawn, APawn* NewPawn)
 {
 	Super::OnPossessedPawnChangedCallback(ArgOldPawn, NewPawn);
 	if (!IsLocalController()) return;
 	ArmedCharacter = Cast<AArmedCharacter>(NewPawn);
-	SkillWidgetBind();
 }
 
 void ABattlePlayerController::StartAbility(EAbilityKind AbilityKind)

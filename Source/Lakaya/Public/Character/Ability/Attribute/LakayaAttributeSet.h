@@ -16,6 +16,8 @@ GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDashStackFullOrNot, const bool, bIsFull);
 
+DECLARE_EVENT_ThreeParams(ALakayaBasePlayerState, FPlayerKilledSignature, AController*, AController*, AActor*)
+
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FAttributeChangeSignature, const float&)
 
 UCLASS(Config=Game)
@@ -46,6 +48,7 @@ public:
 
 	mutable FAttributeChangeSignature OnMaxHealthChanged;
 
+	mutable FPlayerKilledSignature OnPlayerKill;
 protected:
 	virtual bool PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data) override;
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
@@ -103,4 +106,6 @@ protected:
 private:
 	UPROPERTY(GlobalConfig)
 	FGameplayTag MaxSkillStackTag;
+private:
+	bool bOutOfHealth;
 };

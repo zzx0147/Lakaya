@@ -1,6 +1,5 @@
 #include "GameMode/OccupationGameState.h"
 
-#include "EngineUtils.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
@@ -71,18 +70,6 @@ void AOccupationGameState::BeginPlay()
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 		LocalController && LocalController->IsLocalController())
 	{
-		if (SkillWidgetClass)
-		{
-			SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
-			if (SkillWidget.IsValid())
-			{
-				SkillWidget->AddToViewport();
-				SkillWidget->SetVisibility(ESlateVisibility::Hidden);
-				if (const auto BattlePlayerController = Cast<ABattlePlayerController>(LocalController))
-					BattlePlayerController->SetSkillWidget(SkillWidget.Get());
-			}
-			else UE_LOG(LogTemp, Warning, TEXT("SkillWidget is null."))
-		}
 
 		if (TeamScoreWidgetClass)
 		{
@@ -230,9 +217,6 @@ void AOccupationGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 	
-	if (SkillWidget.IsValid())
-		SkillWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
 	if (IsValid(TeamScoreWidget))
 		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
 
@@ -338,10 +322,10 @@ void AOccupationGameState::HandleMatchHasEnded()
 	{
 		FinalResultWidget->SetTeam(ClientTeam);
 		FinalResultWidget->SetMatchResultData(GetOccupationWinner(),ProTeamScore,AntiTeamScore, PlayersByTeamMap);
-	
-		ShowEndResultWidget();
-		BindDetailResultWidget();
-		BindDetailResultElementWidget();
+		FinalResultWidget->SetVisibility(ESlateVisibility::Visible);
+		// ShowEndResultWidget();
+		// BindDetailResultWidget();
+		// BindDetailResultElementWidget();
 	}
 
 	if (OccupationMinimapWidget.IsValid())
