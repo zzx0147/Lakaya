@@ -252,6 +252,12 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	bool OnEventFromThrowTriggeredInPathPredict(const FVector& Location, const FVector& Velocity);
 
+	/**
+	 * 투사체가 물리 시뮬레이션을 통해 투척이 실행되던 도중에 FromThrow 이벤트가 트리거되면 호출됩니다. 서버, 클라이언트 모두에서 호출됩니다.
+	 */
+	UFUNCTION(BlueprintNativeEvent)
+	void OnEventFromThrowTriggeredInPhysics();
+
 	/** 이번 투사체 투척에서 해당 액터에 대한 Overlap 이벤트가 더이상 생성되지 않도록 합니다. */
 	UFUNCTION(BlueprintCallable)
 	void AddIgnoredInPerformActor(AActor* InActor);
@@ -292,7 +298,7 @@ private:
 	void RejectProjectile();
 	void StopThrowProjectile();
 	bool MarchProjectileRecursive(FPredictProjectilePathResult& OutResult,
-	                              const ECollisionEnabled::Type& CollisionEnabled);
+	                              const ECollisionEnabled::Type& CollisionEnabled, float CurrentTime = 0.f);
 
 	template <class ArgType, class FunType = typename TMemFunPtrType<false, FProjectileState, bool(ArgType)>::Type>
 	void InternalSetProjectileState(FunType&& FunPtr, ArgType&& Arg);
@@ -322,6 +328,7 @@ private:
 	float RecentPerformedTime;
 	bool bIsStateChanging;
 	TArray<TWeakObjectPtr<AActor>> IgnoredInPerformActors;
+	FTimerHandle EventFromThrowTimerHandle;
 };
 
 template <class ArgType, class FunType>

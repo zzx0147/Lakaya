@@ -173,6 +173,9 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData,
 	static FPredictProjectilePathResult Result;
 	if (MarchProjectileRecursive(Result, CollisionEnabled))
 	{
+		// 이벤트 타이머를 셋업합니다. 남은 시간이 음수거나 0인 경우는 MarchProjectileRecursive에서 처리되었습니다.
+		GetWorldTimerManager().SetTimer(EventFromThrowTimerHandle, this, &ThisClass::OnEventFromThrowTriggeredInPhysics,
+		                                PredictedProjectileParams.MaxSimTime - EventTriggerDelayFromThrow);
 		SetActorLocation(Result.LastTraceDestination.Location);
 		ProjectileMovementComponent->Velocity = Result.LastTraceDestination.Velocity;
 		CollisionComponent->SetCollisionEnabled(CollisionEnabled);
@@ -256,17 +259,20 @@ void ALakayaProjectile::RejectProjectile()
 
 void ALakayaProjectile::StopThrowProjectile()
 {
+	if (EventFromThrowTimerHandle.IsValid())
+	{
+		GetWorldTimerManager().ClearTimer(EventFromThrowTimerHandle);
+	}
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	ProjectileMovementComponent->StopMovementImmediately();
 	ClearIgnoredInPerformActors();
 }
 
 bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& OutResult,
-                                                 const ECollisionEnabled::Type& CollisionEnabled)
+                                                 const ECollisionEnabled::Type& CollisionEnabled, float CurrentTime)
 {
 	// 이미 예측된 부분은 스킵하기 위해 잠시 MaxSimTime을 조정합니다.
 	const auto MaxSimTime = PredictedProjectileParams.MaxSimTime;
-	const auto CurrentTime = OutResult.LastTraceDestination.Time;
 	PredictedProjectileParams.MaxSimTime -= CurrentTime;
 
 	const auto bIsPredictionBlocked =
@@ -274,15 +280,17 @@ bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& O
 	PredictedProjectileParams.MaxSimTime = MaxSimTime;
 
 	// 딜레이 이벤트 기능을 사용하고, MaxSimTime이내에 TriggerDelay가 존재하면 이벤트가 발생할 수 있는 최저 조건을 달성합니다.
-	if (EventTriggerDelayFromThrow > 0.f && MaxSimTime > EventTriggerDelayFromThrow)
+	if (EventTriggerDelayFromThrow > 0.f && MaxSimTime >= EventTriggerDelayFromThrow)
 	{
-		const auto FixedEventTriggerDelay = EventTriggerDelayFromThrow - CurrentTime;
-		if (FixedEventTriggerDelay <= OutResult.LastTraceDestination.Time)
+		const auto RemainEventTime = EventTriggerDelayFromThrow - CurrentTime;
+
+		// 이번 예측에서 이벤트 시간을 지나쳤다면 이벤트를 발생시킵니다.
+		if (RemainEventTime <= OutResult.LastTraceDestination.Time)
 		{
 			const auto FoundIndex = OutResult.PathData.FindLastByPredicate(
-				[&FixedEventTriggerDelay](const FPredictProjectilePathPointData& InData)
+				[&RemainEventTime](const FPredictProjectilePathPointData& InData)
 				{
-					return InData.Time < FixedEventTriggerDelay;
+					return InData.Time < RemainEventTime;
 				});
 			check(FoundIndex != INDEX_NONE);
 
@@ -290,7 +298,7 @@ bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& O
 			const auto& FoundData = OutResult.PathData[FoundIndex];
 			const auto& NextData = OutResult.PathData[FoundIndex + 1];
 			const auto Alpha =
-				UKismetMathLibrary::NormalizeToRange(FixedEventTriggerDelay, FoundData.Time, NextData.Time);
+				UKismetMathLibrary::NormalizeToRange(RemainEventTime, FoundData.Time, NextData.Time);
 
 			const auto Location = FMath::Lerp(FoundData.Location, NextData.Location, Alpha);
 			const auto Velocity = FMath::Lerp(FoundData.Velocity, NextData.Velocity, Alpha);
@@ -359,13 +367,17 @@ bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& O
 	}
 
 	PredictedProjectileParams.StartLocation = OutResult.LastTraceDestination.Location;
-	return MarchProjectileRecursive(OutResult, CollisionEnabled);
+	return MarchProjectileRecursive(OutResult, CollisionEnabled, CurrentTime + OutResult.LastTraceDestination.Time);
 }
 
 bool ALakayaProjectile::OnEventFromThrowTriggeredInPathPredict_Implementation(const FVector& Location,
                                                                               const FVector& Velocity)
 {
 	return true;
+}
+
+void ALakayaProjectile::OnEventFromThrowTriggeredInPhysics_Implementation()
+{
 }
 
 void ALakayaProjectile::AddIgnoredInPerformActor(AActor* InActor)
