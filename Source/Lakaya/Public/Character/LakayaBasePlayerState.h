@@ -230,6 +230,12 @@ private:
 
 	void RespawnTimerCallback(FRespawnTimerDelegate Callback);
 
+	void BindAllSkillToWidget();
+
+	void OnActiveGameplayEffectAddedDelegateToSelfCallback(UAbilitySystemComponent* ArgAbilitySystemComponent, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle);
+
+	void OnSkillStackChange(const FOnAttributeChangeData& ChangedAttributeData);
+	
 public:
 	// 현재 체력이 변경되는 경우 호출됩니다. 매개변수로 변경된 현재 체력을 받습니다.
 	FHealthChangeSignature OnHealthChanged;
@@ -277,6 +283,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGamePlayHealthWidget> HealthWidgetClass;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class USkillWidget> SkillWidgetClass;
+	
 	// 게임중에 표시되는 피격 레이더 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UDirectionalDamageIndicator> DirectionDamageIndicatorClass;
@@ -336,6 +345,7 @@ private:
 	bool bIsAlly;
 
 	TWeakObjectPtr<UGamePlayHealthWidget> HealthWidget;
+	TObjectPtr<USkillWidget> SkillWidget;
 	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;
 	TWeakObjectPtr<UGamePlayPortraitWidget> PortraitWidget;
 };
