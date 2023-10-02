@@ -12,6 +12,13 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameplayCue_Types.h"
 
+#define ENSURE_REMOTE_SERVER_SCOPE() \
+	if (!(ensure(GetCurrentActivationInfoRef().ActivationMode == EGameplayAbilityActivationMode::Authority \
+	&& !GetCurrentActorInfo()->IsLocallyControlled()))) \
+	{ \
+		return; \
+	}
+
 void ULakayaAbility::InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
                                   const FGameplayAbilityActivationInfo ActivationInfo)
 {
@@ -96,6 +103,11 @@ void ULakayaAbility::Log(const FString& Message) const
 	UE_LOG(LogTemp, Log, TEXT("%s"), *Message);
 	if (!bAddLogOnScreen || !GEngine) return;
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, Message);
+}
+
+void ULakayaAbility::BP_Log(const FString& Message) const
+{
+	Log(CurrentActorInfo, Message);
 }
 
 void ULakayaAbility::ServerSetReplicatedTargetData(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
@@ -248,46 +260,38 @@ TArray<FActiveGameplayEffectHandle> ULakayaAbility::K2_ApplyGameplayEffectSpecOr
 	                                            EffectSpecHandle, TargetData, GameplayCueTag);
 }
 
-void ULakayaAbility::TargetDataScope()
+void ULakayaAbility::InitiateInstantTargetDataScope()
 {
-	const auto ActorInfo = GetCurrentActorInfo();
-	const auto ActivationMode = GetCurrentActivationInfoRef().ActivationMode;
+	GetCurrentActivationInfoRef().ActivationMode == EGameplayAbilityActivationMode::Authority
+		&& !GetCurrentActorInfo()->IsLocallyControlled()
+			? WaitForInstantTargetData()
+			: CallMakeTargetData();
+}
 
-	if (ActivationMode == EGameplayAbilityActivationMode::Authority && !ActorInfo->IsLocallyControlled())
+void ULakayaAbility::CallMakeTargetData()
+{
+	FScopedPredictionWindow PredictionWindow((GetAbilitySystemComponentFromActorInfo_Checked()));
+
+	const auto TargetDataHandle = MakeTargetData();
+
+	if (GetCurrentActivationInfoRef().ActivationMode == EGameplayAbilityActivationMode::Predicting)
 	{
-		TargetDataDelegateHandle = GetTargetDataDelegate().AddUObject(this, &ThisClass::OnTargetDataReceived);
-
-		auto& TimerManager = GetWorld()->GetTimerManager();
-		if (ServerTargetDataTimeOut > 0)
-		{
-			/*
-			 * 애니메이션 몽타주를 실행하고, 그 몽타주의 애님 노티파이에서 타겟데이터를 생성하여 서버로 전송하는 경우에 타임아웃 옵션이 유용합니다.
-			 * 이러한 경우 서버는 몽타주를 실행하고 타겟데이터를 기다리는데, 최소한 애님 노티파이가 실행되고 타겟 데이터가 전송되는 시간만큼 기다려야 할 것입니다.
-			 * 따라서 어느정도 넉넉하게 타임아웃 시간을 적용해두고, 너무 긴 시간동안 타겟 데이터가 전송되지 않는다면 어빌리티를 취소하도록 합니다.
-			 */
-			TimerManager.SetTimer(TargetDataTimerHandle, this, &ThisClass::K2_CancelAbility, ServerTargetDataTimeOut);
-		}
-		else
-		{
-			/*
-			 * 대개의 경우 클라이언트에서 ActivateAbility와 동시에 타겟 데이터를 전송하는데,
-			 * 이러한 경우 ActivateAbility 스코프가 종료된 이후 즉시 타겟 데이터 이벤트가 호출됩니다.
-			 * 따라서 다음 프레임까지 타겟데이터가 도착하지 않았다면 뭔가 잘못됐다고 판단하고 CancelAbility를 호출합니다.
-			 */
-			TargetDataTimerHandle = TimerManager.SetTimerForNextTick(this, &ThisClass::K2_CancelAbility);
-		}
+		ServerSetReplicatedTargetData(TargetDataHandle);
 	}
-	else
-	{
-		FScopedPredictionWindow PredictionWindow((GetAbilitySystemComponentFromActorInfo_Checked()));
+}
 
-		const auto TargetDataHandle = MakeTargetData();
+void ULakayaAbility::WaitForInstantTargetData()
+{
+	ENSURE_REMOTE_SERVER_SCOPE()
+	BindTargetDataDelegate();
+	TargetDataTimerHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ThisClass::K2_CancelAbility);
+}
 
-		if (ActivationMode == EGameplayAbilityActivationMode::Predicting)
-		{
-			ServerSetReplicatedTargetData(TargetDataHandle);
-		}
-	}
+void ULakayaAbility::WaitForDelayedTargetData(const float& Delay)
+{
+	ENSURE_REMOTE_SERVER_SCOPE()
+	BindTargetDataDelegate();
+	GetWorld()->GetTimerManager().SetTimer(TargetDataTimerHandle, this, &ThisClass::K2_CancelAbility, Delay);
 }
 
 void ULakayaAbility::OnTargetDataReceived_Implementation(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
@@ -392,4 +396,9 @@ UEnhancedInputLocalPlayerSubsystem* ULakayaAbility::InternalGetEnhancedInputSubs
 {
 	const auto LocalPlayer = GetLocalPlayer(ActorInfo);
 	return LocalPlayer ? LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>() : nullptr;
+}
+
+void ULakayaAbility::BindTargetDataDelegate()
+{
+	TargetDataDelegateHandle = GetTargetDataDelegate().AddUObject(this, &ThisClass::OnTargetDataReceived);
 }

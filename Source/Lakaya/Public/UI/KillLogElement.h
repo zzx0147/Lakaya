@@ -52,13 +52,13 @@ private:
 	std::function<void(UKillLogElement*)> Return;
 
 	UPROPERTY(EditDefaultsOnly)
-	TMap<FName, TObjectPtr<class UTexture2D>> WeaponImageMap;
+	TMap<FName, TObjectPtr<UTexture2D>> WeaponImageMap;
 
 	UPROPERTY(EditDefaultsOnly)
-	TMap<FName, TObjectPtr<class UTexture2D>> CharacterImageMap;
+	TMap<FName, TObjectPtr<UTexture2D>> CharacterImageMap;
 
 	UPROPERTY(EditDefaultsOnly)
-	TMap<ETeam, TObjectPtr<class UTexture2D>> BackgroundImageMap;
+	TMap<ETeam, TObjectPtr<UTexture2D>> BackgroundImageMap;
 
 	UPROPERTY(EditAnywhere)
 	float ShowingTime;

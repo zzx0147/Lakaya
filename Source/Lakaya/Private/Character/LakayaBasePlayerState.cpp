@@ -13,6 +13,8 @@
 #include "UI/GamePlayHealthWidget.h"
 #include "UI/GamePlayPortraitWidget.h"
 #include "UI/OccupationMinimapWidget.h"
+#include "UI/SkillProgressBar.h"
+#include "UI/SkillWidget.h"
 
 void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -52,7 +54,11 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 
 	AbilitySystem = CreateDefaultSubobject<ULakayaAbilitySystemComponent>(TEXT("AbilitySystem"));
 
-	AttributeSet = CreateDefaultSubobject<ULakayaAttributeSet>(TEXT("LakayaAttributeSet"));
+	LakayaAttributeSet = CreateDefaultSubobject<ULakayaAttributeSet>(TEXT("LakayaAttributeSet"));
+
+	AbilitySystem->OnActiveGameplayEffectAddedDelegateToSelf.AddUObject(this,&ALakayaBasePlayerState::OnActiveGameplayEffectAddedDelegateToSelfCallback);
+	AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetSkillStackAttribute()).AddUObject(this,&ALakayaBasePlayerState::OnSkillStackChange);
+	// AbilitySystem->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -82,7 +88,6 @@ void ALakayaBasePlayerState::OnRep_PlayerName()
 void ALakayaBasePlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
@@ -110,7 +115,7 @@ void ALakayaBasePlayerState::OnRep_Owner()
 		PortraitWidget = CreateWidget<UGamePlayPortraitWidget>(LocalController, PortraitWidgetClass);
 		if (PortraitWidget.IsValid())
 		{
-			PortraitWidget->AddToViewport(-2);
+			PortraitWidget->AddToViewport(-1);
 			PortraitWidget->ChangePortrait(GetCharacterName());
 			OnCharacterNameChanged.AddWeakLambda(
 				PortraitWidget.Get(), [Widget = PortraitWidget](auto, const FName& Name)
@@ -130,8 +135,18 @@ void ALakayaBasePlayerState::OnRep_Owner()
 			HealthWidget->SetMaximumHealth(GetMaxHealth());
 			HealthWidget->SetCurrentHealth(Health);
 		}
+
+		SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
+		if (SkillWidget)
+		{
+			SkillWidget->AddToViewport(-2);
+			OnCharacterNameChanged.AddWeakLambda(
+				SkillWidget.Get(), [Widget = SkillWidget](auto, const FName& Name)
+				{
+					Widget->SetCharacter(Name);
+				});
+		}
 	}
-	
 }
 
 void ALakayaBasePlayerState::Tick(float DeltaSeconds)
@@ -150,19 +165,9 @@ void ALakayaBasePlayerState::Tick(float DeltaSeconds)
 	// TODO : 미니맵 방식은 RenderTarget -> 정적 이미지 으로 바뀌었습니다.
 	// if (!HasInitalizedPawn && GetPlayerController() && GetPlayerController()->GetPawn())
 	// {
-		// HasInitalizedPawn = true;
-		// InitalizeWithPawn();
+	// HasInitalizedPawn = true;
+	// InitalizeWithPawn();
 	// }
-}
-
-bool ALakayaBasePlayerState::IsSameTeam(const ALakayaBasePlayerState* Other) const
-{
-	return Other && IsSameTeam(Other->Team);
-}
-
-bool ALakayaBasePlayerState::IsSameTeam(const ETeam& Other) const
-{
-	return JudgeSameTeam(Team, Other);
 }
 
 void ALakayaBasePlayerState::SetTeam(const ETeam& DesireTeam)
@@ -324,6 +329,24 @@ bool ALakayaBasePlayerState::ShouldTakeDamage(float DamageAmount, FDamageEvent c
 	return (DamageAmount > 0.f && !IsSameTeam(Other)) || (DamageAmount < 0.f && IsSameTeam(Other));
 }
 
+void ALakayaBasePlayerState::InitializeStatus()
+{
+	if (const auto Character = GetPawn<ALakayaBaseCharacter>())
+	{
+		FGameplayEffectSpecHandle SpecHandle = AbilitySystem->MakeOutgoingSpec(
+			StatusInitializeEffect, 0, AbilitySystem->MakeEffectContext());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxHealth")),
+		                                               Character->GetCharacterMaxHealth());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxAmmo")),
+		                                               Character->GetCharacterMaxAmmo());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.AttackPoint")),
+		                                               Character->GetCharacterAttackPoint());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxSkillStack")),
+		                                               Character->GetCharacterMaxSkillStack());
+		AbilitySystem->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	}
+}
+
 void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
 {
 	if (const auto OldCharacter = Cast<ALakayaBaseCharacter>(OldPawn))
@@ -354,6 +377,12 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);
 		Character->SetStencilMask(UniqueRenderMask);
 		Character->SetAlly(bIsAlly);
+		
+		if(SkillWidget)
+		{
+			SkillWidget->SetCharacter(Character->GetCharacterName());
+			//BindAllSkillToWidget();
+		}
 	}
 	else
 	{
@@ -362,12 +391,25 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 
 	BroadcastMaxHealthChanged();
 
+	if (HealthWidget.IsValid())
+	{
+		AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetHealthAttribute()).AddUObject(
+			HealthWidget.Get(), &UGamePlayHealthWidget::SetCurrentHealthAttribute);
+		AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxHealthAttribute()).AddUObject(
+			HealthWidget.Get(), &UGamePlayHealthWidget::SetMaximumHealthAttribute);
+		// LakayaAttributeSet->OnHealthChanged.AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetCurrentHealth);
+		// LakayaAttributeSet->OnMaxHealthChanged.AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetMaximumHealth);
+	}
+
 	if (HasAuthority())
 	{
+		InitializeStatus();
 		// 캐릭터가 변경된 경우 그 캐릭터에 맞는 체력으로 재설정합니다.
 		Health = GetMaxHealth();
 		OnHealthChanged.Broadcast(Health);
 	}
+
+
 }
 
 float ALakayaBasePlayerState::GetMaxHealth() const
@@ -455,6 +497,122 @@ void ALakayaBasePlayerState::RespawnTimerCallback(FRespawnTimerDelegate Callback
 {
 	SetAliveState(true);
 	Callback.Execute(GetOwningController());
+}
+
+void ALakayaBasePlayerState::BindAllSkillToWidget()
+{
+	// //TODO: 여기서 스킬과 위젯을 바인딩하면 됨
+	// auto FindAbilityByTag = [&](const FGameplayTag& Tag)
+	// {
+	// 	TArray<FGameplayAbilitySpecHandle> AbilityHandles;
+	// 	FGameplayTagContainer TagContainer;
+	// 	TagContainer.AddTag(Tag);
+	// 	
+	// 	AbilitySystem->FindAllAbilitiesWithTags(AbilityHandles,TagContainer,true);
+	//
+	// 	if(AbilityHandles.Num() < 1) return FGameplayAbilitySpecHandle();//스킬이 아예 없을 경우 유효하지 않은 핸들을 반환
+	//
+	// 	ensureMsgf(AbilityHandles.Num() > 1,TEXT("Two skills are linked to one key. Only one skill must be linked to each key"));//한개 초과일 경우 경고
+	// 	
+	// 	return AbilityHandles[0];
+	// };
+	//
+	// FGameplayAbilitySpecHandle QSkillHandle = FindAbilityByTag(FGameplayTag::RequestGameplayTag(TEXT("Skill.Key.Q")));
+	// FGameplayAbilitySpecHandle ESkillHandle = FindAbilityByTag(FGameplayTag::RequestGameplayTag(TEXT("Skill.Key.E")));
+	// FGameplayAbilitySpecHandle RMBSkillHandle = FindAbilityByTag(FGameplayTag::RequestGameplayTag(TEXT("Skill.Key.RMB")));
+	//
+	//
+	//
+	// if (QSkillHandle.IsValid())
+	// {
+	// 	if (UGameplayAbility* QSkillInstance = AbilitySystem->FindAbilitySpecFromHandle(QSkillHandle)->GetPrimaryInstance())
+	// 	{
+	// 		if (QSkillInstance->AbilityTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.SkillType.Ultimate")))))
+	// 		{
+	// 		}
+	// 		else if (QSkillInstance->AbilityTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.SkillType.Stack")))))
+	// 		{
+	// 		}
+	// 		else if (QSkillInstance->AbilityTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.SkillType.Cooldown")))))
+	// 		{
+	// 		}
+	// 	}
+	// }
+	//
+	// if(ESkillHandle.IsValid())
+	// {
+	// 	if (UGameplayAbility* ESkillInstance = AbilitySystem->FindAbilitySpecFromHandle(ESkillHandle)->GetPrimaryInstance())
+	// 	{
+	// 		if (ESkillInstance->AbilityTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.SkillType.Ultimate")))))
+	// 		{
+	// 		}
+	// 		else if (ESkillInstance->AbilityTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.SkillType.Stack")))))
+	// 		{
+	// 		}
+	// 		else if (ESkillInstance->AbilityTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.SkillType.Cooldown")))))
+	// 		{
+	// 		}
+	// 	}
+	// }
+	//
+	// if(RMBSkillHandle.IsValid())
+	// {
+	// 	if (UGameplayAbility* RMBSkillInstance = AbilitySystem->FindAbilitySpecFromHandle(RMBSkillHandle)->GetPrimaryInstance())
+	// 	{
+	// 		if (RMBSkillInstance->AbilityTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.SkillType.Ultimate")))))
+	// 		{
+	// 		}
+	// 		else if (RMBSkillInstance->AbilityTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.SkillType.Stack")))))
+	// 		{
+	// 		}
+	// 		else if (RMBSkillInstance->AbilityTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.SkillType.Cooldown")))))
+	// 		{
+	// 		}
+	// 	}
+	// }
+}
+
+void ALakayaBasePlayerState::OnActiveGameplayEffectAddedDelegateToSelfCallback(UAbilitySystemComponent* ArgAbilitySystemComponent, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle)
+{
+	const FGameplayTagContainer EffectTags = SpecApplied.Def->InheritableGameplayEffectTags.CombinedTags;
+
+	ESkillKey TargetSkillKey = ESkillKey::None;
+	
+	if(EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.Key.Q")))))
+		TargetSkillKey = ESkillKey::Q;
+	else if(EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.Key.RMB")))))
+		TargetSkillKey = ESkillKey::RMB;
+	else if(EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.Key.E")))))
+		TargetSkillKey = ESkillKey::E;
+	
+	if(TargetSkillKey == ESkillKey::None) return;
+	if(!SkillWidget) return;
+	
+	//적용된 이펙트가 쿨다운 이펙트일 경우
+	if(EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.AbilityCooldown")))))
+	{
+		if(const auto SkillProgressBar = SkillWidget->GetSkillProgressBar(TargetSkillKey))
+		{
+			SkillProgressBar->StartCoolTime(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->StartWorldTime,SpecApplied.Duration);
+		}
+	}
+	//적용된 이펙트가 스킬 스택 리젠 이펙트일 경우
+	else if(EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.SkillStackRegen")))))
+	{
+		if(const auto SkillProgressBar = SkillWidget->GetSkillProgressBar(TargetSkillKey))
+		{
+			SkillProgressBar->StartStackingRegen(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->StartWorldTime,SpecApplied.Period);
+		}
+	}
+}
+
+void ALakayaBasePlayerState::OnSkillStackChange(const FOnAttributeChangeData& ChangedAttributeData)
+{
+	if(ChangedAttributeData.Attribute == LakayaAttributeSet->GetSkillStackAttribute())
+	{
+		const auto MaxReached = ChangedAttributeData.NewValue > LakayaAttributeSet->GetMaxSkillStack() || FMath::IsNearlyEqual(ChangedAttributeData.NewValue, LakayaAttributeSet->GetMaxSkillStack());
+		AbilitySystem->SetLooseGameplayTagCount(FGameplayTag::RequestGameplayTag(TEXT("AttributeEvent.ReachMaxSkillStack")), MaxReached ? 1 : 0);
+	}
 }
 
 // void ALakayaBasePlayerState::InitalizeWithPawn()

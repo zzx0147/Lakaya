@@ -158,8 +158,10 @@ private:
 	/**
 	 * @brief PlayerByMinimap Tmap을 업데이트 해줍니다.
 	 * @param Team 업데이트시켜줄 팀입니다.
+	 * @param PlayerState PlayersByMinimap에 업데이트 시켜줄 플레이어의 정보입니다.
+	 * PlayerState에서는 팀의 정보, 자기 자신 여부를 알기 위해서 사용됩니다.
 	 */
-	void UpdatePlayerByMinimap(const ETeam& Team);
+	void UpdatePlayerByMinimap(const ETeam& Team, ALakayaBasePlayerState* PlayerState);
 	
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
@@ -220,9 +222,6 @@ private:
 	FTimerHandle TimerHandle_MatchStartWaitWidget;
 	
 #pragma region Widget
-	// 게임중에 표시되는 스킬 위젯을 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<USkillWidget> SkillWidgetClass;
 
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
@@ -276,8 +275,8 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	class UInputAction* ResultSwitchingAction;
 
-	// 스킬 위젯 입니다.
-	TWeakObjectPtr<USkillWidget> SkillWidget;
+	// 스킬 위젯 입니다. 스킬 위젯은 플레이어 스테이트로 옮깁니다.
+	// TWeakObjectPtr<USkillWidget> SkillWidget;
 
 	// 팀스코어 위젯 입니다.
 	TObjectPtr<UTeamScoreWidget> TeamScoreWidget;

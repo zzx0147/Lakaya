@@ -1,23 +1,11 @@
-#define DO_CHECK 1
-
 #include "UI/SkillWidget.h"
-
-#include <filesystem>
-
 #include "Character/ArmedCharacter.h"
 #include "UI/SkillProgressBar.h"
 
 void USkillWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	QSkillProgressBar = Cast<USkillProgressBar>(GetWidgetFromName("Skill_Q"));
-	ESkillProgressBar = Cast<USkillProgressBar>(GetWidgetFromName("Skill_E"));
-	RButtonSkillProgressBar = Cast<USkillProgressBar>(GetWidgetFromName("Skill_RButton"));
-
-	check(QSkillProgressBar != nullptr);
-	check(ESkillProgressBar != nullptr);
-	check(RButtonSkillProgressBar != nullptr);
+	
 }
 
 void USkillWidget::SetCharacter(const FName& CharacterName)
@@ -26,21 +14,21 @@ void USkillWidget::SetCharacter(const FName& CharacterName)
 	{
 		QSkillProgressBar->SetTexture(SkillWidgetTextureMap[CharacterName].QSkillTextureBackgroundImage,SkillWidgetTextureMap[CharacterName].QSkillTextureFillImage);
 		ESkillProgressBar->SetTexture(SkillWidgetTextureMap[CharacterName].ESkillTextureBackgroundImage,SkillWidgetTextureMap[CharacterName].ESkillTextureFillImage);
-		RButtonSkillProgressBar->SetTexture(SkillWidgetTextureMap[CharacterName].RButtonSkillTextureBackgroundImage,SkillWidgetTextureMap[CharacterName].RButtonSkillTextureFillImage);
+		RMBSkillProgressBar->SetTexture(SkillWidgetTextureMap[CharacterName].RMBSkillTextureBackgroundImage,SkillWidgetTextureMap[CharacterName].RMBSkillTextureFillImage);
 	}
 }
 
-USkillProgressBar* USkillWidget::GetSkillProgressBar(const EAbilityKind AbilityKind)
+USkillProgressBar* USkillWidget::GetSkillProgressBar(const ESkillKey& SkillKey) const
 {
-	switch (AbilityKind)
+	switch (SkillKey)
 	{
-	case Primary:
+	case ESkillKey::Q:
 		return QSkillProgressBar.Get();
-	case Secondary:
+	case ESkillKey::E:
 		return ESkillProgressBar.Get();
-	case WeaponAbility:
-		return RButtonSkillProgressBar.Get();
+	case ESkillKey::RMB:
+		return RMBSkillProgressBar.Get();
+	default:
+		return nullptr;
 	}
-	
-	return nullptr;
 }

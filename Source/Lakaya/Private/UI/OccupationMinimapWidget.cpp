@@ -61,7 +61,7 @@ void UOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 	}
 }
 
-UImage* UOccupationMinimapWidget::CreatePlayerImage(const ETeam& NewTeam)
+UImage* UOccupationMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, bool bMyPlayer)
 {
 	UImage* NewImage = NewObject<UImage>(this);
 	const auto Team = NewTeam == ETeam::Anti ? ETeam::Anti : ETeam::Pro;
@@ -73,7 +73,14 @@ UImage* UOccupationMinimapWidget::CreatePlayerImage(const ETeam& NewTeam)
 	
 	// NewImage->SetVisibility(ESlateVisibility::Visible);
 	NewImage->SetVisibility(ESlateVisibility::Hidden);
-	
+
+	// 나 자신이라면 자신만의 아이콘으로 설정해줍니다.
+	if (bMyPlayer)
+	{
+		NewImage->SetBrushFromTexture(MinimapOwnIcon);
+		return NewImage;
+	}
+
 	// 이미지를 생성한 플레이어의 팀에 따라 아이콘을 바꿔줍니다.
 	if (Team == ETeam::Anti)
 	{
