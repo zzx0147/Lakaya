@@ -168,11 +168,13 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData,
 	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity,
 	                                           GetServerWorldTimeSeconds());
 
-	OnThrowStarted(InThrowData);
+	OnStartPathPrediction(InThrowData);
 
 	static FPredictProjectilePathResult Result;
 	if (MarchProjectileRecursive(Result, CollisionEnabled))
 	{
+		OnStartPhysicsSimulation(Result);
+
 		// 이벤트 타이머를 셋업합니다. 남은 시간이 음수거나 0인 경우는 MarchProjectileRecursive에서 처리되었습니다.
 		GetWorldTimerManager().SetTimer(EventFromThrowTimerHandle, this, &ThisClass::OnEventFromThrowTriggeredInPhysics,
 		                                PredictedProjectileParams.MaxSimTime - EventTriggerDelayFromThrow);
@@ -197,7 +199,12 @@ void ALakayaProjectile::SetProjectileStateCollapsed()
 	SetProjectileState(EProjectileState::Collapsed);
 }
 
-void ALakayaProjectile::OnThrowStarted_Implementation(const FProjectileThrowData& InThrowData)
+void ALakayaProjectile::OnStartPhysicsSimulation_Implementation(
+	const FPredictProjectilePathResult& LastPredictionResult)
+{
+}
+
+void ALakayaProjectile::OnStartPathPrediction_Implementation(const FProjectileThrowData& InThrowData)
 {
 }
 

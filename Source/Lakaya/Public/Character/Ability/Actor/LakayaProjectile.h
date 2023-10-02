@@ -201,7 +201,10 @@ protected:
 	void SetProjectileStateCollapsed();
 
 	UFUNCTION(BlueprintNativeEvent)
-	void OnThrowStarted(const FProjectileThrowData& InThrowData);
+	void OnStartPathPrediction(const FProjectileThrowData& InThrowData);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnStartPhysicsSimulation(const FPredictProjectilePathResult& LastPredictionResult);
 
 	/** OnRep_ProjectileState에서 커스텀 스테이트에서 탈출할 때 호출됩니다. 0에 대해서는 호출되지 않습니다. */
 	UFUNCTION(BlueprintNativeEvent)
@@ -269,6 +272,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float EventTriggerDelayFromThrow;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FPredictProjectilePathParams PredictedProjectileParams;
+
 	virtual void BeginPlay() override;
 
 private:
@@ -320,9 +326,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float ProjectileLaunchVelocity;
-
-	UPROPERTY(EditAnywhere)
-	FPredictProjectilePathParams PredictedProjectileParams;
 
 	FProjectileState LocalState;
 	float RecentPerformedTime;
