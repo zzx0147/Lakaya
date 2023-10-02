@@ -233,8 +233,6 @@ private:
 	void BindAllSkillToWidget();
 
 	void OnActiveGameplayEffectAddedDelegateToSelfCallback(UAbilitySystemComponent* ArgAbilitySystemComponent, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle);
-
-	void OnSkillStackChange(const FOnAttributeChangeData& ChangedAttributeData);
 	
 public:
 	// 현재 체력이 변경되는 경우 호출됩니다. 매개변수로 변경된 현재 체력을 받습니다.
@@ -345,7 +343,8 @@ private:
 	bool bIsAlly;
 
 	TWeakObjectPtr<UGamePlayHealthWidget> HealthWidget;
-	TObjectPtr<USkillWidget> SkillWidget;
+	// TObjectPtr<USkillWidget> SkillWidget;
 	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;
 	TWeakObjectPtr<UGamePlayPortraitWidget> PortraitWidget;
+	TObjectPtr<class UCharacterWidget> CharacterWidget;
 };

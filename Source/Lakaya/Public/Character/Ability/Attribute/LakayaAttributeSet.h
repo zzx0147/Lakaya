@@ -37,6 +37,7 @@ public:
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxSkillStack);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, EnergyHaste);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, UltimateGauge);
+	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxUltimateGauge);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -83,6 +84,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_UltimateGauge)
 	FGameplayAttributeData UltimateGauge;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_MaxUltimateGauge)
+	FGameplayAttributeData MaxUltimateGauge;
+	
 protected:
 	UFUNCTION()
 	virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldValue);
@@ -102,6 +106,8 @@ protected:
 	virtual void OnRep_EnergyHaste(const FGameplayAttributeData& OldValue);
 	UFUNCTION()
 	virtual void OnRep_UltimateGauge(const FGameplayAttributeData& OldValue);
+	UFUNCTION()
+	virtual void OnRep_MaxUltimateGauge(const FGameplayAttributeData& OldValue);
 
 private:
 	UPROPERTY(GlobalConfig)
