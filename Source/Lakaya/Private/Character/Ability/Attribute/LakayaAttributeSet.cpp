@@ -138,8 +138,13 @@ void ULakayaAttributeSet::OnRep_UltimateGauge(const FGameplayAttributeData& OldV
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, UltimateGauge, OldValue);
 }
 
+void ULakayaAttributeSet::OnRep_MaxUltimateGauge(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, MaxUltimateGauge, OldValue);
+}
+
 ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(40.0f), CurrentAmmo(40.0f),
-                                             AttackPoint(40.0f), SkillStack(3.0f), MaxSkillStack(3.0f)
+                                             AttackPoint(40.0f), SkillStack(3.0f), MaxSkillStack(3.0f), UltimateGauge(0.0f), MaxUltimateGauge(100.0f)
 {
 	bOutOfHealth = false;
 }
@@ -156,4 +161,5 @@ void ULakayaAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, MaxSkillStack, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, EnergyHaste, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, UltimateGauge, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, MaxUltimateGauge, COND_None, REPNOTIFY_Always);
 }

@@ -2,10 +2,16 @@
 
 
 #include "UI/SkillProgressBar.h"
+
+#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
+#include "Components/HorizontalBoxSlot.h"
 #include "Components/ProgressBar.h"
 #include "GameFramework/GameStateBase.h"
 #include "Styling/SlateBrush.h"
 #include "Styling/SlateTypes.h"
+#include "Components/Image.h"
+#include "Components/HorizontalBox.h"
 
 USkillProgressBar::USkillProgressBar(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -14,8 +20,16 @@ USkillProgressBar::USkillProgressBar(const FObjectInitializer& ObjectInitializer
 	bUpdateProgressBar = false;
 	MaxCoolTime = 3.0f;
 	CurrentState = ESkillProgressBarState::None;
+	ProgressBarType = ESkillProgressBarType::None;
 	bShowProgressOnlyZeroStack = false;
 	StartTime = 0.0f;
+	UltimateGauge = 0.0f;
+	MaxUltimateGauge = 100.0f;
+	SkillStack = 0;
+	MaxSkillStack = 0;
+	SkillKeyImageTextureMap.Emplace(ESkillKey::Q, nullptr);
+	SkillKeyImageTextureMap.Emplace(ESkillKey::E, nullptr);
+	SkillKeyImageTextureMap.Emplace(ESkillKey::RMB, nullptr);
 }
 
 void USkillProgressBar::OnEnableTimeChange(const float& ArgEnableTime)
@@ -33,8 +47,6 @@ void USkillProgressBar::SetTexture(UTexture2D* NewBackgroundImageTexture, UTextu
 
 void USkillProgressBar::UpdateWidget()
 {
-	SkillProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("SkillProgressBar")));
-
 	if (SkillProgressBar != nullptr)
 	{
 		FProgressBarStyle MyStyle;
@@ -74,8 +86,7 @@ void USkillProgressBar::StartCoolTime(const float& ArgStartTime, const float& Du
 	StartTime = ArgStartTime;
 	MaxCoolTime = Duration;
 	if (EnableTime > GetWorld()->GetGameState()->GetServerWorldTimeSeconds())
-		CurrentState =
-			ESkillProgressBarState::CoolTime;
+		CurrentState = ESkillProgressBarState::CoolTime;
 }
 
 void USkillProgressBar::StartStackingRegen(const float& ArgStartTime, const float& Duration,
@@ -86,8 +97,53 @@ void USkillProgressBar::StartStackingRegen(const float& ArgStartTime, const floa
 	StartTime = ArgStartTime;
 	MaxCoolTime = Duration;
 	if (EnableTime > GetWorld()->GetGameState()->GetServerWorldTimeSeconds())
-		CurrentState =
-			ESkillProgressBarState::StackingRegen;
+		CurrentState = ESkillProgressBarState::StackingRegen;
+}
+
+void USkillProgressBar::OnChangeUltimateGaugeAttribute(const FOnAttributeChangeData& NewValue)
+{
+	UltimateGauge = NewValue.NewValue;
+}
+
+void USkillProgressBar::OnChangeMaxUltimateGaugeAttribute(const FOnAttributeChangeData& NewValue)
+{
+	MaxUltimateGauge = NewValue.NewValue;
+}
+
+
+void USkillProgressBar::OnChangeSkillStackAttribute(const FOnAttributeChangeData& NewValue)
+{
+	SkillStack = FMath::RoundToInt(NewValue.NewValue);
+	UpdateSkillStackImages();
+	if (SkillStack >= MaxSkillStack)
+	{
+		CurrentState = ESkillProgressBarState::None;
+	}
+}
+
+void USkillProgressBar::OnChangeMaxSkillStackAttribute(const FOnAttributeChangeData& NewValue)
+{
+	MaxSkillStack = FMath::RoundToInt(NewValue.NewValue);
+	CreateSkillStackImages(MaxSkillStack);
+	UpdateSkillStackImages();
+}
+
+void USkillProgressBar::SetProgressType(const ESkillProgressBarType& NewType)
+{
+	ProgressBarType = NewType;
+
+	SkillStackPanel->SetVisibility(ProgressBarType == ESkillProgressBarType::StackingRegen ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Hidden);
+	
+	if (ProgressBarType == ESkillProgressBarType::None)
+		SetVisibility(ESlateVisibility::Hidden);
+	else
+		SetVisibility(ESlateVisibility::HitTestInvisible);
+}
+
+void USkillProgressBar::SetKey(const ESkillKey& NewKey)
+{
+	if (SkillKeyImageTextureMap.Contains(NewKey))
+		SkillKeyImage->SetBrushFromTexture(SkillKeyImageTextureMap[NewKey]);
 }
 
 void USkillProgressBar::NativePreConstruct()
@@ -122,12 +178,21 @@ void USkillProgressBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 		{
 			if (bShowProgressOnlyZeroStack)
 			{
+				if (SkillStack <= 0)
+				{
+					const float PassedTime = GetWorld()->GetTimeSeconds() - StartTime;
+					const float RemainRegenTime = FMath::Fmod(PassedTime, MaxCoolTime);
+					SkillProgressBar->SetPercent(RemainRegenTime / MaxCoolTime);
+				}
+				else
+				{
+					SkillProgressBar->SetPercent(1.0f);
+				}
 			}
 			else
 			{
 				const float PassedTime = GetWorld()->GetTimeSeconds() - StartTime;
-				const float RemainRegenTime = FMath::Fmod(PassedTime,MaxCoolTime);
-				// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red,FString::Printf(TEXT("%f"),1.0f - RemainRegenTime / MaxCoolTime));
+				const float RemainRegenTime = FMath::Fmod(PassedTime, MaxCoolTime);
 				SkillProgressBar->SetPercent(RemainRegenTime / MaxCoolTime);
 			}
 			break;
@@ -137,8 +202,46 @@ void USkillProgressBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 	}
 
 	// const float RemainCoolTime = EnableTime - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
-
-
 	// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("%f"),1.0f - RemainCoolTime / MaxCoolTime));
 	// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("%f : %f"),RemainCoolTime,MaxCoolTime));
+}
+
+void USkillProgressBar::CreateSkillStackImages(const uint8& Count)
+{
+	for (int i = 0; i < SkillStackImages.Num(); ++i)
+	{
+		SkillStackImages[i]->ConditionalBeginDestroy();
+	}
+	SkillStackImages.Empty();
+
+	for (int i = 0; i < Count; ++i)
+	{
+		UImage* NewImage = NewObject<UImage>(this, UImage::StaticClass());
+		NewImage->SetBrushFromTexture(SKillStackEmptyTexture);
+		NewImage->SetDesiredSizeOverride(FVector2d(SKillStackEmptyTexture->GetSizeX(),
+		                                           SKillStackEmptyTexture->GetSizeY()));
+		SkillStackPanel->AddChildToHorizontalBox(NewImage);
+
+		UHorizontalBoxSlot* ImageSlot = UWidgetLayoutLibrary::SlotAsHorizontalBoxSlot(NewImage);
+		ImageSlot->SetHorizontalAlignment(HAlign_Center);
+		FSlateChildSize SlateChildSize;
+		SlateChildSize.SizeRule = ESlateSizeRule::Fill;
+		ImageSlot->SetSize(SlateChildSize);
+		SkillStackImages.Add(NewImage);
+	}
+}
+
+void USkillProgressBar::UpdateSkillStackImages()
+{
+	for (int i = 0; i < SkillStackImages.Num(); ++i)
+	{
+		if (i < SkillStack)
+		{
+			SkillStackImages[i]->SetBrushFromTexture(SkillStackFillTexture);
+		}
+		else
+		{
+			SkillStackImages[i]->SetBrushFromTexture(SKillStackEmptyTexture);
+		}
+	}
 }
