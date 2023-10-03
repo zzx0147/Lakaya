@@ -24,6 +24,11 @@ void ULakayaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 		SetHealth(FMath::Max(GetHealth(), 0.0f));
 	}
 
+	if (Data.EvaluatedData.Attribute == GetUltimateGaugeAttribute())
+	{
+		SetUltimateGauge(FMath::Min(GetUltimateGauge(), GetMaxUltimateGauge()));
+	}
+	
 	if ((GetHealth() <= 0.0f) && !bOutOfHealth)
 	{
 		if (OnPlayerKill.IsBound())
@@ -144,7 +149,7 @@ void ULakayaAttributeSet::OnRep_MaxUltimateGauge(const FGameplayAttributeData& O
 }
 
 ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(40.0f), CurrentAmmo(40.0f),
-                                             AttackPoint(40.0f), SkillStack(3.0f), MaxSkillStack(3.0f), UltimateGauge(0.0f), MaxUltimateGauge(100.0f)
+                                             AttackPoint(40.0f), SkillStack(3.0f), MaxSkillStack(3.0f), UltimateGauge(-1.0f), MaxUltimateGauge(-1.0f)
 {
 	bOutOfHealth = false;
 }

@@ -103,11 +103,14 @@ void USkillProgressBar::StartStackingRegen(const float& ArgStartTime, const floa
 void USkillProgressBar::OnChangeUltimateGaugeAttribute(const FOnAttributeChangeData& NewValue)
 {
 	UltimateGauge = NewValue.NewValue;
+	SkillProgressBar->SetPercent(UltimateGauge / MaxUltimateGauge);
+	
 }
 
 void USkillProgressBar::OnChangeMaxUltimateGaugeAttribute(const FOnAttributeChangeData& NewValue)
 {
 	MaxUltimateGauge = NewValue.NewValue;
+	SkillProgressBar->SetPercent(UltimateGauge / MaxUltimateGauge);
 }
 
 

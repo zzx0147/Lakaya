@@ -333,8 +333,11 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameplayEffect> StatusInitializeEffect;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameplayEffect> StatRegenEffect;
+
 	UPROPERTY()
-	TObjectPtr<const class ULakayaAttributeSet> LakayaAttributeSet;
+	TObjectPtr<const ULakayaAttributeSet> LakayaAttributeSet;
 
 	FTimerHandle RespawnTimer;
 	FTimerHandle CurrentCaptureTimer;

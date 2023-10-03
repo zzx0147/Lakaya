@@ -339,7 +339,7 @@ void ALakayaBasePlayerState::InitializeStatus()
 {
 	if (const auto Character = GetPawn<ALakayaBaseCharacter>())
 	{
-		FGameplayEffectSpecHandle SpecHandle = AbilitySystem->MakeOutgoingSpec(
+		const FGameplayEffectSpecHandle SpecHandle = AbilitySystem->MakeOutgoingSpec(
 			StatusInitializeEffect, 0, AbilitySystem->MakeEffectContext());
 		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxHealth")),
 		                                               Character->GetCharacterMaxHealth());
@@ -349,7 +349,14 @@ void ALakayaBasePlayerState::InitializeStatus()
 		                                               Character->GetCharacterAttackPoint());
 		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxSkillStack")),
 		                                               Character->GetCharacterMaxSkillStack());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxUltimateGauge")),
+													   Character->GetCharacterMaxUltimateGauge());
+		
 		AbilitySystem->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+
+		const FGameplayEffectSpecHandle RegenEffectSpecHandle = AbilitySystem->MakeOutgoingSpec(
+					StatRegenEffect, 0, AbilitySystem->MakeEffectContext());
+		AbilitySystem->ApplyGameplayEffectSpecToSelf(*RegenEffectSpecHandle.Data.Get());
 	}
 }
 
