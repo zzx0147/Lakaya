@@ -13,7 +13,6 @@
 #include "UI/DirectionalDamageIndicator.h"
 #include "UI/GamePlayHealthWidget.h"
 #include "UI/GamePlayPortraitWidget.h"
-#include "UI/OccupationMinimapWidget.h"
 #include "UI/SkillProgressBar.h"
 #include "UI/SkillWidget.h"
 
@@ -61,6 +60,8 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 		this, &ALakayaBasePlayerState::OnActiveGameplayEffectAddedDelegateToSelfCallback);
 
 	// AbilitySystem->SetReplicationMode(EGameplayEffectReplicationMode::Full);
+
+	AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetSkillStackAttribute()).AddUObject(this,&ALakayaBasePlayerState::OnChangeSkillStackAttribute);
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -536,8 +537,6 @@ void ALakayaBasePlayerState::BindAllSkillToWidget()
 			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetUltimateGaugeAttribute()).AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeUltimateGaugeAttribute);
 			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxUltimateGaugeAttribute()).AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeMaxUltimateGaugeAttribute);
 			break;
-
-			
 		case ESkillProgressBarType::None:
 		default: ;
 		}
@@ -595,35 +594,61 @@ void ALakayaBasePlayerState::OnActiveGameplayEffectAddedDelegateToSelfCallback(
 	FActiveGameplayEffectHandle ActiveHandle)
 {
 	const FGameplayTagContainer EffectTags = SpecApplied.Def->InheritableGameplayEffectTags.CombinedTags;
-
-	ESkillKey TargetSkillKey = ESkillKey::None;
-
-	if (EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.Key.Q")))))
-		TargetSkillKey = ESkillKey::Q;
-	else if (EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.Key.RMB")))))
-		TargetSkillKey = ESkillKey::RMB;
-	else if (EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.Key.E")))))
-		TargetSkillKey = ESkillKey::E;
-
-	if (TargetSkillKey == ESkillKey::None) return;
-	if(!CharacterWidget || !CharacterWidget->GetSkillWidget()) return;
 	
-	//적용된 이펙트가 쿨다운 이펙트일 경우
-	if(EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.AbilityCooldown")))))
+	if(!(CharacterWidget && CharacterWidget->GetSkillWidget())) return;
+	for(const auto& SkillProgressBar : CharacterWidget->GetSkillWidget()->GetAllSkillProgressBar())
 	{
-		if(const auto SkillProgressBar = CharacterWidget->GetSkillWidget()->GetSkillProgressBar(TargetSkillKey))
+		if(SkillProgressBar->GetProgressType() == ESkillProgressBarType::None ||
+			!EffectTags.HasAnyExact(FGameplayTagContainer(SkillProgressBar->GetTag()))) continue;
+		
+		if(EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.AbilityCooldown")))))
 		{
 			SkillProgressBar->StartCoolTime(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->StartWorldTime,SpecApplied.Duration);
 		}
-	}
-	//적용된 이펙트가 스킬 스택 리젠 이펙트일 경우
-	else if(EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.SkillStackRegen")))))
-	{
-		if(const auto SkillProgressBar = CharacterWidget->GetSkillWidget()->GetSkillProgressBar(TargetSkillKey))
+		//적용된 이펙트가 스킬 스택 리젠 이펙트일 경우
+		else if(EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.SkillStackRegen")))))
 		{
-			SkillProgressBar->StartStackingRegen(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->StartWorldTime,SpecApplied.Period, true);
+			SkillProgressBar->StartStackingRegen(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->CachedStartServerWorldTime,SpecApplied.Period, true);
 		}
 	}
+	
+	
+	
+	//
+	// ESkillKey TargetSkillKey = ESkillKey::None;
+	//
+	// if (EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.Key.Q")))))
+	// 	TargetSkillKey = ESkillKey::Q;
+	// else if (EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.Key.RMB")))))
+	// 	TargetSkillKey = ESkillKey::RMB;
+	// else if (EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.Key.E")))))
+	// 	TargetSkillKey = ESkillKey::E;
+	//
+	// if (TargetSkillKey == ESkillKey::None) return;
+	// if(!CharacterWidget || !CharacterWidget->GetSkillWidget()) return;
+	//
+	// //적용된 이펙트가 쿨다운 이펙트일 경우
+	// if(EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.AbilityCooldown")))))
+	// {
+	// 	if(const auto SkillProgressBar = CharacterWidget->GetSkillWidget()->GetSkillProgressBar(TargetSkillKey))
+	// 	{
+	// 		SkillProgressBar->StartCoolTime(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->StartWorldTime,SpecApplied.Duration);
+	// 	}
+	// }
+	// //적용된 이펙트가 스킬 스택 리젠 이펙트일 경우
+	// else if(EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.SkillStackRegen")))))
+	// {
+	// 	if(const auto SkillProgressBar = CharacterWidget->GetSkillWidget()->GetSkillProgressBar(TargetSkillKey))
+	// 	{
+	// 		SkillProgressBar->StartStackingRegen(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->StartServerWorldTime,SpecApplied.Period, true);
+	// 	}
+	// }
+}
+
+void ALakayaBasePlayerState::OnChangeSkillStackAttribute(const FOnAttributeChangeData& NewValue)
+{
+	const auto MaxReached = NewValue.NewValue > LakayaAttributeSet->GetMaxSkillStack() || FMath::IsNearlyEqual(NewValue.NewValue, LakayaAttributeSet->GetMaxSkillStack());
+	AbilitySystem->SetLooseGameplayTagCount(FGameplayTag::RequestGameplayTag(TEXT("AttributeEvent.ReachMaxSkillStack")), MaxReached ? 1 : 0);
 }
 
 // void ALakayaBasePlayerState::InitalizeWithPawn()
