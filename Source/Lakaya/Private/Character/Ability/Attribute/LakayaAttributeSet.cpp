@@ -76,7 +76,7 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 		// 	OnDashStackFullOrNot.Broadcast(false);
 		// }
 
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("SkillStack: %f"), NewValue));
+		// GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("SkillStack: %f"), NewValue));
 		const auto MaxReached = NewValue > GetMaxSkillStack() || FMath::IsNearlyEqual(NewValue, GetMaxSkillStack());
 		GetOwningAbilitySystemComponentChecked()->SetLooseGameplayTagCount(MaxSkillStackTag, MaxReached ? 1 : 0);
 	}

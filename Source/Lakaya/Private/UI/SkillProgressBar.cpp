@@ -186,7 +186,7 @@ void USkillProgressBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 					const float PassedTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds() - StartTime;
 					const float RemainRegenTime = FMath::Fmod(PassedTime, MaxCoolTime);
 					SkillProgressBar->SetPercent(RemainRegenTime / MaxCoolTime);
-					GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("%f"),PassedTime));
+					// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("%f"),PassedTime));
 					if(RemainRegenTime >= MaxCoolTime - 0.1f)
 						SkillStack = 1;
 					//UI에서 저장하는 값만 늘어남, 실제로 스킬 스택이 늘어나는 것은 아님, 단순히 클라이언트상에서 쿨타임이 다 돌았는데
