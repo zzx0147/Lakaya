@@ -103,11 +103,14 @@ void USkillProgressBar::StartStackingRegen(const float& ArgStartTime, const floa
 void USkillProgressBar::OnChangeUltimateGaugeAttribute(const FOnAttributeChangeData& NewValue)
 {
 	UltimateGauge = NewValue.NewValue;
+	SkillProgressBar->SetPercent(UltimateGauge / MaxUltimateGauge);
+	
 }
 
 void USkillProgressBar::OnChangeMaxUltimateGaugeAttribute(const FOnAttributeChangeData& NewValue)
 {
 	MaxUltimateGauge = NewValue.NewValue;
+	SkillProgressBar->SetPercent(UltimateGauge / MaxUltimateGauge);
 }
 
 
@@ -180,9 +183,14 @@ void USkillProgressBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 			{
 				if (SkillStack <= 0)
 				{
-					const float PassedTime = GetWorld()->GetTimeSeconds() - StartTime;
+					const float PassedTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds() - StartTime;
 					const float RemainRegenTime = FMath::Fmod(PassedTime, MaxCoolTime);
 					SkillProgressBar->SetPercent(RemainRegenTime / MaxCoolTime);
+					// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("%f"),PassedTime));
+					if(RemainRegenTime >= MaxCoolTime - 0.1f)
+						SkillStack = 1;
+					//UI에서 저장하는 값만 늘어남, 실제로 스킬 스택이 늘어나는 것은 아님, 단순히 클라이언트상에서 쿨타임이 다 돌았는데
+					//서버에서 아직 Stack갯수가 늘어난게 리플리케이트되지 않았을 때 프로그래스 바가 다시 0으로 내려가 보이는 것을 막는 장치
 				}
 				else
 				{
