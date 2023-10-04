@@ -3,23 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TabMinimapWidget.h"
-#include "Occupation/Team.h"
-#include "OccupationTabMinimapWidget.generated.h"
+#include "HUDMinimapWidget.h"
+#include "HUDOccupationMinimapWidget.generated.h"
 
-// TODO : 후에 미니맵상에 표시되는 아이콘이 캐릭터와 팀에 따라서 달라집니다.
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API UOccupationTabMinimapWidget : public UTabMinimapWidget
+class LAKAYA_API UHUDOccupationMinimapWidget : public UHUDMinimapWidget
 {
 	GENERATED_BODY()
 
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
 
 	virtual FVector2d ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation, const FVector2D& MiniMapSize) override;
 
