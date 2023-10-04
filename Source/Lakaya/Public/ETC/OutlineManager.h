@@ -17,15 +17,13 @@ class LAKAYA_API AOutlineManager : public AActor
 public:
 	// Sets default values for this actor's properties
 	AOutlineManager();
-	virtual void PostInitializeComponents() override;
 
-protected:
 	void SetClairvoyance(const bool& bIsClairvoyance);
-
-public:
 	void SetTeam(const ETeam& NewTeam);
 	void RegisterClairvoyance(const ALakayaBaseCharacter* Character);
 	void UnRegisterClairvoyance(const ALakayaBaseCharacter* Character);
+
+	virtual void PostInitializeComponents() override;
 
 private:
 	ETeam ClientTeam;

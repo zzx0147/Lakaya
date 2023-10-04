@@ -298,6 +298,33 @@ void ALakayaBaseGameState::SetTabMinimapVisibility(const bool& Visible)
 {
 }
 
+void ALakayaBaseGameState::RequestClairvoyanceActivate(const AActor* InInstigator)
+{
+	if (!CanInstigatorClairvoyance(InInstigator))
+	{
+		return;
+	}
+
+	OnClairvoyanceActivateRequested(InInstigator);
+
+	if (ShouldActivateClairvoyance())
+	{
+		bIsClairvoyanceActivated = true;
+		OnClairvoyanceActivated();
+	}
+}
+
+void ALakayaBaseGameState::RequestClairvoyanceDeactivate(const AActor* InInstigator)
+{
+	OnClairvoyanceDeactivateRequested(InInstigator);
+
+	if (!ShouldActivateClairvoyance())
+	{
+		bIsClairvoyanceActivated = false;
+		OnClairvoyanceDeactivated();
+	}
+}
+
 UGameLobbyCharacterSelectWidget* ALakayaBaseGameState::GetCharacterSelectWidget()
 {
 	// 캐릭터 위젯이 존재하지 않는 경우 생성합니다.
@@ -360,6 +387,21 @@ void ALakayaBaseGameState::ReserveSendRecord()
 bool ALakayaBaseGameState::TrySendMatchResultData()
 {
 	return true;
+}
+
+bool ALakayaBaseGameState::CanInstigatorClairvoyance(const AActor* InInstigator) const
+{
+	return ensure(InInstigator);
+}
+
+void ALakayaBaseGameState::OnClairvoyanceActivated()
+{
+	OutlineManager->SetClairvoyance(true);
+}
+
+void ALakayaBaseGameState::OnClairvoyanceDeactivated()
+{
+	OutlineManager->SetClairvoyance(false);
 }
 
 void ALakayaBaseGameState::SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,
