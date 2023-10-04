@@ -63,10 +63,11 @@ void ULakayaAbility_ContinuousTrigger::ActivateAbility(const FGameplayAbilitySpe
 	AbilityEndTask->OnAbilityEnded.AddUniqueDynamic(this, &ThisClass::OnTriggerAbilityEnded);
 	AbilityEndTask->ReadyForActivation();
 
-	const auto ASC = GetAbilitySystemComponentFromActorInfo_Checked();
-	if (!ASC->FindAbilitySpecFromHandle(TriggerAbilityHandle)->IsActive())
+	const auto TriggerAbilitySpec =
+		GetAbilitySystemComponentFromActorInfo_Checked()->FindAbilitySpecFromHandle(TriggerAbilityHandle);
+	if (!TriggerAbilitySpec->IsActive())
 	{
-		WaitCooldown(ASC->FindAbilitySpecFromHandle(TriggerAbilityHandle)->Ability->GetCooldownTags());
+		WaitCooldown(TriggerAbilitySpec->Ability->GetCooldownTags());
 	}
 
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);

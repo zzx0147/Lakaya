@@ -13,8 +13,7 @@
 #include "GameplayCue_Types.h"
 
 #define ENSURE_REMOTE_SERVER_SCOPE() \
-	if (!(ensure(GetCurrentActivationInfoRef().ActivationMode == EGameplayAbilityActivationMode::Authority \
-	&& !GetCurrentActorInfo()->IsLocallyControlled()))) \
+	if (!ensure(IsForRemoteClient())) \
 	{ \
 		return; \
 	}
@@ -262,10 +261,7 @@ TArray<FActiveGameplayEffectHandle> ULakayaAbility::K2_ApplyGameplayEffectSpecOr
 
 void ULakayaAbility::InitiateInstantTargetDataScope()
 {
-	GetCurrentActivationInfoRef().ActivationMode == EGameplayAbilityActivationMode::Authority
-		&& !GetCurrentActorInfo()->IsLocallyControlled()
-			? WaitForInstantTargetData()
-			: CallMakeTargetData();
+	IsForRemoteClient() ? WaitForInstantTargetData() : CallMakeTargetData();
 }
 
 void ULakayaAbility::CallMakeTargetData()
