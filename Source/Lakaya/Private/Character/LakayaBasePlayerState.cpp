@@ -11,6 +11,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/DirectionalDamageIndicator.h"
+#include "UI/GamePlayBulletWidget.h"
 #include "UI/GamePlayHealthWidget.h"
 #include "UI/GamePlayPortraitWidget.h"
 #include "UI/SkillProgressBar.h"
@@ -399,6 +400,15 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 			{
 				CharacterWidget->AddToViewport();
 				BindAllSkillToWidget();
+
+				if(CharacterWidget->GetGamePlayBulletWidget())
+				{
+					AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxAmmoAttribute()).
+					               AddUObject(CharacterWidget->GetGamePlayBulletWidget(),&UGamePlayBulletWidget::OnChangeMaxBulletAttribute);
+					AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetCurrentAmmoAttribute()).
+					AddUObject(CharacterWidget->GetGamePlayBulletWidget(),&UGamePlayBulletWidget::OnChangeCurrentBulletAttribute);;
+				}
+				
 			}
 		}
 

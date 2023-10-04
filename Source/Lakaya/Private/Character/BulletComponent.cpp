@@ -86,7 +86,7 @@ void UBulletComponent::SetupBulletWidget(AController* Controller)
 	{
 		// 생성되지 않았다면 생성합니다.
 		if (!BulletWidget.IsValid())
-			BulletWidget = CreateWidget<UGamePlayBulletWidget>(LocalController, BulletWidgetClass);
+			// BulletWidget = CreateWidget<UGamePlayBulletWidget>(LocalController, BulletWidgetClass);
 
 		// 정상적으로 생성되지 않는다면 리턴합니다.
 		if (!BulletWidget.IsValid()) return;
