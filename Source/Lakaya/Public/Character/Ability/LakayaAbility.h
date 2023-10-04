@@ -91,6 +91,10 @@ protected:
 		const FGameplayEffectSpecHandle EffectSpecHandle, FGameplayTag GameplayCueTag,
 		FGameplayAbilityTargetDataHandle TargetData);
 
+	/** 오쏘리티가 있고, 로컬 컨트롤이 아니면 true를 반환합니다. 리모트 서버인지 검증할 수 있습니다. */
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool BP_IsForRemoteClient() const { return IsForRemoteClient(); }
+
 	UFUNCTION(BlueprintCallable)
 	void InitiateInstantTargetDataScope();
 
