@@ -109,6 +109,11 @@ protected:
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
 	
 	virtual bool TrySendMatchResultData() override;
+
+	virtual bool CanInstigatorClairvoyance(const AActor* InInstigator) const override;
+	virtual bool ShouldActivateClairvoyance() const override;
+	virtual void OnClairvoyanceActivateRequested(const AActor* InInstigator) override;
+	virtual void OnClairvoyanceDeactivateRequested(const AActor* InInstigator) override;
 	
 private:
 	virtual void SetClientTeam(const ETeam& NewTeam);
@@ -230,6 +235,8 @@ private:
 	FTimerHandle TimerHandle_GameResultHandle;
 	FTimerHandle TimerHandle_UpdateScoreTimer;
 	FTimerHandle TimerHandle_MatchStartWaitWidget;
+
+	TSet<TWeakObjectPtr<const AActor>> ClairvoyanceInstigatorSet;
 	
 #pragma region Widget
 

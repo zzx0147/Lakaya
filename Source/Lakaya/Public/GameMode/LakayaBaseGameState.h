@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "GameFramework/GameState.h"
-#include "functional"
 #include "UI/DynamicCrossHairWidget.h"
 #include "LakayaBaseGameState.generated.h"
 
@@ -60,7 +59,22 @@ public:
 	UDynamicCrossHairWidget* GetRenaDynamicCrossHairFun() const { return RenaDynamicCrossHairWidget.Get(); }
 
 	UFUNCTION(BlueprintCallable)
-	UDynamicCrossHairWidget* GetGangRimDynamicCrossHairFun() const { return GangRimDynamicCrossHairWidget.Get(); } 
+	UDynamicCrossHairWidget* GetGangRimDynamicCrossHairFun() const { return GangRimDynamicCrossHairWidget.Get(); }
+
+	/**
+	 * 적에 대한 투시를 활성화 요청합니다.
+	 * @param InInstigator 투시 어빌리티를 사용한 액터입니다.
+	 */
+	UFUNCTION(BlueprintCallable)
+	void RequestClairvoyanceActivate(const AActor* InInstigator);
+
+	/**
+	 * 적에 대한 투시를 비활성화 요청합니다.
+	 * @param InInstigator 투시 어빌리티를 종료한 액터입니다.
+	 */
+	UFUNCTION(BlueprintCallable)
+	void RequestClairvoyanceDeactivate(const AActor* InInstigator);
+	
 protected:
 	virtual class UGameLobbyCharacterSelectWidget* GetCharacterSelectWidget();
 
@@ -78,6 +92,25 @@ protected:
 	virtual void ReserveSendRecord();
 
 	virtual bool TrySendMatchResultData();
+
+	/** 투시를 사용한 액터가 투시를 활성화하기 적격한지 검사합니다. */
+	virtual bool CanInstigatorClairvoyance(const AActor* InInstigator) const;
+
+	/** 투시를 활성화해야 하는 조건인지 비활성화해야하는 조건인지 검사합니다. */
+	virtual bool ShouldActivateClairvoyance() const { return !bIsClairvoyanceActivated; }
+
+	/** 적격한 액터에게서 투시 사용이 요청되었을 때 호출되는 이벤트 함수입니다. */
+	virtual void OnClairvoyanceActivateRequested(const AActor* InInstigator) { return; }
+
+	/** 투시를 활성화해야 하는 조건을 만족하여 투시가 활성화될 때 호출됩니다. */
+	virtual void OnClairvoyanceActivated();
+
+	/** 해당 액터에게서 투시 사용이 요청되었을 때 호출됩니다. 소멸중인 액터가 호출하는 경우도 있을 것이므로 적격한지 검사되지 않고 호출됩니다. */
+	virtual void OnClairvoyanceDeactivateRequested(const AActor* InInstigator) { return; }
+
+	/** 투시를 비활성화해야 하는 조건을 만족하여 투시가 비활성화될 때 호출됩니다. */
+	virtual void OnClairvoyanceDeactivated();
+	
 
 	virtual void SetScoreBoardVisibility(const bool& Visible);
 
@@ -190,6 +223,7 @@ protected:
 	
 private:
 	bool bWantsSendRecordResult;
+	bool bIsClairvoyanceActivated;
 
 	// 캐릭터에 맞는 크로스헤어위젯들입니다.
 	TMap<FName, UDynamicCrossHairWidget*> CharacterToDynamicCrossHairWidgets;

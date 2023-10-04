@@ -11,6 +11,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/DirectionalDamageIndicator.h"
+#include "UI/GamePlayBulletWidget.h"
 #include "UI/GamePlayHealthWidget.h"
 #include "UI/GamePlayPortraitWidget.h"
 #include "UI/SkillProgressBar.h"
@@ -399,6 +400,15 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 			{
 				CharacterWidget->AddToViewport();
 				BindAllSkillToWidget();
+
+				if(CharacterWidget->GetGamePlayBulletWidget())
+				{
+					AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxAmmoAttribute()).
+					               AddUObject(CharacterWidget->GetGamePlayBulletWidget(),&UGamePlayBulletWidget::OnChangeMaxBulletAttribute);
+					AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetCurrentAmmoAttribute()).
+					AddUObject(CharacterWidget->GetGamePlayBulletWidget(),&UGamePlayBulletWidget::OnChangeCurrentBulletAttribute);;
+				}
+				
 			}
 		}
 
@@ -541,52 +551,7 @@ void ALakayaBasePlayerState::BindAllSkillToWidget()
 		default: ;
 		}
 	}
-
-
 	
-	
-	// auto BindAbilityByTag = [&](const FGameplayTag& Tag, const ESkillKey SkillKey)
-	// {
-	// 	TArray<FGameplayAbilitySpecHandle> AbilityHandles;
-	// 	FGameplayTagContainer TagContainer;
-	// 	TagContainer.AddTag(Tag);
-	//
-	// 	USkillProgressBar* SkillProgressBar = SkillWidget->GetSkillProgressBar(SkillKey);
-	// 	
-	// 	AbilitySystem->FindAllAbilitiesWithTags(AbilityHandles,TagContainer,false);
-	//
-	// 	if(AbilityHandles.Num() < 1) return FGameplayAbilitySpecHandle();//스킬이 아예 없을 경우 유효하지 않은 핸들을 반환
-	//
-	// 	ensureMsgf(AbilityHandles.Num() > 1,TEXT("Two skills are linked to one key. Only one skill must be linked to each key"));//한개 초과일 경우 경고
-	//
-	// 	if(AbilityHandles[0].IsValid())
-	// 	{
-	// 		if (const UGameplayAbility* SkillInstance = AbilitySystem->FindAbilitySpecFromHandle(AbilityHandles[0])->GetPrimaryInstance())
-	// 		{
-	// 			if (SkillInstance->AbilityTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.SkillType.Ultimate")))))
-	// 			{
-	// 				AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetUltimateGaugeAttribute()).AddUObject(SkillProgressBar,&USkillProgressBar::OnChangeUltimateGaugeAttribute);
-	// 				AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxUltimateGaugeAttribute()).AddUObject(SkillProgressBar,&USkillProgressBar::OnChangeMaxUltimateGaugeAttribute);
-	// 			}
-	// 			else if (SkillInstance->AbilityTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.SkillType.Stack")))))
-	// 			{
-	// 				AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetSkillStackAttribute()).AddUObject(SkillProgressBar,&USkillProgressBar::OnChangeSkillStackAttribute);	
-	// 				AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxSkillStackAttribute()).AddUObject(SkillProgressBar,&USkillProgressBar::OnChangeMaxSkillStackAttribute);	
-	// 			}
-	// 			else if (SkillInstance->AbilityTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Skill.SkillType.Cooldown")))))
-	// 			{
-	// 			}
-	// 		}
-	// 	}
-	// 	return AbilityHandles[0];
-	// };
-	//
-	// FGameplayAbilitySpecHandle QSkillHandle = BindAbilityByTag(FGameplayTag::RequestGameplayTag(TEXT("Skill.Key.Q")), ESkillKey::Q);
-	// FGameplayAbilitySpecHandle ESkillHandle = BindAbilityByTag(FGameplayTag::RequestGameplayTag(TEXT("Skill.Key.E")), ESkillKey::E);
-	// FGameplayAbilitySpecHandle RMBSkillHandle = BindAbilityByTag(FGameplayTag::RequestGameplayTag(TEXT("Skill.Key.RMB")), ESkillKey::RMB);
-	//
-	//
-	//
 }
 
 void ALakayaBasePlayerState::OnActiveGameplayEffectAddedDelegateToSelfCallback(
@@ -608,7 +573,7 @@ void ALakayaBasePlayerState::OnActiveGameplayEffectAddedDelegateToSelfCallback(
 		//적용된 이펙트가 스킬 스택 리젠 이펙트일 경우
 		else if(EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.SkillStackRegen")))))
 		{
-			SkillProgressBar->StartStackingRegen(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->CachedStartServerWorldTime,SpecApplied.Period, true);
+			//SkillProgressBar->StartStackingRegen(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->StartWorldTime,SpecApplied.Period, true);
 		}
 	}
 	
@@ -649,6 +614,27 @@ void ALakayaBasePlayerState::OnChangeSkillStackAttribute(const FOnAttributeChang
 {
 	const auto MaxReached = NewValue.NewValue > LakayaAttributeSet->GetMaxSkillStack() || FMath::IsNearlyEqual(NewValue.NewValue, LakayaAttributeSet->GetMaxSkillStack());
 	AbilitySystem->SetLooseGameplayTagCount(FGameplayTag::RequestGameplayTag(TEXT("AttributeEvent.ReachMaxSkillStack")), MaxReached ? 1 : 0);
+	
+	if (CharacterWidget && CharacterWidget->GetSkillWidget() && FMath::IsNearlyEqual(NewValue.NewValue, 0.0f))
+	{
+		for(const auto& ProgressBar : CharacterWidget->GetSkillWidget()->GetAllSkillProgressBar())
+		{
+			if(ProgressBar->GetProgressType() == ESkillProgressBarType::StackingRegen)
+			{
+				auto Result = AbilitySystem->GetActiveGameplayEffects().GetActiveEffects(
+				FGameplayEffectQuery::MakeQuery_MatchAnyEffectTags(
+					FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.SkillStackRegen")))));
+
+				if(!Result.IsEmpty())
+				{
+					const FActiveGameplayEffect* RegenEffect = AbilitySystem->GetActiveGameplayEffect(Result[0]);
+					ProgressBar->StartStackingRegen(RegenEffect->StartWorldTime,RegenEffect->GetPeriod(),true);
+				}
+				break;
+			}
+		}
+	}
+	
 }
 
 // void ALakayaBasePlayerState::InitalizeWithPawn()
