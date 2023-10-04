@@ -38,6 +38,7 @@ public:
 	const static FName ClairvoyanceMeshComponentName;
 	const static FName DamageImmuneMeshComponentName;
 	const static FName ResurrectionNiagaraName;
+	const static FName GrayScalePostProcessComponentName;
 
 	explicit ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
@@ -149,6 +150,8 @@ private:
 
 	void RemoveDissolveEffect();
 
+	void ToggleGrayScalePostProcess(const bool& bIsActivate);
+	
 	UFUNCTION()
 	void DissolveTick(const float& Value);
 
@@ -223,6 +226,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UCharacterWidget> CharacterWidgetClass;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UMaterialInterface> GrayScalePostProcessMaterial;
 	
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
@@ -242,6 +248,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	UNiagaraComponent* ResurrectionNiagara;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UPostProcessComponent> GrayScalePostProcessComponent;
 
 	UPROPERTY(ReplicatedUsing=OnRep_PlayerRotation, Transient)
 	FPlayerRotationPacket PlayerRotation;
