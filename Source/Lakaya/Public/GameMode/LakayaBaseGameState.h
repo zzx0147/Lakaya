@@ -47,8 +47,7 @@ public:
 	UFUNCTION(BlueprintGetter)
 	float GetMatchRemainTime() const { return MatchEndingTime - GetServerWorldTimeSeconds(); }
 
-	// 점수판의 표시 여부를 결정합니다. true를 넘기면 점수판이 표시됩니다.
-	void SetScoreBoardVisibility(const bool& Visible);
+	
 
 	UFUNCTION(NetMulticast, Reliable)
 	void NotifyPlayerKilled(APlayerState* VictimPlayer, APlayerState* InstigatorPlayer, AActor* DamageCauser);
@@ -112,11 +111,13 @@ protected:
 	/** 투시를 비활성화해야 하는 조건을 만족하여 투시가 비활성화될 때 호출됩니다. */
 	virtual void OnClairvoyanceDeactivated();
 	
+
+	virtual void SetScoreBoardVisibility(const bool& Visible);
+
+	virtual void SetTabMinimapVisibility(const bool& Visible);
 private:
 	void SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,
 	                      std::function<void()> Callback, TWeakObjectPtr<class UGameTimeWidget> TimeWidget);
-
-	void InternalSetScoreBoardVisibility(const bool& Visible);
 
 public:
 	virtual bool HasMatchStarted() const override;
@@ -178,11 +179,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UDynamicCrossHairWidget> GangRimDynamicCrossHairClass;
 	
-	// TODO : 구현되어 있지 않아 주석처리 합니다.
-	// 게임중에 표시되는 도움말 위젯을 지정합니다.
-	// UPROPERTY(EditDefaultsOnly)
-	// TSubclassOf<class UHelpWidget> HelpWidgetClass;
-	
 	// 게임이 최대 몇초간 진행될지 정의합니다.
 	UPROPERTY(EditAnywhere)
 	float MatchDuration;
@@ -224,13 +220,6 @@ protected:
 	TWeakObjectPtr<UGamePlayKillLogWidget> KillLogWidget;
 	TWeakObjectPtr<UPlayerNameDisplayerWidget> PlayerNameDisplayerWidget;
 	TWeakObjectPtr<AOutlineManager> OutlineManager;
-	// TWeakObjectPtr<UMiniMapWidget> MiniMapWidget;
-	
-	// TODO : 아직 구현되어 있지 않아 주석처리합니다.
-	// TWeakObjectPtr<UHelpWidget> HelpWidget;
-	
-	// TODO : 개인전에서는 스킬을 사용하지 않기에 주석처리 해주었습니다.
-	// TWeakObjectPtr<USkillWidget> SkillWidget;
 	
 private:
 	bool bWantsSendRecordResult;

@@ -233,6 +233,8 @@ private:
 	void BindAllSkillToWidget();
 
 	void OnActiveGameplayEffectAddedDelegateToSelfCallback(UAbilitySystemComponent* ArgAbilitySystemComponent, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle);
+
+	void OnChangeSkillStackAttribute(const FOnAttributeChangeData& NewValue);
 	
 public:
 	// 현재 체력이 변경되는 경우 호출됩니다. 매개변수로 변경된 현재 체력을 받습니다.
@@ -333,8 +335,11 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameplayEffect> StatusInitializeEffect;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameplayEffect> StatRegenEffect;
+
 	UPROPERTY()
-	TObjectPtr<const class ULakayaAttributeSet> LakayaAttributeSet;
+	TObjectPtr<const ULakayaAttributeSet> LakayaAttributeSet;
 
 	FTimerHandle RespawnTimer;
 	FTimerHandle CurrentCaptureTimer;

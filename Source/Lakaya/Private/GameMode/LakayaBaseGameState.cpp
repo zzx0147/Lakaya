@@ -133,7 +133,7 @@ void ALakayaBaseGameState::BeginPlay()
 				GangRimDynamicCrossHairWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
-
+		
 		// 크로스헤어 위젯들은 생성하고 Map에 담습니다.
 		CharacterToDynamicCrossHairWidgets.Add("Wazi", WaziDynamicCrossHairWidget.Get());
 		CharacterToDynamicCrossHairWidgets.Add("Rena", RenaDynamicCrossHairWidget.Get());
@@ -235,10 +235,6 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	// {
 	// 	UE_LOG(LogTemp, Warning, TEXT("MiniMapWidget is null."));
 	// }
-	
-	// TODO : 아직 구현이 되지 않아 비활성화 합니다.
-	// if (HelpWidget.IsValid())
-	// 	HelpWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 	SetupTimerWidget(MatchWaitToStartTimer, MatchWaitDuration, MatchWaitEndingTime, [this]
 	{
@@ -296,7 +292,10 @@ void ALakayaBaseGameState::OnRep_MatchState()
 
 void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
 {
-	if (MatchState == MatchState::InProgress) InternalSetScoreBoardVisibility(Visible);
+}
+
+void ALakayaBaseGameState::SetTabMinimapVisibility(const bool& Visible)
+{
 }
 
 void ALakayaBaseGameState::RequestClairvoyanceActivate(const AActor* InInstigator)
@@ -417,11 +416,17 @@ void ALakayaBaseGameState::SetupTimerWidget(FTimerHandle& TimerHandle, const flo
 	}
 }
 
-void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible)
-{
-	if (!ScoreBoard.IsValid()) return;
-	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
-}
+// void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible) const
+// {
+// 	if (!ScoreBoard.IsValid()) return;
+// 	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
+// 	// TODO : Tab키를 눌렀을 시, TabMinimapWidget도 띄워주어야 합니다.
+// }
+//
+// void ALakayaBaseGameState::InternalSetTabMinimapVisibility(const bool& Visible) const
+// {
+// 	
+// }
 
 bool ALakayaBaseGameState::HasMatchStarted() const
 {

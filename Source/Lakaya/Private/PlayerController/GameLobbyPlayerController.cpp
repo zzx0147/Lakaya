@@ -92,9 +92,9 @@ void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputCompo
 	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
 	                                   &AGameLobbyPlayerController::MenuHandler);
 	EnhancedInputComponent->BindAction(ShowScoreAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::ShowScoreBoard);
+	                                   &AGameLobbyPlayerController::ShowScoreBoardAndTabMinimap);
 	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::HideScoreBoard);
+	                                   &AGameLobbyPlayerController::HideScoreBoardAndTabMinimap);
 
 	if (!AbilityInputSet.IsNull())
 	{
@@ -109,9 +109,9 @@ void AGameLobbyPlayerController::UnbindAllAndBindMenu(UEnhancedInputComponent* c
 	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
 	                                   &AGameLobbyPlayerController::MenuHandler);
 	EnhancedInputComponent->BindAction(ShowScoreAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::ShowScoreBoard);
+	                                   &AGameLobbyPlayerController::ShowScoreBoardAndTabMinimap);
 	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::HideScoreBoard);
+	                                   &AGameLobbyPlayerController::HideScoreBoardAndTabMinimap);
 }
 
 void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
@@ -172,33 +172,41 @@ void AGameLobbyPlayerController::AbilityInput(TAbilitySystemInputCallback Functi
 	(AbilitySystem.Get()->*Function)(InputID);
 }
 
-void AGameLobbyPlayerController::ShowScoreBoard()
+void AGameLobbyPlayerController::ShowScoreBoardAndTabMinimap()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ShowScoreBoard"));
-
 	// 팀전일 때
-	if (const auto OccupationGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+	if (const auto& NewGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
 	{
-		if (const auto NewGameState = Cast<AOccupationGameState>(OccupationGameState))
+		if (const auto OccupationGameState = Cast<AOccupationGameState>(NewGameState))
 		{
+			if (OccupationGameState == nullptr) UE_LOG(LogTemp, Warning, TEXT("GameLobbyPlayerController_OccupationGameState is null."));
 
-			if (!NewGameState->bTap) return;
-
+			// 결과창 상태에서는 결과창과 디테일결과창을 번갈아가면서 보여줍니다.
 			if (OccupationGameState->GetMatchState() == MatchState::WaitingPostMatch)
 			{
-				// 게임이 종료되고 결과창에 어떠한 위젯이 띄워지고 있느냐에 따라서 위젯들이 보여지는게 달라집니다.
-				NewGameState->ChangeResultWidget();
+				OccupationGameState->ChangeResultWidget();
 			}
 
+			// TODO : 게임상태 검사
 			OccupationGameState->SetScoreBoardVisibility(true);
+			OccupationGameState->SetTabMinimapVisibility(true);
 		}
 	}
 
+	// TODO: 개인전에서의 스코어보드를 작성해야 합니다.
 	// 개인전일 때
 }
 
-void AGameLobbyPlayerController::HideScoreBoard()
+void AGameLobbyPlayerController::HideScoreBoardAndTabMinimap()
 {
-	if (const auto GameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
-		GameState->SetScoreBoardVisibility(false);
+	// 팀전
+	if (const auto& NewGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+	{
+		if (const auto& OccupationGameState = Cast<AOccupationGameState>(NewGameState))
+		{
+			OccupationGameState->SetScoreBoardVisibility(false);
+			OccupationGameState->SetTabMinimapVisibility(false);
+		}
+	}
+	// 개인전
 }

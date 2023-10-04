@@ -6,7 +6,10 @@
 #include "LakayaBaseGameState.h"
 #include "Components/ProgressBar.h"
 #include "EOS/EOSGameInstance.h"
+#include "UI/SkillWidget.h"
+#include "UI/OccupationTabMinimapWidget.h"
 #include "Occupation/Team.h"
+
 #include "OccupationGameState.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeOccupationWinner, const ETeam&)
@@ -20,6 +23,10 @@ class LAKAYA_API AOccupationGameState : public ALakayaBaseGameState
 public:
 	AOccupationGameState();
 
+	virtual void SetScoreBoardVisibility(const bool& Visible) override;
+
+	virtual void SetTabMinimapVisibility(const bool& Visible) override;
+	
 	/**
 	 * @brief 게임이 끝났을 때, 현재 두 팀의 점수를 비교하여 승자를 결정하는 함수입니다.
 	 */
@@ -125,9 +132,12 @@ private:
 
 	void AddPlayerStateToRecordResult(ETeam InTeam ,TArray<ALakayaBasePlayerState*> InPlayers);
 
-	/**
-	 * @brief 스코어를 업데이트 해주는 함수입니다.
-	 */
+
+	void InternalSetScoreBoardVisibility(const bool& Visible) const;
+
+	void InternalSetTabMinimapVisibility(const bool& Visible) const;
+	
+	// 스코어를 업데이트 해주는 함수입니다.
 	void UpdateTeamScoreTick();
 
 	// 게임 승패여부를 띄워줍니다.
@@ -273,8 +283,12 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UOccupyExpressWidget> OccupyExpressWidgetClass;
 
+	// TODO :
+	// UPROPERTY(EditAnywhere)
+	// TSubclassOf<class UOccupationMinimapWidget> OccupationMinimapWidgetClass;
+
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UOccupationMinimapWidget> OccupationMinimapWidgetClass;
+	TSubclassOf<class UOccupationTabMinimapWidget> OccupationTabMinimapWidgetClass;
 	
 	UPROPERTY(EditDefaultsOnly)
 	class UInputMappingContext* ResultShortcutContext;
@@ -317,6 +331,9 @@ private:
 	// 점령 표시 위젯입니다.
 	TWeakObjectPtr<UOccupyExpressWidget> OccupyExpressWidget;
 
-	TWeakObjectPtr<UOccupationMinimapWidget> OccupationMinimapWidget;
+	// TODO :
+	// TWeakObjectPtr<UOccupationMinimapWidget> OccupationMinimapWidget;
+
+	TWeakObjectPtr<UOccupationTabMinimapWidget> OccupationTabMinimapWidget;
 #pragma endregion
 };
