@@ -6,7 +6,6 @@
 #include "LakayaBaseGameState.h"
 #include "Components/ProgressBar.h"
 #include "EOS/EOSGameInstance.h"
-#include "UI/SkillWidget.h"
 #include "UI/OccupationTabMinimapWidget.h"
 #include "Occupation/Team.h"
 

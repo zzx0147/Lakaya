@@ -10,10 +10,13 @@ void UOccupationTabMinimapWidget::NativeConstruct()
 
 	if (MinimapImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("OccupationTabMinimapWidget_MinimapImage is null."));	
 
-	ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("aaa")));
+	ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("PlayerImagePanel")));
 	
 	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
 	TeamIcons.Emplace(ETeam::Pro, ProIcon);
+
+	// TODO : 하드코딩이 아닌 GetDesiredSize()함수를 이용해서 가져오도록 합니다.
+	MinimapSize = FVector2D(312.5f, 476.25f);
 }
 
 void UOccupationTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -33,9 +36,6 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 
 	if (!MinimapImage) return;
 
-	// TODO : 하드코딩이 아닌 GetDesiredSize()함수를 이용해서 가져오도록 합니다.
-	const FVector2D MinimapSize(250.0f, 250.0f);
-
 	for (auto& Player : PlayersByMinimap[Team])
 	{
 		const auto& State = Player.Key;
@@ -48,8 +48,9 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		if (Image->GetVisibility() == ESlateVisibility::Hidden)
 			Image->SetVisibility(ESlateVisibility::Visible);
 
-		// TODO : NewPlayerPosition + Widget Position
-		Image->SetRenderTranslation(NewPlayerPosition + FVector2D(100.0f, 0.0f));
+		// TODO : 맵과 이미지 사이즈가 확정이 되면 수정해야 합니다.
+		// NewPlayerPosition + Widget Position = Player Position
+		Image->SetRenderTranslation(NewPlayerPosition + FVector2D(1520.0f, 540.5f));
 	}
 }
 
