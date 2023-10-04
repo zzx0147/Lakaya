@@ -55,8 +55,8 @@ protected:
 	TSoftObjectPtr<UWorld> ExitLevel;
 
 private:
-	void ShowScoreBoard();
-	void HideScoreBoard();
+	void ShowScoreBoardAndTabMinimap();
+	void HideScoreBoardAndTabMinimap();
 	void MenuHandler();
 	void AbilityInput(TAbilitySystemInputCallback Function, int32 InputID);
 

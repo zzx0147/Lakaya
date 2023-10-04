@@ -120,6 +120,8 @@ public:
 
 	void SetAlly(const bool& IsAlly);
 
+	FORCEINLINE TSubclassOf<class UCharacterWidget> GetCharacterWidgetClass() const { return CharacterWidgetClass; }
+
 protected:
 	virtual void SetTeam_Implementation(const ETeam& Team);
 	virtual void SetAliveState_Implementation(bool IsAlive);
@@ -212,6 +214,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<ULakayaAbilitySet> CharacterAbilities;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UCharacterWidget> CharacterWidgetClass;
+	
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
 	class UResourceComponent* ResourceComponent;

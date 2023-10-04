@@ -6,6 +6,7 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 
 bool FProjectileState::SetProjectileState(const EProjectileState& InProjectileState)
@@ -117,6 +118,11 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 	}
 }
 
+const FProjectileState& ALakayaProjectile::GetProjectileState() const
+{
+	return HasAuthority() ? ProjectileState : LocalState;
+}
+
 void ALakayaProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -160,15 +166,27 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData,
 {
 	RecentPerformedTime = InThrowData.ServerTime;
 	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity,
-	                                           GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
+	                                           GetServerWorldTimeSeconds());
+
+	OnStartPathPrediction(InThrowData);
 
 	static FPredictProjectilePathResult Result;
 	if (MarchProjectileRecursive(Result, CollisionEnabled))
 	{
+		OnStartPhysicsSimulation(Result);
+
+		// 이벤트 타이머를 셋업합니다. 남은 시간이 음수거나 0인 경우는 MarchProjectileRecursive에서 처리되었습니다.
+		GetWorldTimerManager().SetTimer(EventFromThrowTimerHandle, this, &ThisClass::OnEventFromThrowTriggeredInPhysics,
+		                                PredictedProjectileParams.MaxSimTime - EventTriggerDelayFromThrow);
 		SetActorLocation(Result.LastTraceDestination.Location);
 		ProjectileMovementComponent->Velocity = Result.LastTraceDestination.Velocity;
 		CollisionComponent->SetCollisionEnabled(CollisionEnabled);
 	}
+}
+
+float ALakayaProjectile::GetServerWorldTimeSeconds() const
+{
+	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 }
 
 void ALakayaProjectile::SetCustomState(const uint8& InCustomState)
@@ -179,6 +197,15 @@ void ALakayaProjectile::SetCustomState(const uint8& InCustomState)
 void ALakayaProjectile::SetProjectileStateCollapsed()
 {
 	SetProjectileState(EProjectileState::Collapsed);
+}
+
+void ALakayaProjectile::OnStartPhysicsSimulation_Implementation(
+	const FPredictProjectilePathResult& LastPredictionResult)
+{
+}
+
+void ALakayaProjectile::OnStartPathPrediction_Implementation(const FProjectileThrowData& InThrowData)
+{
 }
 
 void ALakayaProjectile::OnReplicatedCustomStateEnter_Implementation(const uint8& NewState)
@@ -239,15 +266,58 @@ void ALakayaProjectile::RejectProjectile()
 
 void ALakayaProjectile::StopThrowProjectile()
 {
+	if (EventFromThrowTimerHandle.IsValid())
+	{
+		GetWorldTimerManager().ClearTimer(EventFromThrowTimerHandle);
+	}
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	ProjectileMovementComponent->StopMovementImmediately();
 	ClearIgnoredInPerformActors();
 }
 
 bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& OutResult,
-                                                 const ECollisionEnabled::Type& CollisionEnabled)
+                                                 const ECollisionEnabled::Type& CollisionEnabled, float CurrentTime)
 {
-	if (!UGameplayStatics::PredictProjectilePath(this, PredictedProjectileParams, OutResult))
+	// 이미 예측된 부분은 스킵하기 위해 잠시 MaxSimTime을 조정합니다.
+	const auto MaxSimTime = PredictedProjectileParams.MaxSimTime;
+	PredictedProjectileParams.MaxSimTime -= CurrentTime;
+
+	const auto bIsPredictionBlocked =
+		UGameplayStatics::PredictProjectilePath(this, PredictedProjectileParams, OutResult);
+	PredictedProjectileParams.MaxSimTime = MaxSimTime;
+
+	// 딜레이 이벤트 기능을 사용하고, MaxSimTime이내에 TriggerDelay가 존재하면 이벤트가 발생할 수 있는 최저 조건을 달성합니다.
+	if (EventTriggerDelayFromThrow > 0.f && MaxSimTime >= EventTriggerDelayFromThrow)
+	{
+		const auto RemainEventTime = EventTriggerDelayFromThrow - CurrentTime;
+
+		// 이번 예측에서 이벤트 시간을 지나쳤다면 이벤트를 발생시킵니다.
+		if (RemainEventTime <= OutResult.LastTraceDestination.Time)
+		{
+			const auto FoundIndex = OutResult.PathData.FindLastByPredicate(
+				[&RemainEventTime](const FPredictProjectilePathPointData& InData)
+				{
+					return InData.Time < RemainEventTime;
+				});
+			check(FoundIndex != INDEX_NONE);
+
+			// FoundIndex는 항상 LastTraceDestination보다 작으므로 +1 인덱스는 안전한 접근입니다.
+			const auto& FoundData = OutResult.PathData[FoundIndex];
+			const auto& NextData = OutResult.PathData[FoundIndex + 1];
+			const auto Alpha =
+				UKismetMathLibrary::NormalizeToRange(RemainEventTime, FoundData.Time, NextData.Time);
+
+			const auto Location = FMath::Lerp(FoundData.Location, NextData.Location, Alpha);
+			const auto Velocity = FMath::Lerp(FoundData.Velocity, NextData.Velocity, Alpha);
+			if (!OnEventFromThrowTriggeredInPathPredict(Location, Velocity))
+			{
+				return false;
+			}
+		}
+	}
+
+	// 충돌이 발생하지 않고 성공적으로 예측이 완료된 경우 true를 반환합니다.
+	if (!bIsPredictionBlocked)
 	{
 		// PredictedProjectileParams에서 무시되었던 액터들을 제거합니다.
 		// CollisionComponent에서 제거하지 않는 것은 아직 투사체의 Perform이 끝난 것은 아니기 때문입니다.
@@ -258,9 +328,10 @@ bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& O
 		return true;
 	}
 
+	// 충돌 이벤트를 처리합니다.
 	const auto& HitResult = OutResult.HitResult;
-	if (const auto HitResponse = CollisionComponent->GetCollisionResponseToComponent(HitResult.GetComponent());
-		HitResponse == ECR_Block)
+	const auto HitResponse = CollisionComponent->GetCollisionResponseToComponent(HitResult.GetComponent());
+	if (HitResponse == ECR_Block)
 	{
 		if (HitResult.bStartPenetrating)
 		{
@@ -282,12 +353,11 @@ bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& O
 			OutResult.LastTraceDestination.Velocity = FVector::ZeroVector;
 			return true;
 		}
-		
-		//TODO: 충돌이 감지된 지점에서 다시 시작하므로 bStartPenetrating이 감지될 수도 있습니다. 이러한 경우 무한루프에 빠질 수 있습니다.
+
 		// 반사 벡터 방향으로 나아가도록 설정합니다.
 		PredictedProjectileParams.LaunchVelocity =
-			-OutResult.LastTraceDestination.Velocity.MirrorByVector(HitResult.ImpactNormal) *
-			ProjectileMovementComponent->Bounciness;
+			-OutResult.LastTraceDestination.Velocity.MirrorByVector(HitResult.ImpactNormal)
+			* ProjectileMovementComponent->Bounciness;
 	}
 	else
 	{
@@ -304,8 +374,17 @@ bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& O
 	}
 
 	PredictedProjectileParams.StartLocation = OutResult.LastTraceDestination.Location;
-	PredictedProjectileParams.MaxSimTime -= OutResult.LastTraceDestination.Time;
-	return MarchProjectileRecursive(OutResult, CollisionEnabled);
+	return MarchProjectileRecursive(OutResult, CollisionEnabled, CurrentTime + OutResult.LastTraceDestination.Time);
+}
+
+bool ALakayaProjectile::OnEventFromThrowTriggeredInPathPredict_Implementation(const FVector& Location,
+                                                                              const FVector& Velocity)
+{
+	return true;
+}
+
+void ALakayaProjectile::OnEventFromThrowTriggeredInPhysics_Implementation()
+{
 }
 
 void ALakayaProjectile::AddIgnoredInPerformActor(AActor* InActor)

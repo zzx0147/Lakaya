@@ -156,16 +156,20 @@ public:
 	 */
 	void ThrowProjectile(const FProjectileThrowData& InThrowData);
 
-	FORCEINLINE const FProjectileState& GetProjectileState() const
-	{
-		return HasAuthority() ? ProjectileState : LocalState;
-	}
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const FProjectileState& GetProjectileState() const;
 
-	FORCEINLINE bool IsCollapsed() const { return GetProjectileState().IsCollapsed(); }
-	FORCEINLINE bool IsPerforming() const { return GetProjectileState().IsPerforming(); }
-	FORCEINLINE bool IsCustomState() const { return GetProjectileState().IsCustomState(); }
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsCollapsed() const { return GetProjectileState().IsCollapsed(); }
 
-	FORCEINLINE float GetRecentPerformedTime() const { return FMath::Max(ThrowData.ServerTime, RecentPerformedTime); }
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsPerforming() const { return GetProjectileState().IsPerforming(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsCustomState() const { return GetProjectileState().IsCustomState(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetRecentPerformedTime() const { return FMath::Max(ThrowData.ServerTime, RecentPerformedTime); }
 
 	/**
 	 * 투사체의 상태가 변경되면 호출되는 이벤트입니다. 로컬에서 예측적으로 투사체의 상태를 변경할 때에도 호출됩니다.
@@ -176,10 +180,17 @@ public:
 	virtual void PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker) override;
 
 protected:
-	FORCEINLINE FProjectileState& InternalGetProjectileState() { return HasAuthority() ? ProjectileState : LocalState; }
-	FORCEINLINE bool IsActualCollapsed() const { return ProjectileState.IsCollapsed(); }
-	FORCEINLINE bool IsActualPerforming() const { return ProjectileState.IsPerforming(); }
-	FORCEINLINE bool IsActualCustomState() const { return ProjectileState.IsCustomState(); }
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsActualCollapsed() const { return ProjectileState.IsCollapsed(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsActualPerforming() const { return ProjectileState.IsPerforming(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsActualCustomState() const { return ProjectileState.IsCustomState(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetServerWorldTimeSeconds() const;
 
 	/** 커스텀 스테이트를 해당 값으로 변경합니다. */
 	UFUNCTION(BlueprintCallable)
@@ -188,6 +199,12 @@ protected:
 	/** 투사체의 상태를 Collapsed로 변경합니다. */
 	UFUNCTION(BlueprintCallable)
 	void SetProjectileStateCollapsed();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnStartPathPrediction(const FProjectileThrowData& InThrowData);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnStartPhysicsSimulation(const FPredictProjectilePathResult& LastPredictionResult);
 
 	/** OnRep_ProjectileState에서 커스텀 스테이트에서 탈출할 때 호출됩니다. 0에 대해서는 호출되지 않습니다. */
 	UFUNCTION(BlueprintNativeEvent)
@@ -228,6 +245,22 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	bool OnProjectilePathBlock(const FPredictProjectilePathResult& PredictResult);
 
+	/**
+	 * 투사체 경로 예측중에 FromThrow 이벤트가 트리거되면 호출됩니다. 서버, 클라이언트 모두에서 호출됩니다.
+	 * 이 이벤트에서 EventTriggerDelayFromThrow값을 업데이트해서 또 다시 일정시간 뒤에 이벤트가 트리거되도록 할 수 있습니다.
+	 * @param Location 이벤트가 트리거되는 시점에서 투사체의 위치입니다.
+	 * @param Velocity 이벤트가 트리거되는 시점에서 투사체의 속도입니다.
+	 * @return false가 반환되면 투사체의 진행을 멈춥니다.
+	 */
+	UFUNCTION(BlueprintNativeEvent)
+	bool OnEventFromThrowTriggeredInPathPredict(const FVector& Location, const FVector& Velocity);
+
+	/**
+	 * 투사체가 물리 시뮬레이션을 통해 투척이 실행되던 도중에 FromThrow 이벤트가 트리거되면 호출됩니다. 서버, 클라이언트 모두에서 호출됩니다.
+	 */
+	UFUNCTION(BlueprintNativeEvent)
+	void OnEventFromThrowTriggeredInPhysics();
+
 	/** 이번 투사체 투척에서 해당 액터에 대한 Overlap 이벤트가 더이상 생성되지 않도록 합니다. */
 	UFUNCTION(BlueprintCallable)
 	void AddIgnoredInPerformActor(AActor* InActor);
@@ -235,6 +268,12 @@ protected:
 	/** 이번 투사체 투척에서 Ignore되었던 액터들을 다시 Ignore되지 않도록 하고 목록을 비웁니다. */
 	UFUNCTION(BlueprintCallable)
 	void ClearIgnoredInPerformActors();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float EventTriggerDelayFromThrow;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FPredictProjectilePathParams PredictedProjectileParams;
 
 	virtual void BeginPlay() override;
 
@@ -257,6 +296,7 @@ private:
 		bool& bLockRef;
 	};
 
+	FORCEINLINE FProjectileState& InternalGetProjectileState() { return HasAuthority() ? ProjectileState : LocalState; }
 	void ThrowProjectileAuthoritative(const FProjectileThrowData& InThrowData);
 	void ThrowProjectile(const FProjectileThrowData& InThrowData, ECollisionEnabled::Type&& CollisionEnabled);
 	void SetProjectileState(const EProjectileState& InProjectileState);
@@ -264,7 +304,7 @@ private:
 	void RejectProjectile();
 	void StopThrowProjectile();
 	bool MarchProjectileRecursive(FPredictProjectilePathResult& OutResult,
-	                              const ECollisionEnabled::Type& CollisionEnabled);
+	                              const ECollisionEnabled::Type& CollisionEnabled, float CurrentTime = 0.f);
 
 	template <class ArgType, class FunType = typename TMemFunPtrType<false, FProjectileState, bool(ArgType)>::Type>
 	void InternalSetProjectileState(FunType&& FunPtr, ArgType&& Arg);
@@ -287,13 +327,11 @@ private:
 	UPROPERTY(EditAnywhere)
 	float ProjectileLaunchVelocity;
 
-	UPROPERTY(EditAnywhere)
-	FPredictProjectilePathParams PredictedProjectileParams;
-
 	FProjectileState LocalState;
 	float RecentPerformedTime;
 	bool bIsStateChanging;
 	TArray<TWeakObjectPtr<AActor>> IgnoredInPerformActors;
+	FTimerHandle EventFromThrowTimerHandle;
 };
 
 template <class ArgType, class FunType>
