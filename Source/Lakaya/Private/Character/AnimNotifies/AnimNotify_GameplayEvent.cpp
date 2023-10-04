@@ -12,3 +12,8 @@ void UAnimNotify_GameplayEvent::Notify(USkeletalMeshComponent* MeshComp, UAnimSe
 
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(MeshComp->GetOwner(), EventTag, FGameplayEventData());
 }
+
+FString UAnimNotify_GameplayEvent::GetNotifyName_Implementation() const
+{
+	return EventTag.IsValid() ? EventTag.ToString() : Super::GetNotifyName_Implementation();
+}

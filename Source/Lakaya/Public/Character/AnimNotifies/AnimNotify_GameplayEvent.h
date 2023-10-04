@@ -18,8 +18,9 @@ class LAKAYA_API UAnimNotify_GameplayEvent : public UAnimNotify
 public:
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
 	                    const FAnimNotifyEventReference& EventReference) override;
+	virtual FString GetNotifyName_Implementation() const override;
 
 private:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	FGameplayTag EventTag;
 };
