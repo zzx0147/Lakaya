@@ -139,9 +139,6 @@ private:
 	// 스코어를 업데이트 해주는 함수입니다.
 	void UpdateTeamScoreTick();
 
-	// 게임 승패여부를 띄워줍니다.
-	void ShowEndResultWidget();
-
 	// 게임결과 배경위젯를 띄워줍니다.
 	void ShowGradeResultWidget(class ALakayaBasePlayerState* PlayerState, APlayerController* Controller);
 

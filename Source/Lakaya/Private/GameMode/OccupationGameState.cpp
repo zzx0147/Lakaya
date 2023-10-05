@@ -358,9 +358,18 @@ void AOccupationGameState::HandleMatchHasEnded()
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 	LocalController && LocalController->IsLocalController())
 	{
-		FinalResultWidget->SetTeam(ClientTeam);
-		FinalResultWidget->SetMatchResultData(GetOccupationWinner(),ProTeamScore,AntiTeamScore, PlayersByTeamMap);
-		FinalResultWidget->SetVisibility(ESlateVisibility::Visible);
+		GameResultWidget->ShowResult(ClientTeam == GetOccupationWinner(), AntiTeamScore, ProTeamScore);
+	
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindLambda([&]
+		{
+			GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
+			FinalResultWidget->SetTeam(ClientTeam);
+			FinalResultWidget->SetMatchResultData(GetOccupationWinner(),ProTeamScore,AntiTeamScore, PlayersByTeamMap);
+			FinalResultWidget->SetVisibility(ESlateVisibility::Visible);
+		});
+		GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
+		
 		// ShowEndResultWidget();
 		// BindDetailResultWidget();
 		// BindDetailResultElementWidget();
@@ -527,37 +536,6 @@ void AOccupationGameState::DestroyShieldWallObject()
 		ShieldActor->Destroy();
 }
 
-void AOccupationGameState::ShowEndResultWidget()
-{
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
-		GameResultWidget.IsValid() && LocalController && LocalController->IsLocalController())
-	{
-		LocalController->SetShowMouseCursor(false);
-		LocalController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_None);
-		const auto LobbyController = Cast<AGameLobbyPlayerController>(LocalController);
-		LobbyController->UnbindAllAndBindMenu(Cast<UEnhancedInputComponent>(LocalController->InputComponent));
-
-		if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
-		{
-			if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
-			{
-				// 승리했다면 "승리" 이미지를 띄워줍니다.
-				GameResultWidget->VictoryImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			}
-			else
-			{
-				// 패배했다면 "패배" 이미지를 띄워줍니다.
-				GameResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			}
-
-			GameResultWidget->AntiScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), AntiTeamScore)));
-			GameResultWidget->ProScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), ProTeamScore)));
-
-			ShowGradeResultWidget(LakayaPlayerState, LocalController);
-		}
-		else UE_LOG(LogTemp, Warning, TEXT("LakayaPlayerState is null."));
-	}
-}
 
 void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerState, APlayerController* Controller)
 {
