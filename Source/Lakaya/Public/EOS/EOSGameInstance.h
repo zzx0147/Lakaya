@@ -20,8 +20,8 @@ enum class ERequestType
 	InsertRecord
 };
 
-//게임 한 판의 결과를 저장하는 구조체입니다
-//시작 시간, 게임 길이, 이긴 팀, 안티 플레이어, 프로 플레이어의 통계를 저장합니다
+// 게임 한 판의 결과를 저장하는 구조체입니다
+// 시작 시간, 게임 길이, 이긴 팀, 안티 플레이어, 프로 플레이어의 통계를 저장합니다
 USTRUCT()
 struct FMatchResultStruct
 {

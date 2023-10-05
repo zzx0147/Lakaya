@@ -24,6 +24,11 @@ void ULakayaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 		SetHealth(FMath::Max(GetHealth(), 0.0f));
 	}
 
+	if (Data.EvaluatedData.Attribute == GetUltimateGaugeAttribute())
+	{
+		SetUltimateGauge(FMath::Min(GetUltimateGauge(), GetMaxUltimateGauge()));
+	}
+	
 	if ((GetHealth() <= 0.0f) && !bOutOfHealth)
 	{
 		if (OnPlayerKill.IsBound())
@@ -71,7 +76,7 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 		// 	OnDashStackFullOrNot.Broadcast(false);
 		// }
 
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("SkillStack: %f"), NewValue));
+		// GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("SkillStack: %f"), NewValue));
 		const auto MaxReached = NewValue > GetMaxSkillStack() || FMath::IsNearlyEqual(NewValue, GetMaxSkillStack());
 		GetOwningAbilitySystemComponentChecked()->SetLooseGameplayTagCount(MaxSkillStackTag, MaxReached ? 1 : 0);
 	}
@@ -143,8 +148,8 @@ void ULakayaAttributeSet::OnRep_MaxUltimateGauge(const FGameplayAttributeData& O
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, MaxUltimateGauge, OldValue);
 }
 
-ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(40.0f), CurrentAmmo(40.0f),
-                                             AttackPoint(40.0f), SkillStack(3.0f), MaxSkillStack(3.0f), UltimateGauge(0.0f), MaxUltimateGauge(100.0f)
+ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(-1.0f), CurrentAmmo(-1.0f),
+                                             AttackPoint(40.0f), SkillStack(3.0f), MaxSkillStack(3.0f), UltimateGauge(-1.0f), MaxUltimateGauge(-1.0f)
 {
 	bOutOfHealth = false;
 }

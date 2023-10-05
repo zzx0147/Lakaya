@@ -16,8 +16,22 @@ class LAKAYA_API UCharacterWidget : public UUserWidget
 
 public:
 	FORCEINLINE class USkillWidget* GetSkillWidget() const { return SkillWidget; }
+	FORCEINLINE class UGamePlayBulletWidget* GetGamePlayBulletWidget() const { return BulletWidget; }
+	FORCEINLINE class URespawnWidget* GetRespawnWidget() const { return RespawnWidget; }
+	FORCEINLINE class UDynamicCrossHairWidget* GetCrossHairWidget() const { return CrosshairWidget; }
 
+	void SetAliveState(const bool& IsAlive);
+	
 private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<USkillWidget> SkillWidget;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UGamePlayBulletWidget> BulletWidget;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<URespawnWidget> RespawnWidget;
+	
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UDynamicCrossHairWidget> CrosshairWidget;
 };

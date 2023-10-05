@@ -4,17 +4,13 @@
 #include "Components/TextBlock.h"
 #include "GameMode/OccupationGameState.h"
 
-void UGameResultWidget::NativeConstruct()
+void UGameResultWidget::ShowResult(const bool& IsWin, const float& AntiScore, const float& ProScore)
 {
-	Super::NativeConstruct();
+	SetVisibility(ESlateVisibility::HitTestInvisible);
 
-	VictoryImage = Cast<UImage>(GetWidgetFromName(TEXT("Result_Victory_Image")));
-	DefeatImage = Cast<UImage>(GetWidgetFromName(TEXT("Result_Defeat_Image")));
-	AntiScore = Cast<UTextBlock>(GetWidgetFromName(TEXT("Result_Anti_Score_Text")));
-	ProScore = Cast<UTextBlock>(GetWidgetFromName(TEXT("Result_Pro_Score_Text")));
-
-	if (VictoryImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("VictoryImage is null."));
-	if (DefeatImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("DefeatImage is null."));
-	if (AntiScore == nullptr) UE_LOG(LogTemp, Warning, TEXT("AntiScore is null."));
-	if (ProScore == nullptr) UE_LOG(LogTemp, Warning, TEXT("ProScore is null."));
+	AntiScoreTextBlock->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), AntiScore)));
+	ProScoreTextBlock->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), ProScore)));
+	
+	VictoryPanel->SetVisibility(IsWin ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Hidden);
+	DefeatPanel->SetVisibility(IsWin ? ESlateVisibility::Hidden : ESlateVisibility::HitTestInvisible);
 }

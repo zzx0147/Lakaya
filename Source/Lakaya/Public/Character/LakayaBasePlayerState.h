@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "CharacterWidget.h"
 #include "GameFramework/PlayerState.h"
 #include "Occupation/Team.h"
 #include "EOS/EOSGameInstance.h"
@@ -29,6 +30,9 @@ DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FPlayerNameSignature, const FStri
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOwnerChangeSignature, AActor*)
 
 DECLARE_DELEGATE_OneParam(FRespawnTimerDelegate, AController*)
+
+DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOnRespawnTimeChangeSignature, const float&)
+
 
 UCLASS()
 class LAKAYA_API ALakayaBasePlayerState : public APlayerState, public IAbilitySystemInterface,
@@ -63,6 +67,9 @@ public:
 	UFUNCTION(BlueprintGetter)
 	const ETeam& BP_GetTeam() const { return Team; }
 
+	UFUNCTION(BlueprintCallable)
+	const class UDynamicCrossHairWidget* GetDynamicCrossHairWidget() const;
+	
 	/**
 	 * @brief 플레이어가 예약된 시간에 부활하도록 합니다.
 	 * @param ReservedRespawnTime 목표 부활 시간입니다. 이 시간에 플레이어가 부활합니다.
@@ -233,7 +240,11 @@ private:
 	void BindAllSkillToWidget();
 
 	void OnActiveGameplayEffectAddedDelegateToSelfCallback(UAbilitySystemComponent* ArgAbilitySystemComponent, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle);
-	
+
+	void OnChangeSkillStackAttribute(const FOnAttributeChangeData& NewValue);
+
+	void OnRespawnTimeChangedCallback(const float& ReservedRespawnTime);
+
 public:
 	// 현재 체력이 변경되는 경우 호출됩니다. 매개변수로 변경된 현재 체력을 받습니다.
 	FHealthChangeSignature OnHealthChanged;
@@ -276,6 +287,9 @@ public:
 
 	// 오너가 변경될 때 호출됩니다. 매개변수로 변경된 오너의 AActor 포인터를 받습니다.
 	FOwnerChangeSignature OnOwnerChanged;
+
+	//리스폰 타임이 변경될 때 호출됩니다. 매개변수로 부활하는 시간을 받습니다. 음수면 부활하지 못하는 것이고 현재 시간보다 작으면 이미 부활한 것입니다.
+	FOnRespawnTimeChangeSignature OnRespawnTimeChanged;
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -333,8 +347,11 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameplayEffect> StatusInitializeEffect;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameplayEffect> StatRegenEffect;
+
 	UPROPERTY()
-	TObjectPtr<const class ULakayaAttributeSet> LakayaAttributeSet;
+	TObjectPtr<const ULakayaAttributeSet> LakayaAttributeSet;
 
 	FTimerHandle RespawnTimer;
 	FTimerHandle CurrentCaptureTimer;

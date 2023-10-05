@@ -205,7 +205,7 @@ FGameplayAbilityTargetDataHandle ULakayaAbility_Projectile::MakeTargetData_Imple
 	const auto NewProjectile = ProjectilePool.GetFreeProjectile();
 	check(IsValid(NewProjectile))
 
-	static FVector ThrowLocation, ThrowDirection;
+	FVector ThrowLocation, ThrowDirection;
 	MakeProjectileThrowLocation(ThrowLocation, ThrowDirection);
 
 	const auto TargetData = new FGameplayAbilityTargetData_ThrowProjectile(

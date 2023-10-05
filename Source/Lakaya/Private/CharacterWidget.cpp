@@ -3,3 +3,9 @@
 
 #include "CharacterWidget.h"
 
+#include "UI/DynamicCrossHairWidget.h"
+
+void UCharacterWidget::SetAliveState(const bool& IsAlive)
+{
+	CrosshairWidget->SetVisibility(IsAlive ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Hidden);
+}

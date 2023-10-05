@@ -38,6 +38,7 @@ public:
 	const static FName ClairvoyanceMeshComponentName;
 	const static FName DamageImmuneMeshComponentName;
 	const static FName ResurrectionNiagaraName;
+	const static FName GrayScalePostProcessComponentName;
 
 	explicit ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
@@ -81,6 +82,9 @@ public:
 
 	UFUNCTION(BlueprintGetter)
 	const float& GetCharacterMaxSkillStack() const { return MaxSkillStack; }
+
+	UFUNCTION(BlueprintGetter)
+	const float& GetCharacterMaxUltimateGauge() const { return MaxUltimateGauge; }
 	
 	// 연속처치시 적용될 버프 목록을 가져옵니다.
 	UFUNCTION(BlueprintGetter)
@@ -101,6 +105,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void SetTeam(const ETeam& Team);
 
+	UFUNCTION(BlueprintGetter)
+	ETeam GetTeam() { return RecentTeam; }
+	
 	// 캐릭터의 생존 상태를 변경합니다.
 	UFUNCTION(BlueprintNativeEvent)
 	void SetAliveState(bool IsAlive);
@@ -146,6 +153,8 @@ private:
 
 	void RemoveDissolveEffect();
 
+	void ToggleGrayScalePostProcess(const bool& bIsActivate);
+	
 	UFUNCTION()
 	void DissolveTick(const float& Value);
 
@@ -162,6 +171,10 @@ protected:
 	//스택형 스킬의 리소스입니다. 각각 레나는 지뢰, 와지는 연막탄, 강림은 대쉬의 스택입니다
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
 	float MaxSkillStack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
+	float MaxUltimateGauge;
+	
 	
 	// 이 캐릭터의 공격력의 기본값입니다. AttributeSet의 기본 값을 설정하는데 사용됩니다. 런타임중에 변경하지 마십시오
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
@@ -216,6 +229,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UCharacterWidget> CharacterWidgetClass;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UMaterialInterface> GrayScalePostProcessMaterial;
 	
 private:
 	UPROPERTY(VisibleAnywhere, Replicated)
@@ -235,6 +251,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	UNiagaraComponent* ResurrectionNiagara;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UPostProcessComponent> GrayScalePostProcessComponent;
 
 	UPROPERTY(ReplicatedUsing=OnRep_PlayerRotation, Transient)
 	FPlayerRotationPacket PlayerRotation;
