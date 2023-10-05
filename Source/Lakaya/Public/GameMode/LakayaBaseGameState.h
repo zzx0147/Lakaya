@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "GameFramework/GameState.h"
-#include "UI/DynamicCrossHairWidget.h"
 #include "LakayaBaseGameState.generated.h"
 
 DECLARE_EVENT_OneParam(ALakayaBaseGameState, OnChangePlayerNumberSignature, const uint8&)
@@ -47,19 +46,8 @@ public:
 	UFUNCTION(BlueprintGetter)
 	float GetMatchRemainTime() const { return MatchEndingTime - GetServerWorldTimeSeconds(); }
 
-	
-
 	UFUNCTION(NetMulticast, Reliable)
 	void NotifyPlayerKilled(APlayerState* VictimPlayer, APlayerState* InstigatorPlayer, AActor* DamageCauser);
-
-	UFUNCTION(BlueprintCallable)
-	UDynamicCrossHairWidget* GetWaziDynamicCrossHairFun() const { return WaziDynamicCrossHairWidget.Get(); } 
-
-	UFUNCTION(BlueprintCallable)
-	UDynamicCrossHairWidget* GetRenaDynamicCrossHairFun() const { return RenaDynamicCrossHairWidget.Get(); }
-
-	UFUNCTION(BlueprintCallable)
-	UDynamicCrossHairWidget* GetGangRimDynamicCrossHairFun() const { return GangRimDynamicCrossHairWidget.Get(); }
 
 	/**
 	 * 적에 대한 투시를 활성화 요청합니다.
@@ -152,10 +140,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameTimeWidget> CharacterSelectTimerWidgetClass;
 	
-	// 게임중에 표시되는 크로스헤어 위젯을 지정합니다.
-	// UPROPERTY(EditDefaultsOnly)
-	// TSubclassOf<class UDynamicCrossHairWidget> DynamicCrossHairWidgetClass;
-	
 	// 에임에 있는 플레이어의 이름을 표기해주는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UPlayerNameDisplayerWidget> PlayerNameDisplayerWidgetClass;
@@ -165,19 +149,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class AOutlineManager> OutlineManagerClass;
-
-	// 미니맵위젯 클래스를 지정합니다.
-	// UPROPERTY(EditDefaultsOnly)
-	// TSubclassOf<UMiniMapWidget> MiniMapWidgetClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UDynamicCrossHairWidget> WaziDynamicCrossHairClass;
-	
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UDynamicCrossHairWidget> RenaDynamicCrossHairClass;
-	
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UDynamicCrossHairWidget> GangRimDynamicCrossHairClass;
 	
 	// 게임이 최대 몇초간 진행될지 정의합니다.
 	UPROPERTY(EditAnywhere)
@@ -210,9 +181,6 @@ protected:
 	FTimerHandle MatchWaitToStartTimer;
 
 	TWeakObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
-	TWeakObjectPtr<UDynamicCrossHairWidget> WaziDynamicCrossHairWidget;
-	TWeakObjectPtr<UDynamicCrossHairWidget> RenaDynamicCrossHairWidget;
-	TWeakObjectPtr<UDynamicCrossHairWidget> GangRimDynamicCrossHairWidget;
 	TWeakObjectPtr<ULoadingWidget> LoadingWidget;
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
 	TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;
@@ -222,9 +190,7 @@ protected:
 	TWeakObjectPtr<AOutlineManager> OutlineManager;
 	
 private:
+
 	bool bWantsSendRecordResult;
 	bool bIsClairvoyanceActivated;
-
-	// 캐릭터에 맞는 크로스헤어위젯들입니다.
-	TMap<FName, UDynamicCrossHairWidget*> CharacterToDynamicCrossHairWidgets;
 };
