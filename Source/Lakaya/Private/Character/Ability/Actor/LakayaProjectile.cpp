@@ -85,6 +85,8 @@ ALakayaProjectile::ALakayaProjectile()
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(
 		TEXT("ProjectileMovementComponent"));
+	ProjectileMovementComponent->bShouldBounce = true;
+	ProjectileMovementComponent->bAutoActivate = false;
 
 	ProjectileLaunchVelocity = 1000.f;
 }
@@ -180,6 +182,7 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData,
 		                                PredictedProjectileParams.MaxSimTime - EventTriggerDelayFromThrow);
 		SetActorLocation(Result.LastTraceDestination.Location);
 		ProjectileMovementComponent->Velocity = Result.LastTraceDestination.Velocity;
+		ProjectileMovementComponent->Activate();
 		CollisionComponent->SetCollisionEnabled(CollisionEnabled);
 	}
 }
@@ -272,6 +275,7 @@ void ALakayaProjectile::StopThrowProjectile()
 	}
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	ProjectileMovementComponent->StopMovementImmediately();
+	ProjectileMovementComponent->Deactivate();
 	ClearIgnoredInPerformActors();
 }
 
