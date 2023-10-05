@@ -183,7 +183,7 @@ void USkillProgressBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 			{
 				if (SkillStack <= 0)
 				{
-					const float PassedTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds() - StartTime;
+					const float PassedTime = GetWorld()->GetTimeSeconds() - StartTime;
 					const float RemainRegenTime = FMath::Fmod(PassedTime, MaxCoolTime);
 					SkillProgressBar->SetPercent(RemainRegenTime / MaxCoolTime);
 					// GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("%f"),PassedTime));

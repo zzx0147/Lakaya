@@ -24,7 +24,7 @@ void UTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 FVector2D UTabMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
 	const FVector2D& MiniMapSize)
 {
-	// // TODO : 맵의 전체 크기를 가져오는 함수가 있을까...?
+	// TODO : 맵의 전체 크기를 가져오는 함수가 있을까...?
 	// WorldMap Size.
 	const FVector2D WorldMapSize(7560.0f, 10600.0f);
 	

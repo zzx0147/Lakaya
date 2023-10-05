@@ -16,8 +16,16 @@ class LAKAYA_API UCharacterWidget : public UUserWidget
 
 public:
 	FORCEINLINE class USkillWidget* GetSkillWidget() const { return SkillWidget; }
+	FORCEINLINE class UGamePlayBulletWidget* GetGamePlayBulletWidget() const { return BulletWidget; }
+	FORCEINLINE class URespawnWidget* GetRespawnWidget() const { return RespawnWidget; }
 
 private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<USkillWidget> SkillWidget;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UGamePlayBulletWidget> BulletWidget;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<URespawnWidget> RespawnWidget;
 };

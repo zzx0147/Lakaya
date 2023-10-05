@@ -474,6 +474,38 @@ bool AOccupationGameState::TrySendMatchResultData()
 	return false;
 }
 
+bool AOccupationGameState::CanInstigatorClairvoyance(const AActor* InInstigator) const
+{
+	if (Super::CanInstigatorClairvoyance(InInstigator))
+	{
+		const auto PlayerController = GetWorld()->GetFirstPlayerController();
+		if (PlayerController && PlayerController->IsLocalController())
+		{
+			const auto TeamObject = PlayerController->GetPlayerState<ITeamObjectInterface>();
+			return TeamObject && TeamObject->IsSameTeam(Cast<ITeamObjectInterface>(InInstigator));
+		}
+	}
+
+	return false;
+}
+
+bool AOccupationGameState::ShouldActivateClairvoyance() const
+{
+	return Super::ShouldActivateClairvoyance() && !ClairvoyanceInstigatorSet.IsEmpty();
+}
+
+void AOccupationGameState::OnClairvoyanceActivateRequested(const AActor* InInstigator)
+{
+	Super::OnClairvoyanceActivateRequested(InInstigator);
+	ClairvoyanceInstigatorSet.Emplace(InInstigator);
+}
+
+void AOccupationGameState::OnClairvoyanceDeactivateRequested(const AActor* InInstigator)
+{
+	Super::OnClairvoyanceDeactivateRequested(InInstigator);
+	ClairvoyanceInstigatorSet.Remove(InInstigator);
+}
+
 void AOccupationGameState::DestroyShieldWallObject()
 {
 	UWorld* World = GetWorld();

@@ -30,6 +30,9 @@ DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOwnerChangeSignature, AActor*)
 
 DECLARE_DELEGATE_OneParam(FRespawnTimerDelegate, AController*)
 
+DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOnRespawnTimeChangeSignature, const float&)
+
+
 UCLASS()
 class LAKAYA_API ALakayaBasePlayerState : public APlayerState, public IAbilitySystemInterface,
                                           public ITeamObjectInterface
@@ -235,6 +238,8 @@ private:
 	void OnActiveGameplayEffectAddedDelegateToSelfCallback(UAbilitySystemComponent* ArgAbilitySystemComponent, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle);
 
 	void OnChangeSkillStackAttribute(const FOnAttributeChangeData& NewValue);
+
+	void OnRespawnTimeChangedCallback(const float& ReservedRespawnTime);
 	
 public:
 	// 현재 체력이 변경되는 경우 호출됩니다. 매개변수로 변경된 현재 체력을 받습니다.
@@ -278,6 +283,9 @@ public:
 
 	// 오너가 변경될 때 호출됩니다. 매개변수로 변경된 오너의 AActor 포인터를 받습니다.
 	FOwnerChangeSignature OnOwnerChanged;
+
+	//리스폰 타임이 변경될 때 호출됩니다. 매개변수로 부활하는 시간을 받습니다. 음수면 부활하지 못하는 것이고 현재 시간보다 작으면 이미 부활한 것입니다.
+	FOnRespawnTimeChangeSignature OnRespawnTimeChanged;
 
 protected:
 	UPROPERTY(EditAnywhere)

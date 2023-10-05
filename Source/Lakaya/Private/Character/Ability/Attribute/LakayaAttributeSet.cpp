@@ -148,7 +148,7 @@ void ULakayaAttributeSet::OnRep_MaxUltimateGauge(const FGameplayAttributeData& O
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, MaxUltimateGauge, OldValue);
 }
 
-ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(40.0f), CurrentAmmo(40.0f),
+ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(-1.0f), CurrentAmmo(-1.0f),
                                              AttackPoint(40.0f), SkillStack(3.0f), MaxSkillStack(3.0f), UltimateGauge(-1.0f), MaxUltimateGauge(-1.0f)
 {
 	bOutOfHealth = false;
