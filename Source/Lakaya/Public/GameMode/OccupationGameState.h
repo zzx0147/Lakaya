@@ -135,13 +135,13 @@ private:
 	void UpdateTeamScoreTick();
 
 	UFUNCTION()
-	void OnRep_AntiTeamScore();
+	void OnRep_AntiTeamScore() const;
 
 	UFUNCTION()
-	void OnRep_ProTeamScore();
+	void OnRep_ProTeamScore() const;
 
 	UFUNCTION()
-	void OnRep_OccupationWinner();
+	void OnRep_OccupationWinner() const;
 
 	/**
 	 * @brief PlayerByMinimap Tmap을 업데이트 해줍니다.
@@ -154,10 +154,9 @@ private:
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;
-	
-	bool bTap;
 
-	TMap<uint8, UProgressBar*> OccupyBarMaps;
+	// TODO : bTap은 사용되지 않는 변수입니다.
+	// bool bTap;
 	
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
@@ -210,6 +209,9 @@ private:
 	FTimerHandle TimerHandle_MatchStartWaitWidget;
 
 	TSet<TWeakObjectPtr<const AActor>> ClairvoyanceInstigatorSet;
+
+	UPROPERTY()
+	TMap<uint8, UProgressBar*> OccupyBarMaps;
 	
 #pragma region Widget
 
