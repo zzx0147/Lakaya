@@ -270,7 +270,7 @@ void ULakayaAbility::CallMakeTargetData()
 
 	const auto TargetDataHandle = MakeTargetData();
 
-	if (GetCurrentActivationInfoRef().ActivationMode == EGameplayAbilityActivationMode::Predicting)
+	if (IsPredictingClient())
 	{
 		ServerSetReplicatedTargetData(TargetDataHandle);
 	}
