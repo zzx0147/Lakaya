@@ -288,6 +288,16 @@ void AOccupationGameState::HandleMatchHasEnded()
 	if (GameResultWidget.IsValid())
 		GameResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
+	if (OccupationTabMinimapWidget.IsValid() && OccupationHUDMinimapWidget.IsValid())
+	{
+		OccupationTabMinimapWidget->UpdateMinimap = false;
+		OccupationHUDMinimapWidget->UpdateMinimap = false;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OccupationTabMinimapWidge && OccupationHUDMinimapWidget is null."));
+	}
+	
 	// Anti팀의 배열과, Pro팀의 배열을 내림차순으로 정렬합니다.
 	static auto Predicate = [](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B)
 	{
@@ -312,7 +322,7 @@ void AOccupationGameState::HandleMatchHasEnded()
 	}
 
 	bTap = false;
-
+	
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 	LocalController && LocalController->IsLocalController())
 	{
@@ -333,8 +343,7 @@ void AOccupationGameState::HandleMatchHasEnded()
 		// BindDetailResultElementWidget();
 	}
 
-	if (OccupationTabMinimapWidget.IsValid())
-		OccupationTabMinimapWidget->UpdateMinimap = false;
+	
 }
 
 void AOccupationGameState::EndTimeCheck()
