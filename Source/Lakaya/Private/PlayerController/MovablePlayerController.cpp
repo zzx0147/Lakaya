@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 AMovablePlayerController::AMovablePlayerController()
 {
@@ -78,7 +79,11 @@ void AMovablePlayerController::Jump()
 
 void AMovablePlayerController::Crouch()
 {
-	if (const auto LocalCharacter = GetCharacter()) LocalCharacter->Crouch();
+	if (const auto LocalCharacter = GetCharacter())
+	{
+		if(LocalCharacter->GetCharacterMovement()->IsFalling() == false)
+			LocalCharacter->Crouch();
+	}
 }
 
 void AMovablePlayerController::UnCrouch()
