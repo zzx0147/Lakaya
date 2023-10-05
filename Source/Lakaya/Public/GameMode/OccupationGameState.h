@@ -32,11 +32,6 @@ public:
 	void SetOccupationWinner();
 
 	/**
-	 * @brief 게임이 끝나고 나서 출력되는 GradeResult, DetailResult를 전환합니다.
-	 */
-	void ChangeResultWidget();
-
-	/**
 	* @brief 점령에 성공한 팀이 상대편의 점령구역 개수가 많은지 판별합니다.
 	* @param Team 점령에 성공한 팀입니다.
 	*/
@@ -139,24 +134,6 @@ private:
 	// 스코어를 업데이트 해주는 함수입니다.
 	void UpdateTeamScoreTick();
 
-	// 게임결과 배경위젯를 띄워줍니다.
-	void ShowGradeResultWidget(class ALakayaBasePlayerState* PlayerState, APlayerController* Controller);
-
-	// 게임결과 등수 위젯을 띄워줍니다.
-	void ShowGradeResultElementWidget(ALakayaBasePlayerState* NewPlayerState) const;
-
-	void GradeResultTeamInfo(TArray<TObjectPtr<ALakayaBasePlayerState>>& PlayerArray, uint8 NewIndex) const;
-
-	// 본인의 팀에 따라 보여지는 게임결과 등수 위젯을 띄워줍니다.
-	void ShowAntiTeamGradeResultElementWidget() const;
-	void ShowProTeamGradeResultElementWidget() const;
-
-	// DetailResultWidget에서 본인의 정보를 바인딩합니다.
-	void BindDetailResultWidget();
-
-	// 모든 인원들의 정보를 담은 위젯을 바인딩합니다.
-	void BindDetailResultElementWidget();
-
 	UFUNCTION()
 	void OnRep_AntiTeamScore();
 
@@ -256,22 +233,6 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameResultWidget> GameResultWidgetClass;
 	
-	// 게임 종료 후 배경 위젯 클래스를 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UGradeResultWidget> GradeResultWidgetClass;
-
-	// 게임 종료 후 게임 팀내 등수 결과를 띄우는 위젯 클래스를 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UGradeResultElementWidget> GradeResultElementWidgetClass;
-
-	// 게임 종료 시 게임 디테일 결과를 띄우는 위젯 클래스를 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UDetailResultWidget> DetailResultWidgetClass;
-
-	// 게임 종료 시 게임 디테일 결과에서 플레이어들의 정보를 띄우는 위젯 클래스를 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UDetailResultElementWidget> DetailResultElementWidgetClass;
-
 	// 게임 종료 시 게임 디테일 결과를 띄우는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UFinalResultWidget> FinalResultWidgetClass;
@@ -309,20 +270,8 @@ private:
 	// 게임 승패 위젯 입니다.
 	TWeakObjectPtr<UGameResultWidget> GameResultWidget;
 
-	// 게임 종료 후 배경 위젯입니다.
-	TWeakObjectPtr<UGradeResultWidget> GradeResultWidget;
-
-	// 게임 팀내 등수 결과 위젯입니다.
-	TWeakObjectPtr<UGradeResultElementWidget> GradeResultElementWidget;
-
 	// 게임 종료 후 게임 디테일 결과 위젯입니다.
 	TObjectPtr<UFinalResultWidget> FinalResultWidget;
-
-	// 게임 디테일 결과 위젯입니다.
-	TWeakObjectPtr<UDetailResultWidget> DetailResultWidget;
-
-	// 게임 디테일 Element 결과 위젯입니다.
-	TWeakObjectPtr<UDetailResultElementWidget> DetailResultElementWidget;
 
 	// 점령 표시 위젯입니다.
 	TWeakObjectPtr<UOccupyExpressWidget> OccupyExpressWidget;

@@ -181,12 +181,6 @@ void AGameLobbyPlayerController::ShowScoreBoardAndTabMinimap()
 		{
 			if (OccupationGameState == nullptr) UE_LOG(LogTemp, Warning, TEXT("GameLobbyPlayerController_OccupationGameState is null."));
 
-			// 결과창 상태에서는 결과창과 디테일결과창을 번갈아가면서 보여줍니다.
-			if (OccupationGameState->GetMatchState() == MatchState::WaitingPostMatch)
-			{
-				OccupationGameState->ChangeResultWidget();
-			}
-
 			OccupationGameState->SetScoreBoardVisibility(true);
 			OccupationGameState->SetTabMinimapVisibility(true);
 		}
