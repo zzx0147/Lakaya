@@ -10,6 +10,7 @@
 #include "Camera/CameraComponent.h"
 #include "Character/ResourceComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/PostProcessComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
@@ -23,6 +24,8 @@ const FName ALakayaBaseCharacter::ResourceComponentName = FName(TEXT("ResourceCo
 const FName ALakayaBaseCharacter::ClairvoyanceMeshComponentName = FName(TEXT("ClairvoyanceMesh"));
 const FName ALakayaBaseCharacter::DamageImmuneMeshComponentName = FName(TEXT("DamageImmuneMesh"));
 const FName ALakayaBaseCharacter::ResurrectionNiagaraName = FName(TEXT("ResurrectionNiagara"));
+const FName ALakayaBaseCharacter::GrayScalePostProcessComponentName = FName(TEXT("GrayScalePostProcess"));
+
 
 ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -79,6 +82,11 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	static ConstructorHelpers::FObjectFinder<UCurveFloat> DissolveCurveFinder(
 		TEXT("/Game/Blueprints/Curve/CV_Float_DissolveCurve.CV_Float_DissolveCurve"));
 
+	GrayScalePostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(GrayScalePostProcessComponentName);
+	GrayScalePostProcessComponent->SetupAttachment(RootComponent);
+	GrayScalePostProcessComponent->bUnbound = true;
+	GrayScalePostProcessComponent->Priority = -1.0f;
+	
 	if (DissolveCurveFinder.Succeeded()) DissolveCurve = DissolveCurveFinder.Object;
 }
 
@@ -249,6 +257,8 @@ void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 			OnRep_DamageImmuneEndingTime();
 		}
 		RemoveDissolveEffect();
+		
+
 	}
 	else
 	{
@@ -258,6 +268,10 @@ void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 		StartDissolveEffect();
 	}
 	if (HasAuthority()) GetCharacterMovement()->SetMovementMode(IsAlive ? MOVE_Walking : MOVE_None);
+	
+	if(Controller && Controller->IsLocalController())
+		ToggleGrayScalePostProcess(IsAlive);
+	
 }
 
 float ALakayaBaseCharacter::GetServerTime() const
@@ -314,6 +328,14 @@ void ALakayaBaseCharacter::RemoveDissolveEffect()
 		TargetMaterial->SetScalarParameterValue(TEXT("Dissolve"), 2.0f);
 
 	if (CharacterOverlayMaterial.IsValid()) CharacterOverlayMaterial->SetScalarParameterValue(TEXT("Opacity"), 0.04f);
+}
+
+void ALakayaBaseCharacter::ToggleGrayScalePostProcess(const bool& bIsActivate)
+{
+	if(!GrayScalePostProcessComponent || !GrayScalePostProcessMaterial)
+		return;
+	
+	GrayScalePostProcessComponent->AddOrUpdateBlendable(GrayScalePostProcessMaterial,bIsActivate ? 0.0f : 1.0f);
 }
 
 void ALakayaBaseCharacter::DissolveTick(const float& Value)

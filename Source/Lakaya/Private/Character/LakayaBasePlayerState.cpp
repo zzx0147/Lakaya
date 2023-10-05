@@ -14,6 +14,7 @@
 #include "UI/GamePlayBulletWidget.h"
 #include "UI/GamePlayHealthWidget.h"
 #include "UI/GamePlayPortraitWidget.h"
+#include "UI/RespawnWidget.h"
 #include "UI/SkillProgressBar.h"
 #include "UI/SkillWidget.h"
 
@@ -63,6 +64,8 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	// AbilitySystem->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 
 	AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetSkillStackAttribute()).AddUObject(this,&ALakayaBasePlayerState::OnChangeSkillStackAttribute);
+
+	OnRespawnTimeChanged.AddUObject(this,&ALakayaBasePlayerState::OnRespawnTimeChangedCallback);
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -191,7 +194,8 @@ void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, c
 	RespawnTime = ReservedRespawnTime;
 	const auto CurrentTime = GetServerTime();
 	UpdateAliveStateWithRespawnTime(CurrentTime);
-
+	OnRespawnTimeChanged.Broadcast(RespawnTime);
+	
 	if (ReservedRespawnTime < CurrentTime) return;
 	static FTimerDelegate TimerDelegate;
 	TimerDelegate.BindUObject(this, &ALakayaBasePlayerState::RespawnTimerCallback, Callback);
@@ -468,7 +472,8 @@ void ALakayaBasePlayerState::OnRep_RespawnTime()
 {
 	const auto CurrentTime = GetServerTime();
 	UpdateAliveStateWithRespawnTime(CurrentTime);
-
+	OnRespawnTimeChanged.Broadcast(RespawnTime);
+	
 	// 부활시간에 OnAliveStateChanged 이벤트가 호출될 수 있도록 타이머를 설정합니다.
 	static FTimerDelegate Delegate;
 	Delegate.BindUObject(this, &ALakayaBasePlayerState::SetAliveState, true);
@@ -634,6 +639,15 @@ void ALakayaBasePlayerState::OnChangeSkillStackAttribute(const FOnAttributeChang
 			}
 		}
 	}
+	
+}
+
+void ALakayaBasePlayerState::OnRespawnTimeChangedCallback(const float& ReservedRespawnTime)
+{
+	const float CurrentTime = GetServerTime();
+	if (CharacterWidget && CharacterWidget->GetRespawnWidget())
+		CharacterWidget->GetRespawnWidget()->StartRespawnProgress(ReservedRespawnTime, CurrentTime);
+
 	
 }
 
