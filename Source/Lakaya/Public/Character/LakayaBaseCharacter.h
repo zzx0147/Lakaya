@@ -105,6 +105,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void SetTeam(const ETeam& Team);
 
+	UFUNCTION(BlueprintGetter)
+	ETeam GetTeam() { return RecentTeam; }
+	
 	// 캐릭터의 생존 상태를 변경합니다.
 	UFUNCTION(BlueprintNativeEvent)
 	void SetAliveState(bool IsAlive);
