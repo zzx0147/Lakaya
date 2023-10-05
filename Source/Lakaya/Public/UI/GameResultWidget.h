@@ -9,12 +9,19 @@ class LAKAYA_API UGameResultWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-protected:
-	virtual void NativeConstruct() override;
-
 public:
-	TWeakObjectPtr<class UImage> VictoryImage;
-	TWeakObjectPtr<UImage> DefeatImage;
-	TWeakObjectPtr<class UTextBlock> AntiScore;
-	TWeakObjectPtr<UTextBlock> ProScore;
+	void ShowResult(const bool& IsWin, const float& AntiScore, const float& ProScore);
+	
+private:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UCanvasPanel> VictoryPanel;
+	
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UCanvasPanel> DefeatPanel;
+	
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UTextBlock> AntiScoreTextBlock;
+	
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> ProScoreTextBlock;
 };

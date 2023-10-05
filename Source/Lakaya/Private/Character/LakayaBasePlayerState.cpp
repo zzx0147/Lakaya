@@ -5,6 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "CharacterWidget.h"
+#include "Algo/Accumulate.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Character/Ability/Attribute/LakayaAttributeSet.h"
 #include "Character/Ability/Component/LakayaAbilitySystemComponent.h"
@@ -159,26 +160,6 @@ void ALakayaBasePlayerState::OnRep_Owner()
 void ALakayaBasePlayerState::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	// UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
-
-	// if (GetAbilitySystemComponent())
-	// {
-	// 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow,
-	// 		                                 *FString::Printf(TEXT("::%f"), GetAbilitySystemComponent()->GetSet<ULakayaAttributeSet>()->GetHealth() ));
-	// }
-	//
-
-	// if (!HasAuthority())
-	// {
-	// 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, *FString::Printf(TEXT("::%f"), 0.0f));
-	// }
-	// TODO : 미니맵 방식은 RenderTarget -> 정적 이미지 으로 바뀌었습니다.
-	// if (!HasInitalizedPawn && GetPlayerController() && GetPlayerController()->GetPawn())
-	// {
-	// HasInitalizedPawn = true;
-	// InitalizeWithPawn();
-	// }
 }
 
 void ALakayaBasePlayerState::SetTeam(const ETeam& DesireTeam)
@@ -187,6 +168,15 @@ void ALakayaBasePlayerState::SetTeam(const ETeam& DesireTeam)
 	Team = DesireTeam;
 	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->SetTeam(Team);
 	OnTeamChanged.Broadcast(Team);
+}
+
+const UDynamicCrossHairWidget* ALakayaBasePlayerState::GetDynamicCrossHairWidget() const
+{
+	if(CharacterWidget)
+	{
+		return CharacterWidget->GetCrossHairWidget();
+	}
+	return nullptr;
 }
 
 void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, const FRespawnTimerDelegate& Callback)
@@ -524,6 +514,7 @@ void ALakayaBasePlayerState::SetAliveState(bool AliveState)
 {
 	if (bRecentAliveState == AliveState) return;
 	bRecentAliveState = AliveState;
+	if(CharacterWidget) CharacterWidget->SetAliveState(bRecentAliveState);
 	OnAliveStateChanged.Broadcast(AliveState);
 }
 

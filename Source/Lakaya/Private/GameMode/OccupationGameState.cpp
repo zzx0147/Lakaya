@@ -3,7 +3,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "RenderCore.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
@@ -24,6 +23,7 @@
 #include "UI/GradeResultWidget.h"
 #include "UI/MatchStartWaitWidget.h"
 #include "UI/OccupationCharacterSelectWidget.h"
+#include "UI/HUDOccupationMinimapWidget.h"
 #include "UI/StartMessageWidget.h"
 #include "UI/TeamScoreWidget.h"
 #include "UI/WeaponOutLineWidget.h"
@@ -41,15 +41,20 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(AOccupationGameState, TeamToUpdate);
 }
 
-AOccupationGameState::AOccupationGameState()
+AOccupationGameState::AOccupationGameState(): MatchResult()
 {
 	MaxScore = 100.f;
+	AntiTeamScore = 0.0f;
+	ProTeamScore = 0.0f;
+	AntiTeamCaptureAreaCount = 0;
+	ProTeamCaptureAreaCount = 0;
 	ScoreUpdateDelay = 1.0f;
 	AdditiveScore = 3.0f;
 	MatchDuration = 180.f;
 	MatchStartWaitWidgetLifeTime = 3.0f;
 	MatchStartWidgetLifeTime = 5.0f;
 	ClientTeam = ETeam::None;
+	CurrentOccupationWinner = ETeam::None;
 
 	PlayersByTeamMap.Emplace(ETeam::Anti);
 	PlayersByTeamMap.Emplace(ETeam::Pro);
@@ -125,48 +130,6 @@ void AOccupationGameState::BeginPlay()
 			}
 		}
 
-		if (GradeResultWidgetClass)
-		{
-			GradeResultWidget = CreateWidget<UGradeResultWidget>(LocalController, GradeResultWidgetClass);
-			if (GradeResultWidget.IsValid())
-			{
-				GradeResultWidget->AddToViewport(1);
-				GradeResultWidget->SetVisibility(ESlateVisibility::Hidden);
-			}
-		}
-
-		if (GradeResultElementWidgetClass)
-		{
-			GradeResultElementWidget = CreateWidget<UGradeResultElementWidget>(
-				LocalController, GradeResultElementWidgetClass);
-			if (GradeResultElementWidget.IsValid())
-			{
-				GradeResultElementWidget->AddToViewport(1);
-				GradeResultElementWidget->SetVisibility(ESlateVisibility::Hidden);
-			}
-		}
-
-		if (DetailResultWidgetClass)
-		{
-			DetailResultWidget = CreateWidget<UDetailResultWidget>(LocalController, DetailResultWidgetClass);
-			if (DetailResultWidget.IsValid())
-			{
-				DetailResultWidget->AddToViewport(1);
-				DetailResultWidget->SetVisibility(ESlateVisibility::Hidden);
-			}
-		}
-
-		if (DetailResultElementWidgetClass)
-		{
-			DetailResultElementWidget = CreateWidget<UDetailResultElementWidget>(
-				LocalController, DetailResultElementWidgetClass);
-			if (DetailResultElementWidget.IsValid())
-			{
-				DetailResultElementWidget->AddToViewport(1);
-				DetailResultElementWidget->SetVisibility(ESlateVisibility::Hidden);
-			}
-		}
-
 		if (FinalResultWidgetClass)
 		{
 			FinalResultWidget = CreateWidget<UFinalResultWidget>(
@@ -192,20 +155,19 @@ void AOccupationGameState::BeginPlay()
 			}
 		}
 
-		// TODO :
-		// if (OccupationMinimapWidgetClass)
-		// {
-		// 	OccupationMinimapWidget = CreateWidget<UOccupationMinimapWidget>(
-		// 		LocalController, OccupationMinimapWidgetClass);
-		// 	if (OccupationMinimapWidget.IsValid())
-		// 	{
-		// 		OccupationMinimapWidget->AddToViewport();
-		// 		OccupationMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
-		// 		OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
-		// 		OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
-		// 	}
-		// }
-
+		if (OccupationHUDMinimapWidgetClass)
+		{
+			OccupationHUDMinimapWidget = CreateWidget<UHUDOccupationMinimapWidget>(
+				LocalController, OccupationHUDMinimapWidgetClass);
+			if (OccupationHUDMinimapWidget.IsValid())
+			{
+				OccupationHUDMinimapWidget->AddToViewport();
+				OccupationHUDMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
+				OccupationHUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
+				OccupationHUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
+			}
+		}
+		
 		if (OccupationTabMinimapWidgetClass)
 		{
 			OccupationTabMinimapWidget = CreateWidget<UOccupationTabMinimapWidget>(
@@ -239,31 +201,30 @@ void AOccupationGameState::HandleMatchHasStarted()
 	if (OccupyExpressWidget.IsValid())
 		OccupyExpressWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-	// if (OccupationMinimapWidget.IsValid())
-	// {
-	// 	OccupationMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	// 	OccupationMinimapWidget->UpdateMinimap = true;
-	// 	OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
-	// 	OccupationMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
-	//
-	// 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
-	// 	LocalController && LocalController->IsLocalController())
-	// 	{
-	// 		if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
-	// 		{
-	// 			OccupationMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
-	//
-	// 			// 와지가 스킬을 쓰게 되면 상대방의 위치도 미니맵 상에 업데이트 해줘야 하기 때문에
-	// 			// 일단은 본인의 팀과 상대방의 팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
-	// 			UpdatePlayerByMinimap(ETeam::Anti, LakayaPlayerState);
-	// 			UpdatePlayerByMinimap(ETeam::Pro, LakayaPlayerState);
-	// 		}
-	// 	}
-	// }
+	if (OccupationHUDMinimapWidget.IsValid())
+	{
+		OccupationHUDMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		OccupationHUDMinimapWidget->UpdateMinimap = true;
+		OccupationHUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
+		OccupationHUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
+	
+		if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
+		LocalController && LocalController->IsLocalController())
+		{
+			if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
+			{
+				OccupationHUDMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
+	
+				// 와지가 스킬을 쓰게 되면 상대방의 위치도 미니맵 상에 업데이트 해줘야 하기 때문에
+				// 일단은 본인의 팀과 상대방의 팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
+				UpdatePlayerByMinimap(ETeam::Anti, LakayaPlayerState);
+				UpdatePlayerByMinimap(ETeam::Pro, LakayaPlayerState);
+			}
+		}
+	}
 
 	if (OccupationTabMinimapWidget.IsValid())
 	{
-		// OccupationTabMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		OccupationTabMinimapWidget->UpdateMinimap = true;
 		OccupationTabMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
 		OccupationTabMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
@@ -355,9 +316,18 @@ void AOccupationGameState::HandleMatchHasEnded()
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 	LocalController && LocalController->IsLocalController())
 	{
-		FinalResultWidget->SetTeam(ClientTeam);
-		FinalResultWidget->SetMatchResultData(GetOccupationWinner(),ProTeamScore,AntiTeamScore, PlayersByTeamMap);
-		FinalResultWidget->SetVisibility(ESlateVisibility::Visible);
+		GameResultWidget->ShowResult(ClientTeam == GetOccupationWinner(), AntiTeamScore, ProTeamScore);
+	
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindLambda([&]
+		{
+			GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
+			FinalResultWidget->SetTeam(ClientTeam);
+			FinalResultWidget->SetMatchResultData(GetOccupationWinner(),ProTeamScore,AntiTeamScore, PlayersByTeamMap);
+			FinalResultWidget->SetVisibility(ESlateVisibility::Visible);
+		});
+		GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
+		
 		// ShowEndResultWidget();
 		// BindDetailResultWidget();
 		// BindDetailResultElementWidget();
@@ -382,19 +352,6 @@ void AOccupationGameState::EndTimeCheck()
 
 		GameMode->EndMatch();
 	}
-}
-
-void AOccupationGameState::ChangeResultWidget()
-{
-	if (!GradeResultWidget.IsValid() || !DetailResultWidget.IsValid() || !DetailResultElementWidget.IsValid()) return;
-	ESlateVisibility gradeVisibility = ResultBool ? ESlateVisibility::Hidden : ESlateVisibility::SelfHitTestInvisible;
-	ESlateVisibility detailVisibility = ResultBool ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden;
-
-	GradeResultWidget->SetVisibility(gradeVisibility);
-	DetailResultWidget->SetVisibility(detailVisibility);
-	DetailResultElementWidget->SetVisibility(detailVisibility);
-
-	ResultBool = !ResultBool;
 }
 
 void AOccupationGameState::SetOccupationWinner()
@@ -435,6 +392,7 @@ void AOccupationGameState::UpdatePlayerByMinimap(const ETeam& Team, ALakayaBaseP
 	{
 		const bool bMyPlayer = (Players == PlayerState);
 		OccupationTabMinimapWidget->PlayersByMinimap[Team].Emplace(Players, OccupationTabMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
+		OccupationHUDMinimapWidget->PlayersByMinimap[Team].Emplace(Players, OccupationHUDMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
 	}
 }
 
@@ -521,269 +479,6 @@ void AOccupationGameState::DestroyShieldWallObject()
 
 	for (const auto& ShieldActor : FoundActors)
 		ShieldActor->Destroy();
-}
-
-void AOccupationGameState::ShowEndResultWidget()
-{
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
-		GameResultWidget.IsValid() && LocalController && LocalController->IsLocalController())
-	{
-		LocalController->SetShowMouseCursor(false);
-		LocalController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_None);
-		const auto LobbyController = Cast<AGameLobbyPlayerController>(LocalController);
-		LobbyController->UnbindAllAndBindMenu(Cast<UEnhancedInputComponent>(LocalController->InputComponent));
-
-		if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
-		{
-			if (LakayaPlayerState->IsSameTeam(GetOccupationWinner()))
-			{
-				// 승리했다면 "승리" 이미지를 띄워줍니다.
-				GameResultWidget->VictoryImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			}
-			else
-			{
-				// 패배했다면 "패배" 이미지를 띄워줍니다.
-				GameResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			}
-
-			GameResultWidget->AntiScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), AntiTeamScore)));
-			GameResultWidget->ProScore->SetText(FText::FromString(FString::Printf(TEXT("%.1f%%"), ProTeamScore)));
-
-			ShowGradeResultWidget(LakayaPlayerState, LocalController);
-		}
-		else UE_LOG(LogTemp, Warning, TEXT("LakayaPlayerState is null."));
-	}
-}
-
-void AOccupationGameState::ShowGradeResultWidget(ALakayaBasePlayerState* PlayerState, APlayerController* Controller)
-{
-	// 게임 결과를 띄우고 5초뒤에 비활성화 해주고, GradeResultWidget, GradeResultElementWidget을 띄웁니다.
-	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindLambda([this, PlayerState, Controller]
-	{
-		if (this == nullptr || !GameResultWidget.IsValid() || !GradeResultWidget.IsValid()) return;
-		GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
-		GradeResultWidget->SetVisibility(ESlateVisibility::Hidden);
-		FinalResultWidget->SetVisibility(ESlateVisibility::Visible);
-		
-		if (PlayerState->GetTeam() == ETeam::Anti)
-			GradeResultWidget->AntiTextBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		if (PlayerState->GetTeam() == ETeam::Pro)
-			GradeResultWidget->ProTextBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-		if (PlayerState->IsSameTeam(GetOccupationWinner()))
-			GradeResultWidget->VictoryImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		else GradeResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-		Controller->SetShowMouseCursor(false);
-
-		if (Controller != nullptr && Controller->GetLocalPlayer() != nullptr)
-		{
-			if (const auto SubSystem = Controller->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
-			{
-				SubSystem->AddMappingContext(ResultShortcutContext, 200);
-			}
-		}
-
-		ShowGradeResultElementWidget(PlayerState);
-		bTap = true;
-	});
-	GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
-}
-
-void AOccupationGameState::ShowGradeResultElementWidget(ALakayaBasePlayerState* NewPlayerState) const
-{
-	if (GradeResultElementWidget.IsValid()) GradeResultElementWidget->SetVisibility(ESlateVisibility::Hidden);
-
-	if (NewPlayerState->GetTeam() == ETeam::Anti)
-	{
-		ShowAntiTeamGradeResultElementWidget();
-	}
-
-	if (NewPlayerState->GetTeam() == ETeam::Pro)
-	{
-		ShowProTeamGradeResultElementWidget();
-	}
-}
-
-void AOccupationGameState::GradeResultTeamInfo(TArray<TObjectPtr<ALakayaBasePlayerState>>& NewPlayerArray,
-                                               uint8 NewIndex) const
-{
-	if (!GradeResultElementWidget.IsValid()) return;
-	FString CharacterName;
-	if (NewPlayerArray[NewIndex]->GetCharacterName() == "Rena")
-		CharacterName.Append("Rena");
-	if (NewPlayerArray[NewIndex]->GetCharacterName() == "Wazi")
-		CharacterName.Append("Wazi");
-
-	FString RankLetter;
-	switch (NewIndex)
-	{
-	case 0:
-		RankLetter = "First";
-		break;
-	case 1:
-		RankLetter = "Second";
-		break;
-	case 2:
-		RankLetter = "Third";
-		break;
-	default:
-		UE_LOG(LogTemp, Warning, TEXT("존재하는 않은 Index입니다."));
-		break;
-	}
-
-	FString TeamLetter;
-	if (NewPlayerArray[NewIndex]->GetTeam() == ETeam::Anti)
-		TeamLetter = "Anti";
-	if (NewPlayerArray[NewIndex]->GetTeam() == ETeam::Pro)
-		TeamLetter = "Pro";
-
-	GradeResultElementWidget->GetWidgetFromName(
-		*FString::Printf(TEXT("%s_%s_%s_Image"), *RankLetter, *TeamLetter, *CharacterName))->SetVisibility(
-		ESlateVisibility::SelfHitTestInvisible);
-	GradeResultElementWidget->GetWidgetFromName(
-		*FString::Printf(TEXT("%s_%s_RankBoard_Image"), *RankLetter, *TeamLetter))->SetVisibility(
-		ESlateVisibility::SelfHitTestInvisible);
-
-	FString FormattedName = FString::Printf(TEXT("%s"), *NewPlayerArray[NewIndex]->GetPlayerName());
-	UTextBlock* NameText = Cast<UTextBlock>(
-		GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_Name_Text"), *RankLetter)));
-	NameText->SetText(FText::FromString(FormattedName));
-	NameText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-	UTextBlock* TotalScoreText = Cast<UTextBlock>(
-		GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_TotalScore_Text"), *RankLetter)));
-	TotalScoreText->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewPlayerArray[NewIndex]->GetTotalScore())));
-	TotalScoreText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-	GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_Rank_Text"), *RankLetter))->SetVisibility(
-		ESlateVisibility::SelfHitTestInvisible);
-	GradeResultElementWidget->GetWidgetFromName(*FString::Printf(TEXT("%s_ScoreBoard_Icon_Image"), *RankLetter))->
-	                          SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-}
-
-void AOccupationGameState::ShowAntiTeamGradeResultElementWidget() const
-{
-	TArray<TObjectPtr<ALakayaBasePlayerState>> AntiPlayerArray;
-	int index = 0;
-	for (auto RegisterPlayerState : PlayersByTeamMap[ETeam::Anti])
-	{
-		AntiPlayerArray.Add(RegisterPlayerState);
-		GradeResultTeamInfo(AntiPlayerArray, index);
-		++index;
-	}
-}
-
-void AOccupationGameState::ShowProTeamGradeResultElementWidget() const
-{
-	TArray<TObjectPtr<ALakayaBasePlayerState>> ProPlayerArray;
-	int index = 0;
-	for (auto RegisterPlayerState : PlayersByTeamMap[ETeam::Pro])
-	{
-		ProPlayerArray.Add(RegisterPlayerState);
-		GradeResultTeamInfo(ProPlayerArray, index);
-		++index;
-	}
-}
-
-void AOccupationGameState::BindDetailResultWidget()
-{
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController();
-		DetailResultWidget.IsValid() && LocalController && LocalController->IsLocalController())
-	{
-		const ALakayaBasePlayerState* PlayerState = Cast<ALakayaBasePlayerState>(LocalController->PlayerState);
-
-		// Anti
-		if (PlayerState->GetTeam() == ETeam::Anti)
-		{
-			DetailResultWidget->AntiTextBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			DetailResultWidget->AntiUserBoxNameImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			DetailResultWidget->AntiUserBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			DetailResultWidget->AntiTotalBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (PlayerState->GetCharacterName() == "Rena")
-			{
-				DetailResultWidget->AntiRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				DetailResultWidget->PortraitRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				DetailResultWidget->UserBoxCharacterNameText->SetText(FText::FromString(TEXT("RENA")));
-			}
-
-			if (PlayerState->GetCharacterName() == "Wazi")
-			{
-				DetailResultWidget->AntiWaziImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				DetailResultWidget->PortraitWaziImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				DetailResultWidget->UserBoxCharacterNameText->SetText(FText::FromString(TEXT("WAZI")));
-			}
-		}
-
-		// Pro
-		if (PlayerState->GetTeam() == ETeam::Pro)
-		{
-			DetailResultWidget->ProTextBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			DetailResultWidget->ProUserBoxNameImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			DetailResultWidget->ProUserBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			DetailResultWidget->ProTotalBoxImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-			if (PlayerState->GetCharacterName() == "Rena")
-			{
-				DetailResultWidget->ProRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				DetailResultWidget->PortraitRenaImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				DetailResultWidget->UserBoxCharacterNameText->SetText(FText::FromString(TEXT("RENA")));
-			}
-
-			if (PlayerState->GetCharacterName() == "Wazi")
-			{
-				DetailResultWidget->ProWaziImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				DetailResultWidget->PortraitWaziImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				DetailResultWidget->UserBoxCharacterNameText->SetText(FText::FromString(TEXT("WAZI")));
-			}
-		}
-
-		// 승리
-		if (PlayerState->IsSameTeam(GetOccupationWinner()))
-		{
-			DetailResultWidget->VictoryImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
-
-		// 패배
-		if (!PlayerState->IsSameTeam(GetOccupationWinner()))
-		{
-			DetailResultWidget->DefeatImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
-
-		FString FormattedName;
-		FormattedName = FString::Printf(TEXT("%s"), *PlayerState->GetPlayerName());
-		DetailResultWidget->UserBoxNameText->SetText(FText::FromString(FormattedName));
-
-		DetailResultWidget->InfoBoxScoreText->SetText(
-			FText::FromString(FString::Printf(TEXT("%d"), PlayerState->GetTotalScore())));
-		DetailResultWidget->InfoBoxOccupationText->SetText(
-			FText::FromString(FString::Printf(TEXT("%d"), PlayerState->GetSuccessCaptureCount())));
-		DetailResultWidget->InfoBoxKillText->SetText(
-			FText::FromString(FString::Printf(TEXT("%d"), PlayerState->GetKillCount())));
-		DetailResultWidget->InfoBoxDeathText->SetText(
-			FText::FromString(FString::Printf(TEXT("%d"), PlayerState->GetDeathCount())));
-	}
-}
-
-void AOccupationGameState::BindDetailResultElementWidget()
-{
-	if (!DetailResultElementWidget.IsValid()) return;
-	uint8 AntiIndex = 0;
-	uint8 ProIndex = 0;
-
-	for (auto& ElementPlayerState : PlayersByTeamMap[ETeam::Anti])
-	{
-		DetailResultElementWidget->SetElementWidget(ElementPlayerState, AntiIndex);
-		++AntiIndex;
-	}
-
-	for (auto& ElementPlayerState : PlayersByTeamMap[ETeam::Pro])
-	{
-		DetailResultElementWidget->SetElementWidget(ElementPlayerState, ProIndex);
-		++ProIndex;
-	}
 }
 
 void AOccupationGameState::UpdatePlayerByTeamMap(const ETeam& Team, ALakayaBasePlayerState* PlayerState)

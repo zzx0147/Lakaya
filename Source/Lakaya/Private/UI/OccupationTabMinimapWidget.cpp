@@ -15,7 +15,7 @@ void UOccupationTabMinimapWidget::NativeConstruct()
 	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
 	TeamIcons.Emplace(ETeam::Pro, ProIcon);
 
-	// TODO : 하드코딩이 아닌 GetDesiredSize()함수를 이용해서 가져오도록 합니다.
+	// TODO : 하드코딩이 아닌 GetDesiredSize() 함수를 이용해서 가져오도록 해야합니다.
 	MinimapSize = FVector2D(312.5f, 476.25f);
 }
 
@@ -77,9 +77,11 @@ UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 	if (TeamIcons.Contains(Team))
 	{
 		PlayerImage->SetBrushFromTexture(TeamIcons[Team]);
+		return PlayerImage;
 	}
 
-	return PlayerImage;
+	UE_LOG(LogTemp, Warning, TEXT("OccupationTabMinimapWidget_PlayerImage is null."));
+	return nullptr;
 }
 
 FVector2D UOccupationTabMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
