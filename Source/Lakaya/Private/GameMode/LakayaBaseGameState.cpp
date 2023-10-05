@@ -9,7 +9,6 @@
 #include "Net/UnrealNetwork.h"
 #include "PlayerController/BattlePlayerController.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
-#include "UI/DynamicCrossHairWidget.h"
 #include "UI/GamePlayKillLogWidget.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
@@ -103,41 +102,6 @@ void ALakayaBaseGameState::BeginPlay()
 				PlayerNameDisplayerWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 			}
 		}
-
-		if (WaziDynamicCrossHairClass)
-		{
-			WaziDynamicCrossHairWidget = CreateWidget<UDynamicCrossHairWidget>(LocalController, WaziDynamicCrossHairClass);
-			if (WaziDynamicCrossHairWidget.IsValid())
-			{
-				WaziDynamicCrossHairWidget->AddToViewport();
-				WaziDynamicCrossHairWidget->SetVisibility(ESlateVisibility::Hidden);
-			}
-		}
-
-		if (RenaDynamicCrossHairClass)
-		{
-			RenaDynamicCrossHairWidget = CreateWidget<UDynamicCrossHairWidget>(LocalController, RenaDynamicCrossHairClass);
-			if (RenaDynamicCrossHairWidget.IsValid())
-			{
-				RenaDynamicCrossHairWidget->AddToViewport();
-				RenaDynamicCrossHairWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
-			}
-		}
-
-		if (GangRimDynamicCrossHairClass)
-		{
-			GangRimDynamicCrossHairWidget = CreateWidget<UDynamicCrossHairWidget>(LocalController, GangRimDynamicCrossHairClass);
-			if (GangRimDynamicCrossHairWidget.IsValid())
-			{
-				GangRimDynamicCrossHairWidget->AddToViewport();
-				GangRimDynamicCrossHairWidget->SetVisibility(ESlateVisibility::Hidden);
-			}
-		}
-		
-		// 크로스헤어 위젯들은 생성하고 Map에 담습니다.
-		CharacterToDynamicCrossHairWidgets.Add("Wazi", WaziDynamicCrossHairWidget.Get());
-		CharacterToDynamicCrossHairWidgets.Add("Rena", RenaDynamicCrossHairWidget.Get());
-		CharacterToDynamicCrossHairWidgets.Add("GangRim", GangRimDynamicCrossHairWidget.Get());
 	}
 		
 	SpawnOutlineManager();
@@ -176,33 +140,6 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 			AuthGameMode->StartMatch();
 		}
 	}, CharacterSelectTimeWidget);
-
-	// 캐릭터가 바뀔 때마다, 캐릭터에게 적합한 DynamicCrossHair 위젯을 생성합니다.
-	if (auto BasePlayerState = GetWorld()->GetFirstPlayerController()->GetPlayerState<ALakayaBasePlayerState>())
-	{
-		// UE_LOG(LogTemp, Warning, TEXT("BasePlayerState is valid."));
-
-		BasePlayerState->OnCharacterNameChanged.AddLambda([this, BasePlayerState](ALakayaBasePlayerState* , const FName&)
-		{
-			// 모든 위젯들을 숨겨줍니다.
-			for (auto& Pair : CharacterToDynamicCrossHairWidgets)
-			{
-				Pair.Value->SetVisibility(ESlateVisibility::Hidden);
-			}
-
-			FName CharName = BasePlayerState->GetCharacterName();
-
-			// 현재 캐릭터의 이름을 찾아 캐릭터에 맞는 에임 위젯을 찾아서 활성화 시켜줍니다.
-			if (UDynamicCrossHairWidget** WidgetPtr = CharacterToDynamicCrossHairWidgets.Find(CharName))
-			{
-				(*WidgetPtr)->SetVisibility(ESlateVisibility::Visible);
-			}
-		});
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("BasePlayerState is not valid."));
-	}
 }
 
 void ALakayaBaseGameState::HandleMatchHasStarted()
@@ -226,16 +163,6 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 	
-	// TODO
-	// if (MiniMapWidget.IsValid())
-	// {
-	// 	MiniMapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("MiniMapWidget is null."));
-	// }
-
 	SetupTimerWidget(MatchWaitToStartTimer, MatchWaitDuration, MatchWaitEndingTime, [this]
 	{
 		SetupTimerWidget(EndingTimer, MatchDuration, MatchEndingTime, [this]
@@ -415,18 +342,6 @@ void ALakayaBaseGameState::SetupTimerWidget(FTimerHandle& TimerHandle, const flo
 		if (TimeWidget.IsValid()) TimeWidget->SetWidgetTimer(EndingTime);
 	}
 }
-
-// void ALakayaBaseGameState::InternalSetScoreBoardVisibility(const bool& Visible) const
-// {
-// 	if (!ScoreBoard.IsValid()) return;
-// 	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
-// 	// TODO : Tab키를 눌렀을 시, TabMinimapWidget도 띄워주어야 합니다.
-// }
-//
-// void ALakayaBaseGameState::InternalSetTabMinimapVisibility(const bool& Visible) const
-// {
-// 	
-// }
 
 bool ALakayaBaseGameState::HasMatchStarted() const
 {

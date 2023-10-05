@@ -187,7 +187,6 @@ void AGameLobbyPlayerController::ShowScoreBoardAndTabMinimap()
 				OccupationGameState->ChangeResultWidget();
 			}
 
-			// TODO : 게임상태 검사
 			OccupationGameState->SetScoreBoardVisibility(true);
 			OccupationGameState->SetTabMinimapVisibility(true);
 		}

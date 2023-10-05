@@ -3,6 +3,7 @@
 
 #include "IndividualTabMinimapWidget.h"
 
+// TODO: 헤더파일에 선언된 기능을 구현해야 합니다.
 void UIndividualTabMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();

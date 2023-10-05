@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "CharacterWidget.h"
 #include "GameFramework/PlayerState.h"
 #include "Occupation/Team.h"
 #include "EOS/EOSGameInstance.h"
@@ -66,6 +67,9 @@ public:
 	UFUNCTION(BlueprintGetter)
 	const ETeam& BP_GetTeam() const { return Team; }
 
+	UFUNCTION(BlueprintCallable)
+	const class UDynamicCrossHairWidget* GetDynamicCrossHairWidget() const;
+	
 	/**
 	 * @brief 플레이어가 예약된 시간에 부활하도록 합니다.
 	 * @param ReservedRespawnTime 목표 부활 시간입니다. 이 시간에 플레이어가 부활합니다.
@@ -240,7 +244,7 @@ private:
 	void OnChangeSkillStackAttribute(const FOnAttributeChangeData& NewValue);
 
 	void OnRespawnTimeChangedCallback(const float& ReservedRespawnTime);
-	
+
 public:
 	// 현재 체력이 변경되는 경우 호출됩니다. 매개변수로 변경된 현재 체력을 받습니다.
 	FHealthChangeSignature OnHealthChanged;

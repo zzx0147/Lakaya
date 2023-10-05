@@ -275,6 +275,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UDetailResultElementWidget> DetailResultElementWidgetClass;
 
+	// 게임 종료 시 게임 디테일 결과를 띄우는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UFinalResultWidget> FinalResultWidgetClass;
 
@@ -282,10 +283,11 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UOccupyExpressWidget> OccupyExpressWidgetClass;
 
-	// TODO :
-	// UPROPERTY(EditAnywhere)
-	// TSubclassOf<class UOccupationMinimapWidget> OccupationMinimapWidgetClass;
+	// 인게임도중 좌측상단에 띄워지는 미니맵 위젯 클래스를 지정합니다.
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UHUDOccupationMinimapWidget> OccupationHUDMinimapWidgetClass;
 
+	// 인게임도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UOccupationTabMinimapWidget> OccupationTabMinimapWidgetClass;
 	
@@ -294,9 +296,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	class UInputAction* ResultSwitchingAction;
-
-	// 스킬 위젯 입니다. 스킬 위젯은 플레이어 스테이트로 옮깁니다.
-	// TWeakObjectPtr<USkillWidget> SkillWidget;
 
 	// 팀스코어 위젯 입니다.
 	TObjectPtr<UTeamScoreWidget> TeamScoreWidget;
@@ -318,7 +317,8 @@ private:
 
 	// 게임 팀내 등수 결과 위젯입니다.
 	TWeakObjectPtr<UGradeResultElementWidget> GradeResultElementWidget;
-	
+
+	// 게임 종료 후 게임 디테일 결과 위젯입니다.
 	TObjectPtr<UFinalResultWidget> FinalResultWidget;
 
 	// 게임 디테일 결과 위젯입니다.
@@ -330,9 +330,10 @@ private:
 	// 점령 표시 위젯입니다.
 	TWeakObjectPtr<UOccupyExpressWidget> OccupyExpressWidget;
 
-	// TODO :
-	// TWeakObjectPtr<UOccupationMinimapWidget> OccupationMinimapWidget;
+	// 인게임도중 좌측상단에 띄워지는 미니맵 위젯입니다.
+	TWeakObjectPtr<UHUDOccupationMinimapWidget> OccupationHUDMinimapWidget;
 
+	// 인게임도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯입니다.
 	TWeakObjectPtr<UOccupationTabMinimapWidget> OccupationTabMinimapWidget;
 #pragma endregion
 };
