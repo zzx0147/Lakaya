@@ -81,7 +81,6 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		FVector2D PlayerPosition(State->GetPawn()->GetActorLocation().X, State->GetPawn()->GetActorLocation().Y);
 		
 		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *NewPlayerPosition.ToString());
 		
 		if (Image->GetVisibility() == ESlateVisibility::Hidden)
 			Image->SetVisibility(ESlateVisibility::Visible);
