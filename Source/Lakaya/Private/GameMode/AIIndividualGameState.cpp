@@ -271,6 +271,16 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 	Timers.ClearAllTimersForObject(GetWorld());
 }
 
+bool AAIIndividualGameState::CanInstigatorClairvoyance(const AActor* InInstigator) const
+{
+	if (Super::CanInstigatorClairvoyance(InInstigator))
+	{
+		const auto Pawn = Cast<APawn>(InInstigator);
+		return Pawn && Pawn->IsLocallyControlled();
+	}
+	return false;
+}
+
 ERendererStencilMask AAIIndividualGameState::GetUniqueStencilMaskWithCount(const uint8& Count)
 {
 	switch (Count)
