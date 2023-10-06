@@ -155,9 +155,6 @@ public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;
 
-	// TODO : bTap은 사용되지 않는 변수입니다.
-	// bool bTap;
-	
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
 	ETeam CurrentOccupationWinner;
@@ -191,6 +188,7 @@ private:
 
 	bool ResultBool = false;
 
+	// 플레이어의 팀에 따른 플레이어 리스트를 저장하는 맵입니다.
 	TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> PlayersByTeamMap;
 	
 	ETeam ClientTeam;
@@ -242,14 +240,6 @@ private:
 	// 점령 표시 위젯 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UOccupyExpressWidget> OccupyExpressWidgetClass;
-
-	// 인게임도중 좌측상단에 띄워지는 미니맵 위젯 클래스를 지정합니다.
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UHUDOccupationMinimapWidget> OccupationHUDMinimapWidgetClass;
-
-	// 인게임도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯 클래스를 지정합니다.
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UOccupationTabMinimapWidget> OccupationTabMinimapWidgetClass;
 	
 	UPROPERTY(EditDefaultsOnly)
 	class UInputMappingContext* ResultShortcutContext;
@@ -278,10 +268,12 @@ private:
 	// 점령 표시 위젯입니다.
 	TWeakObjectPtr<UOccupyExpressWidget> OccupyExpressWidget;
 
+	// TODO : 부모로 옮겨주어야 합니다.
 	// 인게임도중 좌측상단에 띄워지는 미니맵 위젯입니다.
-	TWeakObjectPtr<UHUDOccupationMinimapWidget> OccupationHUDMinimapWidget;
+	// TWeakObjectPtr<UHUDOccupationMinimapWidget> OccupationHUDMinimapWidget;
 
+	// TODO : 부모로 옮겨주어야 합니다.
 	// 인게임도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯입니다.
-	TWeakObjectPtr<UOccupationTabMinimapWidget> OccupationTabMinimapWidget;
+	// TWeakObjectPtr<UOccupationTabMinimapWidget> OccupationTabMinimapWidget;
 #pragma endregion
 };

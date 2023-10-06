@@ -38,12 +38,6 @@ void AOccupationGameMode::HandleMatchHasEnded()
 void AOccupationGameMode::RegisterPlayer(AController* NewPlayer)
 {
 	Super::RegisterPlayer(NewPlayer);
-
-	// if (CurrentPlayerNum == BaseGameState->GetMaximumPlayers())
-	// {
-	// 	GetWorldTimerManager().SetTimer(TimerHandle_DelayedMatchStart, this, &AOccupationGameMode::StartMatch,
-	// 		MatchStartDelay, false);
-	// }
 }
 
 void AOccupationGameMode::HandleMatchHasStarted()
