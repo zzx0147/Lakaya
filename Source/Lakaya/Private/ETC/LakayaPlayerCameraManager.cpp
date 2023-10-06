@@ -3,7 +3,7 @@
 
 #include "ETC/LakayaPlayerCameraManager.h"
 
-void ALakayaPlayerCameraManager::Zoom(const bool& IsZoomIn)
+void ALakayaPlayerCameraManager::Zoom_Implementation(const bool IsZoomIn)
 {
 	SetFOV(IsZoomIn ? 60 : 90);
 }

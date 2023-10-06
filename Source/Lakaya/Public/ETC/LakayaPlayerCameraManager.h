@@ -15,5 +15,7 @@ class LAKAYA_API ALakayaPlayerCameraManager : public APlayerCameraManager
 	GENERATED_BODY()
 
 public:
-	virtual void Zoom(const bool& IsZoomIn);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void Zoom(const bool IsZoomIn);
 };
