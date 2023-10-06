@@ -165,10 +165,10 @@ ULakayaAbility_Projectile::ULakayaAbility_Projectile(): ProjectilePool()
 	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ClientOrServer;
 }
 
-void ULakayaAbility_Projectile::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo,
-                                              const FGameplayAbilitySpec& Spec)
+void ULakayaAbility_Projectile::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo,
+                                            const FGameplayAbilitySpec& Spec)
 {
-	Super::OnGiveAbility(ActorInfo, Spec);
+	Super::OnAvatarSet(ActorInfo, Spec);
 	if (ActorInfo->IsNetAuthority())
 	{
 		FActorSpawnParameters SpawnParameters;

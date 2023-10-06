@@ -32,6 +32,24 @@ void ULakayaAbility::InputReleased(const FGameplayAbilitySpecHandle Handle, cons
 	OnInputReleased();
 }
 
+void ULakayaAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+	Super::OnGiveAbility(ActorInfo, Spec);
+	BP_OnGiveAbility(ActorInfo ? *ActorInfo : FGameplayAbilityActorInfo(), Spec);
+}
+
+void ULakayaAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+	Super::OnAvatarSet(ActorInfo, Spec);
+	BP_OnAvatarSet(ActorInfo ? *ActorInfo : FGameplayAbilityActorInfo(), Spec);
+}
+
+void ULakayaAbility::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+	Super::OnRemoveAbility(ActorInfo, Spec);
+	BP_OnRemoveAbility(ActorInfo ? *ActorInfo : FGameplayAbilityActorInfo(), Spec);
+}
+
 void ULakayaAbility::NativeEndAbility(const FGameplayAbilitySpecHandle Handle,
                                       const FGameplayAbilityActorInfo* ActorInfo,
                                       const FGameplayAbilityActivationInfo ActivationInfo,
