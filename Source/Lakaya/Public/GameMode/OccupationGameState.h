@@ -150,7 +150,7 @@ private:
 	 * PlayerState에서는 팀의 정보, 자기 자신 여부를 알기 위해서 사용됩니다.
 	 */
 	void UpdatePlayerByMinimap(const ETeam& Team, ALakayaBasePlayerState* PlayerState);
-	
+
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;

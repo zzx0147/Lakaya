@@ -24,6 +24,10 @@ protected:
 	virtual void RegisterPlayer(AController* NewPlayer) override;
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchIsSelectCharacter() override;
+
+private:
+	// TODO : 테스트용 함수입니다. 나중에 삭제해야 합니다.
+	void AssignTeams(const uint8 PlayerCount) const;
 	
 private:
 	TObjectPtr<AOccupationGameState> OccupationGameState;
