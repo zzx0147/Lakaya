@@ -15,19 +15,33 @@ class LAKAYA_API UPlayerNameDisplayerWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+	explicit UPlayerNameDisplayerWidget(const FObjectInitializer& ObjectInitializer);
+	
 protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	virtual void NativeConstruct() override;
 
+public:
+	virtual void SetTeam(const ETeam& NewTeam) { MyTeam = NewTeam; }
 
 private:
+
+	UPROPERTY(EditDefaultsOnly)
+	FLinearColor MyTeamColor;
+
+	UPROPERTY(EditDefaultsOnly)
+	FLinearColor EnemyTeamColor;
+
+	UPROPERTY(EditDefaultsOnly)
+	FLinearColor IndividualColor;
+	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UTextBlock> PlayerNameText;
 
 	UPROPERTY()
 	TWeakObjectPtr<APlayerCameraManager> PlayerCameraManager;
-	
-	FCollisionQueryParams CollisionQueryParams;
 
 	ETeam MyTeam;
+
+	TWeakObjectPtr<APawn> MyPawn;
 };
