@@ -11,6 +11,7 @@ ULakayaAbility_Zoom::ULakayaAbility_Zoom(): Super()
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateNo;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalOnly;
 	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ClientOrServer;
+	ZoomFov = 60.0f;
 }
 
 void ULakayaAbility_Zoom::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
@@ -30,7 +31,7 @@ void ULakayaAbility_Zoom::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	{
 		if(ALakayaPlayerCameraManager* LakayaPlayerCameraManager = Cast<ALakayaPlayerCameraManager>(ActorInfo->PlayerController->PlayerCameraManager))
 		{
-			LakayaPlayerCameraManager->Zoom(true);
+			LakayaPlayerCameraManager->Zoom(true, ZoomFov);
 		}
 	}
 }
@@ -46,7 +47,7 @@ void ULakayaAbility_Zoom::NativeEndAbility(const FGameplayAbilitySpecHandle Hand
 	{
 		if(ALakayaPlayerCameraManager* LakayaPlayerCameraManager = Cast<ALakayaPlayerCameraManager>(ActorInfo->PlayerController->PlayerCameraManager))
 		{
-			LakayaPlayerCameraManager->Zoom(false);
+			LakayaPlayerCameraManager->Zoom(false, ZoomFov);
 		}
 	}
 }
