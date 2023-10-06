@@ -25,6 +25,8 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 
+	virtual bool CanInstigatorClairvoyance(const AActor* InInstigator) const override;
+
 private:
 	ERendererStencilMask GetUniqueStencilMaskWithCount(const uint8& Count);
 	

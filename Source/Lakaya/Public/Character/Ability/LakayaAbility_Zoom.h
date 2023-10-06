@@ -26,4 +26,7 @@ protected:
 	virtual void NativeCancelAbility(const FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 		bool bReplicateCancelAbility) override;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float ZoomFov;
 };

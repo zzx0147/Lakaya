@@ -21,6 +21,9 @@ public:
 	                          const FGameplayAbilityActivationInfo ActivationInfo) override;
 	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	                           const FGameplayAbilityActivationInfo ActivationInfo) override;
+	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
 protected:
 	/** 기존의 EndAbility를 대체하는 이벤트 함수입니다. */
@@ -119,6 +122,15 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnInputReleased();
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnGiveAbility")
+	void BP_OnGiveAbility(const FGameplayAbilityActorInfo& ActorInfo, const FGameplayAbilitySpec& Spec);
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnAvatarSet")
+	void BP_OnAvatarSet(const FGameplayAbilityActorInfo& ActorInfo, const FGameplayAbilitySpec& Spec);
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnRemoveAbility")
+	void BP_OnRemoveAbility(const FGameplayAbilityActorInfo& ActorInfo, const FGameplayAbilitySpec& Spec);
 
 	/** HitResult들을 타겟 데이터 핸들로 변환시킵니다. */
 	static void HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,

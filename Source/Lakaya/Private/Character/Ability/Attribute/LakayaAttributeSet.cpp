@@ -64,6 +64,13 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 {
 	Super::PostAttributeChange(Attribute, OldValue, NewValue);
 
+	static const auto UpdateAttributeMaxTag = [](const float& Base, const float& Max, UAbilitySystemComponent* ASC,
+	                                             const FGameplayTag& MaxTag)
+	{
+		const auto MaxReached = Base > Max || FMath::IsNearlyEqual(Base, Max);
+		ASC->SetLooseGameplayTagCount(MaxTag, MaxReached ? 1 : 0);
+	};
+
 	if (Attribute == GetSkillStackAttribute())
 	{
 		// if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), NewValue, 0.01f)) //대시 갯수가 꽉 참, 대쉬 갯수 리젠 이펙트를 꺼야 함
@@ -77,8 +84,7 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 		// }
 
 		// GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("SkillStack: %f"), NewValue));
-		const auto MaxReached = NewValue > GetMaxSkillStack() || FMath::IsNearlyEqual(NewValue, GetMaxSkillStack());
-		GetOwningAbilitySystemComponentChecked()->SetLooseGameplayTagCount(MaxSkillStackTag, MaxReached ? 1 : 0);
+		UpdateAttributeMaxTag(NewValue, GetMaxSkillStack(), GetOwningAbilitySystemComponentChecked(), MaxSkillStackTag);
 	}
 	else if(Attribute == GetHealthAttribute())
 	{
@@ -88,6 +94,11 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 	else if(Attribute == GetMaxHealthAttribute())
 	{
 		OnMaxHealthChanged.Broadcast(NewValue);
+	}
+	else if (Attribute == GetUltimateGaugeAttribute())
+	{
+		UpdateAttributeMaxTag(NewValue, GetMaxUltimateGauge(), GetOwningAbilitySystemComponentChecked(),
+		                      MaxUltimateGaugeTag);
 	}
 
 	if (bOutOfHealth && (GetHealth() > 0.0f))

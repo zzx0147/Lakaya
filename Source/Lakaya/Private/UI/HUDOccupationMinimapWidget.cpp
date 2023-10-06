@@ -87,7 +87,6 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		
 		// TODO : 맵과 이미지 사이즈가 확정이 되면 수정해야 합니다.
 		// NewPlayerPosition + Widget Position = Player Position
-		// Image->SetRenderTranslation(NewPlayerPosition + FVector2D(250.f, 381.0f));
-		Image->SetRenderTranslation(NewPlayerPosition + FVector2D(150.f, 150.f));
+		Image->SetRenderTranslation(NewPlayerPosition + FVector2D(125.f, 127.5f));
 	}
 }
