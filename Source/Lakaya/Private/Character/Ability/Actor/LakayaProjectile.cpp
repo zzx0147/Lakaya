@@ -85,6 +85,8 @@ ALakayaProjectile::ALakayaProjectile()
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(
 		TEXT("ProjectileMovementComponent"));
+	ProjectileMovementComponent->bShouldBounce = true;
+	ProjectileMovementComponent->bAutoActivate = false;
 
 	ProjectileLaunchVelocity = 1000.f;
 }
@@ -168,20 +170,34 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData,
 	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity,
 	                                           GetServerWorldTimeSeconds());
 
-	OnStartPathPrediction(InThrowData);
-
 	static FPredictProjectilePathResult Result;
-	if (MarchProjectileRecursive(Result, CollisionEnabled))
+	auto Location = PredictedProjectileParams.StartLocation;
+	auto Velocity = PredictedProjectileParams.LaunchVelocity;
+	auto EventDelay = EventTriggerDelayFromThrow;
+
+	if (PredictedProjectileParams.MaxSimTime > 0.f)
 	{
+		OnStartPathPrediction(InThrowData);
+
+		if (!MarchProjectileRecursive(Result, CollisionEnabled))
+		{
+			return;
+		}
+
 		OnStartPhysicsSimulation(Result);
 
-		// 이벤트 타이머를 셋업합니다. 남은 시간이 음수거나 0인 경우는 MarchProjectileRecursive에서 처리되었습니다.
-		GetWorldTimerManager().SetTimer(EventFromThrowTimerHandle, this, &ThisClass::OnEventFromThrowTriggeredInPhysics,
-		                                PredictedProjectileParams.MaxSimTime - EventTriggerDelayFromThrow);
-		SetActorLocation(Result.LastTraceDestination.Location);
-		ProjectileMovementComponent->Velocity = Result.LastTraceDestination.Velocity;
-		CollisionComponent->SetCollisionEnabled(CollisionEnabled);
+		EventDelay -= PredictedProjectileParams.MaxSimTime;
+		Location = Result.LastTraceDestination.Location;
+		Velocity = Result.LastTraceDestination.Velocity;
 	}
+
+	OnStartPhysicsSimulation(Result);
+	GetWorldTimerManager().SetTimer(EventFromThrowTimerHandle, this, &ThisClass::OnEventFromThrowTriggeredInPhysics,
+	                                EventDelay);
+	ProjectileMovementComponent->Velocity = Velocity;
+	ProjectileMovementComponent->Activate();
+	SetActorLocation(Location);
+	CollisionComponent->SetCollisionEnabled(CollisionEnabled);
 }
 
 float ALakayaProjectile::GetServerWorldTimeSeconds() const
@@ -272,6 +288,7 @@ void ALakayaProjectile::StopThrowProjectile()
 	}
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	ProjectileMovementComponent->StopMovementImmediately();
+	ProjectileMovementComponent->Deactivate();
 	ClearIgnoredInPerformActors();
 }
 
