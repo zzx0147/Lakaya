@@ -8,10 +8,6 @@ void UTabMinimapWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	if (MinimapImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("TabMinimapWidget_MinimapImage is null."));
-	
-	// UpdateMinimap = false;
-	// IconAlignment = FVector2D(0.5f, 0.5f);
-	// IconSize = FVector2D(12.0f, 12.0f);
 }
 
 void UTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
