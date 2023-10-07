@@ -28,7 +28,7 @@ void ULakayaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 	{
 		SetUltimateGauge(FMath::Min(GetUltimateGauge(), GetMaxUltimateGauge()));
 	}
-	
+
 	if ((GetHealth() <= 0.0f) && !bOutOfHealth)
 	{
 		if (OnPlayerKill.IsBound())
@@ -39,9 +39,10 @@ void ULakayaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 
 			const auto VictimPlayerState = Cast<APlayerState>(GetOwningActor());
 			const auto InstigatorPlayerState = Cast<APlayerState>(Instigator);
-			if(VictimPlayerState != nullptr && InstigatorPlayerState != nullptr)
+			if (VictimPlayerState != nullptr && InstigatorPlayerState != nullptr)
 			{
-				OnPlayerKill.Broadcast(VictimPlayerState->GetPlayerController(),InstigatorPlayerState->GetPlayerController(),Causer);
+				OnPlayerKill.Broadcast(VictimPlayerState->GetPlayerController(),
+				                       InstigatorPlayerState->GetPlayerController(), Causer);
 			}
 			//피해자 컨트롤러 가해자 컨트롤러 가해자 액터
 		}
@@ -64,13 +65,6 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 {
 	Super::PostAttributeChange(Attribute, OldValue, NewValue);
 
-	static const auto UpdateAttributeMaxTag = [](const float& Base, const float& Max, UAbilitySystemComponent* ASC,
-	                                             const FGameplayTag& MaxTag)
-	{
-		const auto MaxReached = Base > Max || FMath::IsNearlyEqual(Base, Max);
-		ASC->SetLooseGameplayTagCount(MaxTag, MaxReached ? 1 : 0);
-	};
-
 	if (Attribute == GetSkillStackAttribute())
 	{
 		// if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), NewValue, 0.01f)) //대시 갯수가 꽉 참, 대쉬 갯수 리젠 이펙트를 꺼야 함
@@ -84,21 +78,27 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 		// }
 
 		// GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("SkillStack: %f"), NewValue));
-		UpdateAttributeMaxTag(NewValue, GetMaxSkillStack(), GetOwningAbilitySystemComponentChecked(), MaxSkillStackTag);
+		UpdateSkillStackMaxTag(NewValue, GetMaxSkillStack());
 	}
-	else if(Attribute == GetHealthAttribute())
+	else if (Attribute == GetMaxSkillStackAttribute())
+	{
+		UpdateSkillStackMaxTag(GetSkillStack(), NewValue);
+	}
+	else if (Attribute == GetHealthAttribute())
 	{
 		OnHealthChanged.Broadcast(NewValue);
-
 	}
-	else if(Attribute == GetMaxHealthAttribute())
+	else if (Attribute == GetMaxHealthAttribute())
 	{
 		OnMaxHealthChanged.Broadcast(NewValue);
 	}
 	else if (Attribute == GetUltimateGaugeAttribute())
 	{
-		UpdateAttributeMaxTag(NewValue, GetMaxUltimateGauge(), GetOwningAbilitySystemComponentChecked(),
-		                      MaxUltimateGaugeTag);
+		UpdateUltimateGaugeMaxTag(NewValue, GetMaxUltimateGauge());
+	}
+	else if (Attribute == GetMaxUltimateGaugeAttribute())
+	{
+		UpdateUltimateGaugeMaxTag(GetUltimateGauge(), NewValue);
 	}
 
 	if (bOutOfHealth && (GetHealth() > 0.0f))
@@ -137,11 +137,13 @@ void ULakayaAttributeSet::OnRep_AttackPoint(const FGameplayAttributeData& OldVal
 void ULakayaAttributeSet::OnRep_SkillStack(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, SkillStack, OldValue);
+	UpdateSkillStackMaxTag();
 }
 
 void ULakayaAttributeSet::OnRep_MaxSkillStack(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, MaxSkillStack, OldValue);
+	UpdateSkillStackMaxTag();
 }
 
 void ULakayaAttributeSet::OnRep_EnergyHaste(const FGameplayAttributeData& OldValue)
@@ -152,15 +154,24 @@ void ULakayaAttributeSet::OnRep_EnergyHaste(const FGameplayAttributeData& OldVal
 void ULakayaAttributeSet::OnRep_UltimateGauge(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, UltimateGauge, OldValue);
+	UpdateUltimateGaugeMaxTag();
 }
 
 void ULakayaAttributeSet::OnRep_MaxUltimateGauge(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, MaxUltimateGauge, OldValue);
+	UpdateUltimateGaugeMaxTag();
+}
+
+void ULakayaAttributeSet::UpdateAttributeMaxTag(const float& Base, const float& Max, const FGameplayTag& MaxTag) const
+{
+	const auto MaxReached = Base > Max || FMath::IsNearlyEqual(Base, Max);
+	GetOwningAbilitySystemComponentChecked()->SetLooseGameplayTagCount(MaxTag, MaxReached ? 1 : 0);
 }
 
 ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(-1.0f), CurrentAmmo(-1.0f),
-                                             AttackPoint(40.0f), SkillStack(3.0f), MaxSkillStack(3.0f), UltimateGauge(-1.0f), MaxUltimateGauge(-1.0f)
+                                             AttackPoint(40.0f), SkillStack(3.0f), MaxSkillStack(3.0f),
+                                             UltimateGauge(-1.0f), MaxUltimateGauge(-1.0f)
 {
 	bOutOfHealth = false;
 }
