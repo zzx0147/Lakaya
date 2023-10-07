@@ -81,7 +81,7 @@ float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const&
 	Health = FMath::Clamp(Health, 0, GetMaxHealth());
 	OnHealthChanged.Broadcast(Health);
 
-	if (Damage > 0.f) NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
+	// if (Damage > 0.f) NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
 	if (IsDead) OnPlayerKilled.Broadcast(GetOwningController(), EventInstigator, DamageCauser);
 
 	return Damage;
@@ -144,6 +144,12 @@ void ALakayaBasePlayerState::OnRep_Owner()
 			HealthWidget->SetCurrentHealth(Health);
 		}
 
+		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(LocalController, DirectionDamageIndicatorClass);
+		if(DirectionDamageIndicatorWidget)
+		{
+			DirectionDamageIndicatorWidget->AddToViewport();
+		}
+		
 		// SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
 		// if (SkillWidget)
 		// {
@@ -655,13 +661,12 @@ bool ALakayaBasePlayerState::RequestCharacterChange_Validate(const FName& Name)
 	return true;
 }
 
-void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserName, const FVector& CauserLocation,
-                                                            const float& Damage)
+void ALakayaBasePlayerState::NoticePlayerHit(const FName& CauserName, const FVector& CauserLocation)
 {
 	if (const auto PlayerController = GetPlayerController(); PlayerController && PlayerController->IsLocalController())
 	{
 		if (DirectionDamageIndicatorWidget)
-			DirectionDamageIndicatorWidget->IndicateStart(CauserName.ToString(), CauserLocation, 3.0f);
+			DirectionDamageIndicatorWidget->IndicateStart(CauserName.ToString(), CauserLocation);
 
 		if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->PlayHitScreen();
 	}
