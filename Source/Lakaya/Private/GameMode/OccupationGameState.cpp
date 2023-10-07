@@ -20,6 +20,7 @@
 #include "UI/TeamScoreWidget.h"
 #include "UI/WeaponOutLineWidget.h"
 #include "UI/OccupyExpressWidget.h"
+#include "UI/PlayerNameDisplayerWidget.h"
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -394,11 +395,12 @@ void AOccupationGameState::SetClientTeam(const ETeam& NewTeam)
 		for (const auto& Player : Pair.Value)
 			SetupPlayerStateOnLocal(Player);
 
-	if(UOccupationCharacterSelectWidget* const OccupationCharacterSelectWidget = Cast<UOccupationCharacterSelectWidget>(
-		CharacterSelectWidget))
-	{
+	if(UOccupationCharacterSelectWidget* const OccupationCharacterSelectWidget = Cast<UOccupationCharacterSelectWidget>(CharacterSelectWidget))
 		OccupationCharacterSelectWidget->SetTeam(NewTeam);
-	}
+
+	if(PlayerNameDisplayerWidget.IsValid())
+		PlayerNameDisplayerWidget->SetTeam(NewTeam);
+	
 }
 
 bool AOccupationGameState::TrySendMatchResultData()
