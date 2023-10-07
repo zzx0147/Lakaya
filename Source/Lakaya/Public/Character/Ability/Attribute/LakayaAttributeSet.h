@@ -111,9 +111,28 @@ protected:
 	virtual void OnRep_MaxUltimateGauge(const FGameplayAttributeData& OldValue);
 
 private:
+	void UpdateAttributeMaxTag(const float& Base, const float& Max, const FGameplayTag& MaxTag) const;
+
+	FORCEINLINE void UpdateSkillStackMaxTag(const float& Base, const float& Max) const
+	{
+		UpdateAttributeMaxTag(Base, Max, MaxSkillStackTag);
+	}
+
+	FORCEINLINE void UpdateSkillStackMaxTag() const { UpdateSkillStackMaxTag(GetSkillStack(), GetMaxSkillStack()); }
+
+	FORCEINLINE void UpdateUltimateGaugeMaxTag(const float& Base, const float& Max) const
+	{
+		UpdateAttributeMaxTag(Base, Max, MaxUltimateGaugeTag);
+	}
+
+	FORCEINLINE void UpdateUltimateGaugeMaxTag() const
+	{
+		UpdateUltimateGaugeMaxTag(GetUltimateGauge(), GetMaxUltimateGauge());
+	}
+
 	UPROPERTY(GlobalConfig)
 	FGameplayTag MaxSkillStackTag;
-	
+
 	UPROPERTY(GlobalConfig)
 	FGameplayTag MaxUltimateGaugeTag;
 
