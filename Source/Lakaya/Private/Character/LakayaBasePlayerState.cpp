@@ -642,48 +642,6 @@ void ALakayaBasePlayerState::OnRespawnTimeChangedCallback(const float& ReservedR
 	
 }
 
-// void ALakayaBasePlayerState::InitalizeWithPawn()
-// {
-// 	DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(
-// 		LocalController, DirectionDamageIndicatorClass);
-// 	if (DirectionDamageIndicatorWidget) DirectionDamageIndicatorWidget->AddToViewport();
-//
-// 	OccupationMinimapWidget = CreateWidget<UOccupationMinimapWidget>(LocalController, OccupationMinimapWidgetClass);
-// 	if (OccupationMinimapWidget.IsValid())
-// 	{
-// 		OccupationMinimapWidget->AddToViewport();
-// 	}
-//
-// 	FVector PlayerLocation = LocalController->GetPawn()->GetActorLocation();
-// 	FVector CaptureLocation = PlayerLocation + FVector(0.0f, 0.0f, 500.0f);
-// 	FRotator CaptureRotation = FRotator(-90.0f, 0.0f, 0.0f);
-// 	
-// 	USceneCaptureComponent2D* MiniMapCapture = NewObject<USceneCaptureComponent2D>(this);
-// 	MiniMapCapture->SetupAttachment(LocalController->GetPawn()->GetRootComponent());
-// 	
-// 	MiniMapCapture->SetWorldLocation(CaptureLocation);
-// 	MiniMapCapture->SetWorldRotation(CaptureRotation);
-// 	MiniMapCapture->ProjectionType = ECameraProjectionMode::Orthographic;
-// 	MiniMapCapture->OrthoWidth = 1000;
-//
-// 	MiniMapCapture->CaptureScene();
-// 	MiniMapCapture->RegisterComponent();
-// 	
-// 	UTextureRenderTarget2D* MiniMapRenderTarget = NewObject<UTextureRenderTarget2D>(this);
-// 	MiniMapRenderTarget->InitAutoFormat(512, 512);
-// 	MiniMapRenderTarget->UpdateResource();
-//
-// 	MiniMapCapture->TextureTarget = MiniMapRenderTarget;
-// 	
-// 	UMaterial* BaseMaterial = LoadObject<UMaterial>(nullptr, TEXT("/Game/Characters/RenderTarget/M_Minimap"));
-// 	
-// 	UMaterialInstanceDynamic* DynamicMaterialInstance = UMaterialInstanceDynamic::Create(BaseMaterial, this);
-// 	
-// 	DynamicMaterialInstance->SetTextureParameterValue(FName("MiniMapTexture"), MiniMapRenderTarget);
-// 	
-// 	OccupationMinimapWidget->MinimapImage->SetBrushFromMaterial(DynamicMaterialInstance);
-// }
-
 void ALakayaBasePlayerState::RequestCharacterChange_Implementation(const FName& Name)
 {
 	if (!ShouldChangeCharacterName(Name)) return;

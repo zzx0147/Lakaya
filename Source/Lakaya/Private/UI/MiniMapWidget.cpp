@@ -33,5 +33,4 @@ FVector2D UMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& Play
 
 void UMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 {
-	if (!MinimapImage) UE_LOG(LogTemp, Warning, TEXT("MinimapImage is null."));
 }
