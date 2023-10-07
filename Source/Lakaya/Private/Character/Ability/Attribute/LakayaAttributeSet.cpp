@@ -65,24 +65,27 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 {
 	Super::PostAttributeChange(Attribute, OldValue, NewValue);
 
-	if (Attribute == GetSkillStackAttribute())
+	// if (Attribute == GetSkillStackAttribute())
+	// {
+	// 	if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), NewValue, 0.01f)) //대시 갯수가 꽉 참, 대쉬 갯수 리젠 이펙트를 꺼야 함
+	// 	{
+	// 		OnDashStackFullOrNot.Broadcast(true);
+	// 	}
+	// 	else if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), OldValue, 0.01f) && NewValue < OldValue)
+	// 	//최대치에서 감소함, 이때부터 대쉬 갯수 리젠 이펙트를 켜야 함
+	// 	{
+	// 		OnDashStackFullOrNot.Broadcast(false);
+	// 	}
+	//
+	// 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("SkillStack: %f"), NewValue));
+	// }
+	if (Attribute == GetSkillStackAttribute() || Attribute == GetMaxSkillStackAttribute())
 	{
-		// if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), NewValue, 0.01f)) //대시 갯수가 꽉 참, 대쉬 갯수 리젠 이펙트를 꺼야 함
-		// {
-		// 	OnDashStackFullOrNot.Broadcast(true);
-		// }
-		// else if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), OldValue, 0.01f) && NewValue < OldValue)
-		// //최대치에서 감소함, 이때부터 대쉬 갯수 리젠 이펙트를 켜야 함
-		// {
-		// 	OnDashStackFullOrNot.Broadcast(false);
-		// }
-
-		// GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("SkillStack: %f"), NewValue));
-		UpdateSkillStackMaxTag(NewValue, GetMaxSkillStack());
+		UpdateSkillStackMaxTag();
 	}
-	else if (Attribute == GetMaxSkillStackAttribute())
+	else if (Attribute == GetUltimateGaugeAttribute() || Attribute == GetMaxUltimateGaugeAttribute())
 	{
-		UpdateSkillStackMaxTag(GetSkillStack(), NewValue);
+		UpdateUltimateGaugeMaxTag();
 	}
 	else if (Attribute == GetHealthAttribute())
 	{
@@ -91,14 +94,6 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 	else if (Attribute == GetMaxHealthAttribute())
 	{
 		OnMaxHealthChanged.Broadcast(NewValue);
-	}
-	else if (Attribute == GetUltimateGaugeAttribute())
-	{
-		UpdateUltimateGaugeMaxTag(NewValue, GetMaxUltimateGauge());
-	}
-	else if (Attribute == GetMaxUltimateGaugeAttribute())
-	{
-		UpdateUltimateGaugeMaxTag(GetUltimateGauge(), NewValue);
 	}
 
 	if (bOutOfHealth && (GetHealth() > 0.0f))
