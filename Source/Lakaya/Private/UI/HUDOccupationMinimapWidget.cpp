@@ -3,6 +3,8 @@
 
 #include "UI/HUDOccupationMinimapWidget.h"
 
+#include "Camera/CameraComponent.h"
+#include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
 
 void UHUDOccupationMinimapWidget::NativeConstruct()
@@ -10,6 +12,7 @@ void UHUDOccupationMinimapWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("RetainerCanvasPanel")));
+	RetainerBox = Cast<URetainerBox>(GetWidgetFromName(TEXT("RetainerBox_74")));
 	
 	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
 	TeamIcons.Emplace(ETeam::Pro, ProIcon);
@@ -37,7 +40,8 @@ UImage* UHUDOccupationMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PanelSlot is null."));
 		return nullptr;
-	}	
+	}
+	
 	PanelSlot->SetAlignment(IconAlignment);
 	PanelSlot->SetSize(IconSize);
 	
@@ -70,9 +74,9 @@ FVector2d UHUDOccupationMinimapWidget::ConvertWorldToMiniMapCoordinates(const FV
 void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 {
 	Super::UpdatePlayerPosition(Team);
-
+	
 	if (!MinimapImage) UE_LOG(LogTemp, Warning, TEXT("MinimapImage is null."));
-
+	
 	for (auto& Player : PlayersByMinimap[Team])
 	{
 		const auto& State = Player.Key;
@@ -84,9 +88,22 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		
 		if (Image->GetVisibility() == ESlateVisibility::Hidden)
 			Image->SetVisibility(ESlateVisibility::Visible);
+
+		if (State == GetOwningPlayerState())
+			UpdateMinimapImagePositionAndRotation(*State, NewPlayerPosition);
 		
 		// TODO : 맵과 이미지 사이즈가 확정이 되면 수정해야 합니다.
 		// NewPlayerPosition + Widget Position = Player Position
 		Image->SetRenderTranslation(NewPlayerPosition + FVector2D(125.f, 127.5f));
 	}
+}
+
+void UHUDOccupationMinimapWidget::UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const
+{
+	const auto PlayerCharacter = NewPlayerState.GetPlayerController()->GetCharacter();
+	const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
+	const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
+	
+	ParentPanel->SetRenderTranslation(-NewPosition);
+	RetainerBox->SetRenderTransformAngle(-(PlayerRotation.Yaw + 90.0f));
 }

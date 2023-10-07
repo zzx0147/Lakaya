@@ -45,23 +45,6 @@ void AOccupationGameMode::HandleMatchHasStarted()
 	Super::HandleMatchHasStarted();
 }
 
-void AOccupationGameMode::AssignTeams(const uint8 PlayerCount) const
-{
-	for (int i = 0; i < PlayerCount; i++)
-	{
-		auto* LakayaBasePlayerState = Cast<ALakayaBasePlayerState>(OccupationGameState->PlayerArray[i]);
-		if (LakayaBasePlayerState == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_LakayaBasePlayerState is null."));	
-		}
-
-		auto Team = i % 2 == 0 ? ETeam::Anti : ETeam::Pro;
-		LakayaBasePlayerState->SetTeam(Team);
-
-		UE_LOG(LogTemp, Warning, TEXT("%s"), Team == ETeam::Anti ? TEXT("Anti팀에 배정되었습니다.") : TEXT("Pro팀에 배정되었습니다."));
-	}
-}
-
 void AOccupationGameMode::HandleMatchIsSelectCharacter()
 {
 	Super::HandleMatchIsSelectCharacter();
@@ -93,4 +76,21 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 	// 		UE_LOG(LogTemp, Warning, TEXT("%s"), Team == ETeam::Anti ? TEXT("Anti팀에 배정되었습니다.") : TEXT("Pro팀에 배정되었습니다."));
 	// 	}
 	// }
+}
+
+void AOccupationGameMode::AssignTeams(const uint8 PlayerCount) const
+{
+	for (int i = 0; i < PlayerCount; i++)
+	{
+		auto* LakayaBasePlayerState = Cast<ALakayaBasePlayerState>(OccupationGameState->PlayerArray[i]);
+		if (LakayaBasePlayerState == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("OccupationGameMode_LakayaBasePlayerState is null."));	
+		}
+
+		auto Team = i % 2 == 0 ? ETeam::Anti : ETeam::Pro;
+		LakayaBasePlayerState->SetTeam(Team);
+
+		UE_LOG(LogTemp, Warning, TEXT("%s"), Team == ETeam::Anti ? TEXT("Anti팀에 배정되었습니다.") : TEXT("Pro팀에 배정되었습니다."));
+	}
 }
