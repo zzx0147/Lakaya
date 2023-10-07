@@ -54,13 +54,11 @@ void ULakayaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 void ULakayaAttributeSet::PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const
 {
 	Super::PreAttributeBaseChange(Attribute, NewValue);
-	ClampAttributes(Attribute, NewValue);
 }
 
 void ULakayaAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
 {
 	Super::PreAttributeChange(Attribute, NewValue);
-	ClampAttributes(Attribute, NewValue);
 }
 
 void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
@@ -81,15 +79,7 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 	//
 	// 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("SkillStack: %f"), NewValue));
 	// }
-	if (Attribute == GetSkillStackAttribute() || Attribute == GetMaxSkillStackAttribute())
-	{
-		UpdateSkillStackMaxTag();
-	}
-	else if (Attribute == GetUltimateGaugeAttribute() || Attribute == GetMaxUltimateGaugeAttribute())
-	{
-		UpdateUltimateGaugeMaxTag();
-	}
-	else if (Attribute == GetHealthAttribute())
+	if (Attribute == GetHealthAttribute())
 	{
 		OnHealthChanged.Broadcast(NewValue);
 	}
@@ -134,13 +124,13 @@ void ULakayaAttributeSet::OnRep_AttackPoint(const FGameplayAttributeData& OldVal
 void ULakayaAttributeSet::OnRep_SkillStack(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, SkillStack, OldValue);
-	UpdateSkillStackMaxTag();
+	UpdateMaxTagOnReplicated(GetSkillStackAttribute());
 }
 
 void ULakayaAttributeSet::OnRep_MaxSkillStack(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, MaxSkillStack, OldValue);
-	UpdateSkillStackMaxTag();
+	UpdateMaxTagOnReplicated(GetMaxSkillStackAttribute());
 }
 
 void ULakayaAttributeSet::OnRep_EnergyHaste(const FGameplayAttributeData& OldValue)
@@ -151,39 +141,13 @@ void ULakayaAttributeSet::OnRep_EnergyHaste(const FGameplayAttributeData& OldVal
 void ULakayaAttributeSet::OnRep_UltimateGauge(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, UltimateGauge, OldValue);
-	UpdateUltimateGaugeMaxTag();
+	UpdateMaxTagOnReplicated(GetUltimateGaugeAttribute());
 }
 
 void ULakayaAttributeSet::OnRep_MaxUltimateGauge(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, MaxUltimateGauge, OldValue);
-	UpdateUltimateGaugeMaxTag();
-}
-
-void ULakayaAttributeSet::UpdateAttributeMaxTag(const float& Base, const float& Max, const FGameplayTag& MaxTag) const
-{
-	const auto MaxReached = Base > Max || FMath::IsNearlyEqual(Base, Max);
-	GetOwningAbilitySystemComponentChecked()->SetLooseGameplayTagCount(MaxTag, MaxReached ? 1 : 0);
-}
-
-void ULakayaAttributeSet::ClampAttributes(const FGameplayAttribute& Attribute, float& NewValue) const
-{
-	if (Attribute == GetHealthAttribute())
-	{
-		ClampHealthRef(NewValue);
-	}
-	else if (Attribute == GetCurrentAmmoAttribute())
-	{
-		ClampAmmoRef(NewValue);
-	}
-	else if (Attribute == GetSkillStackAttribute())
-	{
-		ClampSkillStackRef(NewValue);
-	}
-	else if (Attribute == GetUltimateGaugeAttribute())
-	{
-		ClampUltimateRef(NewValue);
-	}
+	UpdateMaxTagOnReplicated(GetMaxUltimateGaugeAttribute());
 }
 
 ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(-1.0f), CurrentAmmo(-1.0f),
@@ -191,6 +155,14 @@ ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), 
                                              UltimateGauge(-1.0f), MaxUltimateGauge(-1.0f)
 {
 	bOutOfHealth = false;
+
+	RelatedAttributes = {
+		{GetHealthAttribute(), GetMaxHealthAttribute()},
+		{GetCurrentAmmoAttribute(), GetMaxAmmoAttribute()},
+		{GetSkillStackAttribute(), GetMaxSkillStackAttribute(), &MaxSkillStackTag},
+		{GetUltimateGaugeAttribute(), GetMaxUltimateGaugeAttribute(), &MaxUltimateGaugeTag}
+	};
+	SetupRelatedAttributes();
 }
 
 void ULakayaAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

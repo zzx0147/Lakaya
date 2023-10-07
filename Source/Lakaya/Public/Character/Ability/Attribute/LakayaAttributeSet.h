@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
-#include "AttributeSet.h"
+#include "LakayaBaseAttributeSet.h"
 #include "LakayaAttributeSet.generated.h"
 
 #define ATTRIBUTE_ACCESSORS(ClassName, PropertyName) \
@@ -21,7 +21,7 @@ DECLARE_EVENT_ThreeParams(ALakayaBasePlayerState, FPlayerKilledSignature, AContr
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FAttributeChangeSignature, const float&)
 
 UCLASS(Config=Game)
-class LAKAYA_API ULakayaAttributeSet : public UAttributeSet
+class LAKAYA_API ULakayaAttributeSet : public ULakayaBaseAttributeSet
 {
 	GENERATED_BODY()
 
@@ -111,42 +111,6 @@ protected:
 	virtual void OnRep_MaxUltimateGauge(const FGameplayAttributeData& OldValue);
 
 private:
-	void UpdateAttributeMaxTag(const float& Base, const float& Max, const FGameplayTag& MaxTag) const;
-
-	FORCEINLINE void UpdateSkillStackMaxTag(const float& Base, const float& Max) const
-	{
-		UpdateAttributeMaxTag(Base, Max, MaxSkillStackTag);
-	}
-
-	FORCEINLINE void UpdateSkillStackMaxTag() const { UpdateSkillStackMaxTag(GetSkillStack(), GetMaxSkillStack()); }
-
-	FORCEINLINE void UpdateUltimateGaugeMaxTag(const float& Base, const float& Max) const
-	{
-		UpdateAttributeMaxTag(Base, Max, MaxUltimateGaugeTag);
-	}
-
-	FORCEINLINE void UpdateUltimateGaugeMaxTag() const
-	{
-		UpdateUltimateGaugeMaxTag(GetUltimateGauge(), GetMaxUltimateGauge());
-	}
-
-	FORCEINLINE static float ClampBy(const float& NewValue, const float& Max)
-	{
-		return FMath::Clamp(NewValue, 0.0f, Max);
-	}
-
-	FORCEINLINE float ClampHealth(const float& NewValue) const { return ClampBy(NewValue, GetMaxHealth()); }
-	FORCEINLINE float ClampAmmo(const float& NewValue) const { return ClampBy(NewValue, GetMaxAmmo()); }
-	FORCEINLINE float ClampSkillStack(const float& NewValue) const { return ClampBy(NewValue, GetMaxSkillStack()); }
-	FORCEINLINE float ClampUltimate(const float& NewValue) const { return ClampBy(NewValue, GetMaxUltimateGauge()); }
-
-	FORCEINLINE void ClampHealthRef(float& NewValue) const { NewValue = ClampHealth(NewValue); }
-	FORCEINLINE void ClampAmmoRef(float& NewValue) const { NewValue = ClampAmmo(NewValue); }
-	FORCEINLINE void ClampSkillStackRef(float& NewValue) const { NewValue = ClampSkillStack(NewValue); }
-	FORCEINLINE void ClampUltimateRef(float& NewValue) const { NewValue = ClampUltimate(NewValue); }
-
-	void ClampAttributes(const FGameplayAttribute& Attribute, float& NewValue) const;
-
 	UPROPERTY(GlobalConfig)
 	FGameplayTag MaxSkillStackTag;
 
