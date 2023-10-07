@@ -130,6 +130,23 @@ private:
 		UpdateUltimateGaugeMaxTag(GetUltimateGauge(), GetMaxUltimateGauge());
 	}
 
+	FORCEINLINE static float ClampBy(const float& NewValue, const float& Max)
+	{
+		return FMath::Clamp(NewValue, 0.0f, Max);
+	}
+
+	FORCEINLINE float ClampHealth(const float& NewValue) const { return ClampBy(NewValue, GetMaxHealth()); }
+	FORCEINLINE float ClampAmmo(const float& NewValue) const { return ClampBy(NewValue, GetMaxAmmo()); }
+	FORCEINLINE float ClampSkillStack(const float& NewValue) const { return ClampBy(NewValue, GetMaxSkillStack()); }
+	FORCEINLINE float ClampUltimate(const float& NewValue) const { return ClampBy(NewValue, GetMaxUltimateGauge()); }
+
+	FORCEINLINE void ClampHealthRef(float& NewValue) const { NewValue = ClampHealth(NewValue); }
+	FORCEINLINE void ClampAmmoRef(float& NewValue) const { NewValue = ClampAmmo(NewValue); }
+	FORCEINLINE void ClampSkillStackRef(float& NewValue) const { NewValue = ClampSkillStack(NewValue); }
+	FORCEINLINE void ClampUltimateRef(float& NewValue) const { NewValue = ClampUltimate(NewValue); }
+
+	void ClampAttributes(const FGameplayAttribute& Attribute, float& NewValue) const;
+
 	UPROPERTY(GlobalConfig)
 	FGameplayTag MaxSkillStackTag;
 

@@ -17,17 +17,17 @@ void ULakayaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 {
 	Super::PostGameplayEffectExecute(Data);
 
-	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
-	{
-		// 이 게임플레이 이펙트는 Health를 변경합니다. 적용하되 우선 값을 제한합니다.
-		// 이 경우 Health 베이스 값은 음수가 아니어야 합니다.
-		SetHealth(FMath::Max(GetHealth(), 0.0f));
-	}
-
-	if (Data.EvaluatedData.Attribute == GetUltimateGaugeAttribute())
-	{
-		SetUltimateGauge(FMath::Min(GetUltimateGauge(), GetMaxUltimateGauge()));
-	}
+	// if (Data.EvaluatedData.Attribute == GetHealthAttribute())
+	// {
+	// 	// 이 게임플레이 이펙트는 Health를 변경합니다. 적용하되 우선 값을 제한합니다.
+	// 	// 이 경우 Health 베이스 값은 음수가 아니어야 합니다.
+	// 	SetHealth(FMath::Max(GetHealth(), 0.0f));
+	// }
+	//
+	// if (Data.EvaluatedData.Attribute == GetUltimateGaugeAttribute())
+	// {
+	// 	SetUltimateGauge(FMath::Min(GetUltimateGauge(), GetMaxUltimateGauge()));
+	// }
 
 	if ((GetHealth() <= 0.0f) && !bOutOfHealth)
 	{
@@ -54,11 +54,13 @@ void ULakayaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 void ULakayaAttributeSet::PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const
 {
 	Super::PreAttributeBaseChange(Attribute, NewValue);
+	ClampAttributes(Attribute, NewValue);
 }
 
 void ULakayaAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
 {
 	Super::PreAttributeChange(Attribute, NewValue);
+	ClampAttributes(Attribute, NewValue);
 }
 
 void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
@@ -162,6 +164,26 @@ void ULakayaAttributeSet::UpdateAttributeMaxTag(const float& Base, const float& 
 {
 	const auto MaxReached = Base > Max || FMath::IsNearlyEqual(Base, Max);
 	GetOwningAbilitySystemComponentChecked()->SetLooseGameplayTagCount(MaxTag, MaxReached ? 1 : 0);
+}
+
+void ULakayaAttributeSet::ClampAttributes(const FGameplayAttribute& Attribute, float& NewValue) const
+{
+	if (Attribute == GetHealthAttribute())
+	{
+		ClampHealthRef(NewValue);
+	}
+	else if (Attribute == GetCurrentAmmoAttribute())
+	{
+		ClampAmmoRef(NewValue);
+	}
+	else if (Attribute == GetSkillStackAttribute())
+	{
+		ClampSkillStackRef(NewValue);
+	}
+	else if (Attribute == GetUltimateGaugeAttribute())
+	{
+		ClampUltimateRef(NewValue);
+	}
 }
 
 ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(-1.0f), CurrentAmmo(-1.0f),
