@@ -1,26 +1,18 @@
 #include "GameMode/OccupationGameState.h"
 
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Occupation/ShieldWallObject.h"
-#include "PlayerController/BattlePlayerController.h"
-#include "UI/DetailResultElementWidget.h"
-#include "UI/DetailResultWidget.h"
 #include "UI/FinalResultWidget.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/GameResultWidget.h"
 #include "UI/GameScoreBoardWidget.h"
-#include "UI/GradeResultElementWidget.h"
-#include "UI/GradeResultWidget.h"
 #include "UI/MatchStartWaitWidget.h"
 #include "UI/OccupationCharacterSelectWidget.h"
 #include "UI/HUDOccupationMinimapWidget.h"
@@ -28,6 +20,7 @@
 #include "UI/TeamScoreWidget.h"
 #include "UI/WeaponOutLineWidget.h"
 #include "UI/OccupyExpressWidget.h"
+#include "UI/PlayerNameDisplayerWidget.h"
 
 void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -68,7 +61,7 @@ AOccupationGameState::AOccupationGameState(): MatchResult()
 	ResultShortcutContext = ResultContextFinder.Object;
 	ResultSwitchingAction = ResultSwitchActionFinder.Object;
 
-	bTap = true;
+	// bTap = true;
 }
 
 void AOccupationGameState::BeginPlay()
@@ -288,6 +281,9 @@ void AOccupationGameState::HandleMatchHasEnded()
 	if (GameResultWidget.IsValid())
 		GameResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
+	OccupationTabMinimapWidget->UpdateMinimap = false;
+	OccupationHUDMinimapWidget->UpdateMinimap = false;
+	
 	// Anti팀의 배열과, Pro팀의 배열을 내림차순으로 정렬합니다.
 	static auto Predicate = [](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B)
 	{
@@ -311,8 +307,8 @@ void AOccupationGameState::HandleMatchHasEnded()
 		}
 	}
 
-	bTap = false;
-
+	// bTap = false;
+	
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 	LocalController && LocalController->IsLocalController())
 	{
@@ -327,14 +323,7 @@ void AOccupationGameState::HandleMatchHasEnded()
 			FinalResultWidget->SetVisibility(ESlateVisibility::Visible);
 		});
 		GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
-		
-		// ShowEndResultWidget();
-		// BindDetailResultWidget();
-		// BindDetailResultElementWidget();
 	}
-
-	if (OccupationTabMinimapWidget.IsValid())
-		OccupationTabMinimapWidget->UpdateMinimap = false;
 }
 
 void AOccupationGameState::EndTimeCheck()
@@ -371,17 +360,17 @@ void AOccupationGameState::AddPlayerState(APlayerState* PlayerState)
 	}
 }
 
-void AOccupationGameState::OnRep_AntiTeamScore()
+void AOccupationGameState::OnRep_AntiTeamScore() const
 {
 	OnTeamScoreSignature.Broadcast(ETeam::Anti, AntiTeamScore);
 }
 
-void AOccupationGameState::OnRep_ProTeamScore()
+void AOccupationGameState::OnRep_ProTeamScore() const
 {
 	OnTeamScoreSignature.Broadcast(ETeam::Pro, ProTeamScore);
 }
 
-void AOccupationGameState::OnRep_OccupationWinner()
+void AOccupationGameState::OnRep_OccupationWinner() const
 {
 	OnChangeOccupationWinner.Broadcast(CurrentOccupationWinner);
 }
@@ -405,11 +394,12 @@ void AOccupationGameState::SetClientTeam(const ETeam& NewTeam)
 		for (const auto& Player : Pair.Value)
 			SetupPlayerStateOnLocal(Player);
 
-	if(UOccupationCharacterSelectWidget* const OccupationCharacterSelectWidget = Cast<UOccupationCharacterSelectWidget>(
-		CharacterSelectWidget))
-	{
+	if(UOccupationCharacterSelectWidget* const OccupationCharacterSelectWidget = Cast<UOccupationCharacterSelectWidget>(CharacterSelectWidget))
 		OccupationCharacterSelectWidget->SetTeam(NewTeam);
-	}
+
+	if(PlayerNameDisplayerWidget.IsValid())
+		PlayerNameDisplayerWidget->SetTeam(NewTeam);
+	
 }
 
 bool AOccupationGameState::TrySendMatchResultData()

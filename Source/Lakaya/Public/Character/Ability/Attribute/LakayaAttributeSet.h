@@ -50,6 +50,7 @@ public:
 	mutable FAttributeChangeSignature OnMaxHealthChanged;
 
 	mutable FPlayerKilledSignature OnPlayerKill;
+
 protected:
 	virtual bool PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data) override;
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
@@ -86,7 +87,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_MaxUltimateGauge)
 	FGameplayAttributeData MaxUltimateGauge;
-	
+
 protected:
 	UFUNCTION()
 	virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldValue);
@@ -110,8 +111,30 @@ protected:
 	virtual void OnRep_MaxUltimateGauge(const FGameplayAttributeData& OldValue);
 
 private:
+	void UpdateAttributeMaxTag(const float& Base, const float& Max, const FGameplayTag& MaxTag) const;
+
+	FORCEINLINE void UpdateSkillStackMaxTag(const float& Base, const float& Max) const
+	{
+		UpdateAttributeMaxTag(Base, Max, MaxSkillStackTag);
+	}
+
+	FORCEINLINE void UpdateSkillStackMaxTag() const { UpdateSkillStackMaxTag(GetSkillStack(), GetMaxSkillStack()); }
+
+	FORCEINLINE void UpdateUltimateGaugeMaxTag(const float& Base, const float& Max) const
+	{
+		UpdateAttributeMaxTag(Base, Max, MaxUltimateGaugeTag);
+	}
+
+	FORCEINLINE void UpdateUltimateGaugeMaxTag() const
+	{
+		UpdateUltimateGaugeMaxTag(GetUltimateGauge(), GetMaxUltimateGauge());
+	}
+
 	UPROPERTY(GlobalConfig)
 	FGameplayTag MaxSkillStackTag;
-private:
+
+	UPROPERTY(GlobalConfig)
+	FGameplayTag MaxUltimateGaugeTag;
+
 	bool bOutOfHealth;
 };
