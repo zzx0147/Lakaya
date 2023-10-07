@@ -124,6 +124,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float MatchDuration;
 
+	// 캐릭터 선택 시간을 정의합니다.
 	UPROPERTY(EditDefaultsOnly)
 	float CharacterSelectDuration;
 	
@@ -139,6 +140,7 @@ protected:
 	UPROPERTY(ReplicatedUsing=OnRep_MatchEndingTime)
 	float MatchEndingTime;
 
+	// 캐릭터 선택이 몇초간 지속될 지를 정의합니다.
 	UPROPERTY(ReplicatedUsing = OnRep_CharacterSelectEndingTime)
 	float CharacterSelectEndingTime;
 	

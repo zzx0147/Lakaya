@@ -43,7 +43,7 @@ protected:
 	 * @param Team 플레이어의 팀입니다.
 	 */
 	virtual void UpdatePlayerPosition(const ETeam& Team);
-	
+
 public:
 	FORCEINLINE const ETeam& GetTeam() const { return CurrentTeam; }
 	FORCEINLINE const bool& GetUpdateMinimap() const { return UpdateMinimap; }
