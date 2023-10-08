@@ -215,6 +215,11 @@ void ALakayaProjectile::SetProjectileStateCollapsed()
 	SetProjectileState(EProjectileState::Collapsed);
 }
 
+void ALakayaProjectile::SetSourceObject(FGameplayEffectContextHandle EffectContext, const UObject* SourceObject)
+{
+	EffectContext.AddSourceObject(SourceObject);
+}
+
 void ALakayaProjectile::OnStartPhysicsSimulation_Implementation(
 	const FPredictProjectilePathResult& LastPredictionResult)
 {
