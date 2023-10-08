@@ -50,7 +50,7 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 
 		// TODO : 맵과 이미지 사이즈가 확정이 되면 수정해야 합니다.
 		// NewPlayerPosition + Widget Position = Player Position
-		Image->SetRenderTranslation(NewPlayerPosition + FVector2D(1515.0f, 545.5f));
+		Image->SetRenderTranslation(NewPlayerPosition + FVector2D(1665.0f, 545.5f));
 	}
 }
 

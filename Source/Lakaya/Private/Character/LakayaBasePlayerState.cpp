@@ -81,7 +81,7 @@ float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const&
 	Health = FMath::Clamp(Health, 0, GetMaxHealth());
 	OnHealthChanged.Broadcast(Health);
 
-	if (Damage > 0.f) NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
+	// if (Damage > 0.f) NoticePlayerHit(*DamageCauser->GetName(), DamageCauser->GetActorLocation(), Damage);
 	if (IsDead) OnPlayerKilled.Broadcast(GetOwningController(), EventInstigator, DamageCauser);
 
 	return Damage;
@@ -144,6 +144,12 @@ void ALakayaBasePlayerState::OnRep_Owner()
 			HealthWidget->SetCurrentHealth(Health);
 		}
 
+		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(LocalController, DirectionDamageIndicatorClass);
+		if(DirectionDamageIndicatorWidget)
+		{
+			DirectionDamageIndicatorWidget->AddToViewport();
+		}
+		
 		// SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
 		// if (SkillWidget)
 		// {
@@ -642,48 +648,6 @@ void ALakayaBasePlayerState::OnRespawnTimeChangedCallback(const float& ReservedR
 	
 }
 
-// void ALakayaBasePlayerState::InitalizeWithPawn()
-// {
-// 	DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(
-// 		LocalController, DirectionDamageIndicatorClass);
-// 	if (DirectionDamageIndicatorWidget) DirectionDamageIndicatorWidget->AddToViewport();
-//
-// 	OccupationMinimapWidget = CreateWidget<UOccupationMinimapWidget>(LocalController, OccupationMinimapWidgetClass);
-// 	if (OccupationMinimapWidget.IsValid())
-// 	{
-// 		OccupationMinimapWidget->AddToViewport();
-// 	}
-//
-// 	FVector PlayerLocation = LocalController->GetPawn()->GetActorLocation();
-// 	FVector CaptureLocation = PlayerLocation + FVector(0.0f, 0.0f, 500.0f);
-// 	FRotator CaptureRotation = FRotator(-90.0f, 0.0f, 0.0f);
-// 	
-// 	USceneCaptureComponent2D* MiniMapCapture = NewObject<USceneCaptureComponent2D>(this);
-// 	MiniMapCapture->SetupAttachment(LocalController->GetPawn()->GetRootComponent());
-// 	
-// 	MiniMapCapture->SetWorldLocation(CaptureLocation);
-// 	MiniMapCapture->SetWorldRotation(CaptureRotation);
-// 	MiniMapCapture->ProjectionType = ECameraProjectionMode::Orthographic;
-// 	MiniMapCapture->OrthoWidth = 1000;
-//
-// 	MiniMapCapture->CaptureScene();
-// 	MiniMapCapture->RegisterComponent();
-// 	
-// 	UTextureRenderTarget2D* MiniMapRenderTarget = NewObject<UTextureRenderTarget2D>(this);
-// 	MiniMapRenderTarget->InitAutoFormat(512, 512);
-// 	MiniMapRenderTarget->UpdateResource();
-//
-// 	MiniMapCapture->TextureTarget = MiniMapRenderTarget;
-// 	
-// 	UMaterial* BaseMaterial = LoadObject<UMaterial>(nullptr, TEXT("/Game/Characters/RenderTarget/M_Minimap"));
-// 	
-// 	UMaterialInstanceDynamic* DynamicMaterialInstance = UMaterialInstanceDynamic::Create(BaseMaterial, this);
-// 	
-// 	DynamicMaterialInstance->SetTextureParameterValue(FName("MiniMapTexture"), MiniMapRenderTarget);
-// 	
-// 	OccupationMinimapWidget->MinimapImage->SetBrushFromMaterial(DynamicMaterialInstance);
-// }
-
 void ALakayaBasePlayerState::RequestCharacterChange_Implementation(const FName& Name)
 {
 	if (!ShouldChangeCharacterName(Name)) return;
@@ -697,13 +661,12 @@ bool ALakayaBasePlayerState::RequestCharacterChange_Validate(const FName& Name)
 	return true;
 }
 
-void ALakayaBasePlayerState::NoticePlayerHit_Implementation(const FName& CauserName, const FVector& CauserLocation,
-                                                            const float& Damage)
+void ALakayaBasePlayerState::NoticePlayerHit(const FName& CauserName, const FVector& CauserLocation)
 {
 	if (const auto PlayerController = GetPlayerController(); PlayerController && PlayerController->IsLocalController())
 	{
 		if (DirectionDamageIndicatorWidget)
-			DirectionDamageIndicatorWidget->IndicateStart(CauserName.ToString(), CauserLocation, 3.0f);
+			DirectionDamageIndicatorWidget->IndicateStart(CauserName.ToString(), CauserLocation);
 
 		if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->PlayHitScreen();
 	}

@@ -58,31 +58,28 @@ void UDirectionalDamageIndicator::NativeTick(const FGeometry& MyGeometry, float 
 
 }
 
-void UDirectionalDamageIndicator::IndicateStart(const FString& CauserName, const FVector& DamageCursorPosition, const float& Damage)
+void UDirectionalDamageIndicator::IndicateStart(const FString& CauserName, const FVector& DamageCursorPosition)
 {
-	UDirectionalIndicatorElement* result = nullptr;
-	UDirectionalIndicatorElement** resultPtr = IndicatorMap.Find(CauserName);
-	//TODO: 다음과 같이 사용하면 더 간단히 표현할 수 있습니다.
-	// if (!IndicatorMap.Contains(CauserName))
-	// IndicatorMap[CauserName] 이렇게 사용하면 이중 포인터가 아닙니다.
-	if (resultPtr != nullptr) result = *resultPtr;
+	UDirectionalIndicatorElement* Result = nullptr;
 
+	if(IndicatorMap.Contains(CauserName)) Result = IndicatorMap[CauserName];
+	
 
-	if (result == nullptr)
+	if (Result == nullptr)
 	{
-		result = CreateWidget<UDirectionalIndicatorElement>(this, IndicatorElementClass);
+		Result = CreateWidget<UDirectionalIndicatorElement>(this, IndicatorElementClass);
 
-		if (result == nullptr) return;
+		if (Result == nullptr) return;
 
-		IndicatorMap.Add(CauserName, result);
-		IndicatorPanel->AddChild(result);
+		IndicatorMap.Add(CauserName, Result);
+		IndicatorPanel->AddChild(Result);
 
-		UCanvasPanelSlot* tempSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(result);
+		UCanvasPanelSlot* tempSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Result);
 		tempSlot->SetAnchors(FAnchors(0.0f, 0.0f, 1.0f, 1.0f));
 		tempSlot->SetAlignment(FVector2d(0.5f, 0.5f));
 		tempSlot->SetPosition(FVector2d(0.0f, 0.0f));
 		tempSlot->SetOffsets(FMargin(0.0f));
 	}
 	
-	result->IndicateStart(GetOwningPlayer()->GetCharacter()->GetRootComponent(), DamageCursorPosition, IndicateTime);
+	Result->IndicateStart(GetOwningPlayer()->GetCharacter()->GetRootComponent(), DamageCursorPosition, IndicateTime);
 }

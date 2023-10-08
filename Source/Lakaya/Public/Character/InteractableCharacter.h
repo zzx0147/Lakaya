@@ -104,7 +104,6 @@ private:
 	FInteractionInfo InteractionInfo;
 	
 	// 현재 본인의 상호작용 상태를 나타냅니다.
-	// TODO : 적용했을 시, 클라 측에서 버그가 발생함 (이유를 찾지못함)
 	UPROPERTY()
 	bool bInteractionRequested;
 	

@@ -119,7 +119,40 @@ public:
 protected:
 	int64 StartTimeStamp;	//유닉스 타임 스탬프를 사용합니다
 	float StartTime;		//서버가 시작된 시점을 0초로 계산합니다
+	
+	// 게임이 최대 몇초간 진행될지 정의합니다.
+	UPROPERTY(EditAnywhere)
+	float MatchDuration;
 
+	// 캐릭터 선택 시간을 정의합니다.
+	UPROPERTY(EditDefaultsOnly)
+	float CharacterSelectDuration;
+	
+	// 게임시작 후 몇초간 대기할 지 정의합니다.
+	UPROPERTY(EditAnywhere)
+	float MatchWaitDuration;
+
+	// 플레이가능한 최대 인원 수를 정의합니다.
+	UPROPERTY(EditDefaultsOnly)
+	uint8 MaximumPlayers;
+
+	// 매치가 몇초간 지속될 지를 정의합니다.
+	UPROPERTY(ReplicatedUsing=OnRep_MatchEndingTime)
+	float MatchEndingTime;
+
+	// 캐릭터 선택이 몇초간 지속될 지를 정의합니다.
+	UPROPERTY(ReplicatedUsing = OnRep_CharacterSelectEndingTime)
+	float CharacterSelectEndingTime;
+	
+	// 게임시작대기가 몇초간 지속될 지를 정의합니다.
+	UPROPERTY(ReplicatedUsing=OnRep_MatchWaitEndingTime)
+	float MatchWaitEndingTime;
+
+	FTimerHandle EndingTimer;
+	FTimerHandle CharacterSelectTimer;
+	FTimerHandle MatchWaitToStartTimer;
+
+#pragma region Widget
 	// Tab키를 눌렀을 때 표시되는 점수판 위젯의 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGameScoreBoardWidget> ScoreBoardClass;
@@ -144,53 +177,54 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UPlayerNameDisplayerWidget> PlayerNameDisplayerWidgetClass;
 
+	// 킬로그 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGamePlayKillLogWidget> KillLogWidgetClass;
 
+	// 플레이어의 투시를 표시해주는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class AOutlineManager> OutlineManagerClass;
-	
-	// 게임이 최대 몇초간 진행될지 정의합니다.
-	UPROPERTY(EditAnywhere)
-	float MatchDuration;
 
+	// 인게임도중 좌측상단에 띄워지는 미니맵 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
-	float CharacterSelectDuration;
-	
-	// 게임시작 후 몇초간 대기할 지 정의합니다.
-	UPROPERTY(EditAnywhere)
-	float MatchWaitDuration;
+	TSubclassOf<class UHUDMinimapWidget> HUDMinimapWidgetClass;
 
-	// 플레이가능한 최대 인원 수를 정의합니다.
+	// 인게임 도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
-	uint8 MaximumPlayers;
-
-	// 매치가 몇초간 지속될 지를 정의합니다.
-	UPROPERTY(ReplicatedUsing=OnRep_MatchEndingTime)
-	float MatchEndingTime;
-
-	UPROPERTY(ReplicatedUsing = OnRep_CharacterSelectEndingTime)
-	float CharacterSelectEndingTime;
+	TSubclassOf<class UTabMinimapWidget> TabMinimapWidgetClass;
 	
-	// 게임시작대기가 몇초간 지속될 지를 정의합니다.
-	UPROPERTY(ReplicatedUsing=OnRep_MatchWaitEndingTime)
-	float MatchWaitEndingTime;
-	
-	FTimerHandle EndingTimer;
-	FTimerHandle CharacterSelectTimer;
-	FTimerHandle MatchWaitToStartTimer;
-
+	// 캐릭터 선택 위젯 입니다.	
 	TWeakObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
+
+	// 게임 시작 대기중에 표시되는 위젯입니다.
 	TWeakObjectPtr<ULoadingWidget> LoadingWidget;
+
+	// 게임중에 표시되는 점수판 위젯입니다.
 	TWeakObjectPtr<UGameScoreBoardWidget> ScoreBoard;
+
+	// 캐릭터 선택중에 표시되는 타이머 위젯입니다.
 	TWeakObjectPtr<UGameTimeWidget> CharacterSelectTimeWidget;
+
+	// 게임중에 표시되는 타이머 위젯입니다.
 	TWeakObjectPtr<UGameTimeWidget> InGameTimeWidget;
+
+	// 게임중에 표시되는 킬로그 위젯입니다.
 	TWeakObjectPtr<UGamePlayKillLogWidget> KillLogWidget;
+
+	// 에임에 있는 플레이어의 이름을 표기해주는 위젯입니다.
 	TWeakObjectPtr<UPlayerNameDisplayerWidget> PlayerNameDisplayerWidget;
+
+	// 플레이어의 투시를 표시해주는 위젯입니다.
 	TWeakObjectPtr<AOutlineManager> OutlineManager;
+
+	// 인게임도중 좌측상단에 띄워지는 미니맵 위젯입니다.
+	TObjectPtr<UHUDMinimapWidget> HUDMinimapWidget;
+
+	// 인게임 도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯입니다.
+	TObjectPtr<UTabMinimapWidget> TabMinimapWidget;
+#pragma endregion
 	
 private:
-
 	bool bWantsSendRecordResult;
 	bool bIsClairvoyanceActivated;
 };

@@ -11,7 +11,7 @@ class LAKAYA_API UDirectionalDamageIndicator : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UDirectionalDamageIndicator(const FObjectInitializer& ObjectInitializer);
+	explicit UDirectionalDamageIndicator(const FObjectInitializer& ObjectInitializer);
 
 	// virtual void BindCharacter(ACharacter* const& Character) override;
 	// virtual bool UnbindCharacter(ACharacter* const& Character) override;
@@ -22,10 +22,11 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 public:
-	virtual void IndicateStart(const FString& CauserName, const FVector& DamageCursorPosition,const float& Damage);
+	virtual void IndicateStart(const FString& CauserName, const FVector& DamageCursorPosition);
 
 private:
-	TMap<FString, UDirectionalIndicatorElement*> IndicatorMap;
+	UPROPERTY()
+	TMap<FString, TObjectPtr<UDirectionalIndicatorElement>> IndicatorMap;
 
 	TSubclassOf<UDirectionalIndicatorElement> IndicatorElementClass;
 

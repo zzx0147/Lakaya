@@ -2,6 +2,7 @@
 
 #include <filesystem>
 
+#include "TabMinimapWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "EOS/EOSGameInstance.h"
 #include "ETC/OutlineManager.h"
@@ -12,6 +13,7 @@
 #include "UI/GamePlayKillLogWidget.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
+#include "UI/HUDMinimapWidget.h"
 #include "UI/LoadingWidget.h"
 #include "UI/PlayerNameDisplayerWidget.h"
 
@@ -102,8 +104,10 @@ void ALakayaBaseGameState::BeginPlay()
 				PlayerNameDisplayerWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 			}
 		}
-	}
+
 		
+	}
+	
 	SpawnOutlineManager();
 }
 
@@ -148,8 +152,6 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	StartTimeStamp = FDateTime::UtcNow().ToUnixTimestamp();
 	StartTime = GetServerWorldTimeSeconds();
 	
-	
-	
 	if (GetCharacterSelectWidget())
 	{
 		CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -167,7 +169,10 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	{
 		SetupTimerWidget(EndingTimer, MatchDuration, MatchEndingTime, [this]
 		{
-			if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>()) AuthGameMode->EndMatch();
+			if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
+			{
+				AuthGameMode->EndMatch();
+			}
 		}, InGameTimeWidget);
 	}, InGameTimeWidget);
 	
@@ -197,8 +202,6 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	}
 }
 
-
-
 void ALakayaBaseGameState::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -214,6 +217,12 @@ void ALakayaBaseGameState::OnRep_MatchState()
 	if (MatchState == MatchState::IsSelectCharacter)
 	{
 		HandleMatchIsCharacterSelect();
+	}
+
+	if (MatchState != MatchState::InProgress)
+	{
+		if (HUDMinimapWidget) HUDMinimapWidget->SetUpdateMinimap(false);
+		if (TabMinimapWidget) TabMinimapWidget->SetUpdateMinimap(false);
 	}
 }
 
