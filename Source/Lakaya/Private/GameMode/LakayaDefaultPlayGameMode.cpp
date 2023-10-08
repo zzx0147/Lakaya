@@ -188,10 +188,10 @@ void ALakayaDefaultPlayGameMode::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
 
-	if (const auto GameInstance = GetGameInstance<UEOSGameInstance>())
-	{
-		GameInstance->EndSession();
-	}
+	// if (const auto GameInstance = GetGameInstance<UEOSGameInstance>())
+	// {
+	// 	// GameInstance->EndSession();
+	// }
 
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasEnded"));
 }

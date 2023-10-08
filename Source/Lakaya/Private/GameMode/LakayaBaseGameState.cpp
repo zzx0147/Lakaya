@@ -194,7 +194,7 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	if (EOSGameInstance == nullptr) return;
 	if (HasAuthority())
 	{
-		EOSGameInstance->DestroySession();
+		// EOSGameInstance->DestroySession();
 	}
 	else
 	{
