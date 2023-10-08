@@ -3,9 +3,9 @@
 
 #include "UI/HUDOccupationMinimapWidget.h"
 
-#include "Camera/CameraComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 void UHUDOccupationMinimapWidget::NativeConstruct()
 {
@@ -33,17 +33,29 @@ void UHUDOccupationMinimapWidget::NativeTick(const FGeometry& MyGeometry, float 
 		
 		// TODO : 와지 투시 스킬 사용중이거나, 시야에 적팀이 들어왔을 시에는, 상대방의 위치도 업데이트를 해줘야 합니다.
 		// 적팀의 팀원 리스트를 가져옵니다.
-		// for (const auto& Enemy : PlayersByMinimap[CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti])
-		// {
-		// 	const auto& State = Enemy.Key;
-		//
-		// 	// TODO : 와지가 스킬 사용중일 때도 업데이트를 해줘야 합니다.
-		// 	if (IsInCameraView(State))
-		// 	{
-		// 		
-		// 	}
-		// }
+		for (const auto& Enemy : PlayersByMinimap[CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti])
+		{
+			const auto& State = Enemy.Key;
+		
+			// TODO : 와지가 스킬 사용중일 때도 업데이트를 해줘야 합니다.
+			if (IsInCameraView(State))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("IsInCameraView"));
+				UpdatePlayerPosition(CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti, State);
+			}
+			else
+			{
+				if (Enemy.Value->GetVisibility() != ESlateVisibility::Hidden)
+					Enemy.Value->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
 	}
+}
+
+FVector2d UHUDOccupationMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
+	const FVector2D& MiniMapSize)
+{
+	return Super::ConvertWorldToMiniMapCoordinates(PlayerLocation, MiniMapSize);
 }
 
 UImage* UHUDOccupationMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
@@ -81,12 +93,6 @@ UImage* UHUDOccupationMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 	return nullptr;
 }
 
-FVector2d UHUDOccupationMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
-	const FVector2D& MiniMapSize)
-{
-	return Super::ConvertWorldToMiniMapCoordinates(PlayerLocation, MiniMapSize);
-}
-
 void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 {
 	Super::UpdatePlayerPosition(Team);
@@ -114,25 +120,94 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 	}
 }
 
-void UHUDOccupationMinimapWidget::UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const
+void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
+	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
 {
-	const auto PlayerCharacter = NewPlayerState.GetPlayerController()->GetCharacter();
-	const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
-	const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
+	if (!MinimapImage) UE_LOG(LogTemp, Warning, TEXT("MinimapImage is null."));
+
+	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
+		return;
+	}
+
+	const auto& EnemyImage = PlayersByMinimap[NewTeam][NewPlayerState].Get();
+	if (EnemyImage == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
+		return;
+	}
 	
-	ParentPanel->SetRenderTranslation(-NewPosition);
-	RetainerBox->SetRenderTransformAngle(-(PlayerRotation.Yaw + 90.0f));
+	const FVector2D PlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
+	const FVector2D NewPlayerPosition = const_cast<UHUDOccupationMinimapWidget*>(this)->ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
+
+	if (EnemyImage->GetVisibility() == ESlateVisibility::Hidden)
+		EnemyImage->SetVisibility(ESlateVisibility::Visible);
+
+	EnemyImage->SetRenderTranslation(NewPlayerPosition + FVector2D(125.f, 127.5f));
+}
+
+void UHUDOccupationMinimapWidget::UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState,
+	const FVector2D NewPosition) const
+{
+	Super::UpdateMinimapImagePositionAndRotation(NewPlayerState, NewPosition);
 }
 
 bool UHUDOccupationMinimapWidget::IsInCameraView(const TWeakObjectPtr<ALakayaBasePlayerState> State) const
 {
+#pragma region NullCheck
+	if (!State.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("State is not valid."));
+		return false;
+	}
+
+	const APawn* EnemyPawn = State->GetPawn();
+	if (!EnemyPawn)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EnemyPawn is null."));
+		return false;
+	}
+	
 	const APlayerController* PlayerController = GetOwningPlayer();
 
-	const FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
-	const FVector CameraDirection = PlayerController->PlayerCameraManager->GetCameraRotation().Vector();
-	const FVector DirectionToTarget = State->GetPawn()->GetActorLocation() - CameraLocation;
+	if (!PlayerController || !PlayerController->PlayerCameraManager)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PlayerController or PlayerCameraManager is null."));
+		return false;
+	}
+#pragma endregion
+	
+	// 시야에 적이 들어왔는지 확인합니다.
+	{
+		const FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
+		const FVector EnemyLocation = EnemyPawn->GetActorLocation();
+		const FVector DirectionToTarget = (EnemyLocation - CameraLocation).GetSafeNormal();
+		const FVector LookDirection = PlayerController->GetControlRotation().Vector();
+		const float AngleThreshold = FMath::DegreesToRadians(90.0f);
+		const float AngleBetweenVectors = FMath::Acos(FVector::DotProduct(DirectionToTarget.GetSafeNormal(), LookDirection));
+		
+		bool bIsVisible = AngleBetweenVectors <= AngleThreshold;
 
-	const float DotProduct = FVector::DotProduct(CameraDirection, DirectionToTarget);
+		// 시야에 적이 들어왔는지 확인합니다.
+		if (!bIsVisible) return false;
+		
+		FHitResult HitResult;
 
-	return DotProduct >= 0;
+		if (bool bIsObstructed = UKismetSystemLibrary::LineTraceSingle(
+			this,
+			CameraLocation,
+			EnemyLocation,
+			TraceTypeQuery1,
+			false,
+			TArray<AActor*>(),
+			EDrawDebugTrace::None,
+			HitResult,
+			true); bIsObstructed && HitResult.GetActor() != EnemyPawn)
+		{
+			bIsVisible = false;
+		}
+		
+		return bIsVisible;
+	}
 }
