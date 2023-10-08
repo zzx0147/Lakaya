@@ -25,29 +25,32 @@ void UHUDOccupationMinimapWidget::NativeTick(const FGeometry& MyGeometry, float 
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	// 게임 중에는 미니맵을 매 프레임마다 업데이트 해줍니다.
-	if (UpdateMinimap)
+	// 게임 중이 아닐때에는 미니맵을 업데이트 해주지 않습니다.
+	if (!UpdateMinimap) return;
+
+	// 자기 자신의 팀의 위치를 업데이트 해줍니다.
+	UpdatePlayerPosition(CurrentTeam);
+
+	const ETeam EnemyTeam = CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
+
+	for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
 	{
-		// 자기 자신의 팀의 위치를 업데이트 해줍니다.
-		UpdatePlayerPosition(CurrentTeam);
+		const auto& State = Enemy.Key;
 		
-		// TODO : 와지 투시 스킬 사용중이거나, 시야에 적팀이 들어왔을 시에는, 상대방의 위치도 업데이트를 해줘야 합니다.
-		// 적팀의 팀원 리스트를 가져옵니다.
-		for (const auto& Enemy : PlayersByMinimap[CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti])
+		if (const ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(State->GetPawn()))
 		{
-			const auto& State = Enemy.Key;
-		
-			// TODO : 와지가 스킬 사용중일 때도 업데이트를 해줘야 합니다.
-			if (IsInCameraView(State))
+			bool bIsEnemyVisibleInCamera = LakayaCharacter->IsEnemyVisibleInCamera(State);
+			
+			if (bIsEnemyVisibleInCamera)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("IsInCameraView"));
-				UpdatePlayerPosition(CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti, State);
+				UpdatePlayerPosition(EnemyTeam, State);
+				continue;
 			}
-			else
-			{
-				if (Enemy.Value->GetVisibility() != ESlateVisibility::Hidden)
-					Enemy.Value->SetVisibility(ESlateVisibility::Hidden);
-			}
+			
+			bool bIsCurrentlyVisibleOnMinimap = Enemy.Value->GetVisibility() != ESlateVisibility::Hidden;
+			
+			if(bIsCurrentlyVisibleOnMinimap)
+				Enemy.Value->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }
@@ -151,63 +154,4 @@ void UHUDOccupationMinimapWidget::UpdateMinimapImagePositionAndRotation(const AL
 	const FVector2D NewPosition) const
 {
 	Super::UpdateMinimapImagePositionAndRotation(NewPlayerState, NewPosition);
-}
-
-bool UHUDOccupationMinimapWidget::IsInCameraView(const TWeakObjectPtr<ALakayaBasePlayerState> State) const
-{
-#pragma region NullCheck
-	if (!State.IsValid())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("State is not valid."));
-		return false;
-	}
-
-	const APawn* EnemyPawn = State->GetPawn();
-	if (!EnemyPawn)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("EnemyPawn is null."));
-		return false;
-	}
-	
-	const APlayerController* PlayerController = GetOwningPlayer();
-
-	if (!PlayerController || !PlayerController->PlayerCameraManager)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayerController or PlayerCameraManager is null."));
-		return false;
-	}
-#pragma endregion
-	
-	// 시야에 적이 들어왔는지 확인합니다.
-	{
-		const FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
-		const FVector EnemyLocation = EnemyPawn->GetActorLocation();
-		const FVector DirectionToTarget = (EnemyLocation - CameraLocation).GetSafeNormal();
-		const FVector LookDirection = PlayerController->GetControlRotation().Vector();
-		const float AngleThreshold = FMath::DegreesToRadians(90.0f);
-		const float AngleBetweenVectors = FMath::Acos(FVector::DotProduct(DirectionToTarget.GetSafeNormal(), LookDirection));
-		
-		bool bIsVisible = AngleBetweenVectors <= AngleThreshold;
-
-		// 시야에 적이 들어왔는지 확인합니다.
-		if (!bIsVisible) return false;
-		
-		FHitResult HitResult;
-
-		if (bool bIsObstructed = UKismetSystemLibrary::LineTraceSingle(
-			this,
-			CameraLocation,
-			EnemyLocation,
-			TraceTypeQuery1,
-			false,
-			TArray<AActor*>(),
-			EDrawDebugTrace::None,
-			HitResult,
-			true); bIsObstructed && HitResult.GetActor() != EnemyPawn)
-		{
-			bIsVisible = false;
-		}
-		
-		return bIsVisible;
-	}
 }

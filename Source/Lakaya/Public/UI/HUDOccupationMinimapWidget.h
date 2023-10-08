@@ -27,15 +27,6 @@ protected:
 	virtual void UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const override;
 
 private:
-	// TODO : 여기서 카메라 시야에 적이 있는지를 판별할 게 아니라, 캐릭터도 옮겨야 할 것 같습니다.
-	/**
-	* @brief 해당 플레이어가 카메라에 보이는지 확인합니다.
-	* @param State 확인할 플레이어의 상태입니다.
-	* @return 카메라에 보인다면 true, 아니라면 false를 반환합니다.
-	*/
-	bool IsInCameraView(const TWeakObjectPtr<ALakayaBasePlayerState> State) const;
-
-private:
 	// 미니맵상에 Anti팀을 표시하는 아이콘 텍스처입니다.
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture2D> AntiIcon;

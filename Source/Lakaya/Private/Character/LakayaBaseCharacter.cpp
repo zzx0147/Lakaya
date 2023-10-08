@@ -8,6 +8,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
+#include "Character/LakayaBasePlayerState.h"
 #include "Character/ResourceComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PostProcessComponent.h"
@@ -16,6 +17,7 @@
 #include "GameFramework/PlayerState.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Net/UnrealNetwork.h"
 
 const FName ALakayaBaseCharacter::SpringArmComponentName = FName(TEXT("SpringArm"));
@@ -230,6 +232,72 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 	}
 
 	CharacterOverlayMaterial->SetVectorParameterValue(TEXT("Color"), IsAlly ? FLinearColor::Blue : FLinearColor::Red);
+}
+
+bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const TWeakObjectPtr<ALakayaBasePlayerState> State) const
+{
+	
+#pragma region NullCheck
+	if (!State.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("State is not valid."));
+		return false;
+	}
+
+	const APawn* EnemyPawn = State->GetPawn();
+	if (!EnemyPawn)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EnemyPawn is null."));
+		return false;
+	}
+	
+	// const APlayerController* PlayerController = GetOwningPlayer();
+	const APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	
+	if (!PlayerController || !PlayerController->PlayerCameraManager)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PlayerController or PlayerCameraManager is null."));
+		return false;
+	}
+#pragma endregion
+	
+	// 시야에 적이 들어왔는지 확인합니다.
+	{
+		const FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
+		const FVector EnemyLocation = EnemyPawn->GetActorLocation();
+		const FVector DirectionToTarget = (EnemyLocation - CameraLocation).GetSafeNormal();
+		const FVector LookDirection = PlayerController->GetControlRotation().Vector();
+
+		// 시야각을 설정합하여, 라디언으로 변환합니다.
+		const float AngleThreshold = FMath::DegreesToRadians(90.0f);
+
+		// 두 벡터 사이의 각도를 계산합니다.
+		const float AngleBetweenVectors = FMath::Acos(FVector::DotProduct(DirectionToTarget.GetSafeNormal(), LookDirection));
+
+		// 계산된 각도와 임계값을 비교하여, 시야 내에 있는지 판단합니다.
+		bool bIsVisible = AngleBetweenVectors <= AngleThreshold;
+
+		// 시야 내에 없다면 false를 반환하고 함수를 종료합니다.
+		if (!bIsVisible) return false;
+		
+		FHitResult HitResult;
+
+		if (bool bIsObstructed = UKismetSystemLibrary::LineTraceSingle(
+			this,
+			CameraLocation,
+			EnemyLocation,
+			TraceTypeQuery1,
+			false,
+			TArray<AActor*>(),
+			EDrawDebugTrace::None,
+			HitResult,
+			true); bIsObstructed && HitResult.GetActor() != EnemyPawn)
+		{
+			bIsVisible = false;
+		}
+		
+		return bIsVisible;
+	}
 }
 
 void ALakayaBaseCharacter::SetTeam_Implementation(const ETeam& Team)
