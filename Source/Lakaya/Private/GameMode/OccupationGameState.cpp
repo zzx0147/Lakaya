@@ -61,7 +61,8 @@ AOccupationGameState::AOccupationGameState(): MatchResult()
 	ResultShortcutContext = ResultContextFinder.Object;
 	ResultSwitchingAction = ResultSwitchActionFinder.Object;
 
-	// bTap = true;
+	HUDMinimapWidgetClass = UHUDOccupationMinimapWidget::StaticClass();
+	TabMinimapWidgetClass = UOccupationTabMinimapWidget::StaticClass();
 }
 
 void AOccupationGameState::BeginPlay()
@@ -69,7 +70,6 @@ void AOccupationGameState::BeginPlay()
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 		LocalController && LocalController->IsLocalController())
 	{
-
 		if (TeamScoreWidgetClass)
 		{
 			TeamScoreWidget = CreateWidget<UTeamScoreWidget>(LocalController, TeamScoreWidgetClass);
@@ -148,29 +148,29 @@ void AOccupationGameState::BeginPlay()
 			}
 		}
 
-		if (OccupationHUDMinimapWidgetClass)
+		if (HUDMinimapWidgetClass)
 		{
-			OccupationHUDMinimapWidget = CreateWidget<UHUDOccupationMinimapWidget>(
-				LocalController, OccupationHUDMinimapWidgetClass);
-			if (OccupationHUDMinimapWidget.IsValid())
+			HUDMinimapWidget = CreateWidget<UHUDOccupationMinimapWidget>(
+				LocalController, HUDMinimapWidgetClass);
+			if (HUDMinimapWidget)
 			{
-				OccupationHUDMinimapWidget->AddToViewport();
-				OccupationHUDMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
-				OccupationHUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
-				OccupationHUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
+				HUDMinimapWidget->AddToViewport();
+				HUDMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
+				HUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
+				HUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
 			}
 		}
-		
-		if (OccupationTabMinimapWidgetClass)
+
+		if (TabMinimapWidgetClass)
 		{
-			OccupationTabMinimapWidget = CreateWidget<UOccupationTabMinimapWidget>(
-				LocalController, OccupationTabMinimapWidgetClass);
-			if (OccupationTabMinimapWidget.IsValid())
+			TabMinimapWidget = CreateWidget<UOccupationTabMinimapWidget>(
+				LocalController, TabMinimapWidgetClass);
+			if (TabMinimapWidget)
 			{
-				OccupationTabMinimapWidget->AddToViewport();
-				OccupationTabMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
-				OccupationTabMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
-				OccupationTabMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
+				TabMinimapWidget->AddToViewport();
+				TabMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
+				TabMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
+				TabMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
 			}
 		}
 	}
@@ -184,7 +184,7 @@ void AOccupationGameState::BeginPlay()
 void AOccupationGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-	
+
 	if (IsValid(TeamScoreWidget))
 		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
 
@@ -194,20 +194,20 @@ void AOccupationGameState::HandleMatchHasStarted()
 	if (OccupyExpressWidget.IsValid())
 		OccupyExpressWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-	if (OccupationHUDMinimapWidget.IsValid())
+	if (HUDMinimapWidget)
 	{
-		OccupationHUDMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		OccupationHUDMinimapWidget->UpdateMinimap = true;
-		OccupationHUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
-		OccupationHUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
-	
+		HUDMinimapWidget->SetUpdateMinimap(true);
+		HUDMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		HUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
+		HUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
+
 		if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
-		LocalController && LocalController->IsLocalController())
+			LocalController && LocalController->IsLocalController())
 		{
 			if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 			{
-				OccupationHUDMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
-	
+				HUDMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
+
 				// 와지가 스킬을 쓰게 되면 상대방의 위치도 미니맵 상에 업데이트 해줘야 하기 때문에
 				// 일단은 본인의 팀과 상대방의 팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
 				UpdatePlayerByMinimap(ETeam::Anti, LakayaPlayerState);
@@ -216,19 +216,20 @@ void AOccupationGameState::HandleMatchHasStarted()
 		}
 	}
 
-	if (OccupationTabMinimapWidget.IsValid())
+	// TODO : 게임이 끝났을 경우에는, UpdateMinimap을 false 바꿔줘야 합니다.
+	if (TabMinimapWidget)
 	{
-		OccupationTabMinimapWidget->UpdateMinimap = true;
-		OccupationTabMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
-		OccupationTabMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
-	
+		TabMinimapWidget->SetUpdateMinimap(true);
+		TabMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
+		TabMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
+
 		if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 			LocalController && LocalController->IsLocalController())
 		{
 			if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 			{
-				OccupationTabMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
-	
+				TabMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
+
 				// 와지가 스킬을 쓰게 되면 상대방의 위치도 미니맵 상에 업데이트 해줘야 하기 때문에
 				// 본인의 팀과 상대팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
 				UpdatePlayerByMinimap(ETeam::Anti, LakayaPlayerState);
@@ -236,7 +237,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 			}
 		}
 	}
-	
+
 	FTimerDelegate TimerDelegate_MatchStartWaitWidget;
 	TimerDelegate_MatchStartWaitWidget.BindLambda([this]
 	{
@@ -244,8 +245,9 @@ void AOccupationGameState::HandleMatchHasStarted()
 		if (MatchStartWaitWidget.IsValid())
 			MatchStartWaitWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	});
-	GetWorldTimerManager().SetTimer(TimerHandle_MatchStartWaitWidget, TimerDelegate_MatchStartWaitWidget, MatchWaitDuration - 10,false);
-	
+	GetWorldTimerManager().SetTimer(TimerHandle_MatchStartWaitWidget, TimerDelegate_MatchStartWaitWidget,
+	                                MatchWaitDuration - 10, false);
+
 	// MatchStartWaitWidget위젯을 띄우고, N초(MatchStartWaitWidgetLifeTime) 뒤에 비활성화 해줍니다.
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindLambda([this]
@@ -253,7 +255,8 @@ void AOccupationGameState::HandleMatchHasStarted()
 		if (this == nullptr) return;
 		if (MatchStartWaitWidget.IsValid()) MatchStartWaitWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
-	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate,   (MatchWaitDuration - 10 + MatchStartWaitWidgetLifeTime), false);
+	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate,
+	                                (MatchWaitDuration - 10 + MatchStartWaitWidgetLifeTime), false);
 
 	// 게임이 본격적으로 시작이 되면 StartMessage위젯을 띄워줍니다.
 	TimerDelegate.BindLambda([this]
@@ -281,9 +284,10 @@ void AOccupationGameState::HandleMatchHasEnded()
 	if (GameResultWidget.IsValid())
 		GameResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-	OccupationTabMinimapWidget->UpdateMinimap = false;
-	OccupationHUDMinimapWidget->UpdateMinimap = false;
-	
+	// TODO : 게임이 종료 되어있을 때는, 이미 Widet들이 삭제된 이후 입니다.
+	// HUDMinimapWidget->UpdateMinimap = false;
+	// TabMinimapWidget->UpdateMinimap = false;
+
 	// Anti팀의 배열과, Pro팀의 배열을 내림차순으로 정렬합니다.
 	static auto Predicate = [](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B)
 	{
@@ -307,19 +311,17 @@ void AOccupationGameState::HandleMatchHasEnded()
 		}
 	}
 
-	// bTap = false;
-	
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
-	LocalController && LocalController->IsLocalController())
+		LocalController && LocalController->IsLocalController())
 	{
 		GameResultWidget->ShowResult(ClientTeam == GetOccupationWinner(), AntiTeamScore, ProTeamScore);
-	
+
 		FTimerDelegate TimerDelegate;
 		TimerDelegate.BindLambda([&]
 		{
 			GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
 			FinalResultWidget->SetTeam(ClientTeam);
-			FinalResultWidget->SetMatchResultData(GetOccupationWinner(),ProTeamScore,AntiTeamScore, PlayersByTeamMap);
+			FinalResultWidget->SetMatchResultData(GetOccupationWinner(), ProTeamScore, AntiTeamScore, PlayersByTeamMap);
 			FinalResultWidget->SetVisibility(ESlateVisibility::Visible);
 		});
 		GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
@@ -380,8 +382,8 @@ void AOccupationGameState::UpdatePlayerByMinimap(const ETeam& Team, ALakayaBaseP
 	for (auto& Players : PlayersByTeamMap[Team])
 	{
 		const bool bMyPlayer = (Players == PlayerState);
-		OccupationTabMinimapWidget->PlayersByMinimap[Team].Emplace(Players, OccupationTabMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
-		OccupationHUDMinimapWidget->PlayersByMinimap[Team].Emplace(Players, OccupationHUDMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
+		TabMinimapWidget->PlayersByMinimap[Team].Emplace(Players, TabMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
+		HUDMinimapWidget->PlayersByMinimap[Team].Emplace(Players, HUDMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
 	}
 }
 
@@ -394,12 +396,12 @@ void AOccupationGameState::SetClientTeam(const ETeam& NewTeam)
 		for (const auto& Player : Pair.Value)
 			SetupPlayerStateOnLocal(Player);
 
-	if(UOccupationCharacterSelectWidget* const OccupationCharacterSelectWidget = Cast<UOccupationCharacterSelectWidget>(CharacterSelectWidget))
+	if (UOccupationCharacterSelectWidget* const OccupationCharacterSelectWidget
+		= Cast<UOccupationCharacterSelectWidget>(CharacterSelectWidget))
 		OccupationCharacterSelectWidget->SetTeam(NewTeam);
 
-	if(PlayerNameDisplayerWidget.IsValid())
+	if (PlayerNameDisplayerWidget.IsValid())
 		PlayerNameDisplayerWidget->SetTeam(NewTeam);
-	
 }
 
 bool AOccupationGameState::TrySendMatchResultData()
@@ -429,8 +431,17 @@ bool AOccupationGameState::CanInstigatorClairvoyance(const AActor* InInstigator)
 		const auto PlayerController = GetWorld()->GetFirstPlayerController();
 		if (PlayerController && PlayerController->IsLocalController())
 		{
-			const auto TeamObject = PlayerController->GetPlayerState<ITeamObjectInterface>();
-			return TeamObject && TeamObject->IsSameTeam(Cast<ITeamObjectInterface>(InInstigator));
+			// Find Instigator PlayerState
+			auto InstigatorState = Cast<APlayerState>(InInstigator);
+			if (!InstigatorState)
+			{
+				if (const auto Pawn = Cast<APawn>(InInstigator))
+				{
+					InstigatorState = Pawn->GetPlayerState<APlayerState>();
+				}
+			}
+
+			return IsSameTeam(PlayerController->PlayerState, InstigatorState);
 		}
 	}
 
@@ -521,7 +532,7 @@ void AOccupationGameState::AddPlayerStateToRecordResult(ETeam InTeam, TArray<ALa
 void AOccupationGameState::SetScoreBoardVisibility(const bool& Visible)
 {
 	Super::SetScoreBoardVisibility(Visible);
-	
+
 	if (MatchState == MatchState::InProgress)
 	{
 		InternalSetScoreBoardVisibility(Visible);
@@ -541,7 +552,7 @@ void AOccupationGameState::SetTabMinimapVisibility(const bool& Visible)
 void AOccupationGameState::InternalSetScoreBoardVisibility(const bool& Visible) const
 {
 	UE_LOG(LogTemp, Warning, TEXT("InternalSetScoreBoardVisibility"));
-	
+
 	if (!ScoreBoard.IsValid())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_ScoreBoard is null."));
@@ -554,14 +565,14 @@ void AOccupationGameState::InternalSetScoreBoardVisibility(const bool& Visible) 
 void AOccupationGameState::InternalSetTabMinimapVisibility(const bool& Visible) const
 {
 	UE_LOG(LogTemp, Warning, TEXT("InternalSetTabMinimapVisibility"));
-	
-	if (!OccupationTabMinimapWidget.IsValid())
+
+	if (!TabMinimapWidget)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_OccupationTabMinimapWidget is null."));
 		return;
 	}
 
-	OccupationTabMinimapWidget->SetVisibility(Visible ?  ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
+	TabMinimapWidget->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
 }
 
 void AOccupationGameState::AddCaptureAreaCount(const ETeam& Team, const uint8 Id)
@@ -595,9 +606,10 @@ void AOccupationGameState::StartScoreUpdate(const ETeam& Team, float UpdateDelay
 	{
 		StopScoreUpdate();
 	}
-	
+
 	TeamToUpdate = Team;
-	GetWorldTimerManager().SetTimer(TimerHandle_UpdateScoreTimer, this, &AOccupationGameState::UpdateTeamScoreTick, UpdateDelay, true);
+	GetWorldTimerManager().SetTimer(TimerHandle_UpdateScoreTimer, this, &AOccupationGameState::UpdateTeamScoreTick,
+	                                UpdateDelay, true);
 }
 
 void AOccupationGameState::StopScoreUpdate()
@@ -614,7 +626,7 @@ void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const ui
 		if (UProgressBar** ProgressBar = OccupyBarMaps.Find(Id))
 		{
 			FSlateBrush BackGroundImageBrush;
-	
+
 			switch (Team)
 			{
 			case ETeam::Anti:
@@ -627,7 +639,7 @@ void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const ui
 				UE_LOG(LogTemp, Warning, TEXT("Invalid Team."));
 				return;
 			}
-		
+
 			// ReSharper disable once CppDeprecatedEntity
 			(*ProgressBar)->WidgetStyle.BackgroundImage = BackGroundImageBrush;
 		}
@@ -640,16 +652,18 @@ void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const ui
 
 bool AOccupationGameState::CheckCaptureAreaCount(const ETeam& Team)
 {
-	int AntiCaptureAreaCount = GetAntiTeamCaptureAreaCount();
-	int ProCaptureAreaCount = GetProTeamCaptureAreaCount();
+	const int AntiCaptureAreaCount = GetAntiTeamCaptureAreaCount();
+	const int ProCaptureAreaCount = GetProTeamCaptureAreaCount();
 
 	if (AntiCaptureAreaCount == ProCaptureAreaCount)
 	{
 		StopScoreUpdate();
 		return false;
 	}
-	
-	return (Team == ETeam::Anti) ? (AntiCaptureAreaCount > ProCaptureAreaCount) : (AntiCaptureAreaCount < ProCaptureAreaCount);
+
+	return (Team == ETeam::Anti)
+		       ? (AntiCaptureAreaCount > ProCaptureAreaCount)
+		       : (AntiCaptureAreaCount < ProCaptureAreaCount);
 }
 
 void AOccupationGameState::SetupPlayerStateOnLocal(ALakayaBasePlayerState* PlayerState)

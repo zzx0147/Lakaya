@@ -32,6 +32,12 @@ public:
 
 	FORCEINLINE bool IsSameTeam(const ITeamObjectInterface* InTeamObject) const
 	{
-		return ensure(InTeamObject) && JudgeSameTeam(GetTeam(), InTeamObject->GetTeam());
+		return InTeamObject && JudgeSameTeam(GetTeam(), InTeamObject->GetTeam());
 	}
 };
+
+FORCEINLINE bool IsSameTeam(const UObject* InTeamObject, const UObject* InOtherTeamObject)
+{
+	const auto TeamObject = Cast<ITeamObjectInterface>(InTeamObject);
+	return TeamObject && TeamObject->IsSameTeam(Cast<ITeamObjectInterface>(InOtherTeamObject));
+}

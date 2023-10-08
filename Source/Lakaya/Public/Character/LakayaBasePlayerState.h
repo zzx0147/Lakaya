@@ -232,8 +232,9 @@ private:
 	 * @param CauserLocation 피해를 입힌 당시의 액터의 위치입니다.
 	 * @param Damage 최종적으로 플레이어가 입은 피해량입니다.
 	 */
-	UFUNCTION(Client, Reliable)
-	void NoticePlayerHit(const FName& CauserName, const FVector& CauserLocation, const float& Damage);
+	// UFUNCTION(Client, Reliable)
+	UFUNCTION(BlueprintCallable)
+	void NoticePlayerHit(const FName& CauserName, const FVector& CauserLocation);
 
 	void RespawnTimerCallback(FRespawnTimerDelegate Callback);
 
@@ -363,5 +364,6 @@ private:
 	// TObjectPtr<USkillWidget> SkillWidget;
 	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;
 	TWeakObjectPtr<UGamePlayPortraitWidget> PortraitWidget;
+	UPROPERTY()
 	TObjectPtr<class UCharacterWidget> CharacterWidget;
 };
