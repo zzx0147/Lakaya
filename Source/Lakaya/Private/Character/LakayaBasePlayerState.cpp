@@ -238,6 +238,17 @@ void ALakayaBasePlayerState::IncreaseKillCount()
 	OnKillCountChanged.Broadcast(++KillCount);
 }
 
+void ALakayaBasePlayerState::OnKillOtherPlayer()
+{
+	if (const auto Character = GetPawn<ALakayaBaseCharacter>())
+	{
+		const FGameplayEffectSpecHandle SpecHandle = AbilitySystem->MakeOutgoingSpec(
+			OnKillOtherCharacterEffect, 0, AbilitySystem->MakeEffectContext());
+
+		AbilitySystem->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	}
+}
+
 void ALakayaBasePlayerState::IncreaseKillStreak()
 {
 	OnKillStreakChanged.Broadcast(++KillStreak);

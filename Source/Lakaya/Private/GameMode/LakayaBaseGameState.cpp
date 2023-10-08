@@ -284,6 +284,12 @@ void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* Victi
 	{
 		KillLogWidget->OnKillCharacterNotify(VictimPlayer, InstigatorPlayer, DamageCauser);
 	}
+
+	if(const auto InstigatorBasePlayerState = Cast<ALakayaBasePlayerState>(InstigatorPlayer))
+	{
+		InstigatorBasePlayerState->OnKillOtherPlayer();
+	}
+	
 }
 
 void ALakayaBaseGameState::OnRep_MatchEndingTime()
