@@ -18,7 +18,7 @@
 #include "UI/RespawnWidget.h"
 #include "UI/SkillProgressBar.h"
 #include "UI/SkillWidget.h"
-
+ 
 void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -575,7 +575,7 @@ void ALakayaBasePlayerState::OnActiveGameplayEffectAddedDelegateToSelfCallback(
 		//적용된 이펙트가 스킬 스택 리젠 이펙트일 경우
 		else if(EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.SkillStackRegen")))))
 		{
-			//SkillProgressBar->StartStackingRegen(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->StartWorldTime,SpecApplied.Period, true);
+			//SkillProgressBar->StartStackingRegen(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->StartWorldTime,SpecApplied.Period, true);			
 		}
 	}
 	
@@ -614,9 +614,8 @@ void ALakayaBasePlayerState::OnActiveGameplayEffectAddedDelegateToSelfCallback(
 
 void ALakayaBasePlayerState::OnChangeSkillStackAttribute(const FOnAttributeChangeData& NewValue)
 {
-	const auto MaxReached = NewValue.NewValue > LakayaAttributeSet->GetMaxSkillStack() || FMath::IsNearlyEqual(NewValue.NewValue, LakayaAttributeSet->GetMaxSkillStack());
-	AbilitySystem->SetLooseGameplayTagCount(FGameplayTag::RequestGameplayTag(TEXT("AttributeEvent.ReachMaxSkillStack")), MaxReached ? 1 : 0);
-	
+	// const auto MaxReached = NewValue.NewValue > LakayaAttributeSet->GetMaxSkillStack() || FMath::IsNearlyEqual(NewValue.NewValue, LakayaAttributeSet->GetMaxSkillStack());
+	// AbilitySystem->SetLooseGameplayTagCount(FGameplayTag::RequestGameplayTag(TEXT("AttributeEvent.ReachMaxSkillStack")), MaxReached ? 1 : 0);
 	if (CharacterWidget && CharacterWidget->GetSkillWidget() && FMath::IsNearlyEqual(NewValue.NewValue, 0.0f))
 	{
 		for(const auto& ProgressBar : CharacterWidget->GetSkillWidget()->GetAllSkillProgressBar())
@@ -631,6 +630,7 @@ void ALakayaBasePlayerState::OnChangeSkillStackAttribute(const FOnAttributeChang
 				{
 					const FActiveGameplayEffect* RegenEffect = AbilitySystem->GetActiveGameplayEffect(Result[0]);
 					ProgressBar->StartStackingRegen(RegenEffect->StartWorldTime,RegenEffect->GetPeriod(),true);
+					// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("StartTime : %f"), RegenEffect->StartServerWorldTime));
 				}
 				break;
 			}
