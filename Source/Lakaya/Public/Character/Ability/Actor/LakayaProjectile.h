@@ -200,6 +200,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SetProjectileStateCollapsed();
 
+	UFUNCTION(BlueprintCallable)
+	void SetSourceObject(FGameplayEffectContextHandle EffectContext, const UObject* SourceObject);
+
 	UFUNCTION(BlueprintNativeEvent)
 	void OnStartPathPrediction(const FProjectileThrowData& InThrowData);
 
