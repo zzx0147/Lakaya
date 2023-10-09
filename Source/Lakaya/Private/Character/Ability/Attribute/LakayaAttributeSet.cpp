@@ -41,8 +41,8 @@ void ULakayaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 			const auto InstigatorPlayerState = Cast<APlayerState>(Instigator);
 			if (VictimPlayerState != nullptr && InstigatorPlayerState != nullptr)
 			{
-				OnPlayerKill.Broadcast(VictimPlayerState->GetPlayerController(),
-				                       InstigatorPlayerState->GetPlayerController(), Causer);
+				OnPlayerKill.Broadcast(VictimPlayerState->GetOwningController(),
+				                       InstigatorPlayerState->GetOwningController(), Causer);
 			}
 			//피해자 컨트롤러 가해자 컨트롤러 가해자 액터
 		}
