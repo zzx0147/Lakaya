@@ -134,6 +134,8 @@ public:
 	// 플레이어의 킬 횟수를 늘립니다.
 	virtual void IncreaseKillCount();
 
+	virtual void OnKillOtherPlayer();
+	
 	// 플레이어의 연속처치 횟수를 늘립니다.
 	virtual void IncreaseKillStreak();
 
@@ -348,6 +350,9 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UGameplayEffect> StatusInitializeEffect;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameplayEffect> OnKillOtherCharacterEffect;
+	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> StatRegenEffect;
 

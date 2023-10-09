@@ -96,8 +96,7 @@ void USkillProgressBar::StartStackingRegen(const float& ArgStartTime, const floa
 	EnableTime = ArgStartTime + Duration;
 	StartTime = ArgStartTime;
 	MaxCoolTime = Duration;
-	if (EnableTime > GetWorld()->GetGameState()->GetServerWorldTimeSeconds())
-		CurrentState = ESkillProgressBarState::StackingRegen;
+	CurrentState = ESkillProgressBarState::StackingRegen;
 }
 
 void USkillProgressBar::OnChangeUltimateGaugeAttribute(const FOnAttributeChangeData& NewValue)
