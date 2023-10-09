@@ -200,7 +200,6 @@ void ALakayaDefaultPlayGameMode::HandleMatchHasEnded()
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindWeakLambda(this,[&]
 	{
-		RestartGame();
 
 		if(GameSession)
 		{
@@ -214,6 +213,8 @@ void ALakayaDefaultPlayGameMode::HandleMatchHasEnded()
 				}
 			}
 		}
+		
+		RestartGame();
 	});
 	GetWorldTimerManager().SetTimer(RestartServerTimerHandle, TimerDelegate, 15.0f, false);
 }
