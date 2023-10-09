@@ -109,7 +109,7 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData,
 	Key.NewRejectedDelegate().BindUObject(this, &ThisClass::RejectProjectile);
 
 	SetProjectileState(EProjectileState::Perform);
-	ThrowProjectile(InThrowData, ECollisionEnabled::PhysicsOnly);
+	ThrowProjectile(InThrowData, ECollisionEnabled::QueryAndPhysics);
 }
 
 void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
@@ -276,7 +276,7 @@ void ALakayaProjectile::RejectProjectile()
 	{
 		// 서버에서 타겟 데이터를 거부하고 새로 투사체를 투척한 경우이므로, 간단히 투사체를 껐다가 다시 켜줍니다.
 		StopThrowProjectile();
-		ThrowProjectile(ThrowData, ECollisionEnabled::PhysicsOnly);
+		ThrowProjectile(ThrowData, ECollisionEnabled::QueryAndPhysics);
 	}
 	else
 	{
@@ -457,7 +457,7 @@ void ALakayaProjectile::OnRep_ProjectileState()
 	{
 	case EProjectileState::Collapsed: break;
 	case EProjectileState::Perform:
-		ThrowProjectile(ThrowData, ECollisionEnabled::PhysicsOnly);
+		ThrowProjectile(ThrowData, ECollisionEnabled::QueryAndPhysics);
 		break;
 	case EProjectileState::Custom:
 		OnReplicatedCustomStateEnter(LocalState.GetCustomState());
