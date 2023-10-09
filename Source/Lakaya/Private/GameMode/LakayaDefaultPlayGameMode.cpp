@@ -200,7 +200,6 @@ void ALakayaDefaultPlayGameMode::HandleMatchHasEnded()
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindWeakLambda(this,[&]
 	{
-		RestartGame();
 
 		if(GameSession)
 		{
@@ -214,8 +213,10 @@ void ALakayaDefaultPlayGameMode::HandleMatchHasEnded()
 				}
 			}
 		}
+		
+		RestartGame();
 	});
-	GetWorldTimerManager().SetTimer(RestartServerTimerHandle, TimerDelegate, 10.0f, false);
+	GetWorldTimerManager().SetTimer(RestartServerTimerHandle, TimerDelegate, 15.0f, false);
 }
 
 //TODO: 사용되지 않는 오버라이딩 제거
