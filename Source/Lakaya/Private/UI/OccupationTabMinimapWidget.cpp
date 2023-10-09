@@ -2,13 +2,12 @@
 
 #include "UI/OccupationTabMinimapWidget.h"
 
+#include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
 
 void UOccupationTabMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	if (MinimapImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("OccupationTabMinimapWidget_MinimapImage is null."));	
 
 	ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("PlayerImagePanel")));
 	
@@ -17,24 +16,49 @@ void UOccupationTabMinimapWidget::NativeConstruct()
 
 	// TODO : 하드코딩이 아닌 GetDesiredSize() 함수를 이용해서 가져오도록 해야합니다.
 	MinimapSize = FVector2D(312.5f, 476.25f);
+
+	WidgetOffset = FVector2D(1515.0f, 545.5f);
 }
 
 void UOccupationTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	// 게임 중에는 미니맵을 프레임마다업데이트 해줍니다.
-	if (UpdateMinimap)
+	// 게임 중이 아닐때에는 미니맵을 업데이트 해주지 않습니다.
+	if (!UpdateMinimap) return;
+
+	// 자기 자신의 팀의 위치를 업데이트 해줍니다.
+	UpdatePlayerPosition(CurrentTeam);
+
+	const ETeam EnemyTeam = CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
+
+	// TODO : 와지 투시 스킬을 사용했을 때도 추가해줘야 합니다.
+	// 적들의 위치정보를 가져와서, 내 시야에 들어와있다면, 미니맵에 표시해줍니다.
+	for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
 	{
-		UpdatePlayerPosition(CurrentTeam);
+		const auto& State = Enemy.Key;
+		
+		if (const ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(State->GetPawn()))
+		{
+			bool bIsEnemyVisibleInCamera = LakayaCharacter->IsEnemyVisibleInCamera(State);
+			
+			if (bIsEnemyVisibleInCamera)
+			{
+				UpdatePlayerPosition(EnemyTeam, State);
+				continue;
+			}
+			
+			bool bIsCurrentlyVisibleOnMinimap = Enemy.Value->GetVisibility() != ESlateVisibility::Hidden;
+			
+			if(bIsCurrentlyVisibleOnMinimap)
+				Enemy.Value->SetVisibility(ESlateVisibility::Hidden);
+		}
 	}
 }
 
 void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 {
 	Super::UpdatePlayerPosition(Team);
-
-	if (!MinimapImage) return;
 
 	for (auto& Player : PlayersByMinimap[Team])
 	{
@@ -50,8 +74,33 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 
 		// TODO : 맵과 이미지 사이즈가 확정이 되면 수정해야 합니다.
 		// NewPlayerPosition + Widget Position = Player Position
-		Image->SetRenderTranslation(NewPlayerPosition + FVector2D(1665.0f, 545.5f));
+		Image->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 	}
+}
+
+void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
+	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+{
+	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
+		return;
+	}
+
+	const auto& EnemyImage = PlayersByMinimap[NewTeam][NewPlayerState].Get();
+	if (EnemyImage == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
+		return;
+	}
+	
+	const FVector2D PlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
+	const FVector2D NewPlayerPosition = const_cast<UOccupationTabMinimapWidget*>(this)->ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
+
+	if (EnemyImage->GetVisibility() == ESlateVisibility::Hidden)
+		EnemyImage->SetVisibility(ESlateVisibility::Visible);
+
+	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 }
 
 UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
@@ -63,6 +112,7 @@ UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 
 	PanelSlot->SetAlignment(IconAlignment);
 	PanelSlot->SetSize(IconSize);
+	PanelSlot->SetZOrder(1);
 
 	PlayerImage->SetVisibility(ESlateVisibility::Hidden);
 

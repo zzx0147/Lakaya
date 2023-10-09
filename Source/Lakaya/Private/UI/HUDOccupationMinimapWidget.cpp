@@ -19,6 +19,8 @@ void UHUDOccupationMinimapWidget::NativeConstruct()
 
 	// TODO : 하드코딩이 아닌 GetDesiredSize() 함수를 이용해서 가져오도록 해야합니다.
 	MinimapSize = FVector2D(250.0f, 381.0f);
+
+	WidgetOffset = FVector2D(125.0f, 127.5f);
 }
 
 void UHUDOccupationMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -33,6 +35,8 @@ void UHUDOccupationMinimapWidget::NativeTick(const FGeometry& MyGeometry, float 
 
 	const ETeam EnemyTeam = CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
 
+	// TODO : 와지 투시 스킬을 사용했을 때도 추가해줘야 합니다.
+	// 적들의 위치정보를 가져와서, 내 시야에 들어와있다면, 미니맵에 표시해줍니다.
 	for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
 	{
 		const auto& State = Enemy.Key;
@@ -67,6 +71,7 @@ UImage* UHUDOccupationMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 	const auto Team = NewTeam == ETeam::Anti ? ETeam::Anti : ETeam::Pro;
 
 	UCanvasPanelSlot* PanelSlot = ParentPanel->AddChildToCanvas(PlayerImage);
+	
 	if (PanelSlot == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PanelSlot is null."));
@@ -75,6 +80,7 @@ UImage* UHUDOccupationMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 	
 	PanelSlot->SetAlignment(IconAlignment);
 	PanelSlot->SetSize(IconSize);
+	PanelSlot->SetZOrder(1);
 	
 	PlayerImage->SetVisibility(ESlateVisibility::Hidden);
 	
@@ -100,34 +106,31 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 {
 	Super::UpdatePlayerPosition(Team);
 	
-	if (!MinimapImage) UE_LOG(LogTemp, Warning, TEXT("MinimapImage is null."));
-	
 	for (auto& Player : PlayersByMinimap[Team])
 	{
 		const auto& State = Player.Key;
 		const auto& Image = Player.Value;
-
+	
 		FVector2D PlayerPosition(State->GetPawn()->GetActorLocation().X, State->GetPawn()->GetActorLocation().Y);
 		
 		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
 		
 		if (Image->GetVisibility() == ESlateVisibility::Hidden)
 			Image->SetVisibility(ESlateVisibility::Visible);
-
+	
+		// 검사한 상태가 자기 자신이라면 자기 자신의 기점으로 미니맵의 위치와 회전값을 업데이트 해줍니다.
 		if (State == GetOwningPlayerState())
 			UpdateMinimapImagePositionAndRotation(*State, NewPlayerPosition);
 		
 		// TODO : 맵과 이미지 사이즈가 확정이 되면 수정해야 합니다.
 		// NewPlayerPosition + Widget Position = Player Position
-		Image->SetRenderTranslation(NewPlayerPosition + FVector2D(125.f, 127.5f));
+		Image->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 	}
 }
 
 void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
 {
-	if (!MinimapImage) UE_LOG(LogTemp, Warning, TEXT("MinimapImage is null."));
-
 	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
@@ -147,7 +150,7 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	if (EnemyImage->GetVisibility() == ESlateVisibility::Hidden)
 		EnemyImage->SetVisibility(ESlateVisibility::Visible);
 
-	EnemyImage->SetRenderTranslation(NewPlayerPosition + FVector2D(125.f, 127.5f));
+	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 }
 
 void UHUDOccupationMinimapWidget::UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState,
