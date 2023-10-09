@@ -54,10 +54,10 @@ void AAIIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 		// FName RandomCharacterName = (distrib(gen) == 0) ? TEXT("Rena") : (distrib(gen) == 1 ? TEXT("Wazi") : TEXT("Gangrim"));
 
 		// 레나를 제외한 나머지 캐릭 생성
-		// FName RandomCharacterName = (distrib(gen) == 0) ? TEXT("Gangrim") : TEXT("Wazi");
+		FName RandomCharacterName = (distrib(gen) == 0) ? TEXT("Gangrim") : TEXT("Wazi");
 
 		// 강림 생성
-		FName RandomCharacterName = TEXT("Gangrim");
+		// FName RandomCharacterName = TEXT("Gangrim");
 
 		// AI의 캐릭터 변경
 		ALakayaBasePlayerState* AiState = AiController->GetPlayerState<ALakayaBasePlayerState>();
