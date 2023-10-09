@@ -215,7 +215,7 @@ void ALakayaDefaultPlayGameMode::HandleMatchHasEnded()
 			}
 		}
 	});
-	GetWorldTimerManager().SetTimer(RestartServerTimerHandle, TimerDelegate, 10.0f, false);
+	GetWorldTimerManager().SetTimer(RestartServerTimerHandle, TimerDelegate, 15.0f, false);
 }
 
 //TODO: 사용되지 않는 오버라이딩 제거
