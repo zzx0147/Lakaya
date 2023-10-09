@@ -8,8 +8,6 @@ void UOccupationTabMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (MinimapImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("OccupationTabMinimapWidget_MinimapImage is null."));	
-
 	ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("PlayerImagePanel")));
 	
 	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
@@ -33,8 +31,6 @@ void UOccupationTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float 
 void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 {
 	Super::UpdatePlayerPosition(Team);
-
-	if (!MinimapImage) return;
 
 	for (auto& Player : PlayersByMinimap[Team])
 	{

@@ -100,8 +100,6 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 {
 	Super::UpdatePlayerPosition(Team);
 	
-	if (!MinimapImage) UE_LOG(LogTemp, Warning, TEXT("MinimapImage is null."));
-	
 	for (auto& Player : PlayersByMinimap[Team])
 	{
 		const auto& State = Player.Key;
@@ -114,6 +112,7 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		if (Image->GetVisibility() == ESlateVisibility::Hidden)
 			Image->SetVisibility(ESlateVisibility::Visible);
 
+		// 검사한 상태가 자기 자신이라면 자기 자신의 기점으로 미니맵의 위치와 회전값을 업데이트 해줍니다.
 		if (State == GetOwningPlayerState())
 			UpdateMinimapImagePositionAndRotation(*State, NewPlayerPosition);
 		
