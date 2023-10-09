@@ -16,11 +16,6 @@ AAIIndividualGameMode::AAIIndividualGameMode()
 void AAIIndividualGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
-	FVector SpawnLocation(-600.f, -850.f, 500.f); // 스폰 위치 설정
-	FRotator SpawnRotation(0.f, 0.f, 0.f); // 스폰 회전 설정
-	
-	AAiDroneCharacter* Drones = GetWorld()->SpawnActor<AAiDroneCharacter>(AIDroneClass, SpawnLocation, SpawnRotation);
 	
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
@@ -56,7 +51,13 @@ void AAIIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 		AiController = GetWorld()->SpawnActor<AAiCharacterController>(AIControllerClass);
 
 		// 랜덤 캐릭터 이름 생성
-		FName RandomCharacterName = (distrib(gen) == 0) ? TEXT("Rena") : TEXT("Wazi");
+		// FName RandomCharacterName = (distrib(gen) == 0) ? TEXT("Rena") : (distrib(gen) == 1 ? TEXT("Wazi") : TEXT("Gangrim"));
+
+		// 레나를 제외한 나머지 캐릭 생성
+		FName RandomCharacterName = (distrib(gen) == 0) ? TEXT("Gangrim") : TEXT("Wazi");
+
+		// 강림 생성
+		// FName RandomCharacterName = TEXT("Gangrim");
 
 		// AI의 캐릭터 변경
 		ALakayaBasePlayerState* AiState = AiController->GetPlayerState<ALakayaBasePlayerState>();

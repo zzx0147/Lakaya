@@ -30,7 +30,3 @@ FVector2D UMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& Play
 	
 	return MiniMapCoordinates;
 }
-
-void UMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
-{
-}

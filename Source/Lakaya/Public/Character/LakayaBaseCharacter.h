@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "LakayaAbilitySet.h"
+#include "LakayaBasePlayerState.h"
 #include "RegisterAbilityInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
@@ -128,6 +129,13 @@ public:
 	void SetAlly(const bool& IsAlly);
 
 	FORCEINLINE TSubclassOf<class UCharacterWidget> GetCharacterWidgetClass() const { return CharacterWidgetClass; }
+
+	/**
+	* @brief 해당 플레이어가 카메라에 보이는지 확인합니다.
+	* @param State 확인할 플레이어의 상태입니다.
+	* @return 카메라에 보인다면 true, 아니라면 false를 반환합니다.
+	*/
+	bool IsEnemyVisibleInCamera(const TWeakObjectPtr<ALakayaBasePlayerState> State) const;
 
 protected:
 	virtual void SetTeam_Implementation(const ETeam& Team);
