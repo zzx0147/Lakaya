@@ -336,8 +336,8 @@ void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 		StartDissolveEffect();
 	}
 	if (HasAuthority()) GetCharacterMovement()->SetMovementMode(IsAlive ? MOVE_Walking : MOVE_None);
-	
-	if(Controller && Controller->IsLocalController())
+
+	if (const auto PlayerController = Cast<APlayerController>(Controller); PlayerController && PlayerController->IsLocalController())
 		ToggleGrayScalePostProcess(IsAlive);
 	
 }
