@@ -42,7 +42,14 @@ protected:
 	 * @brief 플레이어의 위치를 업데이트합니다.
 	 * @param Team 플레이어의 팀입니다.
 	 */
-	virtual void UpdatePlayerPosition(const ETeam& Team);
+	virtual void UpdatePlayerPosition(const ETeam& Team) { return; };
+
+	/**
+	 * @brief 플레이어의 위치를 업데이트합니다.
+	 * @param NewTeam 위치를 업데이트 할 플레이어의 팀입니다.
+	 * @param NewPlayerState 위치를 업데이트 할 플레이어의 상태입니다.
+	 */
+	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) { return; }
 
 public:
 	FORCEINLINE const ETeam& GetTeam() const { return CurrentTeam; }
