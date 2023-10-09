@@ -42,7 +42,7 @@ protected:
 	 * @brief 플레이어의 위치를 업데이트합니다.
 	 * @param Team 플레이어의 팀입니다.
 	 */
-	virtual void UpdatePlayerPosition(const ETeam& Team) { return; };
+	virtual void UpdatePlayerPosition(const ETeam& Team) { return; }
 
 	/**
 	 * @brief 플레이어의 위치를 업데이트합니다.
@@ -86,6 +86,8 @@ protected:
 
 	FVector2D MinimapSize;
 
+	FVector2D WidgetOffset;
+	
 	// 미니맵업데이트 여부입니다.
 	bool UpdateMinimap;
 };
