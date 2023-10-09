@@ -194,7 +194,7 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	if (EOSGameInstance == nullptr) return;
 	if (HasAuthority())
 	{
-		EOSGameInstance->DestroySession();
+		// EOSGameInstance->DestroySession();
 	}
 	else
 	{
@@ -284,6 +284,12 @@ void ALakayaBaseGameState::NotifyPlayerKilled_Implementation(APlayerState* Victi
 	{
 		KillLogWidget->OnKillCharacterNotify(VictimPlayer, InstigatorPlayer, DamageCauser);
 	}
+
+	if(const auto InstigatorBasePlayerState = Cast<ALakayaBasePlayerState>(InstigatorPlayer))
+	{
+		InstigatorBasePlayerState->OnKillOtherPlayer();
+	}
+	
 }
 
 void ALakayaBaseGameState::OnRep_MatchEndingTime()
