@@ -11,6 +11,7 @@
 #include "GameMode/LakayaBaseGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Character/Ability/Attribute/LakayaAttributeSet.h"
+#include "GameFramework/GameSession.h"
 
 namespace MatchState
 {
@@ -188,12 +189,33 @@ void ALakayaDefaultPlayGameMode::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
 
-	if (const auto GameInstance = GetGameInstance<UEOSGameInstance>())
-	{
-		GameInstance->EndSession();
-	}
+	// if (const auto GameInstance = GetGameInstance<UEOSGameInstance>())
+	// {
+	// 	// GameInstance->EndSession();
+	// }
 
 	UE_LOG(LogTemp, Error, TEXT("HandleMatchHasEnded"));
+	
+	FTimerHandle RestartServerTimerHandle;
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindWeakLambda(this,[&]
+	{
+		RestartGame();
+
+		if(GameSession)
+		{
+			for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+			{
+				APlayerController* PlayerController = Iterator->Get();
+				
+				if (GameSession && PlayerController && PlayerController->PlayerState)
+				{
+					GameSession->KickPlayer(PlayerController, NSLOCTEXT("Network", "ServerClosed", "The server has closed."));
+				}
+			}
+		}
+	});
+	GetWorldTimerManager().SetTimer(RestartServerTimerHandle, TimerDelegate, 10.0f, false);
 }
 
 //TODO: 사용되지 않는 오버라이딩 제거
