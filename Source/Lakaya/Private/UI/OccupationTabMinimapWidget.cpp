@@ -2,56 +2,54 @@
 
 #include "UI/OccupationTabMinimapWidget.h"
 
+#include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
 
 void UOccupationTabMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (MinimapImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("OccupationTabMinimapWidget_MinimapImage is null."));	
-
 	ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("PlayerImagePanel")));
 	
-	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
-	TeamIcons.Emplace(ETeam::Pro, ProIcon);
-
 	// TODO : 하드코딩이 아닌 GetDesiredSize() 함수를 이용해서 가져오도록 해야합니다.
 	MinimapSize = FVector2D(312.5f, 476.25f);
+
+	WidgetOffset = FVector2D(1515.0f, 545.5f);
 }
 
 void UOccupationTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-
-	// 게임 중에는 미니맵을 프레임마다업데이트 해줍니다.
-	if (UpdateMinimap)
-	{
-		UpdatePlayerPosition(CurrentTeam);
-	}
 }
 
 void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 {
 	Super::UpdatePlayerPosition(Team);
+}
 
-	if (!MinimapImage) return;
-
-	for (auto& Player : PlayersByMinimap[Team])
+void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
+	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+{
+	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
 	{
-		const auto& State = Player.Key;
-		const auto& Image = Player.Value;
-
-		FVector2D PlayerPosition(State->GetPawn()->GetActorLocation().X, State->GetPawn()->GetActorLocation().Y);
-
-		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
-
-		if (Image->GetVisibility() == ESlateVisibility::Hidden)
-			Image->SetVisibility(ESlateVisibility::Visible);
-
-		// TODO : 맵과 이미지 사이즈가 확정이 되면 수정해야 합니다.
-		// NewPlayerPosition + Widget Position = Player Position
-		Image->SetRenderTranslation(NewPlayerPosition + FVector2D(1665.0f, 545.5f));
+		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
+		return;
 	}
+
+	const auto& EnemyImage = PlayersByMinimap[NewTeam][NewPlayerState].Get();
+	if (EnemyImage == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
+		return;
+	}
+	
+	const FVector2D PlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
+	const FVector2D NewPlayerPosition = const_cast<UOccupationTabMinimapWidget*>(this)->ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
+
+	if (EnemyImage->GetVisibility() == ESlateVisibility::Hidden)
+		EnemyImage->SetVisibility(ESlateVisibility::Visible);
+
+	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 }
 
 UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
@@ -61,8 +59,15 @@ UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 
 	UCanvasPanelSlot* PanelSlot = ParentPanel->AddChildToCanvas(PlayerImage);
 
+	if (PanelSlot == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PanelSlot is null."));
+		return nullptr;
+	}
+	
 	PanelSlot->SetAlignment(IconAlignment);
 	PanelSlot->SetSize(IconSize);
+	PanelSlot->SetZOrder(1);
 
 	PlayerImage->SetVisibility(ESlateVisibility::Hidden);
 
