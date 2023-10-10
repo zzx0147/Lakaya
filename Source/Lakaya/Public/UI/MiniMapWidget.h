@@ -28,7 +28,7 @@ protected:
 	* @param bMyPlayer 나 자신인지 아닌지의 여부입니다.
 	* @return 동적으로 생성한 이미지를 리턴합니다.
 	*/
-	virtual UImage* CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer = false) { return nullptr; };
+	virtual UImage* CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer = false);
 
 	/**
 	* @brief 월드를 미니맵 좌표로 변환합니다.
@@ -42,7 +42,7 @@ protected:
 	 * @brief 플레이어의 위치를 업데이트합니다.
 	 * @param Team 플레이어의 팀입니다.
 	 */
-	virtual void UpdatePlayerPosition(const ETeam& Team) { return; };
+	virtual void UpdatePlayerPosition(const ETeam& Team);
 
 	/**
 	 * @brief 플레이어의 위치를 업데이트합니다.
@@ -70,6 +70,14 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> MinimapImage;
 
+	// 미니맵상에 Anti팀을 표시하는 아이콘 텍스처입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> AntiIcon;
+
+	// 미니맵상에 Pro팀을 표시하는 아이콘 텍스처입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ProIcon;
+	
 	// 미니맵상에 자기 자신을 표시하는 아이콘 텍스쳐입니다.
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture2D> OwnIcon;
@@ -77,15 +85,19 @@ protected:
 	// 플레이어가 죽게 되었을 때, 미니맵 상에 표시하는 아이콘 텍스처입니다.
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture2D> DeathIcon;
+
+	// AntiIcon, ProIcon을 담는 맵입니다.
+	UPROPERTY()
+	TMap<ETeam, TObjectPtr<UTexture2D>> TeamIcons;
 	
 	// Owner의 소속 팀 입니다.
 	ETeam CurrentTeam;
 	
 	FVector2D IconAlignment;
 	FVector2D IconSize;
-
 	FVector2D MinimapSize;
-
+	FVector2D WidgetOffset;
+	
 	// 미니맵업데이트 여부입니다.
 	bool UpdateMinimap;
 };

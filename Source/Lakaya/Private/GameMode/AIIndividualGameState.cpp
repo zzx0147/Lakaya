@@ -276,7 +276,7 @@ bool AAIIndividualGameState::CanInstigatorClairvoyance(const AActor* InInstigato
 	if (Super::CanInstigatorClairvoyance(InInstigator))
 	{
 		const auto Pawn = Cast<APawn>(InInstigator);
-		return Pawn && Pawn->IsLocallyControlled();
+		return Pawn && Pawn->IsLocallyControlled() && Pawn->IsPlayerControlled();
 	}
 	return false;
 }
