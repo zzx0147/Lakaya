@@ -150,6 +150,9 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_DamageImmuneEndingTime();
 
+	UFUNCTION()
+	virtual bool CanJumpInternal_Implementation() const override;
+
 private:
 	// 단순히 이전 주기의 플레이어 회전과 최신 주기의 플레이어 회전을 선형 외삽한 값을 반환합니다.
 	FQuat GetRawExtrapolatedRotator(const float& CurrentTime) const;
