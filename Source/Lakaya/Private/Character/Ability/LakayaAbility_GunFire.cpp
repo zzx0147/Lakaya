@@ -27,6 +27,10 @@ void ULakayaAbility_GunFire::OnAvatarSet(const FGameplayAbilityActorInfo* ActorI
 	}
 
 	const auto TargetActor = ActorInfo->AvatarActor.Get();
+	if (!TargetActor)
+	{
+		return;
+	}
 
 	FireTraceComponent = Cast<UAbilityComponent_FireTrace>(TargetActor->FindComponentByClass(FireTraceComponentClass));
 	if (FireTraceComponent.IsValid())

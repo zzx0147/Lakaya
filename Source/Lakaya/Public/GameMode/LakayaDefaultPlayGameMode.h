@@ -4,7 +4,6 @@
 #include "GameFramework/GameMode.h"
 #include "AgonesComponent.h"
 #include "LakayaBaseGameState.h"
-#include "AI/AiDroneCharacter.h"
 #include "LakayaDefaultPlayGameMode.generated.h"
 
 namespace MatchState
@@ -90,9 +89,6 @@ protected:
 public:
 	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Drone")
-	TSubclassOf<AAiDroneCharacter> AIDroneClass;
-	
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FName, TSubclassOf<class AInteractableCharacter>> CharacterClasses;
