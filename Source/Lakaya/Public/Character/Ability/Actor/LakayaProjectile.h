@@ -154,7 +154,7 @@ public:
 	 * @brief 투사체를 Authority를 체크하고 투척합니다. 서버에서만 동작합니다.
 	 * @param InThrowData 투사체를 투척하기 위한 데이터입니다.
 	 */
-	void ThrowProjectile(const FProjectileThrowData& InThrowData);
+	void ThrowProjectileAuthoritative(const FProjectileThrowData& InThrowData);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	const FProjectileState& GetProjectileState() const;
@@ -178,6 +178,7 @@ public:
 	FProjectileStateChanged OnProjectileStateChanged;
 
 	virtual void PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker) override;
+	virtual void PostInitializeComponents() override;
 
 protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -217,22 +218,18 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void OnReplicatedCustomStateEnter(const uint8& NewState);
 
-	/**
-	 * CollisionComponent의 오버랩 이벤트에 바인딩된 함수입니다.
-	 * 하위 클래스의 구현에 따라 클라이언트에서도 호출될 수 있지만, 클라이언트에서의 충돌 결과는 신뢰할 수 없으므로 그러지 않는 편이 좋습니다.
-	 */
+	/** CollisionComponent의 오버랩 이벤트에 바인딩된 함수입니다. 클라이언트에서는 충돌 검사를 신뢰할 수 없으므로 호출되지 않습니다. */
 	UFUNCTION(BlueprintNativeEvent)
 	void OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	                         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 	                         const FHitResult& SweepResult);
 
 	/**
-	 * CollisionComponent의 Hit 이벤트에 바인딩된 함수입니다.
+	 * ProjectileMovementComponent의 바운스 이벤트에 바인딩된 함수입니다.
 	 * Block 이벤트는 정적 오브젝트에 대해서만 발동하므로 안전합니다. 따라서 클라이언트에서도 호출됩니다.
 	 */
 	UFUNCTION(BlueprintNativeEvent)
-	void OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	                     FVector NormalImpulse, const FHitResult& Hit);
+	void OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity);
 
 	/**
 	 * 투사체 경로 예측중에 오버랩 이벤트가 발생하면 호출됩니다. 서버에서만 실행됩니다.
@@ -242,7 +239,7 @@ protected:
 	bool OnProjectilePathOverlap(const FPredictProjectilePathResult& PredictResult);
 
 	/**
-	 * 투사체 경로 예측중에 Block 이벤트가 발생하면 호출됩니다. 클라이언트에서도 실행됩니다.
+	 * 투사체 경로 예측중에 Block 이벤트가 발생하면 호출됩니다. 서버와 클라이언트 모두에서 실행됩니다.
 	 * @return false를 반환하면 투사체의 진행을 멈춥니다.
 	 */
 	UFUNCTION(BlueprintNativeEvent)
@@ -278,8 +275,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FPredictProjectilePathParams PredictedProjectileParams;
 
-	virtual void BeginPlay() override;
-
 private:
 	struct FScopedLock
 	{
@@ -300,14 +295,12 @@ private:
 	};
 
 	FORCEINLINE FProjectileState& InternalGetProjectileState() { return HasAuthority() ? ProjectileState : LocalState; }
-	void ThrowProjectileAuthoritative(const FProjectileThrowData& InThrowData);
-	void ThrowProjectile(const FProjectileThrowData& InThrowData, ECollisionEnabled::Type&& CollisionEnabled);
+	void ThrowProjectile(const FProjectileThrowData& InThrowData);
 	void SetProjectileState(const EProjectileState& InProjectileState);
 	void BroadcastOnProjectileStateChanged(const FProjectileState& OldState, const FProjectileState& NewState);
 	void RejectProjectile();
 	void StopThrowProjectile();
-	bool MarchProjectileRecursive(FPredictProjectilePathResult& OutResult,
-	                              const ECollisionEnabled::Type& CollisionEnabled, float CurrentTime = 0.f);
+	bool MarchProjectileRecursive(FPredictProjectilePathResult& OutResult, float CurrentTime = 0.f);
 
 	template <class ArgType, class FunType = typename TMemFunPtrType<false, FProjectileState, bool(ArgType)>::Type>
 	void InternalSetProjectileState(FunType&& FunPtr, ArgType&& Arg);
