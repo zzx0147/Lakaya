@@ -11,24 +11,27 @@ class LAKAYA_API UTeamScoreWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+public:
+	explicit UTeamScoreWidget(const FObjectInitializer& ObjectInitializer);
+
+	void SetTeamScore(const ETeam& Team,const float& NewScore);
+	void SetMaxScore(const float& ArgMaxScore);
+	void SetMaxScoreVisibility(const bool& IsVisible);
+	
 protected:
 	virtual void NativeConstruct() override;
-	
+
 private:
-	UFUNCTION()
-	void OnChangeAntiTeamScore(const float& NewScore) const;
-
-	UFUNCTION()
-	void OnChangeProTeamScore(const float& NewScore) const;
-
-	UFUNCTION()
-	void OnTeamScoreChanged(const ETeam& Team, const float& Score) const;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> AntiTeamScoreText;
 
 	UPROPERTY(meta = (BindWidget))
-	TWeakObjectPtr<UTextBlock> AntiTeamScoreText;
+	TObjectPtr<UTextBlock> ProTeamScoreText;
 
 	UPROPERTY(meta = (BindWidget))
-	TWeakObjectPtr<UTextBlock> ProTeamScoreText;
-
+	TObjectPtr<UTextBlock> MaxScoreText;
+	
 	float MaxScore;
+
+	FText ScoreFormatText;
 };
