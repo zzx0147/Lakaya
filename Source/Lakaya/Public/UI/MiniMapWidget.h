@@ -54,12 +54,11 @@ protected:
 public:
 	FORCEINLINE const ETeam& GetTeam() const { return CurrentTeam; }
 	FORCEINLINE const bool& GetUpdateMinimap() const { return UpdateMinimap; }
+	FORCEINLINE const TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>>& GetPlayersByMinimap() const { return PlayersByMinimap; }
 	
 	FORCEINLINE void SetTeam(const ETeam& Team) { CurrentTeam = Team; }
 	FORCEINLINE void SetUpdateMinimap(const bool& bUpdate) { UpdateMinimap = bUpdate; }
-	
-	// 미니맵상에서 자신과 상대(AI포함)의 위치를 업데이트하기 위한 컨테이너입니다.
-	TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>> PlayersByMinimap;
+	FORCEINLINE void SetPlayersByMinimap(const ETeam& Team, ALakayaBasePlayerState* NewPlayerState, UImage* NewImage) { if (NewImage != nullptr) PlayersByMinimap[Team].Emplace(NewPlayerState, NewImage); }
 
 protected:
 	// 위젯의 최상단 CanvasPanel
@@ -89,6 +88,9 @@ protected:
 	// AntiIcon, ProIcon을 담는 맵입니다.
 	UPROPERTY()
 	TMap<ETeam, TObjectPtr<UTexture2D>> TeamIcons;
+
+	// 미니맵상에서 자신과 상대(AI포함)의 위치를 업데이트하기 위한 컨테이너입니다.
+	TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>> PlayersByMinimap;
 	
 	// Owner의 소속 팀 입니다.
 	ETeam CurrentTeam;

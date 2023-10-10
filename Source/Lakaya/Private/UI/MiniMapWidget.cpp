@@ -17,6 +17,9 @@ void UMinimapWidget::NativeConstruct()
 	
 	IconAlignment = FVector2D(0.5f, 0.5f);
 	IconSize = FVector2D(12.0f, 12.0f);
+
+	PlayersByMinimap.Emplace(ETeam::Anti);
+	PlayersByMinimap.Emplace(ETeam::Pro);
 }
 
 void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
