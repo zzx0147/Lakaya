@@ -361,6 +361,11 @@ void ALakayaBaseCharacter::OnRep_DamageImmuneEndingTime()
 	                                DamageImmuneEndingTime - GetServerTime());
 }
 
+bool ALakayaBaseCharacter::CanJumpInternal_Implementation() const
+{
+	return JumpIsAllowedInternal();
+}
+
 FQuat ALakayaBaseCharacter::GetRawExtrapolatedRotator(const float& CurrentTime) const
 {
 	// 이전 주기의 회전 정보와, 최신 주기의 회전 정보를 구면보간하여 반환합니다.

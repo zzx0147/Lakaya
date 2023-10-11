@@ -13,6 +13,7 @@
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/GameResultWidget.h"
 #include "UI/GameScoreBoardWidget.h"
+#include "UI/GameTimeWidget.h"
 #include "UI/MatchStartWaitWidget.h"
 #include "UI/OccupationCharacterSelectWidget.h"
 #include "UI/HUDOccupationMinimapWidget.h"
@@ -77,6 +78,9 @@ void AOccupationGameState::BeginPlay()
 			{
 				TeamScoreWidget->AddToViewport();
 				TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
+				TeamScoreWidget->SetMaxScore(MaxScore);
+				TeamScoreWidget->SetMaxScoreVisibility(false);
+				OnTeamScoreSignature.AddUObject(TeamScoreWidget,&UTeamScoreWidget::SetTeamScore);
 			}
 			else UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidget is null."));
 		}
@@ -156,8 +160,6 @@ void AOccupationGameState::BeginPlay()
 			{
 				HUDMinimapWidget->AddToViewport();
 				HUDMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
-				HUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
-				HUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
 			}
 		}
 
@@ -169,8 +171,6 @@ void AOccupationGameState::BeginPlay()
 			{
 				TabMinimapWidget->AddToViewport();
 				TabMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
-				TabMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
-				TabMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
 			}
 		}
 	}
@@ -198,8 +198,6 @@ void AOccupationGameState::HandleMatchHasStarted()
 	{
 		HUDMinimapWidget->SetUpdateMinimap(true);
 		HUDMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		HUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
-		HUDMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
 
 		if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 			LocalController && LocalController->IsLocalController())
@@ -216,12 +214,9 @@ void AOccupationGameState::HandleMatchHasStarted()
 		}
 	}
 
-	// TODO : 게임이 끝났을 경우에는, UpdateMinimap을 false 바꿔줘야 합니다.
 	if (TabMinimapWidget)
 	{
 		TabMinimapWidget->SetUpdateMinimap(true);
-		TabMinimapWidget->PlayersByMinimap.Emplace(ETeam::Anti);
-		TabMinimapWidget->PlayersByMinimap.Emplace(ETeam::Pro);
 
 		if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 			LocalController && LocalController->IsLocalController())
@@ -259,20 +254,21 @@ void AOccupationGameState::HandleMatchHasStarted()
 	                                (MatchWaitDuration - 10 + MatchStartWaitWidgetLifeTime), false);
 
 	// 게임이 본격적으로 시작이 되면 StartMessage위젯을 띄워줍니다.
-	TimerDelegate.BindLambda([this]
+	TimerDelegate.BindWeakLambda(this,[this]
 	{
-		if (this == nullptr) return;
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		DestroyShieldWallObject();
+		if(TeamScoreWidget) TeamScoreWidget->SetMaxScoreVisibility(true);
+		if(InGameTimeWidget.IsValid()) InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageVisible, TimerDelegate, MatchWaitDuration, false);
 
 	// StartMessage위젯을 5초 뒤에 비활성화 해줍니다.
-	TimerDelegate.BindLambda([this]
+	TimerDelegate.BindWeakLambda(this,[this]
 	{
-		if (this == nullptr) return;
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
+	
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, TimerDelegate,
 	                                MatchWaitDuration + MatchStartWidgetLifeTime, false);
 }
@@ -382,8 +378,8 @@ void AOccupationGameState::UpdatePlayerByMinimap(const ETeam& Team, ALakayaBaseP
 	for (auto& Players : PlayersByTeamMap[Team])
 	{
 		const bool bMyPlayer = (Players == PlayerState);
-		TabMinimapWidget->PlayersByMinimap[Team].Emplace(Players, TabMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
-		HUDMinimapWidget->PlayersByMinimap[Team].Emplace(Players, HUDMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
+		TabMinimapWidget->SetPlayersByMinimap(Team, Players, TabMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
+		HUDMinimapWidget->SetPlayersByMinimap(Team, Players, HUDMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
 	}
 }
 
@@ -551,8 +547,6 @@ void AOccupationGameState::SetTabMinimapVisibility(const bool& Visible)
 
 void AOccupationGameState::InternalSetScoreBoardVisibility(const bool& Visible) const
 {
-	UE_LOG(LogTemp, Warning, TEXT("InternalSetScoreBoardVisibility"));
-
 	if (!ScoreBoard.IsValid())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_ScoreBoard is null."));
