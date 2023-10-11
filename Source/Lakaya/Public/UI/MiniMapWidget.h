@@ -39,13 +39,13 @@ protected:
 	virtual FVector2D ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation, const FVector2D& MiniMapSize);
 
 	/**
-	 * @brief 플레이어의 위치를 업데이트합니다.
+	 * @brief 플레이어팀의 위치를 업데이트합니다.
 	 * @param Team 플레이어의 팀입니다.
 	 */
 	virtual void UpdatePlayerPosition(const ETeam& Team);
 
 	/**
-	 * @brief 플레이어의 위치를 업데이트합니다.
+	 * @brief 특정 적의 위치를 업데이트합니다.
 	 * @param NewTeam 위치를 업데이트 할 플레이어의 팀입니다.
 	 * @param NewPlayerState 위치를 업데이트 할 플레이어의 상태입니다.
 	 */
