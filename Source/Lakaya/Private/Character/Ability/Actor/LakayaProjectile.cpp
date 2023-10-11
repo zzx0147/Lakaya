@@ -76,15 +76,15 @@ ALakayaProjectile::ALakayaProjectile()
 	SetRootComponent(CollisionComponent);
 
 	// 정적 오브젝트에 대해서만 충돌이 가능하도록 설정합니다. 하위 클래스에서 필요한 콜리전 채널에 대해 Overlap을 설정하는 것은 가능합니다.
-	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-	CollisionComponent->SetGenerateOverlapEvents(true);
 	CollisionComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &ThisClass::OnProjectileOverlap);
-	CollisionComponent->OnComponentHit.AddUniqueDynamic(this, &ThisClass::OnProjectileHit);
 
-	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(
-		TEXT("ProjectileMovementComponent"));
+	ProjectileMovementComponent =
+		CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
+	ProjectileMovementComponent->SetUpdatedComponent(CollisionComponent);
+	ProjectileMovementComponent->OnProjectileBounce.AddUniqueDynamic(this, &ThisClass::OnProjectileBounce);
 	ProjectileMovementComponent->bShouldBounce = true;
 	ProjectileMovementComponent->bAutoActivate = false;
 
@@ -109,14 +109,16 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData,
 	Key.NewRejectedDelegate().BindUObject(this, &ThisClass::RejectProjectile);
 
 	SetProjectileState(EProjectileState::Perform);
-	ThrowProjectile(InThrowData, ECollisionEnabled::QueryAndPhysics);
+	ThrowProjectile(InThrowData);
 }
 
-void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
+void ALakayaProjectile::ThrowProjectileAuthoritative(const FProjectileThrowData& InThrowData)
 {
 	if (ensure(HasAuthority()))
 	{
-		ThrowProjectileAuthoritative(InThrowData);
+		ThrowData = InThrowData;
+		SetProjectileState(EProjectileState::Perform);
+		ThrowProjectile(ThrowData);
 	}
 }
 
@@ -140,9 +142,11 @@ void ALakayaProjectile::PreReplication(IRepChangedPropertyTracker& ChangedProper
 	DOREPLIFETIME_ACTIVE_OVERRIDE(ALakayaProjectile, ThrowData, !IsActualCollapsed());
 }
 
-void ALakayaProjectile::BeginPlay()
+void ALakayaProjectile::PostInitializeComponents()
 {
-	Super::BeginPlay();
+	Super::PostInitializeComponents();
+
+	CollisionComponent->SetGenerateOverlapEvents(HasAuthority());
 
 	PredictedProjectileParams.OverrideGravityZ = ProjectileMovementComponent->ShouldApplyGravity()
 		                                             ? ProjectileMovementComponent->GetGravityZ()
@@ -156,15 +160,7 @@ void ALakayaProjectile::SetProjectileState(const EProjectileState& InProjectileS
 	InternalSetProjectileState(&FProjectileState::SetProjectileState, InProjectileState);
 }
 
-void ALakayaProjectile::ThrowProjectileAuthoritative(const FProjectileThrowData& InThrowData)
-{
-	ThrowData = InThrowData;
-	SetProjectileState(EProjectileState::Perform);
-	ThrowProjectile(ThrowData, ECollisionEnabled::QueryAndPhysics);
-}
-
-void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData,
-                                        ECollisionEnabled::Type&& CollisionEnabled)
+void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 {
 	RecentPerformedTime = InThrowData.ServerTime;
 	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity,
@@ -179,7 +175,7 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData,
 	{
 		OnStartPathPrediction(InThrowData);
 
-		if (!MarchProjectileRecursive(Result, CollisionEnabled))
+		if (!MarchProjectileRecursive(Result))
 		{
 			return;
 		}
@@ -197,7 +193,7 @@ void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData,
 	ProjectileMovementComponent->Velocity = Velocity;
 	ProjectileMovementComponent->Activate();
 	SetActorLocation(Location);
-	CollisionComponent->SetCollisionEnabled(CollisionEnabled);
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
 float ALakayaProjectile::GetServerWorldTimeSeconds() const
@@ -239,12 +235,6 @@ void ALakayaProjectile::OnReplicatedCustomStateExit_Implementation(const uint8& 
 	UE_LOG(LogActor, Log, TEXT("[%s] Custom state Exit : %d"), *GetName(), OldState);
 }
 
-void ALakayaProjectile::OnProjectileHit_Implementation(UPrimitiveComponent* HitComponent, AActor* OtherActor,
-                                                       UPrimitiveComponent* OtherComp, FVector NormalImpulse,
-                                                       const FHitResult& Hit)
-{
-}
-
 bool ALakayaProjectile::OnProjectilePathOverlap_Implementation(const FPredictProjectilePathResult& PredictResult)
 {
 	return true;
@@ -276,7 +266,7 @@ void ALakayaProjectile::RejectProjectile()
 	{
 		// 서버에서 타겟 데이터를 거부하고 새로 투사체를 투척한 경우이므로, 간단히 투사체를 껐다가 다시 켜줍니다.
 		StopThrowProjectile();
-		ThrowProjectile(ThrowData, ECollisionEnabled::QueryAndPhysics);
+		ThrowProjectile(ThrowData);
 	}
 	else
 	{
@@ -297,8 +287,7 @@ void ALakayaProjectile::StopThrowProjectile()
 	ClearIgnoredInPerformActors();
 }
 
-bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& OutResult,
-                                                 const ECollisionEnabled::Type& CollisionEnabled, float CurrentTime)
+bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& OutResult, float CurrentTime)
 {
 	// 이미 예측된 부분은 스킵하기 위해 잠시 MaxSimTime을 조정합니다.
 	const auto MaxSimTime = PredictedProjectileParams.MaxSimTime;
@@ -365,7 +354,7 @@ bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& O
 			//TODO: 벽이나 바닥과 같은 오브젝트에 투사체가 걸쳐져있거나, 그 안에 있습니다. 이 투사체를 꺼내서 다시 투사체를 던지도록 합니다.
 		}
 
-		if (CollisionEnabledHasPhysics(CollisionEnabled) && !OnProjectilePathBlock(OutResult))
+		if (!OnProjectilePathBlock(OutResult))
 		{
 			return false;
 		}
@@ -383,7 +372,7 @@ bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& O
 	}
 	else
 	{
-		if (HitResponse == ECR_Overlap && CollisionEnabledHasQuery(CollisionEnabled)
+		if (HitResponse == ECR_Overlap && CollisionComponent->GetGenerateOverlapEvents()
 			&& !OnProjectilePathOverlap(OutResult))
 		{
 			return false;
@@ -396,7 +385,7 @@ bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& O
 	}
 
 	PredictedProjectileParams.StartLocation = OutResult.LastTraceDestination.Location;
-	return MarchProjectileRecursive(OutResult, CollisionEnabled, CurrentTime + OutResult.LastTraceDestination.Time);
+	return MarchProjectileRecursive(OutResult, CurrentTime + OutResult.LastTraceDestination.Time);
 }
 
 bool ALakayaProjectile::OnEventFromThrowTriggeredInPathPredict_Implementation(const FVector& Location,
@@ -406,6 +395,10 @@ bool ALakayaProjectile::OnEventFromThrowTriggeredInPathPredict_Implementation(co
 }
 
 void ALakayaProjectile::OnEventFromThrowTriggeredInPhysics_Implementation()
+{
+}
+
+void ALakayaProjectile::OnProjectileBounce_Implementation(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
 {
 }
 
@@ -457,7 +450,7 @@ void ALakayaProjectile::OnRep_ProjectileState()
 	{
 	case EProjectileState::Collapsed: break;
 	case EProjectileState::Perform:
-		ThrowProjectile(ThrowData, ECollisionEnabled::QueryAndPhysics);
+		ThrowProjectile(ThrowData);
 		break;
 	case EProjectileState::Custom:
 		OnReplicatedCustomStateEnter(LocalState.GetCustomState());
