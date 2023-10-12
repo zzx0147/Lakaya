@@ -233,6 +233,13 @@ protected:
 	void OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity);
 
 	/**
+	 * ProjectileMovementComponent의 스탑 이벤트에 바인딩된 함수입니다.
+	 * 투사체의 운동은 항상 안전하도록 구현되었으므로 클라이언트에서도 호출됩니다.
+	 */
+	UFUNCTION(BlueprintNativeEvent)
+	void OnProjectileStop(const FHitResult& ImpactResult);
+
+	/**
 	 * 투사체 경로 예측중에 오버랩 이벤트가 발생하면 호출됩니다. 서버에서만 실행됩니다.
 	 * @return false를 반환하면 투사체의 진행을 멈춥니다.
 	 */

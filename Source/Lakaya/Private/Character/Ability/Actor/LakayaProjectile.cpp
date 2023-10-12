@@ -85,6 +85,7 @@ ALakayaProjectile::ALakayaProjectile()
 		CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->SetUpdatedComponent(CollisionComponent);
 	ProjectileMovementComponent->OnProjectileBounce.AddUniqueDynamic(this, &ThisClass::OnProjectileBounce);
+	ProjectileMovementComponent->OnProjectileStop.AddUniqueDynamic(this, &ThisClass::OnProjectileStop);
 	ProjectileMovementComponent->bShouldBounce = true;
 	ProjectileMovementComponent->bAutoActivate = false;
 
@@ -399,6 +400,10 @@ void ALakayaProjectile::OnEventFromThrowTriggeredInPhysics_Implementation()
 }
 
 void ALakayaProjectile::OnProjectileBounce_Implementation(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
+{
+}
+
+void ALakayaProjectile::OnProjectileStop_Implementation(const FHitResult& ImpactResult)
 {
 }
 
