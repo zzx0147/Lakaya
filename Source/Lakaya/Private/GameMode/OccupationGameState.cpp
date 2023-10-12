@@ -558,8 +558,6 @@ void AOccupationGameState::InternalSetScoreBoardVisibility(const bool& Visible) 
 
 void AOccupationGameState::InternalSetTabMinimapVisibility(const bool& Visible) const
 {
-	UE_LOG(LogTemp, Warning, TEXT("InternalSetTabMinimapVisibility"));
-
 	if (!TabMinimapWidget)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState_OccupationTabMinimapWidget is null."));

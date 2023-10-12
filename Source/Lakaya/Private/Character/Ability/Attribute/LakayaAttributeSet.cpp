@@ -82,6 +82,10 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 	if (Attribute == GetHealthAttribute())
 	{
 		OnHealthChanged.Broadcast(NewValue);
+		if(OldValue > NewValue)
+		{
+			SetUltimateGauge(UltimateGauge.GetBaseValue() + (OldValue - NewValue) * UltimateGainOnAttacked.GetCurrentValue());
+		}
 	}
 	else if (Attribute == GetMaxHealthAttribute())
 	{
@@ -150,9 +154,25 @@ void ULakayaAttributeSet::OnRep_MaxUltimateGauge(const FGameplayAttributeData& O
 	UpdateMaxTagOnReplicated(GetMaxUltimateGaugeAttribute());
 }
 
+void ULakayaAttributeSet::OnRep_UltimateGainOnAttack(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, UltimateGainOnAttack, OldValue);
+}
+
+void ULakayaAttributeSet::OnRep_UltimateGainOnAttacked(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, UltimateGainOnAttacked, OldValue);
+}
+
+void ULakayaAttributeSet::OnRep_UltimateGainOnSecond(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, UltimateGainOnSecond, OldValue);
+}
+
 ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(-1.0f), CurrentAmmo(-1.0f),
                                              AttackPoint(40.0f), SkillStack(3.0f), MaxSkillStack(3.0f),
-                                             UltimateGauge(-1.0f), MaxUltimateGauge(-1.0f)
+                                             UltimateGauge(-1.0f), MaxUltimateGauge(-1.0f), UltimateGainOnAttack(1.0f),
+                                             UltimateGainOnAttacked(1.0f), UltimateGainOnSecond(0.0f)
 {
 	bOutOfHealth = false;
 
@@ -178,4 +198,7 @@ void ULakayaAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, EnergyHaste, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, UltimateGauge, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, MaxUltimateGauge, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, UltimateGainOnAttack, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, UltimateGainOnAttacked, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, UltimateGainOnSecond, COND_None, REPNOTIFY_Always);
 }
