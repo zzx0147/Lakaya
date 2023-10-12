@@ -131,11 +131,15 @@ public:
 	FORCEINLINE TSubclassOf<class UCharacterWidget> GetCharacterWidgetClass() const { return CharacterWidgetClass; }
 
 	/**
-	* @brief 해당 플레이어가 카메라에 보이는지 확인합니다.
-	* @param State 확인할 플레이어의 상태입니다.
+	* @brief 해당 적이 카메라에 보이는지 확인합니다.
+	* @param EnemyTeam 적의 소속팀 입니다.
+	* @param EnemyState 확인할 적의 상태입니다.
 	* @return 카메라에 보인다면 true, 아니라면 false를 반환합니다.
 	*/
-	bool IsEnemyVisibleInCamera(const TWeakObjectPtr<ALakayaBasePlayerState> State) const;
+	bool IsEnemyVisibleInCamera(const ETeam& EnemyTeam, const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState);
+
+	UFUNCTION(Server, Reliable)
+	void Server_OnEnemySpotted(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState);
 
 protected:
 	virtual void SetTeam_Implementation(const ETeam& Team);
@@ -285,4 +289,8 @@ private:
 	TWeakObjectPtr<UMaterialInstanceDynamic> CharacterOverlayMaterial;
 	FTimerHandle DamageImmuneTimer;
 	FLakayaAbilityHandleContainer AbilityHandleContainer;
+
+// public:
+// 	UPROPERTY(Replicated)
+// 	bool bIsSpottedByTeammate;
 };

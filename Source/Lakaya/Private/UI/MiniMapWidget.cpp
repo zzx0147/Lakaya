@@ -20,6 +20,7 @@ void UMinimapWidget::NativeConstruct()
 
 	PlayersByMinimap.Emplace(ETeam::Anti);
 	PlayersByMinimap.Emplace(ETeam::Pro);
+
 }
 
 void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -40,17 +41,20 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
 	{
 		const auto& State = Enemy.Key;
-		
-		if (const ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayer()->GetPawn()))
+		const ETeam& NewTeam = State->GetTeam();
+	
+		if (ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayer()->GetPawn()))
 		{
-			if (LakayaCharacter->IsEnemyVisibleInCamera(State))
+			bool bIsVisibleInCamera = LakayaCharacter->IsEnemyVisibleInCamera(NewTeam, State);
+
+			if (bIsVisibleInCamera || LakayaCharacter->IsEnemyVisibleInCamera(EnemyTeam, State))
 			{
 				UpdatePlayerPosition(EnemyTeam, State);
 				continue;
 			}
 
-			if(Enemy.Value->GetVisibility() != ESlateVisibility::Hidden)
-				Enemy.Value->SetVisibility(ESlateVisibility::Hidden);
+			// if(Enemy.Value->GetVisibility() != ESlateVisibility::Hidden)
+				// Enemy.Value->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }

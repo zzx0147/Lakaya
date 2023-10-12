@@ -30,3 +30,9 @@ UImage* UTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bM
 {
 	return Super::CreatePlayerImage(NewTeam, bMyPlayer);
 }
+
+void UTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
+	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+{
+	Super::UpdatePlayerPosition(NewTeam, NewPlayerState);
+}
