@@ -18,7 +18,7 @@
 #include "UI/RespawnWidget.h"
 #include "UI/SkillProgressBar.h"
 #include "UI/SkillWidget.h"
- 
+
 void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -62,11 +62,17 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	AbilitySystem->OnActiveGameplayEffectAddedDelegateToSelf.AddUObject(
 		this, &ALakayaBasePlayerState::OnActiveGameplayEffectAddedDelegateToSelfCallback);
 
+	AbilitySystem->OnGameplayEffectAppliedDelegateToTarget.AddUObject(
+		this, &ALakayaBasePlayerState::OnGameplayEffectAppliedDelegateToTargetCallback);
+	
+
+
 	// AbilitySystem->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 
-	AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetSkillStackAttribute()).AddUObject(this,&ALakayaBasePlayerState::OnChangeSkillStackAttribute);
+	AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetSkillStackAttribute()).AddUObject(
+		this, &ALakayaBasePlayerState::OnChangeSkillStackAttribute);
 
-	OnRespawnTimeChanged.AddUObject(this,&ALakayaBasePlayerState::OnRespawnTimeChangedCallback);
+	OnRespawnTimeChanged.AddUObject(this, &ALakayaBasePlayerState::OnRespawnTimeChangedCallback);
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -144,12 +150,13 @@ void ALakayaBasePlayerState::OnRep_Owner()
 			HealthWidget->SetCurrentHealth(Health);
 		}
 
-		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(LocalController, DirectionDamageIndicatorClass);
-		if(DirectionDamageIndicatorWidget)
+		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(
+			LocalController, DirectionDamageIndicatorClass);
+		if (DirectionDamageIndicatorWidget)
 		{
 			DirectionDamageIndicatorWidget->AddToViewport();
 		}
-		
+
 		// SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
 		// if (SkillWidget)
 		// {
@@ -178,7 +185,7 @@ void ALakayaBasePlayerState::SetTeam(const ETeam& DesireTeam)
 
 const UDynamicCrossHairWidget* ALakayaBasePlayerState::GetDynamicCrossHairWidget() const
 {
-	if(CharacterWidget)
+	if (CharacterWidget)
 	{
 		return CharacterWidget->GetCrossHairWidget();
 	}
@@ -191,7 +198,7 @@ void ALakayaBasePlayerState::SetRespawnTimer(const float& ReservedRespawnTime, c
 	const auto CurrentTime = GetServerTime();
 	UpdateAliveStateWithRespawnTime(CurrentTime);
 	OnRespawnTimeChanged.Broadcast(RespawnTime);
-	
+
 	if (ReservedRespawnTime < CurrentTime) return;
 	static FTimerDelegate TimerDelegate;
 	TimerDelegate.BindUObject(this, &ALakayaBasePlayerState::RespawnTimerCallback, Callback);
@@ -363,13 +370,15 @@ void ALakayaBasePlayerState::InitializeStatus()
 		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxSkillStack")),
 		                                               Character->GetCharacterMaxSkillStack());
 		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxUltimateGauge")),
-													   Character->GetCharacterMaxUltimateGauge());
-		
+		                                               Character->GetCharacterMaxUltimateGauge());
+
 		AbilitySystem->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 
 		const FGameplayEffectSpecHandle RegenEffectSpecHandle = AbilitySystem->MakeOutgoingSpec(
-					StatRegenEffect, 0, AbilitySystem->MakeEffectContext());
+			StatRegenEffect, 0, AbilitySystem->MakeEffectContext());
 		AbilitySystem->ApplyGameplayEffectSpecToSelf(*RegenEffectSpecHandle.Data.Get());
+
+		
 	}
 }
 
@@ -404,7 +413,8 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		Character->SetStencilMask(UniqueRenderMask);
 		Character->SetAlly(bIsAlly);
 
-		if (const auto CharacterWidgetClass = Character->GetCharacterWidgetClass(); CharacterWidgetClass && GetPlayerController() && GetPlayerController()->IsLocalController())
+		if (const auto CharacterWidgetClass = Character->GetCharacterWidgetClass(); CharacterWidgetClass &&
+			GetPlayerController() && GetPlayerController()->IsLocalController())
 		{
 			CharacterWidget = CreateWidget<UCharacterWidget>(GetPlayerController(), CharacterWidgetClass);
 			if (CharacterWidget)
@@ -412,19 +422,18 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 				CharacterWidget->AddToViewport();
 				BindAllSkillToWidget();
 
-				if(CharacterWidget->GetGamePlayBulletWidget())
+				if (CharacterWidget->GetGamePlayBulletWidget())
 				{
 					AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxAmmoAttribute()).
-					               AddUObject(CharacterWidget->GetGamePlayBulletWidget(),&UGamePlayBulletWidget::OnChangeMaxBulletAttribute);
-					AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetCurrentAmmoAttribute()).
-					AddUObject(CharacterWidget->GetGamePlayBulletWidget(),&UGamePlayBulletWidget::OnChangeCurrentBulletAttribute);;
+					               AddUObject(CharacterWidget->GetGamePlayBulletWidget(),
+					                          &UGamePlayBulletWidget::OnChangeMaxBulletAttribute);
+					AbilitySystem->GetGameplayAttributeValueChangeDelegate(
+						               LakayaAttributeSet->GetCurrentAmmoAttribute()).
+					               AddUObject(CharacterWidget->GetGamePlayBulletWidget(),
+					                          &UGamePlayBulletWidget::OnChangeCurrentBulletAttribute);;
 				}
-				
 			}
 		}
-
-
-		
 	}
 	else
 	{
@@ -480,7 +489,7 @@ void ALakayaBasePlayerState::OnRep_RespawnTime()
 	const auto CurrentTime = GetServerTime();
 	UpdateAliveStateWithRespawnTime(CurrentTime);
 	OnRespawnTimeChanged.Broadcast(RespawnTime);
-	
+
 	// 부활시간에 OnAliveStateChanged 이벤트가 호출될 수 있도록 타이머를 설정합니다.
 	static FTimerDelegate Delegate;
 	Delegate.BindUObject(this, &ALakayaBasePlayerState::SetAliveState, true);
@@ -531,7 +540,7 @@ void ALakayaBasePlayerState::SetAliveState(bool AliveState)
 {
 	if (bRecentAliveState == AliveState) return;
 	bRecentAliveState = AliveState;
-	if(CharacterWidget) CharacterWidget->SetAliveState(bRecentAliveState);
+	if (CharacterWidget) CharacterWidget->SetAliveState(bRecentAliveState);
 	OnAliveStateChanged.Broadcast(AliveState);
 }
 
@@ -544,27 +553,30 @@ void ALakayaBasePlayerState::RespawnTimerCallback(FRespawnTimerDelegate Callback
 void ALakayaBasePlayerState::BindAllSkillToWidget()
 {
 	//TODO: 여기서 스킬과 위젯을 바인딩하면 됨
-	if(!CharacterWidget->GetSkillWidget()) return;
+	if (!CharacterWidget->GetSkillWidget()) return;
 
-	for(const auto& SkillProgressBar : CharacterWidget->GetSkillWidget()->GetAllSkillProgressBar())
+	for (const auto& SkillProgressBar : CharacterWidget->GetSkillWidget()->GetAllSkillProgressBar())
 	{
 		switch (SkillProgressBar->GetProgressType())
 		{
 		case ESkillProgressBarType::CoolTime:
 			break;
 		case ESkillProgressBarType::StackingRegen:
-			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetSkillStackAttribute()).AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeSkillStackAttribute);
-			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxSkillStackAttribute()).AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeMaxSkillStackAttribute);
+			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetSkillStackAttribute()).
+			               AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeSkillStackAttribute);
+			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxSkillStackAttribute()).
+			               AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeMaxSkillStackAttribute);
 			break;
 		case ESkillProgressBarType::Ultimate:
-			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetUltimateGaugeAttribute()).AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeUltimateGaugeAttribute);
-			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxUltimateGaugeAttribute()).AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeMaxUltimateGaugeAttribute);
+			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetUltimateGaugeAttribute()).
+			               AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeUltimateGaugeAttribute);
+			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxUltimateGaugeAttribute()).
+			               AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeMaxUltimateGaugeAttribute);
 			break;
 		case ESkillProgressBarType::None:
 		default: ;
 		}
 	}
-	
 }
 
 void ALakayaBasePlayerState::OnActiveGameplayEffectAddedDelegateToSelfCallback(
@@ -572,26 +584,29 @@ void ALakayaBasePlayerState::OnActiveGameplayEffectAddedDelegateToSelfCallback(
 	FActiveGameplayEffectHandle ActiveHandle)
 {
 	const FGameplayTagContainer EffectTags = SpecApplied.Def->InheritableGameplayEffectTags.CombinedTags;
-	
-	if(!(CharacterWidget && CharacterWidget->GetSkillWidget())) return;
-	for(const auto& SkillProgressBar : CharacterWidget->GetSkillWidget()->GetAllSkillProgressBar())
+
+	if (!(CharacterWidget && CharacterWidget->GetSkillWidget())) return;
+	for (const auto& SkillProgressBar : CharacterWidget->GetSkillWidget()->GetAllSkillProgressBar())
 	{
-		if(SkillProgressBar->GetProgressType() == ESkillProgressBarType::None ||
-			!EffectTags.HasAnyExact(FGameplayTagContainer(SkillProgressBar->GetTag()))) continue;
-		
-		if(EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.AbilityCooldown")))))
+		if (SkillProgressBar->GetProgressType() == ESkillProgressBarType::None ||
+			!EffectTags.HasAnyExact(FGameplayTagContainer(SkillProgressBar->GetTag())))
+			continue;
+
+		if (EffectTags.HasAnyExact(
+			FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.AbilityCooldown")))))
 		{
-			SkillProgressBar->StartCoolTime(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->StartWorldTime,SpecApplied.Duration);
+			SkillProgressBar->StartCoolTime(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->StartWorldTime,
+			                                SpecApplied.Duration);
 		}
 		//적용된 이펙트가 스킬 스택 리젠 이펙트일 경우
-		else if(EffectTags.HasAnyExact(FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.SkillStackRegen")))))
+		else if (EffectTags.HasAnyExact(
+			FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.SkillStackRegen")))))
 		{
 			//SkillProgressBar->StartStackingRegen(AbilitySystem->GetActiveGameplayEffect(ActiveHandle)->StartWorldTime,SpecApplied.Period, true);			
 		}
 	}
-	
-	
-	
+
+
 	//
 	// ESkillKey TargetSkillKey = ESkillKey::None;
 	//
@@ -623,31 +638,58 @@ void ALakayaBasePlayerState::OnActiveGameplayEffectAddedDelegateToSelfCallback(
 	// }
 }
 
+void ALakayaBasePlayerState::OnGameplayEffectAppliedDelegateToTargetCallback(
+	UAbilitySystemComponent* ArgAbilitySystemComponent, const FGameplayEffectSpec& SpecApplied,
+	FActiveGameplayEffectHandle ActiveHandle)
+{
+	static const FGameplayAttribute HealthAttribute = LakayaAttributeSet->GetHealthAttribute();
+
+	for (const auto& ModifiedAttribute : SpecApplied.ModifiedAttributes)
+	{
+		//이펙트로 적의 체력을 깎았을 때데미지를 줬을 때)
+		if (ModifiedAttribute.Attribute == HealthAttribute && ModifiedAttribute.TotalMagnitude < 0.0f)
+		{
+			// ModifiedAttribute.TotalMagnitude 변경된 어트리뷰트의 총량 데미지 200을 받았다면 -200
+			
+			const FGameplayEffectSpecHandle SpecHandle = AbilitySystem->MakeOutgoingSpec(
+				GainUltimateOnAttackEffect, 0, AbilitySystem->MakeEffectContext());
+			
+			SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.Damage")), -ModifiedAttribute.TotalMagnitude);
+
+			AbilitySystem->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+			
+			return;
+		}
+	}
+
+	// SpecApplied.GetEffectContext().GetInstigator()
+}
+
 void ALakayaBasePlayerState::OnChangeSkillStackAttribute(const FOnAttributeChangeData& NewValue)
 {
 	// const auto MaxReached = NewValue.NewValue > LakayaAttributeSet->GetMaxSkillStack() || FMath::IsNearlyEqual(NewValue.NewValue, LakayaAttributeSet->GetMaxSkillStack());
 	// AbilitySystem->SetLooseGameplayTagCount(FGameplayTag::RequestGameplayTag(TEXT("AttributeEvent.ReachMaxSkillStack")), MaxReached ? 1 : 0);
 	if (CharacterWidget && CharacterWidget->GetSkillWidget() && FMath::IsNearlyEqual(NewValue.NewValue, 0.0f))
 	{
-		for(const auto& ProgressBar : CharacterWidget->GetSkillWidget()->GetAllSkillProgressBar())
+		for (const auto& ProgressBar : CharacterWidget->GetSkillWidget()->GetAllSkillProgressBar())
 		{
-			if(ProgressBar->GetProgressType() == ESkillProgressBarType::StackingRegen)
+			if (ProgressBar->GetProgressType() == ESkillProgressBarType::StackingRegen)
 			{
 				auto Result = AbilitySystem->GetActiveGameplayEffects().GetActiveEffects(
-				FGameplayEffectQuery::MakeQuery_MatchAnyEffectTags(
-					FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.SkillStackRegen")))));
+					FGameplayEffectQuery::MakeQuery_MatchAnyEffectTags(
+						FGameplayTagContainer(
+							FGameplayTag::RequestGameplayTag(TEXT("GameplayEffect.SkillStackRegen")))));
 
-				if(!Result.IsEmpty())
+				if (!Result.IsEmpty())
 				{
 					const FActiveGameplayEffect* RegenEffect = AbilitySystem->GetActiveGameplayEffect(Result[0]);
-					ProgressBar->StartStackingRegen(RegenEffect->StartWorldTime,RegenEffect->GetPeriod(),true);
+					ProgressBar->StartStackingRegen(RegenEffect->StartWorldTime, RegenEffect->GetPeriod(), true);
 					// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("StartTime : %f"), RegenEffect->StartServerWorldTime));
 				}
 				break;
 			}
 		}
 	}
-	
 }
 
 void ALakayaBasePlayerState::OnRespawnTimeChangedCallback(const float& ReservedRespawnTime)
@@ -655,8 +697,6 @@ void ALakayaBasePlayerState::OnRespawnTimeChangedCallback(const float& ReservedR
 	const float CurrentTime = GetServerTime();
 	if (CharacterWidget && CharacterWidget->GetRespawnWidget())
 		CharacterWidget->GetRespawnWidget()->StartRespawnProgress(ReservedRespawnTime, CurrentTime);
-
-	
 }
 
 void ALakayaBasePlayerState::RequestCharacterChange_Implementation(const FName& Name)

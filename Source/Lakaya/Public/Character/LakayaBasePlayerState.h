@@ -243,7 +243,7 @@ private:
 	void BindAllSkillToWidget();
 
 	void OnActiveGameplayEffectAddedDelegateToSelfCallback(UAbilitySystemComponent* ArgAbilitySystemComponent, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle);
-
+	void OnGameplayEffectAppliedDelegateToTargetCallback(UAbilitySystemComponent* ArgAbilitySystemComponent, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle);
 	void OnChangeSkillStackAttribute(const FOnAttributeChangeData& NewValue);
 
 	void OnRespawnTimeChangedCallback(const float& ReservedRespawnTime);
@@ -355,6 +355,9 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> StatRegenEffect;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameplayEffect> GainUltimateOnAttackEffect;
 
 	UPROPERTY()
 	TObjectPtr<const ULakayaAttributeSet> LakayaAttributeSet;
