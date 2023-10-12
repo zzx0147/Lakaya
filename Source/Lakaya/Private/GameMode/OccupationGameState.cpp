@@ -13,6 +13,7 @@
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/GameResultWidget.h"
 #include "UI/GameScoreBoardWidget.h"
+#include "UI/GameTimeWidget.h"
 #include "UI/MatchStartWaitWidget.h"
 #include "UI/OccupationCharacterSelectWidget.h"
 #include "UI/HUDOccupationMinimapWidget.h"
@@ -77,6 +78,9 @@ void AOccupationGameState::BeginPlay()
 			{
 				TeamScoreWidget->AddToViewport();
 				TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
+				TeamScoreWidget->SetMaxScore(MaxScore);
+				TeamScoreWidget->SetMaxScoreVisibility(false);
+				OnTeamScoreSignature.AddUObject(TeamScoreWidget,&UTeamScoreWidget::SetTeamScore);
 			}
 			else UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidget is null."));
 		}
@@ -250,20 +254,21 @@ void AOccupationGameState::HandleMatchHasStarted()
 	                                (MatchWaitDuration - 10 + MatchStartWaitWidgetLifeTime), false);
 
 	// 게임이 본격적으로 시작이 되면 StartMessage위젯을 띄워줍니다.
-	TimerDelegate.BindLambda([this]
+	TimerDelegate.BindWeakLambda(this,[this]
 	{
-		if (this == nullptr) return;
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		DestroyShieldWallObject();
+		if(TeamScoreWidget) TeamScoreWidget->SetMaxScoreVisibility(true);
+		if(InGameTimeWidget.IsValid()) InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageVisible, TimerDelegate, MatchWaitDuration, false);
 
 	// StartMessage위젯을 5초 뒤에 비활성화 해줍니다.
-	TimerDelegate.BindLambda([this]
+	TimerDelegate.BindWeakLambda(this,[this]
 	{
-		if (this == nullptr) return;
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 	});
+	
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, TimerDelegate,
 	                                MatchWaitDuration + MatchStartWidgetLifeTime, false);
 }
