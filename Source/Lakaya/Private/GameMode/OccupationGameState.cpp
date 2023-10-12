@@ -232,7 +232,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 			}
 		}
 	}
-
+	
 	FTimerDelegate TimerDelegate_MatchStartWaitWidget;
 	TimerDelegate_MatchStartWaitWidget.BindLambda([this]
 	{
@@ -279,10 +279,6 @@ void AOccupationGameState::HandleMatchHasEnded()
 
 	if (GameResultWidget.IsValid())
 		GameResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-	// TODO : 게임이 종료 되어있을 때는, 이미 Widet들이 삭제된 이후 입니다.
-	// HUDMinimapWidget->UpdateMinimap = false;
-	// TabMinimapWidget->UpdateMinimap = false;
 
 	// Anti팀의 배열과, Pro팀의 배열을 내림차순으로 정렬합니다.
 	static auto Predicate = [](const ALakayaBasePlayerState& A, const ALakayaBasePlayerState& B)
@@ -640,6 +636,26 @@ void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const ui
 			UE_LOG(LogTemp, Warning, TEXT("ProgressBar is not Found for Id : %d"), Id);
 		}
 	}
+}
+
+void AOccupationGameState::OnEnemySpotted(const ETeam& Team, ALakayaBasePlayerState* Player)
+{
+	Multicast_UpdateMinimap(Team, Player);
+	UE_LOG(LogTemp, Warning, TEXT("Multicast"));
+}
+
+void AOccupationGameState::Multicast_UpdateMinimap_Implementation(const ETeam& Team,
+	ALakayaBasePlayerState* Player)
+{
+		if (TabMinimapWidget && HUDMinimapWidget)
+		{
+			TabMinimapWidget->UpdatePlayerPosition(Team, Player);
+			HUDMinimapWidget->UpdatePlayerPosition(Team, Player);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Null."));
+		}
 }
 
 bool AOccupationGameState::CheckCaptureAreaCount(const ETeam& Team)
