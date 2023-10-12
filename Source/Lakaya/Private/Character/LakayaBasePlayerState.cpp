@@ -371,6 +371,12 @@ void ALakayaBasePlayerState::InitializeStatus()
 		                                               Character->GetCharacterMaxSkillStack());
 		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxUltimateGauge")),
 		                                               Character->GetCharacterMaxUltimateGauge());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.GainUltimateOnAttack")),
+											   Character->GetCharacterGainUltimateOnAttack());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.GainUltimateOnAttacked")),
+											   Character->GetCharacterGainUltimateOnAttacked());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.GainUltimateOnSecond")),
+											   Character->GetCharacterGainUltimateOnSecond());
 
 		AbilitySystem->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 

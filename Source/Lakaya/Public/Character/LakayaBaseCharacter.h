@@ -86,6 +86,15 @@ public:
 
 	UFUNCTION(BlueprintGetter)
 	const float& GetCharacterMaxUltimateGauge() const { return MaxUltimateGauge; }
+
+	UFUNCTION(BlueprintGetter)
+	const float& GetCharacterGainUltimateOnAttack() const { return GainUltimateOnAttack; }
+
+	UFUNCTION(BlueprintGetter)
+	const float& GetCharacterGainUltimateOnAttacked() const { return GainUltimateOnAttacked; }
+
+	UFUNCTION(BlueprintGetter)
+	const float& GetCharacterGainUltimateOnSecond() const { return GainUltimateOnSecond; }
 	
 	// 연속처치시 적용될 버프 목록을 가져옵니다.
 	UFUNCTION(BlueprintGetter)
@@ -185,7 +194,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
 	float MaxUltimateGauge;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
+	float GainUltimateOnAttack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
+	float GainUltimateOnAttacked;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
+	float GainUltimateOnSecond;
 	
 	// 이 캐릭터의 공격력의 기본값입니다. AttributeSet의 기본 값을 설정하는데 사용됩니다. 런타임중에 변경하지 마십시오
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
