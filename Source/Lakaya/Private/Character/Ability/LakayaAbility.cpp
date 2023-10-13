@@ -334,7 +334,7 @@ void ULakayaAbility::SetZoom(const bool& bZoom, const float& ZoomFov, const FGam
 	}
 }
 
-void ULakayaAbility::BP_SetZoom(const bool& bZoom, const float& ZoomFov) const
+void ULakayaAbility::BP_SetZoom(const bool& bZoom, const float& ZoomFov)
 {
 	SetZoom(bZoom, ZoomFov, GetCurrentActorInfo());
 }
