@@ -4,8 +4,7 @@
 #include "Character/LakayaBasePlayerState.h"
 
 #include "AbilitySystemComponent.h"
-#include "CharacterWidget.h"
-#include "Algo/Accumulate.h"
+#include "UI/CharacterWidget.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Character/Ability/Attribute/LakayaAttributeSet.h"
 #include "Character/Ability/Component/LakayaAbilitySystemComponent.h"

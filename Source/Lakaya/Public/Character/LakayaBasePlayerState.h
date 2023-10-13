@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
-#include "CharacterWidget.h"
+#include "UI/CharacterWidget.h"
 #include "GameFramework/PlayerState.h"
 #include "Occupation/Team.h"
 #include "EOS/EOSGameInstance.h"
