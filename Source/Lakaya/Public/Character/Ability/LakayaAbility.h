@@ -132,6 +132,11 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, DisplayName="OnRemoveAbility")
 	void BP_OnRemoveAbility(const FGameplayAbilityActorInfo& ActorInfo, const FGameplayAbilitySpec& Spec);
 
+	static void SetZoom(const bool& bZoom, const float& ZoomFov, const FGameplayAbilityActorInfo* ActorInfo);
+
+	UFUNCTION(BlueprintCallable, DisplayName="SetZoom")
+	void BP_SetZoom(const bool& bZoom, const float& ZoomFov) const;
+
 	/** HitResult들을 타겟 데이터 핸들로 변환시킵니다. */
 	static void HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
 	                                         FGameplayAbilityTargetDataHandle& OutTargetDataHandle);
