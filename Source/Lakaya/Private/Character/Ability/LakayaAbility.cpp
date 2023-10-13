@@ -312,6 +312,7 @@ void ULakayaAbility::OnTargetDataReceived_Implementation(const FGameplayAbilityT
                                                          FGameplayTag GameplayTag)
 {
 	GetWorld()->GetTimerManager().ClearTimer(TargetDataTimerHandle);
+	ConsumeTargetData();
 }
 
 FGameplayAbilityTargetDataHandle ULakayaAbility::MakeTargetData_Implementation()
