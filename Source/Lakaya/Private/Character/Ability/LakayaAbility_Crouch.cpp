@@ -62,7 +62,8 @@ void ULakayaAbility_Crouch::CharacterCrouchStart()
 
 void ULakayaAbility_Crouch::CharacterCrouchStop()
 {
-	if (ALakayaBaseCharacter* LakayaBaseCharacter = CurrentActorInfo ? Cast<ALakayaBaseCharacter>(CurrentActorInfo->AvatarActor.Get()) : nullptr)
+	// if (ALakayaBaseCharacter* LakayaBaseCharacter = CurrentActorInfo ? Cast<ALakayaBaseCharacter>(CurrentActorInfo->AvatarActor.Get()) : nullptr)
+	if (ALakayaBaseCharacter* LakayaBaseCharacter = Cast<ALakayaBaseCharacter>(GetAvatarActorFromActorInfo()))
 	{
 		if (LakayaBaseCharacter->IsLocallyControlled())
 		{
