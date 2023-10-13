@@ -236,7 +236,10 @@ private:
 	// UFUNCTION(Client, Reliable)
 	UFUNCTION(BlueprintCallable)
 	void NoticePlayerHit(const FName& CauserName, const FVector& CauserLocation);
-
+	
+	UFUNCTION(BlueprintCallable)
+	void NoticeNormalAttackHitEnemy();
+	
 	void RespawnTimerCallback(FRespawnTimerDelegate Callback);
 
 	void BindAllSkillToWidget();

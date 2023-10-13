@@ -11,6 +11,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/DirectionalDamageIndicator.h"
+#include "UI/DynamicCrossHairWidget.h"
 #include "UI/GamePlayBulletWidget.h"
 #include "UI/GamePlayHealthWidget.h"
 #include "UI/GamePlayPortraitWidget.h"
@@ -725,6 +726,14 @@ void ALakayaBasePlayerState::NoticePlayerHit(const FName& CauserName, const FVec
 			DirectionDamageIndicatorWidget->IndicateStart(CauserName.ToString(), CauserLocation);
 
 		if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->PlayHitScreen();
+	}
+}
+
+void ALakayaBasePlayerState::NoticeNormalAttackHitEnemy()
+{
+	if(CharacterWidget && CharacterWidget->GetCrossHairWidget())
+	{
+		CharacterWidget->GetCrossHairWidget()->OnNormalAttackHitEnemy();
 	}
 }
 
