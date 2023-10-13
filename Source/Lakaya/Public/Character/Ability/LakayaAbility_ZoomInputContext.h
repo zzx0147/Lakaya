@@ -3,20 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "LakayaAbility.h"
-#include "LakayaAbility_InputContext.generated.h"
+#include "LakayaAbility_Zoom.h"
+#include "LakayaAbility_ZoomInputContext.generated.h"
 
-class ULakayaInputContext;
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API ULakayaAbility_InputContext : public ULakayaAbility
+class LAKAYA_API ULakayaAbility_ZoomInputContext : public ULakayaAbility_Zoom
 {
 	GENERATED_BODY()
-
-public:
-	ULakayaAbility_InputContext();
 
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -27,7 +23,6 @@ protected:
 	                              bool bWasCancelled) override;
 
 private:
-	/** 이 어빌리티가 활성화되는 동안 사용될 입력 컨텍스트를 지정합니다. */
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<ULakayaInputContext> InputContext;
 };

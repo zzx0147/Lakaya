@@ -13,20 +13,21 @@ UCLASS()
 class LAKAYA_API ULakayaAbility_Zoom : public ULakayaAbility
 {
 	GENERATED_BODY()
-	ULakayaAbility_Zoom();
 
 public:
-	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	                           const FGameplayAbilityActivationInfo ActivationInfo) override;
+
+	ULakayaAbility_Zoom();
 
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	                             const FGameplayAbilityActivationInfo ActivationInfo,
+	                             const FGameplayEventData* TriggerEventData) override;
 	virtual void NativeEndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
-	virtual void NativeCancelAbility(const FGameplayAbilitySpecHandle Handle,
-		const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-		bool bReplicateCancelAbility) override;
-	
+	                              const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
+	                              bool bWasCancelled) override;
+
 	UPROPERTY(EditDefaultsOnly)
 	float ZoomFov;
 };
