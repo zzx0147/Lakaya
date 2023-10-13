@@ -150,6 +150,26 @@ public:
 	UFUNCTION(Server, Reliable)
 	void Server_OnEnemySpotted(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState);
 
+	UFUNCTION(Server, Reliable)
+	void Server_OnEnemyLost(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState);
+	
+	// VisibleEnemy 목록을 반환합니다.
+	FORCEINLINE const TSet<ALakayaBasePlayerState*>& GetVisibleEnemies() const { return VisibleEnemies; }
+	
+	// 캐릭터 시야에 적이 들어왔다면 VisibleEnemies에 추가합니다.
+	void AddVisibleEnemy(ALakayaBasePlayerState* Enemy) { VisibleEnemies.Emplace(Enemy); }
+
+	// 캐릭터 시야에서 적이 나갔다면 VisibleEnemies에서 제거합니다.
+	void RemoveVisibleEnemy(ALakayaBasePlayerState* Enemy) { VisibleEnemies.Remove(Enemy); }
+
+	// 캐릭터 시야에 적이 있는지 확인합니다.
+	bool IsEnemyVisible(ALakayaBasePlayerState* Enemy) const { return VisibleEnemies.Contains(Enemy); }
+
+	UFUNCTION(Server, Reliable)
+	void Server_SetEnemyVisibility(ALakayaBasePlayerState* EnemyState, bool bIsVisible);
+
+	UFUNCTION(Client, Reliable)
+	void Client_SetEnemyVisibility(ALakayaBasePlayerState* EnemyState, bool bIsVisible);
 protected:
 	virtual void SetTeam_Implementation(const ETeam& Team);
 	virtual void SetAliveState_Implementation(bool IsAlive);
@@ -307,7 +327,7 @@ private:
 	FTimerHandle DamageImmuneTimer;
 	FLakayaAbilityHandleContainer AbilityHandleContainer;
 
-// public:
-// 	UPROPERTY(Replicated)
-// 	bool bIsSpottedByTeammate;
+	// 플레이어가 적을 발견했을 때, 시야를 공유하기 위해 사용하는 변수입니다.
+	UPROPERTY()
+	TSet<ALakayaBasePlayerState*> VisibleEnemies;
 };

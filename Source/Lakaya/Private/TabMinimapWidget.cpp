@@ -36,3 +36,9 @@ void UTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 {
 	Super::UpdatePlayerPosition(NewTeam, NewPlayerState);
 }
+
+void UTabMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
+	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+{
+	Super::HidePlayerPosition(NewTeam, NewPlayerState);
+}
