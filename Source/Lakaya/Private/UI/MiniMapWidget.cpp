@@ -45,9 +45,7 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	
 		if (ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayer()->GetPawn()))
 		{
-			bool bIsVisibleInCamera = LakayaCharacter->IsEnemyVisibleInCamera(NewTeam, State);
-
-			if (bIsVisibleInCamera || LakayaCharacter->IsEnemyVisibleInCamera(EnemyTeam, State))
+			if (LakayaCharacter->IsEnemyVisibleInCamera(EnemyTeam, State))
 			{
 				UpdatePlayerPosition(EnemyTeam, State);
 				continue;
