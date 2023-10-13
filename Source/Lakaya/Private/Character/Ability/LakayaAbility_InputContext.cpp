@@ -18,7 +18,7 @@ void ULakayaAbility_InputContext::ActivateAbility(const FGameplayAbilitySpecHand
                                                   const FGameplayAbilityActivationInfo ActivationInfo,
                                                   const FGameplayEventData* TriggerEventData)
 {
-	AddMappingContext(ActorInfo);
+	AddMappingContext(ActorInfo, InputContext.LoadSynchronous());
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
@@ -27,24 +27,6 @@ void ULakayaAbility_InputContext::NativeEndAbility(const FGameplayAbilitySpecHan
                                                    const FGameplayAbilityActivationInfo ActivationInfo,
                                                    bool bReplicateEndAbility, bool bWasCancelled)
 {
-	RemoveMappingContext(ActorInfo);
+	RemoveMappingContext(ActorInfo, InputContext.LoadSynchronous());
 	Super::NativeEndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-}
-
-void ULakayaAbility_InputContext::AddMappingContext(const FGameplayAbilityActorInfo* ActorInfo)
-{
-	if (InputContext.IsNull()) return;
-	if (const auto InputSubsystem = GetEnhancedInputSubsystem(ActorInfo))
-	{
-		InputContext.LoadSynchronous()->AddMappingContext(InputSubsystem);
-	}
-}
-
-void ULakayaAbility_InputContext::RemoveMappingContext(const FGameplayAbilityActorInfo* ActorInfo)
-{
-	if (InputContext.IsNull()) return;
-	if (const auto InputSubsystem = GetEnhancedInputSubsystem(ActorInfo))
-	{
-		InputContext.LoadSynchronous()->RemoveMappingContext(InputSubsystem);
-	}
 }

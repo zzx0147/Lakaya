@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
-#include "CharacterWidget.h"
+#include "UI/CharacterWidget.h"
 #include "GameFramework/PlayerState.h"
 #include "Occupation/Team.h"
 #include "EOS/EOSGameInstance.h"
@@ -32,7 +32,6 @@ DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOwnerChangeSignature, AActor*)
 DECLARE_DELEGATE_OneParam(FRespawnTimerDelegate, AController*)
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOnRespawnTimeChangeSignature, const float&)
-
 
 UCLASS()
 class LAKAYA_API ALakayaBasePlayerState : public APlayerState, public IAbilitySystemInterface,
@@ -243,7 +242,7 @@ private:
 	void BindAllSkillToWidget();
 
 	void OnActiveGameplayEffectAddedDelegateToSelfCallback(UAbilitySystemComponent* ArgAbilitySystemComponent, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle);
-
+	void OnGameplayEffectAppliedDelegateToTargetCallback(UAbilitySystemComponent* ArgAbilitySystemComponent, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle);
 	void OnChangeSkillStackAttribute(const FOnAttributeChangeData& NewValue);
 
 	void OnRespawnTimeChangedCallback(const float& ReservedRespawnTime);
@@ -293,7 +292,7 @@ public:
 
 	//리스폰 타임이 변경될 때 호출됩니다. 매개변수로 부활하는 시간을 받습니다. 음수면 부활하지 못하는 것이고 현재 시간보다 작으면 이미 부활한 것입니다.
 	FOnRespawnTimeChangeSignature OnRespawnTimeChanged;
-
+	
 protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGamePlayHealthWidget> HealthWidgetClass;
@@ -355,6 +354,9 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> StatRegenEffect;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameplayEffect> GainUltimateOnAttackEffect;
 
 	UPROPERTY()
 	TObjectPtr<const ULakayaAttributeSet> LakayaAttributeSet;

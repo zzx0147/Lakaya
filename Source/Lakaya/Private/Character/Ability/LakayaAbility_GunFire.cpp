@@ -90,8 +90,6 @@ FGameplayAbilityTargetDataHandle ULakayaAbility_GunFire::MakeTargetData_Implemen
 void ULakayaAbility_GunFire::OnTargetDataReceived_Implementation(
 	const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag GameplayTag)
 {
-	Super::OnTargetDataReceived_Implementation(TargetDataHandle, GameplayTag);
-
 	BP_ApplyGameplayEffectOrCueToTarget(TargetDataHandle, DamageEffect, EnvironmentCue.GameplayCueTag);
-	ConsumeTargetData();
+	Super::OnTargetDataReceived_Implementation(TargetDataHandle, GameplayTag);
 }

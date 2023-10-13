@@ -69,6 +69,13 @@ public:
 	 */
 	UFUNCTION()
 	void UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id);
+
+	void OnEnemySpotted(const ETeam& Team,
+		ALakayaBasePlayerState* Player);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_UpdateMinimap(const ETeam& Team,
+	ALakayaBasePlayerState* Player);
 	
 	FORCEINLINE const float& GetTeamScore(const ETeam& Team) const { return (Team == ETeam::Anti) ? AntiTeamScore : ProTeamScore; }
 	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }
@@ -83,6 +90,7 @@ public:
 	FORCEINLINE void SetAntiTeamCaptureAreaCount(const uint8& NewCaptureCount) { AntiTeamCaptureAreaCount = NewCaptureCount; }
 	FORCEINLINE void SetProTeamCaptureAreaCount(const uint8& NewCaptureCount) { ProTeamCaptureAreaCount = NewCaptureCount; }
 	FORCEINLINE void SetTeamToUpdate(const ETeam& NewTeam) { TeamToUpdate = NewTeam; }
+
 protected:
 	virtual void BeginPlay() override;
 	
