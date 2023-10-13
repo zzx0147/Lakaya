@@ -93,8 +93,6 @@ protected:
 
 	// 미니맵상에서 자신과 상대(AI포함)의 위치를 업데이트하기 위한 컨테이너입니다.
 	TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>> PlayersByMinimap;
-
-	TMap<ALakayaBaseCharacter*, TSet<TWeakObjectPtr<ALakayaBasePlayerState>>> VisibleEnemiesByAlly;
 	
 	// Owner의 소속 팀 입니다.
 	ETeam CurrentTeam;
