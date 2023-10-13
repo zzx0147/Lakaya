@@ -6,6 +6,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "LakayaAbility.generated.h"
 
+class ULakayaInputContext;
 class UEnhancedInputComponent;
 class UEnhancedInputLocalPlayerSubsystem;
 /**
@@ -136,6 +137,16 @@ protected:
 
 	UFUNCTION(BlueprintCallable, DisplayName="SetZoom")
 	void BP_SetZoom(const bool& bZoom, const float& ZoomFov) const;
+
+	void AddMappingContext(const FGameplayAbilityActorInfo* ActorInfo, const ULakayaInputContext* InputContext);
+
+	UFUNCTION(BlueprintCallable)
+	void BP_AddMappingContext(const ULakayaInputContext* InputContext);
+
+	void RemoveMappingContext(const FGameplayAbilityActorInfo* ActorInfo, const ULakayaInputContext* InputContext);
+
+	UFUNCTION(BlueprintCallable)
+	void BP_RemoveMappingContext(const ULakayaInputContext* InputContext);
 
 	/** HitResult들을 타겟 데이터 핸들로 변환시킵니다. */
 	static void HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,

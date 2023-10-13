@@ -12,6 +12,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameplayCue_Types.h"
 #include "ETC/LakayaPlayerCameraManager.h"
+#include "Input/LakayaInputContext.h"
 
 #define ENSURE_REMOTE_SERVER_SCOPE() \
 	if (!ensure(IsForRemoteClient())) \
@@ -336,6 +337,34 @@ void ULakayaAbility::SetZoom(const bool& bZoom, const float& ZoomFov, const FGam
 void ULakayaAbility::BP_SetZoom(const bool& bZoom, const float& ZoomFov) const
 {
 	SetZoom(bZoom, ZoomFov, GetCurrentActorInfo());
+}
+
+void ULakayaAbility::AddMappingContext(const FGameplayAbilityActorInfo* ActorInfo,
+                                       const ULakayaInputContext* InputContext)
+{
+	if (const auto InputSystem = GetEnhancedInputSubsystem(ActorInfo); InputSystem && InputContext)
+	{
+		InputContext->AddMappingContext(InputSystem);
+	}
+}
+
+void ULakayaAbility::BP_AddMappingContext(const ULakayaInputContext* InputContext)
+{
+	AddMappingContext(GetCurrentActorInfo(), InputContext);
+}
+
+void ULakayaAbility::RemoveMappingContext(const FGameplayAbilityActorInfo* ActorInfo,
+                                          const ULakayaInputContext* InputContext)
+{
+	if (const auto InputSystem = GetEnhancedInputSubsystem(ActorInfo); InputSystem && InputContext)
+	{
+		InputContext->RemoveMappingContext(InputSystem);
+	}
+}
+
+void ULakayaAbility::BP_RemoveMappingContext(const ULakayaInputContext* InputContext)
+{
+	RemoveMappingContext(GetCurrentActorInfo(), InputContext);
 }
 
 void ULakayaAbility::HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
