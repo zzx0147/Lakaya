@@ -49,9 +49,6 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	if (EnemyImage->GetVisibility() == ESlateVisibility::Hidden)
 		EnemyImage->SetVisibility(ESlateVisibility::Visible);
 
-	const auto& PlayerCharacter = Cast<ALakayaBaseCharacter>(NewPlayerState->GetPawn());
-	// PlayerCharacter->GetAliveState();
-	
 	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 }
 

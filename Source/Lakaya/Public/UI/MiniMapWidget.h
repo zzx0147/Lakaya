@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Character/LakayaBaseCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/CanvasPanel.h"
 #include "Components/Image.h"
@@ -17,11 +18,19 @@ UCLASS()
 class LAKAYA_API UMinimapWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
+	
+public:
+	/**
+	 * @brief 특정 적의 위치를 업데이트합니다.
+	 * @param NewTeam 위치를 업데이트 할 플레이어의 팀입니다.
+	 * @param NewPlayerState 위치를 업데이트 할 플레이어의 상태입니다.
+	 */
+	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) { return; }
+	
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
+	
 	/**
 	* @brief 미니맵에 모든 플레이어들의 아이콘(이미지)으로 띄우기 위해, 플레이어 인원 수만큼 이미지를 동적 생성합니다.
 	* @param NewTeam 팀에 따라, 아이콘의 이미지가 달라지는데, 생성된 팀의 정보입니다.
@@ -39,17 +48,10 @@ protected:
 	virtual FVector2D ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation, const FVector2D& MiniMapSize);
 
 	/**
-	 * @brief 플레이어의 위치를 업데이트합니다.
+	 * @brief 플레이어팀의 위치를 업데이트합니다.
 	 * @param Team 플레이어의 팀입니다.
 	 */
 	virtual void UpdatePlayerPosition(const ETeam& Team);
-
-	/**
-	 * @brief 플레이어의 위치를 업데이트합니다.
-	 * @param NewTeam 위치를 업데이트 할 플레이어의 팀입니다.
-	 * @param NewPlayerState 위치를 업데이트 할 플레이어의 상태입니다.
-	 */
-	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) { return; }
 
 public:
 	FORCEINLINE const ETeam& GetTeam() const { return CurrentTeam; }
@@ -102,4 +104,5 @@ protected:
 	
 	// 미니맵업데이트 여부입니다.
 	bool UpdateMinimap;
+	
 };
