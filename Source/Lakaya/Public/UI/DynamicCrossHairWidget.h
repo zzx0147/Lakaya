@@ -19,4 +19,7 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnNormalAttackHitEnemy();
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnChangeBulletSpreadAmount(const float& NewAmount);
 };

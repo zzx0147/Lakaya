@@ -40,6 +40,7 @@ public:
 	const static FName DamageImmuneMeshComponentName;
 	const static FName ResurrectionNiagaraName;
 	const static FName GrayScalePostProcessComponentName;
+	const static FName BulletSpreadComponentName;
 
 	explicit ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
@@ -66,6 +67,9 @@ public:
 	UFUNCTION(BlueprintGetter)
 	class UCameraComponent* const& GetCamera() const { return Camera; }
 
+	UFUNCTION(BlueprintGetter)
+	class UBulletSpreadComponent* GetBulletSpread() const { return BulletSpreadComponent; }
+	
 	// 캐릭터의 자원 컴포넌트를 가져옵니다.
 	template <class T = class UResourceComponent>
 	UFUNCTION(BlueprintGetter)
@@ -306,6 +310,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UPostProcessComponent> GrayScalePostProcessComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintGetter = GetBulletSpread)
+	TObjectPtr<UBulletSpreadComponent> BulletSpreadComponent;
 
 	UPROPERTY(ReplicatedUsing=OnRep_PlayerRotation, Transient)
 	FPlayerRotationPacket PlayerRotation;

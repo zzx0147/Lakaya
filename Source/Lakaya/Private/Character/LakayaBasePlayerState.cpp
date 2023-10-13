@@ -4,6 +4,7 @@
 #include "Character/LakayaBasePlayerState.h"
 
 #include "AbilitySystemComponent.h"
+#include "Character/BulletSpreadComponent.h"
 #include "UI/CharacterWidget.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Character/Ability/Attribute/LakayaAttributeSet.h"
@@ -418,7 +419,7 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);
 		Character->SetStencilMask(UniqueRenderMask);
 		Character->SetAlly(bIsAlly);
-
+		
 		if (const auto CharacterWidgetClass = Character->GetCharacterWidgetClass(); CharacterWidgetClass &&
 			GetPlayerController() && GetPlayerController()->IsLocalController())
 		{
@@ -437,6 +438,11 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 						               LakayaAttributeSet->GetCurrentAmmoAttribute()).
 					               AddUObject(CharacterWidget->GetGamePlayBulletWidget(),
 					                          &UGamePlayBulletWidget::OnChangeCurrentBulletAttribute);;
+				}
+
+				if(const auto BulletSpreadComponent = Character->GetBulletSpread(); BulletSpreadComponent && CharacterWidget->GetCrossHairWidget())
+				{
+					BulletSpreadComponent->OnChangeBulletSpreadAmountSignature.AddUObject(CharacterWidget->GetCrossHairWidget(),&UDynamicCrossHairWidget::OnChangeBulletSpreadAmount);
 				}
 			}
 		}
