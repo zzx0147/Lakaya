@@ -217,6 +217,11 @@ void ALakayaProjectile::SetSourceObject(FGameplayEffectContextHandle EffectConte
 	EffectContext.AddSourceObject(SourceObject);
 }
 
+ECollisionChannel ALakayaProjectile::ConvertToCollisionChannel(EObjectTypeQuery ObjectType)
+{
+	return UEngineTypes::ConvertToCollisionChannel(ObjectType);
+}
+
 void ALakayaProjectile::OnStartPhysicsSimulation_Implementation(
 	const FPredictProjectilePathResult& LastPredictionResult)
 {
