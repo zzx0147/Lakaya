@@ -25,8 +25,8 @@ void ULakayaAbility_Zoom::ActivateAbility(const FGameplayAbilitySpecHandle Handl
                                           const FGameplayAbilityActivationInfo ActivationInfo,
                                           const FGameplayEventData* TriggerEventData)
 {
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 	SetZoom(true, ZoomFov, ActorInfo);
+	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
 void ULakayaAbility_Zoom::NativeEndAbility(const FGameplayAbilitySpecHandle Handle,
@@ -34,6 +34,6 @@ void ULakayaAbility_Zoom::NativeEndAbility(const FGameplayAbilitySpecHandle Hand
                                            const FGameplayAbilityActivationInfo ActivationInfo,
                                            bool bReplicateEndAbility, bool bWasCancelled)
 {
-	Super::NativeEndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 	SetZoom(false, ZoomFov, ActorInfo);
+	Super::NativeEndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
