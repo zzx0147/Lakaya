@@ -3,6 +3,7 @@
 
 #include "UI/MiniMapWidget.h"
 
+#include "Camera/CameraComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
 
@@ -13,8 +14,8 @@ void UMinimapWidget::NativeConstruct()
 	UpdateMinimap = false;
 	
 	IconAlignment = FVector2D(0.5f, 0.5f);
-	IconSize = FVector2D(12.0f, 12.0f);
-	OwnIconSize = FVector2D(50.0f, 50.0f);
+	IconSize = FVector2D(15.0f, 15.0f);
+	OwnIconSize = FVector2D(62.0f, 112.0f);
 	
 	PlayersByMinimap.Emplace(ETeam::Anti);
 	PlayersByMinimap.Emplace(ETeam::Pro);
@@ -72,10 +73,19 @@ void UMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		const auto& State = Player.Key;
 		const auto& Image = Player.Value;
 
+		// 검사한 상대가 나 자신이라면
+		if (State == GetOwningPlayerState())
+		{
+			// 회전값을 업데이트 해줍니다.
+			const auto PlayerCharacter = State->GetPlayerController()->GetCharacter();
+			const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
+			const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
+			Image->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+		}
+		
 		FVector2D PlayerPosition(State->GetPawn()->GetActorLocation().X, State->GetPawn()->GetActorLocation().Y);
-
 		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
-
+		
 		if (Image->GetVisibility() == ESlateVisibility::Hidden)
 			Image->SetVisibility(ESlateVisibility::Visible);
 
