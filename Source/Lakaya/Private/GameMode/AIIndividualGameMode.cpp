@@ -43,7 +43,7 @@ void AAIIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 
 	std::random_device rd; // 랜덤 디바이스 초기화
 	std::mt19937 gen(rd()); // 랜덤 엔진 초기화
-	std::uniform_int_distribution<> distrib(0, 1); // 해당 범위 정수 중 임의의 값 생성
+	std::uniform_int_distribution<> distrib(0, 2); // 해당 범위 정수 중 임의의 값 생성
 	
 	for (int i = 0; i < NumberOfAi; ++i) //첫번째 플레이어가 접속하면 그때 AI를 생성합니다, 플레이어가 한명일 때만을 가정합니다
 	{
@@ -51,13 +51,16 @@ void AAIIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 		AiController = GetWorld()->SpawnActor<AAiCharacterController>(AIControllerClass);
 
 		// 랜덤 캐릭터 이름 생성
-		// FName RandomCharacterName = (distrib(gen) == 0) ? TEXT("Rena") : (distrib(gen) == 1 ? TEXT("Wazi") : TEXT("Gangrim"));
+		FName RandomCharacterName = (distrib(gen) == 0) ? TEXT("Rena") : (distrib(gen) == 1 ? TEXT("Wazi") : TEXT("Gangrim"));
 
 		// 레나를 제외한 나머지 캐릭 생성
-		FName RandomCharacterName = (distrib(gen) == 0) ? TEXT("Gangrim") : TEXT("Wazi");
+		// FName RandomCharacterName = (distrib(gen) == 0) ? TEXT("Gangrim") : TEXT("Wazi");
 
 		// 강림 생성
 		// FName RandomCharacterName = TEXT("Gangrim");
+
+		// 레나 생성
+		// FName RandomCharacterName = TEXT("Rena");
 
 		// AI의 캐릭터 변경
 		ALakayaBasePlayerState* AiState = AiController->GetPlayerState<ALakayaBasePlayerState>();
