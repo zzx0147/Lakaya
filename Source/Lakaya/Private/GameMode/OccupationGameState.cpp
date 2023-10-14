@@ -638,6 +638,32 @@ void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const ui
 	}
 }
 
+void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress)
+{
+	UProgressBar** Bar = OccupyBarMaps.Find(Id);
+	FSlateBrush ChargeImageBrush;
+	if (Bar != nullptr && *Bar != nullptr)
+	{
+		if (Team == ETeam::Anti)
+		{
+			ChargeImageBrush.SetResourceObject(OccupyExpressWidget->GetAntiChargeImage());
+		}
+		else if (Team == ETeam::Pro)
+		{
+			ChargeImageBrush.SetResourceObject(OccupyExpressWidget->GetProChargeImage());
+		}
+	
+		(*Bar)->WidgetStyle.SetFillImage(ChargeImageBrush);
+		(*Bar)->WidgetStyle.FillImage = ChargeImageBrush;
+	
+		(*Bar)->SetPercent(Progress / 4);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Bar && *Bar is null."));
+	}
+}
+
 void AOccupationGameState::OnEnemySpotted(const ETeam& EnemyTeam, ALakayaBasePlayerState* Enemy)
 {
 	// 같은 팀의 정보는 필요 없으므로, 리턴합니다.
