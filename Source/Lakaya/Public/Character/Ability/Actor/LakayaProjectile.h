@@ -210,10 +210,6 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	static void SetSourceObject(FGameplayEffectContextHandle EffectContext, const UObject* SourceObject);
 
-	//TODO: 추후 블루프린트 라이브러리로 옮겨야 합니다.
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static ECollisionChannel ConvertToCollisionChannel(EObjectTypeQuery ObjectType);
-
 	UFUNCTION(BlueprintNativeEvent)
 	void OnStartPathPrediction(const FProjectileThrowData& InThrowData);
 
@@ -279,11 +275,23 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void ClearIgnoredInPerformActors();
 
+	/** 투사체가 이 오브젝트 타입에 대해 충돌하도록 설정합니다. */
+	UFUNCTION(BlueprintCallable)
+	void AddOverlapObjectType(const EObjectTypeQuery& ObjectType);
+
+	/** 투사체가 이 오브젝트 타입을 무시하도록 설정합니다. */
+	UFUNCTION(BlueprintCallable)
+	void IgnoreObjectType(const EObjectTypeQuery& ObjectType);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float EventTriggerDelayFromThrow;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FPredictProjectilePathParams PredictedProjectileParams;
+
+	/** 투사체 투척시에 Owner나 Instigator에 대해 충돌이 발생하지 않도록 설정합니다. */
+	UPROPERTY(EditAnywhere)
+	uint8 bIgnoreOwnerAndInstigator : 1;
 
 private:
 	struct FScopedLock
@@ -317,6 +325,11 @@ private:
 
 	UFUNCTION()
 	void OnRep_ProjectileState();
+
+	UFUNCTION()
+	void CallOnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	                             UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+	                             const FHitResult& SweepResult);
 
 	UPROPERTY(VisibleAnywhere)
 	class UProjectileMovementComponent* ProjectileMovementComponent;

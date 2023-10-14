@@ -4,6 +4,7 @@
 #include "Character/LakayaBasePlayerState.h"
 
 #include "AbilitySystemComponent.h"
+#include "Character/BulletSpreadComponent.h"
 #include "UI/CharacterWidget.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Character/Ability/Attribute/LakayaAttributeSet.h"
@@ -11,6 +12,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/DirectionalDamageIndicator.h"
+#include "UI/DynamicCrossHairWidget.h"
 #include "UI/GamePlayBulletWidget.h"
 #include "UI/GamePlayHealthWidget.h"
 #include "UI/GamePlayPortraitWidget.h"
@@ -417,7 +419,7 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);
 		Character->SetStencilMask(UniqueRenderMask);
 		Character->SetAlly(bIsAlly);
-
+		
 		if (const auto CharacterWidgetClass = Character->GetCharacterWidgetClass(); CharacterWidgetClass &&
 			GetPlayerController() && GetPlayerController()->IsLocalController())
 		{
@@ -436,6 +438,11 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 						               LakayaAttributeSet->GetCurrentAmmoAttribute()).
 					               AddUObject(CharacterWidget->GetGamePlayBulletWidget(),
 					                          &UGamePlayBulletWidget::OnChangeCurrentBulletAttribute);;
+				}
+
+				if(const auto BulletSpreadComponent = Character->GetBulletSpread(); BulletSpreadComponent && CharacterWidget->GetCrossHairWidget())
+				{
+					BulletSpreadComponent->OnChangeBulletSpreadAmountSignature.AddUObject(CharacterWidget->GetCrossHairWidget(),&UDynamicCrossHairWidget::OnChangeBulletSpreadAmount);
 				}
 			}
 		}
@@ -725,6 +732,14 @@ void ALakayaBasePlayerState::NoticePlayerHit(const FName& CauserName, const FVec
 			DirectionDamageIndicatorWidget->IndicateStart(CauserName.ToString(), CauserLocation);
 
 		if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->PlayHitScreen();
+	}
+}
+
+void ALakayaBasePlayerState::NoticeNormalAttackHitEnemy()
+{
+	if(CharacterWidget && CharacterWidget->GetCrossHairWidget())
+	{
+		CharacterWidget->GetCrossHairWidget()->OnNormalAttackHitEnemy();
 	}
 }
 

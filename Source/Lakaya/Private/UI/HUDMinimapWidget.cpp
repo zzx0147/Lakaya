@@ -41,8 +41,14 @@ void UHUDMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	Super::UpdatePlayerPosition(NewTeam, NewPlayerState);
 }
 
+void UHUDMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
+	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+{
+	Super::HidePlayerPosition(NewTeam, NewPlayerState);
+}
+
 void UHUDMinimapWidget::UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState,
-	const FVector2D NewPosition) const
+                                                              const FVector2D NewPosition) const
 {
 	const auto PlayerCharacter = NewPlayerState.GetPlayerController()->GetCharacter();
 	const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);

@@ -638,24 +638,37 @@ void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const ui
 	}
 }
 
-void AOccupationGameState::OnEnemySpotted(const ETeam& Team, ALakayaBasePlayerState* Player)
+void AOccupationGameState::OnEnemySpotted(const ETeam& EnemyTeam, ALakayaBasePlayerState* Enemy)
 {
-	Multicast_UpdateMinimap(Team, Player);
-	UE_LOG(LogTemp, Warning, TEXT("Multicast"));
+	// 같은 팀의 정보는 필요 없으므로, 리턴합니다.
+	if (EnemyTeam == ClientTeam) return;
+	Multicast_UpdateMinimap(EnemyTeam, Enemy);
 }
 
-void AOccupationGameState::Multicast_UpdateMinimap_Implementation(const ETeam& Team,
-	ALakayaBasePlayerState* Player)
+void AOccupationGameState::OnEnemyLost(const ETeam& EnemyTeam, ALakayaBasePlayerState* Enemy)
 {
-		if (TabMinimapWidget && HUDMinimapWidget)
-		{
-			TabMinimapWidget->UpdatePlayerPosition(Team, Player);
-			HUDMinimapWidget->UpdatePlayerPosition(Team, Player);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Null."));
-		}
+	// 같은 팀의 정보는 필요 없으므로, 리턴합니다.
+	// if (EnemyTeam == ClientTeam) return;
+	MultiCast_HideFromMinimap(EnemyTeam, Enemy);
+}
+
+void AOccupationGameState::MultiCast_HideFromMinimap_Implementation(const ETeam& EnemyTeam, ALakayaBasePlayerState* Enemy)
+{
+	if (TabMinimapWidget && HUDMinimapWidget)
+	{
+		TabMinimapWidget->HidePlayerPosition(EnemyTeam, Enemy);
+		HUDMinimapWidget->HidePlayerPosition(EnemyTeam, Enemy);
+	}
+}
+
+void AOccupationGameState::Multicast_UpdateMinimap_Implementation(const ETeam& EnemyTeam,
+                                                                  ALakayaBasePlayerState* Enemy)
+{
+	if (TabMinimapWidget && HUDMinimapWidget)
+	{
+		TabMinimapWidget->UpdatePlayerPosition(EnemyTeam, Enemy);
+		HUDMinimapWidget->UpdatePlayerPosition(EnemyTeam, Enemy);
+	}
 }
 
 bool AOccupationGameState::CheckCaptureAreaCount(const ETeam& Team)

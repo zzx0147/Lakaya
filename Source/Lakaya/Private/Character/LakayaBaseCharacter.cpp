@@ -8,6 +8,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
+#include "Character/BulletSpreadComponent.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Character/ResourceComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -28,7 +29,7 @@ const FName ALakayaBaseCharacter::ClairvoyanceMeshComponentName = FName(TEXT("Cl
 const FName ALakayaBaseCharacter::DamageImmuneMeshComponentName = FName(TEXT("DamageImmuneMesh"));
 const FName ALakayaBaseCharacter::ResurrectionNiagaraName = FName(TEXT("ResurrectionNiagara"));
 const FName ALakayaBaseCharacter::GrayScalePostProcessComponentName = FName(TEXT("GrayScalePostProcess"));
-
+const FName ALakayaBaseCharacter::BulletSpreadComponentName = FName(TEXT("BulletSpread"));
 
 ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -90,6 +91,9 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	GrayScalePostProcessComponent->bUnbound = true;
 	GrayScalePostProcessComponent->Priority = -1.0f;
 
+	BulletSpreadComponent = CreateDefaultSubobject<UBulletSpreadComponent>(BulletSpreadComponentName);
+	
+	
 	// bIsSpottedByTeammate = false;
 	
 	if (DissolveCurveFinder.Succeeded()) DissolveCurve = DissolveCurveFinder.Object;
@@ -281,7 +285,7 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam ,const 
 
 		// 시야 내에 없다면 false를 반환하고 함수를 종료합니다.
 		if (!bIsVisible) return false;
-		
+			
 		FHitResult HitResult;
 
 		if (bool bIsObstructed = UKismetSystemLibrary::LineTraceSingle(
@@ -301,23 +305,64 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam ,const 
 		if (bIsVisible)
 		{
 			Server_OnEnemySpotted(EnemyTeam, EnemyState.Get());
-			// bIsSpottedByTeammate = true;
 		}
-		else
+		else if (!bIsVisible)
 		{
-			// bIsSpottedByTeammate = false;
+			Server_OnEnemyLost(EnemyTeam, EnemyState.Get());
 		}
+
+		Server_SetEnemyVisibility(EnemyState.Get(), bIsVisible);
 		
 		return bIsVisible;
 	}
 }
 
+void ALakayaBaseCharacter::Server_OnEnemyLost_Implementation(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState)
+{
+	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
+	{
+		OccupationGameState->OnEnemyLost(EnemyTeam, EnemyState);
+	}
+}
+
 void ALakayaBaseCharacter::Server_OnEnemySpotted_Implementation(const ETeam& EnemyTeam,
-	ALakayaBasePlayerState* EnemyState)
+                                                                ALakayaBasePlayerState* EnemyState)
 {
 	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
 	{
 		OccupationGameState->OnEnemySpotted(EnemyTeam, EnemyState);
+	}
+}
+
+void ALakayaBaseCharacter::Server_SetEnemyVisibility_Implementation(
+	ALakayaBasePlayerState* EnemyState, bool bIsVisible)
+{
+	if (bIsVisible && !VisibleEnemies.Contains(EnemyState))
+	{
+		VisibleEnemies.Emplace(EnemyState);
+		UE_LOG(LogTemp, Warning, TEXT("Server_Emplace"));
+		Client_SetEnemyVisibility(EnemyState, true);
+	}
+	else if (!bIsVisible && VisibleEnemies.Contains(EnemyState))
+	{
+		VisibleEnemies.Remove(EnemyState);
+		UE_LOG(LogTemp, Warning, TEXT("Server_Remove"));
+		Client_SetEnemyVisibility(EnemyState, false);
+	}
+}
+
+void ALakayaBaseCharacter::Client_SetEnemyVisibility_Implementation(
+	ALakayaBasePlayerState* EnemyState, bool bIsVisible)
+{
+	if (bIsVisible)
+	{
+		VisibleEnemies.Emplace(EnemyState);
+		UE_LOG(LogTemp, Warning, TEXT("Client_Emplace"));
+	}
+	else
+	{
+		VisibleEnemies.Remove(EnemyState);
+		UE_LOG(LogTemp, Warning, TEXT("Client_Remove"));
 	}
 }
 

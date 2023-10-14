@@ -26,6 +26,7 @@ public:
 	 * @param NewPlayerState 위치를 업데이트 할 플레이어의 상태입니다.
 	 */
 	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) { return; }
+	virtual void HidePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) { return; }
 	
 protected:
 	virtual void NativeConstruct() override;

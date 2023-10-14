@@ -19,6 +19,7 @@ class LAKAYA_API UTabMinimapWidget : public UMinimapWidget
 public:
 	virtual UImage* CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer = false) override;
 	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
+	virtual void HidePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
 	
 protected:
 	virtual void NativeConstruct() override;
