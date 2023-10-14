@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Character/LakayaBaseCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/CanvasPanel.h"
 #include "Components/Image.h"
@@ -38,7 +37,7 @@ protected:
 	* @param bMyPlayer 나 자신인지 아닌지의 여부입니다.
 	* @return 동적으로 생성한 이미지를 리턴합니다.
 	*/
-	virtual UImage* CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer = false);
+	virtual UImage* CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer = false) { return nullptr; }
 
 	/**
 	* @brief 월드를 미니맵 좌표로 변환합니다.
@@ -71,26 +70,15 @@ protected:
 	// 미니맵 이미지입니다. (BindWidget으로 구현이 되어 있어서, 블루프린트의 이미지와 이름을 동일하게 설정해줘야합니다.)
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> MinimapImage;
-
-	// 미니맵상에 Anti팀을 표시하는 아이콘 텍스처입니다.
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> AntiIcon;
-
-	// 미니맵상에 Pro팀을 표시하는 아이콘 텍스처입니다.
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> ProIcon;
 	
+	// TODO : 개인전에서 관리해야합니다.
 	// 미니맵상에 자기 자신을 표시하는 아이콘 텍스쳐입니다.
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> OwnIcon;
-
+	// UPROPERTY(EditAnywhere)
+	// TObjectPtr<UTexture2D> OwnIcon;
+	
 	// 플레이어가 죽게 되었을 때, 미니맵 상에 표시하는 아이콘 텍스처입니다.
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture2D> DeathIcon;
-
-	// AntiIcon, ProIcon을 담는 맵입니다.
-	UPROPERTY()
-	TMap<ETeam, TObjectPtr<UTexture2D>> TeamIcons;
 
 	// 미니맵상에서 자신과 상대(AI포함)의 위치를 업데이트하기 위한 컨테이너입니다.
 	TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>> PlayersByMinimap;
@@ -100,6 +88,7 @@ protected:
 	
 	FVector2D IconAlignment;
 	FVector2D IconSize;
+	FVector2D OwnIconSize;
 	FVector2D MinimapSize;
 	FVector2D WidgetOffset;
 	

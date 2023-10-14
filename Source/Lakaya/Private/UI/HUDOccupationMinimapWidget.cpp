@@ -13,6 +13,9 @@ void UHUDOccupationMinimapWidget::NativeConstruct()
 	ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("RetainerCanvasPanel")));
 	RetainerBox = Cast<URetainerBox>(GetWidgetFromName(TEXT("RetainerBox_74")));
 
+	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
+	TeamIcons.Emplace(ETeam::Pro, ProIcon);
+	
 	// TODO : 하드코딩이 아닌 GetDesiredSize() 함수를 이용해서 가져오도록 해야합니다.
 	MinimapSize = FVector2D(250.0f, 381.0f);
 
@@ -49,11 +52,21 @@ UImage* UHUDOccupationMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 	
 	PlayerImage->SetVisibility(ESlateVisibility::Hidden);
 	
-	// 나 자신이라면 자신만의 아이콘으로 설정해줍니다.
+	// 나 자신이라면 자신의 팀에 따른 자신만의 아이콘으로 설정해줍니다.
 	if (bMyPlayer)
 	{
-		PlayerImage->SetBrushFromTexture(OwnIcon);
-		return PlayerImage;
+		if (Team == ETeam::Anti)
+		{
+			PlayerImage->SetBrushFromTexture(AntiOwnIcon);
+			PanelSlot->SetSize(OwnIconSize);
+			return PlayerImage;
+		}
+		else if (Team == ETeam::Pro)
+		{
+			PlayerImage->SetBrushFromTexture(ProOwnIcon);
+			PanelSlot->SetSize(OwnIconSize);
+			return PlayerImage;
+		}
 	}
 
 	// 나 자신이 아니라면 팀에 따라서 아이콘을 설정해줍니다.
