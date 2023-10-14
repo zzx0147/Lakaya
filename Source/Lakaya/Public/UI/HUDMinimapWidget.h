@@ -17,13 +17,13 @@ class LAKAYA_API UHUDMinimapWidget : public UMinimapWidget
 
 public:
 	virtual UImage* CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer = false) override;
+	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
 
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	virtual FVector2d ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation, const FVector2D& MiniMapSize) override;
 	virtual void UpdatePlayerPosition(const ETeam& Team) override;
-	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
 
 	/**
 	 * @brief 미니맵 이미지의 위치와 회전을 업데이트합니다.

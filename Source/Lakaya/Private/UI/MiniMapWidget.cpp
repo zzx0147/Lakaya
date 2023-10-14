@@ -20,6 +20,7 @@ void UMinimapWidget::NativeConstruct()
 
 	PlayersByMinimap.Emplace(ETeam::Anti);
 	PlayersByMinimap.Emplace(ETeam::Pro);
+
 }
 
 void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -35,25 +36,23 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	const ETeam EnemyTeam = CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
 
 	// TODO : 와지 투시 스킬을 사용했을 때도 추가해줘야 합니다.
+	// TODO : 적을 발견했다면, 시야를 팀원들과 공유해야 합니다.
 	// 적들의 위치정보를 가져와서, 내 시야에 들어와있다면, 미니맵에 표시해줍니다.
 	for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
 	{
 		const auto& State = Enemy.Key;
-		
-		if (const ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(State->GetPawn()))
+		const ETeam& NewTeam = State->GetTeam();
+	
+		if (ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayer()->GetPawn()))
 		{
-			bool bIsEnemyVisibleInCamera = LakayaCharacter->IsEnemyVisibleInCamera(State);
-			
-			if (bIsEnemyVisibleInCamera)
+			if (LakayaCharacter->IsEnemyVisibleInCamera(EnemyTeam, State))
 			{
 				UpdatePlayerPosition(EnemyTeam, State);
 				continue;
 			}
-			
-			bool bIsCurrentlyVisibleOnMinimap = Enemy.Value->GetVisibility() != ESlateVisibility::Hidden;
-			
-			if(bIsCurrentlyVisibleOnMinimap)
-				Enemy.Value->SetVisibility(ESlateVisibility::Hidden);
+
+			// if(Enemy.Value->GetVisibility() != ESlateVisibility::Hidden)
+				// Enemy.Value->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }

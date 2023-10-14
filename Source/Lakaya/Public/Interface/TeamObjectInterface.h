@@ -32,7 +32,7 @@ public:
 
 	FORCEINLINE bool IsSameTeam(const ITeamObjectInterface* InTeamObject) const
 	{
-		return InTeamObject && JudgeSameTeam(GetTeam(), InTeamObject->GetTeam());
+		return InTeamObject == this || (InTeamObject && JudgeSameTeam(GetTeam(), InTeamObject->GetTeam()));
 	}
 };
 

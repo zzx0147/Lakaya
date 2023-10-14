@@ -16,6 +16,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameMode/OccupationGameState.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Net/UnrealNetwork.h"
@@ -88,6 +89,8 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	GrayScalePostProcessComponent->SetupAttachment(RootComponent);
 	GrayScalePostProcessComponent->bUnbound = true;
 	GrayScalePostProcessComponent->Priority = -1.0f;
+
+	// bIsSpottedByTeammate = false;
 	
 	if (DissolveCurveFinder.Succeeded()) DissolveCurve = DissolveCurveFinder.Object;
 }
@@ -234,17 +237,16 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 	CharacterOverlayMaterial->SetVectorParameterValue(TEXT("Color"), IsAlly ? FLinearColor::Blue : FLinearColor::Red);
 }
 
-bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const TWeakObjectPtr<ALakayaBasePlayerState> State) const
+bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam ,const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState)
 {
-	
 #pragma region NullCheck
-	if (!State.IsValid())
+	if (!EnemyState.IsValid())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("State is not valid."));
 		return false;
 	}
 
-	const APawn* EnemyPawn = State->GetPawn();
+	const APawn* EnemyPawn = EnemyState->GetPawn();
 	if (!EnemyPawn)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("EnemyPawn is null."));
@@ -295,8 +297,27 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const TWeakObjectPtr<ALakayaBa
 		{
 			bIsVisible = false;
 		}
+
+		if (bIsVisible)
+		{
+			Server_OnEnemySpotted(EnemyTeam, EnemyState.Get());
+			// bIsSpottedByTeammate = true;
+		}
+		else
+		{
+			// bIsSpottedByTeammate = false;
+		}
 		
 		return bIsVisible;
+	}
+}
+
+void ALakayaBaseCharacter::Server_OnEnemySpotted_Implementation(const ETeam& EnemyTeam,
+	ALakayaBasePlayerState* EnemyState)
+{
+	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
+	{
+		OccupationGameState->OnEnemySpotted(EnemyTeam, EnemyState);
 	}
 }
 
@@ -425,4 +446,5 @@ void ALakayaBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, ResourceComponent, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, PlayerRotation, COND_SkipOwner);
 	DOREPLIFETIME(ALakayaBaseCharacter, DamageImmuneEndingTime);
+	// DOREPLIFETIME(ALakayaBaseCharacter, bIsSpottedByTeammate);
 }

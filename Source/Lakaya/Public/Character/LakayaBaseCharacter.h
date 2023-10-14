@@ -86,6 +86,15 @@ public:
 
 	UFUNCTION(BlueprintGetter)
 	const float& GetCharacterMaxUltimateGauge() const { return MaxUltimateGauge; }
+
+	UFUNCTION(BlueprintGetter)
+	const float& GetCharacterGainUltimateOnAttack() const { return GainUltimateOnAttack; }
+
+	UFUNCTION(BlueprintGetter)
+	const float& GetCharacterGainUltimateOnAttacked() const { return GainUltimateOnAttacked; }
+
+	UFUNCTION(BlueprintGetter)
+	const float& GetCharacterGainUltimateOnSecond() const { return GainUltimateOnSecond; }
 	
 	// 연속처치시 적용될 버프 목록을 가져옵니다.
 	UFUNCTION(BlueprintGetter)
@@ -131,11 +140,15 @@ public:
 	FORCEINLINE TSubclassOf<class UCharacterWidget> GetCharacterWidgetClass() const { return CharacterWidgetClass; }
 
 	/**
-	* @brief 해당 플레이어가 카메라에 보이는지 확인합니다.
-	* @param State 확인할 플레이어의 상태입니다.
+	* @brief 해당 적이 카메라에 보이는지 확인합니다.
+	* @param EnemyTeam 적의 소속팀 입니다.
+	* @param EnemyState 확인할 적의 상태입니다.
 	* @return 카메라에 보인다면 true, 아니라면 false를 반환합니다.
 	*/
-	bool IsEnemyVisibleInCamera(const TWeakObjectPtr<ALakayaBasePlayerState> State) const;
+	bool IsEnemyVisibleInCamera(const ETeam& EnemyTeam, const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState);
+
+	UFUNCTION(Server, Reliable)
+	void Server_OnEnemySpotted(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState);
 
 protected:
 	virtual void SetTeam_Implementation(const ETeam& Team);
@@ -185,7 +198,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
 	float MaxUltimateGauge;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
+	float GainUltimateOnAttack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
+	float GainUltimateOnAttacked;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
+	float GainUltimateOnSecond;
 	
 	// 이 캐릭터의 공격력의 기본값입니다. AttributeSet의 기본 값을 설정하는데 사용됩니다. 런타임중에 변경하지 마십시오
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
@@ -285,4 +306,8 @@ private:
 	TWeakObjectPtr<UMaterialInstanceDynamic> CharacterOverlayMaterial;
 	FTimerHandle DamageImmuneTimer;
 	FLakayaAbilityHandleContainer AbilityHandleContainer;
+
+// public:
+// 	UPROPERTY(Replicated)
+// 	bool bIsSpottedByTeammate;
 };

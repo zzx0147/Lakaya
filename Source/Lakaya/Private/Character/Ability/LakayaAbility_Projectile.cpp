@@ -191,7 +191,7 @@ void ULakayaAbility_Projectile::OnTargetDataReceived_Implementation(
 			const auto TargetData = static_cast<const FGameplayAbilityTargetData_ThrowProjectile*>(RawTargetDataPtr);
 			if (ensure(TargetData->Projectile))
 			{
-				TargetData->Projectile->ThrowProjectile(TargetData->ThrowData);
+				TargetData->Projectile->ThrowProjectileAuthoritative(TargetData->ThrowData);
 				return;
 			}
 		}
