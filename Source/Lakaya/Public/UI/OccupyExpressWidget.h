@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "OccupyExpressWidget.generated.h"
 
@@ -22,7 +23,10 @@ public:
 	FORCEINLINE UProgressBar* GetProBar() const { return Pro_Bar.Get(); }
 	FORCEINLINE UTexture* GetOccupyAntiImage() const { return OccupyAntiImage; }
 	FORCEINLINE UTexture* GetOccupyProImage() const { return OccupyProImage; }
-
+	FORCEINLINE TObjectPtr<UTexture> GetNoneChargeImage() const { return NoneChargeImage; }
+	FORCEINLINE TObjectPtr<UTexture> GetAntiChargeImage() const { return AntiChargeImage; }
+	FORCEINLINE TObjectPtr<UTexture> GetProChargeImage() const { return ProChargeImage; }
+	
 private:
 	UPROPERTY(EditAnywhere, Category = "Image")
 	UTexture* OccupyAntiImage;
@@ -38,4 +42,13 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	TWeakObjectPtr<UProgressBar> Pro_Bar;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture> NoneChargeImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture> AntiChargeImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture> ProChargeImage;
 };

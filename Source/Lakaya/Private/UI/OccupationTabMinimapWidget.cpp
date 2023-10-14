@@ -10,6 +10,9 @@ void UOccupationTabMinimapWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("PlayerImagePanel")));
+
+	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
+	TeamIcons.Emplace(ETeam::Pro, ProIcon);
 	
 	// TODO : 하드코딩이 아닌 GetDesiredSize() 함수를 이용해서 가져오도록 해야합니다.
 	MinimapSize = FVector2D(312.5f, 476.25f);
@@ -91,11 +94,21 @@ UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 
 	PlayerImage->SetVisibility(ESlateVisibility::Hidden);
 
-	// 나 자신이라면 자신만의 아이콘으로 설정해줍니다.
+	// 나 자신이라면 자신의 팀에 따른 자신만의 아이콘으로 설정해줍니다.
 	if (bMyPlayer)
 	{
-		PlayerImage->SetBrushFromTexture(OwnIcon);
-		return PlayerImage;
+		if (Team == ETeam::Anti)
+		{
+			PlayerImage->SetBrushFromTexture(AntiOwnIcon);
+			PanelSlot->SetSize(OwnIconSize);
+			return PlayerImage;
+		}
+		else if (Team == ETeam::Pro)
+		{
+			PlayerImage->SetBrushFromTexture(ProOwnIcon);
+			PanelSlot->SetSize(OwnIconSize);
+			return PlayerImage;
+		}
 	}
 
 	// 생성된 이미지는 플레이어의 팀에 따라 아이콘이 정해집니다.

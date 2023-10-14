@@ -10,14 +10,12 @@ void UMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
-	TeamIcons.Emplace(ETeam::Pro, ProIcon);
-	
 	UpdateMinimap = false;
 	
 	IconAlignment = FVector2D(0.5f, 0.5f);
 	IconSize = FVector2D(12.0f, 12.0f);
-
+	OwnIconSize = FVector2D(50.0f, 50.0f);
+	
 	PlayersByMinimap.Emplace(ETeam::Anti);
 	PlayersByMinimap.Emplace(ETeam::Pro);
 }
@@ -51,43 +49,6 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 			AllyCharacter->IsEnemyVisibleInCamera(EnemyTeam, EnemyState);
 		}
 	}
-}
-
-UImage* UMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
-{
-	UImage* PlayerImage = NewObject<UImage>(this);
-	const auto Team = NewTeam == ETeam::Anti ? ETeam::Anti : ETeam::Pro;
-
-	UCanvasPanelSlot* PanelSlot = ParentPanel->AddChildToCanvas(PlayerImage);
-
-	if (PanelSlot == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PanelSlot is null."));
-		return nullptr;
-	}
-	
-	PanelSlot->SetAlignment(IconAlignment);
-	PanelSlot->SetSize(IconSize);
-	PanelSlot->SetZOrder(1);
-
-	PlayerImage->SetVisibility(ESlateVisibility::Hidden);
-
-	// 나 자신이라면 자신만의 아이콘으로 설정해줍니다.
-	if (bMyPlayer)
-	{
-		PlayerImage->SetBrushFromTexture(OwnIcon);
-		return PlayerImage;
-	}
-
-	// 생성된 이미지는 플레이어의 팀에 따라 아이콘이 정해집니다.
-	if (TeamIcons.Contains(Team))
-	{
-		PlayerImage->SetBrushFromTexture(TeamIcons[Team]);
-		return PlayerImage;
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("OccupationTabMinimapWidget_PlayerImage is null."));
-	return nullptr;
 }
 
 FVector2D UMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,

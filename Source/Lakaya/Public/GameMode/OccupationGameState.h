@@ -70,6 +70,9 @@ public:
 	UFUNCTION()
 	void UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id);
 
+	UFUNCTION()
+	void UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress);
+	
 	void OnEnemySpotted(const ETeam& EnemyTeam,
 		ALakayaBasePlayerState* Enemy);
 
@@ -140,7 +143,6 @@ private:
 	void OnPlayerStateOwnerChanged(AActor* Owner);
 
 	void AddPlayerStateToRecordResult(ETeam InTeam ,TArray<ALakayaBasePlayerState*> InPlayers);
-
 
 	void InternalSetScoreBoardVisibility(const bool& Visible) const;
 
