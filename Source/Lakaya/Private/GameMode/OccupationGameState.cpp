@@ -294,7 +294,7 @@ void AOccupationGameState::HandleMatchHasEnded()
 	MatchResult.Duration = GetServerWorldTimeSeconds() - StartTime;
 	AddPlayerStateToRecordResult(ETeam::Anti, PlayersByTeamMap[ETeam::Anti]);
 	AddPlayerStateToRecordResult(ETeam::Pro, PlayersByTeamMap[ETeam::Pro]);
-
+	
 	if (HasAuthority())
 	{
 		if (const auto EOSGameInstance = Cast<UEOSGameInstance>(GetGameInstance()))
@@ -638,7 +638,7 @@ void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const ui
 	}
 }
 
-void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress)
+void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress, const bool& bIsOccupy)
 {
 	UProgressBar** Bar = OccupyBarMaps.Find(Id);
 	FSlateBrush ChargeImageBrush;
@@ -655,8 +655,9 @@ void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& I
 	
 		(*Bar)->WidgetStyle.SetFillImage(ChargeImageBrush);
 		(*Bar)->WidgetStyle.FillImage = ChargeImageBrush;
-	
 		(*Bar)->SetPercent(Progress / 4);
+		
+		OccupyExpressWidget->SetAimOccupyProgressBar(Progress, bIsOccupy);
 	}
 	else
 	{

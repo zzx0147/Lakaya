@@ -42,25 +42,27 @@ void ACaptureArea::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 		{
 			if(auto OccupyingPlayerState = Cast<ALakayaBasePlayerState>(OverlappedArmedCharacter->GetPlayerState()))
 			{
-				// 겹친 액터가 캐릭터입니다.
-				// TODO : 궁극기 범위 콜라이더 처리
-				// if (OtherActor->Tags.Contains("SkeletalMeshComponent"))
+				// OccupyPlayerList에 추가합니다.
 				AddToOccupyPlayerList(OccupyingPlayerState->GetTeam(), OccupyingPlayerState);
+
+				// if (const auto& OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState()))
+				// {
+				// }
 			}
 			else
 			{
-				// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Character Cast Failed."));	
+				GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Character Cast Failed."));	
 			}
 		}
 		else
 		{
 			// 겹친 액터는 캐릭터가 아닙니다.
-			// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Trigger Overlapped by non-ArmedCharacter"));
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Trigger Overlapped by non-ArmedCharacter"));
 		}
 	}
 	else
 	{
-		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Same Trigger"));
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Same Trigger"));
 	}
 }
 
@@ -320,7 +322,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 			return;
 		}
 
-		OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress);
+		OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress, true);
 
 		UE_LOG(LogTemp, Warning, TEXT("%f"), TeamCaptureProgress);
 		
@@ -350,7 +352,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 			CaptureAreaTeamOnChangedSignature.Broadcast(GetCurrentCaptureAreaTeam());
 			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 
-			OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress);
+			OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress, false);
 			
 			if (OccupationGameState->CheckCaptureAreaCount(CurrentTeam))
 			{
@@ -377,7 +379,7 @@ void ACaptureArea::DecreaseCaptureProgress()
 	const float TeamCaptureProgress = AntiTeamCaptureProgress > ProTeamCaptureProgress ? AntiTeamCaptureProgress : ProTeamCaptureProgress;
 	const ETeam CurrentTeam = AntiTeamCaptureProgress > ProTeamCaptureProgress ? ETeam::Anti : ETeam::Pro;
 	
-	OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress);
+	OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress, false);
 	
 	if (AntiTeamCaptureProgress <= 0.0f && ProTeamCaptureProgress <= 0.0f)
 	{

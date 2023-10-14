@@ -5,7 +5,7 @@
 
 #include "Camera/CameraComponent.h"
 #include "Character/LakayaBaseCharacter.h"
-#include "Components/CanvasPanelSlot.h"
+#include "GameMode/OccupationGameState.h"
 
 void UMinimapWidget::NativeConstruct()
 {
@@ -28,7 +28,7 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	// 게임 중이 아닐때에는 미니맵을 업데이트 해주지 않습니다.
 	if (!UpdateMinimap) return;
 
-	// 자기 자신의 팀의 위치를 업데이트 해줍니다.
+	// 자신의 팀(자기 자신 포함)위치 를 업데이트 해줍니다.
 	UpdatePlayerPosition(CurrentTeam);
 
 	const ETeam EnemyTeam = CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
@@ -45,8 +45,6 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		{
 			const auto& AllyState = Ally.Key;
 			ALakayaBaseCharacter* AllyCharacter = Cast<ALakayaBaseCharacter>(AllyState->GetPawn());
-			
-			// 한명이라도 적이 시야에 있는 상태입니다.
 			AllyCharacter->IsEnemyVisibleInCamera(EnemyTeam, EnemyState);
 		}
 	}
@@ -66,12 +64,21 @@ FVector2D UMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& Play
 	return MiniMapCoordinates;
 }
 
+// TODO : 개인전에서는 나 자신만의 위치를 업데이트 해야 하며, 발견된 적의 위치만을 업데이트 해야 해서, 로직 변경이 필요합니다.
 void UMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 {
 	for (auto& Player : PlayersByMinimap[Team])
 	{
 		const auto& State = Player.Key;
 		const auto& Image = Player.Value;
+		
+		FVector2D PlayerPosition(State->GetPawn()->GetActorLocation().X, State->GetPawn()->GetActorLocation().Y);
+		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
+		
+		if (Image->GetVisibility() == ESlateVisibility::Hidden)
+			Image->SetVisibility(ESlateVisibility::Visible);
+
+		Image->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 
 		// 검사한 상대가 나 자신이라면
 		if (State == GetOwningPlayerState())
@@ -82,13 +89,5 @@ void UMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 			const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
 			Image->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
 		}
-		
-		FVector2D PlayerPosition(State->GetPawn()->GetActorLocation().X, State->GetPawn()->GetActorLocation().Y);
-		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
-		
-		if (Image->GetVisibility() == ESlateVisibility::Hidden)
-			Image->SetVisibility(ESlateVisibility::Visible);
-
-		Image->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 	}
 }

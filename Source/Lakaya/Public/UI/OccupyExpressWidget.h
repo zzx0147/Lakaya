@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "OccupyExpressWidget.generated.h"
+
 
 /**
  * 
@@ -15,9 +15,12 @@ UCLASS()
 class LAKAYA_API UOccupyExpressWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
+protected:
+	virtual void NativeConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	
 public:
-
 	FORCEINLINE UProgressBar* GetAntiBar() const { return Anti_Bar.Get(); }
 	FORCEINLINE UProgressBar* GetCenterBar() const { return Center_Bar.Get(); }
 	FORCEINLINE UProgressBar* GetProBar() const { return Pro_Bar.Get(); }
@@ -26,6 +29,8 @@ public:
 	FORCEINLINE TObjectPtr<UTexture> GetNoneChargeImage() const { return NoneChargeImage; }
 	FORCEINLINE TObjectPtr<UTexture> GetAntiChargeImage() const { return AntiChargeImage; }
 	FORCEINLINE TObjectPtr<UTexture> GetProChargeImage() const { return ProChargeImage; }
+
+	void SetAimOccupyProgressBar(const float NewProgress, const bool bIsNewOccupy);
 	
 private:
 	UPROPERTY(EditAnywhere, Category = "Image")
@@ -43,6 +48,9 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	TWeakObjectPtr<UProgressBar> Pro_Bar;
 
+	UPROPERTY(meta = (BindWidget))
+	TWeakObjectPtr<UProgressBar> AimOccupyProgressBar;
+	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture> NoneChargeImage;
 
@@ -51,4 +59,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture> ProChargeImage;
+
+	float Percent;
 };
