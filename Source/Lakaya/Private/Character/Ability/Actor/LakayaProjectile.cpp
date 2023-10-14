@@ -407,6 +407,10 @@ void ALakayaProjectile::OnProjectileBounce_Implementation(const FHitResult& Impa
 {
 }
 
+void ALakayaProjectile::PostExitPerformStateReplicated_Implementation()
+{
+}
+
 void ALakayaProjectile::AddIgnoredInPerformActor(AActor* InActor)
 {
 	if (IsValid(InActor))
@@ -455,6 +459,7 @@ void ALakayaProjectile::OnRep_ProjectileState()
 	case EProjectileState::Collapsed: break;
 	case EProjectileState::Perform:
 		StopThrowProjectile();
+		PostExitPerformStateReplicated();
 		break;
 	case EProjectileState::Custom:
 		OnReplicatedCustomStateExit(OldState.GetCustomState());

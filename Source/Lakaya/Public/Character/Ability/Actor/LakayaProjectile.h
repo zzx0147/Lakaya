@@ -267,6 +267,10 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void OnEventFromThrowTriggeredInPhysics();
 
+	/** 리플리케이트되어 투사체가 Perform 상태에서 탈출한 이후에 호출됩니다. */
+	UFUNCTION(BlueprintNativeEvent)
+	void PostExitPerformStateReplicated();
+
 	/** 이번 투사체 투척에서 해당 액터에 대한 Overlap 이벤트가 더이상 생성되지 않도록 합니다. */
 	UFUNCTION(BlueprintCallable)
 	void AddIgnoredInPerformActor(AActor* InActor);
