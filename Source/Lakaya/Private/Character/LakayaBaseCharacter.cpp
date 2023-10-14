@@ -8,6 +8,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
+#include "Character/BulletSpreadComponent.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Character/ResourceComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -28,7 +29,7 @@ const FName ALakayaBaseCharacter::ClairvoyanceMeshComponentName = FName(TEXT("Cl
 const FName ALakayaBaseCharacter::DamageImmuneMeshComponentName = FName(TEXT("DamageImmuneMesh"));
 const FName ALakayaBaseCharacter::ResurrectionNiagaraName = FName(TEXT("ResurrectionNiagara"));
 const FName ALakayaBaseCharacter::GrayScalePostProcessComponentName = FName(TEXT("GrayScalePostProcess"));
-
+const FName ALakayaBaseCharacter::BulletSpreadComponentName = FName(TEXT("BulletSpread"));
 
 ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -90,6 +91,9 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	GrayScalePostProcessComponent->bUnbound = true;
 	GrayScalePostProcessComponent->Priority = -1.0f;
 
+	BulletSpreadComponent = CreateDefaultSubobject<UBulletSpreadComponent>(BulletSpreadComponentName);
+	
+	
 	// bIsSpottedByTeammate = false;
 	
 	if (DissolveCurveFinder.Succeeded()) DissolveCurve = DissolveCurveFinder.Object;
