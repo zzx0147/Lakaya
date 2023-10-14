@@ -43,6 +43,8 @@ void ACaptureArea::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 			if(auto OccupyingPlayerState = Cast<ALakayaBasePlayerState>(OverlappedArmedCharacter->GetPlayerState()))
 			{
 				// 겹친 액터가 캐릭터입니다.
+				// TODO : 궁극기 범위 콜라이더 처리
+				// if (OtherActor->Tags.Contains("SkeletalMeshComponent"))
 				AddToOccupyPlayerList(OccupyingPlayerState->GetTeam(), OccupyingPlayerState);
 			}
 			else
