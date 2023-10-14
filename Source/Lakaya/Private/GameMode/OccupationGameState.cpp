@@ -648,7 +648,7 @@ void AOccupationGameState::OnEnemySpotted(const ETeam& EnemyTeam, ALakayaBasePla
 void AOccupationGameState::OnEnemyLost(const ETeam& EnemyTeam, ALakayaBasePlayerState* Enemy)
 {
 	// 같은 팀의 정보는 필요 없으므로, 리턴합니다.
-	// if (EnemyTeam == ClientTeam) return;
+	if (EnemyTeam == ClientTeam) return;
 	MultiCast_HideFromMinimap(EnemyTeam, Enemy);
 }
 
@@ -656,8 +656,8 @@ void AOccupationGameState::MultiCast_HideFromMinimap_Implementation(const ETeam&
 {
 	if (TabMinimapWidget && HUDMinimapWidget)
 	{
-		TabMinimapWidget->HidePlayerPosition(EnemyTeam, Enemy);
-		HUDMinimapWidget->HidePlayerPosition(EnemyTeam, Enemy);
+		// TabMinimapWidget->HidePlayerPosition(EnemyTeam, Enemy);
+		// HUDMinimapWidget->HidePlayerPosition(EnemyTeam, Enemy);
 	}
 }
 

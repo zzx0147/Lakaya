@@ -241,7 +241,8 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 	CharacterOverlayMaterial->SetVectorParameterValue(TEXT("Color"), IsAlly ? FLinearColor::Blue : FLinearColor::Red);
 }
 
-bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam ,const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState)
+bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
+	const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState)
 {
 #pragma region NullCheck
 	if (!EnemyState.IsValid())
@@ -256,8 +257,8 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam ,const 
 		UE_LOG(LogTemp, Warning, TEXT("EnemyPawn is null."));
 		return false;
 	}
-	
-	// const APlayerController* PlayerController = GetOwningPlayer();
+
+	// TODO : GetFristPlayerController를 가져오는 것이 맞는지 확인해야 합니다.
 	const APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	
 	if (!PlayerController || !PlayerController->PlayerCameraManager)
