@@ -2,14 +2,10 @@
 
 #include "Occupation/CaptureArea.h"
 
-#include "AI/NavigationSystemBase.h"
 #include "Character/ArmedCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
-#include "Components/BoxComponent.h"
-#include "Components/ProgressBar.h"
 #include "GameMode/OccupationGameState.h"
 #include "Net/UnrealNetwork.h"
-#include "ProfilingDebugging/BootProfiling.h"
 
 ACaptureArea::ACaptureArea()
 {
@@ -21,6 +17,8 @@ ACaptureArea::ACaptureArea()
 	AntiTeamCaptureProgress = 0.0f;
 	ProTeamCaptureProgress = 0.0f;
 	CaptureSpeed = 1.0f;
+
+	CaptureAreaId = 100;
 }
 
 void ACaptureArea::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -45,6 +43,8 @@ void ACaptureArea::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 			if(auto OccupyingPlayerState = Cast<ALakayaBasePlayerState>(OverlappedArmedCharacter->GetPlayerState()))
 			{
 				// 겹친 액터가 캐릭터입니다.
+				// TODO : 궁극기 범위 콜라이더 처리
+				// if (OtherActor->Tags.Contains("SkeletalMeshComponent"))
 				AddToOccupyPlayerList(OccupyingPlayerState->GetTeam(), OccupyingPlayerState);
 			}
 			else
@@ -314,6 +314,15 @@ void ACaptureArea::IncreaseCaptureProgress()
 		const ETeam CurrentTeam = (CaptureAreaState == ECaptureAreaState::AntiProgress) ? ETeam::Anti : ETeam::Pro;
 		float& TeamCaptureProgress = (CurrentTeam == ETeam::Anti) ? AntiTeamCaptureProgress : ProTeamCaptureProgress;
 		TeamCaptureProgress += CaptureSpeed * 0.1f;
+		const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
+		if (OccupationGameState == nullptr)
+		{
+			return;
+		}
+
+		OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress);
+
+		UE_LOG(LogTemp, Warning, TEXT("%f"), TeamCaptureProgress);
 		
 		if (CurrentTeam == ETeam::Anti)
 		{
@@ -326,14 +335,8 @@ void ACaptureArea::IncreaseCaptureProgress()
 		
 		if (TeamCaptureProgress >= 4.0f)
 		{
-			// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("%sTeam Capture Success."), *ETeamToString(CurrentTeam)));
-			const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
-			if (OccupationGameState == nullptr)
-			{
-				// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("OccupationGameState is null."));
-				return;
-			}
-
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("%sTeam Capture Success."), *ETeamToString(CurrentTeam)));
+			
 			const ETeam OtherTeam = (CurrentTeam == ETeam::Anti) ? ETeam::Pro : ETeam::Anti;
 			if (GetCurrentCaptureAreaTeam() == OtherTeam)
 			{
@@ -347,6 +350,8 @@ void ACaptureArea::IncreaseCaptureProgress()
 			CaptureAreaTeamOnChangedSignature.Broadcast(GetCurrentCaptureAreaTeam());
 			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 
+			OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress);
+			
 			if (OccupationGameState->CheckCaptureAreaCount(CurrentTeam))
 			{
 				OccupationGameState->SetTeamToUpdate(CurrentTeam);
@@ -360,6 +365,19 @@ void ACaptureArea::DecreaseCaptureProgress()
 {
 	AntiTeamCaptureProgress -= CaptureSpeed * 0.1f;
 	ProTeamCaptureProgress -= CaptureSpeed * 0.1f;
+	UE_LOG(LogTemp, Warning, TEXT("Anti : %f"), AntiTeamCaptureProgress);
+	UE_LOG(LogTemp, Warning, TEXT("Pro : %f"), ProTeamCaptureProgress);
+
+	const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
+	if (OccupationGameState == nullptr)
+	{
+		return;
+	}
+
+	const float TeamCaptureProgress = AntiTeamCaptureProgress > ProTeamCaptureProgress ? AntiTeamCaptureProgress : ProTeamCaptureProgress;
+	const ETeam CurrentTeam = AntiTeamCaptureProgress > ProTeamCaptureProgress ? ETeam::Anti : ETeam::Pro;
+	
+	OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress);
 	
 	if (AntiTeamCaptureProgress <= 0.0f && ProTeamCaptureProgress <= 0.0f)
 	{

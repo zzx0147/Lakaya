@@ -3,6 +3,7 @@
 
 #include "UI/MiniMapWidget.h"
 
+#include "Camera/CameraComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
 
@@ -10,17 +11,14 @@ void UMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
-	TeamIcons.Emplace(ETeam::Pro, ProIcon);
-	
 	UpdateMinimap = false;
 	
 	IconAlignment = FVector2D(0.5f, 0.5f);
-	IconSize = FVector2D(12.0f, 12.0f);
-
+	IconSize = FVector2D(15.0f, 15.0f);
+	OwnIconSize = FVector2D(62.0f, 112.0f);
+	
 	PlayersByMinimap.Emplace(ETeam::Anti);
 	PlayersByMinimap.Emplace(ETeam::Pro);
-
 }
 
 void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -41,78 +39,17 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
 	{
 		const auto& EnemyState = Enemy.Key;
-	
-		if (ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayer()->GetPawn()))
-		{
-			// 적이 시야에 들어왔다면, 모든 아군들에게 적의 위치를 공유합니다.
-			LakayaCharacter->IsEnemyVisibleInCamera(EnemyTeam, EnemyState);
-			continue;
-		}
-
-		bool bIsAnyAllySeeingThisEnemy = false;
 		
 		// 모든 아군을 순회해서 시야에 없다면, 적을 업데이트 하지 않습니다.
 		for (const auto& Ally : PlayersByMinimap[CurrentTeam])
 		{
 			const auto& AllyState = Ally.Key;
 			ALakayaBaseCharacter* AllyCharacter = Cast<ALakayaBaseCharacter>(AllyState->GetPawn());
-
+			
 			// 한명이라도 적이 시야에 있는 상태입니다.
-			if (AllyCharacter->IsEnemyVisibleInCamera(EnemyTeam, EnemyState))
-			{
-				bIsAnyAllySeeingThisEnemy = true;
-				break;
-			}
-		}
-
-		if (bIsAnyAllySeeingThisEnemy)
-		{
-			if(Enemy.Value->GetVisibility() != ESlateVisibility::Visible)
-				Enemy.Value->SetVisibility(ESlateVisibility::Visible);
-		}
-		else if (!bIsAnyAllySeeingThisEnemy)
-		{
-			if(Enemy.Value->GetVisibility() != ESlateVisibility::Hidden)
-				Enemy.Value->SetVisibility(ESlateVisibility::Hidden);
+			AllyCharacter->IsEnemyVisibleInCamera(EnemyTeam, EnemyState);
 		}
 	}
-}
-
-UImage* UMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
-{
-	UImage* PlayerImage = NewObject<UImage>(this);
-	const auto Team = NewTeam == ETeam::Anti ? ETeam::Anti : ETeam::Pro;
-
-	UCanvasPanelSlot* PanelSlot = ParentPanel->AddChildToCanvas(PlayerImage);
-
-	if (PanelSlot == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PanelSlot is null."));
-		return nullptr;
-	}
-	
-	PanelSlot->SetAlignment(IconAlignment);
-	PanelSlot->SetSize(IconSize);
-	PanelSlot->SetZOrder(1);
-
-	PlayerImage->SetVisibility(ESlateVisibility::Hidden);
-
-	// 나 자신이라면 자신만의 아이콘으로 설정해줍니다.
-	if (bMyPlayer)
-	{
-		PlayerImage->SetBrushFromTexture(OwnIcon);
-		return PlayerImage;
-	}
-
-	// 생성된 이미지는 플레이어의 팀에 따라 아이콘이 정해집니다.
-	if (TeamIcons.Contains(Team))
-	{
-		PlayerImage->SetBrushFromTexture(TeamIcons[Team]);
-		return PlayerImage;
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("OccupationTabMinimapWidget_PlayerImage is null."));
-	return nullptr;
 }
 
 FVector2D UMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
@@ -136,10 +73,19 @@ void UMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		const auto& State = Player.Key;
 		const auto& Image = Player.Value;
 
+		// 검사한 상대가 나 자신이라면
+		if (State == GetOwningPlayerState())
+		{
+			// 회전값을 업데이트 해줍니다.
+			const auto PlayerCharacter = State->GetPlayerController()->GetCharacter();
+			const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
+			const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
+			Image->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+		}
+		
 		FVector2D PlayerPosition(State->GetPawn()->GetActorLocation().X, State->GetPawn()->GetActorLocation().Y);
-
 		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
-
+		
 		if (Image->GetVisibility() == ESlateVisibility::Hidden)
 			Image->SetVisibility(ESlateVisibility::Visible);
 
