@@ -52,6 +52,26 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 }
 
+void UOccupationTabMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
+	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+{
+	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
+		return;
+	}
+	
+	const auto& EnemyImage = PlayersByMinimap[NewTeam][NewPlayerState].Get();
+	if (EnemyImage == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
+		return;
+	}
+	
+	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
+		EnemyImage->SetVisibility(ESlateVisibility::Hidden);
+}
+
 UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
 {
 	UImage* PlayerImage = NewObject<UImage>(this);

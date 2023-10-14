@@ -40,19 +40,40 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	// 적들의 위치정보를 가져와서, 내 시야에 들어와있다면, 미니맵에 표시해줍니다.
 	for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
 	{
-		const auto& State = Enemy.Key;
-		const ETeam& NewTeam = State->GetTeam();
+		const auto& EnemyState = Enemy.Key;
 	
 		if (ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayer()->GetPawn()))
 		{
-			if (LakayaCharacter->IsEnemyVisibleInCamera(EnemyTeam, State))
-			{
-				UpdatePlayerPosition(EnemyTeam, State);
-				continue;
-			}
+			// 적이 시야에 들어왔다면, 모든 아군들에게 적의 위치를 공유합니다.
+			LakayaCharacter->IsEnemyVisibleInCamera(EnemyTeam, EnemyState);
+			continue;
+		}
 
-			// if(Enemy.Value->GetVisibility() != ESlateVisibility::Hidden)
-				// Enemy.Value->SetVisibility(ESlateVisibility::Hidden);
+		bool bIsAnyAllySeeingThisEnemy = false;
+		
+		// 모든 아군을 순회해서 시야에 없다면, 적을 업데이트 하지 않습니다.
+		for (const auto& Ally : PlayersByMinimap[CurrentTeam])
+		{
+			const auto& AllyState = Ally.Key;
+			ALakayaBaseCharacter* AllyCharacter = Cast<ALakayaBaseCharacter>(AllyState->GetPawn());
+
+			// 한명이라도 적이 시야에 있는 상태입니다.
+			if (AllyCharacter->IsEnemyVisibleInCamera(EnemyTeam, EnemyState))
+			{
+				bIsAnyAllySeeingThisEnemy = true;
+				break;
+			}
+		}
+
+		if (bIsAnyAllySeeingThisEnemy)
+		{
+			if(Enemy.Value->GetVisibility() != ESlateVisibility::Visible)
+				Enemy.Value->SetVisibility(ESlateVisibility::Visible);
+		}
+		else if (!bIsAnyAllySeeingThisEnemy)
+		{
+			if(Enemy.Value->GetVisibility() != ESlateVisibility::Hidden)
+				Enemy.Value->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }

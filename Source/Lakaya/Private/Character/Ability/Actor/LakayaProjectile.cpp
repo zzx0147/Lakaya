@@ -79,7 +79,7 @@ ALakayaProjectile::ALakayaProjectile()
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-	CollisionComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &ThisClass::OnProjectileOverlap);
+	CollisionComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &ThisClass::CallOnProjectileOverlap);
 
 	ProjectileMovementComponent =
 		CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
@@ -216,11 +216,6 @@ void ALakayaProjectile::SetSourceObject(FGameplayEffectContextHandle EffectConte
 	EffectContext.AddSourceObject(SourceObject);
 }
 
-ECollisionChannel ALakayaProjectile::ConvertToCollisionChannel(EObjectTypeQuery ObjectType)
-{
-	return UEngineTypes::ConvertToCollisionChannel(ObjectType);
-}
-
 void ALakayaProjectile::OnStartPhysicsSimulation_Implementation(
 	const FPredictProjectilePathResult& LastPredictionResult)
 {
@@ -228,6 +223,11 @@ void ALakayaProjectile::OnStartPhysicsSimulation_Implementation(
 
 void ALakayaProjectile::OnStartPathPrediction_Implementation(const FProjectileThrowData& InThrowData)
 {
+	if (bIgnoreOwnerAndInstigator)
+	{
+		AddIgnoredInPerformActor(GetOwner());
+		AddIgnoredInPerformActor(GetInstigator());
+	}
 }
 
 void ALakayaProjectile::OnReplicatedCustomStateEnter_Implementation(const uint8& NewState)
@@ -427,6 +427,18 @@ void ALakayaProjectile::ClearIgnoredInPerformActors()
 	IgnoredInPerformActors.Reset();
 }
 
+void ALakayaProjectile::AddOverlapObjectType(const EObjectTypeQuery& ObjectType)
+{
+	PredictedProjectileParams.ObjectTypes.AddUnique(ObjectType);
+	CollisionComponent->SetCollisionResponseToChannel(UEngineTypes::ConvertToCollisionChannel(ObjectType), ECR_Overlap);
+}
+
+void ALakayaProjectile::IgnoreObjectType(const EObjectTypeQuery& ObjectType)
+{
+	PredictedProjectileParams.ObjectTypes.RemoveSwap(ObjectType);
+	CollisionComponent->SetCollisionResponseToChannel(UEngineTypes::ConvertToCollisionChannel(ObjectType), ECR_Ignore);
+}
+
 void ALakayaProjectile::OnRep_ProjectileState()
 {
 	if (LocalState == ProjectileState)
@@ -463,5 +475,15 @@ void ALakayaProjectile::OnRep_ProjectileState()
 	default:
 		UE_LOG(LogActor, Fatal, TEXT("[%s] Invalid ProjectileState has replicated: %d"), *GetName(),
 		       NewProjectileState);
+	}
+}
+
+void ALakayaProjectile::CallOnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                                                UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+                                                const FHitResult& SweepResult)
+{
+	if (!CollisionComponent->GetMoveIgnoreActors().Contains(OtherActor))
+	{
+		OnProjectileOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 	}
 }

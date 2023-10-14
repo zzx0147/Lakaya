@@ -14,5 +14,12 @@ class LAKAYA_API UDynamicCrossHairWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+
+public:
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnNormalAttackHitEnemy();
 	
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnChangeBulletSpreadAmount(const float& NewAmount);
 };

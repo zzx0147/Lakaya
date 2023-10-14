@@ -70,12 +70,19 @@ public:
 	UFUNCTION()
 	void UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id);
 
-	void OnEnemySpotted(const ETeam& Team,
-		ALakayaBasePlayerState* Player);
+	void OnEnemySpotted(const ETeam& EnemyTeam,
+		ALakayaBasePlayerState* Enemy);
+
+	void OnEnemyLost(const ETeam& EnemyTeam,
+		ALakayaBasePlayerState* Enemy);
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_UpdateMinimap(const ETeam& EnemyTeam,
+	ALakayaBasePlayerState* Enemy);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_UpdateMinimap(const ETeam& Team,
-	ALakayaBasePlayerState* Player);
+	void MultiCast_HideFromMinimap(const ETeam& EnemyTeam,
+		ALakayaBasePlayerState* Enemy);
 	
 	FORCEINLINE const float& GetTeamScore(const ETeam& Team) const { return (Team == ETeam::Anti) ? AntiTeamScore : ProTeamScore; }
 	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }

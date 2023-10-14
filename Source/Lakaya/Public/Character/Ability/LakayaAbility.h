@@ -136,16 +136,16 @@ protected:
 	static void SetZoom(const bool& bZoom, const float& ZoomFov, const FGameplayAbilityActorInfo* ActorInfo);
 
 	UFUNCTION(BlueprintCallable, DisplayName="SetZoom")
-	void BP_SetZoom(const bool& bZoom, const float& ZoomFov) const;
+	void BP_SetZoom(const bool& bZoom, const float& ZoomFov);
 
 	void AddMappingContext(const FGameplayAbilityActorInfo* ActorInfo, const ULakayaInputContext* InputContext);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, DisplayName="AddMappingContext")
 	void BP_AddMappingContext(const ULakayaInputContext* InputContext);
 
 	void RemoveMappingContext(const FGameplayAbilityActorInfo* ActorInfo, const ULakayaInputContext* InputContext);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, DisplayName="RemoveMappingContext")
 	void BP_RemoveMappingContext(const ULakayaInputContext* InputContext);
 
 	/** HitResult들을 타겟 데이터 핸들로 변환시킵니다. */
