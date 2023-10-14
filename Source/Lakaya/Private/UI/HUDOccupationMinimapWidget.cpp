@@ -3,8 +3,10 @@
 
 #include "UI/HUDOccupationMinimapWidget.h"
 
+#include "Editor.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
+#include "DSP/AudioDebuggingUtilities.h"
 
 void UHUDOccupationMinimapWidget::NativeConstruct()
 {
@@ -76,7 +78,6 @@ UImage* UHUDOccupationMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 		return PlayerImage;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("HUDOccupationMinimapWidget_PlayerImage is null."));
 	return nullptr;
 }
 
@@ -84,15 +85,65 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 {
 	Super::UpdatePlayerPosition(Team);
 	
+	// 자기 자신을 검사해서, 자신의 위치를 토대로 미니맵을 회전과 위치를 업데이트시켜줍니다.
 	for (auto& Player : PlayersByMinimap[Team])
 	{
 		const auto& State = Player.Key;
-		
-		FVector2D PlayerPosition(State->GetPawn()->GetActorLocation().X, State->GetPawn()->GetActorLocation().Y);
-		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
-		
+		const auto& Image = Player.Value;
+
+		// 자기 자신을 검사해서, 자신의 위치를 토대로 미니맵의 회전과 위치를 업데이트시켜줍니다.
 		if (State == GetOwningPlayerState())
+		{
+			FVector2D PlayerPosition(State->GetPawn()->GetActorLocation().X, State->GetPawn()->GetActorLocation().Y);
+			const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
+
 			UpdateMinimapImagePositionAndRotation(*State, NewPlayerPosition);
+			// continue;
+		}
+
+		// 아군들을 검사해서 아군(나 자신 포함)이 죽어있다면, 죽음 아이콘으로 변경해줍니다.
+		if (const auto PlayerCharacter = State->GetPawn())
+		{
+			if (const ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter))
+			{
+				// 검사한 아군(나 자신 포함)이 죽었다면 텍스처를 DeathIcon으로 변경해줍니다.
+				if (!LakayaCharacter->GetAliveState())
+				{
+					Image->SetBrushFromTexture(DeathIcon);
+
+					if (State == GetOwningPlayerState())
+					{
+						Image->SetBrushSize(IconSize);
+					}
+				}
+				else 
+				{
+					switch (Team)
+					{
+						case ETeam::Anti:
+							if (State == GetOwningPlayerState())
+							{
+								Image->SetBrushFromTexture(AntiOwnIcon);
+								Image->SetBrushSize(OwnIconSize);
+								break;
+							}
+							Image->SetBrushFromTexture(AntiIcon);
+							break;
+						case ETeam::Pro:
+							if (State == GetOwningPlayerState())
+							{
+								Image->SetBrushFromTexture(ProOwnIcon);
+								Image->SetBrushSize(OwnIconSize);
+								break;
+							}
+							Image->SetBrushFromTexture(ProIcon);
+							break;
+						default:
+							break;
+					}
+				}
+			}
+		}
 	}
 }
 
