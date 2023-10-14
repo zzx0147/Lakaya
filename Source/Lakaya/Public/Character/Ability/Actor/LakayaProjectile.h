@@ -285,6 +285,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FPredictProjectilePathParams PredictedProjectileParams;
 
+	/** 투사체 투척시에 Owner나 Instigator에 대해 충돌이 발생하지 않도록 설정합니다. */
+	UPROPERTY(EditAnywhere)
+	uint8 bIgnoreOwnerAndInstigator : 1;
+
 private:
 	struct FScopedLock
 	{
@@ -317,6 +321,11 @@ private:
 
 	UFUNCTION()
 	void OnRep_ProjectileState();
+
+	UFUNCTION()
+	void CallOnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	                             UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+	                             const FHitResult& SweepResult);
 
 	UPROPERTY(VisibleAnywhere)
 	class UProjectileMovementComponent* ProjectileMovementComponent;
