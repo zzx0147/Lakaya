@@ -216,11 +216,6 @@ void ALakayaProjectile::SetSourceObject(FGameplayEffectContextHandle EffectConte
 	EffectContext.AddSourceObject(SourceObject);
 }
 
-ECollisionChannel ALakayaProjectile::ConvertToCollisionChannel(EObjectTypeQuery ObjectType)
-{
-	return UEngineTypes::ConvertToCollisionChannel(ObjectType);
-}
-
 void ALakayaProjectile::OnStartPhysicsSimulation_Implementation(
 	const FPredictProjectilePathResult& LastPredictionResult)
 {
@@ -430,6 +425,18 @@ void ALakayaProjectile::ClearIgnoredInPerformActors()
 		PredictedProjectileParams.ActorsToIgnore.RemoveSwap(IgnoredActor.Get());
 	}
 	IgnoredInPerformActors.Reset();
+}
+
+void ALakayaProjectile::AddOverlapObjectType(const EObjectTypeQuery& ObjectType)
+{
+	PredictedProjectileParams.ObjectTypes.AddUnique(ObjectType);
+	CollisionComponent->SetCollisionResponseToChannel(UEngineTypes::ConvertToCollisionChannel(ObjectType), ECR_Overlap);
+}
+
+void ALakayaProjectile::IgnoreObjectType(const EObjectTypeQuery& ObjectType)
+{
+	PredictedProjectileParams.ObjectTypes.RemoveSwap(ObjectType);
+	CollisionComponent->SetCollisionResponseToChannel(UEngineTypes::ConvertToCollisionChannel(ObjectType), ECR_Ignore);
 }
 
 void ALakayaProjectile::OnRep_ProjectileState()
