@@ -21,6 +21,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
+	UFUNCTION(BlueprintCallable)
 	virtual void AddSpreadAmount(const float& AdditionalAmount);
 
 	virtual float GetTotalSpreadAmount() { return FMath::Max(DefaultSpreadValue+BulletSpreadAmountByMovement + BulletSpreadAmountByFire, 0.0f); }
