@@ -147,12 +147,12 @@ void ALakayaProjectile::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	CollisionComponent->SetGenerateOverlapEvents(HasAuthority());
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	PredictedProjectileParams.OverrideGravityZ = ProjectileMovementComponent->ShouldApplyGravity()
 		                                             ? ProjectileMovementComponent->GetGravityZ()
 		                                             : -1.f;
 	PredictedProjectileParams.ProjectileRadius = CollisionComponent->GetScaledSphereRadius();
-	//TODO: 오너나 인스티게이터 액터에 대한 충돌을 무시하도록 설정해야할 수 있습니다.
 }
 
 void ALakayaProjectile::SetProjectileState(const EProjectileState& InProjectileState)

@@ -216,7 +216,11 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void OnStartPhysicsSimulation(const FPredictProjectilePathResult& LastPredictionResult);
 
-	/** OnRep_ProjectileState에서 커스텀 스테이트에서 탈출할 때 호출됩니다. 0에 대해서는 호출되지 않습니다. */
+	/**
+	 * OnRep_ProjectileState에서 커스텀 스테이트에서 탈출할 때 호출됩니다.
+	 * 여기에서 GetProjectileState를 통해 다음 스테이트로 넘어갈 때 해야하는 행동을 특별히 정의해도 괜찮습니다.
+	 * 하지만 이전 스테이트가 0인 경우 이 이벤트 자체가 호출되지 않으므로, 특정 스테이트로 진입할 때의 행동을 여기서 구현하지 마세요.
+	 */
 	UFUNCTION(BlueprintNativeEvent)
 	void OnReplicatedCustomStateExit(const uint8& OldState);
 
