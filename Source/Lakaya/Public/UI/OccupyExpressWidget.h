@@ -16,10 +16,6 @@ class LAKAYA_API UOccupyExpressWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-protected:
-	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	
 public:
 	FORCEINLINE UProgressBar* GetAntiBar() const { return Anti_Bar.Get(); }
 	FORCEINLINE UProgressBar* GetCenterBar() const { return Center_Bar.Get(); }

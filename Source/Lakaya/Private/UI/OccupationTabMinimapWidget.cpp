@@ -100,13 +100,11 @@ UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 		if (Team == ETeam::Anti)
 		{
 			PlayerImage->SetBrushFromTexture(AntiOwnIcon);
-			PanelSlot->SetSize(OwnIconSize);
 			return PlayerImage;
 		}
 		else if (Team == ETeam::Pro)
 		{
 			PlayerImage->SetBrushFromTexture(ProOwnIcon);
-			PanelSlot->SetSize(OwnIconSize);
 			return PlayerImage;
 		}
 	}
