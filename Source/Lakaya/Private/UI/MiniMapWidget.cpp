@@ -14,8 +14,7 @@ void UMinimapWidget::NativeConstruct()
 	UpdateMinimap = false;
 	
 	IconAlignment = FVector2D(0.5f, 0.5f);
-	IconSize = FVector2D(15.0f, 15.0f);
-	OwnIconSize = FVector2D(62.0f, 112.0f);
+	IconSize = FVector2D(62.0f, 112.0f);
 	
 	PlayersByMinimap.Emplace(ETeam::Anti);
 	PlayersByMinimap.Emplace(ETeam::Pro);

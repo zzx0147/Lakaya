@@ -237,7 +237,9 @@ void UGameLobbyCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum)
 	}
 
 	CharacterNameImage->SetBrushFromTexture(CharacterNameTextureMap[CharacterNameArray[CharacterNum]]);
+	CharacterNameImage->SetDesiredSizeOverride(FVector2d(CharacterNameTextureMap[CharacterNameArray[CharacterNum]]->GetSizeX(),CharacterNameTextureMap[CharacterNameArray[CharacterNum]]->GetSizeY()));
 }
+
 
 void UGameLobbyCharacterSelectWidget::OnClickedCharacterSelectButton()
 {
