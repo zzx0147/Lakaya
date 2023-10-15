@@ -26,8 +26,6 @@ public:
 	FORCEINLINE TObjectPtr<UTexture> GetAntiChargeImage() const { return AntiChargeImage; }
 	FORCEINLINE TObjectPtr<UTexture> GetProChargeImage() const { return ProChargeImage; }
 
-	void SetAimOccupyProgressBar(const float NewProgress, const bool bIsNewOccupy);
-	
 private:
 	UPROPERTY(EditAnywhere, Category = "Image")
 	UTexture* OccupyAntiImage;
@@ -44,9 +42,6 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	TWeakObjectPtr<UProgressBar> Pro_Bar;
 
-	UPROPERTY(meta = (BindWidget))
-	TWeakObjectPtr<UProgressBar> AimOccupyProgressBar;
-	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture> NoneChargeImage;
 
@@ -55,6 +50,4 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture> ProChargeImage;
-
-	float Percent;
 };

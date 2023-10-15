@@ -19,6 +19,7 @@
 #include "UI/RespawnWidget.h"
 #include "UI/SkillProgressBar.h"
 #include "UI/SkillWidget.h"
+#include "UI/AimOccupyProgressWidget.h"
 
 void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -52,10 +53,14 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	static ConstructorHelpers::FClassFinder<UGamePlayPortraitWidget> PortraitFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_Portrait"));
 
+	static ConstructorHelpers::FClassFinder<UAimOccupyProgressWidget> AimOccupyProgressFinder(
+		TEXT("/Game/Blueprints/UMG/WBP_AimOccupyProgressWidget"));
+	
 	HealthWidgetClass = HealthFinder.Class;
 	DirectionDamageIndicatorClass = DirectionDamageFinder.Class;
 	PortraitWidgetClass = PortraitFinder.Class;
-
+	AimOccupyProgressWidgetClass = AimOccupyProgressFinder.Class;
+	
 	AbilitySystem = CreateDefaultSubobject<ULakayaAbilitySystemComponent>(TEXT("AbilitySystem"));
 
 	LakayaAttributeSet = CreateDefaultSubobject<ULakayaAttributeSet>(TEXT("LakayaAttributeSet"));
@@ -66,8 +71,6 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	AbilitySystem->OnGameplayEffectAppliedDelegateToTarget.AddUObject(
 		this, &ALakayaBasePlayerState::OnGameplayEffectAppliedDelegateToTargetCallback);
 	
-
-
 	// AbilitySystem->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 
 	AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetSkillStackAttribute()).AddUObject(
@@ -151,6 +154,13 @@ void ALakayaBasePlayerState::OnRep_Owner()
 			HealthWidget->SetCurrentHealth(Health);
 		}
 
+		AimOccupyProgressWidget = CreateWidget<UAimOccupyProgressWidget>(
+			LocalController, AimOccupyProgressWidgetClass);
+		if (AimOccupyProgressWidget)
+		{
+			AimOccupyProgressWidget->AddToViewport();
+		}
+		
 		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(
 			LocalController, DirectionDamageIndicatorClass);
 		if (DirectionDamageIndicatorWidget)

@@ -638,7 +638,7 @@ void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const ui
 	}
 }
 
-void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress, const bool& bIsOccupy)
+void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress)
 {
 	UProgressBar** Bar = OccupyBarMaps.Find(Id);
 	FSlateBrush ChargeImageBrush;
@@ -656,8 +656,6 @@ void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& I
 		(*Bar)->WidgetStyle.SetFillImage(ChargeImageBrush);
 		(*Bar)->WidgetStyle.FillImage = ChargeImageBrush;
 		(*Bar)->SetPercent(Progress / 4);
-		
-		OccupyExpressWidget->SetAimOccupyProgressBar(Progress, bIsOccupy);
 	}
 	else
 	{

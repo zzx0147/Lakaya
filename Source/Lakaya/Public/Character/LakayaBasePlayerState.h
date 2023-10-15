@@ -33,6 +33,8 @@ DECLARE_DELEGATE_OneParam(FRespawnTimerDelegate, AController*)
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOnRespawnTimeChangeSignature, const float&)
 
+class UAimOccupyProgressWidget;
+
 UCLASS()
 class LAKAYA_API ALakayaBasePlayerState : public APlayerState, public IAbilitySystemInterface,
                                           public ITeamObjectInterface
@@ -68,6 +70,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	const class UDynamicCrossHairWidget* GetDynamicCrossHairWidget() const;
+
+	UAimOccupyProgressWidget* GetAimOccupyProgressWidget() const { return AimOccupyProgressWidget; }
 	
 	/**
 	 * @brief 플레이어가 예약된 시간에 부활하도록 합니다.
@@ -310,6 +314,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGamePlayPortraitWidget> PortraitWidgetClass;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UAimOccupyProgressWidget> AimOccupyProgressWidgetClass;
+	
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Health, Transient)
 	float Health;
@@ -376,4 +383,5 @@ private:
 	TWeakObjectPtr<UGamePlayPortraitWidget> PortraitWidget;
 	UPROPERTY()
 	TObjectPtr<class UCharacterWidget> CharacterWidget;
+	TObjectPtr<class UAimOccupyProgressWidget> AimOccupyProgressWidget;
 };
