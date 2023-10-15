@@ -254,7 +254,7 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 	const APawn* EnemyPawn = EnemyState->GetPawn();
 	if (!EnemyPawn)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("EnemyPawn is null."));
+		// UE_LOG(LogTemp, Warning, TEXT("EnemyPawn is null."));
 		return false;
 	}
 

@@ -365,8 +365,10 @@ void ACaptureArea::IncreaseCaptureProgress()
 			for (const auto& Player : OccupyingPlayerList[CurrentTeam])
 			{
 				if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled())
+				{
 					Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, false);
-				UE_LOG(LogTemp, Warning, TEXT("true"));
+					Player->GetAimOccupyProgressWidget()->Success();
+				}
 			}
 			
 			if (OccupationGameState->CheckCaptureAreaCount(CurrentTeam))
