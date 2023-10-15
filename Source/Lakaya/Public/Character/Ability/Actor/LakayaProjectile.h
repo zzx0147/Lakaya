@@ -275,6 +275,14 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void PostExitPerformStateReplicated();
 
+	/** 리플리케이트된 상태와 LocalState가 동일한 경우에 재트리거 이벤트를 호출할지 여부를 판단합니다. */
+	UFUNCTION(BlueprintNativeEvent)
+	bool ShouldRetriggerCustomState(const uint8& CustomState);
+
+	/** 서버로부터 동일한 상태에 대해 리플리케이트되었으나 엄밀히 현재 투사체의 상태가 서버와 같지 않을 때 호출됩니다. */
+	UFUNCTION(BlueprintNativeEvent)
+	void OnCustomStateRetrigger(const uint8& CustomState);
+
 	/** 이번 투사체 투척에서 해당 액터에 대한 Overlap 이벤트가 더이상 생성되지 않도록 합니다. */
 	UFUNCTION(BlueprintCallable)
 	void AddIgnoredInPerformActor(AActor* InActor);

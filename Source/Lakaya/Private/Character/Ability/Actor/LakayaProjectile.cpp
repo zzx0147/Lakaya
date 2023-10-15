@@ -411,6 +411,15 @@ void ALakayaProjectile::PostExitPerformStateReplicated_Implementation()
 {
 }
 
+bool ALakayaProjectile::ShouldRetriggerCustomState_Implementation(const uint8& CustomState)
+{
+	return false;
+}
+
+void ALakayaProjectile::OnCustomStateRetrigger_Implementation(const uint8& CustomState)
+{
+}
+
 void ALakayaProjectile::AddIgnoredInPerformActor(AActor* InActor)
 {
 	if (IsValid(InActor))
@@ -447,6 +456,14 @@ void ALakayaProjectile::OnRep_ProjectileState()
 {
 	if (LocalState == ProjectileState)
 	{
+		if (LocalState.IsPerforming())
+		{
+			//TODO: 로컬 ThrowData와 다른 경우 다시 던지도록 해야 합니다.
+		}
+		else if (LocalState.IsCustomState() && ShouldRetriggerCustomState(LocalState.GetCustomState()))
+		{
+			OnCustomStateRetrigger(LocalState.GetCustomState());
+		}
 		return;
 	}
 
