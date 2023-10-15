@@ -49,6 +49,14 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	const FVector2D PlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
 	const FVector2D NewPlayerPosition = const_cast<UOccupationTabMinimapWidget*>(this)->ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
 
+	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
+	{
+		if (NewTeam == ETeam::Anti)
+			EnemyImage->SetBrushFromTexture(AntiIcon);
+		else if (NewTeam == ETeam::Pro)
+			EnemyImage->SetBrushFromTexture(ProIcon);
+	}
+	
 	if (EnemyImage->GetVisibility() == ESlateVisibility::Hidden)
 		EnemyImage->SetVisibility(ESlateVisibility::Visible);
 
@@ -70,9 +78,10 @@ void UOccupationTabMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
 		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
 		return;
 	}
-	
+
 	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
-		EnemyImage->SetVisibility(ESlateVisibility::Hidden);
+	EnemyImage->SetVisibility(ESlateVisibility::Hidden);
+
 }
 
 UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
