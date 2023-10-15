@@ -162,7 +162,7 @@ void ALakayaProjectile::SetProjectileState(const EProjectileState& InProjectileS
 
 void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 {
-	RecentPerformedTime = InThrowData.ServerTime;
+	LocalThrowData = InThrowData;
 	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity,
 	                                           GetServerWorldTimeSeconds());
 
@@ -267,7 +267,7 @@ void ALakayaProjectile::BroadcastOnProjectileStateChanged(const FProjectileState
 
 void ALakayaProjectile::RejectProjectile()
 {
-	if (LocalState == ProjectileState && LocalState.IsPerforming() && RecentPerformedTime != ThrowData.ServerTime)
+	if (LocalState == ProjectileState && LocalState.IsPerforming() && LocalThrowData != ThrowData)
 	{
 		// 서버에서 타겟 데이터를 거부하고 새로 투사체를 투척한 경우이므로, 간단히 투사체를 껐다가 다시 켜줍니다.
 		StopThrowProjectile();
@@ -456,11 +456,7 @@ void ALakayaProjectile::OnRep_ProjectileState()
 {
 	if (LocalState == ProjectileState)
 	{
-		if (LocalState.IsPerforming())
-		{
-			//TODO: 로컬 ThrowData와 다른 경우 다시 던지도록 해야 합니다.
-		}
-		else if (LocalState.IsCustomState() && ShouldRetriggerCustomState(LocalState.GetCustomState()))
+		if (LocalState.IsCustomState() && ShouldRetriggerCustomState(LocalState.GetCustomState()))
 		{
 			OnCustomStateRetrigger(LocalState.GetCustomState());
 		}

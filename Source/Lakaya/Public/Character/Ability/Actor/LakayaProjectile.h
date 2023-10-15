@@ -95,6 +95,14 @@ struct FProjectileThrowData
 	void SetupPredictedProjectileParams(FPredictProjectilePathParams& OutParams, const float& Velocity,
 	                                    const float& CurrentTime) const;
 
+	FORCEINLINE bool operator==(const FProjectileThrowData& Other) const
+	{
+		return ThrowLocation == Other.ThrowLocation && ThrowDirection == Other.ThrowDirection &&
+			ServerTime == Other.ServerTime;
+	}
+
+	FORCEINLINE bool operator!=(const FProjectileThrowData& Other) const { return !operator==(Other); }
+
 	FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FProjectileThrowData& ThrowData)
 	{
 		Ar << ThrowData.ThrowLocation << ThrowData.ThrowDirection << ThrowData.ServerTime;
@@ -171,7 +179,7 @@ public:
 	bool IsCustomState() const { return GetProjectileState().IsCustomState(); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	float GetRecentPerformedTime() const { return FMath::Max(ThrowData.ServerTime, RecentPerformedTime); }
+	float GetRecentPerformedTime() const { return FMath::Max(ThrowData.ServerTime, LocalThrowData.ServerTime); }
 
 	UFUNCTION(BlueprintGetter)
 	USphereComponent* GetCollisionComponent() const { return CollisionComponent; }
@@ -363,7 +371,7 @@ private:
 	float ProjectileLaunchVelocity;
 
 	FProjectileState LocalState;
-	float RecentPerformedTime;
+	FProjectileThrowData LocalThrowData;
 	bool bIsStateChanging;
 	TArray<TWeakObjectPtr<AActor>> IgnoredInPerformActors;
 	FTimerHandle EventFromThrowTimerHandle;
