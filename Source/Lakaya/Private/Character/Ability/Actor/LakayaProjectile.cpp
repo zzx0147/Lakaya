@@ -147,12 +147,12 @@ void ALakayaProjectile::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	CollisionComponent->SetGenerateOverlapEvents(HasAuthority());
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	PredictedProjectileParams.OverrideGravityZ = ProjectileMovementComponent->ShouldApplyGravity()
 		                                             ? ProjectileMovementComponent->GetGravityZ()
 		                                             : -1.f;
 	PredictedProjectileParams.ProjectileRadius = CollisionComponent->GetScaledSphereRadius();
-	//TODO: 오너나 인스티게이터 액터에 대한 충돌을 무시하도록 설정해야할 수 있습니다.
 }
 
 void ALakayaProjectile::SetProjectileState(const EProjectileState& InProjectileState)
@@ -162,7 +162,7 @@ void ALakayaProjectile::SetProjectileState(const EProjectileState& InProjectileS
 
 void ALakayaProjectile::ThrowProjectile(const FProjectileThrowData& InThrowData)
 {
-	RecentPerformedTime = InThrowData.ServerTime;
+	LocalThrowData = InThrowData;
 	InThrowData.SetupPredictedProjectileParams(PredictedProjectileParams, ProjectileLaunchVelocity,
 	                                           GetServerWorldTimeSeconds());
 
@@ -267,7 +267,7 @@ void ALakayaProjectile::BroadcastOnProjectileStateChanged(const FProjectileState
 
 void ALakayaProjectile::RejectProjectile()
 {
-	if (LocalState == ProjectileState && LocalState.IsPerforming() && RecentPerformedTime != ThrowData.ServerTime)
+	if (LocalState == ProjectileState && LocalState.IsPerforming() && LocalThrowData != ThrowData)
 	{
 		// 서버에서 타겟 데이터를 거부하고 새로 투사체를 투척한 경우이므로, 간단히 투사체를 껐다가 다시 켜줍니다.
 		StopThrowProjectile();
@@ -411,6 +411,15 @@ void ALakayaProjectile::PostExitPerformStateReplicated_Implementation()
 {
 }
 
+bool ALakayaProjectile::ShouldRetriggerCustomState_Implementation(const uint8& CustomState)
+{
+	return false;
+}
+
+void ALakayaProjectile::OnCustomStateRetrigger_Implementation(const uint8& CustomState)
+{
+}
+
 void ALakayaProjectile::AddIgnoredInPerformActor(AActor* InActor)
 {
 	if (IsValid(InActor))
@@ -447,6 +456,10 @@ void ALakayaProjectile::OnRep_ProjectileState()
 {
 	if (LocalState == ProjectileState)
 	{
+		if (LocalState.IsCustomState() && ShouldRetriggerCustomState(LocalState.GetCustomState()))
+		{
+			OnCustomStateRetrigger(LocalState.GetCustomState());
+		}
 		return;
 	}
 

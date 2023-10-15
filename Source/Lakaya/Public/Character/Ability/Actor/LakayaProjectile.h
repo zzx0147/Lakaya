@@ -95,6 +95,14 @@ struct FProjectileThrowData
 	void SetupPredictedProjectileParams(FPredictProjectilePathParams& OutParams, const float& Velocity,
 	                                    const float& CurrentTime) const;
 
+	FORCEINLINE bool operator==(const FProjectileThrowData& Other) const
+	{
+		return ThrowLocation == Other.ThrowLocation && ThrowDirection == Other.ThrowDirection &&
+			ServerTime == Other.ServerTime;
+	}
+
+	FORCEINLINE bool operator!=(const FProjectileThrowData& Other) const { return !operator==(Other); }
+
 	FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FProjectileThrowData& ThrowData)
 	{
 		Ar << ThrowData.ThrowLocation << ThrowData.ThrowDirection << ThrowData.ServerTime;
@@ -171,7 +179,7 @@ public:
 	bool IsCustomState() const { return GetProjectileState().IsCustomState(); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	float GetRecentPerformedTime() const { return FMath::Max(ThrowData.ServerTime, RecentPerformedTime); }
+	float GetRecentPerformedTime() const { return FMath::Max(ThrowData.ServerTime, LocalThrowData.ServerTime); }
 
 	UFUNCTION(BlueprintGetter)
 	USphereComponent* GetCollisionComponent() const { return CollisionComponent; }
@@ -216,7 +224,11 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void OnStartPhysicsSimulation(const FPredictProjectilePathResult& LastPredictionResult);
 
-	/** OnRep_ProjectileState에서 커스텀 스테이트에서 탈출할 때 호출됩니다. 0에 대해서는 호출되지 않습니다. */
+	/**
+	 * OnRep_ProjectileState에서 커스텀 스테이트에서 탈출할 때 호출됩니다.
+	 * 여기에서 GetProjectileState를 통해 다음 스테이트로 넘어갈 때 해야하는 행동을 특별히 정의해도 괜찮습니다.
+	 * 하지만 이전 스테이트가 0인 경우 이 이벤트 자체가 호출되지 않으므로, 특정 스테이트로 진입할 때의 행동을 여기서 구현하지 마세요.
+	 */
 	UFUNCTION(BlueprintNativeEvent)
 	void OnReplicatedCustomStateExit(const uint8& OldState);
 
@@ -270,6 +282,14 @@ protected:
 	/** 리플리케이트되어 투사체가 Perform 상태에서 탈출한 이후에 호출됩니다. */
 	UFUNCTION(BlueprintNativeEvent)
 	void PostExitPerformStateReplicated();
+
+	/** 리플리케이트된 상태와 LocalState가 동일한 경우에 재트리거 이벤트를 호출할지 여부를 판단합니다. */
+	UFUNCTION(BlueprintNativeEvent)
+	bool ShouldRetriggerCustomState(const uint8& CustomState);
+
+	/** 서버로부터 동일한 상태에 대해 리플리케이트되었으나 엄밀히 현재 투사체의 상태가 서버와 같지 않을 때 호출됩니다. */
+	UFUNCTION(BlueprintNativeEvent)
+	void OnCustomStateRetrigger(const uint8& CustomState);
 
 	/** 이번 투사체 투척에서 해당 액터에 대한 Overlap 이벤트가 더이상 생성되지 않도록 합니다. */
 	UFUNCTION(BlueprintCallable)
@@ -351,7 +371,7 @@ private:
 	float ProjectileLaunchVelocity;
 
 	FProjectileState LocalState;
-	float RecentPerformedTime;
+	FProjectileThrowData LocalThrowData;
 	bool bIsStateChanging;
 	TArray<TWeakObjectPtr<AActor>> IgnoredInPerformActors;
 	FTimerHandle EventFromThrowTimerHandle;
