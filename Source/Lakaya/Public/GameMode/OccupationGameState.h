@@ -70,6 +70,9 @@ public:
 	UFUNCTION()
 	void UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id);
 
+	UFUNCTION()
+	void UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress, const bool& bIsOccupy);
+	
 	void OnEnemySpotted(const ETeam& EnemyTeam,
 		ALakayaBasePlayerState* Enemy);
 
@@ -97,7 +100,7 @@ public:
 	FORCEINLINE void SetAntiTeamCaptureAreaCount(const uint8& NewCaptureCount) { AntiTeamCaptureAreaCount = NewCaptureCount; }
 	FORCEINLINE void SetProTeamCaptureAreaCount(const uint8& NewCaptureCount) { ProTeamCaptureAreaCount = NewCaptureCount; }
 	FORCEINLINE void SetTeamToUpdate(const ETeam& NewTeam) { TeamToUpdate = NewTeam; }
-
+	
 protected:
 	virtual void BeginPlay() override;
 	
@@ -140,7 +143,6 @@ private:
 	void OnPlayerStateOwnerChanged(AActor* Owner);
 
 	void AddPlayerStateToRecordResult(ETeam InTeam ,TArray<ALakayaBasePlayerState*> InPlayers);
-
 
 	void InternalSetScoreBoardVisibility(const bool& Visible) const;
 
@@ -282,13 +284,5 @@ private:
 
 	// 점령 표시 위젯입니다.
 	TWeakObjectPtr<UOccupyExpressWidget> OccupyExpressWidget;
-
-	// TODO : 부모로 옮겨주어야 합니다.
-	// 인게임도중 좌측상단에 띄워지는 미니맵 위젯입니다.
-	// TWeakObjectPtr<UHUDOccupationMinimapWidget> OccupationHUDMinimapWidget;
-
-	// TODO : 부모로 옮겨주어야 합니다.
-	// 인게임도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯입니다.
-	// TWeakObjectPtr<UOccupationTabMinimapWidget> OccupationTabMinimapWidget;
 #pragma endregion
 };
