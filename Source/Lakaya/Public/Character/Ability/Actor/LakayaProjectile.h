@@ -347,6 +347,7 @@ private:
 	void RejectProjectile();
 	void StopThrowProjectile();
 	bool MarchProjectileRecursive(FPredictProjectilePathResult& OutResult, float CurrentTime = 0.f);
+	void IgnoreOwnerAndInstigator();
 
 	template <class ArgType, class FunType = typename TMemFunPtrType<false, FProjectileState, bool(ArgType)>::Type>
 	void InternalSetProjectileState(FunType&& FunPtr, ArgType&& Arg);
