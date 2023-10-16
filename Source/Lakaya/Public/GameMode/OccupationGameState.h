@@ -71,7 +71,7 @@ public:
 	void UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id);
 
 	UFUNCTION()
-	void UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress, const bool& bIsOccupy);
+	void UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress);
 	
 	void OnEnemySpotted(const ETeam& EnemyTeam,
 		ALakayaBasePlayerState* Enemy);

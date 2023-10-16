@@ -16,10 +16,6 @@ class LAKAYA_API UOccupyExpressWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-protected:
-	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	
 public:
 	FORCEINLINE UProgressBar* GetAntiBar() const { return Anti_Bar.Get(); }
 	FORCEINLINE UProgressBar* GetCenterBar() const { return Center_Bar.Get(); }
@@ -30,8 +26,6 @@ public:
 	FORCEINLINE TObjectPtr<UTexture> GetAntiChargeImage() const { return AntiChargeImage; }
 	FORCEINLINE TObjectPtr<UTexture> GetProChargeImage() const { return ProChargeImage; }
 
-	void SetAimOccupyProgressBar(const float NewProgress, const bool bIsNewOccupy);
-	
 private:
 	UPROPERTY(EditAnywhere, Category = "Image")
 	UTexture* OccupyAntiImage;
@@ -48,9 +42,6 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	TWeakObjectPtr<UProgressBar> Pro_Bar;
 
-	UPROPERTY(meta = (BindWidget))
-	TWeakObjectPtr<UProgressBar> AimOccupyProgressBar;
-	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture> NoneChargeImage;
 
@@ -59,6 +50,4 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture> ProChargeImage;
-
-	float Percent;
 };

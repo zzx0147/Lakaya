@@ -80,6 +80,10 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture2D> DeathIcon;
 
+	// 적이 시야에서 사라지게 되었을 때, 미니맵 상에 표시되는 아이콘 텍스처입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> QuestionMarkIcon;
+	
 	// 미니맵상에서 자신과 상대(AI포함)의 위치를 업데이트하기 위한 컨테이너입니다.
 	TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>> PlayersByMinimap;
 	
@@ -88,7 +92,6 @@ protected:
 	
 	FVector2D IconAlignment;
 	FVector2D IconSize;
-	FVector2D OwnIconSize;
 	FVector2D MinimapSize;
 	FVector2D WidgetOffset;
 	

@@ -6,7 +6,6 @@
 #include "Editor.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
-#include "DSP/AudioDebuggingUtilities.h"
 
 void UHUDOccupationMinimapWidget::NativeConstruct()
 {
@@ -60,13 +59,11 @@ UImage* UHUDOccupationMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 		if (Team == ETeam::Anti)
 		{
 			PlayerImage->SetBrushFromTexture(AntiOwnIcon);
-			PanelSlot->SetSize(OwnIconSize);
 			return PlayerImage;
 		}
 		else if (Team == ETeam::Pro)
 		{
 			PlayerImage->SetBrushFromTexture(ProOwnIcon);
-			PanelSlot->SetSize(OwnIconSize);
 			return PlayerImage;
 		}
 	}
@@ -110,11 +107,6 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 				if (!LakayaCharacter->GetAliveState())
 				{
 					Image->SetBrushFromTexture(DeathIcon);
-
-					if (State == GetOwningPlayerState())
-					{
-						Image->SetBrushSize(IconSize);
-					}
 				}
 				else 
 				{
@@ -124,7 +116,6 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 							if (State == GetOwningPlayerState())
 							{
 								Image->SetBrushFromTexture(AntiOwnIcon);
-								Image->SetBrushSize(OwnIconSize);
 								break;
 							}
 							Image->SetBrushFromTexture(AntiIcon);
@@ -133,7 +124,6 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 							if (State == GetOwningPlayerState())
 							{
 								Image->SetBrushFromTexture(ProOwnIcon);
-								Image->SetBrushSize(OwnIconSize);
 								break;
 							}
 							Image->SetBrushFromTexture(ProIcon);
@@ -165,6 +155,14 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	
 	const FVector2D PlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
 	const FVector2D NewPlayerPosition = const_cast<UHUDOccupationMinimapWidget*>(this)->ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
+
+	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
+	{
+		if (NewTeam == ETeam::Anti)
+			EnemyImage->SetBrushFromTexture(AntiIcon);
+		else if (NewTeam == ETeam::Pro)
+			EnemyImage->SetBrushFromTexture(ProIcon);
+	}
 	
 	if (EnemyImage->GetVisibility() == ESlateVisibility::Hidden)
 		EnemyImage->SetVisibility(ESlateVisibility::Visible);
