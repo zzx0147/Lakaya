@@ -156,20 +156,10 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 					switch (Team == ETeam::Anti ? ETeam::Pro : ETeam::Anti)
 					{
 					case ETeam::Anti:
-						if (State == GetOwningPlayerState())
-						{
-							Image->SetBrushFromTexture(AntiOwnIcon);
-							break;
-						}
-						Image->SetBrushFromTexture(AntiIcon);
+						// Image->SetBrushFromTexture(AntiIcon);
 						break;
 					case ETeam::Pro:
-						if (State == GetOwningPlayerState())
-						{
-							Image->SetBrushFromTexture(ProOwnIcon);
-							break;
-						}
-						Image->SetBrushFromTexture(ProIcon);
+						// Image->SetBrushFromTexture(ProIcon);
 						break;
 					default:
 						break;
@@ -180,8 +170,17 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 	}
 }
 
+void UHUDOccupationMinimapWidget::SetEnemyImage() const
+{
+	for (const auto& Enemy : PlayersByMinimap[CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti])
+	{
+		const auto& EnemyImage = Enemy.Value;
+		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
+	}
+}
+
 void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+                                                       const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
 {
 #pragma region NullCheck
 	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
@@ -210,8 +209,28 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 
 	if (EnemyImage->GetVisibility() == ESlateVisibility::Hidden)
 		EnemyImage->SetVisibility(ESlateVisibility::Visible);
+
+	if (NewTeam == ETeam::Anti)
+	{
+		EnemyImage->SetBrushFromTexture(AntiIcon);
+	}
+	else
+	{
+		EnemyImage->SetBrushFromTexture(ProIcon);
+	}
 	
 	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
+
+	// GetWorld()->GetTimerManager().ClearTimer(QuestionIconTimerHandle);
+	
+	GetWorld()->GetTimerManager().SetTimer(QuestionIconTimerHandle, [this, EnemyImage, NewTeam]()
+	{
+		for (const auto& Enemy : PlayersByMinimap[NewTeam])
+		{
+			SetEnemyImage();
+			UE_LOG(LogTemp, Warning, TEXT("타이머 호출"));
+		}
+	}, 0.1f, false);
 }
 
 void UHUDOccupationMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,

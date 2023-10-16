@@ -27,7 +27,9 @@ protected:
 
 	virtual FVector2d ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation, const FVector2D& MiniMapSize) override;
 	virtual void UpdatePlayerPosition(const ETeam& Team) override;
-	
+
+	void SetEnemyImage() const;
+
 private:
 	virtual void UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const override;
 

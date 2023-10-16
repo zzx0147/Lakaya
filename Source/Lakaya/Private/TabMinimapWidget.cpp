@@ -6,8 +6,6 @@
 void UTabMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	if (MinimapImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("TabMinimapWidget_MinimapImage is null."));
 }
 
 void UTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)

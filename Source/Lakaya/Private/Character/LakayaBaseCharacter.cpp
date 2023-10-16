@@ -288,6 +288,8 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 
 		// 계산된 각도와 임계값을 비교하여, 시야 내에 있는지 판단합니다.
 		bool bIsVisible = AngleBetweenVectors <= AngleThreshold;
+
+		if (!bIsVisible) return false;
 		
 		FHitResult HitResult;
 
@@ -305,20 +307,18 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 			bIsVisible = false;
 		}
 
-		// 적을 발견했다면, Spotted를 true로 바꿔줍니다.
-		if (bIsVisible)
-		{
-			Server_OnEnemySpotted(EnemyTeam, EnemyState.Get());
-		}
-		else if (!bIsVisible)
-		{
-			Server_OnEnemyLost(EnemyTeam, EnemyState.Get());
-			// EnemyImage->SetBrushFromTexture(QuestionIcon);
-		}
-
 		Server_SetEnemyVisibility(EnemyState.Get(), bIsVisible);
 		
 		return bIsVisible;
+	}
+}
+
+void ALakayaBaseCharacter::Server_OnEnemySpotted_Implementation(const ETeam& EnemyTeam,
+																ALakayaBasePlayerState* EnemyState)
+{
+	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
+	{
+		OccupationGameState->OnEnemySpotted(EnemyTeam, EnemyState);
 	}
 }
 
@@ -327,15 +327,6 @@ void ALakayaBaseCharacter::Server_OnEnemyLost_Implementation(const ETeam& EnemyT
 	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
 	{
 		OccupationGameState->OnEnemyLost(EnemyTeam, EnemyState);
-	}
-}
-
-void ALakayaBaseCharacter::Server_OnEnemySpotted_Implementation(const ETeam& EnemyTeam,
-                                                                ALakayaBasePlayerState* EnemyState)
-{
-	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
-	{
-		OccupationGameState->OnEnemySpotted(EnemyTeam, EnemyState);
 	}
 }
 

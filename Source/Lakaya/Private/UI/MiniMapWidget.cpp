@@ -40,20 +40,24 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 			return;
 		}
 	}
-
-	// 적들의 위치정보를 가져와서, 내 시야에 들어와있다면, 미니맵에 표시해줍니다.
+	
+	// 적들의 정보를 가져와서, 내 시야에 들어와있다면, 미니맵에 표시해줍니다.
 	for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
 	{
 		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
 		const TWeakObjectPtr<UImage> EnemyImage = Enemy.Value;
-		
+
 		// 모든 아군을 순회해서 시야에 없다면, 적을 업데이트 하지 않습니다.
 		for (const auto& Ally : PlayersByMinimap[CurrentTeam])
 		{
 			const auto& AllyState = Ally.Key;
+			
 			ALakayaBaseCharacter* AllyCharacter = Cast<ALakayaBaseCharacter>(AllyState->GetPawn());
 			
-			AllyCharacter->IsEnemyVisibleInCamera(EnemyTeam, EnemyState, EnemyImage);
+			if (AllyCharacter->IsEnemyVisibleInCamera(EnemyTeam, EnemyState, EnemyImage))
+			{
+				AllyCharacter->Server_OnEnemySpotted(EnemyTeam, EnemyState.Get());
+			}
 		}
 	}
 }
