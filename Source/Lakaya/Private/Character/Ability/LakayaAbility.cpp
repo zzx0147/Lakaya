@@ -36,18 +36,21 @@ void ULakayaAbility::InputReleased(const FGameplayAbilitySpecHandle Handle, cons
 
 void ULakayaAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
+	Log(ActorInfo,TEXT("Give Ability"));
 	Super::OnGiveAbility(ActorInfo, Spec);
 	BP_OnGiveAbility(ActorInfo ? *ActorInfo : FGameplayAbilityActorInfo(), Spec);
 }
 
 void ULakayaAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
+	Log(ActorInfo, TEXT("Avatar Set"));
 	Super::OnAvatarSet(ActorInfo, Spec);
 	BP_OnAvatarSet(ActorInfo ? *ActorInfo : FGameplayAbilityActorInfo(), Spec);
 }
 
 void ULakayaAbility::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
+	Log(ActorInfo, TEXT("Remove Ability"));
 	Super::OnRemoveAbility(ActorInfo, Spec);
 	BP_OnRemoveAbility(ActorInfo ? *ActorInfo : FGameplayAbilityActorInfo(), Spec);
 }
@@ -365,6 +368,11 @@ void ULakayaAbility::RemoveMappingContext(const FGameplayAbilityActorInfo* Actor
 void ULakayaAbility::BP_RemoveMappingContext(const ULakayaInputContext* InputContext)
 {
 	RemoveMappingContext(GetCurrentActorInfo(), InputContext);
+}
+
+bool ULakayaAbility::TryActivateAbilityWithSpec(UAbilitySystemComponent* ASC, const FGameplayAbilitySpec& Spec)
+{
+	return ASC->TryActivateAbility(Spec.Handle);
 }
 
 void ULakayaAbility::HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,

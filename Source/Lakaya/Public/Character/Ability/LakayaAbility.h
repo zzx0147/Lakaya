@@ -148,6 +148,9 @@ protected:
 	UFUNCTION(BlueprintCallable, DisplayName="RemoveMappingContext")
 	void BP_RemoveMappingContext(const ULakayaInputContext* InputContext);
 
+	UFUNCTION(BlueprintCallable)
+	static bool TryActivateAbilityWithSpec(UAbilitySystemComponent* ASC, const FGameplayAbilitySpec& Spec);
+
 	/** HitResult들을 타겟 데이터 핸들로 변환시킵니다. */
 	static void HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
 	                                         FGameplayAbilityTargetDataHandle& OutTargetDataHandle);
