@@ -81,6 +81,49 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 			}
 		}
 	}
+
+	for (auto& Player : PlayersByMinimap[Team == ETeam::Anti ? ETeam::Pro : ETeam::Anti])
+	{
+		const auto& State = Player.Key;
+		const auto& Image = Player.Value;
+
+		// 아군들을 검사해서 아군(나 자신 포함)이 죽어있다면, 죽음 아이콘으로 변경해줍니다.
+		if (const auto PlayerCharacter = State->GetPawn())
+		{
+			if (const ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter))
+			{
+				// 검사한 아군(나 자신 포함)이 죽었다면 텍스처를 DeathIcon으로 변경해줍니다.
+				if (!LakayaCharacter->GetAliveState())
+				{
+					Image->SetBrushFromTexture(DeathIcon);
+				}
+				else 
+				{
+					switch (Team == ETeam::Anti ? ETeam::Pro : ETeam::Anti)
+					{
+					case ETeam::Anti:
+						if (State == GetOwningPlayerState())
+						{
+							Image->SetBrushFromTexture(AntiOwnIcon);
+							break;
+						}
+						Image->SetBrushFromTexture(AntiIcon);
+						break;
+					case ETeam::Pro:
+						if (State == GetOwningPlayerState())
+						{
+							Image->SetBrushFromTexture(ProOwnIcon);
+							break;
+						}
+						Image->SetBrushFromTexture(ProIcon);
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		}
+	}
 }
 
 void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,

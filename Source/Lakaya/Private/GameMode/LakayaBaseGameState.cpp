@@ -104,8 +104,6 @@ void ALakayaBaseGameState::BeginPlay()
 				PlayerNameDisplayerWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 			}
 		}
-
-		
 	}
 	
 	SpawnOutlineManager();
