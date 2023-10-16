@@ -82,6 +82,7 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		}
 	}
 
+	// 적을 검사해서
 	for (auto& Player : PlayersByMinimap[Team == ETeam::Anti ? ETeam::Pro : ETeam::Anti])
 	{
 		const auto& State = Player.Key;
@@ -92,7 +93,7 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		{
 			if (const ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter))
 			{
-				// 검사한 아군(나 자신 포함)이 죽었다면 텍스처를 DeathIcon으로 변경해줍니다.
+				// 검사한 적이 죽었다면 텍스처를 DeathIcon으로 변경해줍니다.
 				if (!LakayaCharacter->GetAliveState())
 				{
 					Image->SetBrushFromTexture(DeathIcon);
@@ -102,20 +103,10 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 					switch (Team == ETeam::Anti ? ETeam::Pro : ETeam::Anti)
 					{
 					case ETeam::Anti:
-						if (State == GetOwningPlayerState())
-						{
-							Image->SetBrushFromTexture(AntiOwnIcon);
-							break;
-						}
-						Image->SetBrushFromTexture(AntiIcon);
+						// Image->SetBrushFromTexture(AntiIcon);
 						break;
 					case ETeam::Pro:
-						if (State == GetOwningPlayerState())
-						{
-							Image->SetBrushFromTexture(ProOwnIcon);
-							break;
-						}
-						Image->SetBrushFromTexture(ProIcon);
+						// Image->SetBrushFromTexture(ProIcon);
 						break;
 					default:
 						break;
@@ -126,8 +117,17 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 	}
 }
 
+void UOccupationTabMinimapWidget::SetEnemyImage() const
+{
+	for (const auto& Enemy : PlayersByMinimap[CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti])
+	{
+		const auto& EnemyImage = Enemy.Value;
+		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
+	}
+}
+
 void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+                                                       const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
 {
 #pragma region NullCheck
 	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
@@ -157,8 +157,29 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	if (EnemyImage->GetVisibility() == ESlateVisibility::Hidden)
 		EnemyImage->SetVisibility(ESlateVisibility::Visible);
 
+	if (NewTeam == ETeam::Anti)
+	{
+		EnemyImage->SetBrushFromTexture(AntiIcon);
+	}
+	else
+	{
+		EnemyImage->SetBrushFromTexture(ProIcon);
+	}
+	
 	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
+
+	// GetWorld()->GetTimerManager().ClearTimer(QuestionIconTimerHandle);
+
+	GetWorld()->GetTimerManager().SetTimer(QuestionIconTimerHandle, [this, EnemyImage, NewTeam]()
+	{
+		for (const auto& Enemy : PlayersByMinimap[NewTeam])
+		{
+			SetEnemyImage();
+			UE_LOG(LogTemp, Warning, TEXT("타이머 호출"));
+		}
+	}, 0.1f, false);
 }
+
 
 void UOccupationTabMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
 	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
@@ -175,10 +196,9 @@ void UOccupationTabMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
 		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
 		return;
 	}
-
+	
 	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
 	EnemyImage->SetVisibility(ESlateVisibility::Hidden);
-
 }
 
 UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
