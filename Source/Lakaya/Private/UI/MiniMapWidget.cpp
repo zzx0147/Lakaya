@@ -5,6 +5,7 @@
 
 #include "Camera/CameraComponent.h"
 #include "Character/LakayaBaseCharacter.h"
+#include "GameMode/OccupationGameState.h"
 
 void UMinimapWidget::NativeConstruct()
 {
@@ -32,14 +33,14 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	
 	const ETeam EnemyTeam = CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
 
-	// if (const auto& GameState = Cast<AOccupationGameState>(GetWorld()->GetGameState()))
-	// {
-	// 	if (GameState->GetbIsClairvoyanceActivated())
-	// 	{
-	// 		UpdatePlayerPosition(EnemyTeam);
-	// 		return;
-	// 	}
-	// }
+	if (const auto& GameState = Cast<AOccupationGameState>(GetWorld()->GetGameState()))
+	{
+		if (GameState->GetbIsClairvoyanceActivated())
+		{
+			UpdatePlayerPosition(EnemyTeam);
+			return;
+		}
+	}
 	
 	// TODO : 와지 투시 스킬을 사용했을 때도 추가해줘야 합니다.
 	// TODO : 적을 발견했다면, 시야를 팀원들과 공유해야 합니다.
