@@ -367,6 +367,11 @@ void ULakayaAbility::BP_RemoveMappingContext(const ULakayaInputContext* InputCon
 	RemoveMappingContext(GetCurrentActorInfo(), InputContext);
 }
 
+bool ULakayaAbility::TryActivateAbilityWithSpec(UAbilitySystemComponent* ASC, const FGameplayAbilitySpec& Spec)
+{
+	return ASC->TryActivateAbility(Spec.Handle);
+}
+
 void ULakayaAbility::HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
                                                   FGameplayAbilityTargetDataHandle& OutTargetDataHandle)
 {
