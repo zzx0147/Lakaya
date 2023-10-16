@@ -53,7 +53,7 @@ void UFinalResultElement::SetPlayer(TObjectPtr<ALakayaBasePlayerState> NewPlayer
 
 	if(Character3DImageMaterialMap.Contains(NewPlayer->GetCharacterName()))
 	{
-		Character3DImage->SetBrushFromMaterial(Character3DImageMaterialMap[NewPlayer->GetCharacterName()]);
+		Character3DImage->SetBrushFromTexture(Character3DImageMaterialMap[NewPlayer->GetCharacterName()]);
 	}
 }
 

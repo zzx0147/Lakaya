@@ -122,7 +122,7 @@ void AOccupationGameState::BeginPlay()
 			GameResultWidget = CreateWidget<UGameResultWidget>(LocalController, GameResultWidgetClass);
 			if (GameResultWidget.IsValid())
 			{
-				GameResultWidget->AddToViewport();
+				GameResultWidget->AddToViewport(20);
 				GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}

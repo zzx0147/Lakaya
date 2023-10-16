@@ -57,5 +57,5 @@ private:
 	TMap<ETeam, UTexture2D*> UserInfoOutlineImageMap;
 
 	UPROPERTY(EditDefaultsOnly)
-	TMap<FName, UMaterialInterface*> Character3DImageMaterialMap;
+	TMap<FName, UTexture2D*> Character3DImageMaterialMap;
 };

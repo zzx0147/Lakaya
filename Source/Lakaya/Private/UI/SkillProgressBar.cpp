@@ -225,8 +225,11 @@ void USkillProgressBar::CreateSkillStackImages(const uint8& Count)
 	{
 		UImage* NewImage = NewObject<UImage>(this, UImage::StaticClass());
 		NewImage->SetBrushFromTexture(SKillStackEmptyTexture);
-		NewImage->SetDesiredSizeOverride(FVector2d(SKillStackEmptyTexture->GetSizeX(),
-		                                           SKillStackEmptyTexture->GetSizeY()));
+
+		FSlateBrush NewBrush = NewImage->GetBrush();
+		NewBrush.SetImageSize(FVector2f(SKillStackEmptyTexture->GetSizeX(),SKillStackEmptyTexture->GetSizeY()));
+		NewImage->SetBrush(NewBrush);
+		
 		SkillStackPanel->AddChildToHorizontalBox(NewImage);
 
 		UHorizontalBoxSlot* ImageSlot = UWidgetLayoutLibrary::SlotAsHorizontalBoxSlot(NewImage);
@@ -234,6 +237,7 @@ void USkillProgressBar::CreateSkillStackImages(const uint8& Count)
 		FSlateChildSize SlateChildSize;
 		SlateChildSize.SizeRule = ESlateSizeRule::Fill;
 		ImageSlot->SetSize(SlateChildSize);
+		
 		SkillStackImages.Add(NewImage);
 	}
 }
