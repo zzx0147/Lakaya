@@ -4,6 +4,7 @@
 #include "Character/LakayaBaseCharacter.h"
 
 #include "AbilitySystemComponent.h"
+#include "Engine/World.h"
 #include "Character/LakayaAbilitySet.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
@@ -263,6 +264,8 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 		return false;
 	}
 
+	//TODO 월드가 유효하지 않은 때가 있습니다. 임시로 Null체크를 집어넣었습니다. 추후 수정 요망
+	if(!GetWorld()) return false;
 	// TODO : GetFristPlayerController를 가져오는 것이 맞는지 확인해야 합니다.
 	const APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	

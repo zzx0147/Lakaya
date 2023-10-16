@@ -32,7 +32,7 @@ void FProjectilePoolItem::UnbindProjectileItem()
 {
 	if (OnProjectileStateChangedHandle.IsValid())
 	{
-		if (Projectile)
+		if (IsValid(Projectile))
 		{
 			Projectile->OnProjectileStateChanged.Remove(OnProjectileStateChangedHandle);
 		}

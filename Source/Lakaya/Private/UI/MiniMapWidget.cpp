@@ -83,6 +83,8 @@ void UMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 	{
 		const auto& State = Player.Key;
 		const auto& Image = Player.Value;
+
+		if(!State.IsValid() || !State->GetPawn()) continue;
 		
 		FVector2D PlayerPosition(State->GetPawn()->GetActorLocation().X, State->GetPawn()->GetActorLocation().Y);
 		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
