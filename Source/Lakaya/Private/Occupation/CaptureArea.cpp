@@ -81,7 +81,10 @@ void ACaptureArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 
 				// AimOccupyProgressWidget을 0으로 초기화해줍니다.
 				if (const auto PlayerController = OccupyingPlayerState->GetPawn()->IsLocallyControlled())
-					OccupyingPlayerState->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(0, false);
+					if(OccupyingPlayerState->GetAimOccupyProgressWidget())
+					{
+						OccupyingPlayerState->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(0, false);
+					}
 				else
 				{
 					UE_LOG(LogTemp, Warning, TEXT("84line null."));
