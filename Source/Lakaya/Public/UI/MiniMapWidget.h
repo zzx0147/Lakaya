@@ -88,7 +88,6 @@ protected:
 	
 	FVector2D IconAlignment;
 	FVector2D IconSize;
-	FVector2D OwnIconSize;
 	FVector2D MinimapSize;
 	FVector2D WidgetOffset;
 	
