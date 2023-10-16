@@ -224,6 +224,11 @@ ECollisionChannel ALakayaProjectile::ConvertToCollisionChannel(const EObjectType
 void ALakayaProjectile::OnStartPhysicsSimulation_Implementation(
 	const FPredictProjectilePathResult& LastPredictionResult)
 {
+	if (bIgnoreOwnerAndInstigator)
+	{
+		AddIgnoredInPerformActor(GetOwner());
+		AddIgnoredInPerformActor(GetInstigator());
+	}
 }
 
 void ALakayaProjectile::OnStartPathPrediction_Implementation(const FProjectileThrowData& InThrowData)
@@ -429,9 +434,9 @@ void ALakayaProjectile::AddIgnoredInPerformActor(AActor* InActor)
 {
 	if (IsValid(InActor))
 	{
-		PredictedProjectileParams.ActorsToIgnore.Emplace(InActor);
+		PredictedProjectileParams.ActorsToIgnore.AddUnique(InActor);
 		CollisionComponent->IgnoreActorWhenMoving(InActor, true);
-		IgnoredInPerformActors.Emplace(InActor);
+		IgnoredInPerformActors.AddUnique(InActor);
 	}
 }
 
