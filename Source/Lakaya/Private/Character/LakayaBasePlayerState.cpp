@@ -106,6 +106,12 @@ void ALakayaBasePlayerState::OnRep_PlayerName()
 void ALakayaBasePlayerState::BeginPlay()
 {
 	Super::BeginPlay();
+	//TODO:: 임시 코드, 차수 수정 요망
+
+	if(HasAuthority())
+	{
+		OnRep_Owner();
+	}
 }
 
 void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
