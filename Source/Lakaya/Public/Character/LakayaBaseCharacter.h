@@ -158,6 +158,9 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void Server_OnEnemyLost(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState);
+
+	// VisibleEnemy가 비어있는지 확인합니다.
+	FORCEINLINE const bool IsVisibleEnemyEmpty() const { return VisibleEnemies.Num() == 0; }
 	
 	// VisibleEnemy 목록을 반환합니다.
 	FORCEINLINE const TSet<ALakayaBasePlayerState*>& GetVisibleEnemies() const { return VisibleEnemies; }
