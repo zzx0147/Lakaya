@@ -29,6 +29,7 @@ protected:
 	virtual FVector2d ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation, const FVector2D& MiniMapSize) override;
 	virtual void UpdatePlayerPosition(const ETeam& Team) override;
 
+	void SetEnemyImage() const;
 private:
 	// 미니맵상에 Anti팀을 표시하는 아이콘 텍스처입니다.
 	UPROPERTY(EditAnywhere)

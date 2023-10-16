@@ -224,15 +224,12 @@ ECollisionChannel ALakayaProjectile::ConvertToCollisionChannel(const EObjectType
 void ALakayaProjectile::OnStartPhysicsSimulation_Implementation(
 	const FPredictProjectilePathResult& LastPredictionResult)
 {
+	IgnoreOwnerAndInstigator();
 }
 
 void ALakayaProjectile::OnStartPathPrediction_Implementation(const FProjectileThrowData& InThrowData)
 {
-	if (bIgnoreOwnerAndInstigator)
-	{
-		AddIgnoredInPerformActor(GetOwner());
-		AddIgnoredInPerformActor(GetInstigator());
-	}
+	IgnoreOwnerAndInstigator();
 }
 
 void ALakayaProjectile::OnReplicatedCustomStateEnter_Implementation(const uint8& NewState)
@@ -398,6 +395,15 @@ bool ALakayaProjectile::MarchProjectileRecursive(FPredictProjectilePathResult& O
 	return MarchProjectileRecursive(OutResult, CurrentTime + OutResult.LastTraceDestination.Time);
 }
 
+void ALakayaProjectile::IgnoreOwnerAndInstigator()
+{
+	if (bIgnoreOwnerAndInstigator)
+	{
+		AddIgnoredInPerformActor(GetOwner());
+		AddIgnoredInPerformActor(GetInstigator());
+	}
+}
+
 bool ALakayaProjectile::OnEventFromThrowTriggeredInPathPredict_Implementation(const FVector& Location,
                                                                               const FVector& Velocity)
 {
@@ -427,7 +433,7 @@ void ALakayaProjectile::OnCustomStateRetrigger_Implementation(const uint8& Custo
 
 void ALakayaProjectile::AddIgnoredInPerformActor(AActor* InActor)
 {
-	if (IsValid(InActor))
+	if (IsValid(InActor) && !IgnoredInPerformActors.Contains(InActor))
 	{
 		PredictedProjectileParams.ActorsToIgnore.Emplace(InActor);
 		CollisionComponent->IgnoreActorWhenMoving(InActor, true);

@@ -122,7 +122,7 @@ void AOccupationGameState::BeginPlay()
 			GameResultWidget = CreateWidget<UGameResultWidget>(LocalController, GameResultWidgetClass);
 			if (GameResultWidget.IsValid())
 			{
-				GameResultWidget->AddToViewport();
+				GameResultWidget->AddToViewport(20);
 				GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
@@ -638,7 +638,7 @@ void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const ui
 	}
 }
 
-void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress, const bool& bIsOccupy)
+void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress)
 {
 	UProgressBar** Bar = OccupyBarMaps.Find(Id);
 	FSlateBrush ChargeImageBrush;
@@ -656,8 +656,6 @@ void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& I
 		(*Bar)->WidgetStyle.SetFillImage(ChargeImageBrush);
 		(*Bar)->WidgetStyle.FillImage = ChargeImageBrush;
 		(*Bar)->SetPercent(Progress / 4);
-		
-		OccupyExpressWidget->SetAimOccupyProgressBar(Progress, bIsOccupy);
 	}
 	else
 	{
@@ -668,14 +666,14 @@ void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& I
 void AOccupationGameState::OnEnemySpotted(const ETeam& EnemyTeam, ALakayaBasePlayerState* Enemy)
 {
 	// 같은 팀의 정보는 필요 없으므로, 리턴합니다.
-	if (EnemyTeam == ClientTeam) return;
+	// if (EnemyTeam == ClientTeam) return;
 	Multicast_UpdateMinimap(EnemyTeam, Enemy);
 }
 
 void AOccupationGameState::OnEnemyLost(const ETeam& EnemyTeam, ALakayaBasePlayerState* Enemy)
 {
 	// 같은 팀의 정보는 필요 없으므로, 리턴합니다.
-	if (EnemyTeam == ClientTeam) return;
+	// if (EnemyTeam == ClientTeam) return;
 	MultiCast_HideFromMinimap(EnemyTeam, Enemy);
 }
 

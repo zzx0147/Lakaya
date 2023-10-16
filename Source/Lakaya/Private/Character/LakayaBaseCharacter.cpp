@@ -93,10 +93,15 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 
 	BulletSpreadComponent = CreateDefaultSubobject<UBulletSpreadComponent>(BulletSpreadComponentName);
 	
-	
-	// bIsSpottedByTeammate = false;
-	
 	if (DissolveCurveFinder.Succeeded()) DissolveCurve = DissolveCurveFinder.Object;
+
+	static ConstructorHelpers::FObjectFinder<UTexture2D> QuestionIconFinder(
+		TEXT("/Game/UI_2/UI_Minimap/Minimap_QuestionMark"));
+
+	if (QuestionIconFinder.Succeeded())
+	{
+		QuestionIcon = QuestionIconFinder.Object;
+	}
 }
 
 ELifetimeCondition ALakayaBaseCharacter::AllowActorComponentToReplicate(
@@ -242,7 +247,7 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 }
 
 bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState)
+                                                  const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState, const TWeakObjectPtr<UImage> EnemyImage)
 {
 #pragma region NullCheck
 	if (!EnemyState.IsValid())
@@ -254,7 +259,7 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 	const APawn* EnemyPawn = EnemyState->GetPawn();
 	if (!EnemyPawn)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("EnemyPawn is null."));
+		// UE_LOG(LogTemp, Warning, TEXT("EnemyPawn is null."));
 		return false;
 	}
 
@@ -284,9 +289,8 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 		// 계산된 각도와 임계값을 비교하여, 시야 내에 있는지 판단합니다.
 		bool bIsVisible = AngleBetweenVectors <= AngleThreshold;
 
-		// 시야 내에 없다면 false를 반환하고 함수를 종료합니다.
 		if (!bIsVisible) return false;
-			
+		
 		FHitResult HitResult;
 
 		if (bool bIsObstructed = UKismetSystemLibrary::LineTraceSingle(
@@ -303,18 +307,18 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 			bIsVisible = false;
 		}
 
-		if (bIsVisible)
-		{
-			Server_OnEnemySpotted(EnemyTeam, EnemyState.Get());
-		}
-		else if (!bIsVisible)
-		{
-			Server_OnEnemyLost(EnemyTeam, EnemyState.Get());
-		}
-
 		Server_SetEnemyVisibility(EnemyState.Get(), bIsVisible);
 		
 		return bIsVisible;
+	}
+}
+
+void ALakayaBaseCharacter::Server_OnEnemySpotted_Implementation(const ETeam& EnemyTeam,
+																ALakayaBasePlayerState* EnemyState)
+{
+	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
+	{
+		OccupationGameState->OnEnemySpotted(EnemyTeam, EnemyState);
 	}
 }
 
@@ -323,15 +327,6 @@ void ALakayaBaseCharacter::Server_OnEnemyLost_Implementation(const ETeam& EnemyT
 	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
 	{
 		OccupationGameState->OnEnemyLost(EnemyTeam, EnemyState);
-	}
-}
-
-void ALakayaBaseCharacter::Server_OnEnemySpotted_Implementation(const ETeam& EnemyTeam,
-                                                                ALakayaBasePlayerState* EnemyState)
-{
-	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
-	{
-		OccupationGameState->OnEnemySpotted(EnemyTeam, EnemyState);
 	}
 }
 

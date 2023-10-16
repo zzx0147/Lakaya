@@ -57,10 +57,11 @@ void UKillLogElement::SetKillLog(APlayerState* Attacker, APlayerState* Victim)
 							{
 								if(PlayerAttackerController)
 								{
-									UTexture2D* IndividualPlayerKillLogImage =
-										LoadObject<UTexture2D>(nullptr,
-											TEXT("Texture2D'/Game/UI/individual/ingame_scoreboard/T_Individual_In_killlogbar_player.T_Individual_In_killlogbar_player'"));
-									BackgroundImage->SetBrushFromTexture(IndividualPlayerKillLogImage);
+									//임시 비활성화
+									// UTexture2D* IndividualPlayerKillLogImage =
+									// 	LoadObject<UTexture2D>(nullptr,
+									// 		TEXT("Texture2D'/Game/UI/individual/ingame_scoreboard/T_Individual_In_killlogbar_player.T_Individual_In_killlogbar_player'"));
+									// BackgroundImage->SetBrushFromTexture(IndividualPlayerKillLogImage);
 								}
 							}
 							else if(AAIController* AIAttackerController =
@@ -68,10 +69,10 @@ void UKillLogElement::SetKillLog(APlayerState* Attacker, APlayerState* Victim)
 							{
 								if(AIAttackerController)
 								{
-									UTexture2D* IndividualPlayerKillLogImage =
-										LoadObject<UTexture2D>(nullptr,
-											TEXT("Texture2D'/Game/UI/individual/ingame_scoreboard/T_Individual_In_killlogbar.T_Individual_In_killlogbar'"));
-									BackgroundImage->SetBrushFromTexture(IndividualPlayerKillLogImage);
+									// UTexture2D* IndividualPlayerKillLogImage =
+									// 	LoadObject<UTexture2D>(nullptr,
+									// 		TEXT("Texture2D'/Game/UI/individual/ingame_scoreboard/T_Individual_In_killlogbar.T_Individual_In_killlogbar'"));
+									// BackgroundImage->SetBrushFromTexture(IndividualPlayerKillLogImage);
 								}
 							}
 						}

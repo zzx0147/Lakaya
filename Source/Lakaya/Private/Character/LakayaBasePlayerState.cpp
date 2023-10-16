@@ -19,6 +19,7 @@
 #include "UI/RespawnWidget.h"
 #include "UI/SkillProgressBar.h"
 #include "UI/SkillWidget.h"
+#include "UI/AimOccupyProgressWidget.h"
 
 void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -52,9 +53,13 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	static ConstructorHelpers::FClassFinder<UGamePlayPortraitWidget> PortraitFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_Portrait"));
 
+	static ConstructorHelpers::FClassFinder<UAimOccupyProgressWidget> AimOccupyProgressFinder(
+		TEXT("/Game/Blueprints/UMG/WBP_AimOccupyProgressWidget"));
+
 	HealthWidgetClass = HealthFinder.Class;
 	DirectionDamageIndicatorClass = DirectionDamageFinder.Class;
 	PortraitWidgetClass = PortraitFinder.Class;
+	AimOccupyProgressWidgetClass = AimOccupyProgressFinder.Class;
 
 	AbilitySystem = CreateDefaultSubobject<ULakayaAbilitySystemComponent>(TEXT("AbilitySystem"));
 
@@ -65,8 +70,6 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 
 	AbilitySystem->OnGameplayEffectAppliedDelegateToTarget.AddUObject(
 		this, &ALakayaBasePlayerState::OnGameplayEffectAppliedDelegateToTargetCallback);
-	
-
 
 	// AbilitySystem->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 
@@ -103,6 +106,12 @@ void ALakayaBasePlayerState::OnRep_PlayerName()
 void ALakayaBasePlayerState::BeginPlay()
 {
 	Super::BeginPlay();
+	//TODO:: 임시 코드, 차수 수정 요망
+
+	if(HasAuthority())
+	{
+		OnRep_Owner();
+	}
 }
 
 void ALakayaBasePlayerState::CopyProperties(APlayerState* PlayerState)
@@ -149,6 +158,13 @@ void ALakayaBasePlayerState::OnRep_Owner()
 
 			HealthWidget->SetMaximumHealth(GetMaxHealth());
 			HealthWidget->SetCurrentHealth(Health);
+		}
+
+		AimOccupyProgressWidget = CreateWidget<UAimOccupyProgressWidget>(
+			LocalController, AimOccupyProgressWidgetClass);
+		if (AimOccupyProgressWidget)
+		{
+			AimOccupyProgressWidget->AddToViewport();
 		}
 
 		DirectionDamageIndicatorWidget = CreateWidget<UDirectionalDamageIndicator>(
@@ -372,20 +388,21 @@ void ALakayaBasePlayerState::InitializeStatus()
 		                                               Character->GetCharacterMaxSkillStack());
 		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.MaxUltimateGauge")),
 		                                               Character->GetCharacterMaxUltimateGauge());
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.GainUltimateOnAttack")),
-											   Character->GetCharacterGainUltimateOnAttack());
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.GainUltimateOnAttacked")),
-											   Character->GetCharacterGainUltimateOnAttacked());
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.GainUltimateOnSecond")),
-											   Character->GetCharacterGainUltimateOnSecond());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(
+			FGameplayTag::RequestGameplayTag(TEXT("Stat.GainUltimateOnAttack")),
+			Character->GetCharacterGainUltimateOnAttack());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(
+			FGameplayTag::RequestGameplayTag(TEXT("Stat.GainUltimateOnAttacked")),
+			Character->GetCharacterGainUltimateOnAttacked());
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(
+			FGameplayTag::RequestGameplayTag(TEXT("Stat.GainUltimateOnSecond")),
+			Character->GetCharacterGainUltimateOnSecond());
 
 		AbilitySystem->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 
 		const FGameplayEffectSpecHandle RegenEffectSpecHandle = AbilitySystem->MakeOutgoingSpec(
 			StatRegenEffect, 0, AbilitySystem->MakeEffectContext());
 		AbilitySystem->ApplyGameplayEffectSpecToSelf(*RegenEffectSpecHandle.Data.Get());
-
-		
 	}
 }
 
@@ -419,14 +436,14 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);
 		Character->SetStencilMask(UniqueRenderMask);
 		Character->SetAlly(bIsAlly);
-		
+
 		if (const auto CharacterWidgetClass = Character->GetCharacterWidgetClass(); CharacterWidgetClass &&
 			GetPlayerController() && GetPlayerController()->IsLocalController())
 		{
 			CharacterWidget = CreateWidget<UCharacterWidget>(GetPlayerController(), CharacterWidgetClass);
 			if (CharacterWidget)
 			{
-				CharacterWidget->AddToViewport();
+				CharacterWidget->AddToViewport(-5);
 				BindAllSkillToWidget();
 
 				if (CharacterWidget->GetGamePlayBulletWidget())
@@ -440,9 +457,11 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 					                          &UGamePlayBulletWidget::OnChangeCurrentBulletAttribute);;
 				}
 
-				if(const auto BulletSpreadComponent = Character->GetBulletSpread(); BulletSpreadComponent && CharacterWidget->GetCrossHairWidget())
+				if (const auto BulletSpreadComponent = Character->GetBulletSpread(); BulletSpreadComponent &&
+					CharacterWidget->GetCrossHairWidget())
 				{
-					BulletSpreadComponent->OnChangeBulletSpreadAmountSignature.AddUObject(CharacterWidget->GetCrossHairWidget(),&UDynamicCrossHairWidget::OnChangeBulletSpreadAmount);
+					BulletSpreadComponent->OnChangeBulletSpreadAmountSignature.AddUObject(
+						CharacterWidget->GetCrossHairWidget(), &UDynamicCrossHairWidget::OnChangeBulletSpreadAmount);
 				}
 			}
 		}
@@ -662,14 +681,15 @@ void ALakayaBasePlayerState::OnGameplayEffectAppliedDelegateToTargetCallback(
 		if (ModifiedAttribute.Attribute == HealthAttribute && ModifiedAttribute.TotalMagnitude < 0.0f)
 		{
 			// ModifiedAttribute.TotalMagnitude 변경된 어트리뷰트의 총량 데미지 200을 받았다면 -200
-			
+
 			const FGameplayEffectSpecHandle SpecHandle = AbilitySystem->MakeOutgoingSpec(
 				GainUltimateOnAttackEffect, 0, AbilitySystem->MakeEffectContext());
-			
-			SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.Damage")), -ModifiedAttribute.TotalMagnitude);
+
+			SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Stat.Damage")),
+			                                               -ModifiedAttribute.TotalMagnitude);
 
 			AbilitySystem->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
-			
+
 			return;
 		}
 	}
@@ -737,7 +757,7 @@ void ALakayaBasePlayerState::NoticePlayerHit(const FName& CauserName, const FVec
 
 void ALakayaBasePlayerState::NoticeNormalAttackHitEnemy()
 {
-	if(CharacterWidget && CharacterWidget->GetCrossHairWidget())
+	if (CharacterWidget && CharacterWidget->GetCrossHairWidget())
 	{
 		CharacterWidget->GetCrossHairWidget()->OnNormalAttackHitEnemy();
 	}

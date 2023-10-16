@@ -52,7 +52,6 @@ protected:
 	 * @param Team 플레이어의 팀입니다.
 	 */
 	virtual void UpdatePlayerPosition(const ETeam& Team);
-
 public:
 	FORCEINLINE const ETeam& GetTeam() const { return CurrentTeam; }
 	FORCEINLINE const bool& GetUpdateMinimap() const { return UpdateMinimap; }
@@ -75,11 +74,21 @@ protected:
 	// 미니맵상에 자기 자신을 표시하는 아이콘 텍스쳐입니다.
 	// UPROPERTY(EditAnywhere)
 	// TObjectPtr<UTexture2D> OwnIcon;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> AntiIcon1;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ProIcon1;
 	
 	// 플레이어가 죽게 되었을 때, 미니맵 상에 표시하는 아이콘 텍스처입니다.
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture2D> DeathIcon;
 
+	// 적이 시야에서 사라지게 되었을 때, 미니맵 상에 표시되는 아이콘 텍스처입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> QuestionMarkIcon;
+	
 	// 미니맵상에서 자신과 상대(AI포함)의 위치를 업데이트하기 위한 컨테이너입니다.
 	TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>> PlayersByMinimap;
 	
@@ -90,8 +99,9 @@ protected:
 	FVector2D IconSize;
 	FVector2D MinimapSize;
 	FVector2D WidgetOffset;
-	
+
 	// 미니맵업데이트 여부입니다.
 	bool UpdateMinimap;
 	
+	FTimerHandle QuestionIconTimerHandle;
 };

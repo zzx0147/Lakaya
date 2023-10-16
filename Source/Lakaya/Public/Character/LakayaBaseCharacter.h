@@ -7,6 +7,7 @@
 #include "LakayaAbilitySet.h"
 #include "LakayaBasePlayerState.h"
 #include "RegisterAbilityInterface.h"
+#include "Components/Image.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "Occupation/Team.h"
@@ -149,13 +150,17 @@ public:
 	* @param EnemyState 확인할 적의 상태입니다.
 	* @return 카메라에 보인다면 true, 아니라면 false를 반환합니다.
 	*/
-	bool IsEnemyVisibleInCamera(const ETeam& EnemyTeam, const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState);
+	bool IsEnemyVisibleInCamera(const ETeam& EnemyTeam, const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState,
+		const TWeakObjectPtr<UImage> EnemyImage);
 
 	UFUNCTION(Server, Reliable)
 	void Server_OnEnemySpotted(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState);
 
 	UFUNCTION(Server, Reliable)
 	void Server_OnEnemyLost(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState);
+
+	// VisibleEnemy가 비어있는지 확인합니다.
+	FORCEINLINE const bool IsVisibleEnemyEmpty() const { return VisibleEnemies.Num() == 0; }
 	
 	// VisibleEnemy 목록을 반환합니다.
 	FORCEINLINE const TSet<ALakayaBasePlayerState*>& GetVisibleEnemies() const { return VisibleEnemies; }
@@ -337,4 +342,7 @@ private:
 	// 플레이어가 적을 발견했을 때, 시야를 공유하기 위해 사용하는 변수입니다.
 	UPROPERTY()
 	TSet<ALakayaBasePlayerState*> VisibleEnemies;
+
+	UPROPERTY()
+	TObjectPtr<UTexture2D> QuestionIcon;
 };

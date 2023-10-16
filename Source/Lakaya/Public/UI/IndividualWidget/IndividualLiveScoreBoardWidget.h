@@ -23,35 +23,39 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* Score1stNameTextBlock;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* Score2ndNameTextBlock;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* Score3rdNameTextBlock;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* Score4thNameTextBlock;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* Score5thNameTextBlock;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* Score6thNameTextBlock;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UImage* Slot_2nd;
+	UImage* Slot_Player_1st;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UImage* Slot_Player_2nd;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UImage* Slot_Player_3rd;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UImage* Slot_Player_4th;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UImage* Slot_Player_5th;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UImage* Slot_Player_6th;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UImage* Slot_2nd;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UImage* Slot_3rd;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UImage* Slot_4th;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UImage* Slot_5th;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UImage* Slot_6th;
 };

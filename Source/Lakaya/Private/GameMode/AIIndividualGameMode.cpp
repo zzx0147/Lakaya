@@ -65,6 +65,7 @@ void AAIIndividualGameMode::PostLogin(APlayerController* NewPlayer)
 		// AI의 캐릭터 변경
 		ALakayaBasePlayerState* AiState = AiController->GetPlayerState<ALakayaBasePlayerState>();
 		AiState->RequestCharacterChange(RandomCharacterName);
+		AiState->SetPlayerName(FString::Printf(TEXT("AI : %d"),i));
 		
 		AiControllerArray.Emplace(AiController);
 		RegisterPlayer(AiController);

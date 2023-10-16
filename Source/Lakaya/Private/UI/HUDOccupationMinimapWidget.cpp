@@ -6,7 +6,6 @@
 #include "Editor.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
-#include "DSP/AudioDebuggingUtilities.h"
 
 void UHUDOccupationMinimapWidget::NativeConstruct()
 {
@@ -96,7 +95,6 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 			const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
 
 			UpdateMinimapImagePositionAndRotation(*State, NewPlayerPosition);
-			// continue;
 		}
 
 		// 아군들을 검사해서 아군(나 자신 포함)이 죽어있다면, 죽음 아이콘으로 변경해줍니다.
@@ -136,11 +134,55 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 			}
 		}
 	}
+
+	// 적 사망 검사
+	for (auto& Player : PlayersByMinimap[Team == ETeam::Anti ? ETeam::Pro : ETeam::Anti])
+	{
+		const auto& State = Player.Key;
+		const auto& Image = Player.Value;
+
+		// 아군들을 검사해서 아군(나 자신 포함)이 죽어있다면, 죽음 아이콘으로 변경해줍니다.
+		if (const auto PlayerCharacter = State->GetPawn())
+		{
+			if (const ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter))
+			{
+				// 검사한 아군(나 자신 포함)이 죽었다면 텍스처를 DeathIcon으로 변경해줍니다.
+				if (!LakayaCharacter->GetAliveState())
+				{
+					Image->SetBrushFromTexture(DeathIcon);
+				}
+				else 
+				{
+					switch (Team == ETeam::Anti ? ETeam::Pro : ETeam::Anti)
+					{
+					case ETeam::Anti:
+						// Image->SetBrushFromTexture(AntiIcon);
+						break;
+					case ETeam::Pro:
+						// Image->SetBrushFromTexture(ProIcon);
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+
+void UHUDOccupationMinimapWidget::SetEnemyImage() const
+{
+	for (const auto& Enemy : PlayersByMinimap[CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti])
+	{
+		const auto& EnemyImage = Enemy.Value;
+		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
+	}
 }
 
 void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+                                                       const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
 {
+#pragma region NullCheck
 	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
@@ -153,14 +195,42 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
 		return;
 	}
-	
+#pragma endregion
 	const FVector2D PlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
 	const FVector2D NewPlayerPosition = const_cast<UHUDOccupationMinimapWidget*>(this)->ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
-	
+
+	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
+	{
+		if (NewTeam == ETeam::Anti)
+			EnemyImage->SetBrushFromTexture(AntiIcon);
+		else if (NewTeam == ETeam::Pro)
+			EnemyImage->SetBrushFromTexture(ProIcon);
+	}
+
 	if (EnemyImage->GetVisibility() == ESlateVisibility::Hidden)
 		EnemyImage->SetVisibility(ESlateVisibility::Visible);
+
+	if (NewTeam == ETeam::Anti)
+	{
+		EnemyImage->SetBrushFromTexture(AntiIcon);
+	}
+	else
+	{
+		EnemyImage->SetBrushFromTexture(ProIcon);
+	}
 	
 	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
+
+	// GetWorld()->GetTimerManager().ClearTimer(QuestionIconTimerHandle);
+	
+	GetWorld()->GetTimerManager().SetTimer(QuestionIconTimerHandle, [this, EnemyImage, NewTeam]()
+	{
+		for (const auto& Enemy : PlayersByMinimap[NewTeam])
+		{
+			SetEnemyImage();
+			UE_LOG(LogTemp, Warning, TEXT("타이머 호출"));
+		}
+	}, 0.1f, false);
 }
 
 void UHUDOccupationMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,

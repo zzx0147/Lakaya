@@ -29,22 +29,35 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	// 자신의 팀(자기 자신 포함)위치 를 업데이트 해줍니다.
 	UpdatePlayerPosition(CurrentTeam);
-
+	
 	const ETeam EnemyTeam = CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
 
-	// TODO : 와지 투시 스킬을 사용했을 때도 추가해줘야 합니다.
-	// TODO : 적을 발견했다면, 시야를 팀원들과 공유해야 합니다.
-	// 적들의 위치정보를 가져와서, 내 시야에 들어와있다면, 미니맵에 표시해줍니다.
+	if (const auto& GameState = Cast<AOccupationGameState>(GetWorld()->GetGameState()))
+	{
+		if (GameState->GetbIsClairvoyanceActivated())
+		{
+			UpdatePlayerPosition(EnemyTeam);
+			return;
+		}
+	}
+	
+	// 적들의 정보를 가져와서, 내 시야에 들어와있다면, 미니맵에 표시해줍니다.
 	for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
 	{
-		const auto& EnemyState = Enemy.Key;
-		
+		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
+		const TWeakObjectPtr<UImage> EnemyImage = Enemy.Value;
+
 		// 모든 아군을 순회해서 시야에 없다면, 적을 업데이트 하지 않습니다.
 		for (const auto& Ally : PlayersByMinimap[CurrentTeam])
 		{
 			const auto& AllyState = Ally.Key;
+			
 			ALakayaBaseCharacter* AllyCharacter = Cast<ALakayaBaseCharacter>(AllyState->GetPawn());
-			AllyCharacter->IsEnemyVisibleInCamera(EnemyTeam, EnemyState);
+			
+			if (AllyCharacter->IsEnemyVisibleInCamera(EnemyTeam, EnemyState, EnemyImage))
+			{
+				AllyCharacter->Server_OnEnemySpotted(EnemyTeam, EnemyState.Get());
+			}
 		}
 	}
 }
