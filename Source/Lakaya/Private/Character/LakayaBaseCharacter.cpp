@@ -96,7 +96,7 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	if (DissolveCurveFinder.Succeeded()) DissolveCurve = DissolveCurveFinder.Object;
 
 	static ConstructorHelpers::FObjectFinder<UTexture2D> QuestionIconFinder(
-		TEXT("/Game/UI_2/UI_Minimap/Minimap_Question_Mark_Tap"));
+		TEXT("/Game/UI_2/UI_Minimap/Minimap_QuestionMark"));
 
 	if (QuestionIconFinder.Succeeded())
 	{
@@ -294,13 +294,13 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 		bool bIsVisible = AngleBetweenVectors <= AngleThreshold;
 
 		// 시야 내에 없다면 false를 반환하고 함수를 종료합니다.
-		if (!bIsVisible) return false;
+		// if (!bIsVisible) return false;
 		
-		// if (!bIsVisible)
-		// {
-		// 	EnemyImage->SetBrushFromTexture(QuestionIcon);
-		// 	return false;
-		// }
+		if (!bIsVisible)
+		{
+			EnemyImage->SetBrushFromTexture(QuestionIcon);
+			return false;
+		}
 		
 		FHitResult HitResult;
 
