@@ -93,10 +93,19 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 
 	BulletSpreadComponent = CreateDefaultSubobject<UBulletSpreadComponent>(BulletSpreadComponentName);
 	
-	
-	// bIsSpottedByTeammate = false;
-	
 	if (DissolveCurveFinder.Succeeded()) DissolveCurve = DissolveCurveFinder.Object;
+
+	static ConstructorHelpers::FObjectFinder<UTexture2D> QuestionIconFinder(
+		TEXT("/Game/UI_2/UI_Minimap/Minimap_Question_Mark_Tap"));
+
+	if (QuestionIconFinder.Succeeded())
+	{
+		QuestionIcon = QuestionIconFinder.Object;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("failed."));	
+	}
 }
 
 ELifetimeCondition ALakayaBaseCharacter::AllowActorComponentToReplicate(
@@ -242,7 +251,7 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 }
 
 bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState)
+                                                  const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState, const TWeakObjectPtr<UImage> EnemyImage)
 {
 #pragma region NullCheck
 	if (!EnemyState.IsValid())
@@ -254,7 +263,7 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 	const APawn* EnemyPawn = EnemyState->GetPawn();
 	if (!EnemyPawn)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("EnemyPawn is null."));
+		// UE_LOG(LogTemp, Warning, TEXT("EnemyPawn is null."));
 		return false;
 	}
 
@@ -286,7 +295,13 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 
 		// 시야 내에 없다면 false를 반환하고 함수를 종료합니다.
 		if (!bIsVisible) return false;
-			
+		
+		// if (!bIsVisible)
+		// {
+		// 	EnemyImage->SetBrushFromTexture(QuestionIcon);
+		// 	return false;
+		// }
+		
 		FHitResult HitResult;
 
 		if (bool bIsObstructed = UKismetSystemLibrary::LineTraceSingle(
@@ -309,6 +324,12 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 		}
 		else if (!bIsVisible)
 		{
+			if (!bIsVisible)
+			{
+				EnemyImage->SetBrushFromTexture(QuestionIcon);
+				// EnemyImage->SetBrushSize(FVector2D(24.0f, 24.0f));
+				return false;
+			}
 			Server_OnEnemyLost(EnemyTeam, EnemyState.Get());
 		}
 

@@ -46,6 +46,8 @@ public:
 	UFUNCTION(BlueprintGetter)
 	float GetMatchRemainTime() const { return MatchEndingTime - GetServerWorldTimeSeconds(); }
 
+	FORCEINLINE bool GetbIsClairvoyanceActivated() const { return bIsClairvoyanceActivated;}
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void NotifyPlayerKilled(APlayerState* VictimPlayer, APlayerState* InstigatorPlayer, AActor* DamageCauser);
 
@@ -81,6 +83,7 @@ protected:
 
 	virtual bool TrySendMatchResultData();
 
+	
 	/** 투시를 사용한 액터가 투시를 활성화하기 적격한지 검사합니다. */
 	virtual bool CanInstigatorClairvoyance(const AActor* InInstigator) const;
 
