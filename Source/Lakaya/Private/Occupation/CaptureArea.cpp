@@ -83,6 +83,7 @@ void ACaptureArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 				if(OccupyingPlayerState && OccupyingPlayerState->GetPawn())
 				{
 					if (const auto PlayerController = OccupyingPlayerState->GetPawn()->IsLocallyControlled())
+					{
 						if (OccupyingPlayerState->GetAimOccupyProgressWidget())
 						{
 							OccupyingPlayerState->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(0, false);
@@ -91,6 +92,7 @@ void ACaptureArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 						{
 							UE_LOG(LogTemp, Warning, TEXT("84line null."));
 						}
+					}
 				}
 			}
 			else
