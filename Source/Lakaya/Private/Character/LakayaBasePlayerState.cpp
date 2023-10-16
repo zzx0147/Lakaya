@@ -436,7 +436,7 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 			CharacterWidget = CreateWidget<UCharacterWidget>(GetPlayerController(), CharacterWidgetClass);
 			if (CharacterWidget)
 			{
-				CharacterWidget->AddToViewport();
+				CharacterWidget->AddToViewport(-5);
 				BindAllSkillToWidget();
 
 				if (CharacterWidget->GetGamePlayBulletWidget())
