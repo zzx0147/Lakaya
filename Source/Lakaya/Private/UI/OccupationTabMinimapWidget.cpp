@@ -127,7 +127,7 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 }
 
 void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState, bool Spotted)
+	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
 {
 #pragma region NullCheck
 	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))

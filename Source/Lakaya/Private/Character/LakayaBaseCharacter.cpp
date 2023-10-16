@@ -288,7 +288,6 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 
 		// 계산된 각도와 임계값을 비교하여, 시야 내에 있는지 판단합니다.
 		bool bIsVisible = AngleBetweenVectors <= AngleThreshold;
-
 		
 		FHitResult HitResult;
 
@@ -314,6 +313,7 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 		else if (!bIsVisible)
 		{
 			Server_OnEnemyLost(EnemyTeam, EnemyState.Get());
+			// EnemyImage->SetBrushFromTexture(QuestionIcon);
 		}
 
 		Server_SetEnemyVisibility(EnemyState.Get(), bIsVisible);

@@ -15,7 +15,6 @@ void UMinimapWidget::NativeConstruct()
 	
 	IconAlignment = FVector2D(0.5f, 0.5f);
 	IconSize = FVector2D(62.0f, 112.0f);
-	// IconSize = FVector2D(31.0f, 56.0f);
 	
 	PlayersByMinimap.Emplace(ETeam::Anti);
 	PlayersByMinimap.Emplace(ETeam::Pro);
@@ -41,12 +40,12 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 			return;
 		}
 	}
-	
+
 	// 적들의 위치정보를 가져와서, 내 시야에 들어와있다면, 미니맵에 표시해줍니다.
 	for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
 	{
-		const auto& EnemyState = Enemy.Key;
-		const auto& EnemyImage = Enemy.Value;
+		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
+		const TWeakObjectPtr<UImage> EnemyImage = Enemy.Value;
 		
 		// 모든 아군을 순회해서 시야에 없다면, 적을 업데이트 하지 않습니다.
 		for (const auto& Ally : PlayersByMinimap[CurrentTeam])

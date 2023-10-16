@@ -181,7 +181,7 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 }
 
 void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState, bool Spotted)
+	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
 {
 #pragma region NullCheck
 	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
@@ -200,26 +200,18 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	const FVector2D PlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
 	const FVector2D NewPlayerPosition = const_cast<UHUDOccupationMinimapWidget*>(this)->ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
 
-	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible && Spotted)
+	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
 	{
 		if (NewTeam == ETeam::Anti)
 			EnemyImage->SetBrushFromTexture(AntiIcon);
 		else if (NewTeam == ETeam::Pro)
 			EnemyImage->SetBrushFromTexture(ProIcon);
-
-		if (EnemyImage->GetVisibility() == ESlateVisibility::Hidden)
-			EnemyImage->SetVisibility(ESlateVisibility::Visible);
-	
-		EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 	}
 
-	// if (!Spotted)
-	// {
-	// 	if (NewTeam == ETeam::Anti)
-	// 		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
-	// 	else if (NewTeam == ETeam::Pro)
-	// 		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
-	// }
+	if (EnemyImage->GetVisibility() == ESlateVisibility::Hidden)
+		EnemyImage->SetVisibility(ESlateVisibility::Visible);
+	
+	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 }
 
 void UHUDOccupationMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
