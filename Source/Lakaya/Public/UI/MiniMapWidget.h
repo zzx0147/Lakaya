@@ -97,5 +97,4 @@ protected:
 	
 	// 미니맵업데이트 여부입니다.
 	bool UpdateMinimap;
-	
 };

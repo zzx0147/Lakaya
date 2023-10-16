@@ -102,10 +102,6 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	{
 		QuestionIcon = QuestionIconFinder.Object;
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("failed."));	
-	}
 }
 
 ELifetimeCondition ALakayaBaseCharacter::AllowActorComponentToReplicate(
@@ -292,15 +288,6 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 
 		// 계산된 각도와 임계값을 비교하여, 시야 내에 있는지 판단합니다.
 		bool bIsVisible = AngleBetweenVectors <= AngleThreshold;
-
-		// 시야 내에 없다면 false를 반환하고 함수를 종료합니다.
-		// if (!bIsVisible) return false;
-		
-		if (!bIsVisible)
-		{
-			EnemyImage->SetBrushFromTexture(QuestionIcon);
-			return false;
-		}
 		
 		FHitResult HitResult;
 
@@ -318,19 +305,15 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 			bIsVisible = false;
 		}
 
+		// 적을 발견했다면, Spotted를 true로 바꿔줍니다.
 		if (bIsVisible)
 		{
 			Server_OnEnemySpotted(EnemyTeam, EnemyState.Get());
 		}
 		else if (!bIsVisible)
 		{
-			if (!bIsVisible)
-			{
-				EnemyImage->SetBrushFromTexture(QuestionIcon);
-				// EnemyImage->SetBrushSize(FVector2D(24.0f, 24.0f));
-				return false;
-			}
 			Server_OnEnemyLost(EnemyTeam, EnemyState.Get());
+			// EnemyImage->SetBrushFromTexture(QuestionIcon);
 		}
 
 		Server_SetEnemyVisibility(EnemyState.Get(), bIsVisible);
