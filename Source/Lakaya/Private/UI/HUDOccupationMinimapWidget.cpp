@@ -3,7 +3,6 @@
 
 #include "UI/HUDOccupationMinimapWidget.h"
 
-#include "Editor.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
 
