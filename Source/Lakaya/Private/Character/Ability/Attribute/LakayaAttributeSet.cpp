@@ -171,7 +171,7 @@ void ULakayaAttributeSet::OnRep_UltimateGainOnSecond(const FGameplayAttributeDat
 
 ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(-1.0f), CurrentAmmo(-1.0f),
                                              AttackPoint(40.0f), SkillStack(3.0f), MaxSkillStack(3.0f),
-                                             UltimateGauge(-1.0f), MaxUltimateGauge(-1.0f), UltimateGainOnAttack(1.0f),
+                                             UltimateGauge(0.0f), MaxUltimateGauge(-1.0f), UltimateGainOnAttack(1.0f),
                                              UltimateGainOnAttacked(1.0f), UltimateGainOnSecond(0.0f)
 {
 	bOutOfHealth = false;
