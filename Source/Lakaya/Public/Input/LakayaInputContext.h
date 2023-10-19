@@ -17,12 +17,12 @@ class LAKAYA_API ULakayaInputContext : public UDataAsset
 
 public:
 	/**
-	 * @brief 이 데이터 에셋의 컨텍스트를 추가합니다.
+	 * @brief 이 데이터 에셋의 컨텍스트를 추가합니다. 이미 컨텍스트가 서브 시스템에 존재하면 추가되지 않습니다.
 	 * @param InputSubsystem 컨텍스트를 추가할 대상 서브시스템입니다.
 	 */
 	FORCEINLINE void AddMappingContext(UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
 	{
-		if (ensure(IsValid(InputSubsystem)))
+		if (ensure(IsValid(InputSubsystem)) && !InputSubsystem->HasMappingContext(Context))
 		{
 			InputSubsystem->AddMappingContext(Context, Priority);
 		}
@@ -34,7 +34,7 @@ public:
 	 */
 	FORCEINLINE void RemoveMappingContext(UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
 	{
-		if (ensure(IsValid(InputSubsystem)))
+		if (ensure(IsValid(InputSubsystem)) && InputSubsystem->HasMappingContext(Context))
 		{
 			InputSubsystem->RemoveMappingContext(Context);
 		}
