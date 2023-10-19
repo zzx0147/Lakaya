@@ -377,6 +377,8 @@ private:
 	ERendererStencilMask UniqueRenderMask;
 	bool bIsAlly;
 
+	uint8 bIsPawnSettedOnce : 1;
+	
 	TWeakObjectPtr<UGamePlayHealthWidget> HealthWidget;
 	// TObjectPtr<USkillWidget> SkillWidget;
 	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;

@@ -41,6 +41,7 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	OccupationTickCount = 0;
 	CharacterName = TEXT("Rena");
 	bRecentAliveState = true;
+	bIsPawnSettedOnce = false;
 	OnPawnSet.AddUniqueDynamic(this, &ALakayaBasePlayerState::OnPawnSetCallback);
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -408,6 +409,17 @@ void ALakayaBasePlayerState::InitializeStatus()
 
 void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
 {
+	if (HasAuthority())
+	{
+		InitializeStatus();
+		Health = GetMaxHealth();
+		OnHealthChanged.Broadcast(Health);
+	}
+	
+	if(bIsPawnSettedOnce) return;
+	bIsPawnSettedOnce = true;
+	
+	
 	if (const auto OldCharacter = Cast<ALakayaBaseCharacter>(OldPawn))
 	{
 		OldCharacter->SetTeam(ETeam::None);
@@ -483,13 +495,13 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		// LakayaAttributeSet->OnMaxHealthChanged.AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetMaximumHealth);
 	}
 
-	if (HasAuthority())
-	{
-		InitializeStatus();
-		// 캐릭터가 변경된 경우 그 캐릭터에 맞는 체력으로 재설정합니다.
-		Health = GetMaxHealth();
-		OnHealthChanged.Broadcast(Health);
-	}
+	// if (HasAuthority())
+	// {
+	// 	InitializeStatus();
+	// 	// 캐릭터가 변경된 경우 그 캐릭터에 맞는 체력으로 재설정합니다.
+	// 	Health = GetMaxHealth();
+	// 	OnHealthChanged.Broadcast(Health);
+	// }
 }
 
 float ALakayaBasePlayerState::GetMaxHealth() const
