@@ -10,8 +10,22 @@ void FLakayaAbilityHandleContainer::ClearAbilities()
 	{
 		for (const auto& Handle : Handles)
 		{
+			const auto Ability = AbilitySystem->FindAbilitySpecFromHandle(Handle);
+			if (!(ensure(Ability))) continue;
+
+			// ASC의 ClearAbility에 NonInstanced 어빌리티에 대한 EndAbility 호출 처리가 없으므로, 여기서 처리합니다.
+			if (Ability->IsActive())
+			{
+				UE_LOG(LogTemp, Log, TEXT("Found active ability %s. It will be canceled and cleared."),
+				       *Ability->Ability->GetName());
+				AbilitySystem->CancelAbilityHandle(Handle);
+			}
 			AbilitySystem->ClearAbility(Handle);
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Failed to clear abilities. AbilitySystem is not valid."))
 	}
 	Handles.Empty();
 	AbilitySystem.Reset();
