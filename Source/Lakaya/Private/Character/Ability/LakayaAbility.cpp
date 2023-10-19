@@ -50,7 +50,15 @@ void ULakayaAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, con
 
 void ULakayaAbility::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
-	Log(ActorInfo, TEXT("Remove Ability"));
+	if (Spec.IsActive())
+	{
+		Log(ActorInfo, TEXT("OnRemoveAbility called on active ability. Ending ability."));
+		EndAbility(Spec.Handle, ActorInfo, Spec.ActivationInfo, false, true);
+	}
+	else
+	{
+		Log(ActorInfo, TEXT("Remove Ability"));
+	}
 	Super::OnRemoveAbility(ActorInfo, Spec);
 	BP_OnRemoveAbility(ActorInfo ? *ActorInfo : FGameplayAbilityActorInfo(), Spec);
 }
