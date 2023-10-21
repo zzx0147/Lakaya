@@ -121,9 +121,8 @@ void FProjectilePool::ServerProjectileStateChanged(ALakayaProjectile* InProjecti
 	{
 		FreeProjectiles.AddUnique(InProjectile);
 	}
-	else
+	else if (FreeProjectiles.Remove(InProjectile) != INDEX_NONE)
 	{
-		FreeProjectiles.Remove(InProjectile);
 		AddNewObject();
 	}
 }

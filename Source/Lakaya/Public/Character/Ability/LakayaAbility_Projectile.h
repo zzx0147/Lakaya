@@ -54,19 +54,28 @@ struct FProjectilePool : public FFastArraySerializer
 	GENERATED_BODY()
 
 	void Initialize(UWorld* InSpawnWorld, const FActorSpawnParameters& InActorSpawnParameters);
-	
+
 	FORCEINLINE bool IsMaximumReached() const
 	{
 		return MaxPoolSize != 0 && static_cast<uint32>(Items.Num()) >= MaxPoolSize;
 	}
-	
+
 	FORCEINLINE bool IsExtraObjectMaximumReached() const
 	{
 		return static_cast<uint32>(FreeProjectiles.Num()) >= MaxExtraObjectCount;
 	}
-	
+
+	/** 사용 가능한 투사체가 존재하는지 여부입니다. */
 	bool IsAvailable() const;
+
+	/** 새로운 투사체를 하나 추가합니다. 단 조건이 만족되는 경우에만 추가됩니다. */
 	void AddNewObject();
+
+	/**
+	 * 사용 가능한 투사체를 가져옵니다. 이 함수를 통해 투사체를 가져오더라도 풀에서 제거되는 것은 아닙니다.
+	 * ThrowProjectile 등의 함수를 통해 투사체를 사용하고 나서 다시 GetFreeProjectile을 호출하세요.
+	 * 한 스코프에서 이 함수를 반복적으로 호출한다면 모두 같은 투사체를 참조하게될 수 있습니다.
+	 */
 	ALakayaProjectile* GetFreeProjectile();
 
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
