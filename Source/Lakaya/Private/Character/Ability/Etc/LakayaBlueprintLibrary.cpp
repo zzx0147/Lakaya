@@ -21,11 +21,3 @@ ECollisionChannel ULakayaBlueprintLibrary::ConvertToCollisionChannel(const EObje
 	return UEngineTypes::ConvertToCollisionChannel(ObjectType);
 }
 
-float ULakayaBlueprintLibrary::GetRowMagnitude(const FGameplayCueParameters Param)
-{
-	Param.EffectContext.GetAbilityLevel()
-
-	
-}
-
-
