@@ -20,8 +20,6 @@ enum class EPoolNoObjectPolicy
 	RecycleOldest
 };
 
-DECLARE_DELEGATE_RetVal(class ALakayaProjectile*, FProjectileSpawnDelegate)
-
 using FFreeProjectilesArrayType = TArray<TWeakObjectPtr<ALakayaProjectile>>;
 
 USTRUCT()
