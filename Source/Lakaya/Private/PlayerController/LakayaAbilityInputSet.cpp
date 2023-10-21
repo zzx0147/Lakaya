@@ -8,6 +8,7 @@ void FLakayaInputHandle::RemoveBinding(UEnhancedInputComponent* InputComponent)
 	if (!ensure(InputComponent)) return;
 	RemoveSingleBinding(Press, InputComponent);
 	RemoveSingleBinding(Release, InputComponent);
+	RemoveSingleBinding(Canceled, InputComponent);
 }
 
 void FLakayaInputHandleContainer::RemoveBindings()
