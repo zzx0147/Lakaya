@@ -6,7 +6,7 @@
 #include "LakayaInputID.generated.h"
 
 UENUM(BlueprintType)
-enum class ELakayaAbilityInputBind
+enum class ELakayaAbilityInputBind : uint8
 {
 	Ability1 = 0 UMETA(DisplayName = "Q"),
 	Ability2 UMETA(DisplayName = "E"),
@@ -26,11 +26,11 @@ struct FLakayaInputID
 	GENERATED_BODY()
 
 	/** 어떤 키를 통해 어빌리티를 발동시킬지 지정합니다. */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ELakayaAbilityInputBind Input;
 
 	/** 입력자체는 동일하지만, 다른 InputID를 제공하기 위해 사용됩니다. */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 InputOffset;
 
 	/** 어빌리티 시스템 컴포넌트에 바인딩하기 위한 InputID값으로 변환시킵니다. */
