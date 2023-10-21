@@ -47,6 +47,11 @@ void FProjectilePoolItem::PostReplicatedAdd(const FProjectilePool& InArray)
 	BindProjectileItem(CastedArray.CreateClientProjectileStateDelegate());
 }
 
+void FProjectilePoolItem::PostReplicatedRemove(const FProjectilePool& InArray)
+{
+	InArray.FreeProjectiles.RemoveSwap(Projectile);
+}
+
 void FProjectilePool::Initialize(UWorld* InSpawnWorld, const FActorSpawnParameters& InActorSpawnParameters)
 {
 	SpawnWorld = InSpawnWorld;
@@ -54,14 +59,16 @@ void FProjectilePool::Initialize(UWorld* InSpawnWorld, const FActorSpawnParamete
 	ReFeelExtraObjects();
 }
 
-bool FProjectilePool::IsMaximumReached() const
+bool FProjectilePool::IsAvailable() const
 {
-	return MaxPoolSize != 0 && (uint32)Items.Num() >= MaxPoolSize;
-}
-
-bool FProjectilePool::IsExtraObjectMaximumReached() const
-{
-	return (uint32)FreeProjectiles.Num() >= MaxExtraObjectCount;
+	switch (NoExtraPolicy)
+	{
+	case EPoolNoObjectPolicy::ReturnNull:
+		return !FreeProjectiles.IsEmpty();
+	case EPoolNoObjectPolicy::RecycleOldest:
+		return !Items.IsEmpty();
+	default: return false;
+	}
 }
 
 void FProjectilePool::AddNewObject()
@@ -119,9 +126,8 @@ void FProjectilePool::ServerProjectileStateChanged(ALakayaProjectile* InProjecti
 	{
 		FreeProjectiles.AddUnique(InProjectile);
 	}
-	else
+	else if (FreeProjectiles.Remove(InProjectile) != INDEX_NONE)
 	{
-		FreeProjectiles.Remove(InProjectile);
 		AddNewObject();
 	}
 }
@@ -176,6 +182,17 @@ void ULakayaAbility_Projectile::OnAvatarSet(const FGameplayAbilityActorInfo* Act
 		SpawnParameters.Instigator = Cast<APawn>(ActorInfo->AvatarActor.Get());
 		ProjectilePool.Initialize(GetWorld(), SpawnParameters);
 	}
+}
+
+bool ULakayaAbility_Projectile::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
+                                                   const FGameplayAbilityActorInfo* ActorInfo,
+                                                   const FGameplayTagContainer* SourceTags,
+                                                   const FGameplayTagContainer* TargetTags,
+                                                   FGameplayTagContainer* OptionalRelevantTags) const
+{
+	// 사용 가능한 투사체가 있을 때만 어빌리티를 사용할 수 있도록 합니다.
+	return Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags)
+		&& ProjectilePool.IsAvailable();
 }
 
 void ULakayaAbility_Projectile::OnTargetDataReceived_Implementation(
