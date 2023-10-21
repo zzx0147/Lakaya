@@ -47,6 +47,11 @@ void FProjectilePoolItem::PostReplicatedAdd(const FProjectilePool& InArray)
 	BindProjectileItem(CastedArray.CreateClientProjectileStateDelegate());
 }
 
+void FProjectilePoolItem::PostReplicatedRemove(const FProjectilePool& InArray)
+{
+	InArray.FreeProjectiles.RemoveSwap(Projectile);
+}
+
 void FProjectilePool::Initialize(UWorld* InSpawnWorld, const FActorSpawnParameters& InActorSpawnParameters)
 {
 	SpawnWorld = InSpawnWorld;

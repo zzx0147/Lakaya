@@ -41,6 +41,7 @@ struct FProjectilePoolItem : public FFastArraySerializerItem
 	ALakayaProjectile* Projectile;
 
 	void PostReplicatedAdd(const struct FProjectilePool& InArray);
+	void PostReplicatedRemove(const struct FProjectilePool& InArray);
 
 private:
 	FDelegateHandle OnProjectileStateChangedHandle;
@@ -142,7 +143,7 @@ private:
 	FActorSpawnParameters ActorSpawnParameters;
 
 	/** Collapsed로 전환되어 언제든 사용할 수 있는 투사체들이 여기에 보관됩니다. */
-	FFreeProjectilesArrayType FreeProjectiles;
+	mutable FFreeProjectilesArrayType FreeProjectiles;
 
 	friend struct FProjectilePoolItem;
 	friend class ULakayaAbility_Projectile;
