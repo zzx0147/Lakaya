@@ -17,5 +17,5 @@ class LAKAYA_API ULakayaAbility_GangrimAttack : public ULakayaAbility
 
 protected:
 	UFUNCTION(BlueprintCallable)
-	FVector GetOverlappedPoint(class UPrimitiveComponent* TargetComp, AActor* TargetActor);
+	FHitResult K2_ComponentSweepMulti(UPrimitiveComponent* TargetComp, AActor* TargetActor);
 };
