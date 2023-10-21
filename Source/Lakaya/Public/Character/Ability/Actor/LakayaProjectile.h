@@ -214,14 +214,6 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SetProjectileStateCollapsed();
 
-	//TODO: 추후 블루프린트 라이브러리를 만들어서 옮겨야 합니다.
-	UFUNCTION(BlueprintCallable)
-	static void SetSourceObject(FGameplayEffectContextHandle EffectContext, const UObject* SourceObject);
-
-	//TODO: 추후 블루프린트 라이브러리를 만들어서 옮겨야 합니다.
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static ECollisionChannel ConvertToCollisionChannel(const EObjectTypeQuery& ObjectType);
-
 	UFUNCTION(BlueprintNativeEvent)
 	void OnStartPathPrediction(const FProjectileThrowData& InThrowData);
 
