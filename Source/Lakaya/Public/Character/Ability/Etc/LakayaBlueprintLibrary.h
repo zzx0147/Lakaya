@@ -25,4 +25,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static ECollisionChannel ConvertToCollisionChannel(const EObjectTypeQuery& ObjectType);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static float GetRowMagnitude(const FGameplayCueParameters Param);
 };

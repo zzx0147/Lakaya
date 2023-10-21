@@ -60,3 +60,17 @@ float ULakayaAbility_Immunity::GetSetByCallerMagnitude(const FGameplayEffectSpec
 {
 	return Spec.GetSetByCallerMagnitude(DataTag,WarnIfNotFound,DefaultIfNotFound);
 }
+
+bool ULakayaAbility_Immunity::GetModifiedAttributeValue(const FGameplayEffectSpec& Spec, FGameplayAttribute TargetAttribute, float& OutMagnitude)
+{
+	OutMagnitude = 0.0f;
+	for(int i = 0 ; i < Spec.Def->Modifiers.Num(); ++i)
+	{
+		if(Spec.Def->Modifiers[i].Attribute == TargetAttribute)
+		{
+			Spec.Def->Modifiers[i].ModifierMagnitude.AttemptCalculateMagnitude(Spec,OutMagnitude);
+			return true;
+		}
+	}
+	return false;
+}
