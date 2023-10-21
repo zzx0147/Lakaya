@@ -13,7 +13,7 @@
 #include "UI/GamePlayKillLogWidget.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
-#include "UI/HUDMinimapWidget.h"
+#include "UI/OverlayMinimapWidget.h"
 #include "UI/LoadingWidget.h"
 #include "UI/PlayerNameDisplayerWidget.h"
 

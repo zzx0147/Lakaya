@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "TabMinimapWidget.h"
-#include "IndividualTabMinimapWidget.generated.h"
+#include "TabIndividualMinimapWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API UIndividualTabMinimapWidget : public UTabMinimapWidget
+class LAKAYA_API UTabIndividualMinimapWidget : public UTabMinimapWidget
 {
 	GENERATED_BODY()
 

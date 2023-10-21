@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "TabMinimapWidget.h"
 #include "Occupation/Team.h"
-#include "OccupationTabMinimapWidget.generated.h"
+#include "TabOccupationMinimapWidget.generated.h"
 
 // TODO : 팀전에서 공용으로 사용되는 OccupationMinimapWidget을 만들어서 관리해야 합니다.
 // TODO : 후에 미니맵상에 표시되는 아이콘이 캐릭터와 팀에 따라서 달라집니다.
@@ -13,7 +13,7 @@
  * 
  */
 UCLASS()
-class LAKAYA_API UOccupationTabMinimapWidget : public UTabMinimapWidget
+class LAKAYA_API UTabOccupationMinimapWidget : public UTabMinimapWidget
 {
 	GENERATED_BODY()
 

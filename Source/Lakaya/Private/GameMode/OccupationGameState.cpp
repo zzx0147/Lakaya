@@ -16,7 +16,7 @@
 #include "UI/GameTimeWidget.h"
 #include "UI/MatchStartWaitWidget.h"
 #include "UI/OccupationCharacterSelectWidget.h"
-#include "UI/HUDOccupationMinimapWidget.h"
+#include "UI/OverlayOccupationMinimapWidget.h"
 #include "UI/StartMessageWidget.h"
 #include "UI/TeamScoreWidget.h"
 #include "UI/WeaponOutLineWidget.h"
@@ -62,8 +62,8 @@ AOccupationGameState::AOccupationGameState(): MatchResult()
 	ResultShortcutContext = ResultContextFinder.Object;
 	ResultSwitchingAction = ResultSwitchActionFinder.Object;
 
-	HUDMinimapWidgetClass = UHUDOccupationMinimapWidget::StaticClass();
-	TabMinimapWidgetClass = UOccupationTabMinimapWidget::StaticClass();
+	HUDMinimapWidgetClass = UOverlayOccupationMinimapWidget::StaticClass();
+	TabMinimapWidgetClass = UTabOccupationMinimapWidget::StaticClass();
 }
 
 void AOccupationGameState::BeginPlay()
@@ -154,7 +154,7 @@ void AOccupationGameState::BeginPlay()
 
 		if (HUDMinimapWidgetClass)
 		{
-			HUDMinimapWidget = CreateWidget<UHUDOccupationMinimapWidget>(
+			HUDMinimapWidget = CreateWidget<UOverlayOccupationMinimapWidget>(
 				LocalController, HUDMinimapWidgetClass);
 			if (HUDMinimapWidget)
 			{
@@ -165,7 +165,7 @@ void AOccupationGameState::BeginPlay()
 
 		if (TabMinimapWidgetClass)
 		{
-			TabMinimapWidget = CreateWidget<UOccupationTabMinimapWidget>(
+			TabMinimapWidget = CreateWidget<UTabOccupationMinimapWidget>(
 				LocalController, TabMinimapWidgetClass);
 			if (TabMinimapWidget)
 			{
