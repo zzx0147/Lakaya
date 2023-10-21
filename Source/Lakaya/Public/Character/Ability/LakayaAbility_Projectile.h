@@ -54,8 +54,18 @@ struct FProjectilePool : public FFastArraySerializer
 	GENERATED_BODY()
 
 	void Initialize(UWorld* InSpawnWorld, const FActorSpawnParameters& InActorSpawnParameters);
-	bool IsMaximumReached() const;
-	bool IsExtraObjectMaximumReached() const;
+	
+	FORCEINLINE bool IsMaximumReached() const
+	{
+		return MaxPoolSize != 0 && static_cast<uint32>(Items.Num()) >= MaxPoolSize;
+	}
+	
+	FORCEINLINE bool IsExtraObjectMaximumReached() const
+	{
+		return static_cast<uint32>(FreeProjectiles.Num()) >= MaxExtraObjectCount;
+	}
+	
+	bool IsAvailable() const;
 	void AddNewObject();
 	ALakayaProjectile* GetFreeProjectile();
 
@@ -126,6 +136,7 @@ private:
 	FFreeProjectilesArrayType FreeProjectiles;
 
 	friend struct FProjectilePoolItem;
+	friend class ULakayaAbility_Projectile;
 };
 
 template <>
@@ -148,6 +159,9 @@ class LAKAYA_API ULakayaAbility_Projectile : public ULakayaAbility
 public:
 	ULakayaAbility_Projectile();
 	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	                                const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags,
+	                                FGameplayTagContainer* OptionalRelevantTags) const override;
 
 protected:
 	virtual void OnTargetDataReceived_Implementation(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
