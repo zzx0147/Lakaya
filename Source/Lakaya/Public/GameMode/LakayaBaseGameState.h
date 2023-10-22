@@ -190,7 +190,7 @@ protected:
 
 	// 인게임도중 좌측상단에 띄워지는 미니맵 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UHUDMinimapWidget> HUDMinimapWidgetClass;
+	TSubclassOf<class UOverlayMinimapWidget> HUDMinimapWidgetClass;
 
 	// 인게임 도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
@@ -221,7 +221,7 @@ protected:
 	TWeakObjectPtr<AOutlineManager> OutlineManager;
 
 	// 인게임도중 좌측상단에 띄워지는 미니맵 위젯입니다.
-	TObjectPtr<UHUDMinimapWidget> HUDMinimapWidget;
+	TObjectPtr<UOverlayMinimapWidget> HUDMinimapWidget;
 
 	// 인게임 도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯입니다.
 	TObjectPtr<UTabMinimapWidget> TabMinimapWidget;
