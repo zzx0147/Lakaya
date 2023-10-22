@@ -46,6 +46,7 @@ void FProjectilePoolItem::PostReplicatedAdd(const FProjectilePool& InArray)
 {
 	if (!BindProjectileItem(InArray.CreateClientProjectileStateDelegate()))
 	{
+		UE_LOG(LogTemp, Log, TEXT("Failed to bind projectile item. It will be bound later."));
 		InArray.PendingBindItems.Emplace(this);
 	}
 }
@@ -53,6 +54,7 @@ void FProjectilePoolItem::PostReplicatedAdd(const FProjectilePool& InArray)
 void FProjectilePoolItem::PreReplicatedRemove(const FProjectilePool& InArray)
 {
 	InArray.FreeProjectiles.RemoveSwap(Projectile);
+	InArray.PendingBindItems.RemoveSwap(this);
 }
 
 void FProjectilePool::Initialize(UWorld* InSpawnWorld, const FActorSpawnParameters& InActorSpawnParameters)
@@ -60,18 +62,6 @@ void FProjectilePool::Initialize(UWorld* InSpawnWorld, const FActorSpawnParamete
 	SpawnWorld = InSpawnWorld;
 	ActorSpawnParameters = InActorSpawnParameters;
 	ReFeelExtraObjects();
-}
-
-bool FProjectilePool::IsAvailable() const
-{
-	switch (NoExtraPolicy)
-	{
-	case EPoolNoObjectPolicy::ReturnNull:
-		return !FreeProjectiles.IsEmpty();
-	case EPoolNoObjectPolicy::RecycleOldest:
-		return !Items.IsEmpty();
-	default: return false;
-	}
 }
 
 void FProjectilePool::AddNewObject()
@@ -114,6 +104,25 @@ void FProjectilePool::ReFeelExtraObjects()
 	}
 }
 
+bool FProjectilePool::BindPendingItems() const
+{
+	TArray<FProjectilePoolItem*> BoundItems;
+	BoundItems.Reserve(PendingBindItems.Num());
+
+	const auto predicate = [Delegate = CreateClientProjectileStateDelegate()](FProjectilePoolItem* Item)
+	{
+		return Item->BindProjectileItem(Delegate);
+	};
+	Algo::CopyIf(PendingBindItems, BoundItems, predicate);
+
+	for (const auto& Item : BoundItems)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Pending bind %s has bounded."), *Item->Projectile->GetName());
+		PendingBindItems.RemoveSwap(Item);
+	}
+	return !BoundItems.IsEmpty();
+}
+
 void FProjectilePool::ClientProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
                                                    const FProjectileState& NewState) const
 {
@@ -147,9 +156,8 @@ ALakayaProjectile* FProjectilePool::GetFreeProjectile()
 
 	ALakayaProjectile* Projectile = nullptr;
 
-	if (FreeProjectiles.IsEmpty())
+	if (HasFreeProjectile())
 	{
-		// 투사체는 실제로 투사체가 사용되기 시작할 때 생성되며 여기에서 생성하지 않습니다.
 		if (NoExtraPolicy == EPoolNoObjectPolicy::RecycleOldest)
 		{
 			// 로컬 클라이언트에서 예측적으로 동작하는 것일 수도 있으므로 여기에서 투사체를 Collapse 시키지는 않습니다.
