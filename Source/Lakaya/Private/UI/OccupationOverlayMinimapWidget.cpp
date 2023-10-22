@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/HUDOccupationMinimapWidget.h"
+#include "UI/OccupationOverlayMinimapWidget.h"
 
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
 
-void UHUDOccupationMinimapWidget::NativeConstruct()
+void UOccupationOverlayMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
@@ -22,18 +22,18 @@ void UHUDOccupationMinimapWidget::NativeConstruct()
 	WidgetOffset = FVector2D(125.0f, 127.5f);
 }
 
-void UHUDOccupationMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 }
 
-FVector2d UHUDOccupationMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
+FVector2d UOccupationOverlayMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
 	const FVector2D& MiniMapSize)
 {
 	return Super::ConvertWorldToMiniMapCoordinates(PlayerLocation, MiniMapSize);
 }
 
-UImage* UHUDOccupationMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
+UImage* UOccupationOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
 {
 	UImage* PlayerImage = NewObject<UImage>(this);
 	const auto Team = NewTeam == ETeam::Anti ? ETeam::Anti : ETeam::Pro;
@@ -77,7 +77,7 @@ UImage* UHUDOccupationMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 	return nullptr;
 }
 
-void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
+void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 {
 	Super::UpdatePlayerPosition(Team);
 	
@@ -169,7 +169,7 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 	}
 }
 
-void UHUDOccupationMinimapWidget::SetEnemyImage() const
+void UOccupationOverlayMinimapWidget::SetEnemyImage() const
 {
 	for (const auto& Enemy : PlayersByMinimap[CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti])
 	{
@@ -178,7 +178,7 @@ void UHUDOccupationMinimapWidget::SetEnemyImage() const
 	}
 }
 
-void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
+void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
                                                        const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
 {
 #pragma region NullCheck
@@ -196,7 +196,7 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	}
 #pragma endregion
 	const FVector2D PlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
-	const FVector2D NewPlayerPosition = const_cast<UHUDOccupationMinimapWidget*>(this)->ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
+	const FVector2D NewPlayerPosition = const_cast<UOccupationOverlayMinimapWidget*>(this)->ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
 
 	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
 	{
@@ -232,7 +232,7 @@ void UHUDOccupationMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	}, 0.1f, false);
 }
 
-void UHUDOccupationMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
+void UOccupationOverlayMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
 	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
 {
 	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
@@ -252,7 +252,7 @@ void UHUDOccupationMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
 		EnemyImage->SetVisibility(ESlateVisibility::Hidden);
 }
 
-void UHUDOccupationMinimapWidget::UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState,
+void UOccupationOverlayMinimapWidget::UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState,
                                                                         const FVector2D NewPosition) const
 {
 	Super::UpdateMinimapImagePositionAndRotation(NewPlayerState, NewPosition);

@@ -20,3 +20,4 @@ ECollisionChannel ULakayaBlueprintLibrary::ConvertToCollisionChannel(const EObje
 {
 	return UEngineTypes::ConvertToCollisionChannel(ObjectType);
 }
+

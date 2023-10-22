@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "MiniMapWidget.h"
 #include "Components/RetainerBox.h"
-#include "HUDMinimapWidget.generated.h"
+#include "OverlayMinimapWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API UHUDMinimapWidget : public UMinimapWidget
+class LAKAYA_API UOverlayMinimapWidget : public UMinimapWidget
 {
 	GENERATED_BODY()
 

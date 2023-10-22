@@ -20,8 +20,6 @@ enum class EPoolNoObjectPolicy
 	RecycleOldest
 };
 
-DECLARE_DELEGATE_RetVal(class ALakayaProjectile*, FProjectileSpawnDelegate)
-
 using FFreeProjectilesArrayType = TArray<TWeakObjectPtr<ALakayaProjectile>>;
 
 USTRUCT()
@@ -43,6 +41,7 @@ struct FProjectilePoolItem : public FFastArraySerializerItem
 	ALakayaProjectile* Projectile;
 
 	void PostReplicatedAdd(const struct FProjectilePool& InArray);
+	void PostReplicatedRemove(const struct FProjectilePool& InArray);
 
 private:
 	FDelegateHandle OnProjectileStateChangedHandle;
@@ -56,9 +55,28 @@ struct FProjectilePool : public FFastArraySerializer
 	GENERATED_BODY()
 
 	void Initialize(UWorld* InSpawnWorld, const FActorSpawnParameters& InActorSpawnParameters);
-	bool IsMaximumReached() const;
-	bool IsExtraObjectMaximumReached() const;
+
+	FORCEINLINE bool IsMaximumReached() const
+	{
+		return MaxPoolSize != 0 && static_cast<uint32>(Items.Num()) >= MaxPoolSize;
+	}
+
+	FORCEINLINE bool IsExtraObjectMaximumReached() const
+	{
+		return static_cast<uint32>(FreeProjectiles.Num()) >= MaxExtraObjectCount;
+	}
+
+	/** 사용 가능한 투사체가 존재하는지 여부입니다. */
+	bool IsAvailable() const;
+
+	/** 새로운 투사체를 하나 추가합니다. 단 조건이 만족되는 경우에만 추가됩니다. */
 	void AddNewObject();
+
+	/**
+	 * 사용 가능한 투사체를 가져옵니다. 이 함수를 통해 투사체를 가져오더라도 풀에서 제거되는 것은 아닙니다.
+	 * ThrowProjectile 등의 함수를 통해 투사체를 사용하고 나서 다시 GetFreeProjectile을 호출하세요.
+	 * 한 스코프에서 이 함수를 반복적으로 호출한다면 모두 같은 투사체를 참조하게될 수 있습니다.
+	 */
 	ALakayaProjectile* GetFreeProjectile();
 
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
@@ -125,9 +143,10 @@ private:
 	FActorSpawnParameters ActorSpawnParameters;
 
 	/** Collapsed로 전환되어 언제든 사용할 수 있는 투사체들이 여기에 보관됩니다. */
-	FFreeProjectilesArrayType FreeProjectiles;
+	mutable FFreeProjectilesArrayType FreeProjectiles;
 
 	friend struct FProjectilePoolItem;
+	friend class ULakayaAbility_Projectile;
 };
 
 template <>
@@ -150,6 +169,9 @@ class LAKAYA_API ULakayaAbility_Projectile : public ULakayaAbility
 public:
 	ULakayaAbility_Projectile();
 	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	                                const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags,
+	                                FGameplayTagContainer* OptionalRelevantTags) const override;
 
 protected:
 	virtual void OnTargetDataReceived_Implementation(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
