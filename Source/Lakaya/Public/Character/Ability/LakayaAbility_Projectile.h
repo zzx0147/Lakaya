@@ -41,7 +41,7 @@ struct FProjectilePoolItem : public FFastArraySerializerItem
 	ALakayaProjectile* Projectile;
 
 	void PostReplicatedAdd(const struct FProjectilePool& InArray);
-	void PostReplicatedRemove(const struct FProjectilePool& InArray);
+	void PreReplicatedRemove(const struct FProjectilePool& InArray);
 
 private:
 	FDelegateHandle OnProjectileStateChangedHandle;

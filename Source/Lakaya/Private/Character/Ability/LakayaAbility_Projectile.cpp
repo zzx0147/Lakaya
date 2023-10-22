@@ -48,7 +48,7 @@ void FProjectilePoolItem::PostReplicatedAdd(const FProjectilePool& InArray)
 	BindProjectileItem(CastedArray.CreateClientProjectileStateDelegate());
 }
 
-void FProjectilePoolItem::PostReplicatedRemove(const FProjectilePool& InArray)
+void FProjectilePoolItem::PreReplicatedRemove(const FProjectilePool& InArray)
 {
 	InArray.FreeProjectiles.RemoveSwap(Projectile);
 }
