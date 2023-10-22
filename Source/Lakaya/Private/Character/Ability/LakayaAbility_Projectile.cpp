@@ -284,7 +284,7 @@ void ULakayaAbility_Projectile::OnTargetDataReceived_Implementation(
 FGameplayAbilityTargetDataHandle ULakayaAbility_Projectile::MakeTargetData_Implementation()
 {
 	const auto NewProjectile = ProjectilePool.GetFreeProjectile();
-	if (ensure(IsValid(NewProjectile)))
+	if (!ensure(IsValid(NewProjectile)))
 	{
 		//TODO: 일단 크래시가 발생하지는 않도록 임시조치를 진행했습니다.
 		return {};
