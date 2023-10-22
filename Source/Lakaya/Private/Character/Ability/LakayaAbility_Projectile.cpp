@@ -17,7 +17,8 @@ FProjectilePoolItem::FProjectilePoolItem(ALakayaProjectile* InProjectile,
 
 void FProjectilePoolItem::BindProjectileItem(const FProjectileStateChanged::FDelegate& Delegate)
 {
-	if (!ensure(Projectile && Delegate.IsBound()))
+	check(Delegate.IsBound())
+	if (!ensure(IsValid(Projectile)))
 	{
 		return;
 	}
@@ -90,11 +91,9 @@ FProjectilePool::~FProjectilePool()
 void FProjectilePool::InternalAddNewObject()
 {
 	const auto Instance = SpawnWorld->SpawnActor<ALakayaProjectile>(ProjectileClass, ActorSpawnParameters);
-	if (!ensure(Instance))
-	{
-		return;
-	}
+	check(Instance)
 	Instance->SetReplicates(true);
+	OnProjectileSpawned.Broadcast(Instance);
 
 	auto& Item = Items[Items.Emplace(Instance, CreateServerProjectileStateDelegate())];
 	MarkItemDirty(Item);
@@ -163,12 +162,71 @@ ALakayaProjectile* FProjectilePool::GetFreeProjectile()
 	return Projectile;
 }
 
+bool FProjectilePool::RemoveProjectile(ALakayaProjectile* Projectile)
+{
+	if (Projectile && Items.RemoveSwap(Projectile) != INDEX_NONE)
+	{
+		MarkArrayDirty();
+		FreeProjectiles.RemoveSwap(Projectile);
+		if (Projectile->IsPendingKillPending())
+		{
+			OnPreProjectileDestroy.Broadcast(Projectile);
+			Projectile->Destroy();
+		}
+		AddNewObject();
+		return true;
+	}
+	return false;
+}
+
+void FProjectilePool::ClearProjectilePool()
+{
+	//TODO: 이 스코프 내에서 AddNewObject나 RemoveProjectile이 호출되면 문제가 발생합니다. ScopedListLock을 구현해야할 수 있습니다.
+	for (auto&& Item : Items)
+	{
+		Item.UnbindProjectileItem();
+		if (Item.Projectile && Item.Projectile->IsPendingKillPending())
+		{
+			OnPreProjectileDestroy.Broadcast(Item.Projectile);
+			Item.Projectile->Destroy();
+		}
+	}
+	Items.Empty();
+	FreeProjectiles.Empty();
+	MarkArrayDirty();
+}
+
+void FProjectilePool::SetInstigator(APawn* Instigator)
+{
+	ActorSpawnParameters.Instigator = Instigator;
+	for (auto&& Item : Items)
+	{
+		Item.Projectile->SetInstigator(Instigator);
+	}
+}
+
 ULakayaAbility_Projectile::ULakayaAbility_Projectile(): ProjectilePool()
 {
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ClientOrServer;
+
+	ProjectilePool.OnProjectileSpawned.AddUniqueDynamic(this, &ThisClass::OnProjectileSpawned);
+	ProjectilePool.OnPreProjectileDestroy.AddUniqueDynamic(this, &ThisClass::OnPreProjectileDestroy);
+}
+
+void ULakayaAbility_Projectile::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo,
+                                              const FGameplayAbilitySpec& Spec)
+{
+	Super::OnGiveAbility(ActorInfo, Spec);
+	if (ActorInfo->IsNetAuthority())
+	{
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.Owner = ActorInfo->OwnerActor.Get();
+		SpawnParameters.Instigator = Cast<APawn>(ActorInfo->AvatarActor);
+		ProjectilePool.Initialize(GetWorld(), SpawnParameters);
+	}
 }
 
 void ULakayaAbility_Projectile::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo,
@@ -177,10 +235,17 @@ void ULakayaAbility_Projectile::OnAvatarSet(const FGameplayAbilityActorInfo* Act
 	Super::OnAvatarSet(ActorInfo, Spec);
 	if (ActorInfo->IsNetAuthority())
 	{
-		FActorSpawnParameters SpawnParameters;
-		SpawnParameters.Owner = ActorInfo->OwnerActor.Get();
-		SpawnParameters.Instigator = Cast<APawn>(ActorInfo->AvatarActor.Get());
-		ProjectilePool.Initialize(GetWorld(), SpawnParameters);
+		ProjectilePool.SetInstigator(Cast<APawn>(ActorInfo->AvatarActor));
+	}
+}
+
+void ULakayaAbility_Projectile::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo,
+                                                const FGameplayAbilitySpec& Spec)
+{
+	Super::OnRemoveAbility(ActorInfo, Spec);
+	if (ActorInfo->IsNetAuthority())
+	{
+		ProjectilePool.ClearProjectilePool();
 	}
 }
 
@@ -220,7 +285,11 @@ void ULakayaAbility_Projectile::OnTargetDataReceived_Implementation(
 FGameplayAbilityTargetDataHandle ULakayaAbility_Projectile::MakeTargetData_Implementation()
 {
 	const auto NewProjectile = ProjectilePool.GetFreeProjectile();
-	check(IsValid(NewProjectile))
+	if (!ensure(IsValid(NewProjectile)))
+	{
+		//TODO: 일단 크래시가 발생하지는 않도록 임시조치를 진행했습니다.
+		return {};
+	}
 
 	FVector ThrowLocation, ThrowDirection;
 	MakeProjectileThrowLocation(ThrowLocation, ThrowDirection);
@@ -234,6 +303,24 @@ FGameplayAbilityTargetDataHandle ULakayaAbility_Projectile::MakeTargetData_Imple
 
 	FGameplayAbilityTargetDataHandle TargetDataHandle(TargetData);
 	return TargetDataHandle;
+}
+
+void ULakayaAbility_Projectile::OnProjectileSpawned(ALakayaProjectile* Projectile)
+{
+	BP_Log(FString::Printf(TEXT("%s Spawned"), *Projectile->GetName()));
+	Projectile->OnDestroyed.AddUniqueDynamic(this, &ThisClass::OnProjectileDestroyed);
+}
+
+void ULakayaAbility_Projectile::OnPreProjectileDestroy(ALakayaProjectile* Projectile)
+{
+	// 풀 내부에서 삭제하는 투사체에 대해서는 OnProjectileDestroyed가 호출되지 않도록 합니다.
+	Projectile->OnDestroyed.RemoveAll(this);
+}
+
+void ULakayaAbility_Projectile::OnProjectileDestroyed(AActor* Projectile)
+{
+	BP_Log(FString::Printf(TEXT("%s external destroyed!"), Projectile ? *Projectile->GetName() : TEXT("")));
+	ProjectilePool.RemoveProjectile(Cast<ALakayaProjectile>(Projectile));
 }
 
 void ULakayaAbility_Projectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
