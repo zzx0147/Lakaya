@@ -33,7 +33,7 @@ struct FProjectilePoolItem : public FFastArraySerializerItem
 
 	bool operator==(const FProjectilePoolItem& Other) const { return Projectile == Other.Projectile; }
 
-	void BindProjectileItem(const FProjectileStateChanged::FDelegate& Delegate);
+	bool BindProjectileItem(const FProjectileStateChanged::FDelegate& Delegate);
 
 	void UnbindProjectileItem();
 
@@ -108,24 +108,18 @@ private:
 	void InternalAddNewObject();
 	void ReFeelExtraObjects();
 
-	FORCEINLINE auto CreateProjectileStateDelegate(
-		const FProjectileStateChanged::FDelegate::TMethodPtr<FProjectilePool>& MemberFunction)
+	FORCEINLINE auto CreateClientProjectileStateDelegate() const
 	{
-		return FProjectileStateChanged::FDelegate::CreateRaw(this, MemberFunction);
-	}
-
-	FORCEINLINE auto CreateClientProjectileStateDelegate()
-	{
-		return CreateProjectileStateDelegate(&FProjectilePool::ClientProjectileStateChanged);
+		return FProjectileStateChanged::FDelegate::CreateRaw(this, &FProjectilePool::ClientProjectileStateChanged);
 	}
 
 	FORCEINLINE auto CreateServerProjectileStateDelegate()
 	{
-		return CreateProjectileStateDelegate(&FProjectilePool::ServerProjectileStateChanged);
+		return FProjectileStateChanged::FDelegate::CreateRaw(this, &FProjectilePool::ServerProjectileStateChanged);
 	}
 
 	void ClientProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
-	                                  const FProjectileState& NewState);
+	                                  const FProjectileState& NewState) const;
 	void ServerProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
 	                                  const FProjectileState& NewState);
 
@@ -162,6 +156,9 @@ private:
 
 	/** Collapsed로 전환되어 언제든 사용할 수 있는 투사체들이 여기에 보관됩니다. */
 	mutable FFreeProjectilesArrayType FreeProjectiles;
+
+	/** 클라이언트로 리플리케이트 되었지만 아직 액터가 리플리케이트되지 않아 바인딩이 필요한 아이템들입니다. */
+	mutable TArray<FProjectilePoolItem*> PendingBindItems;
 
 	friend struct FProjectilePoolItem;
 	friend class ULakayaAbility_Projectile;

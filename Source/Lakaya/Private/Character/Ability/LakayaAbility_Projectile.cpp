@@ -15,18 +15,19 @@ FProjectilePoolItem::FProjectilePoolItem(ALakayaProjectile* InProjectile,
 	BindProjectileItem(Delegate);
 }
 
-void FProjectilePoolItem::BindProjectileItem(const FProjectileStateChanged::FDelegate& Delegate)
+bool FProjectilePoolItem::BindProjectileItem(const FProjectileStateChanged::FDelegate& Delegate)
 {
 	check(Delegate.IsBound())
-	if (!ensure(IsValid(Projectile)))
+	if (!IsValid(Projectile))
 	{
-		return;
+		return false;
 	}
 
 	OnProjectileStateChangedHandle = Projectile->OnProjectileStateChanged.Add(Delegate);
 
 	// Execute for initial state
 	Delegate.Execute(Projectile, {}, Projectile->GetProjectileState());
+	return true;
 }
 
 void FProjectilePoolItem::UnbindProjectileItem()
@@ -43,9 +44,10 @@ void FProjectilePoolItem::UnbindProjectileItem()
 
 void FProjectilePoolItem::PostReplicatedAdd(const FProjectilePool& InArray)
 {
-	// We does not modify 'Items' so It's safe to cast away const.
-	auto& CastedArray = const_cast<FProjectilePool&>(InArray);
-	BindProjectileItem(CastedArray.CreateClientProjectileStateDelegate());
+	if (!BindProjectileItem(InArray.CreateClientProjectileStateDelegate()))
+	{
+		InArray.PendingBindItems.Emplace(this);
+	}
 }
 
 void FProjectilePoolItem::PreReplicatedRemove(const FProjectilePool& InArray)
@@ -113,7 +115,7 @@ void FProjectilePool::ReFeelExtraObjects()
 }
 
 void FProjectilePool::ClientProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
-                                                   const FProjectileState& NewState)
+                                                   const FProjectileState& NewState) const
 {
 	NewState.IsCollapsed() ? FreeProjectiles.AddUnique(InProjectile) : FreeProjectiles.Remove(InProjectile);
 }
