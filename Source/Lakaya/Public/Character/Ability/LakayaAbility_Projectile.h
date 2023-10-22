@@ -49,6 +49,8 @@ private:
 	friend struct FProjectilePool;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FProjectilePoolProjectileEventSignature, ALakayaProjectile*, Projectile);
+
 USTRUCT()
 struct FProjectilePool : public FFastArraySerializer
 {
@@ -78,6 +80,22 @@ struct FProjectilePool : public FFastArraySerializer
 	 * 한 스코프에서 이 함수를 반복적으로 호출한다면 모두 같은 투사체를 참조하게될 수 있습니다.
 	 */
 	ALakayaProjectile* GetFreeProjectile();
+
+	/** 지정한 투사체가 존재하는 경우 제거하고 새로 하나를 스폰합니다. */
+	bool RemoveProjectile(ALakayaProjectile* Projectile);
+
+	/** 모든 투사체를 제거합니다. 다시 Initialize를 호출하기 전까지 투사체 풀은 아무 것도 하지 않습니다. */
+	void ClearProjectilePool();
+
+	void SetInstigator(APawn* Instigator);
+
+	/** 투사체가 스폰되고 난 직후 호출되는 이벤트입니다. */
+	UPROPERTY(BlueprintAssignable, NotReplicated)
+	FProjectilePoolProjectileEventSignature OnProjectileSpawned;
+
+	/** 투사체가 풀 내부에서 Destroy시키기 직전에 호출됩니다. */
+	UPROPERTY(BlueprintAssignable, NotReplicated)
+	FProjectilePoolProjectileEventSignature OnPreProjectileDestroy;
 
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
 	{
@@ -168,7 +186,9 @@ class LAKAYA_API ULakayaAbility_Projectile : public ULakayaAbility
 
 public:
 	ULakayaAbility_Projectile();
+	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	                                const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags,
 	                                FGameplayTagContainer* OptionalRelevantTags) const override;
@@ -183,6 +203,15 @@ protected:
 
 	void MakeProjectileThrowLocation_Implementation(FVector& OutLocation, FVector& OutDirection)
 	PURE_VIRTUAL(&ThisClass::MakeProjectileThrowLocation_Implementation,)
+
+	UFUNCTION()
+	virtual void OnProjectileSpawned(ALakayaProjectile* Projectile);
+
+	UFUNCTION()
+	virtual void OnPreProjectileDestroy(ALakayaProjectile* Projectile);
+
+	UFUNCTION()
+	virtual void OnProjectileDestroyed(AActor* Projectile);
 
 private:
 	UPROPERTY(Replicated, EditAnywhere)
