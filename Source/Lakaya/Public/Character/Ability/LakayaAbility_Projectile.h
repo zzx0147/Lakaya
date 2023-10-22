@@ -33,7 +33,11 @@ struct FProjectilePoolItem : public FFastArraySerializerItem
 
 	bool operator==(const FProjectilePoolItem& Other) const { return Projectile == Other.Projectile; }
 
-	void BindProjectileItem(const FProjectileStateChanged::FDelegate& Delegate);
+	/**
+	 * 풀을 셋업하기 위해 투사체의 이벤트에 바인딩합니다.
+	 * @return 바인딩에 성공하면 true를 반환합니다.
+	 */
+	bool BindProjectileItem(const FProjectileStateChanged::FDelegate& Delegate);
 
 	void UnbindProjectileItem();
 
@@ -41,7 +45,7 @@ struct FProjectilePoolItem : public FFastArraySerializerItem
 	ALakayaProjectile* Projectile;
 
 	void PostReplicatedAdd(const struct FProjectilePool& InArray);
-	void PostReplicatedRemove(const struct FProjectilePool& InArray);
+	void PreReplicatedRemove(const struct FProjectilePool& InArray);
 
 private:
 	FDelegateHandle OnProjectileStateChangedHandle;
@@ -69,7 +73,16 @@ struct FProjectilePool : public FFastArraySerializer
 	}
 
 	/** 사용 가능한 투사체가 존재하는지 여부입니다. */
-	bool IsAvailable() const;
+	FORCEINLINE bool IsAvailable() const
+	{
+		return HasFreeProjectile() || (NoExtraPolicy == EPoolNoObjectPolicy::RecycleOldest && !Items.IsEmpty());
+	}
+
+	/** Collapsed 상태의 투사체가 존재하는지 여부입니다. */
+	FORCEINLINE bool HasFreeProjectile() const
+	{
+		return !FreeProjectiles.IsEmpty() || (BindPendingItems() && !FreeProjectiles.IsEmpty());
+	}
 
 	/** 새로운 투사체를 하나 추가합니다. 단 조건이 만족되는 경우에만 추가됩니다. */
 	void AddNewObject();
@@ -107,25 +120,20 @@ struct FProjectilePool : public FFastArraySerializer
 private:
 	void InternalAddNewObject();
 	void ReFeelExtraObjects();
+	bool BindPendingItems() const;
 
-	FORCEINLINE auto CreateProjectileStateDelegate(
-		const FProjectileStateChanged::FDelegate::TMethodPtr<FProjectilePool>& MemberFunction)
+	FORCEINLINE auto CreateClientProjectileStateDelegate() const
 	{
-		return FProjectileStateChanged::FDelegate::CreateRaw(this, MemberFunction);
-	}
-
-	FORCEINLINE auto CreateClientProjectileStateDelegate()
-	{
-		return CreateProjectileStateDelegate(&FProjectilePool::ClientProjectileStateChanged);
+		return FProjectileStateChanged::FDelegate::CreateRaw(this, &FProjectilePool::ClientProjectileStateChanged);
 	}
 
 	FORCEINLINE auto CreateServerProjectileStateDelegate()
 	{
-		return CreateProjectileStateDelegate(&FProjectilePool::ServerProjectileStateChanged);
+		return FProjectileStateChanged::FDelegate::CreateRaw(this, &FProjectilePool::ServerProjectileStateChanged);
 	}
 
 	void ClientProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
-	                                  const FProjectileState& NewState);
+	                                  const FProjectileState& NewState) const;
 	void ServerProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
 	                                  const FProjectileState& NewState);
 
@@ -162,6 +170,9 @@ private:
 
 	/** Collapsed로 전환되어 언제든 사용할 수 있는 투사체들이 여기에 보관됩니다. */
 	mutable FFreeProjectilesArrayType FreeProjectiles;
+
+	/** 클라이언트로 리플리케이트 되었지만 아직 액터가 리플리케이트되지 않아 바인딩이 필요한 아이템들입니다. */
+	mutable TArray<FProjectilePoolItem*> PendingBindItems;
 
 	friend struct FProjectilePoolItem;
 	friend class ULakayaAbility_Projectile;
