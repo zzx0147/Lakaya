@@ -17,7 +17,8 @@ FProjectilePoolItem::FProjectilePoolItem(ALakayaProjectile* InProjectile,
 
 void FProjectilePoolItem::BindProjectileItem(const FProjectileStateChanged::FDelegate& Delegate)
 {
-	if (!ensure(Projectile && Delegate.IsBound()))
+	check(Delegate.IsBound())
+	if (!ensure(IsValid(Projectile)))
 	{
 		return;
 	}
