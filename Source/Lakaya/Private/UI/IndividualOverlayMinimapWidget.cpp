@@ -3,3 +3,12 @@
 
 #include "UI/IndividualOverlayMinimapWidget.h"
 
+void UIndividualOverlayMinimapWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+}
+
+void UIndividualOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+}

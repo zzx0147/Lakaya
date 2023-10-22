@@ -25,6 +25,12 @@ public:
 	 * @param NewPlayerState 위치를 업데이트 할 플레이어의 상태입니다.
 	 */
 	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) { return; }
+
+	/**
+	 * @brief 특정 적의 위치를 숨깁니다.
+	 * @param NewTeam 
+	 * @param NewPlayerState 
+	 */
 	virtual void HidePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) { return; }
 	
 protected:
@@ -66,20 +72,33 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UCanvasPanel> ParentPanel;
 
-	// 미니맵 이미지입니다. (BindWidget으로 구현이 되어 있어서, 블루프린트의 이미지와 이름을 동일하게 설정해줘야합니다.)
+	// 미니맵 이미지입니다.
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> MinimapImage;
+
+	// 미니맵상에 자기 자신(개인전)을 표시하는 아이콘 텍스쳐입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> IndividualOwnIcon;
+
+	// 미니맵상에 적(개인전)을 표시하는 아이콘 텍스처입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> IndividualIcon;
 	
-	// TODO : 개인전에서 관리해야합니다.
-	// 미니맵상에 자기 자신을 표시하는 아이콘 텍스쳐입니다.
-	// UPROPERTY(EditAnywhere)
-	// TObjectPtr<UTexture2D> OwnIcon;
-
+	// 미니맵상에 자기 자신(Anti팀)을 표시하는 아이콘 텍스쳐입니다.
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> AntiIcon1;
+	TObjectPtr<UTexture2D> AntiOwnIcon;
 
+	// 미니맵상에 자기 자신(Pro팀)을 표시하는 아이콘 텍스쳐입니다.
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> ProIcon1;
+	TObjectPtr<UTexture2D> ProOwnIcon;
+
+	// 미니맵상에 Anti팀을 표시하는 아이콘 텍스처입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> AntiIcon;
+
+	// 미니맵상에 Pro팀을 표시하는 아이콘 텍스처입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ProIcon;
 	
 	// 플레이어가 죽게 되었을 때, 미니맵 상에 표시하는 아이콘 텍스처입니다.
 	UPROPERTY(EditAnywhere)
@@ -89,19 +108,31 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture2D> QuestionMarkIcon;
 	
-	// 미니맵상에서 자신과 상대(AI포함)의 위치를 업데이트하기 위한 컨테이너입니다.
-	TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>> PlayersByMinimap;
-	
 	// Owner의 소속 팀 입니다.
 	ETeam CurrentTeam;
-	
+
+	// 미니맵 상에 표시될 Icon들의 Alignment 입니다.
 	FVector2D IconAlignment;
+
+	// 미니맵 상에 표시될 Icon들의 Size 입니다.
 	FVector2D IconSize;
+
+	// 미니맵 이미지의 Size 입니다.
 	FVector2D MinimapSize;
+
+	// 미니맵이 위치한 Widget의 Offset 입니다.
 	FVector2D WidgetOffset;
 
 	// 미니맵업데이트 여부입니다.
 	bool UpdateMinimap;
-	
+
+	// 미니맵상에서 자신과 상대(AI포함)의 위치를 업데이트하기 위한 컨테이너입니다.
+	TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>> PlayersByMinimap;
+
+	// AntiIcon, ProIcon을 담는 맵입니다.
+	UPROPERTY()
+	TMap<ETeam, TObjectPtr<UTexture2D>> TeamIcons;
+
+	// TODO :
 	FTimerHandle QuestionIconTimerHandle;
 };

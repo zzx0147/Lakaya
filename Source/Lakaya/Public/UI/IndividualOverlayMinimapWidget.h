@@ -13,5 +13,8 @@ UCLASS()
 class LAKAYA_API UIndividualOverlayMinimapWidget : public UOverlayMinimapWidget
 {
 	GENERATED_BODY()
-	
+
+protected:
+	virtual void NativeConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 };

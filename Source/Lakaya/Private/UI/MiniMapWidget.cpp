@@ -32,6 +32,7 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	
 	const ETeam EnemyTeam = CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
 
+	// 와지가 궁극기 스킬을 사용중 이라면, 적의 위치를 업데이트 해줍니다.
 	if (const auto& GameState = Cast<AOccupationGameState>(GetWorld()->GetGameState()))
 	{
 		if (GameState->GetbIsClairvoyanceActivated())

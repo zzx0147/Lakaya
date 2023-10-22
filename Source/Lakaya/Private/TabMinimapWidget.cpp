@@ -6,6 +6,9 @@
 void UTabMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	MinimapSize = FVector2D(312.5f, 476.25f);
+	WidgetOffset = FVector2D(1515.0f, 545.5f);
 }
 
 void UTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
