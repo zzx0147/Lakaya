@@ -11,6 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameplayCue_Types.h"
+#include "Character/Ability/Component/AbilityComponent.h"
 #include "ETC/LakayaPlayerCameraManager.h"
 #include "Input/LakayaInputContext.h"
 
@@ -381,6 +382,33 @@ void ULakayaAbility::BP_RemoveMappingContext(const ULakayaInputContext* InputCon
 bool ULakayaAbility::TryActivateAbilityWithSpec(UAbilitySystemComponent* ASC, const FGameplayAbilitySpec& Spec)
 {
 	return ASC->TryActivateAbility(Spec.Handle);
+}
+
+UAbilityComponent* ULakayaAbility::FindOrAddAbilityComponent(AActor* TargetActor,
+                                                             const TSubclassOf<UAbilityComponent> ComponentClass,
+                                                             bool& bIsAdded)
+{
+	bIsAdded = false;
+	if (!IsValid(TargetActor) || !ComponentClass.Get())
+	{
+		return nullptr;
+	}
+
+	auto Component = Cast<UAbilityComponent>(TargetActor->GetComponentByClass(ComponentClass));
+	if (!Component)
+	{
+		Component = Cast<UAbilityComponent>(
+			TargetActor->AddComponentByClass(ComponentClass, false, FTransform::Identity, false));
+
+		if (!Component)
+		{
+			return nullptr;
+		}
+		bIsAdded = true;
+	}
+
+	Component->SetOwningAbility(this);
+	return Component;
 }
 
 void ULakayaAbility::HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,

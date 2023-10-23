@@ -4,7 +4,8 @@
 #include "Character/Ability/LakayaAbility_GunFire.h"
 
 #include "AbilitySystemComponent.h"
-#include "Character/Ability/Component/AbilityComponent_FireTrace.h"
+#include "Character/Ability/Component/AbilityComponent.h"
+#include "Interface/FireTraceInterface.h"
 
 
 ULakayaAbility_GunFire::ULakayaAbility_GunFire()
@@ -20,57 +21,40 @@ void ULakayaAbility_GunFire::OnAvatarSet(const FGameplayAbilityActorInfo* ActorI
 {
 	Super::OnAvatarSet(ActorInfo, Spec);
 
-	check(IsInstantiated())
-	if (!ActorInfo->IsLocallyControlled())
-	{
-		return;
-	}
+	check(FireTraceComponentClass->ImplementsInterface(UFireTraceInterface::StaticClass()));
 
-	const auto TargetActor = ActorInfo->AvatarActor.Get();
-	if (!TargetActor)
-	{
-		return;
-	}
+	TryRemoveAbilityComponent(ActorInfo->AvatarActor.Get());
 
-	FireTraceComponent = Cast<UAbilityComponent_FireTrace>(TargetActor->FindComponentByClass(FireTraceComponentClass));
+	FireTraceComponent = FindOrAddAbilityComponent(ActorInfo->AvatarActor.Get(), FireTraceComponentClass,
+	                                               bIsFireTraceComponentAdded);
+
 	if (FireTraceComponent.IsValid())
 	{
-		UE_LOG(LogTemp, Log, TEXT("[%s] FireTraceComponent found : %s"), *GetName(), *FireTraceComponent->GetName());
+		BP_Log(FString::Printf(
+			TEXT("FireTraceComponent %s : %s"), bIsFireTraceComponentAdded ? TEXT("Added") : TEXT("Found"),
+			*FireTraceComponent->GetName()));
 	}
 	else
 	{
-		FireTraceComponent = Cast<UAbilityComponent_FireTrace>(
-			TargetActor->AddComponentByClass(FireTraceComponentClass, false, FTransform::Identity, false));
-
-		if (FireTraceComponent.IsValid())
-		{
-			bIsFireTraceComponentAdded = true;
-			UE_LOG(LogTemp, Log, TEXT("[%s] FireTraceComponent added : %s"), *GetName(),
-			       *FireTraceComponent->GetName());
-		}
-		else
-		{
-			ActorInfo->AbilitySystemComponent->ClearAbility(Spec.Handle);
-			UE_LOG(LogTemp, Error, TEXT("[%s] Failed to add FireTraceComponent. Ability has been removed"), *GetName());
-			return;
-		}
+		BP_Log(TEXT("Failed to add FireTraceComponent"));
 	}
-
-	FireTraceComponent->SetOwningAbility(this);
 }
 
 void ULakayaAbility_GunFire::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo,
                                              const FGameplayAbilitySpec& Spec)
 {
 	Super::OnRemoveAbility(ActorInfo, Spec);
+	TryRemoveAbilityComponent(ActorInfo->AvatarActor.Get());
+}
 
-	if (bIsFireTraceComponentAdded)
-	{
-		if (const auto& TargetActor = ActorInfo->AvatarActor; TargetActor.IsValid())
-		{
-			TargetActor->RemoveInstanceComponent(FireTraceComponent.Get());
-		}
-	}
+bool ULakayaAbility_GunFire::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
+                                                const FGameplayAbilityActorInfo* ActorInfo,
+                                                const FGameplayTagContainer* SourceTags,
+                                                const FGameplayTagContainer* TargetTags,
+                                                FGameplayTagContainer* OptionalRelevantTags) const
+{
+	return Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags)
+		&& FireTraceComponent.IsValid();
 }
 
 FGameplayAbilityTargetDataHandle ULakayaAbility_GunFire::MakeTargetData_Implementation()
@@ -78,7 +62,7 @@ FGameplayAbilityTargetDataHandle ULakayaAbility_GunFire::MakeTargetData_Implemen
 	check(FireTraceComponent.IsValid())
 
 	TArray<FHitResult> HitResults;
-	FireTraceComponent->FireTrace(HitResults);
+	IFireTraceInterface::Execute_FireTrace(FireTraceComponent.Get(), HitResults);
 
 	FGameplayAbilityTargetDataHandle TargetDataHandle;
 	HitResultsToTargetDataHandle(HitResults, TargetDataHandle);
@@ -92,4 +76,14 @@ void ULakayaAbility_GunFire::OnTargetDataReceived_Implementation(
 {
 	BP_ApplyGameplayEffectOrCueToTarget(TargetDataHandle, DamageEffect, EnvironmentCue.GameplayCueTag);
 	Super::OnTargetDataReceived_Implementation(TargetDataHandle, GameplayTag);
+}
+
+void ULakayaAbility_GunFire::TryRemoveAbilityComponent(AActor* TargetActor)
+{
+	if (FireTraceComponent.IsValid() && bIsFireTraceComponentAdded && TargetActor)
+	{
+		TargetActor->RemoveInstanceComponent(FireTraceComponent.Get());
+		FireTraceComponent.Reset();
+		BP_Log(TEXT("FireTraceComponent Removed"));
+	}
 }

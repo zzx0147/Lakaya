@@ -6,6 +6,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "LakayaAbility.generated.h"
 
+class UAbilityComponent;
 class ULakayaInputContext;
 class UEnhancedInputComponent;
 class UEnhancedInputLocalPlayerSubsystem;
@@ -150,6 +151,10 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	static bool TryActivateAbilityWithSpec(UAbilitySystemComponent* ASC, const FGameplayAbilitySpec& Spec);
+
+	UFUNCTION(BlueprintCallable)
+	UAbilityComponent* FindOrAddAbilityComponent(AActor* TargetActor, TSubclassOf<UAbilityComponent> ComponentClass,
+	                                             bool& bIsAdded);
 
 	/** HitResult들을 타겟 데이터 핸들로 변환시킵니다. */
 	static void HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
