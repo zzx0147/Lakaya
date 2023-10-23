@@ -126,6 +126,9 @@ protected:
 	virtual bool ShouldActivateClairvoyance() const override;
 	virtual void OnClairvoyanceActivateRequested(const AActor* InInstigator) override;
 	virtual void OnClairvoyanceDeactivateRequested(const AActor* InInstigator) override;
+
+	virtual void OnRep_MatchEndingTime() override;
+
 	
 private:
 	virtual void SetClientTeam(const ETeam& NewTeam);
