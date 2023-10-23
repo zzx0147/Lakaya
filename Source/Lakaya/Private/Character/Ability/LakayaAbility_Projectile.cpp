@@ -156,7 +156,7 @@ ALakayaProjectile* FProjectilePool::GetFreeProjectile()
 
 	ALakayaProjectile* Projectile = nullptr;
 
-	if (HasFreeProjectile())
+	if (!HasFreeProjectile())
 	{
 		if (NoExtraPolicy == EPoolNoObjectPolicy::RecycleOldest)
 		{
