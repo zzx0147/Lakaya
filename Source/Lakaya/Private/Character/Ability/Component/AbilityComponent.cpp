@@ -45,7 +45,7 @@ void UAbilityComponent::OnGameplayTagEvent(FGameplayTag Tag, int32 NewCount)
 
 bool UAbilityComponent::ShouldActivate() const
 {
-	return Super::ShouldActivate() && AbilitySystemComponent.IsValid()
+	return Super::ShouldActivate() && AbilitySystemComponent
 		&& AbilitySystemComponent->HasAllMatchingGameplayTags(EnableRequireTags.RequireTags)
 		&& !AbilitySystemComponent->HasAnyMatchingGameplayTags(EnableRequireTags.IgnoreTags);
 }
