@@ -40,6 +40,7 @@ public:
 	virtual void AbilityLocalInputReleased(int32 InputID) override;
 
 protected:
+	virtual void InitializeComponent() override;
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
 
 private:

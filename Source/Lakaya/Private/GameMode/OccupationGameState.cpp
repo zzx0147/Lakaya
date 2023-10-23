@@ -459,6 +459,14 @@ void AOccupationGameState::OnClairvoyanceDeactivateRequested(const AActor* InIns
 	ClairvoyanceInstigatorSet.Remove(InInstigator);
 }
 
+void AOccupationGameState::OnRep_MatchEndingTime()
+{
+	Super::OnRep_MatchEndingTime();
+	if(InGameTimeWidget.IsValid()) InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
+	if(TeamScoreWidget) TeamScoreWidget->SetMaxScoreVisibility(true);
+	
+}
+
 void AOccupationGameState::DestroyShieldWallObject()
 {
 	UWorld* World = GetWorld();
