@@ -22,6 +22,11 @@ public:
 
 protected:
 	void OnGameplayTagEvent(FGameplayTag Tag, int32 NewCount);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UGameplayAbility* GetOwningAbility() const { return OwningAbility.Get(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UAbilitySystemComponent* GetAbilitySystemComponent() const { return AbilitySystemComponent.Get(); }
 
 	virtual bool ShouldActivate() const override;
 
