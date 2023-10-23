@@ -7,25 +7,14 @@
 void UIndividualTabMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	PlayerState = Cast<ALakayaBasePlayerState>(GetOwningPlayerState());
 }
 
 void UIndividualTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-}
 
-FVector2D UIndividualTabMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
-	const FVector2D& MiniMapSize)
-{
-	return Super::ConvertWorldToMiniMapCoordinates(PlayerLocation, MiniMapSize);
-}
-
-void UIndividualTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
-{
-	Super::UpdatePlayerPosition(Team);
-}
-
-UImage* UIndividualTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
-{
-	return Super::CreatePlayerImage(NewTeam, bMyPlayer);
+	// 자기 자신의 위치를 업데이트 해줍니다.
+	UpdatePlayerPosition(CurrentTeam, PlayerState);
 }

@@ -18,9 +18,8 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
-	virtual FVector2D ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation, const FVector2D& MiniMapSize) override;
-	virtual void UpdatePlayerPosition(const ETeam& Team) override;
-
-public:
-	virtual UImage* CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer) override;
+private:
+	// Onwer의 PlayerState입니다.
+	UPROPERTY()
+	TObjectPtr<ALakayaBasePlayerState> PlayerState;
 };

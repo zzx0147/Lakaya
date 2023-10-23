@@ -219,8 +219,8 @@ void ALakayaBaseGameState::OnRep_MatchState()
 
 	if (MatchState != MatchState::InProgress)
 	{
-		if (HUDMinimapWidget) HUDMinimapWidget->SetUpdateMinimap(false);
-		if (TabMinimapWidget) TabMinimapWidget->SetUpdateMinimap(false);
+		if (HUDMinimapWidget) HUDMinimapWidget->SetAllyUpdateMinimap(false);
+		if (TabMinimapWidget) TabMinimapWidget->SetAllyUpdateMinimap(false);
 	}
 }
 

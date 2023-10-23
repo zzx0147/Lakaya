@@ -10,6 +10,8 @@
 #include "Occupation/Team.h"
 #include "MiniMapWidget.generated.h"
 
+class ALakayaBaseCharacter;
+
 /**
  * 
  */
@@ -60,14 +62,20 @@ protected:
 	virtual void UpdatePlayerPosition(const ETeam& Team);
 public:
 	FORCEINLINE const ETeam& GetTeam() const { return CurrentTeam; }
-	FORCEINLINE const bool& GetUpdateMinimap() const { return UpdateMinimap; }
+	FORCEINLINE const bool& GetAllyUpdateMinimap() const { return AllyUpdateMinimap; }
+	FORCEINLINE const bool& GetEnemyUpdateMinimap() const { return EnemyUpdateMinimap; }
 	FORCEINLINE const TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>>& GetPlayersByMinimap() const { return PlayersByMinimap; }
 	
 	FORCEINLINE void SetTeam(const ETeam& Team) { CurrentTeam = Team; }
-	FORCEINLINE void SetUpdateMinimap(const bool& bUpdate) { UpdateMinimap = bUpdate; }
+	FORCEINLINE void SetAllyUpdateMinimap(const bool& bUpdate) { AllyUpdateMinimap = bUpdate; }
+	FORCEINLINE void SetEnemyUpdateMinimap(const bool& bUpdate) { EnemyUpdateMinimap = bUpdate; }
 	FORCEINLINE void SetPlayersByMinimap(const ETeam& Team, ALakayaBasePlayerState* NewPlayerState, UImage* NewImage) { if (NewImage != nullptr) PlayersByMinimap[Team].Emplace(NewPlayerState, NewImage); }
 
 protected:
+	// Onwer의 Character입니다.
+	UPROPERTY()
+	TObjectPtr<ALakayaBaseCharacter> OwnerCharacter;
+	
 	// 위젯의 최상단 CanvasPanel
 	UPROPERTY()
 	TObjectPtr<UCanvasPanel> ParentPanel;
@@ -111,6 +119,9 @@ protected:
 	// Owner의 소속 팀 입니다.
 	ETeam CurrentTeam;
 
+	// Owner의 상대 팀 입니다.
+	ETeam EnemyTeam;
+	
 	// 미니맵 상에 표시될 Icon들의 Alignment 입니다.
 	FVector2D IconAlignment;
 
@@ -123,8 +134,11 @@ protected:
 	// 미니맵이 위치한 Widget의 Offset 입니다.
 	FVector2D WidgetOffset;
 
-	// 미니맵업데이트 여부입니다.
-	bool UpdateMinimap;
+	// 아군의 미니맵업데이트 여부입니다.
+	bool AllyUpdateMinimap;
+
+	// 적군의 미니맵업데이트 여부입니다.
+	bool EnemyUpdateMinimap;
 
 	// 미니맵상에서 자신과 상대(AI포함)의 위치를 업데이트하기 위한 컨테이너입니다.
 	TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>> PlayersByMinimap;
@@ -132,7 +146,7 @@ protected:
 	// AntiIcon, ProIcon을 담는 맵입니다.
 	UPROPERTY()
 	TMap<ETeam, TObjectPtr<UTexture2D>> TeamIcons;
-
+	
 	// TODO :
 	FTimerHandle QuestionIconTimerHandle;
 };

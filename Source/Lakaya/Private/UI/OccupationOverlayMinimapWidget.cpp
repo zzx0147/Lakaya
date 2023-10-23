@@ -5,11 +5,14 @@
 
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
+#include "GameMode/LakayaDefaultPlayGameMode.h"
 
 void UOccupationOverlayMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	
 	ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("RetainerCanvasPanel")));
 
 	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
@@ -19,6 +22,38 @@ void UOccupationOverlayMinimapWidget::NativeConstruct()
 void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	if (!OccupationGameState || !AllyUpdateMinimap || OwnerCharacter)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("null"));
+		return;
+	}
+
+	// 자신의 팀(자기 자신 포함)위치를 업데이트 해줍니다.
+	UpdatePlayerPosition(CurrentTeam);
+
+	// 와지가 궁극기 스킬을 사용 중이라면, 적들의 정보 순회를 멈추고 모든 적의 위치를 업데이트 해줍니다.
+	if (OccupationGameState->GetbIsClairvoyanceActivated())
+	{
+		UpdatePlayerPosition(EnemyTeam);
+		return;
+	}
+
+	for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
+	{
+		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
+		const TWeakObjectPtr<UImage> EnemyMinimapImage = Enemy.Value;
+		
+		// TODO : 적이 시야에 들어왔는 지 검사해야 합니다.
+		if (EnemyState->GetPawn()->WasRecentlyRendered(0.1f) && OwnerCharacter->IsEnemyVisibleInCamera(EnemyState))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Spotted."));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("."));
+		}
+	}
 }
 
 FVector2d UOccupationOverlayMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,

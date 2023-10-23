@@ -247,8 +247,7 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 	CharacterOverlayMaterial->SetVectorParameterValue(TEXT("Color"), IsAlly ? FLinearColor::Blue : FLinearColor::Red);
 }
 
-bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
-                                                  const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState, const TWeakObjectPtr<UImage> EnemyImage)
+bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState) const
 {
 #pragma region NullCheck
 	if (!EnemyState.IsValid())
@@ -260,14 +259,17 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 	const APawn* EnemyPawn = EnemyState->GetPawn();
 	if (!EnemyPawn)
 	{
+		// 액터마다 생성 주기가 다르기에 로그가 찍힐 수 있습니다.
 		// UE_LOG(LogTemp, Warning, TEXT("EnemyPawn is null."));
 		return false;
 	}
 
 	//TODO 월드가 유효하지 않은 때가 있습니다. 임시로 Null체크를 집어넣었습니다. 추후 수정 요망
 	if(!GetWorld()) return false;
+	
 	// TODO : GetFristPlayerController를 가져오는 것이 맞는지 확인해야 합니다.
 	const APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	// const APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	
 	if (!PlayerController || !PlayerController->PlayerCameraManager)
 	{
@@ -284,15 +286,17 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 		const FVector LookDirection = PlayerController->GetControlRotation().Vector();
 
 		// 시야각을 설정합하여, 라디언으로 변환합니다.
-		const float AngleThreshold = FMath::DegreesToRadians(90.0f);
+		// const float AngleThreshold = FMath::DegreesToRadians(90.0f);
 
 		// 두 벡터 사이의 각도를 계산합니다.
-		const float AngleBetweenVectors = FMath::Acos(FVector::DotProduct(DirectionToTarget.GetSafeNormal(), LookDirection));
+		// const float AngleBetweenVectors = FMath::Acos(FVector::DotProduct(DirectionToTarget.GetSafeNormal(), LookDirection));
 
 		// 계산된 각도와 임계값을 비교하여, 시야 내에 있는지 판단합니다.
-		bool bIsVisible = AngleBetweenVectors <= AngleThreshold;
+		// bool bIsVisible = AngleBetweenVectors <= AngleThreshold;
 
-		if (!bIsVisible) return false;
+		// if (!bIsVisible) return false;
+
+		// bool bIsVisible;
 		
 		FHitResult HitResult;
 
@@ -307,12 +311,12 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 			HitResult,
 			true); bIsObstructed && HitResult.GetActor() != EnemyPawn)
 		{
-			bIsVisible = false;
+			return false;
 		}
-
-		Server_SetEnemyVisibility(EnemyState.Get(), bIsVisible);
 		
-		return bIsVisible;
+		// Server_SetEnemyVisibility(EnemyState.Get(), bIsVisible);
+
+		return true;
 	}
 }
 
@@ -333,37 +337,37 @@ void ALakayaBaseCharacter::Server_OnEnemyLost_Implementation(const ETeam& EnemyT
 	}
 }
 
-void ALakayaBaseCharacter::Server_SetEnemyVisibility_Implementation(
-	ALakayaBasePlayerState* EnemyState, bool bIsVisible)
-{
-	if (bIsVisible && !VisibleEnemies.Contains(EnemyState))
-	{
-		VisibleEnemies.Emplace(EnemyState);
-		UE_LOG(LogTemp, Warning, TEXT("Server_Emplace"));
-		Client_SetEnemyVisibility(EnemyState, true);
-	}
-	else if (!bIsVisible && VisibleEnemies.Contains(EnemyState))
-	{
-		VisibleEnemies.Remove(EnemyState);
-		UE_LOG(LogTemp, Warning, TEXT("Server_Remove"));
-		Client_SetEnemyVisibility(EnemyState, false);
-	}
-}
+// void ALakayaBaseCharacter::Server_SetEnemyVisibility_Implementation(
+// 	ALakayaBasePlayerState* EnemyState, bool bIsVisible)
+// {
+// 	if (bIsVisible && !VisibleEnemies.Contains(EnemyState))
+// 	{
+// 		VisibleEnemies.Emplace(EnemyState);
+// 		UE_LOG(LogTemp, Warning, TEXT("Server_Emplace"));
+// 		Client_SetEnemyVisibility(EnemyState, true);
+// 	}
+// 	else if (!bIsVisible && VisibleEnemies.Contains(EnemyState))
+// 	{
+// 		VisibleEnemies.Remove(EnemyState);
+// 		UE_LOG(LogTemp, Warning, TEXT("Server_Remove"));
+// 		Client_SetEnemyVisibility(EnemyState, false);
+// 	}
+// }
 
-void ALakayaBaseCharacter::Client_SetEnemyVisibility_Implementation(
-	ALakayaBasePlayerState* EnemyState, bool bIsVisible)
-{
-	if (bIsVisible)
-	{
-		VisibleEnemies.Emplace(EnemyState);
-		UE_LOG(LogTemp, Warning, TEXT("Client_Emplace"));
-	}
-	else
-	{
-		VisibleEnemies.Remove(EnemyState);
-		UE_LOG(LogTemp, Warning, TEXT("Client_Remove"));
-	}
-}
+// void ALakayaBaseCharacter::Client_SetEnemyVisibility_Implementation(
+// 	ALakayaBasePlayerState* EnemyState, bool bIsVisible)
+// {
+// 	if (bIsVisible)
+// 	{
+// 		VisibleEnemies.Emplace(EnemyState);
+// 		UE_LOG(LogTemp, Warning, TEXT("Client_Emplace"));
+// 	}
+// 	else
+// 	{
+// 		VisibleEnemies.Remove(EnemyState);
+// 		UE_LOG(LogTemp, Warning, TEXT("Client_Remove"));
+// 	}
+// }
 
 void ALakayaBaseCharacter::SetTeam_Implementation(const ETeam& Team)
 {

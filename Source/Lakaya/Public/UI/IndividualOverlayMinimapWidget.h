@@ -17,4 +17,8 @@ class LAKAYA_API UIndividualOverlayMinimapWidget : public UOverlayMinimapWidget
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+private:
+	UPROPERTY()
+	TObjectPtr<ALakayaBasePlayerState> PlayerState;
 };

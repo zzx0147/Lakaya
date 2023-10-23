@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "OverlayMinimapWidget.h"
+#include "GameMode/OccupationGameState.h"
 #include "OccupationOverlayMinimapWidget.generated.h"
 
 // TODO : 팀전에서 공용으로 사용되는 OccupationMinimapWidget을 만들어서 관리해야 합니다.
@@ -32,4 +33,8 @@ protected:
 
 private:
 	virtual void UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const override;
+
+private:
+	UPROPERTY()
+	AOccupationGameState* OccupationGameState;
 };

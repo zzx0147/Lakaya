@@ -146,12 +146,10 @@ public:
 
 	/**
 	* @brief 해당 적이 카메라에 보이는지 확인합니다.
-	* @param EnemyTeam 적의 소속팀 입니다.
 	* @param EnemyState 확인할 적의 상태입니다.
 	* @return 카메라에 보인다면 true, 아니라면 false를 반환합니다.
 	*/
-	bool IsEnemyVisibleInCamera(const ETeam& EnemyTeam, const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState,
-		const TWeakObjectPtr<UImage> EnemyImage);
+	bool IsEnemyVisibleInCamera(const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState) const;
 
 	UFUNCTION(Server, Reliable)
 	void Server_OnEnemySpotted(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState);
@@ -160,25 +158,25 @@ public:
 	void Server_OnEnemyLost(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState);
 
 	// VisibleEnemy가 비어있는지 확인합니다.
-	FORCEINLINE const bool IsVisibleEnemyEmpty() const { return VisibleEnemies.Num() == 0; }
+	// FORCEINLINE const bool IsVisibleEnemyEmpty() const { return VisibleEnemies.Num() == 0; }
 	
 	// VisibleEnemy 목록을 반환합니다.
-	FORCEINLINE const TSet<ALakayaBasePlayerState*>& GetVisibleEnemies() const { return VisibleEnemies; }
+	// FORCEINLINE const TSet<ALakayaBasePlayerState*>& GetVisibleEnemies() const { return VisibleEnemies; }
 	
 	// 캐릭터 시야에 적이 들어왔다면 VisibleEnemies에 추가합니다.
-	void AddVisibleEnemy(ALakayaBasePlayerState* Enemy) { VisibleEnemies.Emplace(Enemy); }
+	// void AddVisibleEnemy(ALakayaBasePlayerState* Enemy) { VisibleEnemies.Emplace(Enemy); }
 
 	// 캐릭터 시야에서 적이 나갔다면 VisibleEnemies에서 제거합니다.
-	void RemoveVisibleEnemy(ALakayaBasePlayerState* Enemy) { VisibleEnemies.Remove(Enemy); }
+	// void RemoveVisibleEnemy(ALakayaBasePlayerState* Enemy) { VisibleEnemies.Remove(Enemy); }
 
 	// 캐릭터 시야에 적이 있는지 확인합니다.
-	bool IsEnemyVisible(ALakayaBasePlayerState* Enemy) const { return VisibleEnemies.Contains(Enemy); }
+	// bool IsEnemyVisible(ALakayaBasePlayerState* Enemy) const { return VisibleEnemies.Contains(Enemy); }
 
-	UFUNCTION(Server, Reliable)
-	void Server_SetEnemyVisibility(ALakayaBasePlayerState* EnemyState, bool bIsVisible);
-
-	UFUNCTION(Client, Reliable)
-	void Client_SetEnemyVisibility(ALakayaBasePlayerState* EnemyState, bool bIsVisible);
+	// UFUNCTION(Server, Reliable)
+	// void Server_SetEnemyVisibility(ALakayaBasePlayerState* EnemyState, bool bIsVisible);
+	//
+	// UFUNCTION(Client, Reliable)
+	// void Client_SetEnemyVisibility(ALakayaBasePlayerState* EnemyState, bool bIsVisible);
 protected:
 	virtual void SetTeam_Implementation(const ETeam& Team);
 	virtual void SetAliveState_Implementation(bool IsAlive);
@@ -339,9 +337,10 @@ private:
 	FTimerHandle DamageImmuneTimer;
 	FLakayaAbilityHandleContainer AbilityHandleContainer;
 
+	// TODO : 각자 정보를 가지고 있는 것보다는, GameState에서 관리하는 것이 좋을 것 같습니다.
 	// 플레이어가 적을 발견했을 때, 시야를 공유하기 위해 사용하는 변수입니다.
-	UPROPERTY()
-	TSet<ALakayaBasePlayerState*> VisibleEnemies;
+	// UPROPERTY()
+	// TSet<ALakayaBasePlayerState*> VisibleEnemies;
 
 	UPROPERTY()
 	TObjectPtr<UTexture2D> QuestionIcon;

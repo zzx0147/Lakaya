@@ -33,6 +33,7 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(AOccupationGameState, AntiTeamCaptureAreaCount);
 	DOREPLIFETIME(AOccupationGameState, ProTeamCaptureAreaCount);
 	DOREPLIFETIME(AOccupationGameState, TeamToUpdate);
+	DOREPLIFETIME(AOccupationGameState, SpottedPlayers);
 }
 
 AOccupationGameState::AOccupationGameState(): MatchResult()
@@ -53,6 +54,11 @@ AOccupationGameState::AOccupationGameState(): MatchResult()
 	PlayersByTeamMap.Emplace(ETeam::Anti);
 	PlayersByTeamMap.Emplace(ETeam::Pro);
 
+	// SpottedList.Emplace(ETeam::Anti);
+	// SpottedList.Emplace(ETeam::Pro);
+
+	OnChangedSpottedPlayersSignature.AddUObject(this, &AOccupationGameState::EnemySpottedLog);
+	
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> ResultContextFinder(
 		TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IC_ResultWidgetControl.IC_ResultWidgetControl'"));
 
@@ -196,7 +202,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 
 	if (HUDMinimapWidget)
 	{
-		HUDMinimapWidget->SetUpdateMinimap(true);
+		HUDMinimapWidget->SetAllyUpdateMinimap(true);
 		HUDMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 		if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
@@ -216,7 +222,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 
 	if (TabMinimapWidget)
 	{
-		TabMinimapWidget->SetUpdateMinimap(true);
+		TabMinimapWidget->SetAllyUpdateMinimap(true);
 
 		if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 			LocalController && LocalController->IsLocalController())
@@ -377,6 +383,16 @@ void AOccupationGameState::UpdatePlayerByMinimap(const ETeam& Team, ALakayaBaseP
 		TabMinimapWidget->SetPlayersByMinimap(Team, Players, TabMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
 		HUDMinimapWidget->SetPlayersByMinimap(Team, Players, HUDMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
 	}
+}
+
+void AOccupationGameState::EnemySpottedLog(const TArray<TWeakObjectPtr<ALakayaBasePlayerState>>& SpottedPlayersArray) const
+{
+	UE_LOG(LogTemp, Warning, TEXT("EnemySpotted."));
+}
+
+void AOccupationGameState::OnRep_SpottedPlayers() const
+{
+	OnChangedSpottedPlayersSignature.Broadcast(SpottedPlayers);
 }
 
 void AOccupationGameState::SetClientTeam(const ETeam& NewTeam)

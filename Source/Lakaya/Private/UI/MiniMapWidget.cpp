@@ -11,13 +11,18 @@ void UMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	UpdateMinimap = false;
+	AllyUpdateMinimap = false;
+	EnemyUpdateMinimap = false;
 	
 	IconAlignment = FVector2D(0.5f, 0.5f);
 	IconSize = FVector2D(62.0f, 112.0f);
 	
 	PlayersByMinimap.Emplace(ETeam::Anti);
 	PlayersByMinimap.Emplace(ETeam::Pro);
+
+	EnemyTeam = CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
+
+	OwnerCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayerPawn());
 }
 
 void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -25,42 +30,40 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
 	// 게임 중이 아닐때에는 미니맵을 업데이트 해주지 않습니다.
-	if (!UpdateMinimap) return;
+	// if (!UpdateMinimap) return;
 
 	// 자신의 팀(자기 자신 포함)위치 를 업데이트 해줍니다.
-	UpdatePlayerPosition(CurrentTeam);
+	// UpdatePlayerPosition(CurrentTeam);
 	
-	const ETeam EnemyTeam = CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
-
 	// 와지가 궁극기 스킬을 사용중 이라면, 적의 위치를 업데이트 해줍니다.
-	if (const auto& GameState = Cast<AOccupationGameState>(GetWorld()->GetGameState()))
-	{
-		if (GameState->GetbIsClairvoyanceActivated())
-		{
-			UpdatePlayerPosition(EnemyTeam);
-			return;
-		}
-	}
+	// if (const auto& GameState = Cast<AOccupationGameState>(GetWorld()->GetGameState()))
+	// {
+	// 	if (GameState->GetbIsClairvoyanceActivated())
+	// 	{
+	// 		UpdatePlayerPosition(EnemyTeam);
+	// 		return;
+	// 	}
+	// }
 	
 	// 적들의 정보를 가져와서, 내 시야에 들어와있다면, 미니맵에 표시해줍니다.
-	for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
-	{
-		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
-		const TWeakObjectPtr<UImage> EnemyImage = Enemy.Value;
-
-		// 모든 아군을 순회해서 시야에 없다면, 적을 업데이트 하지 않습니다.
-		for (const auto& Ally : PlayersByMinimap[CurrentTeam])
-		{
-			const auto& AllyState = Ally.Key;
-			
-			ALakayaBaseCharacter* AllyCharacter = Cast<ALakayaBaseCharacter>(AllyState->GetPawn());
-			
-			if (AllyCharacter->IsEnemyVisibleInCamera(EnemyTeam, EnemyState, EnemyImage))
-			{
-				AllyCharacter->Server_OnEnemySpotted(EnemyTeam, EnemyState.Get());
-			}
-		}
-	}
+	// for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
+	// {
+	// 	const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
+	// 	const TWeakObjectPtr<UImage> EnemyImage = Enemy.Value;
+	//
+	// 	// 모든 아군을 순회해서 시야에 없다면, 적을 업데이트 하지 않습니다.
+	// 	for (const auto& Ally : PlayersByMinimap[CurrentTeam])
+	// 	{
+	// 		const auto& AllyState = Ally.Key;
+	// 		
+	// 		ALakayaBaseCharacter* AllyCharacter = Cast<ALakayaBaseCharacter>(AllyState->GetPawn());
+	// 		
+	// 		if (AllyCharacter->IsEnemyVisibleInCamera(EnemyTeam, EnemyState, EnemyImage))
+	// 		{
+	// 			AllyCharacter->Server_OnEnemySpotted(EnemyTeam, EnemyState.Get());
+	// 		}
+	// 	}
+	// }
 }
 
 FVector2D UMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
