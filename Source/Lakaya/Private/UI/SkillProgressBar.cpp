@@ -234,7 +234,7 @@ void USkillProgressBar::CreateSkillStackImages(const uint8& Count)
 {
 	for (int i = 0; i < SkillStackImages.Num(); ++i)
 	{
-		SkillStackImages[i]->ConditionalBeginDestroy();
+		SkillStackImages[i]->RemoveFromParent();
 	}
 	SkillStackImages.Empty();
 

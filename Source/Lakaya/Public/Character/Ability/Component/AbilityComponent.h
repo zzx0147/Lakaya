@@ -30,7 +30,8 @@ protected:
 	virtual bool ShouldActivate() const override;
 
 private:
-	void OnGameplayTagEvent(FGameplayTag Tag, int32 NewCount);
+	void OnRequiredTagUpdated(FGameplayTag Tag, int32 NewCount);
+	void OnIgnoredTagUpdated(FGameplayTag Tag, int32 NewCount);
 
 	UPROPERTY(EditAnywhere)
 	FGameplayTagRequirements EnableRequireTags;

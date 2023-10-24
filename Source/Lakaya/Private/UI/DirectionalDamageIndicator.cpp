@@ -69,7 +69,7 @@ void UDirectionalDamageIndicator::IndicateStart(const FString& CauserName, const
 	{
 		Result = CreateWidget<UDirectionalIndicatorElement>(this, IndicatorElementClass);
 
-		if (Result == nullptr) return;
+		if (!IsValid(Result)) return;
 
 		IndicatorMap.Add(CauserName, Result);
 		IndicatorPanel->AddChild(Result);
@@ -80,6 +80,7 @@ void UDirectionalDamageIndicator::IndicateStart(const FString& CauserName, const
 		tempSlot->SetPosition(FVector2d(0.0f, 0.0f));
 		tempSlot->SetOffsets(FMargin(0.0f));
 	}
-	
-	Result->IndicateStart(GetOwningPlayer()->GetCharacter()->GetRootComponent(), DamageCursorPosition, IndicateTime);
+
+	if(IsValid(Result))
+		Result->IndicateStart(GetOwningPlayer()->GetCharacter()->GetRootComponent(), DamageCursorPosition, IndicateTime);
 }
