@@ -377,6 +377,8 @@ void AOccupationGameState::OnRep_OccupationWinner() const
 
 void AOccupationGameState::UpdatePlayerByMinimap(const ETeam& Team, ALakayaBasePlayerState* PlayerState)
 {
+	if(!TabMinimapWidget || !HUDMinimapWidget) return;
+	
 	for (auto& Players : PlayersByTeamMap[Team])
 	{
 		const bool bMyPlayer = (Players == PlayerState);
@@ -471,6 +473,14 @@ void AOccupationGameState::OnClairvoyanceDeactivateRequested(const AActor* InIns
 {
 	Super::OnClairvoyanceDeactivateRequested(InInstigator);
 	ClairvoyanceInstigatorSet.Remove(InInstigator);
+}
+
+void AOccupationGameState::OnRep_MatchEndingTime()
+{
+	Super::OnRep_MatchEndingTime();
+	if(InGameTimeWidget.IsValid()) InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
+	if(TeamScoreWidget) TeamScoreWidget->SetMaxScoreVisibility(true);
+	
 }
 
 void AOccupationGameState::DestroyShieldWallObject()

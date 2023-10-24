@@ -20,3 +20,9 @@ ECollisionChannel ULakayaBlueprintLibrary::ConvertToCollisionChannel(const EObje
 {
 	return UEngineTypes::ConvertToCollisionChannel(ObjectType);
 }
+
+FGameplayEffectContextHandle ULakayaBlueprintLibrary::GetEffectContext(const FGameplayEffectSpec& EffectSpec)
+{
+	return EffectSpec.GetEffectContext();
+}
+

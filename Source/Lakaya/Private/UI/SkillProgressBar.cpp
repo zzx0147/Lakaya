@@ -130,6 +130,23 @@ void USkillProgressBar::OnChangeMaxSkillStackAttribute(const FOnAttributeChangeD
 	UpdateSkillStackImages();
 }
 
+void USkillProgressBar::SetMaxSkillStack(const float& NewValue)
+{
+	MaxSkillStack = FMath::RoundToInt(NewValue);
+	CreateSkillStackImages(MaxSkillStack);
+	UpdateSkillStackImages();
+}
+
+void USkillProgressBar::SetSkillStack(const float& NewValue)
+{
+	SkillStack = FMath::RoundToInt(NewValue);
+	UpdateSkillStackImages();
+	if (SkillStack >= MaxSkillStack)
+	{
+		CurrentState = ESkillProgressBarState::None;
+	}
+}
+
 void USkillProgressBar::SetProgressType(const ESkillProgressBarType& NewType)
 {
 	ProgressBarType = NewType;

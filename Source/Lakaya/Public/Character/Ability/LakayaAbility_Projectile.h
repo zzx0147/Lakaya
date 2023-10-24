@@ -20,8 +20,6 @@ enum class EPoolNoObjectPolicy
 	RecycleOldest
 };
 
-DECLARE_DELEGATE_RetVal(class ALakayaProjectile*, FProjectileSpawnDelegate)
-
 using FFreeProjectilesArrayType = TArray<TWeakObjectPtr<ALakayaProjectile>>;
 
 USTRUCT()
@@ -35,7 +33,11 @@ struct FProjectilePoolItem : public FFastArraySerializerItem
 
 	bool operator==(const FProjectilePoolItem& Other) const { return Projectile == Other.Projectile; }
 
-	void BindProjectileItem(const FProjectileStateChanged::FDelegate& Delegate);
+	/**
+	 * 풀을 셋업하기 위해 투사체의 이벤트에 바인딩합니다.
+	 * @return 바인딩에 성공하면 true를 반환합니다.
+	 */
+	bool BindProjectileItem(const FProjectileStateChanged::FDelegate& Delegate);
 
 	void UnbindProjectileItem();
 
@@ -43,6 +45,7 @@ struct FProjectilePoolItem : public FFastArraySerializerItem
 	ALakayaProjectile* Projectile;
 
 	void PostReplicatedAdd(const struct FProjectilePool& InArray);
+	void PreReplicatedRemove(const struct FProjectilePool& InArray);
 
 private:
 	FDelegateHandle OnProjectileStateChangedHandle;
@@ -50,16 +53,62 @@ private:
 	friend struct FProjectilePool;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FProjectilePoolProjectileEventSignature, ALakayaProjectile*, Projectile);
+
 USTRUCT()
 struct FProjectilePool : public FFastArraySerializer
 {
 	GENERATED_BODY()
 
 	void Initialize(UWorld* InSpawnWorld, const FActorSpawnParameters& InActorSpawnParameters);
-	bool IsMaximumReached() const;
-	bool IsExtraObjectMaximumReached() const;
+
+	FORCEINLINE bool IsMaximumReached() const
+	{
+		return MaxPoolSize != 0 && static_cast<uint32>(Items.Num()) >= MaxPoolSize;
+	}
+
+	FORCEINLINE bool IsExtraObjectMaximumReached() const
+	{
+		return static_cast<uint32>(FreeProjectiles.Num()) >= MaxExtraObjectCount;
+	}
+
+	/** 사용 가능한 투사체가 존재하는지 여부입니다. */
+	FORCEINLINE bool IsAvailable() const
+	{
+		return HasFreeProjectile() || (NoExtraPolicy == EPoolNoObjectPolicy::RecycleOldest && !Items.IsEmpty());
+	}
+
+	/** Collapsed 상태의 투사체가 존재하는지 여부입니다. */
+	FORCEINLINE bool HasFreeProjectile() const
+	{
+		return !FreeProjectiles.IsEmpty() || (BindPendingItems() && !FreeProjectiles.IsEmpty());
+	}
+
+	/** 새로운 투사체를 하나 추가합니다. 단 조건이 만족되는 경우에만 추가됩니다. */
 	void AddNewObject();
+
+	/**
+	 * 사용 가능한 투사체를 가져옵니다. 이 함수를 통해 투사체를 가져오더라도 풀에서 제거되는 것은 아닙니다.
+	 * ThrowProjectile 등의 함수를 통해 투사체를 사용하고 나서 다시 GetFreeProjectile을 호출하세요.
+	 * 한 스코프에서 이 함수를 반복적으로 호출한다면 모두 같은 투사체를 참조하게될 수 있습니다.
+	 */
 	ALakayaProjectile* GetFreeProjectile();
+
+	/** 지정한 투사체가 존재하는 경우 제거하고 새로 하나를 스폰합니다. */
+	bool RemoveProjectile(ALakayaProjectile* Projectile);
+
+	/** 모든 투사체를 제거합니다. 다시 Initialize를 호출하기 전까지 투사체 풀은 아무 것도 하지 않습니다. */
+	void ClearProjectilePool();
+
+	void SetInstigator(APawn* Instigator);
+
+	/** 투사체가 스폰되고 난 직후 호출되는 이벤트입니다. */
+	UPROPERTY(BlueprintAssignable, NotReplicated)
+	FProjectilePoolProjectileEventSignature OnProjectileSpawned;
+
+	/** 투사체가 풀 내부에서 Destroy시키기 직전에 호출됩니다. */
+	UPROPERTY(BlueprintAssignable, NotReplicated)
+	FProjectilePoolProjectileEventSignature OnPreProjectileDestroy;
 
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
 	{
@@ -71,25 +120,20 @@ struct FProjectilePool : public FFastArraySerializer
 private:
 	void InternalAddNewObject();
 	void ReFeelExtraObjects();
+	bool BindPendingItems() const;
 
-	FORCEINLINE auto CreateProjectileStateDelegate(
-		const FProjectileStateChanged::FDelegate::TMethodPtr<FProjectilePool>& MemberFunction)
+	FORCEINLINE auto CreateClientProjectileStateDelegate() const
 	{
-		return FProjectileStateChanged::FDelegate::CreateRaw(this, MemberFunction);
-	}
-
-	FORCEINLINE auto CreateClientProjectileStateDelegate()
-	{
-		return CreateProjectileStateDelegate(&FProjectilePool::ClientProjectileStateChanged);
+		return FProjectileStateChanged::FDelegate::CreateRaw(this, &FProjectilePool::ClientProjectileStateChanged);
 	}
 
 	FORCEINLINE auto CreateServerProjectileStateDelegate()
 	{
-		return CreateProjectileStateDelegate(&FProjectilePool::ServerProjectileStateChanged);
+		return FProjectileStateChanged::FDelegate::CreateRaw(this, &FProjectilePool::ServerProjectileStateChanged);
 	}
 
 	void ClientProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
-	                                  const FProjectileState& NewState);
+	                                  const FProjectileState& NewState) const;
 	void ServerProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
 	                                  const FProjectileState& NewState);
 
@@ -125,9 +169,13 @@ private:
 	FActorSpawnParameters ActorSpawnParameters;
 
 	/** Collapsed로 전환되어 언제든 사용할 수 있는 투사체들이 여기에 보관됩니다. */
-	FFreeProjectilesArrayType FreeProjectiles;
+	mutable FFreeProjectilesArrayType FreeProjectiles;
+
+	/** 클라이언트로 리플리케이트 되었지만 아직 액터가 리플리케이트되지 않아 바인딩이 필요한 아이템들입니다. */
+	mutable TArray<FProjectilePoolItem*> PendingBindItems;
 
 	friend struct FProjectilePoolItem;
+	friend class ULakayaAbility_Projectile;
 };
 
 template <>
@@ -149,7 +197,12 @@ class LAKAYA_API ULakayaAbility_Projectile : public ULakayaAbility
 
 public:
 	ULakayaAbility_Projectile();
+	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	                                const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags,
+	                                FGameplayTagContainer* OptionalRelevantTags) const override;
 
 protected:
 	virtual void OnTargetDataReceived_Implementation(const FGameplayAbilityTargetDataHandle& TargetDataHandle,
@@ -161,6 +214,15 @@ protected:
 
 	void MakeProjectileThrowLocation_Implementation(FVector& OutLocation, FVector& OutDirection)
 	PURE_VIRTUAL(&ThisClass::MakeProjectileThrowLocation_Implementation,)
+
+	UFUNCTION()
+	virtual void OnProjectileSpawned(ALakayaProjectile* Projectile);
+
+	UFUNCTION()
+	virtual void OnPreProjectileDestroy(ALakayaProjectile* Projectile);
+
+	UFUNCTION()
+	virtual void OnProjectileDestroyed(AActor* Projectile);
 
 private:
 	UPROPERTY(Replicated, EditAnywhere)

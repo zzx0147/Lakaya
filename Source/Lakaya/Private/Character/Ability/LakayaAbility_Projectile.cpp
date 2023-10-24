@@ -15,17 +15,19 @@ FProjectilePoolItem::FProjectilePoolItem(ALakayaProjectile* InProjectile,
 	BindProjectileItem(Delegate);
 }
 
-void FProjectilePoolItem::BindProjectileItem(const FProjectileStateChanged::FDelegate& Delegate)
+bool FProjectilePoolItem::BindProjectileItem(const FProjectileStateChanged::FDelegate& Delegate)
 {
-	if (!ensure(Projectile && Delegate.IsBound()))
+	check(Delegate.IsBound())
+	if (!IsValid(Projectile))
 	{
-		return;
+		return false;
 	}
 
 	OnProjectileStateChangedHandle = Projectile->OnProjectileStateChanged.Add(Delegate);
 
 	// Execute for initial state
 	Delegate.Execute(Projectile, {}, Projectile->GetProjectileState());
+	return true;
 }
 
 void FProjectilePoolItem::UnbindProjectileItem()
@@ -42,9 +44,17 @@ void FProjectilePoolItem::UnbindProjectileItem()
 
 void FProjectilePoolItem::PostReplicatedAdd(const FProjectilePool& InArray)
 {
-	// We does not modify 'Items' so It's safe to cast away const.
-	auto& CastedArray = const_cast<FProjectilePool&>(InArray);
-	BindProjectileItem(CastedArray.CreateClientProjectileStateDelegate());
+	if (!BindProjectileItem(InArray.CreateClientProjectileStateDelegate()))
+	{
+		UE_LOG(LogTemp, Log, TEXT("Failed to bind projectile item. It will be bound later."));
+		InArray.PendingBindItems.Emplace(this);
+	}
+}
+
+void FProjectilePoolItem::PreReplicatedRemove(const FProjectilePool& InArray)
+{
+	InArray.FreeProjectiles.RemoveSwap(Projectile);
+	InArray.PendingBindItems.RemoveSwap(this);
 }
 
 void FProjectilePool::Initialize(UWorld* InSpawnWorld, const FActorSpawnParameters& InActorSpawnParameters)
@@ -52,16 +62,6 @@ void FProjectilePool::Initialize(UWorld* InSpawnWorld, const FActorSpawnParamete
 	SpawnWorld = InSpawnWorld;
 	ActorSpawnParameters = InActorSpawnParameters;
 	ReFeelExtraObjects();
-}
-
-bool FProjectilePool::IsMaximumReached() const
-{
-	return MaxPoolSize != 0 && (uint32)Items.Num() >= MaxPoolSize;
-}
-
-bool FProjectilePool::IsExtraObjectMaximumReached() const
-{
-	return (uint32)FreeProjectiles.Num() >= MaxExtraObjectCount;
 }
 
 void FProjectilePool::AddNewObject()
@@ -83,11 +83,9 @@ FProjectilePool::~FProjectilePool()
 void FProjectilePool::InternalAddNewObject()
 {
 	const auto Instance = SpawnWorld->SpawnActor<ALakayaProjectile>(ProjectileClass, ActorSpawnParameters);
-	if (!ensure(Instance))
-	{
-		return;
-	}
+	check(Instance)
 	Instance->SetReplicates(true);
+	OnProjectileSpawned.Broadcast(Instance);
 
 	auto& Item = Items[Items.Emplace(Instance, CreateServerProjectileStateDelegate())];
 	MarkItemDirty(Item);
@@ -106,8 +104,27 @@ void FProjectilePool::ReFeelExtraObjects()
 	}
 }
 
+bool FProjectilePool::BindPendingItems() const
+{
+	TArray<FProjectilePoolItem*> BoundItems;
+	BoundItems.Reserve(PendingBindItems.Num());
+
+	const auto predicate = [Delegate = CreateClientProjectileStateDelegate()](FProjectilePoolItem* Item)
+	{
+		return Item->BindProjectileItem(Delegate);
+	};
+	Algo::CopyIf(PendingBindItems, BoundItems, predicate);
+
+	for (const auto& Item : BoundItems)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Pending bind %s has bounded."), *Item->Projectile->GetName());
+		PendingBindItems.RemoveSwap(Item);
+	}
+	return !BoundItems.IsEmpty();
+}
+
 void FProjectilePool::ClientProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
-                                                   const FProjectileState& NewState)
+                                                   const FProjectileState& NewState) const
 {
 	NewState.IsCollapsed() ? FreeProjectiles.AddUnique(InProjectile) : FreeProjectiles.Remove(InProjectile);
 }
@@ -119,9 +136,8 @@ void FProjectilePool::ServerProjectileStateChanged(ALakayaProjectile* InProjecti
 	{
 		FreeProjectiles.AddUnique(InProjectile);
 	}
-	else
+	else if (FreeProjectiles.Remove(InProjectile) != INDEX_NONE)
 	{
-		FreeProjectiles.Remove(InProjectile);
 		AddNewObject();
 	}
 }
@@ -140,9 +156,8 @@ ALakayaProjectile* FProjectilePool::GetFreeProjectile()
 
 	ALakayaProjectile* Projectile = nullptr;
 
-	if (FreeProjectiles.IsEmpty())
+	if (!HasFreeProjectile())
 	{
-		// 투사체는 실제로 투사체가 사용되기 시작할 때 생성되며 여기에서 생성하지 않습니다.
 		if (NoExtraPolicy == EPoolNoObjectPolicy::RecycleOldest)
 		{
 			// 로컬 클라이언트에서 예측적으로 동작하는 것일 수도 있으므로 여기에서 투사체를 Collapse 시키지는 않습니다.
@@ -157,12 +172,71 @@ ALakayaProjectile* FProjectilePool::GetFreeProjectile()
 	return Projectile;
 }
 
+bool FProjectilePool::RemoveProjectile(ALakayaProjectile* Projectile)
+{
+	if (Projectile && Items.RemoveSwap(Projectile) != INDEX_NONE)
+	{
+		MarkArrayDirty();
+		FreeProjectiles.RemoveSwap(Projectile);
+		if (Projectile->IsPendingKillPending())
+		{
+			OnPreProjectileDestroy.Broadcast(Projectile);
+			Projectile->Destroy();
+		}
+		AddNewObject();
+		return true;
+	}
+	return false;
+}
+
+void FProjectilePool::ClearProjectilePool()
+{
+	//TODO: 이 스코프 내에서 AddNewObject나 RemoveProjectile이 호출되면 문제가 발생합니다. ScopedListLock을 구현해야할 수 있습니다.
+	for (auto&& Item : Items)
+	{
+		Item.UnbindProjectileItem();
+		if (Item.Projectile && Item.Projectile->IsPendingKillPending())
+		{
+			OnPreProjectileDestroy.Broadcast(Item.Projectile);
+			Item.Projectile->Destroy();
+		}
+	}
+	Items.Empty();
+	FreeProjectiles.Empty();
+	MarkArrayDirty();
+}
+
+void FProjectilePool::SetInstigator(APawn* Instigator)
+{
+	ActorSpawnParameters.Instigator = Instigator;
+	for (auto&& Item : Items)
+	{
+		Item.Projectile->SetInstigator(Instigator);
+	}
+}
+
 ULakayaAbility_Projectile::ULakayaAbility_Projectile(): ProjectilePool()
 {
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ClientOrServer;
+
+	ProjectilePool.OnProjectileSpawned.AddUniqueDynamic(this, &ThisClass::OnProjectileSpawned);
+	ProjectilePool.OnPreProjectileDestroy.AddUniqueDynamic(this, &ThisClass::OnPreProjectileDestroy);
+}
+
+void ULakayaAbility_Projectile::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo,
+                                              const FGameplayAbilitySpec& Spec)
+{
+	Super::OnGiveAbility(ActorInfo, Spec);
+	if (ActorInfo->IsNetAuthority())
+	{
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.Owner = ActorInfo->OwnerActor.Get();
+		SpawnParameters.Instigator = Cast<APawn>(ActorInfo->AvatarActor);
+		ProjectilePool.Initialize(GetWorld(), SpawnParameters);
+	}
 }
 
 void ULakayaAbility_Projectile::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo,
@@ -171,11 +245,29 @@ void ULakayaAbility_Projectile::OnAvatarSet(const FGameplayAbilityActorInfo* Act
 	Super::OnAvatarSet(ActorInfo, Spec);
 	if (ActorInfo->IsNetAuthority())
 	{
-		FActorSpawnParameters SpawnParameters;
-		SpawnParameters.Owner = ActorInfo->OwnerActor.Get();
-		SpawnParameters.Instigator = Cast<APawn>(ActorInfo->AvatarActor.Get());
-		ProjectilePool.Initialize(GetWorld(), SpawnParameters);
+		ProjectilePool.SetInstigator(Cast<APawn>(ActorInfo->AvatarActor));
 	}
+}
+
+void ULakayaAbility_Projectile::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo,
+                                                const FGameplayAbilitySpec& Spec)
+{
+	Super::OnRemoveAbility(ActorInfo, Spec);
+	if (ActorInfo->IsNetAuthority())
+	{
+		ProjectilePool.ClearProjectilePool();
+	}
+}
+
+bool ULakayaAbility_Projectile::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
+                                                   const FGameplayAbilityActorInfo* ActorInfo,
+                                                   const FGameplayTagContainer* SourceTags,
+                                                   const FGameplayTagContainer* TargetTags,
+                                                   FGameplayTagContainer* OptionalRelevantTags) const
+{
+	// 사용 가능한 투사체가 있을 때만 어빌리티를 사용할 수 있도록 합니다.
+	return Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags)
+		&& ProjectilePool.IsAvailable();
 }
 
 void ULakayaAbility_Projectile::OnTargetDataReceived_Implementation(
@@ -203,7 +295,11 @@ void ULakayaAbility_Projectile::OnTargetDataReceived_Implementation(
 FGameplayAbilityTargetDataHandle ULakayaAbility_Projectile::MakeTargetData_Implementation()
 {
 	const auto NewProjectile = ProjectilePool.GetFreeProjectile();
-	check(IsValid(NewProjectile))
+	if (!ensure(IsValid(NewProjectile)))
+	{
+		//TODO: 일단 크래시가 발생하지는 않도록 임시조치를 진행했습니다.
+		return {};
+	}
 
 	FVector ThrowLocation, ThrowDirection;
 	MakeProjectileThrowLocation(ThrowLocation, ThrowDirection);
@@ -217,6 +313,24 @@ FGameplayAbilityTargetDataHandle ULakayaAbility_Projectile::MakeTargetData_Imple
 
 	FGameplayAbilityTargetDataHandle TargetDataHandle(TargetData);
 	return TargetDataHandle;
+}
+
+void ULakayaAbility_Projectile::OnProjectileSpawned(ALakayaProjectile* Projectile)
+{
+	BP_Log(FString::Printf(TEXT("%s Spawned"), *Projectile->GetName()));
+	Projectile->OnDestroyed.AddUniqueDynamic(this, &ThisClass::OnProjectileDestroyed);
+}
+
+void ULakayaAbility_Projectile::OnPreProjectileDestroy(ALakayaProjectile* Projectile)
+{
+	// 풀 내부에서 삭제하는 투사체에 대해서는 OnProjectileDestroyed가 호출되지 않도록 합니다.
+	Projectile->OnDestroyed.RemoveAll(this);
+}
+
+void ULakayaAbility_Projectile::OnProjectileDestroyed(AActor* Projectile)
+{
+	BP_Log(FString::Printf(TEXT("%s external destroyed!"), Projectile ? *Projectile->GetName() : TEXT("")));
+	ProjectilePool.RemoveProjectile(Cast<ALakayaProjectile>(Projectile));
 }
 
 void ULakayaAbility_Projectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

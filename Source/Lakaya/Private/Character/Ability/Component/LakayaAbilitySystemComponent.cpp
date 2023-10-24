@@ -36,6 +36,14 @@ void ULakayaAbilitySystemComponent::AbilityLocalInputReleased(int32 InputID)
 	}
 }
 
+void ULakayaAbilitySystemComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	// 부모 함수에서 아바타 액터를 임의로 Owner로 설정해버리도록 되어있어 nullptr로 다시 바꿔줍니다.
+	SetAvatarActor(nullptr);
+}
+
 void ULakayaAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
 	//TODO: 언리얼 5.3의 스크립트이므로, 5.3에서는 제거해야 합니다.

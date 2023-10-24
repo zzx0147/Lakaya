@@ -609,6 +609,14 @@ void ALakayaBasePlayerState::BindAllSkillToWidget()
 			               AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeSkillStackAttribute);
 			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxSkillStackAttribute()).
 			               AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeMaxSkillStackAttribute);
+
+			if(HasAuthority())
+			{
+				SkillProgressBar->SetMaxSkillStack(LakayaAttributeSet->GetMaxSkillStack());
+				SkillProgressBar->SetSkillStack(LakayaAttributeSet->GetMaxSkillStack());
+			}
+			
+			
 			break;
 		case ESkillProgressBarType::Ultimate:
 			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetUltimateGaugeAttribute()).

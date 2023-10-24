@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayEffect.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "LakayaBlueprintLibrary.generated.h"
 
@@ -25,4 +26,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static ECollisionChannel ConvertToCollisionChannel(const EObjectTypeQuery& ObjectType);
+
+	UFUNCTION(BlueprintCallable)
+	static FGameplayEffectContextHandle GetEffectContext(const FGameplayEffectSpec& EffectSpec);
 };
