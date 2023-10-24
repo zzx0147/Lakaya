@@ -5,6 +5,7 @@
 #include "Character/LakayaBaseCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
+#include "GameFramework/Character.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameMode.h"
 #include "Kismet/GameplayStatics.h"
@@ -508,6 +509,18 @@ void AOccupationGameState::OnClairvoyanceDeactivateRequested(const AActor* InIns
 	ClairvoyanceInstigatorSet.Remove(InInstigator);
 }
 
+void AOccupationGameState::OnClairvoyanceActivated()
+{
+	Super::OnClairvoyanceActivated();
+	SetOpponentRenderCustomDepth(true);
+}
+
+void AOccupationGameState::OnClairvoyanceDeactivated()
+{
+	Super::OnClairvoyanceDeactivated();
+	SetOpponentRenderCustomDepth(false);
+}
+
 void AOccupationGameState::OnRep_MatchEndingTime()
 {
 	Super::OnRep_MatchEndingTime();
@@ -620,6 +633,27 @@ void AOccupationGameState::InternalSetTabMinimapVisibility(const bool& Visible) 
 	}
 
 	TabMinimapWidget->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
+}
+
+void AOccupationGameState::SetOpponentRenderCustomDepth(const bool& Visible) const
+{
+	if (!ensure(ClientTeam == ETeam::Anti || ClientTeam == ETeam::Pro))
+	{
+		return;
+	}
+
+	const auto OpponentTeam = ClientTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
+
+	for (const auto Player : PlayersByTeamMap[ClientTeam])
+	{
+		if (IsValid(Player))
+		{
+			if (const auto Character = Player->GetPawn<ACharacter>())
+			{
+				Character->GetMesh()->SetRenderCustomDepth(Visible);
+			}
+		}
+	}
 }
 
 void AOccupationGameState::AddCaptureAreaCount(const ETeam& Team, const uint8 Id)

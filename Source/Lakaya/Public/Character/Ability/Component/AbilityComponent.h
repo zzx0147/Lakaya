@@ -21,20 +21,24 @@ public:
 	void SetOwningAbility(UGameplayAbility* InOwningAbility);
 
 protected:
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UGameplayAbility* GetOwningAbility() const { return OwningAbility.Get(); }
+	UFUNCTION(BlueprintGetter)
+	UGameplayAbility* GetOwningAbility() const { return OwningAbility; }
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UAbilitySystemComponent* GetAbilitySystemComponent() const { return AbilitySystemComponent.Get(); }
+	UFUNCTION(BlueprintGetter)
+	UAbilitySystemComponent* GetAbilitySystemComponent() const { return AbilitySystemComponent; }
 
 	virtual bool ShouldActivate() const override;
 
 private:
-	void OnGameplayTagEvent(FGameplayTag Tag, int32 NewCount);
+	void OnRequiredTagUpdated(FGameplayTag Tag, int32 NewCount);
+	void OnIgnoredTagUpdated(FGameplayTag Tag, int32 NewCount);
 
 	UPROPERTY(EditAnywhere)
 	FGameplayTagRequirements EnableRequireTags;
 
-	TWeakObjectPtr<UGameplayAbility> OwningAbility;
-	TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+	UPROPERTY(Transient, BlueprintGetter=GetOwningAbility)
+	TObjectPtr<UGameplayAbility> OwningAbility;
+
+	UPROPERTY(Transient, BlueprintGetter=GetAbilitySystemComponent)
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 };
