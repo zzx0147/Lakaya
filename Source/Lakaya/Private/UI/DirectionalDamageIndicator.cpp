@@ -80,6 +80,7 @@ void UDirectionalDamageIndicator::IndicateStart(const FString& CauserName, const
 		tempSlot->SetPosition(FVector2d(0.0f, 0.0f));
 		tempSlot->SetOffsets(FMargin(0.0f));
 	}
-	
-	Result->IndicateStart(GetOwningPlayer()->GetCharacter()->GetRootComponent(), DamageCursorPosition, IndicateTime);
+
+	if(IsValid(Result))
+		Result->IndicateStart(GetOwningPlayer()->GetCharacter()->GetRootComponent(), DamageCursorPosition, IndicateTime);
 }
