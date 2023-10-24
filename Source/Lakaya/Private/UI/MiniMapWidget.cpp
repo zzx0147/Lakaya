@@ -5,7 +5,6 @@
 
 #include "Camera/CameraComponent.h"
 #include "Character/LakayaBaseCharacter.h"
-#include "GameMode/OccupationGameState.h"
 
 void UMinimapWidget::NativeConstruct()
 {
@@ -21,13 +20,13 @@ void UMinimapWidget::NativeConstruct()
 	PlayersByMinimap.Emplace(ETeam::Pro);
 
 	EnemyTeam = CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
-
-	OwnerCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayerPawn());
 }
 
 void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
+	
+	// OwnerCharacter = Cast<ALakayaBaseCharacter>(GetOwningLocalPlayer());
 
 	// 게임 중이 아닐때에는 미니맵을 업데이트 해주지 않습니다.
 	// if (!UpdateMinimap) return;

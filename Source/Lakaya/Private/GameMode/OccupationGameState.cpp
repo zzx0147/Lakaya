@@ -2,6 +2,7 @@
 
 #include "InputMappingContext.h"
 #include "Blueprint/UserWidget.h"
+#include "Character/LakayaBaseCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
@@ -216,6 +217,17 @@ void AOccupationGameState::HandleMatchHasStarted()
 				// 일단은 본인의 팀과 상대방의 팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
 				UpdatePlayerByMinimap(ETeam::Anti, LakayaPlayerState);
 				UpdatePlayerByMinimap(ETeam::Pro, LakayaPlayerState);
+
+				const auto& PlayerTest = GetOwner();
+				ALakayaBaseCharacter* PlayerCharacter =Cast<ALakayaBaseCharacter>(PlayerTest);
+				if (PlayerCharacter)
+				{
+					HUDMinimapWidget->SetOwnerCharacter(PlayerCharacter);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter is null."));
+				}
 			}
 		}
 	}
@@ -235,6 +247,16 @@ void AOccupationGameState::HandleMatchHasStarted()
 				// 본인의 팀과 상대팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
 				UpdatePlayerByMinimap(ETeam::Anti, LakayaPlayerState);
 				UpdatePlayerByMinimap(ETeam::Pro, LakayaPlayerState);
+
+				// const auto& PlayerTest = GetOwner();
+				// if (ALakayaBaseCharacter* PlayerCharacter = Cast<ALakayaBaseCharacter>(LakayaPlayerState->GetPawn()))
+				// {
+				// 	TabMinimapWidget->SetOwnerCharacter(PlayerCharacter);
+				// }
+				// else
+				// {
+				// 	UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter is null."));
+				// }
 			}
 		}
 	}
@@ -259,13 +281,24 @@ void AOccupationGameState::HandleMatchHasStarted()
 	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate,
 	                                (MatchWaitDuration - 10 + MatchStartWaitWidgetLifeTime), false);
 
-	// 게임이 본격적으로 시작이 되면 StartMessage위젯을 띄워줍니다.
+	// 게임이 본격적으로 시작이 되면 StartMessage위젯을 띄워주며, 적의 위치를 미니맵에 업데이트 할 수 있도록 검사를 진행합니다.
 	TimerDelegate.BindWeakLambda(this,[this]
 	{
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		DestroyShieldWallObject();
 		if(TeamScoreWidget) TeamScoreWidget->SetMaxScoreVisibility(true);
 		if(InGameTimeWidget.IsValid()) InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
+		if (HUDMinimapWidget)
+		{
+			HUDMinimapWidget->SetEnemyUpdateMinimap(true);
+			HUDMinimapWidget->SetOwnerCharacter(Cast<ALakayaBaseCharacter>(GetOwner()));
+		}
+
+		if (TabMinimapWidget)
+		{
+			TabMinimapWidget->SetEnemyUpdateMinimap(true);
+			HUDMinimapWidget->SetOwnerCharacter(Cast<ALakayaBaseCharacter>(GetOwner()));
+		}
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageVisible, TimerDelegate, MatchWaitDuration, false);
 

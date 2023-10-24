@@ -6,6 +6,8 @@
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
+#include "Kismet/GameplayStatics.h"
+#include "Occupation/ShieldWallObject.h"
 
 void UOccupationOverlayMinimapWidget::NativeConstruct()
 {
@@ -23,37 +25,61 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	if (!OccupationGameState || !AllyUpdateMinimap || OwnerCharacter)
+	
+	if (!OccupationGameState /* || !AllyUpdateMinimap || !OwnerCharacter */)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("null"));
+		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState is null."));
 		return;
 	}
+
+	if (!AllyUpdateMinimap)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AllyUpdateMinimap is false."));
+		return;
+	}
+
+	// if (!OwnerCharacter)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("OwnerCharacter is null."));
+	// 	return;
+	// }
+	
+	// if (!OwnerCharacter)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("OwnerCharacter is null."));
+	// 	return;
+	// }
 
 	// 자신의 팀(자기 자신 포함)위치를 업데이트 해줍니다.
 	UpdatePlayerPosition(CurrentTeam);
 
+	// 게임이 본격적으로 게임되지 않은 상태라면, 적의 위치를 업데이트 해주지 않습니다.
+	if (!EnemyUpdateMinimap) return;
+	
 	// 와지가 궁극기 스킬을 사용 중이라면, 적들의 정보 순회를 멈추고 모든 적의 위치를 업데이트 해줍니다.
 	if (OccupationGameState->GetbIsClairvoyanceActivated())
 	{
 		UpdatePlayerPosition(EnemyTeam);
 		return;
 	}
-
-	for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
-	{
-		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
-		const TWeakObjectPtr<UImage> EnemyMinimapImage = Enemy.Value;
-		
-		// TODO : 적이 시야에 들어왔는 지 검사해야 합니다.
-		if (EnemyState->GetPawn()->WasRecentlyRendered(0.1f) && OwnerCharacter->IsEnemyVisibleInCamera(EnemyState))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Spotted."));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("."));
-		}
-	}
+	
+	// 적들을 순회해서, 시야에 들어왔는 지 검사를 합니다.
+	// for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
+	// {
+	// 	const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
+	// 	const TWeakObjectPtr<UImage> EnemyMinimapImage = Enemy.Value;
+	//
+	// 	// 해당 적이 렌더링 중인지 검사를 합니다.
+	// 	if (EnemyState->GetPawn()->WasRecentlyRendered(0.1f)/* && OwnerCharacter->IsEnemyVisibleInCamera(EnemyState)*/)
+	// 	{
+	// 		// 해당 적이 렌더링 중이라면, 해당 적에게 RayCast를 쏴서, 벽과 충돌하는 지를 검사합니다.
+	// 		UE_LOG(LogTemp, Warning, TEXT("Enemy Spotted."));
+	// 	}
+	// 	else
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("."));
+	// 	}
+	// }
 }
 
 FVector2d UOccupationOverlayMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,

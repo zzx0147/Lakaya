@@ -265,26 +265,28 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const TWeakObjectPtr<ALakayaBa
 	}
 
 	//TODO 월드가 유효하지 않은 때가 있습니다. 임시로 Null체크를 집어넣었습니다. 추후 수정 요망
-	if(!GetWorld()) return false;
+	// if(!GetWorld()) return false;
 	
-	// TODO : GetFristPlayerController를 가져오는 것이 맞는지 확인해야 합니다.
-	const APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	// TODO : GetFirstPlayerController를 가져오는 것이 맞는지 확인해야 합니다.
+	// const APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	// const APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	
-	if (!PlayerController || !PlayerController->PlayerCameraManager)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayerController or PlayerCameraManager is null."));
-		return false;
-	}
+	// if (!PlayerController || !PlayerController->PlayerCameraManager)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("PlayerController or PlayerCameraManager is null."));
+	// 	return false;
+	// }
 #pragma endregion
 	
 	// 시야에 적이 들어왔는지 확인합니다.
 	{
-		const FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
+		// const FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
+		const FVector CameraLocation = GetCamera()->GetComponentLocation();
 		const FVector EnemyLocation = EnemyPawn->GetActorLocation();
 		const FVector DirectionToTarget = (EnemyLocation - CameraLocation).GetSafeNormal();
-		const FVector LookDirection = PlayerController->GetControlRotation().Vector();
-
+		// const FVector LookDirection = PlayerController->GetControlRotation().Vector();
+		const FVector LookDirection = GetCamera()->GetForwardVector();
+		
 		// 시야각을 설정합하여, 라디언으로 변환합니다.
 		// const float AngleThreshold = FMath::DegreesToRadians(90.0f);
 

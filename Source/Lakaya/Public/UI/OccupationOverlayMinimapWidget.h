@@ -37,4 +37,6 @@ private:
 private:
 	UPROPERTY()
 	AOccupationGameState* OccupationGameState;
+
+	
 };
