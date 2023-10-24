@@ -116,6 +116,8 @@ public:
 	UFUNCTION(BlueprintGetter)
 	const FName& GetCharacterName() const { return CharacterName; }
 
+	const UStaticMeshComponent* GetClairvoyanceMeshComponent() const { return ClairvoyanceMeshComponent; }
+	
 	// 캐릭터에게 팀을 설정해줍니다.
 	UFUNCTION(BlueprintNativeEvent)
 	void SetTeam(const ETeam& Team);

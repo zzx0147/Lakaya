@@ -64,20 +64,42 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 	}
 	
 	// 적들을 순회해서, 시야에 들어왔는 지 검사를 합니다.
-	// for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
+	for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
+	{
+		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
+		const TWeakObjectPtr<UImage> EnemyMinimapImage = Enemy.Value;
+	
+		// 해당 적이 렌더링 중인지 검사를 합니다.
+		if (EnemyState->GetPawn()->WasRecentlyRendered(0.1f)/* && OwnerCharacter->IsEnemyVisibleInCamera(EnemyState)*/)
+		{
+			// 해당 적이 렌더링 중이라면, 해당 적에게 RayCast를 쏴서, 벽과 충돌하는 지를 검사합니다.
+			UE_LOG(LogTemp, Warning, TEXT("Enemy Spotted."));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("."));
+		}
+	}
+
+	// UWorld* World = GetWorld();
+	// if (World == nullptr)
 	// {
-	// 	const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
-	// 	const TWeakObjectPtr<UImage> EnemyMinimapImage = Enemy.Value;
+	// 	UE_LOG(LogTemp, Warning, TEXT("World is null."));
+	// 	return;
+	// }
 	//
-	// 	// 해당 적이 렌더링 중인지 검사를 합니다.
-	// 	if (EnemyState->GetPawn()->WasRecentlyRendered(0.1f)/* && OwnerCharacter->IsEnemyVisibleInCamera(EnemyState)*/)
+	// TArray<TObjectPtr<AActor>> FoundActors;
+	// UGameplayStatics::GetAllActorsOfClass(World, AShieldWallObject::StaticClass(), FoundActors);
+	//
+	// for (const auto& Actor : FoundActors)
+	// {
+	// 	if (Actor->WasRecentlyRendered(0.1f))
 	// 	{
-	// 		// 해당 적이 렌더링 중이라면, 해당 적에게 RayCast를 쏴서, 벽과 충돌하는 지를 검사합니다.
-	// 		UE_LOG(LogTemp, Warning, TEXT("Enemy Spotted."));
+	// 		UE_LOG(LogTemp, Warning, TEXT("Find."));
 	// 	}
 	// 	else
 	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("."));
+	// 		UE_LOG(LogTemp, Warning, TEXT("Not Find."));
 	// 	}
 	// }
 }

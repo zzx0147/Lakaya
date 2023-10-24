@@ -219,16 +219,16 @@ void AOccupationGameState::HandleMatchHasStarted()
 				UpdatePlayerByMinimap(ETeam::Anti, LakayaPlayerState);
 				UpdatePlayerByMinimap(ETeam::Pro, LakayaPlayerState);
 
-				const auto& PlayerTest = GetOwner();
-				ALakayaBaseCharacter* PlayerCharacter =Cast<ALakayaBaseCharacter>(PlayerTest);
-				if (PlayerCharacter)
-				{
-					HUDMinimapWidget->SetOwnerCharacter(PlayerCharacter);
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter is null."));
-				}
+				// const auto& PlayerTest = GetOwner();
+				// ALakayaBaseCharacter* PlayerCharacter =Cast<ALakayaBaseCharacter>(PlayerTest);
+				// if (PlayerCharacter)
+				// {
+				// 	HUDMinimapWidget->SetOwnerCharacter(PlayerCharacter);
+				// }
+				// else
+				// {
+				// 	UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter is null."));
+				// }
 			}
 		}
 	}
@@ -261,6 +261,8 @@ void AOccupationGameState::HandleMatchHasStarted()
 			}
 		}
 	}
+
+	// OnClairvoyanceDeactivated();
 	
 	FTimerDelegate TimerDelegate_MatchStartWaitWidget;
 	TimerDelegate_MatchStartWaitWidget.BindLambda([this]
@@ -286,19 +288,19 @@ void AOccupationGameState::HandleMatchHasStarted()
 	TimerDelegate.BindWeakLambda(this,[this]
 	{
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		DestroyShieldWallObject();
+		// DestroyShieldWallObject();
 		if(TeamScoreWidget) TeamScoreWidget->SetMaxScoreVisibility(true);
 		if(InGameTimeWidget.IsValid()) InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 		if (HUDMinimapWidget)
 		{
 			HUDMinimapWidget->SetEnemyUpdateMinimap(true);
-			HUDMinimapWidget->SetOwnerCharacter(Cast<ALakayaBaseCharacter>(GetOwner()));
+			// HUDMinimapWidget->SetOwnerCharacter(Cast<ALakayaBaseCharacter>(GetOwner()));
 		}
 
 		if (TabMinimapWidget)
 		{
 			TabMinimapWidget->SetEnemyUpdateMinimap(true);
-			HUDMinimapWidget->SetOwnerCharacter(Cast<ALakayaBaseCharacter>(GetOwner()));
+			// HUDMinimapWidget->SetOwnerCharacter(Cast<ALakayaBaseCharacter>(GetOwner()));
 		}
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageVisible, TimerDelegate, MatchWaitDuration, false);
@@ -316,7 +318,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 void AOccupationGameState::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
-
+	
 	if (GameResultWidget.IsValid())
 		GameResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
@@ -644,13 +646,18 @@ void AOccupationGameState::SetOpponentRenderCustomDepth(const bool& Visible) con
 
 	const auto OpponentTeam = ClientTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
 
-	for (const auto Player : PlayersByTeamMap[ClientTeam])
+	for (const auto Player : PlayersByTeamMap[OpponentTeam])
 	{
 		if (IsValid(Player))
 		{
 			if (const auto Character = Player->GetPawn<ACharacter>())
 			{
 				Character->GetMesh()->SetRenderCustomDepth(Visible);
+				Character->GetMesh()->bRenderCustomDepth = Visible;
+				Character->GetMesh()->bRenderInDepthPass = Visible;
+				UE_LOG(LogTemp, Warning, TEXT("customdepthfunc"));
+				// const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(Character);
+				// LakayaCharacter->GetClairvoyanceMeshComponent()->
 			}
 		}
 	}
