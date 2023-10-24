@@ -52,10 +52,12 @@ public:
 
 	void OnChangeUltimateGaugeAttribute(const FOnAttributeChangeData& NewValue);
 	void OnChangeMaxUltimateGaugeAttribute(const FOnAttributeChangeData& NewValue);
-
+	
 	void OnChangeSkillStackAttribute(const FOnAttributeChangeData& NewValue);
 	void OnChangeMaxSkillStackAttribute(const FOnAttributeChangeData& NewValue);
-
+	void SetMaxSkillStack(const float& NewValue);
+	void SetSkillStack(const float& NewValue);
+	
 	void SetProgressType(const ESkillProgressBarType& NewType);
 	FORCEINLINE ESkillProgressBarType GetProgressType() const { return ProgressBarType; }
 	void SetKey(const ESkillKey& NewKey);
