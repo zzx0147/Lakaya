@@ -69,7 +69,7 @@ void UDirectionalDamageIndicator::IndicateStart(const FString& CauserName, const
 	{
 		Result = CreateWidget<UDirectionalIndicatorElement>(this, IndicatorElementClass);
 
-		if (Result == nullptr) return;
+		if (!IsValid(Result)) return;
 
 		IndicatorMap.Add(CauserName, Result);
 		IndicatorPanel->AddChild(Result);
