@@ -55,11 +55,14 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 	{
 		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
 		const TWeakObjectPtr<UImage> EnemyMinimapImage = Enemy.Value;
+
+		// if (EnemyState == GetOwningPlayerState()) return;
 		
 		// 해당 적이 렌더링 중인지 검사를 합니다.
-		if (EnemyState->GetPawn()->WasRecentlyRendered(0.1f)/* && OwnerCharacter->IsEnemyVisibleInCamera(EnemyState)*/)
+		if (EnemyState->GetPawn()->WasRecentlyRendered(0.1f))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Enemy Spotted. Name : %s"), *EnemyState->GetCharacterName().ToString());
+			UE_LOG(LogTemp, Warning, TEXT("MyTeam : %hhd, EnemyTeam : %hhd"), CurrentTeam, EnemyTeam);
 		}
 		else
 		{

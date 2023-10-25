@@ -206,29 +206,19 @@ void AOccupationGameState::HandleMatchHasStarted()
 	{
 		HUDMinimapWidget->SetAllyUpdateMinimap(true);
 		HUDMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
+		
 		if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 			LocalController && LocalController->IsLocalController())
 		{
 			if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 			{
 				HUDMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
-
+				HUDMinimapWidget->SetEnemyTeam(LakayaPlayerState->GetTeam() == ETeam::Anti ? ETeam::Pro : ETeam::Anti);
+				
 				// 와지가 스킬을 쓰게 되면 상대방의 위치도 미니맵 상에 업데이트 해줘야 하기 때문에
 				// 일단은 본인의 팀과 상대방의 팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
 				UpdatePlayerByMinimap(ETeam::Anti, LakayaPlayerState);
 				UpdatePlayerByMinimap(ETeam::Pro, LakayaPlayerState);
-
-				// const auto& PlayerTest = GetOwner();
-				// ALakayaBaseCharacter* PlayerCharacter =Cast<ALakayaBaseCharacter>(PlayerTest);
-				// if (PlayerCharacter)
-				// {
-				// 	HUDMinimapWidget->SetOwnerCharacter(PlayerCharacter);
-				// }
-				// else
-				// {
-				// 	UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter is null."));
-				// }
 			}
 		}
 	}
@@ -243,21 +233,12 @@ void AOccupationGameState::HandleMatchHasStarted()
 			if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 			{
 				TabMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
+				TabMinimapWidget->SetEnemyTeam(LakayaPlayerState->GetTeam() == ETeam::Anti ? ETeam::Pro : ETeam::Anti);
 
 				// 와지가 스킬을 쓰게 되면 상대방의 위치도 미니맵 상에 업데이트 해줘야 하기 때문에
 				// 본인의 팀과 상대팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
 				UpdatePlayerByMinimap(ETeam::Anti, LakayaPlayerState);
 				UpdatePlayerByMinimap(ETeam::Pro, LakayaPlayerState);
-
-				// const auto& PlayerTest = GetOwner();
-				// if (ALakayaBaseCharacter* PlayerCharacter = Cast<ALakayaBaseCharacter>(LakayaPlayerState->GetPawn()))
-				// {
-				// 	TabMinimapWidget->SetOwnerCharacter(PlayerCharacter);
-				// }
-				// else
-				// {
-				// 	UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter is null."));
-				// }
 			}
 		}
 	}
