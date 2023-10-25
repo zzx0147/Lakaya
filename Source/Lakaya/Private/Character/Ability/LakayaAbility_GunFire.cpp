@@ -23,7 +23,7 @@ void ULakayaAbility_GunFire::OnAvatarSet(const FGameplayAbilityActorInfo* ActorI
 
 	check(FireTraceComponentClass->ImplementsInterface(UFireTraceInterface::StaticClass()));
 
-	TryRemoveAbilityComponent(ActorInfo->AvatarActor.Get());
+	TryRemoveAbilityComponent();
 
 	FireTraceComponent = FindOrAddAbilityComponent(ActorInfo->AvatarActor.Get(), FireTraceComponentClass,
 	                                               bIsFireTraceComponentAdded);
@@ -44,7 +44,7 @@ void ULakayaAbility_GunFire::OnRemoveAbility(const FGameplayAbilityActorInfo* Ac
                                              const FGameplayAbilitySpec& Spec)
 {
 	Super::OnRemoveAbility(ActorInfo, Spec);
-	TryRemoveAbilityComponent(ActorInfo->AvatarActor.Get());
+	TryRemoveAbilityComponent();
 }
 
 bool ULakayaAbility_GunFire::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -78,11 +78,11 @@ void ULakayaAbility_GunFire::OnTargetDataReceived_Implementation(
 	Super::OnTargetDataReceived_Implementation(TargetDataHandle, GameplayTag);
 }
 
-void ULakayaAbility_GunFire::TryRemoveAbilityComponent(AActor* TargetActor)
+void ULakayaAbility_GunFire::TryRemoveAbilityComponent()
 {
-	if (FireTraceComponent.IsValid() && bIsFireTraceComponentAdded && TargetActor)
+	if (FireTraceComponent.IsValid() && bIsFireTraceComponentAdded)
 	{
-		TargetActor->RemoveInstanceComponent(FireTraceComponent.Get());
+		FireTraceComponent->DestroyComponent();
 		FireTraceComponent.Reset();
 		BP_Log(TEXT("FireTraceComponent Removed"));
 	}
