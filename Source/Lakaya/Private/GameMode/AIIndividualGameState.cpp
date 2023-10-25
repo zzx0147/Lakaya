@@ -58,7 +58,7 @@ void AAIIndividualGameState::BeginPlay()
 		}
 		else UE_LOG(LogTemp, Warning, TEXT("GameResultWidgeTClass is null"));
 	}
-	
+
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
 		AController* AllControllers = It->Get();
@@ -73,7 +73,7 @@ void AAIIndividualGameState::BeginPlay()
 		{
 			AIIndividualLiveScoreBoardWidget->AddToViewport();
 			AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Hidden);
-			
+
 			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
 
 			// 매치시작전에 스폰된 플레이어와 AI의 정보를 미리 한번 넣어주는곳입니다. 이후 Tick에서 실시간으로 계속 검사합니다.
@@ -94,12 +94,12 @@ void AAIIndividualGameState::BeginPlay()
 				{
 					// 점수판에 표시되는 이름이며 현재 AI 의 캐릭터 + 몃번째의 AI 컨트롤러 번호인지를 표시해주고있습니다.
 					AIName = PlayerStateObj->GetCharacterName().ToString()
-					+ " AI (" +  FString::FromInt(static_cast<int>(It.GetIndex())) + ")";
+						+ " AI (" + FString::FromInt(static_cast<int>(It.GetIndex())) + ")";
 
 					// AI 이름을 Set해주어서 이제 AI도 자기 이름을 가지고 있도록 했습니다.
 					PlayerStateObj->SetPlayerName(AIName);
 					PlayerAIData.PlayerName = PlayerStateObj->GetPlayerName();
-					
+
 					PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
 					PlayerAIData.bIsPlayerCheck = false;
 					FPlayerAIDataArray.Add(PlayerAIData);
@@ -159,10 +159,10 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
 		// LocalController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_None);
-		
+
 		LocalController->DisableInput(LocalController);
 	}
-	
+
 	FTimerDelegate TimerDelegate;
 	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate, MatchStartWaitWidgetLifeTime, false);
 
@@ -185,14 +185,15 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 			if (PlayerCharacterController)
 			{
 				// PlayerCharacterController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-				
+
 				PlayerCharacterController->EnableInput(PlayerCharacterController);
 			}
 
 			// AI 동작
 			if (AiCharacterController)
 			{
-				AiCharacterController->BlackboardComp->InitializeBlackboard(*(AiCharacterController->BehaviorTreeAsset->BlackboardAsset));
+				AiCharacterController->BlackboardComp->InitializeBlackboard(
+					*(AiCharacterController->BehaviorTreeAsset->BlackboardAsset));
 				AiCharacterController->BehaviorTreeComp->StartTree(*(AiCharacterController->BehaviorTreeAsset));
 				AiCharacterController->bIsBehaviorTreeStart = true;
 			}
@@ -281,6 +282,18 @@ bool AAIIndividualGameState::CanInstigatorClairvoyance(const AActor* InInstigato
 	return false;
 }
 
+void AAIIndividualGameState::OnClairvoyanceActivated()
+{
+	Super::OnClairvoyanceActivated();
+	SetOpponentRenderCustomDepth(true);
+}
+
+void AAIIndividualGameState::OnClairvoyanceDeactivated()
+{
+	Super::OnClairvoyanceDeactivated();
+	SetOpponentRenderCustomDepth(false);
+}
+
 ERendererStencilMask AAIIndividualGameState::GetUniqueStencilMaskWithCount(const uint8& Count)
 {
 	switch (Count)
@@ -292,6 +305,21 @@ ERendererStencilMask AAIIndividualGameState::GetUniqueStencilMaskWithCount(const
 	case 5: return ERendererStencilMask::ERSM_16;
 	case 6: return ERendererStencilMask::ERSM_32;
 	default: return ERendererStencilMask::ERSM_Default;
+	}
+}
+
+void AAIIndividualGameState::SetOpponentRenderCustomDepth(const bool& Visible) const
+{
+	for (const auto Player : PlayerArray)
+	{
+		if (IsValid(Player))
+		{
+			if (const auto Character = Player->GetPawn<ACharacter>();
+				Character && Character->IsPlayerControlled() && Character->IsLocallyControlled())
+			{
+				Character->GetMesh()->SetRenderCustomDepth(Visible);
+			}
+		}
 	}
 }
 

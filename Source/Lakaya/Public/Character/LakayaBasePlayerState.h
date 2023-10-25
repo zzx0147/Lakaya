@@ -368,6 +368,9 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> GainUltimateOnAttackEffect;
 
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag DeathTag;
+	
 	UPROPERTY()
 	TObjectPtr<const ULakayaAttributeSet> LakayaAttributeSet;
 

@@ -33,7 +33,7 @@ protected:
 	                                                 FGameplayTag GameplayTag) override;
 
 private:
-	void TryRemoveAbilityComponent(AActor* TargetActor);
+	void TryRemoveAbilityComponent();
 	
 	/** 피격된 대상에게 적용할 게임플레이 이펙트입니다. */
 	UPROPERTY(EditDefaultsOnly)
