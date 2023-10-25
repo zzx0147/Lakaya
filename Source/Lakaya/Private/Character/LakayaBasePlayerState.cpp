@@ -328,7 +328,11 @@ void ALakayaBasePlayerState::CheckCurrentCaptureCount()
 void ALakayaBasePlayerState::SetUniqueStencilMask(const ERendererStencilMask& StencilMask)
 {
 	UniqueRenderMask = StencilMask;
-	if (const auto Character = GetPawn<ALakayaBaseCharacter>()) Character->SetStencilMask(UniqueRenderMask);
+	if (const auto Character = GetPawn<ALakayaBaseCharacter>())
+	{
+		Character->SetStencilMask(UniqueRenderMask);
+		Character->SetCustomDepth(true);
+	}
 }
 
 void ALakayaBasePlayerState::SetAlly(const bool& Ally)

@@ -262,7 +262,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 		}
 	}
 
-	// OnClairvoyanceDeactivated();
+	OnClairvoyanceDeactivated();
 	
 	FTimerDelegate TimerDelegate_MatchStartWaitWidget;
 	TimerDelegate_MatchStartWaitWidget.BindLambda([this]
@@ -650,14 +650,10 @@ void AOccupationGameState::SetOpponentRenderCustomDepth(const bool& Visible) con
 	{
 		if (IsValid(Player))
 		{
-			if (const auto Character = Player->GetPawn<ACharacter>())
+			if (const auto Character = Player->GetPawn<ALakayaBaseCharacter>())
 			{
-				Character->GetMesh()->SetRenderCustomDepth(Visible);
-				Character->GetMesh()->bRenderCustomDepth = Visible;
-				Character->GetMesh()->bRenderInDepthPass = Visible;
-				UE_LOG(LogTemp, Warning, TEXT("customdepthfunc"));
-				// const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(Character);
-				// LakayaCharacter->GetClairvoyanceMeshComponent()->
+				// Character->GetMesh()->SetRenderCustomDepth(Visible);
+				Character->SetCustomDepth(Visible);
 			}
 		}
 	}

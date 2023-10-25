@@ -142,6 +142,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void SetStencilMask(const ERendererStencilMask& StencilMask);
 
+	UFUNCTION(BlueprintNativeEvent)
+	void SetCustomDepth(const bool bVisible);
+	
 	void SetAlly(const bool& IsAlly);
 
 	FORCEINLINE TSubclassOf<class UCharacterWidget> GetCharacterWidgetClass() const { return CharacterWidgetClass; }
@@ -211,6 +214,7 @@ private:
 	UFUNCTION()
 	void DissolveTick(const float& Value);
 
+	
 protected:
 	// 이 캐릭터의 고유한 최대 체력을 나타냅니다.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LakayaCharacterStat, meta=(AllowPrivateAccess = true))
