@@ -6,14 +6,12 @@
 #include "LakayaBaseGameState.h"
 #include "Components/ProgressBar.h"
 #include "EOS/EOSGameInstance.h"
-#include "UI/OccupationTabMinimapWidget.h"
 #include "Occupation/Team.h"
 
 #include "OccupationGameState.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeOccupationWinner, const ETeam&)
 DECLARE_EVENT_TwoParams(AOccupationGameState, FTeamScoreSignature, const ETeam&, const float&)
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangedSpottedPlayers, const TArray<TWeakObjectPtr<ALakayaBasePlayerState>>&)
 
 UCLASS()
 class LAKAYA_API AOccupationGameState : public ALakayaBaseGameState
@@ -176,12 +174,9 @@ private:
 	 */
 	void UpdatePlayerByMinimap(const ETeam& Team, ALakayaBasePlayerState* PlayerState);
 
-	void EnemySpottedLog(const TArray<TWeakObjectPtr<ALakayaBasePlayerState>>& SpottedPlayersArray) const;
-	
 public:
 	FOnChangeOccupationWinner OnChangeOccupationWinner;
 	FTeamScoreSignature OnTeamScoreSignature;
-	FOnChangedSpottedPlayers OnChangedSpottedPlayersSignature;
 	
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OccupationWinner, Transient)
@@ -239,13 +234,11 @@ private:
 	UPROPERTY()
 	TMap<uint8, UProgressBar*> OccupyBarMaps;
 
+public:
 	// 적에게 발견된 플레이어 정보를 담는 배열입니다.
-	UPROPERTY(ReplicatedUsing = OnRep_SpottedPlayers)
-	TArray<TWeakObjectPtr<ALakayaBasePlayerState>> SpottedPlayers; 
+	UPROPERTY(Replicated)
+	TArray<TWeakObjectPtr<ALakayaBasePlayerState>> SpottedPlayers;
 
-	UFUNCTION()
-	void OnRep_SpottedPlayers() const;
-	
 #pragma region Widget
 
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.

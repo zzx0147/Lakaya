@@ -4,8 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "OverlayMinimapWidget.h"
-#include "GameMode/OccupationGameState.h"
 #include "OccupationOverlayMinimapWidget.generated.h"
+
+class AOccupationGameState;
 
 // TODO : 팀전에서 공용으로 사용되는 OccupationMinimapWidget을 만들어서 관리해야 합니다.
 // TODO : 후에 미니맵상에 표시되는 아이콘이 캐릭터와 팀에 따라서 달라집니다.
@@ -36,7 +37,5 @@ private:
 
 private:
 	UPROPERTY()
-	AOccupationGameState* OccupationGameState;
-
-	
+	TObjectPtr<AOccupationGameState> OccupationGameState;
 };

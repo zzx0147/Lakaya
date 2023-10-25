@@ -10,6 +10,7 @@
 #include "Occupation/Team.h"
 #include "MiniMapWidget.generated.h"
 
+
 class ALakayaBaseCharacter;
 
 /**
@@ -65,14 +66,12 @@ public:
 	FORCEINLINE const ETeam& GetEnemyTeam() const { return EnemyTeam; }
 	FORCEINLINE const bool& GetAllyUpdateMinimap() const { return AllyUpdateMinimap; }
 	FORCEINLINE const bool& GetEnemyUpdateMinimap() const { return EnemyUpdateMinimap; }
-	// FORCEINLINE const TObjectPtr<ALakayaBaseCharacter> GetOwnerCharacter() const { return OwnerCharacter; }
 	FORCEINLINE const TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>>& GetPlayersByMinimap() const { return PlayersByMinimap; }
 	
 	FORCEINLINE void SetTeam(const ETeam& Team) { CurrentTeam = Team; }
 	FORCEINLINE void SetEnemyTeam(const ETeam& Team) { EnemyTeam = Team; }
 	FORCEINLINE void SetAllyUpdateMinimap(const bool& bUpdate) { AllyUpdateMinimap = bUpdate; }
 	FORCEINLINE void SetEnemyUpdateMinimap(const bool& bUpdate) { EnemyUpdateMinimap = bUpdate; }
-	// FORCEINLINE void SetOwnerCharacter(const TObjectPtr<ALakayaBaseCharacter> NewCharacter) { OwnerCharacter = NewCharacter; }
 	FORCEINLINE void SetPlayersByMinimap(const ETeam& Team, ALakayaBasePlayerState* NewPlayerState, UImage* NewImage) { if (NewImage != nullptr) PlayersByMinimap[Team].Emplace(NewPlayerState, NewImage); }
 
 protected:

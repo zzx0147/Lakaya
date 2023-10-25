@@ -5,7 +5,6 @@
 #include "Character/LakayaBaseCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
-#include "GameFramework/Character.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameMode.h"
 #include "Kismet/GameplayStatics.h"
@@ -19,6 +18,7 @@
 #include "UI/MatchStartWaitWidget.h"
 #include "UI/OccupationCharacterSelectWidget.h"
 #include "UI/OccupationOverlayMinimapWidget.h"
+#include "UI/OccupationTabMinimapWidget.h"
 #include "UI/StartMessageWidget.h"
 #include "UI/TeamScoreWidget.h"
 #include "UI/WeaponOutLineWidget.h"
@@ -58,8 +58,6 @@ AOccupationGameState::AOccupationGameState(): MatchResult()
 
 	// SpottedList.Emplace(ETeam::Anti);
 	// SpottedList.Emplace(ETeam::Pro);
-
-	OnChangedSpottedPlayersSignature.AddUObject(this, &AOccupationGameState::EnemySpottedLog);
 	
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> ResultContextFinder(
 		TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IC_ResultWidgetControl.IC_ResultWidgetControl'"));
@@ -402,16 +400,6 @@ void AOccupationGameState::UpdatePlayerByMinimap(const ETeam& Team, ALakayaBaseP
 		TabMinimapWidget->SetPlayersByMinimap(Team, Players, TabMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
 		HUDMinimapWidget->SetPlayersByMinimap(Team, Players, HUDMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
 	}
-}
-
-void AOccupationGameState::EnemySpottedLog(const TArray<TWeakObjectPtr<ALakayaBasePlayerState>>& SpottedPlayersArray) const
-{
-	UE_LOG(LogTemp, Warning, TEXT("EnemySpotted."));
-}
-
-void AOccupationGameState::OnRep_SpottedPlayers() const
-{
-	OnChangedSpottedPlayersSignature.Broadcast(SpottedPlayers);
 }
 
 void AOccupationGameState::SetClientTeam(const ETeam& NewTeam)

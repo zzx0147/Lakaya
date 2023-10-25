@@ -12,7 +12,7 @@ void UOccupationTabMinimapWidget::NativeConstruct()
 
 	ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("PlayerImagePanel")));
 
-	OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
+	// OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
 	
 	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
 	TeamIcons.Emplace(ETeam::Pro, ProIcon);
@@ -26,11 +26,11 @@ void UOccupationTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float 
 	UpdatePlayerPosition(CurrentTeam);
 
 	// 와지가 궁극기 스킬을 사용 중이라면, 적들의 정보 순회를 멈추고 모든 적의 위치를 업데이트 해줍니다.
-	if (OccupationGameState->GetbIsClairvoyanceActivated())
-	{
-		UpdatePlayerPosition(EnemyTeam);
-		return;
-	}
+	// if (OccupationGameState->GetbIsClairvoyanceActivated())
+	// {
+	// 	UpdatePlayerPosition(EnemyTeam);
+	// 	return;
+	// }
 }
 
 void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)

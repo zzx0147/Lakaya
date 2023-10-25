@@ -17,9 +17,4 @@ class LAKAYA_API UIndividualTabMinimapWidget : public UTabMinimapWidget
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
-private:
-	// Onwer의 PlayerState입니다.
-	UPROPERTY()
-	TObjectPtr<ALakayaBasePlayerState> PlayerState;
 };

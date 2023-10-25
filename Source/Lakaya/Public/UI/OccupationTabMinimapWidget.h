@@ -4,10 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "TabMinimapWidget.h"
+#include "GameMode/OccupationGameState.h"
 #include "Occupation/Team.h"
 #include "OccupationTabMinimapWidget.generated.h"
-
-class AOccupationGameState;
 
 /**
  * 

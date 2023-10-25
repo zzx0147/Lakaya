@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UI/MiniMapWidget.h"
 #include "Components/Image.h"
 #include "Occupation/Team.h"
-#include "UI/MiniMapWidget.h"
 #include "TabMinimapWidget.generated.h"
 
 /**

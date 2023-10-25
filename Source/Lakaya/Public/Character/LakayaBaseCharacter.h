@@ -162,26 +162,7 @@ public:
 	UFUNCTION(Server, Reliable)
 	void Server_OnEnemyLost(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState);
 
-	// VisibleEnemy가 비어있는지 확인합니다.
-	// FORCEINLINE const bool IsVisibleEnemyEmpty() const { return VisibleEnemies.Num() == 0; }
-	
-	// VisibleEnemy 목록을 반환합니다.
-	// FORCEINLINE const TSet<ALakayaBasePlayerState*>& GetVisibleEnemies() const { return VisibleEnemies; }
-	
-	// 캐릭터 시야에 적이 들어왔다면 VisibleEnemies에 추가합니다.
-	// void AddVisibleEnemy(ALakayaBasePlayerState* Enemy) { VisibleEnemies.Emplace(Enemy); }
-
-	// 캐릭터 시야에서 적이 나갔다면 VisibleEnemies에서 제거합니다.
-	// void RemoveVisibleEnemy(ALakayaBasePlayerState* Enemy) { VisibleEnemies.Remove(Enemy); }
-
-	// 캐릭터 시야에 적이 있는지 확인합니다.
-	// bool IsEnemyVisible(ALakayaBasePlayerState* Enemy) const { return VisibleEnemies.Contains(Enemy); }
-
-	// UFUNCTION(Server, Reliable)
-	// void Server_SetEnemyVisibility(ALakayaBasePlayerState* EnemyState, bool bIsVisible);
-	//
-	// UFUNCTION(Client, Reliable)
-	// void Client_SetEnemyVisibility(ALakayaBasePlayerState* EnemyState, bool bIsVisible);
+	bool IsEnemySpotted(TWeakObjectPtr<ALakayaBasePlayerState> NewEnemyState);
 protected:
 	virtual void SetTeam_Implementation(const ETeam& Team);
 	virtual void SetAliveState_Implementation(bool IsAlive);
@@ -214,6 +195,7 @@ private:
 	UFUNCTION()
 	void DissolveTick(const float& Value);
 
+	
 	
 protected:
 	// 이 캐릭터의 고유한 최대 체력을 나타냅니다.

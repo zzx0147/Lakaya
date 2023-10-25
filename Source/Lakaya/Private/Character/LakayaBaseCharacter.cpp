@@ -495,11 +495,20 @@ void ALakayaBaseCharacter::DissolveTick(const float& Value)
 	}
 }
 
+bool ALakayaBaseCharacter::IsEnemySpotted(const TWeakObjectPtr<ALakayaBasePlayerState> NewEnemyState)
+{
+	if (NewEnemyState->GetPawn()->WasRecentlyRendered(0.1f))
+	{
+		return true;
+	}
+
+	return false;
+}
+
 void ALakayaBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, ResourceComponent, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, PlayerRotation, COND_SkipOwner);
 	DOREPLIFETIME(ALakayaBaseCharacter, DamageImmuneEndingTime);
-	// DOREPLIFETIME(ALakayaBaseCharacter, bIsSpottedByTeammate);
 }

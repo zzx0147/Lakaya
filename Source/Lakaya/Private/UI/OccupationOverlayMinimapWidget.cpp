@@ -2,29 +2,26 @@
 
 
 #include "UI/OccupationOverlayMinimapWidget.h"
-
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
-#include "GameMode/LakayaDefaultPlayGameMode.h"
-#include "Kismet/GameplayStatics.h"
-#include "Occupation/ShieldWallObject.h"
+#include "GameMode/OccupationGameState.h"
 
 void UOccupationOverlayMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
-	
 	ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("RetainerCanvasPanel")));
 
 	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
 	TeamIcons.Emplace(ETeam::Pro, ProIcon);
+
+	OccupationGameState = Cast<AOccupationGameState>(GetWorld()->GetGameState());
 }
 
 void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-	
+#pragma region 
 	if (!OccupationGameState /* || !AllyUpdateMinimap || !OwnerCharacter */)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationGameState is null."));
@@ -36,7 +33,8 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 		UE_LOG(LogTemp, Warning, TEXT("AllyUpdateMinimap is false."));
 		return;
 	}
-
+#pragma endregion
+	
 	// 자신의 팀(자기 자신 포함)위치를 업데이트 해줍니다.
 	UpdatePlayerPosition(CurrentTeam);
 
@@ -56,41 +54,41 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
 		const TWeakObjectPtr<UImage> EnemyMinimapImage = Enemy.Value;
 
-		// if (EnemyState == GetOwningPlayerState()) return;
-		
-		// 해당 적이 렌더링 중인지 검사를 합니다.
-		if (EnemyState->GetPawn()->WasRecentlyRendered(0.1f))
+		bool bIsEnemySpotted = false;
+
+		// 해당 적을 아군이 렌더링 중이라면 리스트에 추가해줍니다.
+		for (const auto& Ally : PlayersByMinimap[CurrentTeam])
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Enemy Spotted. Name : %s"), *EnemyState->GetCharacterName().ToString());
-			UE_LOG(LogTemp, Warning, TEXT("MyTeam : %hhd, EnemyTeam : %hhd"), CurrentTeam, EnemyTeam);
+			const auto& AllyState = Ally.Key;
+			const auto& AllyCharacter = Cast<ALakayaBaseCharacter>(AllyState->GetPawn());
+			if (AllyCharacter->IsEnemySpotted(EnemyState))
+			{
+				bIsEnemySpotted = true;
+
+				if (!OccupationGameState->SpottedPlayers.Contains(EnemyState))
+				{
+					OccupationGameState->SpottedPlayers.Emplace(EnemyState);
+					UE_LOG(LogTemp, Warning, TEXT("Emplace"));
+				}
+			}
 		}
-		else
+
+		if (!bIsEnemySpotted && OccupationGameState->SpottedPlayers.Contains(EnemyState))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("."));
+			OccupationGameState->SpottedPlayers.Remove(EnemyState);
+			UE_LOG(LogTemp, Warning, TEXT("Remove"));
 		}
 	}
 
-	// UWorld* World = GetWorld();
-	// if (World == nullptr)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("World is null."));
-	// 	return;
-	// }
-	//
-	// TArray<TObjectPtr<AActor>> FoundActors;
-	// UGameplayStatics::GetAllActorsOfClass(World, AShieldWallObject::StaticClass(), FoundActors);
-	//
-	// for (const auto& Actor : FoundActors)
-	// {
-	// 	if (Actor->WasRecentlyRendered(0.1f))
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("Find."));
-	// 	}
-	// 	else
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("Not Find."));
-	// 	}
-	// }
+	// SpottedPlayers를 검사해서 적이 리스트에 있다면 적의 위치를 업데이트 해줍니다.
+	for (const auto& Player : OccupationGameState->SpottedPlayers)
+	{
+		if (Player->GetTeam() == CurrentTeam) return;
+
+		UpdatePlayerPosition(EnemyTeam, Player);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("%d"), OccupationGameState->SpottedPlayers.Num());
 }
 
 FVector2d UOccupationOverlayMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
@@ -264,38 +262,38 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	const FVector2D PlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
 	const FVector2D NewPlayerPosition = const_cast<UOccupationOverlayMinimapWidget*>(this)->ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
 
-	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
-	{
-		if (NewTeam == ETeam::Anti)
-			EnemyImage->SetBrushFromTexture(AntiIcon);
-		else if (NewTeam == ETeam::Pro)
-			EnemyImage->SetBrushFromTexture(ProIcon);
-	}
+	// if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
+	// {
+	// 	if (NewTeam == ETeam::Anti)
+	// 		EnemyImage->SetBrushFromTexture(AntiIcon);
+	// 	else if (NewTeam == ETeam::Pro)
+	// 		EnemyImage->SetBrushFromTexture(ProIcon);
+	// }
 
 	if (EnemyImage->GetVisibility() == ESlateVisibility::Hidden)
 		EnemyImage->SetVisibility(ESlateVisibility::Visible);
 
-	if (NewTeam == ETeam::Anti)
-	{
-		EnemyImage->SetBrushFromTexture(AntiIcon);
-	}
-	else
-	{
-		EnemyImage->SetBrushFromTexture(ProIcon);
-	}
+	// if (NewTeam == ETeam::Anti)
+	// {
+	// 	EnemyImage->SetBrushFromTexture(AntiIcon);
+	// }
+	// else
+	// {
+	// 	EnemyImage->SetBrushFromTexture(ProIcon);
+	// }
 	
 	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 
 	// GetWorld()->GetTimerManager().ClearTimer(QuestionIconTimerHandle);
 	
-	GetWorld()->GetTimerManager().SetTimer(QuestionIconTimerHandle, [this, EnemyImage, NewTeam]()
-	{
-		for (const auto& Enemy : PlayersByMinimap[NewTeam])
-		{
-			SetEnemyImage();
-			UE_LOG(LogTemp, Warning, TEXT("타이머 호출"));
-		}
-	}, 0.1f, false);
+	// GetWorld()->GetTimerManager().SetTimer(QuestionIconTimerHandle, [this, EnemyImage, NewTeam]()
+	// {
+	// 	for (const auto& Enemy : PlayersByMinimap[NewTeam])
+	// 	{
+	// 		SetEnemyImage();
+	// 		UE_LOG(LogTemp, Warning, TEXT("타이머 호출"));
+	// 	}
+	// }, 0.1f, false);
 }
 
 void UOccupationOverlayMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
