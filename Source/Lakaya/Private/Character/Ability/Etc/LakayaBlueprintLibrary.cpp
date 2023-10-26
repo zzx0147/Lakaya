@@ -26,3 +26,10 @@ FGameplayEffectContextHandle ULakayaBlueprintLibrary::GetEffectContext(const FGa
 	return EffectSpec.GetEffectContext();
 }
 
+void ULakayaBlueprintLibrary::GetChildActors(const AActor* ParentActor, TArray<AActor*>& OutChildren)
+{
+	if (IsValid(ParentActor))
+	{
+		Algo::Copy(ParentActor->Children, OutChildren);
+	}
+}
