@@ -36,11 +36,14 @@ public:
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, SkillStack);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxSkillStack);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, EnergyHaste);
+	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, Agility);
+	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, Preparation);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, UltimateGauge);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxUltimateGauge);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, UltimateGainOnAttack);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, UltimateGainOnAttacked);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, UltimateGainOnSecond);
+	
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -85,6 +88,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_EnergyHaste)
 	FGameplayAttributeData EnergyHaste;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_Agility)
+	FGameplayAttributeData Agility;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_Preparation)
+	FGameplayAttributeData Preparation;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_UltimateGauge)
 	FGameplayAttributeData UltimateGauge;
 
@@ -118,6 +127,10 @@ protected:
 	virtual void OnRep_MaxSkillStack(const FGameplayAttributeData& OldValue);
 	UFUNCTION()
 	virtual void OnRep_EnergyHaste(const FGameplayAttributeData& OldValue);
+	UFUNCTION()
+	virtual void OnRep_Preparation(const FGameplayAttributeData& OldValue);
+	UFUNCTION()
+	virtual void OnRep_Agility(const FGameplayAttributeData& OldValue);
 	UFUNCTION()
 	virtual void OnRep_UltimateGauge(const FGameplayAttributeData& OldValue);
 	UFUNCTION()
