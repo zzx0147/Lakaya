@@ -230,6 +230,19 @@ void ALakayaBasePlayerState::MakeAlive()
 	SetAliveState(true);
 }
 
+void ALakayaBasePlayerState::SetSpotted(const bool& NewSpotted)
+{
+	UE_LOG(LogTemp, Warning, TEXT("SetSpotted"));
+	if (GetNetConnection())
+	{
+		Server_SetSpotted(NewSpotted);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Not Connection."));
+	}
+}
+
 const uint16& ALakayaBasePlayerState::AddTotalScoreCount(const uint16& NewScore)
 {
 	TotalScore += NewScore;
@@ -352,6 +365,13 @@ FPlayerStats ALakayaBasePlayerState::GetPlayerStats()
 	MyStats.OccupationCount = GetSuccessCaptureCount();
 	MyStats.OccupationTickCount = OccupationTickCount;
 	return MyStats;
+}
+
+void ALakayaBasePlayerState::NetMulticast_SetSpotted_Implementation(const bool NewSpotted)
+{
+	UE_LOG(LogTemp, Warning, TEXT("NetMulticast_SetSpotted"));
+	bSpotted = NewSpotted;
+	UE_LOG(LogTemp, Warning, TEXT("%hhu"), bSpotted);
 }
 
 float ALakayaBasePlayerState::GetServerTime() const
@@ -581,8 +601,9 @@ void ALakayaBasePlayerState::OnRep_KillStreak()
 
 void ALakayaBasePlayerState::Server_SetSpotted_Implementation(const bool NewSpotted)
 {
-	bSpotted = NewSpotted;
-	UE_LOG(LogTemp, Warning, TEXT("Server Set Is Spotted"));
+	UE_LOG(LogTemp, Warning, TEXT("Server_SetSpotted"));
+	// bSpotted = NewSpotted;
+	NetMulticast_SetSpotted(NewSpotted);
 }
 
 void ALakayaBasePlayerState::UpdateAliveStateWithRespawnTime(const float& CurrentTime)

@@ -267,7 +267,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 	TimerDelegate.BindWeakLambda(this,[this]
 	{
 		if (StartMessageWidget.IsValid()) StartMessageWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		// DestroyShieldWallObject();
+		DestroyShieldWallObject();
 		if(TeamScoreWidget) TeamScoreWidget->SetMaxScoreVisibility(true);
 		if(InGameTimeWidget.IsValid()) InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 		if (HUDMinimapWidget)

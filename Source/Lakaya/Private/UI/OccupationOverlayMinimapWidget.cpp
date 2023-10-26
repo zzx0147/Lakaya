@@ -53,27 +53,22 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 	{
 		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
 		const TWeakObjectPtr<UImage> EnemyMinimapImage = Enemy.Value;
-		
-		if (const ALakayaBaseCharacter* EnemyCharacter = EnemyState->GetPawn<ALakayaBaseCharacter>())
-		{
-			const bool IsRendered = EnemyCharacter->WasRecentlyRendered(0.1f);
-			if(EnemyState->GetPrevSpotted() != IsRendered)
-			{
-				EnemyState->SetPrevSpotted(IsRendered);
-				EnemyState->Server_SetSpotted(IsRendered);
-				UE_LOG(LogTemp, Warning, TEXT("Enemy Spotted."));
-			}
-		}
 
 		if (EnemyState->GetSpotted())
 		{
 			UpdatePlayerPosition(EnemyTeam, EnemyState);
-			UE_LOG(LogTemp, Warning, TEXT("Enemy Update."));
+			return;
 		}
-		// {
-		// 	if ()
-		// 		EnemyState->Server_SetIsSpotted(true);
-		// }
+		
+		if (const ALakayaBaseCharacter* EnemyCharacter = EnemyState->GetPawn<ALakayaBaseCharacter>())
+		{
+			const bool IsRendered = EnemyCharacter->WasRecentlyRendered(0.1f);
+			if (IsRendered && !EnemyState->GetSpotted())
+			{
+				EnemyState->SetSpotted(true);
+				UE_LOG(LogTemp, Warning, TEXT("Enemy Spotted."));
+			}
+		}
 		
 		// 해당 적을 아군이 렌더링 중이라면 리스트에 추가해줍니다.
 		// for (const auto& Ally : PlayersByMinimap[CurrentTeam])

@@ -124,7 +124,7 @@ public:
 	FORCEINLINE bool GetSpotted() const { return bSpotted; }
 
 	// 플레이어의 발견 여부를 설정합니다.
-	bool SetSpotted(const bool& NewSpotted) { return bSpotted = NewSpotted; }
+	void SetSpotted(const bool& NewSpotted);
 
 	// 플레이어의 이전 발견 여부를 가져옵니다.
 	FORCEINLINE bool GetPrevSpotted() const { return bPrevWasRecentlyRendered; }
@@ -167,9 +167,11 @@ public:
 
 	FPlayerStats GetPlayerStats();
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION(Server, UnReliable)
 	void Server_SetSpotted(const bool NewSpotted);
-	
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_SetSpotted(const bool NewSpotted);
 protected:
 	// 현재 서버의 시간을 가져옵니다.
 	float GetServerTime() const;
