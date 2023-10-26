@@ -72,14 +72,6 @@ void FProjectilePool::AddNewObject()
 	}
 }
 
-FProjectilePool::~FProjectilePool()
-{
-	for (auto&& Item : Items)
-	{
-		Item.UnbindProjectileItem();
-	}
-}
-
 void FProjectilePool::InternalAddNewObject()
 {
 	const auto Instance = SpawnWorld->SpawnActor<ALakayaProjectile>(ProjectileClass, ActorSpawnParameters);
@@ -206,6 +198,14 @@ void FProjectilePool::ClearProjectilePool()
 	MarkArrayDirty();
 }
 
+void FProjectilePool::UnbindProjectiles()
+{
+	for (auto&& Item : Items)
+	{
+		Item.UnbindProjectileItem();
+	}
+}
+
 void FProjectilePool::SetInstigator(APawn* Instigator)
 {
 	ActorSpawnParameters.Instigator = Instigator;
@@ -253,10 +253,7 @@ void ULakayaAbility_Projectile::OnRemoveAbility(const FGameplayAbilityActorInfo*
                                                 const FGameplayAbilitySpec& Spec)
 {
 	Super::OnRemoveAbility(ActorInfo, Spec);
-	if (ActorInfo->IsNetAuthority())
-	{
-		ProjectilePool.ClearProjectilePool();
-	}
+	ActorInfo->IsNetAuthority() ? ProjectilePool.ClearProjectilePool() : ProjectilePool.UnbindProjectiles();
 }
 
 bool ULakayaAbility_Projectile::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
