@@ -142,6 +142,16 @@ void ULakayaAttributeSet::OnRep_EnergyHaste(const FGameplayAttributeData& OldVal
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, EnergyHaste, OldValue);
 }
 
+void ULakayaAttributeSet::OnRep_Preparation(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, Preparation, OldValue);
+}
+
+void ULakayaAttributeSet::OnRep_Agility(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, Agility, OldValue);
+}
+
 void ULakayaAttributeSet::OnRep_UltimateGauge(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, UltimateGauge, OldValue);
@@ -171,6 +181,7 @@ void ULakayaAttributeSet::OnRep_UltimateGainOnSecond(const FGameplayAttributeDat
 
 ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(-1.0f), CurrentAmmo(-1.0f),
                                              AttackPoint(40.0f), SkillStack(3.0f), MaxSkillStack(3.0f),
+											 EnergyHaste(0.0f), Agility(0.0f), Preparation(0.0f),
                                              UltimateGauge(0.0f), MaxUltimateGauge(-1.0f), UltimateGainOnAttack(1.0f),
                                              UltimateGainOnAttacked(1.0f), UltimateGainOnSecond(0.0f)
 {
@@ -196,6 +207,8 @@ void ULakayaAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, SkillStack, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, MaxSkillStack, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, EnergyHaste, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, Agility, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, Preparation, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, UltimateGauge, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, MaxUltimateGauge, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, UltimateGainOnAttack, COND_None, REPNOTIFY_Always);
