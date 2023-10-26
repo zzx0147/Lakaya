@@ -46,7 +46,7 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
 	CharacterName = TEXT("Base");
-
+	
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(SpringArmComponentName);
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->bUsePawnControlRotation = true;
@@ -327,22 +327,22 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const TWeakObjectPtr<ALakayaBa
 	}
 }
 
-void ALakayaBaseCharacter::Server_OnEnemySpotted_Implementation(const ETeam& EnemyTeam,
-																ALakayaBasePlayerState* EnemyState)
-{
-	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
-	{
-		OccupationGameState->OnEnemySpotted(EnemyTeam, EnemyState);
-	}
-}
-
-void ALakayaBaseCharacter::Server_OnEnemyLost_Implementation(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState)
-{
-	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
-	{
-		OccupationGameState->OnEnemyLost(EnemyTeam, EnemyState);
-	}
-}
+// void ALakayaBaseCharacter::Server_OnEnemySpotted_Implementation(const ETeam& EnemyTeam,
+// 																ALakayaBasePlayerState* EnemyState)
+// {
+// 	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
+// 	{
+// 		OccupationGameState->OnEnemySpotted(EnemyTeam, EnemyState);
+// 	}
+// }
+//
+// void ALakayaBaseCharacter::Server_OnEnemyLost_Implementation(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState)
+// {
+// 	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
+// 	{
+// 		OccupationGameState->OnEnemyLost(EnemyTeam, EnemyState);
+// 	}
+// }
 
 // void ALakayaBaseCharacter::Server_SetEnemyVisibility_Implementation(
 // 	ALakayaBasePlayerState* EnemyState, bool bIsVisible)
@@ -495,15 +495,15 @@ void ALakayaBaseCharacter::DissolveTick(const float& Value)
 	}
 }
 
-bool ALakayaBaseCharacter::IsEnemySpotted(const TWeakObjectPtr<ALakayaBasePlayerState> NewEnemyState)
-{
-	if (NewEnemyState->GetPawn()->WasRecentlyRendered(0.1f))
-	{
-		return true;
-	}
-
-	return false;
-}
+// bool ALakayaBaseCharacter::IsEnemySpotted(const TWeakObjectPtr<ALakayaBasePlayerState> NewEnemyState)
+// {
+// 	if (NewEnemyState->GetPawn()->WasRecentlyRendered(0.1f))
+// 	{
+// 		return true;
+// 	}
+//
+// 	return false;
+// }
 
 void ALakayaBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {

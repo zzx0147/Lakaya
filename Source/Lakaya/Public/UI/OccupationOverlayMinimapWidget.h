@@ -34,7 +34,7 @@ protected:
 
 private:
 	virtual void UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const override;
-
+	
 private:
 	UPROPERTY()
 	TObjectPtr<AOccupationGameState> OccupationGameState;

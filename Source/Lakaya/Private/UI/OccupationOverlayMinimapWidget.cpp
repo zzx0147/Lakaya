@@ -53,42 +53,61 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 	{
 		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
 		const TWeakObjectPtr<UImage> EnemyMinimapImage = Enemy.Value;
-
-		bool bIsEnemySpotted = false;
-
-		// 해당 적을 아군이 렌더링 중이라면 리스트에 추가해줍니다.
-		for (const auto& Ally : PlayersByMinimap[CurrentTeam])
+		
+		if (const ALakayaBaseCharacter* EnemyCharacter = EnemyState->GetPawn<ALakayaBaseCharacter>())
 		{
-			const auto& AllyState = Ally.Key;
-			const auto& AllyCharacter = Cast<ALakayaBaseCharacter>(AllyState->GetPawn());
-			if (AllyCharacter->IsEnemySpotted(EnemyState))
+			const bool IsRendered = EnemyCharacter->WasRecentlyRendered(0.1f);
+			if(EnemyState->GetPrevSpotted() != IsRendered)
 			{
-				bIsEnemySpotted = true;
-
-				if (!OccupationGameState->SpottedPlayers.Contains(EnemyState))
-				{
-					OccupationGameState->SpottedPlayers.Emplace(EnemyState);
-					UE_LOG(LogTemp, Warning, TEXT("Emplace"));
-				}
+				EnemyState->SetPrevSpotted(IsRendered);
+				EnemyState->Server_SetSpotted(IsRendered);
+				UE_LOG(LogTemp, Warning, TEXT("Enemy Spotted."));
 			}
 		}
 
-		if (!bIsEnemySpotted && OccupationGameState->SpottedPlayers.Contains(EnemyState))
+		if (EnemyState->GetSpotted())
 		{
-			OccupationGameState->SpottedPlayers.Remove(EnemyState);
-			UE_LOG(LogTemp, Warning, TEXT("Remove"));
+			UpdatePlayerPosition(EnemyTeam, EnemyState);
+			UE_LOG(LogTemp, Warning, TEXT("Enemy Update."));
 		}
+		// {
+		// 	if ()
+		// 		EnemyState->Server_SetIsSpotted(true);
+		// }
+		
+		// 해당 적을 아군이 렌더링 중이라면 리스트에 추가해줍니다.
+		// for (const auto& Ally : PlayersByMinimap[CurrentTeam])
+		// {
+		// 	const auto& AllyState = Ally.Key;
+		// 	const auto& AllyCharacter = Cast<ALakayaBaseCharacter>(AllyState->GetPawn());
+		// 	if (AllyCharacter->IsEnemySpotted(EnemyState))
+		// 	{
+		// 		
+		// 		
+		// 		if (!OccupationGameState->SpottedPlayers.Contains(EnemyState))
+		// 		{
+		// 			// OccupationGameState->SpottedPl33333333 3ayers.Emplace(EnemyState);
+		// 			UE_LOG(LogTemp, Warning, TEXT("Emplace"));
+		// 		}
+		// 	}
+		// }
+
+		// if (!bIsEnemySpotted && OccupationGameState->SpottedPlayers.Contains(EnemyState))
+		// {
+		// 	// OccupationGameState->SpottedPlayers.Remove(EnemyState);
+		// 	UE_LOG(LogTemp, Warning, TEXT("Remove"));
+		// }
 	}
 
 	// SpottedPlayers를 검사해서 적이 리스트에 있다면 적의 위치를 업데이트 해줍니다.
-	for (const auto& Player : OccupationGameState->SpottedPlayers)
-	{
-		if (Player->GetTeam() == CurrentTeam) return;
+	// for (const auto& Player : OccupationGameState->SpottedPlayers)
+	// {
+	// 	if (Player->GetTeam() == CurrentTeam) return;
+	//
+	// 	UpdatePlayerPosition(EnemyTeam, Player);
+	// }
 
-		UpdatePlayerPosition(EnemyTeam, Player);
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("%d"), OccupationGameState->SpottedPlayers.Num());
+	// UE_LOG(LogTemp, Warning, TEXT("%d"), OccupationGameState->SpottedPlayers.Num());
 }
 
 FVector2d UOccupationOverlayMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
@@ -240,6 +259,7 @@ void UOccupationOverlayMinimapWidget::SetEnemyImage() const
 		const auto& EnemyImage = Enemy.Value;
 		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
 	}
+	;
 }
 
 void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,

@@ -10,6 +10,7 @@
 #include "EOS/EOSGameInstance.h"
 #include "Character/Ability/Attribute/LakayaAttributeSet.h"
 #include "Interface/TeamObjectInterface.h"
+#include "Util/ColorConstants.h"
 #include "LakayaBasePlayerState.generated.h"
 
 
@@ -119,6 +120,17 @@ public:
 	// 플레이어의 연속처치 횟수를 가져옵니다.
 	const uint16& GetKillStreak() const { return KillStreak; }
 
+	// 플레이어의 발견 여부를 가져옵니다.
+	FORCEINLINE bool GetSpotted() const { return bSpotted; }
+
+	// 플레이어의 발견 여부를 설정합니다.
+	bool SetSpotted(const bool& NewSpotted) { return bSpotted = NewSpotted; }
+
+	// 플레이어의 이전 발견 여부를 가져옵니다.
+	FORCEINLINE bool GetPrevSpotted() const { return bPrevWasRecentlyRendered; }
+
+	bool SetPrevSpotted(const bool& NewSpotted) { return bPrevWasRecentlyRendered = NewSpotted; }
+	
 	// 현재 플레이어의 점수를 올려줍니다.
 	const uint16& AddTotalScoreCount(const uint16& NewScore);
 
@@ -155,6 +167,9 @@ public:
 
 	FPlayerStats GetPlayerStats();
 
+	UFUNCTION(Server, Reliable)
+	void Server_SetSpotted(const bool NewSpotted);
+	
 protected:
 	// 현재 서버의 시간을 가져옵니다.
 	float GetServerTime() const;
@@ -219,6 +234,8 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_KillStreak();
 
+	
+	
 private:
 	/**
 	 * @brief RespawnTime을 통해 생존 상태를 판별하고, 생존상태가 변경되었다면 업데이트합니다.
@@ -381,12 +398,18 @@ private:
 	bool bIsAlly;
 
 	uint8 bIsPawnSettedOnce : 1;
-	
+
+	UPROPERTY(Replicated, Transient)
+	uint8 bSpotted : 1;
+
+	UPROPERTY()
+	uint8 bPrevWasRecentlyRendered : 1;
+#pragma region
 	TWeakObjectPtr<UGamePlayHealthWidget> HealthWidget;
-	// TObjectPtr<USkillWidget> SkillWidget;
 	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;
 	TWeakObjectPtr<UGamePlayPortraitWidget> PortraitWidget;
 	UPROPERTY()
 	TObjectPtr<class UCharacterWidget> CharacterWidget;
 	TObjectPtr<class UAimOccupyProgressWidget> AimOccupyProgressWidget;
+#pragma endregion
 };

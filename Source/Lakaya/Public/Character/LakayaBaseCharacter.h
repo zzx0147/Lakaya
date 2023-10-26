@@ -48,7 +48,7 @@ public:
 	virtual ELifetimeCondition
 	AllowActorComponentToReplicate(const UActorComponent* ComponentToReplicate) const override;
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
-	                         AActor* DamageCauser) override;
+							 AActor* DamageCauser) override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual void GiveAbilities(UAbilitySystemComponent* InAbilitySystem) override;
@@ -57,7 +57,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual float InternalTakeRadialDamage(float Damage, FRadialDamageEvent const& RadialDamageEvent,
-	                                       AController* EventInstigator, AActor* DamageCauser) override;
+										   AController* EventInstigator, AActor* DamageCauser) override;
 
 public:
 	// 캐릭터에 부착된 스프링암 컴포넌트를 가져옵니다.
@@ -147,6 +147,10 @@ public:
 	
 	void SetAlly(const bool& IsAlly);
 
+	// FORCEINLINE bool GetPrevWasRecentlyRendered() const { return bPrevWasRecentlyRendered; }
+
+	// FORCEINLINE void SetPrevWasRecentlyRendered(const bool NewValue) { bPrevWasRecentlyRendered = NewValue; }
+
 	FORCEINLINE TSubclassOf<class UCharacterWidget> GetCharacterWidgetClass() const { return CharacterWidgetClass; }
 
 	/**
@@ -155,14 +159,6 @@ public:
 	* @return 카메라에 보인다면 true, 아니라면 false를 반환합니다.
 	*/
 	bool IsEnemyVisibleInCamera(const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState) const;
-
-	UFUNCTION(Server, Reliable)
-	void Server_OnEnemySpotted(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState);
-
-	UFUNCTION(Server, Reliable)
-	void Server_OnEnemyLost(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState);
-
-	bool IsEnemySpotted(TWeakObjectPtr<ALakayaBasePlayerState> NewEnemyState);
 protected:
 	virtual void SetTeam_Implementation(const ETeam& Team);
 	virtual void SetAliveState_Implementation(bool IsAlive);
@@ -194,8 +190,6 @@ private:
 	
 	UFUNCTION()
 	void DissolveTick(const float& Value);
-
-	
 	
 protected:
 	// 이 캐릭터의 고유한 최대 체력을 나타냅니다.
@@ -314,6 +308,9 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_DamageImmuneEndingTime, Transient)
 	float DamageImmuneEndingTime;
 
+	UPROPERTY()
+	// uint8 bPrevWasRecentlyRendered : 1;
+	
 	FPlayerRotationPacket PrevPlayerRotation;
 	FPlayerRotationPacket LatestPlayerRotation;
 	FQuat LatestUpdateRotation;

@@ -34,6 +34,7 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(ALakayaBasePlayerState, DeathCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillStreak);
+	DOREPLIFETIME(ALakayaBasePlayerState, bSpotted);
 }
 
 ALakayaBasePlayerState::ALakayaBasePlayerState()
@@ -44,7 +45,7 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	bIsPawnSettedOnce = false;
 	OnPawnSet.AddUniqueDynamic(this, &ALakayaBasePlayerState::OnPawnSetCallback);
 	PrimaryActorTick.bCanEverTick = true;
-
+	
 	static ConstructorHelpers::FClassFinder<UGamePlayHealthWidget> HealthFinder(
 		TEXT("/Game/Blueprints/UMG/WBP_GamePlayHealthWidget"));
 
@@ -576,6 +577,12 @@ void ALakayaBasePlayerState::OnRep_KillCount()
 void ALakayaBasePlayerState::OnRep_KillStreak()
 {
 	OnKillStreakChanged.Broadcast(KillStreak);
+}
+
+void ALakayaBasePlayerState::Server_SetSpotted_Implementation(const bool NewSpotted)
+{
+	bSpotted = NewSpotted;
+	UE_LOG(LogTemp, Warning, TEXT("Server Set Is Spotted"));
 }
 
 void ALakayaBasePlayerState::UpdateAliveStateWithRespawnTime(const float& CurrentTime)
