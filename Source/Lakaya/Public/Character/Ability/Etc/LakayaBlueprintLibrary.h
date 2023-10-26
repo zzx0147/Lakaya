@@ -29,4 +29,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	static FGameplayEffectContextHandle GetEffectContext(const FGameplayEffectSpec& EffectSpec);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static void GetChildActors(const AActor* ParentActor, TArray<AActor*>& OutChildren);
 };
