@@ -17,7 +17,7 @@ void UOccupationTabMinimapWidget::NativeConstruct()
 	// TODO : 하드코딩이 아닌 GetDesiredSize() 함수를 이용해서 가져오도록 해야합니다.
 	MinimapSize = FVector2D(312.5f, 476.25f);
 
-	WidgetOffset = FVector2D(1515.0f, 545.5f);
+	WidgetOffset = FVector2D(960.0f, 545.5f);
 }
 
 void UOccupationTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
