@@ -144,6 +144,8 @@ public:
 
 	FORCEINLINE TSubclassOf<class UCharacterWidget> GetCharacterWidgetClass() const { return CharacterWidgetClass; }
 
+	FORCEINLINE TSubclassOf<UGameplayEffect> GetKillStreakBuffEffect() const { return KillStreakBuffEffect; }
+	
 	/**
 	* @brief 해당 적이 카메라에 보이는지 확인합니다.
 	* @param EnemyTeam 적의 소속팀 입니다.
@@ -291,6 +293,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UCharacterWidget> CharacterWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameplayEffect> KillStreakBuffEffect;
+	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UMaterialInterface> GrayScalePostProcessMaterial;
 	
