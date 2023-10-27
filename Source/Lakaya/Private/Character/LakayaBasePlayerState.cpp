@@ -271,12 +271,17 @@ void ALakayaBasePlayerState::OnKillOtherPlayer()
 			OnKillOtherCharacterEffect, 0, AbilitySystem->MakeEffectContext());
 
 		AbilitySystem->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+		IncreaseKillStreak();
 	}
 }
 
 void ALakayaBasePlayerState::IncreaseKillStreak()
 {
 	OnKillStreakChanged.Broadcast(++KillStreak);
+	if(HasAuthority() && KillStreakBuffEffectHandle.IsValid() && GetAbilitySystemComponent())
+	{
+		GetAbilitySystemComponent()->SetActiveGameplayEffectLevel(KillStreakBuffEffectHandle, KillStreak);
+	}
 }
 
 void ALakayaBasePlayerState::ResetKillStreak()
@@ -284,6 +289,10 @@ void ALakayaBasePlayerState::ResetKillStreak()
 	// 변경될 필요가 없다면 리턴합니다.
 	if (KillStreak == 0) return;
 	KillStreak = 0;
+	if(HasAuthority() && KillStreakBuffEffectHandle.IsValid() && GetAbilitySystemComponent())
+	{
+		GetAbilitySystemComponent()->SetActiveGameplayEffectLevel(KillStreakBuffEffectHandle, KillStreak);
+	}
 	OnKillStreakChanged.Broadcast(KillStreak);
 }
 
@@ -401,23 +410,38 @@ void ALakayaBasePlayerState::InitializeStatus()
 
 		AbilitySystem->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 
-		const FGameplayEffectSpecHandle RegenEffectSpecHandle = AbilitySystem->MakeOutgoingSpec(
+		if(StatRegenEffect)
+		{
+			const FGameplayEffectSpecHandle RegenEffectSpecHandle = AbilitySystem->MakeOutgoingSpec(
 			StatRegenEffect, 0, AbilitySystem->MakeEffectContext());
-		AbilitySystem->ApplyGameplayEffectSpecToSelf(*RegenEffectSpecHandle.Data.Get());
+			AbilitySystem->ApplyGameplayEffectSpecToSelf(*RegenEffectSpecHandle.Data.Get());
+		}
+
+		if(Character->GetKillStreakBuffEffect())
+		{
+			const FGameplayEffectSpecHandle KillStreakBuffEffectSpecHandle = AbilitySystem->MakeOutgoingSpec(
+			Character->GetKillStreakBuffEffect(), 0, AbilitySystem->MakeEffectContext());
+			KillStreakBuffEffectHandle = AbilitySystem->ApplyGameplayEffectSpecToSelf(*KillStreakBuffEffectSpecHandle.Data.Get());
+		}
 	}
 }
 
 void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
 {
+	ResetKillStreak();
 	if (HasAuthority())
 	{
 		InitializeStatus();
+		
 		Health = GetMaxHealth();
 		OnHealthChanged.Broadcast(Health);
 	}
 	
+	
 	if(bIsPawnSettedOnce) return;
 	bIsPawnSettedOnce = true;
+	
+	
 	
 	
 	if (const auto OldCharacter = Cast<ALakayaBaseCharacter>(OldPawn))

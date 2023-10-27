@@ -316,6 +316,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UAimOccupyProgressWidget> AimOccupyProgressWidgetClass;
+
+	//서버에서만 유효합니다 이펙트의 레벨을 변경할 때 사용합니다
+	FActiveGameplayEffectHandle KillStreakBuffEffectHandle;
 	
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Health, Transient)
