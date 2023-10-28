@@ -16,9 +16,7 @@ void UOccupationOverlayMinimapWidget::NativeConstruct()
 	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
 	TeamIcons.Emplace(ETeam::Pro, ProIcon);
 	
-	// TODO : 하드코딩이 아닌 GetDesiredSize() 함수를 이용해서 가져오도록 해야합니다.
 	MinimapSize = FVector2D(250.0f, 381.0f);
-
 	WidgetOffset = FVector2D(125.0f, 127.5f);
 }
 

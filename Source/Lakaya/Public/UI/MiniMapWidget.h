@@ -70,17 +70,34 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> MinimapImage;
 	
-	// TODO : 개인전에서 관리해야합니다.
-	// 미니맵상에 자기 자신을 표시하는 아이콘 텍스쳐입니다.
-	// UPROPERTY(EditAnywhere)
-	// TObjectPtr<UTexture2D> OwnIcon;
-
+	// 미니맵상에 자기 자신(개인전)을 표시하는 아이콘 텍스쳐입니다.
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> AntiIcon1;
+	TObjectPtr<UTexture2D> IndividualOwnIcon;
 
+	// 미니맵상에 적을 표시하는 아이콘 텍스처입니다.
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> ProIcon1;
+	TObjectPtr<UTexture2D> IndividualEnemyIcon;
+
+	// 미니맵상에 자기 자신(Anti팀)을 표시하는 아이콘 텍스쳐입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> AntiOwnIcon;
+
+	// 미니맵상에 자기 자신(Pro팀)을 표시하는 아이콘 텍스쳐입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ProOwnIcon;
 	
+	// 미니맵상에 Anti팀을 표시하는 아이콘 텍스처입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> AntiIcon;
+
+	// 미니맵상에 Pro팀을 표시하는 아이콘 텍스처입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ProIcon;
+
+	// AntiIcon, ProIcon을 담는 맵입니다.
+	UPROPERTY()
+	TMap<ETeam, TObjectPtr<UTexture2D>> TeamIcons;
+
 	// 플레이어가 죽게 되었을 때, 미니맵 상에 표시하는 아이콘 텍스처입니다.
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture2D> DeathIcon;

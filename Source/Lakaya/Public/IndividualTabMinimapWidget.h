@@ -24,8 +24,4 @@ protected:
 public:
 	virtual UImage* CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer) override;
 
-private:
-	// 미니맵상에 적팀을 표시하는 아이콘 텍스처입니다.
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> EnemyIcon;
 };
