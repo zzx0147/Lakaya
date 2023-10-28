@@ -35,7 +35,6 @@ void AOccupationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(AOccupationGameState, AntiTeamCaptureAreaCount);
 	DOREPLIFETIME(AOccupationGameState, ProTeamCaptureAreaCount);
 	DOREPLIFETIME(AOccupationGameState, TeamToUpdate);
-	// DOREPLIFETIME(AOccupationGameState, SpottedPlayers);
 }
 
 AOccupationGameState::AOccupationGameState(): MatchResult()
@@ -55,9 +54,6 @@ AOccupationGameState::AOccupationGameState(): MatchResult()
 
 	PlayersByTeamMap.Emplace(ETeam::Anti);
 	PlayersByTeamMap.Emplace(ETeam::Pro);
-
-	// SpottedList.Emplace(ETeam::Anti);
-	// SpottedList.Emplace(ETeam::Pro);
 	
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> ResultContextFinder(
 		TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IC_ResultWidgetControl.IC_ResultWidgetControl'"));
@@ -270,17 +266,8 @@ void AOccupationGameState::HandleMatchHasStarted()
 		DestroyShieldWallObject();
 		if(TeamScoreWidget) TeamScoreWidget->SetMaxScoreVisibility(true);
 		if(InGameTimeWidget.IsValid()) InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
-		if (HUDMinimapWidget)
-		{
-			HUDMinimapWidget->SetEnemyUpdateMinimap(true);
-			// HUDMinimapWidget->SetOwnerCharacter(Cast<ALakayaBaseCharacter>(GetOwner()));
-		}
-
-		if (TabMinimapWidget)
-		{
-			TabMinimapWidget->SetEnemyUpdateMinimap(true);
-			// HUDMinimapWidget->SetOwnerCharacter(Cast<ALakayaBaseCharacter>(GetOwner()));
-		}
+		if (HUDMinimapWidget) HUDMinimapWidget->SetEnemyUpdateMinimap(true);
+		if (TabMinimapWidget) TabMinimapWidget->SetEnemyUpdateMinimap(true);
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageVisible, TimerDelegate, MatchWaitDuration, false);
 

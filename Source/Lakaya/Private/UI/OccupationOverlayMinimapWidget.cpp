@@ -48,61 +48,37 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 		return;
 	}
 	
-	// 적들을 순회해서, 시야에 들어왔는 지 검사를 합니다.
+	// 적들을 순회해서, 발견여부를 검사합니다.
 	for (const auto& Enemy : PlayersByMinimap[EnemyTeam])
 	{
 		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
 		const TWeakObjectPtr<UImage> EnemyMinimapImage = Enemy.Value;
-
+	
+		// 발견되지 않은 상태라면 적의 렌더링 여부를 검사합니다.
+		if (const ALakayaBaseCharacter* EnemyCharacter = EnemyState->GetPawn<ALakayaBaseCharacter>())
+		{
+			bool IsRendered = EnemyCharacter->WasRecentlyRendered(0.1f);
+			if (IsRendered && !EnemyState->GetSpotted())
+			{
+				// UE_LOG(LogTemp, Warning, TEXT("Enemy Spotted."));
+				// EnemyState->SetSpotted(IsRendered);
+				EnemyState->OnSpottedChanged.Broadcast(IsRendered);
+				UE_LOG(LogTemp, Warning, TEXT("Enemy Spotted."));
+			}
+			else if (!IsRendered && EnemyState->GetSpotted())
+			{
+				// UE_LOG(LogTemp, Warning, TEXT("Enemy Lost."));
+				EnemyState->SetSpotted(IsRendered);
+			}
+		}
+	
+		// 적이 발견된 상태라면 적의 위치를 업데이트 해줍니다.
 		if (EnemyState->GetSpotted())
 		{
 			UpdatePlayerPosition(EnemyTeam, EnemyState);
 			return;
 		}
-		
-		if (const ALakayaBaseCharacter* EnemyCharacter = EnemyState->GetPawn<ALakayaBaseCharacter>())
-		{
-			const bool IsRendered = EnemyCharacter->WasRecentlyRendered(0.1f);
-			if (IsRendered && !EnemyState->GetSpotted())
-			{
-				EnemyState->SetSpotted(true);
-				UE_LOG(LogTemp, Warning, TEXT("Enemy Spotted."));
-			}
-		}
-		
-		// 해당 적을 아군이 렌더링 중이라면 리스트에 추가해줍니다.
-		// for (const auto& Ally : PlayersByMinimap[CurrentTeam])
-		// {
-		// 	const auto& AllyState = Ally.Key;
-		// 	const auto& AllyCharacter = Cast<ALakayaBaseCharacter>(AllyState->GetPawn());
-		// 	if (AllyCharacter->IsEnemySpotted(EnemyState))
-		// 	{
-		// 		
-		// 		
-		// 		if (!OccupationGameState->SpottedPlayers.Contains(EnemyState))
-		// 		{
-		// 			// OccupationGameState->SpottedPl33333333 3ayers.Emplace(EnemyState);
-		// 			UE_LOG(LogTemp, Warning, TEXT("Emplace"));
-		// 		}
-		// 	}
-		// }
-
-		// if (!bIsEnemySpotted && OccupationGameState->SpottedPlayers.Contains(EnemyState))
-		// {
-		// 	// OccupationGameState->SpottedPlayers.Remove(EnemyState);
-		// 	UE_LOG(LogTemp, Warning, TEXT("Remove"));
-		// }
 	}
-
-	// SpottedPlayers를 검사해서 적이 리스트에 있다면 적의 위치를 업데이트 해줍니다.
-	// for (const auto& Player : OccupationGameState->SpottedPlayers)
-	// {
-	// 	if (Player->GetTeam() == CurrentTeam) return;
-	//
-	// 	UpdatePlayerPosition(EnemyTeam, Player);
-	// }
-
-	// UE_LOG(LogTemp, Warning, TEXT("%d"), OccupationGameState->SpottedPlayers.Num());
 }
 
 FVector2d UOccupationOverlayMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,

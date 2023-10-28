@@ -263,6 +263,11 @@ void ALakayaDefaultPlayGameMode::OnPlayerKilled(AController* VictimController, A
 	}
 }
 
+void ALakayaDefaultPlayGameMode::OnEnemySpotted(ALakayaBasePlayerState* EnemyPlayerState, bool NewSpotted)
+{
+	EnemyPlayerState->SetSpotted(NewSpotted);
+}
+
 void ALakayaDefaultPlayGameMode::StartSelectCharacter()
 {
 	if (MatchState != MatchState::WaitingToStart) return;
@@ -283,6 +288,11 @@ bool ALakayaDefaultPlayGameMode::HasMatchStarted() const
 	if (MatchState == MatchState::IsSelectCharacter) return false;
 
 	return Super::HasMatchStarted();
+}
+
+void ALakayaDefaultPlayGameMode::TestLog(bool& NewSpotted)
+{
+	UE_LOG(LogTemp, Warning, TEXT("gg"));
 }
 
 UClass* ALakayaDefaultPlayGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
@@ -328,7 +338,7 @@ void ALakayaDefaultPlayGameMode::RegisterPlayer(AController* NewPlayer)
 
 		
 		BasePlayerState->GetLakayaAttributeSet()->OnPlayerKill.AddUObject(this, &ALakayaDefaultPlayGameMode::OnPlayerKilled);
-		// BasePlayerState->OnPlayerKilled.AddUObject(this, &ALakayaDefaultPlayGameMode::OnPlayerKilled);
+		BasePlayerState->OnSpottedChanged.AddUObject(this, &ALakayaDefaultPlayGameMode::TestLog);
 	}
 
 	BaseGameState = GetWorld()->GetGameState<ALakayaBaseGameState>();

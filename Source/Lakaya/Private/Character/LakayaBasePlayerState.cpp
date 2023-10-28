@@ -34,7 +34,7 @@ void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(ALakayaBasePlayerState, DeathCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillCount);
 	DOREPLIFETIME(ALakayaBasePlayerState, KillStreak);
-	DOREPLIFETIME(ALakayaBasePlayerState, bSpotted);
+	DOREPLIFETIME(ALakayaBasePlayerState, bSpotted)
 }
 
 ALakayaBasePlayerState::ALakayaBasePlayerState()
@@ -43,6 +43,7 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	CharacterName = TEXT("Rena");
 	bRecentAliveState = true;
 	bIsPawnSettedOnce = false;
+	bSpotted = false;
 	OnPawnSet.AddUniqueDynamic(this, &ALakayaBasePlayerState::OnPawnSetCallback);
 	PrimaryActorTick.bCanEverTick = true;
 	
@@ -78,7 +79,19 @@ ALakayaBasePlayerState::ALakayaBasePlayerState()
 	AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetSkillStackAttribute()).AddUObject(
 		this, &ALakayaBasePlayerState::OnChangeSkillStackAttribute);
 
-	OnRespawnTimeChanged.AddUObject(this, &ALakayaBasePlayerState::OnRespawnTimeChangedCallback);
+	// OnRespawnTimeChanged.AddUObject(this, &ALakayaBasePlayerState::OnRespawnTimeChangedCallback);
+	// OnChangeSpotted.AddLambda([this](const bool& NewSpotted)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("OnChangeSpotted."));
+	// });
+	// if (OnChangeSpotted.IsBound())
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("OnChangeSpotted is bound."));
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("OnChangeSpotted is not bound."));
+	// }
 }
 
 float ALakayaBasePlayerState::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -230,19 +243,6 @@ void ALakayaBasePlayerState::MakeAlive()
 	SetAliveState(true);
 }
 
-void ALakayaBasePlayerState::SetSpotted(const bool& NewSpotted)
-{
-	UE_LOG(LogTemp, Warning, TEXT("SetSpotted"));
-	if (GetNetConnection())
-	{
-		Server_SetSpotted(NewSpotted);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Not Connection."));
-	}
-}
-
 const uint16& ALakayaBasePlayerState::AddTotalScoreCount(const uint16& NewScore)
 {
 	TotalScore += NewScore;
@@ -367,12 +367,12 @@ FPlayerStats ALakayaBasePlayerState::GetPlayerStats()
 	return MyStats;
 }
 
-void ALakayaBasePlayerState::NetMulticast_SetSpotted_Implementation(const bool NewSpotted)
-{
-	UE_LOG(LogTemp, Warning, TEXT("NetMulticast_SetSpotted"));
-	bSpotted = NewSpotted;
-	UE_LOG(LogTemp, Warning, TEXT("%hhu"), bSpotted);
-}
+// void ALakayaBasePlayerState::NetMulticast_SetSpotted_Implementation(const bool NewSpotted)
+// {
+// 	UE_LOG(LogTemp, Warning, TEXT("NetMulticast_SetSpotted"));
+// 	bSpotted = NewSpotted;
+// 	UE_LOG(LogTemp, Warning, TEXT("%hhu"), bSpotted);
+// }
 
 float ALakayaBasePlayerState::GetServerTime() const
 {
@@ -592,6 +592,7 @@ void ALakayaBasePlayerState::OnRep_DeathCount()
 void ALakayaBasePlayerState::OnRep_KillCount()
 {
 	OnKillCountChanged.Broadcast(KillCount);
+	UE_LOG(LogTemp, Warning, TEXT("OnRep_KillCount"));
 }
 
 void ALakayaBasePlayerState::OnRep_KillStreak()
@@ -599,11 +600,10 @@ void ALakayaBasePlayerState::OnRep_KillStreak()
 	OnKillStreakChanged.Broadcast(KillStreak);
 }
 
-void ALakayaBasePlayerState::Server_SetSpotted_Implementation(const bool NewSpotted)
+void ALakayaBasePlayerState::OnRep_Spotted()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Server_SetSpotted"));
-	// bSpotted = NewSpotted;
-	NetMulticast_SetSpotted(NewSpotted);
+	OnSpottedChanged.Broadcast(bSpotted);
+	UE_LOG(LogTemp, Warning, TEXT("OnRep_Spotted"));
 }
 
 void ALakayaBasePlayerState::UpdateAliveStateWithRespawnTime(const float& CurrentTime)
@@ -785,6 +785,12 @@ void ALakayaBasePlayerState::OnRespawnTimeChangedCallback(const float& ReservedR
 	if (CharacterWidget && CharacterWidget->GetRespawnWidget())
 		CharacterWidget->GetRespawnWidget()->StartRespawnProgress(ReservedRespawnTime, CurrentTime);
 }
+
+// void ALakayaBasePlayerState::OnChangeSpottedCallback(const bool& NewSpotted) const
+// {
+// 	UE_LOG(LogTemp, Warning, TEXT("bSpotted : %hhu"), bSpotted);
+// 	UE_LOG(LogTemp, Warning, TEXT("OnChangedSpottedCallBack."));
+// }
 
 void ALakayaBasePlayerState::RequestCharacterChange_Implementation(const FName& Name)
 {

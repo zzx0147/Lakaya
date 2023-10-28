@@ -72,20 +72,6 @@ public:
 	UFUNCTION()
 	void UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress);
 	
-	// void OnEnemySpotted(const ETeam& EnemyTeam,
-	// 	ALakayaBasePlayerState* Enemy);
-	//
-	// void OnEnemyLost(const ETeam& EnemyTeam,
-	// 	ALakayaBasePlayerState* Enemy);
-	
-	// UFUNCTION(NetMulticast, Reliable)
-	// void Multicast_UpdateMinimap(const ETeam& EnemyTeam,
-	// ALakayaBasePlayerState* Enemy);
-	//
-	// UFUNCTION(NetMulticast, Reliable)
-	// void MultiCast_HideFromMinimap(const ETeam& EnemyTeam,
-	// 	ALakayaBasePlayerState* Enemy);
-	
 	FORCEINLINE const float& GetTeamScore(const ETeam& Team) const { return (Team == ETeam::Anti) ? AntiTeamScore : ProTeamScore; }
 	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }
 	FORCEINLINE const ETeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
@@ -233,11 +219,6 @@ private:
 
 	UPROPERTY()
 	TMap<uint8, UProgressBar*> OccupyBarMaps;
-
-// public:
-	// 적에게 발견된 플레이어 정보를 담는 배열입니다.
-	// UPROPERTY(Replicated)
-	// TArray<TWeakObjectPtr<ALakayaBasePlayerState>> SpottedPlayers;
 
 #pragma region Widget
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.

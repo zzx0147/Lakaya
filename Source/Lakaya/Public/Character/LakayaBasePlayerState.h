@@ -10,7 +10,6 @@
 #include "EOS/EOSGameInstance.h"
 #include "Character/Ability/Attribute/LakayaAttributeSet.h"
 #include "Interface/TeamObjectInterface.h"
-#include "Util/ColorConstants.h"
 #include "LakayaBasePlayerState.generated.h"
 
 
@@ -33,6 +32,8 @@ DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOwnerChangeSignature, AActor*)
 DECLARE_DELEGATE_OneParam(FRespawnTimerDelegate, AController*)
 
 DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOnRespawnTimeChangeSignature, const float&)
+
+DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FOnSpottedChangeSignature, bool&)
 
 class UAimOccupyProgressWidget;
 
@@ -120,20 +121,15 @@ public:
 	// 플레이어의 연속처치 횟수를 가져옵니다.
 	const uint16& GetKillStreak() const { return KillStreak; }
 
-	// 플레이어의 발견 여부를 가져옵니다.
-	FORCEINLINE bool GetSpotted() const { return bSpotted; }
-
-	// 플레이어의 발견 여부를 설정합니다.
-	void SetSpotted(const bool& NewSpotted);
-
-	// 플레이어의 이전 발견 여부를 가져옵니다.
-	FORCEINLINE bool GetPrevSpotted() const { return bPrevWasRecentlyRendered; }
-
-	bool SetPrevSpotted(const bool& NewSpotted) { return bPrevWasRecentlyRendered = NewSpotted; }
-	
 	// 현재 플레이어의 점수를 올려줍니다.
 	const uint16& AddTotalScoreCount(const uint16& NewScore);
 
+	// 현재 플레이어의 발견 여부를 가져옵니다.
+	FORCEINLINE const bool& GetSpotted() const { return bSpotted; }
+
+	// 현재 플레이어의 발견 여부를 설정합니다.
+	void SetSpotted(const bool& NewSpotted) { bSpotted = NewSpotted; }
+	
 	// 플레이어의 누적 점령 성공 횟수를 늘립니다.
 	virtual void IncreaseSuccessCaptureCount();
 
@@ -166,12 +162,6 @@ public:
 	void SetAlly(const bool& Ally);
 
 	FPlayerStats GetPlayerStats();
-
-	UFUNCTION(Server, UnReliable)
-	void Server_SetSpotted(const bool NewSpotted);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void NetMulticast_SetSpotted(const bool NewSpotted);
 protected:
 	// 현재 서버의 시간을 가져옵니다.
 	float GetServerTime() const;
@@ -236,8 +226,9 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_KillStreak();
 
-	
-	
+	UFUNCTION()
+	virtual void OnRep_Spotted();
+
 private:
 	/**
 	 * @brief RespawnTime을 통해 생존 상태를 판별하고, 생존상태가 변경되었다면 업데이트합니다.
@@ -316,8 +307,11 @@ public:
 	// 오너가 변경될 때 호출됩니다. 매개변수로 변경된 오너의 AActor 포인터를 받습니다.
 	FOwnerChangeSignature OnOwnerChanged;
 
-	//리스폰 타임이 변경될 때 호출됩니다. 매개변수로 부활하는 시간을 받습니다. 음수면 부활하지 못하는 것이고 현재 시간보다 작으면 이미 부활한 것입니다.
+	// 리스폰 타임이 변경될 때 호출됩니다. 매개변수로 부활하는 시간을 받습니다. 음수면 부활하지 못하는 것이고 현재 시간보다 작으면 이미 부활한 것입니다.
 	FOnRespawnTimeChangeSignature OnRespawnTimeChanged;
+
+	// 플레이어의 발견 여부가 변경될 때 호출됩니다. 매개변수로 발견되었는지 여부를 받습니다.
+	FOnSpottedChangeSignature OnSpottedChanged;
 	
 protected:
 	UPROPERTY(EditAnywhere)
@@ -349,9 +343,6 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_CharacterName, Transient)
 	FName CharacterName;
 
-	// 1Kill = 100 Score
-	// CaptureSuccess = 500 Score
-	// 1 Second = (CurrentCapturedObject * 50) Score
 	UPROPERTY(ReplicatedUsing=OnRep_TotalScore, Transient)
 	uint16 TotalScore;
 
@@ -372,6 +363,9 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_KillStreak, Transient)
 	uint16 KillStreak;
 
+	UPROPERTY(ReplicatedUsing=OnRep_Spotted, Transient)
+	bool bSpotted;
+	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class ULakayaAbilitySystemComponent> AbilitySystem;
 
@@ -400,12 +394,6 @@ private:
 	bool bIsAlly;
 
 	uint8 bIsPawnSettedOnce : 1;
-
-	UPROPERTY(Replicated, Transient)
-	uint8 bSpotted : 1;
-
-	UPROPERTY()
-	uint8 bPrevWasRecentlyRendered : 1;
 #pragma region
 	TWeakObjectPtr<UGamePlayHealthWidget> HealthWidget;
 	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;

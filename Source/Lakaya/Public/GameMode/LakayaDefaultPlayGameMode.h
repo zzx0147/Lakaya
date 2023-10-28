@@ -77,9 +77,11 @@ protected:
 	
 public:
 	virtual void OnPlayerKilled(AController* VictimController, AController* InstigatorController, AActor* DamageCauser);
+	virtual void OnEnemySpotted(ALakayaBasePlayerState* EnemyPlayerState, bool NewSpotted);
 	virtual void StartSelectCharacter();
 	virtual bool HasMatchStarted() const override;
-
+	virtual void TestLog(bool& NewSpotted);
+	
 protected:
 	virtual void RespawnPlayer(AController* KilledController);
 	virtual bool ShouldRespawn();
