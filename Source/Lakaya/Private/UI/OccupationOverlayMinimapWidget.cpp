@@ -219,8 +219,15 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 
 	// GetWorld()->GetTimerManager().ClearTimer(QuestionIconTimerHandle);
+
+	FTimerHandle NewTimerHandle;
 	
-	GetWorld()->GetTimerManager().SetTimer(QuestionIconTimerHandle, [this, EnemyImage, NewTeam]()
+	if (PlayerTimers.Contains(NewPlayerState))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(PlayerTimers[NewPlayerState]);
+	}
+	
+	GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, [this, EnemyImage, NewTeam]()
 	{
 		for (const auto& Enemy : PlayersByMinimap[NewTeam])
 		{
@@ -228,6 +235,8 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 			UE_LOG(LogTemp, Warning, TEXT("타이머 호출"));
 		}
 	}, 0.1f, false);
+
+	SetPlayerTimers(NewPlayerState, NewTimerHandle);
 }
 
 void UOccupationOverlayMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,

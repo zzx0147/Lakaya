@@ -56,11 +56,12 @@ public:
 	FORCEINLINE const ETeam& GetTeam() const { return CurrentTeam; }
 	FORCEINLINE const bool& GetUpdateMinimap() const { return UpdateMinimap; }
 	FORCEINLINE const TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>>& GetPlayersByMinimap() const { return PlayersByMinimap; }
+	FORCEINLINE const TMap<TWeakObjectPtr<ALakayaBasePlayerState>, FTimerHandle>& GetPlayerTimers() const { return PlayerTimers; }
 	
 	FORCEINLINE void SetTeam(const ETeam& Team) { CurrentTeam = Team; }
 	FORCEINLINE void SetUpdateMinimap(const bool& bUpdate) { UpdateMinimap = bUpdate; }
 	FORCEINLINE void SetPlayersByMinimap(const ETeam& Team, ALakayaBasePlayerState* NewPlayerState, UImage* NewImage) { if (NewImage != nullptr) PlayersByMinimap[Team].Emplace(NewPlayerState, NewImage); }
-
+	FORCEINLINE void SetPlayerTimers(const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState, const FTimerHandle NewTimerHandle) { PlayerTimers.Emplace(NewPlayerState, NewTimerHandle); }
 protected:
 	// 위젯의 최상단 CanvasPanel
 	UPROPERTY()
@@ -120,5 +121,7 @@ protected:
 	// 미니맵업데이트 여부입니다.
 	bool UpdateMinimap;
 	
-	FTimerHandle QuestionIconTimerHandle;
+	// FTimerHandle QuestionIconTimerHandle;
+
+	TMap<TWeakObjectPtr<ALakayaBasePlayerState>, FTimerHandle> PlayerTimers;
 };

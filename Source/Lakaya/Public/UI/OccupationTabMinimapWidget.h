@@ -30,4 +30,6 @@ protected:
 	virtual void UpdatePlayerPosition(const ETeam& Team) override;
 
 	void SetEnemyImage() const;
+
+
 };
