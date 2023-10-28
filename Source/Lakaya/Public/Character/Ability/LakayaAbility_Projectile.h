@@ -100,6 +100,9 @@ struct FProjectilePool : public FFastArraySerializer
 	/** 모든 투사체를 제거합니다. 다시 Initialize를 호출하기 전까지 투사체 풀은 아무 것도 하지 않습니다. */
 	void ClearProjectilePool();
 
+	/** 모든 투사체에 대한 이벤트 바인딩을 제거합니다. */
+	void UnbindProjectiles();
+
 	void SetInstigator(APawn* Instigator);
 
 	/** 투사체가 스폰되고 난 직후 호출되는 이벤트입니다. */
@@ -114,8 +117,6 @@ struct FProjectilePool : public FFastArraySerializer
 	{
 		return FastArrayDeltaSerialize<FProjectilePoolItem, FProjectilePool>(Items, DeltaParms, *this);
 	}
-
-	~FProjectilePool();
 
 private:
 	void InternalAddNewObject();
