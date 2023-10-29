@@ -6,6 +6,9 @@
 void UTabMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	MinimapSize = FVector2D(312.5f, 476.25f);
+	WidgetOffset = FVector2D(960.0f, 545.5f);
 }
 
 void UTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -35,8 +38,8 @@ void UTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	Super::UpdatePlayerPosition(NewTeam, NewPlayerState);
 }
 
-void UTabMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
-{
-	Super::HidePlayerPosition(NewTeam, NewPlayerState);
-}
+// void UTabMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
+// 	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+// {
+// 	Super::HidePlayerPosition(NewTeam, NewPlayerState);
+// }

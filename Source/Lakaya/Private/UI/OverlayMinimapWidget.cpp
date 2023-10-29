@@ -12,6 +12,9 @@ void UOverlayMinimapWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	RetainerBox = Cast<URetainerBox>(GetWidgetFromName(TEXT("RetainerBox_74")));
+
+	MinimapSize = FVector2D(250.0f, 381.0f);
+	WidgetOffset = FVector2D(125.0f, 127.5f);
 }
 
 void UOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -41,11 +44,11 @@ void UOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	Super::UpdatePlayerPosition(NewTeam, NewPlayerState);
 }
 
-void UOverlayMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
-{
-	Super::HidePlayerPosition(NewTeam, NewPlayerState);
-}
+// void UOverlayMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
+// 	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+// {
+// 	Super::HidePlayerPosition(NewTeam, NewPlayerState);
+// }
 
 void UOverlayMinimapWidget::UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState,
                                                               const FVector2D NewPosition) const

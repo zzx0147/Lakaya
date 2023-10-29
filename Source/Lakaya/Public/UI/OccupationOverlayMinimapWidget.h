@@ -19,7 +19,7 @@ class LAKAYA_API UOccupationOverlayMinimapWidget : public UOverlayMinimapWidget
 public:
 	virtual UImage* CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer = false) override;
 	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
-	virtual void HidePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
+	// virtual void HidePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
 	
 protected:
 	virtual void NativeConstruct() override;
@@ -29,7 +29,6 @@ protected:
 	virtual void UpdatePlayerPosition(const ETeam& Team) override;
 
 	void SetEnemyImage() const;
-
 private:
 	virtual void UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const override;
 	virtual void UpdateAreaImageRotation();

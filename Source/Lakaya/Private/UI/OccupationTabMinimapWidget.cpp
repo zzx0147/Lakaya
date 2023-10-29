@@ -14,8 +14,8 @@ void UOccupationTabMinimapWidget::NativeConstruct()
 	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
 	TeamIcons.Emplace(ETeam::Pro, ProIcon);
 	
-	MinimapSize = FVector2D(312.5f, 476.25f);
-	WidgetOffset = FVector2D(960.0f, 545.5f);
+	// MinimapSize = FVector2D(312.5f, 476.25f);
+	// WidgetOffset = FVector2D(960.0f, 545.5f);
 }
 
 void UOccupationTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -187,25 +187,25 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
     	SetPlayerTimers(NewPlayerState, NewTimerHandle);
 }
 
-void UOccupationTabMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
-{
-	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
-		return;
-	}
-	
-	const auto& EnemyImage = PlayersByMinimap[NewTeam][NewPlayerState].Get();
-	if (EnemyImage == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
-		return;
-	}
-	
-	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
-	EnemyImage->SetVisibility(ESlateVisibility::Hidden);
-}
+// void UOccupationTabMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
+// 	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+// {
+// 	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
+// 		return;
+// 	}
+// 	
+// 	const auto& EnemyImage = PlayersByMinimap[NewTeam][NewPlayerState].Get();
+// 	if (EnemyImage == nullptr)
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
+// 		return;
+// 	}
+// 	
+// 	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
+// 	EnemyImage->SetVisibility(ESlateVisibility::Hidden);
+// }
 
 UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
 {

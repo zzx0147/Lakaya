@@ -17,8 +17,8 @@ void UOccupationOverlayMinimapWidget::NativeConstruct()
 	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
 	TeamIcons.Emplace(ETeam::Pro, ProIcon);
 	
-	MinimapSize = FVector2D(250.0f, 381.0f);
-	WidgetOffset = FVector2D(125.0f, 127.5f);
+	// MinimapSize = FVector2D(250.0f, 381.0f);
+	// WidgetOffset = FVector2D(125.0f, 127.5f);
 }
 
 void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -242,25 +242,25 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	SetPlayerTimers(NewPlayerState, NewTimerHandle);
 }
 
-void UOccupationOverlayMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
-{
-	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
-		return;
-	}
-	
-	const auto& EnemyImage = PlayersByMinimap[NewTeam][NewPlayerState].Get();
-	if (EnemyImage == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
-		return;
-	}
-	
-	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
-		EnemyImage->SetVisibility(ESlateVisibility::Hidden);
-}
+// void UOccupationOverlayMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
+// 	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+// {
+// 	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
+// 		return;
+// 	}
+// 	
+// 	const auto& EnemyImage = PlayersByMinimap[NewTeam][NewPlayerState].Get();
+// 	if (EnemyImage == nullptr)
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
+// 		return;
+// 	}
+// 	
+// 	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
+// 		EnemyImage->SetVisibility(ESlateVisibility::Hidden);
+// }
 
 void UOccupationOverlayMinimapWidget::UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState,
                                                                         const FVector2D NewPosition) const
