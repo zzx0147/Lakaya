@@ -32,4 +32,15 @@ protected:
 
 private:
 	virtual void UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const override;
+	virtual void UpdateAreaImageRotation();
+	
+private:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> AntiAreaImage;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> CenterAreaImage;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> ProAreaImage;
 };

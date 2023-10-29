@@ -29,6 +29,8 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 	{
 		UpdateEnemyImageRotation(Enemy.Value);
 	}
+
+	UpdateAreaImageRotation();
 }
 
 FVector2d UOccupationOverlayMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
@@ -264,4 +266,14 @@ void UOccupationOverlayMinimapWidget::UpdateMinimapImagePositionAndRotation(cons
                                                                         const FVector2D NewPosition) const
 {
 	Super::UpdateMinimapImagePositionAndRotation(NewPlayerState, NewPosition);
+}
+
+void UOccupationOverlayMinimapWidget::UpdateAreaImageRotation()
+{
+	const auto PlayerCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayerPawn());
+	const FRotator PlayerRotation = PlayerCharacter->GetCamera()->GetComponentRotation();
+
+	AntiAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+	CenterAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+	ProAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
 }
