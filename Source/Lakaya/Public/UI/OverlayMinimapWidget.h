@@ -33,6 +33,8 @@ protected:
 	 */
 	virtual void UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const;
 
+	virtual void UpdateEnemyImageRotation(const TWeakObjectPtr<UImage> EnemyImage) const;
+	
 protected:
 	// 미니맵 이미지의 부모 패널입니다.
 	UPROPERTY()

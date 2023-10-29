@@ -54,11 +54,13 @@ protected:
 	virtual void UpdatePlayerPosition(const ETeam& Team);
 public:
 	FORCEINLINE const ETeam& GetTeam() const { return CurrentTeam; }
+	FORCEINLINE const ETeam& GetEnemyTeam() const { return CurrentEnemyTeam; }
 	FORCEINLINE const bool& GetUpdateMinimap() const { return UpdateMinimap; }
 	FORCEINLINE const TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>>& GetPlayersByMinimap() const { return PlayersByMinimap; }
 	FORCEINLINE const TMap<TWeakObjectPtr<ALakayaBasePlayerState>, FTimerHandle>& GetPlayerTimers() const { return PlayerTimers; }
 	
 	FORCEINLINE void SetTeam(const ETeam& Team) { CurrentTeam = Team; }
+	FORCEINLINE void SetEnemyTeam(const ETeam& NewEnemyTeam) { CurrentEnemyTeam = NewEnemyTeam; }
 	FORCEINLINE void SetUpdateMinimap(const bool& bUpdate) { UpdateMinimap = bUpdate; }
 	FORCEINLINE void SetPlayersByMinimap(const ETeam& Team, ALakayaBasePlayerState* NewPlayerState, UImage* NewImage) { if (NewImage != nullptr) PlayersByMinimap[Team].Emplace(NewPlayerState, NewImage); }
 	FORCEINLINE void SetPlayerTimers(const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState, const FTimerHandle NewTimerHandle) { PlayerTimers.Emplace(NewPlayerState, NewTimerHandle); }
@@ -112,6 +114,9 @@ protected:
 	
 	// Owner의 소속 팀 입니다.
 	ETeam CurrentTeam;
+
+	// Onwer의 상대 팀 입니다.
+	ETeam CurrentEnemyTeam;
 	
 	FVector2D IconAlignment;
 	FVector2D IconSize;

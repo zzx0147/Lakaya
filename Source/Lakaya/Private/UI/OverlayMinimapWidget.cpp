@@ -57,3 +57,11 @@ void UOverlayMinimapWidget::UpdateMinimapImagePositionAndRotation(const ALakayaB
 	ParentPanel->SetRenderTranslation(-NewPosition);
 	RetainerBox->SetRenderTransformAngle(-(PlayerRotation.Yaw + 90.0f));
 }
+
+void UOverlayMinimapWidget::UpdateEnemyImageRotation(const TWeakObjectPtr<UImage> EnemyImage) const
+{
+	const auto PlayerCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayerPawn());
+	const FRotator PlayerRotation = PlayerCharacter->GetCamera()->GetComponentRotation();
+
+	EnemyImage->SetRenderTransformAngle((PlayerRotation.Yaw + 90.0f));
+}

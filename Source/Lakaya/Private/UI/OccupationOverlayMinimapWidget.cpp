@@ -3,6 +3,7 @@
 
 #include "UI/OccupationOverlayMinimapWidget.h"
 
+#include "Camera/CameraComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
 
@@ -23,6 +24,11 @@ void UOccupationOverlayMinimapWidget::NativeConstruct()
 void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	for (const auto& Enemy : PlayersByMinimap[CurrentEnemyTeam])
+	{
+		UpdateEnemyImageRotation(Enemy.Value);
+	}
 }
 
 FVector2d UOccupationOverlayMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
@@ -218,24 +224,19 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	
 	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 
-	// GetWorld()->GetTimerManager().ClearTimer(QuestionIconTimerHandle);
+	
 
 	FTimerHandle NewTimerHandle;
-	
 	if (PlayerTimers.Contains(NewPlayerState))
-	{
 		GetWorld()->GetTimerManager().ClearTimer(PlayerTimers[NewPlayerState]);
-	}
 	
 	GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, [this, EnemyImage, NewTeam]()
 	{
 		for (const auto& Enemy : PlayersByMinimap[NewTeam])
 		{
 			SetEnemyImage();
-			UE_LOG(LogTemp, Warning, TEXT("타이머 호출"));
 		}
 	}, 0.1f, false);
-
 	SetPlayerTimers(NewPlayerState, NewTimerHandle);
 }
 
