@@ -34,9 +34,21 @@ protected:
 	virtual void UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const;
 
 	virtual void UpdateEnemyImageRotation(const TWeakObjectPtr<UImage> EnemyImage) const;
-	
+
+	// 점령 구역 이미지의 회전을 업데이트합니다.
+	virtual void UpdateAreaImageRotation();
+
 protected:
 	// 미니맵 이미지의 부모 패널입니다.
 	UPROPERTY()
 	TObjectPtr<URetainerBox> RetainerBox;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> AntiAreaImage;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> CenterAreaImage;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> ProAreaImage;
 };

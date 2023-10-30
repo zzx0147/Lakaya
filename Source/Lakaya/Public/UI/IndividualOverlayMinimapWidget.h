@@ -20,13 +20,21 @@ public:
 	// TODO : 나 자신만의 위치를 업데이트 하도록 수정해야 합니다.
 	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
 
+	// FORCEINLINE const TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>& GetEnemiesByMinimap() const { return PlayersByMinimap; }
+
+	// FORCEINLINE void SetEnemiesByMinimap(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState, const TWeakObjectPtr<UImage> NewImage) { PlayersByMinimap.Emplace(NewPlayerState.Get()); }
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	virtual FVector2d ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation, const FVector2D& MiniMapSize) override;
-
-	void SetEnemyImage() const;
+	
+	// void SetEnemyImage() const;
 private:
 	virtual void UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const override;
+
+private:
+	// 개인전에서 적들을 관리하기 위한 컨테이너입니다.
+	// TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>> PlayersByMinimap;
 };

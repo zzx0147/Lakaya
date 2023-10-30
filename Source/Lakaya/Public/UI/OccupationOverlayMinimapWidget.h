@@ -21,6 +21,9 @@ public:
 	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
 	// virtual void HidePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
 	
+	// FORCEINLINE const TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>>& GetPlayersByMinimap() const { return PlayersByMinimap; }
+
+	// FORCEINLINE void SetPlayersByMinimap(const ETeam& Team, ALakayaBasePlayerState* NewPlayerState, UImage* NewImage) { if (NewImage != nullptr) PlayersByMinimap[Team].Emplace(NewPlayerState, NewImage); }
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
@@ -31,15 +34,8 @@ protected:
 	void SetEnemyImage() const;
 private:
 	virtual void UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const override;
-	virtual void UpdateAreaImageRotation();
-	
+
 private:
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> AntiAreaImage;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> CenterAreaImage;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> ProAreaImage;
+	// 팀별로 관리하기 위한 컨테이너입니다.
+	// TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>> PlayersByMinimap;
 };

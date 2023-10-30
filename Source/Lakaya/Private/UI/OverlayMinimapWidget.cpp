@@ -11,6 +11,7 @@ void UOverlayMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("RetainerCanvasPanel")));
 	RetainerBox = Cast<URetainerBox>(GetWidgetFromName(TEXT("RetainerBox_74")));
 
 	MinimapSize = FVector2D(250.0f, 381.0f);
@@ -20,6 +21,8 @@ void UOverlayMinimapWidget::NativeConstruct()
 void UOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
+	
+	UpdateAreaImageRotation();
 }
 
 UImage* UOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
@@ -67,4 +70,14 @@ void UOverlayMinimapWidget::UpdateEnemyImageRotation(const TWeakObjectPtr<UImage
 	const FRotator PlayerRotation = PlayerCharacter->GetCamera()->GetComponentRotation();
 
 	EnemyImage->SetRenderTransformAngle((PlayerRotation.Yaw + 90.0f));
+}
+
+void UOverlayMinimapWidget::UpdateAreaImageRotation()
+{
+		const auto PlayerCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayerPawn());
+		const FRotator PlayerRotation = PlayerCharacter->GetCamera()->GetComponentRotation();
+	
+		AntiAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+		CenterAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+		ProAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
 }

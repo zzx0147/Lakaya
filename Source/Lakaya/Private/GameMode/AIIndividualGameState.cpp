@@ -1,11 +1,12 @@
 #include "GameMode/AIIndividualGameState.h"
 
+#include "IndividualTabMinimapWidget.h"
 #include "AI/AiCharacterController.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "PlayerController/InteractablePlayerController.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
+#include "UI/IndividualOverlayMinimapWidget.h"
 #include "UI/IndividualWidget/IndividualGameResultWidget.h"
 #include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
 
@@ -18,6 +19,9 @@ AAIIndividualGameState::AAIIndividualGameState()
 		TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_IndividualLiveScoreBoardWidget"));
 
 	AIIndividualLiveScoreBoardWidgetClass = AIIndividualLiveScoreBoardFinder.Class;
+
+	HUDMinimapWidgetClass = UIndividualOverlayMinimapWidget::StaticClass();
+	TabMinimapWidgetClass = UIndividualTabMinimapWidget::StaticClass();
 }
 
 void AAIIndividualGameState::AddPlayerState(APlayerState* PlayerState)
@@ -57,6 +61,28 @@ void AAIIndividualGameState::BeginPlay()
 			GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
 		else UE_LOG(LogTemp, Warning, TEXT("GameResultWidgeTClass is null"));
+
+		if (HUDMinimapWidgetClass)
+		{
+			HUDMinimapWidget = CreateWidget<UIndividualOverlayMinimapWidget>(
+				LocalController, HUDMinimapWidgetClass);
+			if (HUDMinimapWidget)
+			{
+				HUDMinimapWidget->AddToViewport();
+				HUDMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+
+		if (TabMinimapWidgetClass)
+		{
+			TabMinimapWidget = CreateWidget<UIndividualTabMinimapWidget>(
+				LocalController, TabMinimapWidgetClass);
+			if (TabMinimapWidget)
+			{
+				TabMinimapWidget->AddToViewport();
+				TabMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
 	}
 
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
@@ -67,7 +93,7 @@ void AAIIndividualGameState::BeginPlay()
 			AllControllers->GetPlayerState<ALakayaBasePlayerState>());
 
 		// AI와 플레이어들의 정보를 Array에 담습니다.
-		AllPlayersArray.Add(IndividualPlayerState);
+		PlayerArrays.Add(IndividualPlayerState);
 
 		if (AllControllers && AIIndividualLiveScoreBoardWidget.IsValid())
 		{
@@ -155,6 +181,26 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 
+	if (HUDMinimapWidget)
+	{
+		HUDMinimapWidget->SetUpdateMinimap(true);
+		HUDMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+		for (auto& Player : PlayerArrays)
+		{
+			const bool bMyPlayer = (Player == Cast<ALakayaBasePlayerState>(GetWorld()->GetFirstPlayerController()));
+
+			HUDMinimapWidget->SetEnemiesByMinimap(Player, HUDMinimapWidget->CreatePlayerImage(ETeam::Individual, bMyPlayer));
+		}
+	}
+
+	// TODO : 
+	if (TabMinimapWidget)
+	{
+		TabMinimapWidget->SetUpdateMinimap(true);
+		TabMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	
 	// 매치 시작하면 플레이어 인풋 막기
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
@@ -320,6 +366,17 @@ void AAIIndividualGameState::SetOpponentRenderCustomDepth(const bool& Visible) c
 				Character->GetMesh()->SetRenderCustomDepth(Visible);
 			}
 		}
+	}
+}
+
+void AAIIndividualGameState::UpdatePlayerByMinimap(const ALakayaBasePlayerState* NewPlayerState,
+	const UImage* NewPlayerImage)
+{
+	if (!HUDMinimapWidget || !TabMinimapWidget) return;
+
+	for (const auto& Player : PlayerArrays)
+	{
+		
 	}
 }
 
