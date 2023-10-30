@@ -21,7 +21,7 @@ void UIndividualOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 	const TWeakObjectPtr<ALakayaBasePlayerState> MyPlayerState = Cast<ALakayaBasePlayerState>(GetOwningPlayerState());
 
 	// 자기 자신의 위치를 업데이트 해줍니다.
-	UpdatePlayerPosition(ETeam::Individual, MyPlayerState);
+	UpdatePlayerPosition(MyPlayerState);
 }
 
 UImage* UIndividualOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
@@ -87,4 +87,12 @@ void UIndividualOverlayMinimapWidget::UpdateMinimapImagePositionAndRotation(
 	const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const
 {
 	Super::UpdateMinimapImagePositionAndRotation(NewPlayerState, NewPosition);
+}
+
+void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState)
+{
+	const FVector2D WorldPlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
+	const FVector2D ConvertByMinimapPlayerPosition = ConvertWorldToMiniMapCoordinates(WorldPlayerPosition, MinimapSize);
+
+	// TODO : IndividualPlayerByMinimap을 업데이트 해서 자기 자신의 이미지를 가져와야 합니다.
 }
