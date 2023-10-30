@@ -25,7 +25,7 @@ public:
 	 * @param NewPlayerState 위치를 업데이트 할 플레이어의 상태입니다.
 	 */
 	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) { return; }
-	virtual void HidePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) { return; }
+	// virtual void HidePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) { return; }
 	
 protected:
 	virtual void NativeConstruct() override;
@@ -54,13 +54,18 @@ protected:
 	virtual void UpdatePlayerPosition(const ETeam& Team);
 public:
 	FORCEINLINE const ETeam& GetTeam() const { return CurrentTeam; }
+	FORCEINLINE const ETeam& GetEnemyTeam() const { return CurrentEnemyTeam; }
 	FORCEINLINE const bool& GetUpdateMinimap() const { return UpdateMinimap; }
 	FORCEINLINE const TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>>& GetPlayersByMinimap() const { return PlayersByMinimap; }
+	FORCEINLINE const TArray<TObjectPtr<ALakayaBasePlayerState>>& GetEnemiesByMinimap() const { return EnemiesByMinimap; }
+	FORCEINLINE const TMap<TWeakObjectPtr<ALakayaBasePlayerState>, FTimerHandle>& GetPlayerTimers() const { return PlayerTimers; }
 	
 	FORCEINLINE void SetTeam(const ETeam& Team) { CurrentTeam = Team; }
+	FORCEINLINE void SetEnemyTeam(const ETeam& NewEnemyTeam) { CurrentEnemyTeam = NewEnemyTeam; }
 	FORCEINLINE void SetUpdateMinimap(const bool& bUpdate) { UpdateMinimap = bUpdate; }
 	FORCEINLINE void SetPlayersByMinimap(const ETeam& Team, ALakayaBasePlayerState* NewPlayerState, UImage* NewImage) { if (NewImage != nullptr) PlayersByMinimap[Team].Emplace(NewPlayerState, NewImage); }
-
+	FORCEINLINE void SetEnemiesByMinimap(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState) { EnemiesByMinimap.Emplace(NewPlayerState.Get()); }
+	FORCEINLINE void SetPlayerTimers(const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState, const FTimerHandle NewTimerHandle) { PlayerTimers.Emplace(NewPlayerState, NewTimerHandle); }
 protected:
 	// 위젯의 최상단 CanvasPanel
 	UPROPERTY()
@@ -70,17 +75,34 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> MinimapImage;
 	
-	// TODO : 개인전에서 관리해야합니다.
-	// 미니맵상에 자기 자신을 표시하는 아이콘 텍스쳐입니다.
-	// UPROPERTY(EditAnywhere)
-	// TObjectPtr<UTexture2D> OwnIcon;
-
+	// 미니맵상에 자기 자신(개인전)을 표시하는 아이콘 텍스쳐입니다.
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> AntiIcon1;
+	TObjectPtr<UTexture2D> IndividualOwnIcon;
 
+	// 미니맵상에 적을 표시하는 아이콘 텍스처입니다.
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> ProIcon1;
+	TObjectPtr<UTexture2D> IndividualEnemyIcon;
+
+	// 미니맵상에 자기 자신(Anti팀)을 표시하는 아이콘 텍스쳐입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> AntiOwnIcon;
+
+	// 미니맵상에 자기 자신(Pro팀)을 표시하는 아이콘 텍스쳐입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ProOwnIcon;
 	
+	// 미니맵상에 Anti팀을 표시하는 아이콘 텍스처입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> AntiIcon;
+
+	// 미니맵상에 Pro팀을 표시하는 아이콘 텍스처입니다.
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ProIcon;
+
+	// AntiIcon, ProIcon을 담는 맵입니다.
+	UPROPERTY()
+	TMap<ETeam, TObjectPtr<UTexture2D>> TeamIcons;
+
 	// 플레이어가 죽게 되었을 때, 미니맵 상에 표시하는 아이콘 텍스처입니다.
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture2D> DeathIcon;
@@ -89,11 +111,17 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture2D> QuestionMarkIcon;
 	
-	// 미니맵상에서 자신과 상대(AI포함)의 위치를 업데이트하기 위한 컨테이너입니다.
+	// 팀별로 관리하기 위한 컨테이너입니다.
 	TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>> PlayersByMinimap;
+
+	// 적들을 관리하기 위한 컨테이너입니다.
+	TArray<TObjectPtr<ALakayaBasePlayerState>> EnemiesByMinimap;
 	
 	// Owner의 소속 팀 입니다.
 	ETeam CurrentTeam;
+
+	// Onwer의 상대 팀 입니다.
+	ETeam CurrentEnemyTeam;
 	
 	FVector2D IconAlignment;
 	FVector2D IconSize;
@@ -103,5 +131,7 @@ protected:
 	// 미니맵업데이트 여부입니다.
 	bool UpdateMinimap;
 	
-	FTimerHandle QuestionIconTimerHandle;
+	// FTimerHandle QuestionIconTimerHandle;
+
+	TMap<TWeakObjectPtr<ALakayaBasePlayerState>, FTimerHandle> PlayerTimers;
 };
