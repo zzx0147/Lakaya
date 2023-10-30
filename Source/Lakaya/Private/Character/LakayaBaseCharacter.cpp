@@ -463,7 +463,12 @@ void ALakayaBaseCharacter::StartDissolveEffect()
 void ALakayaBaseCharacter::RemoveDissolveEffect()
 {
 	for (const auto TargetMaterial : DissolveTargetArray)
-		TargetMaterial->SetScalarParameterValue(TEXT("Dissolve"), 2.0f);
+	{
+		if(TargetMaterial)
+		{
+			TargetMaterial->SetScalarParameterValue(TEXT("Dissolve"), 2.0f);
+		}
+	}
 
 	if (CharacterOverlayMaterial.IsValid()) CharacterOverlayMaterial->SetScalarParameterValue(TEXT("Opacity"), 0.04f);
 }
@@ -480,7 +485,10 @@ void ALakayaBaseCharacter::DissolveTick(const float& Value)
 {
 	for (const auto DissolveTarget : DissolveTargetArray)
 	{
-		DissolveTarget->SetScalarParameterValue(TEXT("Dissolve"), Value);
+		if(DissolveTarget)
+		{
+			DissolveTarget->SetScalarParameterValue(TEXT("Dissolve"), Value);
+		}
 	}
 }
 
