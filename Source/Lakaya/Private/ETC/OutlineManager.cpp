@@ -30,7 +30,7 @@ void AOutlineManager::PostInitializeComponents()
 	ClairvoyanceDynamic->SetScalarParameterValue(EnemyRenderingParameterName, 0.f);
 }
 
-void AOutlineManager::SetClairvoyance(const bool& bIsClairvoyance)
+void AOutlineManager::SetClairvoyance(bool bIsClairvoyance)
 {
 	if (ClairvoyanceDynamic.IsValid())
 		ClairvoyanceDynamic->SetScalarParameterValue(EnemyRenderingParameterName, bIsClairvoyance ? 1.f : 0.f);
