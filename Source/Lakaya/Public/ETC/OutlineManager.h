@@ -18,7 +18,8 @@ public:
 	// Sets default values for this actor's properties
 	AOutlineManager();
 
-	void SetClairvoyance(const bool& bIsClairvoyance);
+	UFUNCTION(BlueprintCallable)
+	void SetClairvoyance(bool bIsClairvoyance);
 	void SetTeam(const ETeam& NewTeam);
 	void RegisterClairvoyance(const ALakayaBaseCharacter* Character);
 	void UnRegisterClairvoyance(const ALakayaBaseCharacter* Character);

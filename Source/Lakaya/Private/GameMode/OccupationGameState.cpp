@@ -206,7 +206,8 @@ void AOccupationGameState::HandleMatchHasStarted()
 			if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 			{
 				HUDMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
-
+				HUDMinimapWidget->SetEnemyTeam(LakayaPlayerState->GetTeam() == ETeam::Anti ? ETeam::Pro : ETeam::Anti);
+				
 				// 와지가 스킬을 쓰게 되면 상대방의 위치도 미니맵 상에 업데이트 해줘야 하기 때문에
 				// 일단은 본인의 팀과 상대방의 팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
 				UpdatePlayerByMinimap(ETeam::Anti, LakayaPlayerState);
@@ -225,7 +226,8 @@ void AOccupationGameState::HandleMatchHasStarted()
 			if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 			{
 				TabMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
-
+				TabMinimapWidget->SetEnemyTeam(LakayaPlayerState->GetTeam() == ETeam::Anti ? ETeam::Pro : ETeam::Anti);
+				
 				// 와지가 스킬을 쓰게 되면 상대방의 위치도 미니맵 상에 업데이트 해줘야 하기 때문에
 				// 본인의 팀과 상대팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
 				UpdatePlayerByMinimap(ETeam::Anti, LakayaPlayerState);
@@ -595,7 +597,7 @@ void AOccupationGameState::SetOpponentRenderCustomDepth(const bool& Visible) con
 
 	const auto OpponentTeam = ClientTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
 
-	for (const auto Player : PlayersByTeamMap[ClientTeam])
+	for (const auto Player : PlayersByTeamMap[OpponentTeam])
 	{
 		if (IsValid(Player))
 		{
@@ -719,6 +721,32 @@ void AOccupationGameState::OnEnemyLost(const ETeam& EnemyTeam, ALakayaBasePlayer
 	// 같은 팀의 정보는 필요 없으므로, 리턴합니다.
 	// if (EnemyTeam == ClientTeam) return;
 	MultiCast_HideFromMinimap(EnemyTeam, Enemy);
+}
+
+TArray<ALakayaBasePlayerState*> AOccupationGameState::GetAllyArray(UObject* TeamObject) const
+{
+	if (const auto CastedObject = Cast<ITeamObjectInterface>(TeamObject))
+	{
+		if (const auto Found = PlayersByTeamMap.Find(CastedObject->GetTeam()))
+		{
+			return *Found;
+		}
+	}
+	return {};
+}
+
+TArray<ALakayaBasePlayerState*> AOccupationGameState::GetEnemyArray(UObject* TeamObject) const
+{
+	if (const auto CastedObject = Cast<ITeamObjectInterface>(TeamObject))
+	{
+		switch (CastedObject->GetTeam())
+		{
+		case ETeam::Anti: return PlayersByTeamMap[ETeam::Pro];
+		case ETeam::Pro: return PlayersByTeamMap[ETeam::Anti];
+		default: return {};
+		}
+	}
+	return {};
 }
 
 void AOccupationGameState::MultiCast_HideFromMinimap_Implementation(const ETeam& EnemyTeam, ALakayaBasePlayerState* Enemy)

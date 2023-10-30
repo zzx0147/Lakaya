@@ -14,10 +14,8 @@ void UOccupationTabMinimapWidget::NativeConstruct()
 	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
 	TeamIcons.Emplace(ETeam::Pro, ProIcon);
 	
-	// TODO : 하드코딩이 아닌 GetDesiredSize() 함수를 이용해서 가져오도록 해야합니다.
-	MinimapSize = FVector2D(312.5f, 476.25f);
-
-	WidgetOffset = FVector2D(960.0f, 545.5f);
+	// MinimapSize = FVector2D(312.5f, 476.25f);
+	// WidgetOffset = FVector2D(960.0f, 545.5f);
 }
 
 void UOccupationTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -169,37 +167,45 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 
 	// GetWorld()->GetTimerManager().ClearTimer(QuestionIconTimerHandle);
-
-	GetWorld()->GetTimerManager().SetTimer(QuestionIconTimerHandle, [this, EnemyImage, NewTeam]()
-	{
-		for (const auto& Enemy : PlayersByMinimap[NewTeam])
-		{
-			SetEnemyImage();
-			UE_LOG(LogTemp, Warning, TEXT("타이머 호출"));
-		}
-	}, 0.1f, false);
+    
+    	FTimerHandle NewTimerHandle;
+    	
+    	if (PlayerTimers.Contains(NewPlayerState))
+    	{
+    		GetWorld()->GetTimerManager().ClearTimer(PlayerTimers[NewPlayerState]);
+    	}
+    	
+    	GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, [this, EnemyImage, NewTeam]()
+    	{
+    		for (const auto& Enemy : PlayersByMinimap[NewTeam])
+    		{
+    			SetEnemyImage();
+    			UE_LOG(LogTemp, Warning, TEXT("타이머 호출"));
+    		}
+    	}, 0.1f, false);
+    
+    	SetPlayerTimers(NewPlayerState, NewTimerHandle);
 }
 
-
-void UOccupationTabMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
-{
-	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
-		return;
-	}
-	
-	const auto& EnemyImage = PlayersByMinimap[NewTeam][NewPlayerState].Get();
-	if (EnemyImage == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
-		return;
-	}
-	
-	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
-	EnemyImage->SetVisibility(ESlateVisibility::Hidden);
-}
+// void UOccupationTabMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
+// 	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+// {
+// 	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
+// 		return;
+// 	}
+// 	
+// 	const auto& EnemyImage = PlayersByMinimap[NewTeam][NewPlayerState].Get();
+// 	if (EnemyImage == nullptr)
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
+// 		return;
+// 	}
+// 	
+// 	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
+// 	EnemyImage->SetVisibility(ESlateVisibility::Hidden);
+// }
 
 UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
 {
