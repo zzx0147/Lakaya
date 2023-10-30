@@ -24,6 +24,7 @@ protected:
 	virtual void RegisterPlayer(AController* NewPlayer) override;
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchIsSelectCharacter() override;
+	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 
 private:
 	// TODO : 테스트용 함수입니다. 나중에 삭제해야 합니다.
