@@ -196,6 +196,7 @@ void AGameLobbyPlayerController::ShowScoreBoardAndTabMinimap()
 			if (AIIndividualGameState == nullptr) UE_LOG(LogTemp, Warning, TEXT("GameLobbyPlayerController_AIIndividualGameState is null."));
 
 			AIIndividualGameState->SetScoreBoardVisibility(true);
+			AIIndividualGameState->SetTabMinimapVisibility(true);
 		}
 	}
 }
@@ -217,6 +218,7 @@ void AGameLobbyPlayerController::HideScoreBoardAndTabMinimap()
 		if (const auto& AIIndividualGameState = Cast<AAIIndividualGameState>(NewGameState))
 		{
 			AIIndividualGameState->SetScoreBoardVisibility(false);
+			AIIndividualGameState->SetTabMinimapVisibility(false);
 		}
 	}
 }

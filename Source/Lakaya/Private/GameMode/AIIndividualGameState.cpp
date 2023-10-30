@@ -54,6 +54,16 @@ void AAIIndividualGameState::SetScoreBoardVisibility(const bool& Visible)
 	}
 }
 
+void AAIIndividualGameState::SetTabMinimapVisibility(const bool& Visible)
+{
+	Super::SetTabMinimapVisibility(Visible);
+
+	if (MatchState == MatchState::InProgress)
+	{
+		InternalSetTabMinimapVisibility(Visible);
+	}
+}
+
 void AAIIndividualGameState::BeginPlay()
 {
 	Super::BeginPlay();
@@ -404,6 +414,17 @@ void AAIIndividualGameState::InternalSetScoreBoardVisibility(const bool& Visible
 	}
 
 	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
+}
+
+void AAIIndividualGameState::InternalSetTabMinimapVisibility(const bool& Visible) const
+{
+	if (!TabMinimapWidget)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AIIndividualGameState_AIIndividualTabMinimapWidget is null."));
+		return;
+	}
+
+	TabMinimapWidget->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
 }
 
 void AAIIndividualGameState::UpdatePlayerByMinimap(const ALakayaBasePlayerState* NewPlayerState,

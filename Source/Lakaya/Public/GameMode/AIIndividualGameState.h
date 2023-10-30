@@ -16,6 +16,7 @@ public:
 
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
 	virtual void SetScoreBoardVisibility(const bool& Visible) override;
+	virtual void SetTabMinimapVisibility(const bool& Visible) override;
 	void SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray);
 	void SetAIIndividualWinner();
 
@@ -33,6 +34,7 @@ private:
 	ERendererStencilMask GetUniqueStencilMaskWithCount(const uint8& Count);
 	void SetOpponentRenderCustomDepth(const bool& Visible) const;
 	void InternalSetScoreBoardVisibility(const bool& Visible) const;
+	void InternalSetTabMinimapVisibility(const bool& Visible) const;
 
 	/**
 	 * @brief EnemiesByMinimap을 업데이트 해주는 함수입니다.
