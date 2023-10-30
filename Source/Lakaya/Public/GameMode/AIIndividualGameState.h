@@ -15,7 +15,7 @@ public:
 	AAIIndividualGameState();
 
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
-
+	virtual void SetScoreBoardVisibility(const bool& Visible) override;
 	void SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray);
 	void SetAIIndividualWinner();
 
@@ -32,6 +32,7 @@ protected:
 private:
 	ERendererStencilMask GetUniqueStencilMaskWithCount(const uint8& Count);
 	void SetOpponentRenderCustomDepth(const bool& Visible) const;
+	void InternalSetScoreBoardVisibility(const bool& Visible) const;
 	
 public:
 	TArray<FPlayerAIData> FPlayerAIDataArray;

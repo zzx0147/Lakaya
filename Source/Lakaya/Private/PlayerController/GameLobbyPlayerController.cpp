@@ -5,6 +5,7 @@
 #include "GameFramework/GameMode.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/PlayerState.h"
+#include "GameMode/AIIndividualGameState.h"
 #include "GameMode/LakayaBaseGameState.h"
 #include "GameMode/OccupationGameState.h"
 #include "Input/LakayaInputContext.h"
@@ -188,6 +189,15 @@ void AGameLobbyPlayerController::ShowScoreBoardAndTabMinimap()
 
 	// TODO: 개인전에서의 스코어보드를 작성해야 합니다.
 	// 개인전일 때
+	if (const auto& NewGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+	{
+		if (const auto AIIndividualGameState = Cast<AAIIndividualGameState>(NewGameState))
+		{
+			if (AIIndividualGameState == nullptr) UE_LOG(LogTemp, Warning, TEXT("GameLobbyPlayerController_AIIndividualGameState is null."));
+
+			AIIndividualGameState->SetScoreBoardVisibility(true);
+		}
+	}
 }
 
 void AGameLobbyPlayerController::HideScoreBoardAndTabMinimap()
@@ -202,4 +212,11 @@ void AGameLobbyPlayerController::HideScoreBoardAndTabMinimap()
 		}
 	}
 	// 개인전
+	if (const auto& NewGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
+	{
+		if (const auto& AIIndividualGameState = Cast<AAIIndividualGameState>(NewGameState))
+		{
+			AIIndividualGameState->SetScoreBoardVisibility(false);
+		}
+	}
 }

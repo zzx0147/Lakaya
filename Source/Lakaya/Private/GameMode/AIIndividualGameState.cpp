@@ -3,11 +3,12 @@
 #include "AI/AiCharacterController.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
-#include "GameFramework/CharacterMovementComponent.h"
+#include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "PlayerController/InteractablePlayerController.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/IndividualWidget/IndividualGameResultWidget.h"
 #include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
+#include "UI/GameScoreBoardWidget.h"
 
 AAIIndividualGameState::AAIIndividualGameState()
 {
@@ -35,6 +36,16 @@ void AAIIndividualGameState::AddPlayerState(APlayerState* PlayerState)
 		const auto Count = PlayerArray.Num();
 		OnOwnerChanged(CastedState->GetOwner(), CastedState, Count);
 		CastedState->OnOwnerChanged.AddLambda(OnOwnerChanged, CastedState, Count);
+	}
+}
+
+void AAIIndividualGameState::SetScoreBoardVisibility(const bool& Visible)
+{
+	Super::SetScoreBoardVisibility(Visible);
+
+	if (MatchState == MatchState::InProgress)
+	{
+		InternalSetScoreBoardVisibility(Visible);
 	}
 }
 
@@ -321,6 +332,17 @@ void AAIIndividualGameState::SetOpponentRenderCustomDepth(const bool& Visible) c
 			}
 		}
 	}
+}
+
+void AAIIndividualGameState::InternalSetScoreBoardVisibility(const bool& Visible) const
+{
+	if (!ScoreBoard.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AIIndividualGameState_ScoreBoard is null."));
+		return;
+	}
+
+	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
 }
 
 void AAIIndividualGameState::SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray)

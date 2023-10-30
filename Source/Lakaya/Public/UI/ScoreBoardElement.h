@@ -18,8 +18,8 @@ protected:
 	
 public:
 	// 플레이어 이름을 설정합니다.
-	void SetPlayerName(const FText& PlayerName) const;
-	void SetPlayerName(const FString& PlayerName) const;
+	virtual void SetPlayerName(const FText& PlayerName) const;
+	virtual void SetPlayerName(const FString& PlayerName) const;
 
 	// 누적 점수를 업데이트합니다.
 	void SetTotalScore(const uint16& ScoreCount) const;
@@ -28,10 +28,10 @@ public:
 	void SetSuccessCaptureCount(const uint16& CaptureCount) const;
 	
 	// 누적 킬 횟수를 업데이트합니다.
-	void SetKillCount(const uint16& KillCount) const;
+	virtual void SetKillCount(const uint16& KillCount) const;
 
 	// 누적 사망 횟수를 업데이트합니다.
-	void SetDeathCount(const uint16& DeathCount) const;
+	virtual void SetDeathCount(const uint16& DeathCount) const;
 	
 private:
 	TWeakObjectPtr<UTextBlock> PlayerNameText;	 // 플레이어 이름
