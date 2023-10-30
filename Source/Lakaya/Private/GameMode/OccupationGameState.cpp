@@ -595,7 +595,7 @@ void AOccupationGameState::SetOpponentRenderCustomDepth(const bool& Visible) con
 
 	const auto OpponentTeam = ClientTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
 
-	for (const auto Player : PlayersByTeamMap[ClientTeam])
+	for (const auto Player : PlayersByTeamMap[OpponentTeam])
 	{
 		if (IsValid(Player))
 		{
@@ -719,6 +719,32 @@ void AOccupationGameState::OnEnemyLost(const ETeam& EnemyTeam, ALakayaBasePlayer
 	// 같은 팀의 정보는 필요 없으므로, 리턴합니다.
 	// if (EnemyTeam == ClientTeam) return;
 	MultiCast_HideFromMinimap(EnemyTeam, Enemy);
+}
+
+TArray<ALakayaBasePlayerState*> AOccupationGameState::GetAllyArray(UObject* TeamObject) const
+{
+	if (const auto CastedObject = Cast<ITeamObjectInterface>(TeamObject))
+	{
+		if (const auto Found = PlayersByTeamMap.Find(CastedObject->GetTeam()))
+		{
+			return *Found;
+		}
+	}
+	return {};
+}
+
+TArray<ALakayaBasePlayerState*> AOccupationGameState::GetEnemyArray(UObject* TeamObject) const
+{
+	if (const auto CastedObject = Cast<ITeamObjectInterface>(TeamObject))
+	{
+		switch (CastedObject->GetTeam())
+		{
+		case ETeam::Anti: return PlayersByTeamMap[ETeam::Pro];
+		case ETeam::Pro: return PlayersByTeamMap[ETeam::Anti];
+		default: return {};
+		}
+	}
+	return {};
 }
 
 void AOccupationGameState::MultiCast_HideFromMinimap_Implementation(const ETeam& EnemyTeam, ALakayaBasePlayerState* Enemy)
