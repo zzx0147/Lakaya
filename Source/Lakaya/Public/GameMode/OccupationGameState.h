@@ -88,13 +88,10 @@ public:
 		ALakayaBasePlayerState* Enemy);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	const TArray<ALakayaBasePlayerState*>& GetAllyArray() const { return PlayersByTeamMap[ClientTeam]; }
+	TArray<ALakayaBasePlayerState*> GetAllyArray(UObject* TeamObject) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	const TArray<ALakayaBasePlayerState*>& GetEnemyArray() const
-	{
-		return PlayersByTeamMap[ClientTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti];
-	}
+	TArray<ALakayaBasePlayerState*> GetEnemyArray(UObject* TeamObject) const;
 	
 	FORCEINLINE const float& GetTeamScore(const ETeam& Team) const { return (Team == ETeam::Anti) ? AntiTeamScore : ProTeamScore; }
 	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }
