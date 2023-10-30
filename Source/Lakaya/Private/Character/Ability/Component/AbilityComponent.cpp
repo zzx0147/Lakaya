@@ -23,20 +23,19 @@ void UAbilityComponent::SetOwningAbility(UGameplayAbility* InOwningAbility)
 
 	if (!EnableRequireTags.IsEmpty())
 	{
-		const auto RequiredDelegate =
-			FOnGameplayEffectTagCountChanged::FDelegate::CreateUObject(this, &ThisClass::OnRequiredTagUpdated);
-
-		const auto IgnoredDelegate =
-			FOnGameplayEffectTagCountChanged::FDelegate::CreateUObject(this, &ThisClass::OnIgnoredTagUpdated);
-
 		for (auto&& Tag : EnableRequireTags.RequireTags)
 		{
-			AbilitySystemComponent->RegisterAndCallGameplayTagEvent(Tag, RequiredDelegate);
+			AbilitySystemComponent->RegisterGameplayTagEvent(Tag).AddUObject(this, &ThisClass::OnRequiredTagUpdated);
 		}
 		for (auto&& Tag : EnableRequireTags.IgnoreTags)
 		{
-			AbilitySystemComponent->RegisterAndCallGameplayTagEvent(Tag, IgnoredDelegate);
+			AbilitySystemComponent->RegisterGameplayTagEvent(Tag).AddUObject(this, &ThisClass::OnIgnoredTagUpdated);
 		}
+		ToggleActive();
+	}
+	else
+	{
+		Activate();
 	}
 }
 

@@ -86,6 +86,12 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiCast_HideFromMinimap(const ETeam& EnemyTeam,
 		ALakayaBasePlayerState* Enemy);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TArray<ALakayaBasePlayerState*> GetAllyArray(UObject* TeamObject) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TArray<ALakayaBasePlayerState*> GetEnemyArray(UObject* TeamObject) const;
 	
 	FORCEINLINE const float& GetTeamScore(const ETeam& Team) const { return (Team == ETeam::Anti) ? AntiTeamScore : ProTeamScore; }
 	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }
@@ -93,8 +99,6 @@ public:
 	FORCEINLINE bool GetSomeoneReachedMaxScore() const { return AntiTeamScore >= MaxScore || ProTeamScore >= MaxScore; }
 	FORCEINLINE const uint8& GetAntiTeamCaptureAreaCount() const { return AntiTeamCaptureAreaCount; }
 	FORCEINLINE const uint8& GetProTeamCaptureAreaCount() const { return ProTeamCaptureAreaCount; }
-	FORCEINLINE TArray<TObjectPtr<ALakayaBasePlayerState>>& GetAllyArray() { return PlayersByTeamMap[ClientTeam]; }
-	FORCEINLINE TArray<TObjectPtr<ALakayaBasePlayerState>>& GetEnemyArray() { return PlayersByTeamMap[ClientTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti]; }
 	FORCEINLINE const ETeam& GetTeamToUpdate() const { return TeamToUpdate; }
 	
 	FORCEINLINE void SetAntiTeamCaptureAreaCount(const uint8& NewCaptureCount) { AntiTeamCaptureAreaCount = NewCaptureCount; }
@@ -213,6 +217,7 @@ private:
 	bool ResultBool = false;
 
 	// 플레이어의 팀에 따른 플레이어 리스트를 저장하는 맵입니다.
+	//TODO: 댕글링 포인터가 발생할 수 있으므로 약포인터로 변경해야 합니다. TMap에 TArray를 값형식으로 사용하면 UPROPERTY로 선언할 수 없습니다. 
 	TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> PlayersByTeamMap;
 	
 	ETeam ClientTeam;
