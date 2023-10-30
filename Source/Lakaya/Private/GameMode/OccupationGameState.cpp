@@ -595,7 +595,7 @@ void AOccupationGameState::SetOpponentRenderCustomDepth(const bool& Visible) con
 
 	const auto OpponentTeam = ClientTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
 
-	for (const auto Player : PlayersByTeamMap[ClientTeam])
+	for (const auto Player : GetAllyArray())
 	{
 		if (IsValid(Player))
 		{
