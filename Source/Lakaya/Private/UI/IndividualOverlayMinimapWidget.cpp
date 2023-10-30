@@ -96,3 +96,8 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 
 	// TODO : IndividualPlayerByMinimap을 업데이트 해서 자기 자신의 이미지를 가져와야 합니다.
 }
+
+void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
+{
+	Super::UpdatePlayerPosition(Team);
+}

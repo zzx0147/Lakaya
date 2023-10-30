@@ -28,4 +28,5 @@ protected:
 private:
 	virtual void UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const override;
 	virtual void UpdatePlayerPosition(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState) override;
+	virtual void UpdatePlayerPosition(const ETeam& Team) override;
 };
