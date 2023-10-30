@@ -20,7 +20,7 @@ class LAKAYA_API UOccupationTabMinimapWidget : public UTabMinimapWidget
 public:
 	virtual UImage* CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer = false) override;
 	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
-	virtual void HidePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
+	// virtual void HidePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
 	
 protected:
 	virtual void NativeConstruct() override;
@@ -30,24 +30,6 @@ protected:
 	virtual void UpdatePlayerPosition(const ETeam& Team) override;
 
 	void SetEnemyImage() const;
-private:
-	// 미니맵상에 Anti팀을 표시하는 아이콘 텍스처입니다.
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> AntiIcon;
 
-	// 미니맵상에 Pro팀을 표시하는 아이콘 텍스처입니다.
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> ProIcon;
 
-	// 미니맵상에 자기 자신(Anti팀)을 표시하는 아이콘 텍스쳐입니다.
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> AntiOwnIcon;
-
-	// 미니맵상에 자기 자신(Pro팀)을 표시하는 아이콘 텍스쳐입니다.
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> ProOwnIcon;
-
-	// AntiIcon, ProIcon을 담는 맵입니다.
-	UPROPERTY()
-	TMap<ETeam, TObjectPtr<UTexture2D>> TeamIcons;
 };
