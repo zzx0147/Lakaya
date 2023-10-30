@@ -18,7 +18,7 @@ class LAKAYA_API UOverlayMinimapWidget : public UMinimapWidget
 public:
 	virtual UImage* CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer = false) override;
 	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
-	virtual void HidePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
+	// virtual void HidePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
 	
 protected:
 	virtual void NativeConstruct() override;
@@ -33,6 +33,8 @@ protected:
 	 */
 	virtual void UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const;
 
+	virtual void UpdateEnemyImageRotation(const TWeakObjectPtr<UImage> EnemyImage) const;
+	
 protected:
 	// 미니맵 이미지의 부모 패널입니다.
 	UPROPERTY()
