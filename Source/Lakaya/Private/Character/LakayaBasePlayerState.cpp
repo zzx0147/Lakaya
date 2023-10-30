@@ -748,7 +748,7 @@ void ALakayaBasePlayerState::OnChangeSkillStackAttribute(const FOnAttributeChang
 {
 	// const auto MaxReached = NewValue.NewValue > LakayaAttributeSet->GetMaxSkillStack() || FMath::IsNearlyEqual(NewValue.NewValue, LakayaAttributeSet->GetMaxSkillStack());
 	// AbilitySystem->SetLooseGameplayTagCount(FGameplayTag::RequestGameplayTag(TEXT("AttributeEvent.ReachMaxSkillStack")), MaxReached ? 1 : 0);
-	if (CharacterWidget && CharacterWidget->GetSkillWidget() && FMath::IsNearlyEqual(NewValue.NewValue, 0.0f))
+	if (CharacterWidget && CharacterWidget->GetSkillWidget()/* && FMath::IsNearlyEqual(NewValue.NewValue, 0.0f)*/)
 	{
 		for (const auto& ProgressBar : CharacterWidget->GetSkillWidget()->GetAllSkillProgressBar())
 		{
@@ -762,7 +762,7 @@ void ALakayaBasePlayerState::OnChangeSkillStackAttribute(const FOnAttributeChang
 				if (!Result.IsEmpty())
 				{
 					const FActiveGameplayEffect* RegenEffect = AbilitySystem->GetActiveGameplayEffect(Result[0]);
-					ProgressBar->StartStackingRegen(RegenEffect->StartWorldTime, RegenEffect->GetPeriod(), true);
+					ProgressBar->StartStackingRegen(RegenEffect->StartWorldTime, RegenEffect->GetPeriod(), false);
 					// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("StartTime : %f"), RegenEffect->StartServerWorldTime));
 				}
 				break;
