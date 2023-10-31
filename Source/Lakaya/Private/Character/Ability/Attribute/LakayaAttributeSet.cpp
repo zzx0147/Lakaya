@@ -7,6 +7,12 @@
 #include "GameFramework/PlayerState.h"
 #include "Net/UnrealNetwork.h"
 
+#define MARK_ATTRIBUTE_DIRTY_IF_CHANGED(AttributeName)\
+	if (Attribute == Get##AttributeName##Attribute())\
+	{\
+		MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, AttributeName, this)\
+	}
+
 
 bool ULakayaAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data)
 {
@@ -53,9 +59,13 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 {
 	Super::PostAttributeChange(Attribute, OldValue, NewValue);
 
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(Health)
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(SkillStack)
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(CurrentAmmo)
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(UltimateGauge)
+
 	if (Attribute == GetHealthAttribute())
 	{
-		MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, Health, this)
 		if (OldValue > NewValue)
 		{
 			SetUltimateGauge(
@@ -73,10 +83,10 @@ void ULakayaAttributeSet::PostAttributeBaseChange(const FGameplayAttribute& Attr
                                                   float NewValue) const
 {
 	Super::PostAttributeBaseChange(Attribute, OldValue, NewValue);
-	if (Attribute == GetHealthAttribute())
-	{
-		MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, Health, this)
-	}
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(Health)
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(SkillStack)
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(CurrentAmmo)
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(UltimateGauge)
 }
 
 void ULakayaAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldValue)
@@ -182,18 +192,18 @@ void ULakayaAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	Params.RepNotifyCondition = REPNOTIFY_Always;
 	Params.bIsPushBased = true;
 	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, Health, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, SkillStack, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, CurrentAmmo, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, UltimateGauge, Params);
 
 	Params.bIsPushBased = false;
 	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, MaxHealth, Params);
 	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, MaxAmmo, Params);
-	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, CurrentAmmo, Params);
 	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, AttackPoint, Params);
-	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, SkillStack, Params);
 	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, MaxSkillStack, Params);
 	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, EnergyHaste, Params);
 	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, Agility, Params);
 	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, Preparation, Params);
-	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, UltimateGauge, Params);
 	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, MaxUltimateGauge, Params);
 	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, UltimateGainOnAttack, Params);
 	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, UltimateGainOnAttacked, Params);
