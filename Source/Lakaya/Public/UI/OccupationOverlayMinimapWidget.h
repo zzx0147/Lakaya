@@ -20,7 +20,8 @@ public:
 	virtual UImage* CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer = false) override;
 	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
 	// virtual void HidePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
-	
+	virtual void UpdateAreaImageRotation() override;
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
@@ -31,15 +32,4 @@ protected:
 	void SetEnemyImage() const;
 private:
 	virtual void UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const override;
-	virtual void UpdateAreaImageRotation();
-	
-private:
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> AntiAreaImage;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> CenterAreaImage;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> ProAreaImage;
 };
