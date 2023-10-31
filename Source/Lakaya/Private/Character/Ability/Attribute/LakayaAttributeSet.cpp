@@ -17,18 +17,6 @@ void ULakayaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 {
 	Super::PostGameplayEffectExecute(Data);
 
-	// if (Data.EvaluatedData.Attribute == GetHealthAttribute())
-	// {
-	// 	// 이 게임플레이 이펙트는 Health를 변경합니다. 적용하되 우선 값을 제한합니다.
-	// 	// 이 경우 Health 베이스 값은 음수가 아니어야 합니다.
-	// 	SetHealth(FMath::Max(GetHealth(), 0.0f));
-	// }
-	//
-	// if (Data.EvaluatedData.Attribute == GetUltimateGaugeAttribute())
-	// {
-	// 	SetUltimateGauge(FMath::Min(GetUltimateGauge(), GetMaxUltimateGauge()));
-	// }
-
 	if ((GetHealth() <= 0.0f) && !bOutOfHealth)
 	{
 		if (OnPlayerKill.IsBound())
@@ -65,33 +53,14 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 {
 	Super::PostAttributeChange(Attribute, OldValue, NewValue);
 
-	// if (Attribute == GetSkillStackAttribute())
-	// {
-	// 	if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), NewValue, 0.01f)) //대시 갯수가 꽉 참, 대쉬 갯수 리젠 이펙트를 꺼야 함
-	// 	{
-	// 		OnDashStackFullOrNot.Broadcast(true);
-	// 	}
-	// 	else if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), OldValue, 0.01f) && NewValue < OldValue)
-	// 	//최대치에서 감소함, 이때부터 대쉬 갯수 리젠 이펙트를 켜야 함
-	// 	{
-	// 		OnDashStackFullOrNot.Broadcast(false);
-	// 	}
-	//
-	// 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("SkillStack: %f"), NewValue));
-	// }
 	if (Attribute == GetHealthAttribute())
 	{
 		MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, Health, this)
-		OnHealthChanged.Broadcast(NewValue);
 		if (OldValue > NewValue)
 		{
 			SetUltimateGauge(
 				UltimateGauge.GetBaseValue() + (OldValue - NewValue) * UltimateGainOnAttacked.GetCurrentValue());
 		}
-	}
-	else if (Attribute == GetMaxHealthAttribute())
-	{
-		OnMaxHealthChanged.Broadcast(NewValue);
 	}
 
 	if (bOutOfHealth && (GetHealth() > 0.0f))
@@ -113,13 +82,11 @@ void ULakayaAttributeSet::PostAttributeBaseChange(const FGameplayAttribute& Attr
 void ULakayaAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, MaxHealth, OldValue);
-	OnMaxHealthChanged.Broadcast(MaxHealth.GetCurrentValue());
 }
 
 void ULakayaAttributeSet::OnRep_Health(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, Health, OldValue);
-	OnHealthChanged.Broadcast(Health.GetCurrentValue());
 }
 
 void ULakayaAttributeSet::OnRep_MaxAmmo(const FGameplayAttributeData& OldValue)
