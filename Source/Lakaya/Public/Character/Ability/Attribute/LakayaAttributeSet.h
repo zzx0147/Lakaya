@@ -43,7 +43,7 @@ public:
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, UltimateGainOnAttack);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, UltimateGainOnAttacked);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, UltimateGainOnSecond);
-	
+
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -63,6 +63,8 @@ protected:
 	virtual void PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const override;
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
+	virtual void
+	PostAttributeBaseChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) const override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealth)
 	FGameplayAttributeData MaxHealth;
@@ -90,7 +92,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_Agility)
 	FGameplayAttributeData Agility;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_Preparation)
 	FGameplayAttributeData Preparation;
 
@@ -109,7 +111,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_UltimateGainOnSecond)
 	FGameplayAttributeData UltimateGainOnSecond;
 
-	
 protected:
 	UFUNCTION()
 	virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldValue);

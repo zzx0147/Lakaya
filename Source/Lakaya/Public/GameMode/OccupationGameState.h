@@ -172,7 +172,7 @@ private:
 	void OnRep_OccupationWinner() const;
 
 	/**
-	 * @brief PlayerByMinimap Tmap을 업데이트 해줍니다.
+	 * @brief PlayerByMinimap를 업데이트 해주는 함수입니다.
 	 * @param Team 업데이트시켜줄 팀입니다.
 	 * @param PlayerState PlayersByMinimap에 업데이트 시켜줄 플레이어의 정보입니다.
 	 * PlayerState에서는 팀의 정보, 자기 자신 여부를 알기 위해서 사용됩니다.
@@ -241,7 +241,6 @@ private:
 	TMap<uint8, UProgressBar*> OccupyBarMaps;
 	
 #pragma region Widget
-
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UTeamScoreWidget> TeamScoreWidgetClass;

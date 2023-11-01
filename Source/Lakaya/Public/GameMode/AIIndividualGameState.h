@@ -15,7 +15,8 @@ public:
 	AAIIndividualGameState();
 
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
-
+	virtual void SetScoreBoardVisibility(const bool& Visible) override;
+	virtual void SetTabMinimapVisibility(const bool& Visible) override;
 	void SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray);
 	void SetAIIndividualWinner();
 
@@ -32,13 +33,22 @@ protected:
 private:
 	ERendererStencilMask GetUniqueStencilMaskWithCount(const uint8& Count);
 	void SetOpponentRenderCustomDepth(const bool& Visible) const;
+	void InternalSetScoreBoardVisibility(const bool& Visible) const;
+	void InternalSetTabMinimapVisibility(const bool& Visible) const;
+
+	/**
+	 * @brief EnemiesByMinimap을 업데이트 해주는 함수입니다.
+	 * @param NewPlayerState 업데이트시켜줄 PlayerState입니다.
+	 * @param NewPlayerImage 업데이트 된 플레이어의 미니맵 이미지입니다.
+	 */
+	void UpdatePlayerByMinimap(const ALakayaBasePlayerState* NewPlayerState, const UImage* NewPlayerImage);
 	
 public:
 	TArray<FPlayerAIData> FPlayerAIDataArray;
 
 	FPlayerAIData PlayerAIData;
 
-	TArray<TWeakObjectPtr<ALakayaBasePlayerState>> AllPlayersArray;
+	TArray<TWeakObjectPtr<ALakayaBasePlayerState>> PlayerArrays;
 	
 private:
 	

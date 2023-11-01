@@ -25,8 +25,21 @@ public:
 	 * @param NewPlayerState 위치를 업데이트 할 플레이어의 상태입니다.
 	 */
 	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) { return; }
-	// virtual void HidePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) { return; }
+
+	FORCEINLINE const ETeam& GetTeam() const { return CurrentTeam; }
+	FORCEINLINE const ETeam& GetEnemyTeam() const { return CurrentEnemyTeam; }
+	FORCEINLINE const bool& GetUpdateMinimap() const { return UpdateMinimap; }
+	FORCEINLINE const TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>>& GetOccupationPlayersByMinimap() const { return OccupationPlayersByMinimap; }
+	FORCEINLINE const TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>& GetIndividualPlayersByMinimap() const { return IndividualPlayersByMinimap; }
+	FORCEINLINE const TMap<TWeakObjectPtr<ALakayaBasePlayerState>, FTimerHandle>& GetPlayerTimers() const { return PlayerTimers; }
 	
+	FORCEINLINE void SetTeam(const ETeam& Team) { CurrentTeam = Team; }
+	FORCEINLINE void SetEnemyTeam(const ETeam& NewEnemyTeam) { CurrentEnemyTeam = NewEnemyTeam; }
+	FORCEINLINE void SetUpdateMinimap(const bool& bUpdate) { UpdateMinimap = bUpdate; }
+	FORCEINLINE void SetOccupationPlayersByMinimap(const ETeam& Team, ALakayaBasePlayerState* NewPlayerState, UImage* NewImage) { if (NewImage != nullptr) OccupationPlayersByMinimap[Team].Emplace(NewPlayerState, NewImage); }
+	FORCEINLINE void SetIndividualPlayersByMinimap(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState, const TWeakObjectPtr<UImage> NewImage) { IndividualPlayersByMinimap.Emplace(NewPlayerState, NewImage); }
+	FORCEINLINE void SetPlayerTimers(const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState, const FTimerHandle NewTimerHandle) { PlayerTimers.Emplace(NewPlayerState, NewTimerHandle); }
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
@@ -51,21 +64,13 @@ protected:
 	 * @brief 플레이어팀의 위치를 업데이트합니다.
 	 * @param Team 플레이어의 팀입니다.
 	 */
-	virtual void UpdatePlayerPosition(const ETeam& Team);
-public:
-	FORCEINLINE const ETeam& GetTeam() const { return CurrentTeam; }
-	FORCEINLINE const ETeam& GetEnemyTeam() const { return CurrentEnemyTeam; }
-	FORCEINLINE const bool& GetUpdateMinimap() const { return UpdateMinimap; }
-	FORCEINLINE const TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>>& GetPlayersByMinimap() const { return PlayersByMinimap; }
-	FORCEINLINE const TArray<TObjectPtr<ALakayaBasePlayerState>>& GetEnemiesByMinimap() const { return EnemiesByMinimap; }
-	FORCEINLINE const TMap<TWeakObjectPtr<ALakayaBasePlayerState>, FTimerHandle>& GetPlayerTimers() const { return PlayerTimers; }
-	
-	FORCEINLINE void SetTeam(const ETeam& Team) { CurrentTeam = Team; }
-	FORCEINLINE void SetEnemyTeam(const ETeam& NewEnemyTeam) { CurrentEnemyTeam = NewEnemyTeam; }
-	FORCEINLINE void SetUpdateMinimap(const bool& bUpdate) { UpdateMinimap = bUpdate; }
-	FORCEINLINE void SetPlayersByMinimap(const ETeam& Team, ALakayaBasePlayerState* NewPlayerState, UImage* NewImage) { if (NewImage != nullptr) PlayersByMinimap[Team].Emplace(NewPlayerState, NewImage); }
-	FORCEINLINE void SetEnemiesByMinimap(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState) { EnemiesByMinimap.Emplace(NewPlayerState.Get()); }
-	FORCEINLINE void SetPlayerTimers(const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState, const FTimerHandle NewTimerHandle) { PlayerTimers.Emplace(NewPlayerState, NewTimerHandle); }
+	virtual void UpdatePlayerPosition(const ETeam& Team) { return; }
+
+	/**
+	 * @brief 자기 자신의 위치를 업데이트 합니다.
+	 * @param NewPlayerState 자기 자신의 PlayerState 입니다.
+	 */
+	virtual void UpdatePlayerPosition(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState) { return;}
 protected:
 	// 위젯의 최상단 CanvasPanel
 	UPROPERTY()
@@ -112,10 +117,11 @@ protected:
 	TObjectPtr<UTexture2D> QuestionMarkIcon;
 	
 	// 팀별로 관리하기 위한 컨테이너입니다.
-	TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>> PlayersByMinimap;
+	TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>> OccupationPlayersByMinimap;
 
 	// 적들을 관리하기 위한 컨테이너입니다.
-	TArray<TObjectPtr<ALakayaBasePlayerState>> EnemiesByMinimap;
+	// TArray<TObjectPtr<ALakayaBasePlayerState>> EnemiesByMinimap;
+	TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>> IndividualPlayersByMinimap;
 	
 	// Owner의 소속 팀 입니다.
 	ETeam CurrentTeam;
