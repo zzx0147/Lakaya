@@ -15,6 +15,7 @@ void UAIIndividualScoreBoardElement::NativeConstruct()
 	IndividualDeathText = Cast<UTextBlock>(GetWidgetFromName(TEXT("IndividualDeath_Text")));
 	Individual_BackGround_Image = Cast<UImage>(GetWidgetFromName("Individual_BackGround_Image"));
 
+	check(IndividualRankText != nullptr);
 	check(IndividualPlayerNameText != nullptr);
 	check(IndividualKillText != nullptr);
 	check(IndividualDeathText != nullptr);
