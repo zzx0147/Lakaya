@@ -18,6 +18,8 @@ public:
 	explicit UAIIndividualScoreBoard(const FObjectInitializer& ObjectInitializer);
 	
 	virtual void RegisterPlayer(APlayerState* PlayerState) override;
+	void OnKillCountChanged(const uint16& NewKillCount);
+
 protected:
 	virtual void NativeConstruct() override;
 

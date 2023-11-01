@@ -21,8 +21,8 @@ protected:
 
 public:
 
-	// // 개인전 등수를 설정합니다.
-	// void SetIndividualRank(const uint16& RankCount) const;
+	// 개인전 등수를 설정합니다.
+	void SetIndividualRank(int32 RankCount);
 	
 	// 플레이어 이름을 설정합니다.
 	virtual void SetPlayerName(const FText& PlayerName) const override;
@@ -30,6 +30,8 @@ public:
 
 	// 누적 킬 횟수를 업데이트합니다.
 	virtual void SetKillCount(const uint16& KillCount) const override;
+
+	const uint16& GetKillCount() const { return IndividualKillCount; }
 
 	// 누적 사망 횟수를 업데이트합니다.
 	virtual void SetDeathCount(const uint16& DeathCount) const override;
@@ -42,7 +44,7 @@ private:
 	TWeakObjectPtr<UTextBlock> KillText;		 			// 킬
 	TWeakObjectPtr<UTextBlock> DeathText;					// 데스
 	
-	// TWeakObjectPtr<UTextBlock> IndividualRankText;			// 개인전 등수
+	TWeakObjectPtr<UTextBlock> IndividualRankText;			// 개인전 등수
 	TWeakObjectPtr<UTextBlock> IndividualPlayerNameText;	// 개인전 플레이어 이름
 	TWeakObjectPtr<UTextBlock> IndividualKillText;			// 개인전 킬
 	TWeakObjectPtr<UTextBlock> IndividualDeathText;			// 개인전 데스
@@ -54,4 +56,7 @@ public:
 	TWeakObjectPtr<UImage> Character_Wazi_Image;			// Anti_와지 초상화
 	
 	TWeakObjectPtr<UImage> Individual_BackGround_Image;		// Individual_뒷배경
+
+	uint16 IndividualKillCount;
+
 };

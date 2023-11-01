@@ -9,7 +9,7 @@ void UAIIndividualScoreBoardElement::NativeConstruct()
 	Super::NativeConstruct();
 
 #pragma region InitAndNullCheck
-	// IndividualRankText = Cast<UTextBlock>(GetWidgetFromName(TEXT("IndividualRank_Text")));
+	IndividualRankText = Cast<UTextBlock>(GetWidgetFromName(TEXT("IndividualRank_Text")));
 	IndividualPlayerNameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("IndividualPlayerName_Text")));
 	IndividualKillText = Cast<UTextBlock>(GetWidgetFromName(TEXT("IndividualKill_Text")));
 	IndividualDeathText = Cast<UTextBlock>(GetWidgetFromName(TEXT("IndividualDeath_Text")));
@@ -23,10 +23,10 @@ void UAIIndividualScoreBoardElement::NativeConstruct()
 #pragma endregion
 }
 
-// void UAIIndividualScoreBoardElement::SetIndividualRank(const uint16& RankCount) const
-// {
-// 	if (IndividualRankText.IsValid()) IndividualRankText->SetText(FText::AsNumber(RankCount));
-// }
+void UAIIndividualScoreBoardElement::SetIndividualRank(int32 RankCount)
+{
+	if (IndividualRankText.IsValid()) IndividualRankText->SetText(FText::AsNumber(RankCount));
+}
 
 void UAIIndividualScoreBoardElement::SetPlayerName(const FText& PlayerName) const
 {
