@@ -57,6 +57,6 @@ public:
 	
 	TWeakObjectPtr<UImage> Individual_BackGround_Image;		// Individual_뒷배경
 
-	uint16 IndividualKillCount;
+	mutable uint16 IndividualKillCount;
 
 };
