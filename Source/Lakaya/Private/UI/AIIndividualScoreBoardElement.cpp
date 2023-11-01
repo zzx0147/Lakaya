@@ -40,6 +40,8 @@ void UAIIndividualScoreBoardElement::SetPlayerName(const FString& PlayerName) co
 
 void UAIIndividualScoreBoardElement::SetKillCount(const uint16& KillCount) const
 {
+	IndividualKillCount = KillCount;
+
 	if (IndividualKillText.IsValid()) IndividualKillText->SetText(FText::AsNumber(KillCount));
 }
 
