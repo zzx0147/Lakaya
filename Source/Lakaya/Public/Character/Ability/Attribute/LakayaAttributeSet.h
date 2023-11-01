@@ -18,8 +18,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDashStackFullOrNot, const bool, b
 
 DECLARE_EVENT_ThreeParams(ALakayaBasePlayerState, FPlayerKilledSignature, AController*, AController*, AActor*)
 
-DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FAttributeChangeSignature, const float&)
-
 UCLASS(Config=Game)
 class LAKAYA_API ULakayaAttributeSet : public ULakayaBaseAttributeSet
 {
@@ -50,10 +48,6 @@ public:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDashStackFullOrNot OnDashStackFullOrNot;
-
-	mutable FAttributeChangeSignature OnHealthChanged;
-
-	mutable FAttributeChangeSignature OnMaxHealthChanged;
 
 	mutable FPlayerKilledSignature OnPlayerKill;
 

@@ -158,7 +158,7 @@ ALakayaProjectile* FProjectilePool::GetFreeProjectile()
 	}
 	else
 	{
-		Projectile = FreeProjectiles.Top().Get();
+		Projectile = FreeProjectiles.Last(FreeProjectiles.Num() - 1).Get();
 	}
 
 	return Projectile;
