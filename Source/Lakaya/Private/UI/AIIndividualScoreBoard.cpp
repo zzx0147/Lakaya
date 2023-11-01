@@ -52,6 +52,9 @@ void UAIIndividualScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 
 	// 엘리먼트 데이터 바인딩
 	// TODO : AI 개인전에서 애들이 None 으로 팀이 들어가있어서 이렇게 처리함 나중에 개인전 팀 할당 체크좀 해줘용
+
+	LakayaState->OnKillCountChanged.AddUObject(this, &UAIIndividualScoreBoard::OnKillCountChanged);
+
 	AIIndividualTeamBox->AddChildToVerticalBox(Element);
 	Element->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	Element->Individual_BackGround_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -59,93 +62,44 @@ void UAIIndividualScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 	LakayaState->OnPlayerNameChanged.AddUObject(Element, &UScoreBoardElement::SetPlayerName);
 	LakayaState->OnKillCountChanged.AddUObject(Element, &UScoreBoardElement::SetKillCount);
 	LakayaState->OnDeathCountChanged.AddUObject(Element, &UScoreBoardElement::SetDeathCount);
-
-	LakayaState->OnKillCountChanged.AddUObject(this, &UAIIndividualScoreBoard::OnKillCountChanged);
 	
 	Element->SetPlayerName(LakayaState->GetPlayerName());
 	Element->SetDeathCount(LakayaState->GetDeathCount());
 	Element->SetKillCount(LakayaState->GetKillCount());
 	Element->IndividualKillCount = LakayaState->GetKillCount();
+	OnKillCountChanged(LakayaState->GetKillCount());
 	
+	LakayaState->OnKillCountChanged.AddUObject(this, &UAIIndividualScoreBoard::OnKillCountChanged);
 }
 
 void UAIIndividualScoreBoard::OnKillCountChanged(const uint16& NewKillCount)
 {
+	TArray<UAIIndividualScoreBoardElement*> Elements;
+
+	// AIIndividualTeamBox에서 생성된 모든 Element들을 가져옴
+	for (int32 i = 0; i < AIIndividualTeamBox->GetChildrenCount(); i++)
+	{
+		UAIIndividualScoreBoardElement* Element = Cast<UAIIndividualScoreBoardElement>(AIIndividualTeamBox->GetChildAt(i));
+		if (Element)
+		{
+			Elements.Add(Element);
+		}
+	}
+
+	// Element들을 킬 카운트를 기준으로 정렬 (내림차순)
+	Elements.Sort([](const UAIIndividualScoreBoardElement& A, const UAIIndividualScoreBoardElement& B) {
+		return A.IndividualKillCount > B.IndividualKillCount;
+	});
 	
-
-
-
-
-	
-	// TArray<UWidget*> ChildWidgets = AIIndividualTeamBox->GetAllChildren();
-	// TArray<UAIIndividualScoreBoardElement*> ScoreBoardElements;
-	//
-	// for (UWidget* ChildWidget : ChildWidgets)
-	// {
-	// 	UAIIndividualScoreBoardElement* ScoreBoardElement = Cast<UAIIndividualScoreBoardElement>(ChildWidget);
-	// 	if (ScoreBoardElement)
-	// 	{
-	// 		ScoreBoardElements.Add(ScoreBoardElement);
-	// 		ScoreBoardElement->SetIndividualRank(0); // 등수 초기화
-	// 		UE_LOG(LogTemp, Error, TEXT("캐릭터 킬수 : %d"), ScoreBoardElement->GetKillCount());
-	// 		UE_LOG(LogTemp, Error, TEXT("킬수 : %d"), NewKillCount);
-	// 	}
-	// }
-	//
-	// ScoreBoardElements.Sort([](const UAIIndividualScoreBoardElement& A, const UAIIndividualScoreBoardElement& B)
-	// { return A.GetKillCount() > B.GetKillCount(); });
-	//
-	// int32 Rank = 1;
-	// for (int32 Index = 0; Index < ScoreBoardElements.Num(); ++Index)
-	// {
-	// 	UAIIndividualScoreBoardElement* ScoreBoardElement = ScoreBoardElements[Index];
-	// 	ScoreBoardElement->SetIndividualRank(Rank); // 등수 설정
-	// 	Rank++;
-	// 	
-	// }
-	//
-	// AIIndividualTeamBox->ClearChildren();
-	//
-	// for (int32 i = 0; i < ScoreBoardElements.Num(); i++)
-	// {
-	// 	AIIndividualTeamBox->AddChild(ScoreBoardElements[i]);
-	// }
-
-	// for (UAIIndividualScoreBoardElement* ScoreBoardElement : ScoreBoardElements)
-	// {
-	// 	AIIndividualTeamBox->AddChild(ScoreBoardElement);
-	// }
+	// 정렬된 Element들을 AIIndividualTeamBox에 추가 (상단에 위치)
+	for (int32 i = 0; i < Elements.Num(); i++)
+	{
+		UAIIndividualScoreBoardElement* Element = Elements[i];
+		if (Element)
+		{
+			Element->SetIndividualRank(i + 1); // 랭크 설정
+			AIIndividualTeamBox->RemoveChild(Element);
+			AIIndividualTeamBox->AddChild(Element);
+		}
+	}
 }
-
-// void UAIIndividualScoreBoard::OnKillCountChanged(const uint16& NewKillCount)
-// {
-// 	TArray<UAIIndividualScoreBoardElement*> ScoreBoardElements;
-//
-// 	for (int32 Index = 0; Index < AIIndividualTeamBox->GetChildrenCount(); ++Index)
-// 	{
-// 		UWidget* ChildWidget = AIIndividualTeamBox->GetChildAt(Index);
-// 		UAIIndividualScoreBoardElement* ScoreBoardElement = Cast<UAIIndividualScoreBoardElement>(ChildWidget);
-// 		if (ScoreBoardElement)
-// 		{
-// 			ScoreBoardElements.Add(ScoreBoardElement);
-// 			ScoreBoardElement->SetIndividualRank(0); // 등수 초기화
-// 		}
-// 	}
-//
-// 	ScoreBoardElements.Sort([](const UAIIndividualScoreBoardElement& A, const UAIIndividualScoreBoardElement& B) {
-// 		return A.GetKillCount() > B.GetKillCount();
-// 	});
-//
-// 	for (int32 Index = 0; Index < ScoreBoardElements.Num(); ++Index)
-// 	{
-// 		UAIIndividualScoreBoardElement* ScoreBoardElement = ScoreBoardElements[Index];
-// 		ScoreBoardElement->SetIndividualRank(Index + 1); // 등수 설정
-// 	}
-//
-// 	AIIndividualTeamBox->ClearChildren();
-//
-// 	for (UAIIndividualScoreBoardElement* ScoreBoardElement : ScoreBoardElements)
-// 	{
-// 		AIIndividualTeamBox->AddChild(ScoreBoardElement);
-// 	}
-// }
