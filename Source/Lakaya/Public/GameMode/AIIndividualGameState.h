@@ -42,7 +42,8 @@ private:
 	 * @param NewPlayerImage 업데이트 된 플레이어의 미니맵 이미지입니다.
 	 */
 	void UpdatePlayerByMinimap(const ALakayaBasePlayerState* NewPlayerState, const UImage* NewPlayerImage);
-	
+
+	virtual void SetClientTeam(const ETeam& NewTeam) override;
 public:
 	TArray<FPlayerAIData> FPlayerAIDataArray;
 
@@ -66,6 +67,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float MatchStartWaitWidgetLifeTime;
+
+	// ETeam CurrentTeam;
 	
 	FString AIName;
 

@@ -47,6 +47,9 @@ public:
 	float GetMatchRemainTime() const { return MatchEndingTime - GetServerWorldTimeSeconds(); }
 
 	FORCEINLINE bool GetbIsClairvoyanceActivated() const { return bIsClairvoyanceActivated;}
+	FORCEINLINE ETeam GetClientTeam() const { return ClientTeam; }
+
+	virtual void SetClientTeam(const ETeam& NewTeam) {};
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void NotifyPlayerKilled(APlayerState* VictimPlayer, APlayerState* InstigatorPlayer, AActor* DamageCauser);
@@ -150,6 +153,8 @@ protected:
 	// 게임시작대기가 몇초간 지속될 지를 정의합니다.
 	UPROPERTY(ReplicatedUsing=OnRep_MatchWaitEndingTime)
 	float MatchWaitEndingTime;
+
+	ETeam ClientTeam;
 
 	FTimerHandle EndingTimer;
 	FTimerHandle CharacterSelectTimer;

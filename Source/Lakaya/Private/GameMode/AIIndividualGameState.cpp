@@ -22,6 +22,8 @@ AAIIndividualGameState::AAIIndividualGameState()
 
 	AIIndividualLiveScoreBoardWidgetClass = AIIndividualLiveScoreBoardFinder.Class;
 
+	ClientTeam = ETeam::Individual;
+	
 	HUDMinimapWidgetClass = UIndividualOverlayMinimapWidget::StaticClass();
 	TabMinimapWidgetClass = UIndividualTabMinimapWidget::StaticClass();
 }
@@ -436,6 +438,13 @@ void AAIIndividualGameState::UpdatePlayerByMinimap(const ALakayaBasePlayerState*
 	{
 		
 	}
+}
+
+void AAIIndividualGameState::SetClientTeam(const ETeam& NewTeam)
+{
+	Super::SetClientTeam(NewTeam);
+
+	ClientTeam = NewTeam;
 }
 
 void AAIIndividualGameState::SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray)

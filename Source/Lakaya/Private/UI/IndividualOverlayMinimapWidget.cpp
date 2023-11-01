@@ -3,8 +3,10 @@
 
 #include "UI/IndividualOverlayMinimapWidget.h"
 
+#include "Camera/CameraComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
+#include "GameMode/AIIndividualGameState.h"
 
 void UIndividualOverlayMinimapWidget::NativeConstruct()
 {
@@ -22,6 +24,35 @@ void UIndividualOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 
 	// 자기 자신의 위치를 업데이트 해줍니다.
 	UpdatePlayerPosition(MyPlayerState);
+
+	// 미니맵 상에 표시되는 적들의 아이콘 회전 값을 업데이트 해줍니다.
+	for (const auto& Player : IndividualPlayersByMinimap)
+	{
+		UpdateEnemyImageRotation(Player.Value);
+	}
+	
+	// 만약 와지(본인)이 궁극기를 사용중이라면, 적들의 위치를 업데이트 합니다.
+	if (const auto& IndividualGameState = Cast<AAIIndividualGameState>(GetWorld()->GetGameState()))
+	{
+		if (IndividualGameState->GetbIsClairvoyanceActivated())
+		{
+			UpdatePlayerPosition(CurrentTeam);
+			return;
+		}
+	}
+	
+	for (const auto& Player : IndividualPlayersByMinimap)
+	{
+		const auto& PlayerState = Player.Key;
+		const auto& PlayerImage = Player.Value;
+
+		ALakayaBaseCharacter* PlayerCharacter = Cast<ALakayaBaseCharacter>(MyPlayerState->GetPawn());
+		if (PlayerCharacter->IsEnemyVisibleInCamera(ETeam::Individual, PlayerState, PlayerImage))
+		{
+			// 해당 적이 나의 시야에 있다면 해당 적을 미니맵에 업데이트 해줍니다.
+			UpdatePlayerPosition(PlayerState);
+		}
+	}
 }
 
 UImage* UIndividualOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
@@ -42,39 +73,68 @@ UImage* UIndividualOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam,
 	PlayerImage->SetVisibility(ESlateVisibility::Hidden);
 
 	if (bMyPlayer)
+	{
 		PlayerImage->SetBrushFromTexture(IndividualOwnIcon);
+		return PlayerImage;
+	}
 	else
+	{
 		PlayerImage->SetBrushFromTexture(IndividualEnemyIcon);
+		return PlayerImage;
+	}
 	
 	return nullptr;
 }
 
-void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState)
 {
-	// Super::UpdatePlayerPosition(NewTeam, NewPlayerState);
-
-	// const auto& MyImage = EnemiesByMinimap[NewTeam][NewPlayerState];
-	
-	// 나 자신의 위치를 업데이트 해주면서 미니맵 위치와 회전을 조절합니다.
-	if (NewPlayerState == GetOwningPlayerState())
+	// 나 자신의 위치를 업데이트 해주면서, 미니맵 위치와 회전을 업데이트해줍니다.
+#pragma region Null Check
+	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState;
+		!IndividualPlayersByMinimap.Contains(WeakNewPlayerState))
 	{
-		const FVector2D PlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
-		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
+		UE_LOG(LogTemp, Warning, TEXT("WeakNewPlayerState is not in IndividualPlayersByMinimap."));
+		return;
+	}
+	
+	const auto& NewPlayerImage = IndividualPlayersByMinimap[NewPlayerState];
+	if (NewPlayerImage == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NewPlayerImage is null."));
+		return;
+	}
+#pragma endregion
 
+	const FVector2D PlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
+	const FVector2D NewPlayerPosition = const_cast<UIndividualOverlayMinimapWidget*>(this)->ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
+
+	if (NewPlayerImage->GetVisibility() == ESlateVisibility::Hidden)
+		NewPlayerImage->SetVisibility(ESlateVisibility::Visible);
+
+	if (NewPlayerState != GetOwningPlayerState())
+	{
+		NewPlayerImage->SetBrushFromTexture(IndividualEnemyIcon);
+		FTimerHandle NewTimerHandle;
+		if (PlayerTimers.Contains(NewPlayerState))
+			GetWorld()->GetTimerManager().ClearTimer(PlayerTimers[NewPlayerState]);
+
+		GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, [this, NewPlayerImage]()
+		{
+			NewPlayerImage->SetBrushFromTexture(QuestionMarkIcon);
+		}, 0.1f, false);
+	}
+	else if (NewPlayerState == GetOwningPlayerState())
+	{
+		const auto PlayerCharacter = NewPlayerState->GetPlayerController()->GetCharacter();
+		const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
+		const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
+
+		NewPlayerImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+		NewPlayerImage->SetBrushFromTexture(IndividualOwnIcon);
 		UpdateMinimapImagePositionAndRotation(*NewPlayerState, NewPlayerPosition);
 	}
 
-	// TODO : 자기 자신의 위치를 미님맵상에 표시해줘야 합니다.
-	
-	// 나 자신을 검사해서 죽어있다면, 죽음 아이콘으로 변경해줍니다.
-	// if (const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(NewPlayerState->GetPawn()))
-	// {
-	// 	if (!LakayaCharacter->GetAliveState())
-	// 	{
-	// 		
-	// 	}
-	// }
+	NewPlayerImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 }
 
 FVector2d UIndividualOverlayMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
@@ -89,13 +149,7 @@ void UIndividualOverlayMinimapWidget::UpdateMinimapImagePositionAndRotation(
 	Super::UpdateMinimapImagePositionAndRotation(NewPlayerState, NewPosition);
 }
 
-void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState)
-{
-	const FVector2D WorldPlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
-	const FVector2D ConvertByMinimapPlayerPosition = ConvertWorldToMiniMapCoordinates(WorldPlayerPosition, MinimapSize);
 
-	// TODO : IndividualPlayerByMinimap을 업데이트 해서 자기 자신의 이미지를 가져와야 합니다.
-}
 
 void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 {

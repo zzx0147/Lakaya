@@ -74,7 +74,7 @@ FVector2d UOccupationOverlayMinimapWidget::ConvertWorldToMiniMapCoordinates(cons
 UImage* UOccupationOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
 {
 	UImage* PlayerImage = NewObject<UImage>(this);
-	const auto Team = NewTeam == ETeam::Anti ? ETeam::Anti : ETeam::Pro;
+	// const auto Team = NewTeam == ETeam::Anti ? ETeam::Anti : ETeam::Pro;
 
 	UCanvasPanelSlot* PanelSlot = ParentPanel->AddChildToCanvas(PlayerImage);
 	
@@ -93,12 +93,12 @@ UImage* UOccupationOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam,
 	// 나 자신이라면 자신의 팀에 따른 자신만의 아이콘으로 설정해줍니다.
 	if (bMyPlayer)
 	{
-		if (Team == ETeam::Anti)
+		if (NewTeam == ETeam::Anti)
 		{
 			PlayerImage->SetBrushFromTexture(AntiOwnIcon);
 			return PlayerImage;
 		}
-		else if (Team == ETeam::Pro)
+		else if (NewTeam == ETeam::Pro)
 		{
 			PlayerImage->SetBrushFromTexture(ProOwnIcon);
 			return PlayerImage;
@@ -106,9 +106,9 @@ UImage* UOccupationOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam,
 	}
 
 	// 나 자신이 아니라면 팀에 따라서 아이콘을 설정해줍니다.
-	if (TeamIcons.Contains(Team))
+	if (TeamIcons.Contains(NewTeam))
 	{
-		PlayerImage->SetBrushFromTexture(TeamIcons[Team]);
+		PlayerImage->SetBrushFromTexture(TeamIcons[NewTeam]);
 		return PlayerImage;
 	}
 
@@ -242,6 +242,7 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 		return;
 	}
 #pragma endregion
+	
 	const FVector2D PlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
 	const FVector2D NewPlayerPosition = const_cast<UOccupationOverlayMinimapWidget*>(this)->ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
 
@@ -266,8 +267,6 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	}
 	
 	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
-
-	
 
 	FTimerHandle NewTimerHandle;
 	if (PlayerTimers.Contains(NewPlayerState))
