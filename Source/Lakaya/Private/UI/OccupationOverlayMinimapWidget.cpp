@@ -182,7 +182,7 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 	}
 
 	// 적 사망 검사
-	for (auto& Player : OccupationPlayersByMinimap[Team == ETeam::Anti ? ETeam::Pro : ETeam::Anti])
+	for (auto& Player : OccupationPlayersByMinimap[CurrentEnemyTeam])
 	{
 		const auto& State = Player.Key;
 		const auto& Image = Player.Value;
@@ -281,26 +281,6 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	}, 0.1f, false);
 	SetPlayerTimers(NewPlayerState, NewTimerHandle);
 }
-
-// void UOccupationOverlayMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
-// 	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
-// {
-// 	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
-// 		return;
-// 	}
-// 	
-// 	const auto& EnemyImage = PlayersByMinimap[NewTeam][NewPlayerState].Get();
-// 	if (EnemyImage == nullptr)
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
-// 		return;
-// 	}
-// 	
-// 	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
-// 		EnemyImage->SetVisibility(ESlateVisibility::Hidden);
-// }
 
 void UOccupationOverlayMinimapWidget::UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState,
                                                                         const FVector2D NewPosition) const

@@ -46,8 +46,22 @@ void UIndividualOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 		const auto& PlayerState = Player.Key;
 		const auto& PlayerImage = Player.Value;
 
-		ALakayaBaseCharacter* PlayerCharacter = Cast<ALakayaBaseCharacter>(MyPlayerState->GetPawn());
-		if (PlayerCharacter->IsEnemyVisibleInCamera(ETeam::Individual, PlayerState, PlayerImage))
+		// 적과 나의 생존 여부를 검사해서, 적이 죽었거나, 나 자신이 죽었다면, 사망 아이콘으로 변경시켜줍니다.
+		// ALakayaBaseCharacter* PlayerCharacter = Cast<ALakayaBaseCharacter>(PlayerState->GetPawn());
+		// if (!PlayerCharacter->GetAliveState())
+		// {
+		// 	PlayerImage->SetBrushFromTexture(DeathIcon);
+		// }
+		// else
+		// {
+		// 	if (PlayerState == GetOwningPlayerState())
+		// 		PlayerImage->SetBrushFromTexture(IndividualOwnIcon);
+		// 	
+		// 	PlayerImage->SetBrushFromTexture(IndividualEnemyIcon);
+		// }
+		
+		ALakayaBaseCharacter* MyPlayerCharacter = Cast<ALakayaBaseCharacter>(MyPlayerState->GetPawn());
+		if (MyPlayerCharacter->IsEnemyVisibleInCamera(ETeam::Individual, PlayerState, PlayerImage))
 		{
 			// 해당 적이 나의 시야에 있다면 해당 적을 미니맵에 업데이트 해줍니다.
 			UpdatePlayerPosition(PlayerState);
@@ -88,7 +102,6 @@ UImage* UIndividualOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam,
 
 void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState)
 {
-	// 나 자신의 위치를 업데이트 해주면서, 미니맵 위치와 회전을 업데이트해줍니다.
 #pragma region Null Check
 	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState;
 		!IndividualPlayersByMinimap.Contains(WeakNewPlayerState))
@@ -111,27 +124,46 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 	if (NewPlayerImage->GetVisibility() == ESlateVisibility::Hidden)
 		NewPlayerImage->SetVisibility(ESlateVisibility::Visible);
 
-	if (NewPlayerState != GetOwningPlayerState())
+	ALakayaBaseCharacter* LakayaBaseCharacter = Cast<ALakayaBaseCharacter>(NewPlayerState->GetPawn());
+	if (!LakayaBaseCharacter->GetAliveState())
 	{
-		NewPlayerImage->SetBrushFromTexture(IndividualEnemyIcon);
-		FTimerHandle NewTimerHandle;
-		if (PlayerTimers.Contains(NewPlayerState))
-			GetWorld()->GetTimerManager().ClearTimer(PlayerTimers[NewPlayerState]);
+		NewPlayerImage->SetBrushFromTexture(DeathIcon);
 
-		GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, [this, NewPlayerImage]()
+		if (NewPlayerState == GetOwningPlayerState())
 		{
-			NewPlayerImage->SetBrushFromTexture(QuestionMarkIcon);
-		}, 0.1f, false);
-	}
-	else if (NewPlayerState == GetOwningPlayerState())
-	{
-		const auto PlayerCharacter = NewPlayerState->GetPlayerController()->GetCharacter();
-		const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
-		const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
+			const auto PlayerCharacter = NewPlayerState->GetPlayerController()->GetCharacter();
+			const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
+			const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
 
-		NewPlayerImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
-		NewPlayerImage->SetBrushFromTexture(IndividualOwnIcon);
-		UpdateMinimapImagePositionAndRotation(*NewPlayerState, NewPlayerPosition);
+			NewPlayerImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+			// NewPlayerImage->SetBrushFromTexture(IndividualOwnIcon);
+			UpdateMinimapImagePositionAndRotation(*NewPlayerState, NewPlayerPosition);
+		}
+	}
+	else
+	{
+		if (NewPlayerState != GetOwningPlayerState())
+		{
+			NewPlayerImage->SetBrushFromTexture(IndividualEnemyIcon);
+			FTimerHandle NewTimerHandle;
+			if (PlayerTimers.Contains(NewPlayerState))
+				GetWorld()->GetTimerManager().ClearTimer(PlayerTimers[NewPlayerState]);
+
+			GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, [this, NewPlayerImage]()
+			{
+				NewPlayerImage->SetBrushFromTexture(QuestionMarkIcon);
+			}, 0.1f, false);
+		}
+		else if (NewPlayerState == GetOwningPlayerState())
+		{
+			const auto PlayerCharacter = NewPlayerState->GetPlayerController()->GetCharacter();
+			const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
+			const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
+
+			NewPlayerImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+			NewPlayerImage->SetBrushFromTexture(IndividualOwnIcon);
+			UpdateMinimapImagePositionAndRotation(*NewPlayerState, NewPlayerPosition);
+		}
 	}
 
 	NewPlayerImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
