@@ -23,9 +23,6 @@ protected:
 private:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
-	void Jump();
-	void Crouch();
-	void UnCrouch();
 
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Context")
 	UInputMappingContext* MovementContext;
@@ -38,13 +35,4 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
 	UInputAction* LookAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
-	UInputAction* JumpAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
-	UInputAction* CrouchAction;
-	
-	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
-	UInputAction* UnCrouchAction;
 };
