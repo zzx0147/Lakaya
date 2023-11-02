@@ -223,6 +223,7 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 	if (!bEnableLocalOutline && IsPlayerControlled() && IsLocallyControlled())
 	{
 		GetMesh()->SetOverlayMaterial(nullptr);
+		GetMesh()->SetRenderCustomDepth(false);
 		return;
 	}
 
