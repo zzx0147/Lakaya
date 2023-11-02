@@ -23,6 +23,9 @@ protected:
 
 private:
 	virtual void UpdatePlayerPosition(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState) override;
+	FVector2d ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation, const FVector2D& MiniMapSize);
+	void UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState,
+	                                           FVector2D NewPosition) const;
 	virtual void UpdatePlayerPosition(const ETeam& Team) override;
 	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
 };
