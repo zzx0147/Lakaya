@@ -38,14 +38,8 @@ protected:
 	                                 const FGameplayAbilityActorInfo* ActorInfo,
 	                                 const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility);
 
-	/** ActorInfo를 통해 향상된 입력 컴포넌트를 찾아 가져옵니다. 반환값은 nullptr일 수 있습니다. */
-	static UEnhancedInputComponent* GetEnhancedInputComponent(const FGameplayAbilityActorInfo* ActorInfo);
-
 	/** ActorInfo를 통해 로컬 플레이어를 찾아 가져옵니다. 반환값은 nullptr일 수 있습니다. */
 	static ULocalPlayer* GetLocalPlayer(const FGameplayAbilityActorInfo* ActorInfo);
-
-	/** ActorInfo를 통해 향상된 입력 서브시스템을 찾아 가져옵니다. 반환값은 nullptr일 수 있습니다. */
-	UEnhancedInputLocalPlayerSubsystem* GetEnhancedInputSubsystem(const FGameplayAbilityActorInfo* ActorInfo);
 
 	/** 로그 출력 포맷을 통해 문자열을 생성합니다. */
 	FString LogFormat(const FGameplayAbilityActorInfo* ActorInfo, const FString& Message) const;
@@ -139,16 +133,6 @@ protected:
 	UFUNCTION(BlueprintCallable, DisplayName="SetZoom")
 	void BP_SetZoom(const bool& bZoom, const float& ZoomFov);
 
-	void AddMappingContext(const FGameplayAbilityActorInfo* ActorInfo, const ULakayaInputContext* InputContext);
-
-	UFUNCTION(BlueprintCallable, DisplayName="AddMappingContext")
-	void BP_AddMappingContext(const ULakayaInputContext* InputContext);
-
-	void RemoveMappingContext(const FGameplayAbilityActorInfo* ActorInfo, const ULakayaInputContext* InputContext);
-
-	UFUNCTION(BlueprintCallable, DisplayName="RemoveMappingContext")
-	void BP_RemoveMappingContext(const ULakayaInputContext* InputContext);
-
 	UFUNCTION(BlueprintCallable)
 	static bool TryActivateAbilityWithSpec(UAbilitySystemComponent* ASC, const FGameplayAbilitySpec& Spec);
 
@@ -180,7 +164,6 @@ private:
 	UPROPERTY(EditAnywhere)
 	uint8 bAddLogOnScreen : 1;
 
-	TWeakObjectPtr<UEnhancedInputLocalPlayerSubsystem> CachedInputSubsystem;
 	FDelegateHandle TargetDataDelegateHandle;
 	FTimerHandle TargetDataTimerHandle;
 };

@@ -1,20 +1,18 @@
 #include "GameMode/LakayaBaseGameState.h"
 
-#include <filesystem>
-
 #include "TabMinimapWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "EOS/EOSGameInstance.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "Net/UnrealNetwork.h"
-#include "PlayerController/BattlePlayerController.h"
+#include "PlayerController/LakayaPlayerController.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/GamePlayKillLogWidget.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
-#include "UI/OverlayMinimapWidget.h"
 #include "UI/LoadingWidget.h"
+#include "UI/OverlayMinimapWidget.h"
 #include "UI/PlayerNameDisplayerWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
@@ -183,7 +181,7 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	if (ScoreBoard.IsValid()) ScoreBoard->RemoveFromParent();
 	if (GetCharacterSelectWidget()) CharacterSelectWidget->RemoveFromParent();
 
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController<AGameLobbyPlayerController>();
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<ALakayaPlayerController>();
 		LocalController && LocalController->IsLocalController())
 		LocalController->SetEnableExitShortcut(true);
 
@@ -230,33 +228,6 @@ void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
 
 void ALakayaBaseGameState::SetTabMinimapVisibility(const bool& Visible)
 {
-}
-
-void ALakayaBaseGameState::RequestClairvoyanceActivate(const AActor* InInstigator)
-{
-	if (!CanInstigatorClairvoyance(InInstigator))
-	{
-		return;
-	}
-
-	OnClairvoyanceActivateRequested(InInstigator);
-
-	if (ShouldActivateClairvoyance())
-	{
-		bIsClairvoyanceActivated = true;
-		OnClairvoyanceActivated();
-	}
-}
-
-void ALakayaBaseGameState::RequestClairvoyanceDeactivate(const AActor* InInstigator)
-{
-	OnClairvoyanceDeactivateRequested(InInstigator);
-
-	if (!ShouldActivateClairvoyance())
-	{
-		bIsClairvoyanceActivated = false;
-		OnClairvoyanceDeactivated();
-	}
 }
 
 UGameLobbyCharacterSelectWidget* ALakayaBaseGameState::GetCharacterSelectWidget()
@@ -327,21 +298,6 @@ void ALakayaBaseGameState::ReserveSendRecord()
 bool ALakayaBaseGameState::TrySendMatchResultData()
 {
 	return true;
-}
-
-bool ALakayaBaseGameState::CanInstigatorClairvoyance(const AActor* InInstigator) const
-{
-	return ensure(InInstigator);
-}
-
-void ALakayaBaseGameState::OnClairvoyanceActivated()
-{
-	OutlineManager->SetClairvoyance(true);
-}
-
-void ALakayaBaseGameState::OnClairvoyanceDeactivated()
-{
-	OutlineManager->SetClairvoyance(false);
 }
 
 void ALakayaBaseGameState::SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,

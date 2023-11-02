@@ -5,7 +5,6 @@
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
-#include "PlayerController/InteractablePlayerController.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/IndividualOverlayMinimapWidget.h"
 #include "UI/IndividualWidget/IndividualGameResultWidget.h"
@@ -22,6 +21,8 @@ AAIIndividualGameState::AAIIndividualGameState()
 
 	AIIndividualLiveScoreBoardWidgetClass = AIIndividualLiveScoreBoardFinder.Class;
 
+	ClientTeam = ETeam::Individual;
+	
 	HUDMinimapWidgetClass = UIndividualOverlayMinimapWidget::StaticClass();
 	TabMinimapWidgetClass = UIndividualTabMinimapWidget::StaticClass();
 }
@@ -125,7 +126,7 @@ void AAIIndividualGameState::BeginPlay()
 			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
 
 			// 매치시작전에 스폰된 플레이어와 AI의 정보를 미리 한번 넣어주는곳입니다. 이후 Tick에서 실시간으로 계속 검사합니다.
-			if (AllControllers && AllControllers->IsA<AInteractablePlayerController>())
+			if (AllControllers && AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
@@ -136,7 +137,7 @@ void AAIIndividualGameState::BeginPlay()
 					FPlayerAIDataArray.Add(PlayerAIData);
 				}
 			}
-			if (AllControllers && !AllControllers->IsA<AInteractablePlayerController>())
+			if (AllControllers && AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
@@ -172,7 +173,7 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 			AController* AllControllers = It->Get();
 			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
 
-			if (AllControllers && AllControllers->IsA<AInteractablePlayerController>())
+			if (AllControllers && AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
@@ -183,7 +184,7 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 					FPlayerAIDataArray.Add(PlayerAIData);
 				}
 			}
-			if (AllControllers && !AllControllers->IsA<AInteractablePlayerController>())
+			if (AllControllers && AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
@@ -354,28 +355,6 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 	Timers.ClearAllTimersForObject(GetWorld());
 }
 
-bool AAIIndividualGameState::CanInstigatorClairvoyance(const AActor* InInstigator) const
-{
-	if (Super::CanInstigatorClairvoyance(InInstigator))
-	{
-		const auto Pawn = Cast<APawn>(InInstigator);
-		return Pawn && Pawn->IsLocallyControlled() && Pawn->IsPlayerControlled();
-	}
-	return false;
-}
-
-void AAIIndividualGameState::OnClairvoyanceActivated()
-{
-	Super::OnClairvoyanceActivated();
-	SetOpponentRenderCustomDepth(true);
-}
-
-void AAIIndividualGameState::OnClairvoyanceDeactivated()
-{
-	Super::OnClairvoyanceDeactivated();
-	SetOpponentRenderCustomDepth(false);
-}
-
 ERendererStencilMask AAIIndividualGameState::GetUniqueStencilMaskWithCount(const uint8& Count)
 {
 	switch (Count)
@@ -387,21 +366,6 @@ ERendererStencilMask AAIIndividualGameState::GetUniqueStencilMaskWithCount(const
 	case 5: return ERendererStencilMask::ERSM_16;
 	case 6: return ERendererStencilMask::ERSM_32;
 	default: return ERendererStencilMask::ERSM_Default;
-	}
-}
-
-void AAIIndividualGameState::SetOpponentRenderCustomDepth(const bool& Visible) const
-{
-	for (const auto Player : PlayerArray)
-	{
-		if (IsValid(Player))
-		{
-			if (const auto Character = Player->GetPawn<ACharacter>();
-				Character && Character->IsPlayerControlled() && Character->IsLocallyControlled())
-			{
-				Character->GetMesh()->SetRenderCustomDepth(Visible);
-			}
-		}
 	}
 }
 
@@ -436,6 +400,13 @@ void AAIIndividualGameState::UpdatePlayerByMinimap(const ALakayaBasePlayerState*
 	{
 		
 	}
+}
+
+void AAIIndividualGameState::SetClientTeam(const ETeam& NewTeam)
+{
+	Super::SetClientTeam(NewTeam);
+
+	ClientTeam = NewTeam;
 }
 
 void AAIIndividualGameState::SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray)

@@ -32,4 +32,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static void GetChildActors(const AActor* ParentActor, TArray<AActor*>& OutChildren);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static UObject* GetClassDefaultObject(TSubclassOf<UObject> Class);
 };
