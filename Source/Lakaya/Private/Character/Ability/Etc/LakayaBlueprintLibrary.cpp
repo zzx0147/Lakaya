@@ -33,3 +33,8 @@ void ULakayaBlueprintLibrary::GetChildActors(const AActor* ParentActor, TArray<A
 		Algo::Copy(ParentActor->Children, OutChildren);
 	}
 }
+
+UObject* ULakayaBlueprintLibrary::GetClassDefaultObject(TSubclassOf<UObject> Class)
+{
+	return Class->GetDefaultObject();
+}
