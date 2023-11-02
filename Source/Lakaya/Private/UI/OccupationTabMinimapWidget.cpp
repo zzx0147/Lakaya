@@ -12,7 +12,7 @@ void UOccupationTabMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("PlayerImagePanel")));
+	// ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("PlayerImagePanel")));
 
 	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
 	TeamIcons.Emplace(ETeam::Pro, ProIcon);

@@ -130,7 +130,7 @@ protected:
 
 	
 private:
-	virtual void SetClientTeam(const ETeam& NewTeam);
+	virtual void SetClientTeam(const ETeam& NewTeam) override;
 	
 	void EndTimeCheck();
 	
@@ -211,7 +211,7 @@ private:
 	//TODO: 댕글링 포인터가 발생할 수 있으므로 약포인터로 변경해야 합니다. TMap에 TArray를 값형식으로 사용하면 UPROPERTY로 선언할 수 없습니다. 
 	TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> PlayersByTeamMap;
 	
-	ETeam ClientTeam;
+	// ETeam ClientTeam;
 
 	UPROPERTY(Replicated)
 	ETeam TeamToUpdate = ETeam::None;
