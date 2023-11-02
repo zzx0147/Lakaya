@@ -2,7 +2,6 @@
 
 #include "Character/InteractableCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "GameMode/OccupationGameMode.h"
 #include "Net/UnrealNetwork.h"
 

@@ -7,12 +7,7 @@ UTeamScoreWidget::UTeamScoreWidget(const FObjectInitializer& ObjectInitializer):
 	ScoreFormatText = FText::FromString(TEXT("{0}"));
 }
 
-void UTeamScoreWidget::NativeConstruct()
-{
-	Super::NativeConstruct();
-}
-
-void UTeamScoreWidget::SetTeamScore(const ETeam& Team, const float& NewScore)
+void UTeamScoreWidget::SetTeamScore(const ETeam& Team, const float& NewScore) const
 {
 	if (Team == ETeam::None || Team == ETeam::Individual) return;
 
@@ -25,7 +20,7 @@ void UTeamScoreWidget::SetMaxScore(const float& ArgMaxScore)
 	MaxScoreText->SetText(FText::Format(ScoreFormatText, MaxScore));
 }
 
-void UTeamScoreWidget::SetMaxScoreVisibility(const bool& IsVisible)
+void UTeamScoreWidget::SetMaxScoreVisibility(const bool& IsVisible) const
 {
 	MaxScoreText->SetVisibility(IsVisible ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Hidden);
 }

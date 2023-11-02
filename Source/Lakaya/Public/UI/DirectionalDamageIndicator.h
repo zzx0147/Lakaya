@@ -13,13 +13,8 @@ class LAKAYA_API UDirectionalDamageIndicator : public UUserWidget
 public:
 	explicit UDirectionalDamageIndicator(const FObjectInitializer& ObjectInitializer);
 
-	// virtual void BindCharacter(ACharacter* const& Character) override;
-	// virtual bool UnbindCharacter(ACharacter* const& Character) override;
-
 protected:
 	virtual void NativeConstruct() override;
-
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 public:
 	virtual void IndicateStart(const FString& CauserName, const FVector& DamageCursorPosition);
