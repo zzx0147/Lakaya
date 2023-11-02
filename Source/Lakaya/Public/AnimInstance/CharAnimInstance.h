@@ -4,11 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
-#include "Character/ArmedCharacter.h"
-#include "Character/InteractableCharacter.h"
-#include "Character/Ability/AutoFireAbility.h"
-#include "Character/Ability/ResultNotifyFireAbility.h"
-#include "Character/Ability/ReloadAbility.h"
 #include "CharAnimInstance.generated.h"
 
 UCLASS()
