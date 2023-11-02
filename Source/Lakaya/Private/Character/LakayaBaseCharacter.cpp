@@ -11,7 +11,6 @@
 #include "Camera/CameraComponent.h"
 #include "Character/BulletSpreadComponent.h"
 #include "Character/LakayaBasePlayerState.h"
-#include "Character/ResourceComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PostProcessComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -100,13 +99,6 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	{
 		QuestionIcon = QuestionIconFinder.Object;
 	}
-}
-
-ELifetimeCondition ALakayaBaseCharacter::AllowActorComponentToReplicate(
-	const UActorComponent* ComponentToReplicate) const
-{
-	if (ComponentToReplicate->IsA(UResourceComponent::StaticClass())) return COND_None;
-	return Super::AllowActorComponentToReplicate(ComponentToReplicate);
 }
 
 float ALakayaBaseCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,

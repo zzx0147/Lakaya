@@ -100,9 +100,6 @@ protected:
 
 	FORCEINLINE class UCameraComponent* GetCameraComponent() const { return CameraComponent.Get(); }
 
-	template <class T = class UResourceComponent>
-	FORCEINLINE T* GetResourceComponent() const { return Cast<T>(ResourceComponent); }
-
 	/**
 	 * @brief 액터에서 카메라가 바라보는 방향으로 움직인 월드공간의 위치를 가져옵니다.
 	 * @param Distance 카메라가 바라보는 방향으로 얼마나 전진할지 지정합니다.
@@ -218,7 +215,6 @@ private:
 	float DelayedAbilityStopTime;
 
 	TWeakObjectPtr<UCameraComponent> CameraComponent;
-	TWeakObjectPtr<class UResourceComponent> ResourceComponent;
 	bool bRecentAliveState;
 	ETeam RecentTeam;
 	FTimerHandle AbilityStartTimerHandle;
