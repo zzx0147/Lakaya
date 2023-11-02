@@ -137,7 +137,7 @@ void AAIIndividualGameState::BeginPlay()
 					FPlayerAIDataArray.Add(PlayerAIData);
 				}
 			}
-			if (AllControllers && AllControllers->IsPlayerController())
+			if (AllControllers && !AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
@@ -184,7 +184,7 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 					FPlayerAIDataArray.Add(PlayerAIData);
 				}
 			}
-			if (AllControllers && AllControllers->IsPlayerController())
+			if (AllControllers && !AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
