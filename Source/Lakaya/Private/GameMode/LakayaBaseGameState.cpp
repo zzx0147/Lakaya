@@ -183,7 +183,7 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	if (ScoreBoard.IsValid()) ScoreBoard->RemoveFromParent();
 	if (GetCharacterSelectWidget()) CharacterSelectWidget->RemoveFromParent();
 
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController<AGameLobbyPlayerController>();
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<ALakayaPlayerController>();
 		LocalController && LocalController->IsLocalController())
 		LocalController->SetEnableExitShortcut(true);
 

@@ -6,7 +6,7 @@
 #include "AbilitySystemInterface.h"
 #include "LakayaAbilityInputSet.h"
 #include "GameFramework/PlayerController.h"
-#include "GameLobbyPlayerController.generated.h"
+#include "LakayaPlayerController.generated.h"
 
 class UEnhancedInputLocalPlayerSubsystem;
 class ULakayaInputContext;
@@ -15,14 +15,14 @@ class UInputMappingContext;
  * 
  */
 UCLASS()
-class LAKAYA_API AGameLobbyPlayerController : public APlayerController, public IAbilitySystemInterface
+class LAKAYA_API ALakayaPlayerController : public APlayerController, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
 	void SetEnableExitShortcut(const bool& Enable);
 	virtual void UnbindAllAndBindMenu(UEnhancedInputComponent* const& EnhancedInputComponent);
-	AGameLobbyPlayerController();
+	ALakayaPlayerController();
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:

@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameLobbyPlayerController.h"
+#include "LakayaPlayerController.h"
 #include "MovablePlayerController.generated.h"
 
 struct FInputActionValue;
 
 UCLASS()
-class LAKAYA_API AMovablePlayerController : public AGameLobbyPlayerController
+class LAKAYA_API AMovablePlayerController : public ALakayaPlayerController
 {
 	GENERATED_BODY()
 

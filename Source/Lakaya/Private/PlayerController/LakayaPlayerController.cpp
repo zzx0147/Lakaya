@@ -1,4 +1,4 @@
-#include "PlayerController/GameLobbyPlayerController.h"
+#include "PlayerController/LakayaPlayerController.h"
 
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
@@ -13,7 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 
 
-void AGameLobbyPlayerController::SetupInputComponent()
+void ALakayaPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
@@ -26,7 +26,7 @@ void AGameLobbyPlayerController::SetupInputComponent()
 	SetupMappingContext(InputSubsystem);
 }
 
-void AGameLobbyPlayerController::OnPossess(APawn* PawnToPossess)
+void ALakayaPlayerController::OnPossess(APawn* PawnToPossess)
 {
 	if (PawnToPossess != NULL &&
 		(PlayerState == NULL || !PlayerState->IsOnlyASpectator()))
@@ -83,39 +83,39 @@ void AGameLobbyPlayerController::OnPossess(APawn* PawnToPossess)
 	}
 }
 
-void AGameLobbyPlayerController::SetEnableExitShortcut(const bool& Enable)
+void ALakayaPlayerController::SetEnableExitShortcut(const bool& Enable)
 {
 	bEnableExitShortcut = Enable;
 }
 
-void AGameLobbyPlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
+void ALakayaPlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
 	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::MenuHandler);
+	                                   &ALakayaPlayerController::MenuHandler);
 	EnhancedInputComponent->BindAction(ShowScoreAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::ShowScoreBoardAndTabMinimap);
+	                                   &ALakayaPlayerController::ShowScoreBoardAndTabMinimap);
 	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::HideScoreBoardAndTabMinimap);
+	                                   &ALakayaPlayerController::HideScoreBoardAndTabMinimap);
 
 	if (!AbilityInputSet.IsNull())
 	{
 		AbilityInputSet.LoadSynchronous()->BindActions(EnhancedInputComponent, this,
-		                                               &AGameLobbyPlayerController::AbilityInput, InputHandleContainer);
+		                                               &ALakayaPlayerController::AbilityInput, InputHandleContainer);
 	}
 }
 
-void AGameLobbyPlayerController::UnbindAllAndBindMenu(UEnhancedInputComponent* const& EnhancedInputComponent)
+void ALakayaPlayerController::UnbindAllAndBindMenu(UEnhancedInputComponent* const& EnhancedInputComponent)
 {
 	EnhancedInputComponent->ClearActionBindings();
 	EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::MenuHandler);
+	                                   &ALakayaPlayerController::MenuHandler);
 	EnhancedInputComponent->BindAction(ShowScoreAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::ShowScoreBoardAndTabMinimap);
+	                                   &ALakayaPlayerController::ShowScoreBoardAndTabMinimap);
 	EnhancedInputComponent->BindAction(HideScoreAction, ETriggerEvent::Triggered, this,
-	                                   &AGameLobbyPlayerController::HideScoreBoardAndTabMinimap);
+	                                   &ALakayaPlayerController::HideScoreBoardAndTabMinimap);
 }
 
-void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
+void ALakayaPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
 {
 	InputSubsystem->AddMappingContext(InterfaceInputContext, InterfaceContextPriority);
 	if (!AbilityInputContext.IsNull())
@@ -124,9 +124,9 @@ void AGameLobbyPlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSu
 	}
 }
 
-AGameLobbyPlayerController::AGameLobbyPlayerController()
+ALakayaPlayerController::ALakayaPlayerController()
 {
-	OnPossessedPawnChanged.AddUniqueDynamic(this, &AGameLobbyPlayerController::OnPossessedPawnChangedCallback);
+	OnPossessedPawnChanged.AddUniqueDynamic(this, &ALakayaPlayerController::OnPossessedPawnChangedCallback);
 	if (IsRunningDedicatedServer()) return;
 
 	InterfaceContextPriority = 100;
@@ -151,19 +151,19 @@ AGameLobbyPlayerController::AGameLobbyPlayerController()
 	ExitLevel = FSoftObjectPath(TEXT("/Script/Engine.World'/Game/Levels/MainLobbyLevel.MainLobbyLevel'"));
 }
 
-UAbilitySystemComponent* AGameLobbyPlayerController::GetAbilitySystemComponent() const
+UAbilitySystemComponent* ALakayaPlayerController::GetAbilitySystemComponent() const
 {
 	if (AbilitySystem.IsValid()) return AbilitySystem.Get();
 	const auto CastedState = GetPlayerState<IAbilitySystemInterface>();
 	return ensure(CastedState) ? CastedState->GetAbilitySystemComponent() : nullptr;
 }
 
-void AGameLobbyPlayerController::MenuHandler()
+void ALakayaPlayerController::MenuHandler()
 {
 	if (bEnableExitShortcut) UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ExitLevel);
 }
 
-void AGameLobbyPlayerController::AbilityInput(TAbilitySystemInputCallback Function, int32 InputID)
+void ALakayaPlayerController::AbilityInput(TAbilitySystemInputCallback Function, int32 InputID)
 {
 	if (!AbilitySystem.IsValid())
 	{
@@ -173,7 +173,7 @@ void AGameLobbyPlayerController::AbilityInput(TAbilitySystemInputCallback Functi
 	(AbilitySystem.Get()->*Function)(InputID);
 }
 
-void AGameLobbyPlayerController::ShowScoreBoardAndTabMinimap()
+void ALakayaPlayerController::ShowScoreBoardAndTabMinimap()
 {
 	// 팀전일 때
 	if (const auto& NewGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
@@ -201,7 +201,7 @@ void AGameLobbyPlayerController::ShowScoreBoardAndTabMinimap()
 	}
 }
 
-void AGameLobbyPlayerController::HideScoreBoardAndTabMinimap()
+void ALakayaPlayerController::HideScoreBoardAndTabMinimap()
 {
 	// 팀전
 	if (const auto& NewGameState = GetWorld()->GetGameState<ALakayaBaseGameState>())
