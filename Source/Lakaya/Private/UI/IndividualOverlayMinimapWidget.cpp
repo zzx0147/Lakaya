@@ -187,3 +187,9 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 {
 	Super::UpdatePlayerPosition(Team);
 }
+
+void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
+	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+{
+	Super::UpdatePlayerPosition(NewTeam, NewPlayerState);
+}

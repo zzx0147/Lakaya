@@ -127,6 +127,12 @@ void UIndividualTabMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALak
 	NewPlayerImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset + FVector2D(-275.0f, 0));
 }
 
+void UIndividualTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
+	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+{
+	Super::UpdatePlayerPosition(NewTeam, NewPlayerState);
+}
+
 UImage* UIndividualTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
 {
 	UImage* PlayerImage = NewObject<UImage>(this);
