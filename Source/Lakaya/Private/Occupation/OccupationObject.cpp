@@ -1,6 +1,5 @@
 #include "Occupation/OccupationObject.h"
 
-#include "Character/InteractableCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameMode/OccupationGameMode.h"
@@ -39,7 +38,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	if (Caller == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OnInteractionStart_Caller is null."));
-		Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
+		// Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
 		return;
 	}
 	
@@ -47,7 +46,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	if (OccupationPlayerState == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
-		Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
+		// Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
 		return;
 	}
 
@@ -55,7 +54,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	if (OccupationPlayerState->IsSameTeam(ObjectTeam))
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("OccupationObject_이미 점령한 오브젝트 입니다."));
-		Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
+		// Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
 		return;
 	}
 	
@@ -77,7 +76,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("%s is faster!"), *SecondCaller->GetName());
 			if (InteractingPawn != nullptr && InteractingPawn->GetController() == Caller->Controller) return;
-			Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
+			// Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
 			InteractingPawn = SecondCaller;
 			
 		}
@@ -96,7 +95,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	GetWorldTimerManager().SetTimer(InteractionTimerHandle, [this, Caller]
 	{
 		if (this == nullptr) return;
-		Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::Success);
+		// Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::Success);
 	}, MaxInteractionDuration, false);
 }
 
@@ -111,7 +110,7 @@ void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller, EInt
 	}
 
 	// 인터렉션 중단을 요청한 Caller가 가지고 있는 InteractingPawn과 일치한지 검사합니다.
-	if (Cast<AInteractableCharacter>(GetInteractingPawn()) != InteractingPawn) return;
+	// if (Cast<AInteractableCharacter>(GetInteractingPawn()) != InteractingPawn) return;
 	
 	InteractingPawn = nullptr;
 	OnInteractingActorSignature.Broadcast(InteractingPawn);
@@ -124,7 +123,7 @@ void AOccupationObject::OnInteractionStop(const float& Time, APawn* Caller, EInt
 		GetWorldTimerManager().ClearTimer(InteractionTimerHandle);
 	}
 
-	Cast<AInteractableCharacter>(Caller)->FinishInteraction(NewState, Time);
+	// Cast<AInteractableCharacter>(Caller)->FinishInteraction(NewState, Time);
 }
 
 void AOccupationObject::OnCharacterDead(APawn* Caller)

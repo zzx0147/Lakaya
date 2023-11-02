@@ -3,7 +3,6 @@
 
 #include "AI/AiCharacterController.h"
 
-#include "Character/ArmedCharacter.h"
 #include "Kismet/KismetMathLibrary.h"
 
 AAiCharacterController::AAiCharacterController() // 생성자
