@@ -4,7 +4,6 @@
 #include "Blueprint/UserWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
-#include "GameFramework/Character.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "GameMode/OccupationGameMode.h"
 #include "Kismet/GameplayStatics.h"

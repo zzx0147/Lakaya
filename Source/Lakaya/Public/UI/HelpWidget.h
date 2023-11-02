@@ -8,7 +8,4 @@ UCLASS()
 class LAKAYA_API UHelpWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
-protected:
-	virtual void NativeConstruct() override;
 };
