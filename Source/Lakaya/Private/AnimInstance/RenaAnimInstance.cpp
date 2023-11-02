@@ -3,8 +3,6 @@
 
 #include "AnimInstance/RenaAnimInstance.h"
 
-#include "Character/Ability/CoolTimedSummonAbility.h"
-#include "Character/Ability/DeathRayAbility.h"
 #include "GameFramework/GameStateBase.h"
 
 URenaAnimInstance::URenaAnimInstance()
@@ -21,24 +19,24 @@ void URenaAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
 
-	if (const auto Character = Cast<AArmedCharacter>(TryGetPawnOwner()))
-	{
-		if (const auto Ability = Character->FindAbility<UCoolTimedSummonAbility>(WeaponAbility))
-		{
-			Ability->OnAbilityStartTimeNotified.
-			         AddUObject(this, &URenaAnimInstance::OnWeaponAbilityPerformTimeNotified);
-		}
-		if (const auto PrimaryAbility = Character->FindAbility<UCoolTimedSummonAbility>(Primary))
-		{
-			PrimaryAbility->OnAbilityStartTimeNotified.AddUObject(
-				this, &URenaAnimInstance::OnPrimaryAbilityPerformTimeNotified);
-		}
-		if (const auto SecondaryAbility = Character->FindAbility<UDeathRayAbility>(Secondary))
-		{
-			SecondaryAbility->OnAbilityStartTimeNotified.AddUObject(
-				this, &URenaAnimInstance::OnSecondaryAbilityPerformTimeNotified);
-		}
-	}
+	// if (const auto Character = Cast<AArmedCharacter>(TryGetPawnOwner()))
+	// {
+	// 	if (const auto Ability = Character->FindAbility<UCoolTimedSummonAbility>(WeaponAbility))
+	// 	{
+	// 		Ability->OnAbilityStartTimeNotified.
+	// 		         AddUObject(this, &URenaAnimInstance::OnWeaponAbilityPerformTimeNotified);
+	// 	}
+	// 	if (const auto PrimaryAbility = Character->FindAbility<UCoolTimedSummonAbility>(Primary))
+	// 	{
+	// 		PrimaryAbility->OnAbilityStartTimeNotified.AddUObject(
+	// 			this, &URenaAnimInstance::OnPrimaryAbilityPerformTimeNotified);
+	// 	}
+	// 	if (const auto SecondaryAbility = Character->FindAbility<UDeathRayAbility>(Secondary))
+	// 	{
+	// 		SecondaryAbility->OnAbilityStartTimeNotified.AddUObject(
+	// 			this, &URenaAnimInstance::OnSecondaryAbilityPerformTimeNotified);
+	// 	}
+	// }
 }
 
 void URenaAnimInstance::NativeUpdateAnimation(float DeltaSeconds)

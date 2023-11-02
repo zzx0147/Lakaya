@@ -421,59 +421,6 @@ bool AOccupationGameState::TrySendMatchResultData()
 	return false;
 }
 
-bool AOccupationGameState::CanInstigatorClairvoyance(const AActor* InInstigator) const
-{
-	if (Super::CanInstigatorClairvoyance(InInstigator))
-	{
-		const auto PlayerController = GetWorld()->GetFirstPlayerController();
-		if (PlayerController && PlayerController->IsLocalController())
-		{
-			// Find Instigator PlayerState
-			auto InstigatorState = Cast<APlayerState>(InInstigator);
-			if (!InstigatorState)
-			{
-				if (const auto Pawn = Cast<APawn>(InInstigator))
-				{
-					InstigatorState = Pawn->GetPlayerState<APlayerState>();
-				}
-			}
-
-			return IsSameTeam(PlayerController->PlayerState, InstigatorState);
-		}
-	}
-
-	return false;
-}
-
-bool AOccupationGameState::ShouldActivateClairvoyance() const
-{
-	return Super::ShouldActivateClairvoyance() && !ClairvoyanceInstigatorSet.IsEmpty();
-}
-
-void AOccupationGameState::OnClairvoyanceActivateRequested(const AActor* InInstigator)
-{
-	Super::OnClairvoyanceActivateRequested(InInstigator);
-	ClairvoyanceInstigatorSet.Emplace(InInstigator);
-}
-
-void AOccupationGameState::OnClairvoyanceDeactivateRequested(const AActor* InInstigator)
-{
-	Super::OnClairvoyanceDeactivateRequested(InInstigator);
-	ClairvoyanceInstigatorSet.Remove(InInstigator);
-}
-
-void AOccupationGameState::OnClairvoyanceActivated()
-{
-	Super::OnClairvoyanceActivated();
-	SetOpponentRenderCustomDepth(true);
-}
-
-void AOccupationGameState::OnClairvoyanceDeactivated()
-{
-	Super::OnClairvoyanceDeactivated();
-	SetOpponentRenderCustomDepth(false);
-}
-
 void AOccupationGameState::OnRep_MatchEndingTime()
 {
 	Super::OnRep_MatchEndingTime();
@@ -586,27 +533,6 @@ void AOccupationGameState::InternalSetTabMinimapVisibility(const bool& Visible) 
 	}
 
 	TabMinimapWidget->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
-}
-
-void AOccupationGameState::SetOpponentRenderCustomDepth(const bool& Visible) const
-{
-	if (!ensure(ClientTeam == ETeam::Anti || ClientTeam == ETeam::Pro))
-	{
-		return;
-	}
-
-	const auto OpponentTeam = ClientTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti;
-
-	for (const auto Player : PlayersByTeamMap[OpponentTeam])
-	{
-		if (IsValid(Player))
-		{
-			if (const auto Character = Player->GetPawn<ACharacter>())
-			{
-				Character->GetMesh()->SetRenderCustomDepth(Visible);
-			}
-		}
-	}
 }
 
 void AOccupationGameState::AddCaptureAreaCount(const ETeam& Team, const uint8 Id)

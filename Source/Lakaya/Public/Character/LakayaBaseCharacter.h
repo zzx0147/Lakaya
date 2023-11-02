@@ -71,11 +71,6 @@ public:
 	UFUNCTION(BlueprintGetter)
 	class UBulletSpreadComponent* GetBulletSpread() const { return BulletSpreadComponent; }
 	
-	// 캐릭터의 자원 컴포넌트를 가져옵니다.
-	template <class T = class UResourceComponent>
-	UFUNCTION(BlueprintGetter)
-	T* GetResourceComponent() const { return Cast<T>(ResourceComponent); }
-
 	// 캐릭터 고유의 최대 체력을 가져옵니다. 플레이어의 최종적인 체력을 의미하지는 않습니다.
 	UFUNCTION(BlueprintGetter)
 	const float& GetCharacterMaxHealth() const { return MaxHealth; }
@@ -300,9 +295,6 @@ protected:
 	TObjectPtr<UMaterialInterface> GrayScalePostProcessMaterial;
 	
 private:
-	UPROPERTY(VisibleAnywhere, Replicated)
-	class UResourceComponent* ResourceComponent;
-
 	UPROPERTY(VisibleAnywhere, BlueprintGetter = GetSpringArm, Category = Camera)
 	USpringArmComponent* SpringArm;
 

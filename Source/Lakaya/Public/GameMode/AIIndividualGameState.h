@@ -26,13 +26,8 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 
-	virtual bool CanInstigatorClairvoyance(const AActor* InInstigator) const override;
-	virtual void OnClairvoyanceActivated() override;
-	virtual void OnClairvoyanceDeactivated() override;
-
 private:
 	ERendererStencilMask GetUniqueStencilMaskWithCount(const uint8& Count);
-	void SetOpponentRenderCustomDepth(const bool& Visible) const;
 	void InternalSetScoreBoardVisibility(const bool& Visible) const;
 	void InternalSetTabMinimapVisibility(const bool& Visible) const;
 
@@ -42,7 +37,8 @@ private:
 	 * @param NewPlayerImage 업데이트 된 플레이어의 미니맵 이미지입니다.
 	 */
 	void UpdatePlayerByMinimap(const ALakayaBasePlayerState* NewPlayerState, const UImage* NewPlayerImage);
-	
+
+	virtual void SetClientTeam(const ETeam& NewTeam) override;
 public:
 	TArray<FPlayerAIData> FPlayerAIDataArray;
 
@@ -66,6 +62,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float MatchStartWaitWidgetLifeTime;
+
+	// ETeam CurrentTeam;
 	
 	FString AIName;
 

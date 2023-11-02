@@ -15,39 +15,39 @@ void UCharAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
 
-	if(const auto Character = Cast<AArmedCharacter>(TryGetPawnOwner()))
-	{
-		if(const auto ResultNotifyFireAbility = Character->FindAbility<UResultNotifyFireAbility>(WeaponFire))
-		{
-			ResultNotifyFireAbility->OnSingleFire.
-			AddLambda([this](const FVector&,const FVector&, const FVector&, const EFireResult&)
-			{
-				RecentFireTime = GetWorld()->TimeSeconds; 
-			} );
-		}
-
-		if(const auto ReloadAbility = Character->FindAbility<UReloadAbility>(WeaponReload))
-		{
-			ReloadAbility->OnReloadStateChanged.
-			AddLambda([this](const bool& ReloadState)
-				{bIsReload = ReloadState;} );
-		}
-
-		if (const auto InteractableCharacter = Cast<AInteractableCharacter>(Character))
-		{
-			InteractableCharacter->OnInteractingActorChanged.
-			AddUObject(this, &UCharAnimInstance::OnInteractingActorChanged);
-		}
-	}
+	// if(const auto Character = Cast<AArmedCharacter>(TryGetPawnOwner()))
+	// {
+	// 	if(const auto ResultNotifyFireAbility = Character->FindAbility<UResultNotifyFireAbility>(WeaponFire))
+	// 	{
+	// 		ResultNotifyFireAbility->OnSingleFire.
+	// 		AddLambda([this](const FVector&,const FVector&, const FVector&, const EFireResult&)
+	// 		{
+	// 			RecentFireTime = GetWorld()->TimeSeconds; 
+	// 		} );
+	// 	}
+	//
+	// 	if(const auto ReloadAbility = Character->FindAbility<UReloadAbility>(WeaponReload))
+	// 	{
+	// 		ReloadAbility->OnReloadStateChanged.
+	// 		AddLambda([this](const bool& ReloadState)
+	// 			{bIsReload = ReloadState;} );
+	// 	}
+	//
+	// 	if (const auto InteractableCharacter = Cast<AInteractableCharacter>(Character))
+	// 	{
+	// 		InteractableCharacter->OnInteractingActorChanged.
+	// 		AddUObject(this, &UCharAnimInstance::OnInteractingActorChanged);
+	// 	}
+	// }
 }
 
 void UCharAnimInstance::OnInteractingActorChanged(AActor* NewInteractingActor)
 {
-	if (const auto InteractableCharacter =
-		Cast<AInteractableCharacter>(TryGetPawnOwner()))
-	{
-		bIsInteracting = NewInteractingActor != nullptr;
-	}
+	// if (const auto InteractableCharacter =
+	// 	Cast<AInteractableCharacter>(TryGetPawnOwner()))
+	// {
+	// 	bIsInteracting = NewInteractingActor != nullptr;
+	// }
 }
 
 void UCharAnimInstance::NativeUpdateAnimation(float DeltaSeconds)

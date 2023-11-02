@@ -57,9 +57,6 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	HitScreenEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Niagara"));
 	HitScreenEffect->SetupAttachment(Camera);
 
-	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(ResourceComponentName);
-	ResourceComponent->SetIsReplicated(true);
-
 	ClairvoyanceMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(ClairvoyanceMeshComponentName);
 	ClairvoyanceMeshComponent->SetupAttachment(GetMesh());
 	ClairvoyanceMeshComponent->SetRenderCustomDepth(true);
@@ -495,7 +492,6 @@ void ALakayaBaseCharacter::DissolveTick(const float& Value)
 void ALakayaBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, ResourceComponent, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, PlayerRotation, COND_SkipOwner);
 	DOREPLIFETIME(ALakayaBaseCharacter, DamageImmuneEndingTime);
 	// DOREPLIFETIME(ALakayaBaseCharacter, bIsSpottedByTeammate);
