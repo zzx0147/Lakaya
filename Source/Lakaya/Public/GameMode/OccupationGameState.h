@@ -126,13 +126,6 @@ protected:
 	
 	virtual bool TrySendMatchResultData() override;
 
-	virtual bool CanInstigatorClairvoyance(const AActor* InInstigator) const override;
-	virtual bool ShouldActivateClairvoyance() const override;
-	virtual void OnClairvoyanceActivateRequested(const AActor* InInstigator) override;
-	virtual void OnClairvoyanceDeactivateRequested(const AActor* InInstigator) override;
-	virtual void OnClairvoyanceActivated() override;
-	virtual void OnClairvoyanceDeactivated() override;
-
 	virtual void OnRep_MatchEndingTime() override;
 
 	
@@ -157,8 +150,6 @@ private:
 
 	void InternalSetTabMinimapVisibility(const bool& Visible) const;
 
-	void SetOpponentRenderCustomDepth(const bool& Visible) const;
-	
 	// 스코어를 업데이트 해주는 함수입니다.
 	void UpdateTeamScoreTick();
 

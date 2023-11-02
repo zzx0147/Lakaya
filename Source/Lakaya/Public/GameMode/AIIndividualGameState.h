@@ -26,13 +26,8 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 
-	virtual bool CanInstigatorClairvoyance(const AActor* InInstigator) const override;
-	virtual void OnClairvoyanceActivated() override;
-	virtual void OnClairvoyanceDeactivated() override;
-
 private:
 	ERendererStencilMask GetUniqueStencilMaskWithCount(const uint8& Count);
-	void SetOpponentRenderCustomDepth(const bool& Visible) const;
 	void InternalSetScoreBoardVisibility(const bool& Visible) const;
 	void InternalSetTabMinimapVisibility(const bool& Visible) const;
 

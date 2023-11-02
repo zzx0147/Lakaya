@@ -354,28 +354,6 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 	Timers.ClearAllTimersForObject(GetWorld());
 }
 
-bool AAIIndividualGameState::CanInstigatorClairvoyance(const AActor* InInstigator) const
-{
-	if (Super::CanInstigatorClairvoyance(InInstigator))
-	{
-		const auto Pawn = Cast<APawn>(InInstigator);
-		return Pawn && Pawn->IsLocallyControlled() && Pawn->IsPlayerControlled();
-	}
-	return false;
-}
-
-void AAIIndividualGameState::OnClairvoyanceActivated()
-{
-	Super::OnClairvoyanceActivated();
-	SetOpponentRenderCustomDepth(true);
-}
-
-void AAIIndividualGameState::OnClairvoyanceDeactivated()
-{
-	Super::OnClairvoyanceDeactivated();
-	SetOpponentRenderCustomDepth(false);
-}
-
 ERendererStencilMask AAIIndividualGameState::GetUniqueStencilMaskWithCount(const uint8& Count)
 {
 	switch (Count)
@@ -387,21 +365,6 @@ ERendererStencilMask AAIIndividualGameState::GetUniqueStencilMaskWithCount(const
 	case 5: return ERendererStencilMask::ERSM_16;
 	case 6: return ERendererStencilMask::ERSM_32;
 	default: return ERendererStencilMask::ERSM_Default;
-	}
-}
-
-void AAIIndividualGameState::SetOpponentRenderCustomDepth(const bool& Visible) const
-{
-	for (const auto Player : PlayerArray)
-	{
-		if (IsValid(Player))
-		{
-			if (const auto Character = Player->GetPawn<ACharacter>();
-				Character && Character->IsPlayerControlled() && Character->IsLocallyControlled())
-			{
-				Character->GetMesh()->SetRenderCustomDepth(Visible);
-			}
-		}
 	}
 }
 
