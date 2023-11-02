@@ -2,8 +2,6 @@
 
 
 #include "Camera/CameraComponent.h"
-#include "Character/BulletComponent.h"
-#include "Character/ResourceComponent.h"
 #include "Character/Ability/CharacterAbility.h"
 #include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
@@ -32,7 +30,7 @@ void UCharacterAbility::InitializeComponent()
 {
 	Super::InitializeComponent();
 	CameraComponent = GetOwner()->FindComponentByClass<UCameraComponent>();
-	ResourceComponent = GetOwner()->FindComponentByClass<UResourceComponent>();
+	// ResourceComponent = GetOwner()->FindComponentByClass<UResourceComponent>();
 	bRecentAliveState = true;
 }
 
@@ -122,8 +120,8 @@ bool UCharacterAbility::CostResource(const EResourceKind& ResourceKind, const fl
 	{
 	case EResourceKind::Bullet:
 		{
-			if (const auto BulletComponent = GetResourceComponent<UBulletComponent>())
-				return BulletComponent->CostBullet(Value);
+			// if (const auto BulletComponent = GetResourceComponent<UBulletComponent>())
+				// return BulletComponent->CostBullet(Value);
 			return false;
 		}
 	default:
@@ -140,8 +138,8 @@ bool UCharacterAbility::CostResource(const TArray<FResourceCostData>& CostArray)
 		{
 		case EResourceKind::Bullet:
 			{
-				if (const auto BulletComponent = GetResourceComponent<UBulletComponent>();
-					!BulletComponent || !BulletComponent->IsEnough(Value))
+				// if (const auto BulletComponent = GetResourceComponent<UBulletComponent>();
+				// 	!BulletComponent || !BulletComponent->IsEnough(Value))
 					return false;
 				break;
 			}
@@ -156,7 +154,7 @@ bool UCharacterAbility::CostResource(const TArray<FResourceCostData>& CostArray)
 		switch (ResourceKind)
 		{
 		case EResourceKind::Bullet:
-			GetResourceComponent<UBulletComponent>()->CostBullet(Value);
+		// 	GetResourceComponent<UBulletComponent>()->CostBullet(Value);
 			break;
 		}
 	}
