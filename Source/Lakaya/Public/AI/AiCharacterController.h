@@ -79,7 +79,7 @@ private:
 	//TODO: 사용되지 않음
 	TWeakObjectPtr<AArmedCharacter> ArmedCharacter;
 
-	TWeakObjectPtr<class UBulletComponent> BulletComponent;
+	// TWeakObjectPtr<class UBulletComponent> BulletComponent;
 	USpringArmComponent* SpringArm;
 	FVector AISpringArmOffset;
 
