@@ -20,12 +20,21 @@ class LAKAYA_API UMinimapWidget : public UUserWidget
 	
 public:
 	/**
-	 * @brief 특정 적의 위치를 업데이트합니다.
+		* @brief 미니맵에 모든 플레이어들의 아이콘(이미지)으로 띄우기 위해, 플레이어 인원 수만큼 이미지를 동적 생성합니다.
+		* @param NewTeam 팀에 따라, 아이콘의 이미지가 달라지는데, 생성된 팀의 정보입니다.
+		* @param bMyPlayer 나 자신인지 아닌지의 여부입니다.
+		* @return 동적으로 생성한 이미지를 리턴합니다.
+		*/
+	virtual UImage* CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer = false) { return nullptr; }
+	
+	/**
+	 * @brief 특정 플레이어의 위치를 업데이트합니다.
 	 * @param NewTeam 위치를 업데이트 할 플레이어의 팀입니다.
 	 * @param NewPlayerState 위치를 업데이트 할 플레이어의 상태입니다.
 	 */
 	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) { return; }
 
+	
 	FORCEINLINE const ETeam& GetTeam() const { return CurrentTeam; }
 	FORCEINLINE const ETeam& GetEnemyTeam() const { return CurrentEnemyTeam; }
 	FORCEINLINE const bool& GetUpdateMinimap() const { return UpdateMinimap; }
@@ -42,15 +51,6 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	
-	/**
-	* @brief 미니맵에 모든 플레이어들의 아이콘(이미지)으로 띄우기 위해, 플레이어 인원 수만큼 이미지를 동적 생성합니다.
-	* @param NewTeam 팀에 따라, 아이콘의 이미지가 달라지는데, 생성된 팀의 정보입니다.
-	* @param bMyPlayer 나 자신인지 아닌지의 여부입니다.
-	* @return 동적으로 생성한 이미지를 리턴합니다.
-	*/
-	virtual UImage* CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer = false) { return nullptr; }
 
 	/**
 	* @brief 월드를 미니맵 좌표로 변환합니다.
@@ -61,8 +61,8 @@ protected:
 	virtual FVector2D ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation, const FVector2D& MiniMapSize);
 
 	/**
-	 * @brief 플레이어팀의 위치를 업데이트합니다.
-	 * @param Team 플레이어의 팀입니다.
+	 * @brief 해당팀의 위치를 업데이트합니다.
+	 * @param Team 업데이트 할 팀입니다.
 	 */
 	virtual void UpdatePlayerPosition(const ETeam& Team) { return; }
 
@@ -71,6 +71,7 @@ protected:
 	 * @param NewPlayerState 자기 자신의 PlayerState 입니다.
 	 */
 	virtual void UpdatePlayerPosition(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState) { return;}
+	
 protected:
 	// 위젯의 최상단 CanvasPanel
 	UPROPERTY()
@@ -120,13 +121,12 @@ protected:
 	TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>> OccupationPlayersByMinimap;
 
 	// 적들을 관리하기 위한 컨테이너입니다.
-	// TArray<TObjectPtr<ALakayaBasePlayerState>> EnemiesByMinimap;
 	TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>> IndividualPlayersByMinimap;
 	
 	// Owner의 소속 팀 입니다.
 	ETeam CurrentTeam;
 
-	// Onwer의 상대 팀 입니다.
+	// Owner의 상대 팀 입니다.
 	ETeam CurrentEnemyTeam;
 	
 	FVector2D IconAlignment;
@@ -137,7 +137,5 @@ protected:
 	// 미니맵업데이트 여부입니다.
 	bool UpdateMinimap;
 	
-	// FTimerHandle QuestionIconTimerHandle;
-
 	TMap<TWeakObjectPtr<ALakayaBasePlayerState>, FTimerHandle> PlayerTimers;
 };

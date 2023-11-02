@@ -25,34 +25,6 @@ void UOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDelt
 	UpdateAreaImageRotation();
 }
 
-UImage* UOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
-{
-	return Super::CreatePlayerImage(NewTeam, bMyPlayer);
-}
-
-FVector2d UOverlayMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
-	const FVector2D& MiniMapSize)
-{
-	return Super::ConvertWorldToMiniMapCoordinates(PlayerLocation, MiniMapSize);
-}
-
-void UOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
-{
-	Super::UpdatePlayerPosition(Team);
-}
-
-void UOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
-{
-	Super::UpdatePlayerPosition(NewTeam, NewPlayerState);
-}
-
-// void UOverlayMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
-// 	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
-// {
-// 	Super::HidePlayerPosition(NewTeam, NewPlayerState);
-// }
-
 void UOverlayMinimapWidget::UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState,
                                                               const FVector2D NewPosition) const
 {

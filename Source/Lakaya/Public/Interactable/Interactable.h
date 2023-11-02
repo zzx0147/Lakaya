@@ -1,9 +1,18 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "Character/InteractableCharacter.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
 #include "Interactable.generated.h"
+
+UENUM()
+enum class EInteractionState : uint8
+{
+	None UMETA(DisplayerName = "None"),
+	OnGoing UMETA(DisplayerName = "OnGoing"),
+	Success UMETA(DisPlayerName = "Success"),
+	Stopped UMETA(DisPlayerName = "Stopped"),
+	Canceled UMETA(DisPlayerName = "Canceled"),
+};
 
 UCLASS()
 class AInteractable : public AActor

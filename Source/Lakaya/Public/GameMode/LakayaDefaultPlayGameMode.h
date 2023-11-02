@@ -91,7 +91,7 @@ public:
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
-	TMap<FName, TSubclassOf<class AInteractableCharacter>> CharacterClasses;
+	TMap<FName, TSubclassOf<class ALakayaBaseCharacter>> CharacterClasses;
 
 	UPROPERTY(EditDefaultsOnly)
 	float CharacterSelectStartDelay;

@@ -2,14 +2,14 @@
 
 #include "GameMode/OccupationGameMode.h"
 
-#include "Character/InteractableCharacter.h"
+#include "Character/LakayaBaseCharacter.h"
 #include "GameFramework/GameSession.h"
 #include "GameMode/OccupationGameState.h"
 #include "PlayerController/MovablePlayerController.h"
 
 AOccupationGameMode::AOccupationGameMode() : Super()
 {
-	DefaultPawnClass = AInteractableCharacter::StaticClass();
+	DefaultPawnClass = ALakayaBaseCharacter::StaticClass();
 	PlayerControllerClass = AMovablePlayerController::StaticClass();
 	GameStateClass = AOccupationGameState::StaticClass();
 

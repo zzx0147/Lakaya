@@ -155,9 +155,6 @@ protected:
 	                        bool bWasCancelled) override final;
 
 private:
-	static UEnhancedInputLocalPlayerSubsystem* InternalGetEnhancedInputSubsystem(
-		const FGameplayAbilityActorInfo* ActorInfo);
-
 	void BindTargetDataDelegate();
 
 	/** 로그가 PIE에서도 표시되도록 하는 기능입니다. */
