@@ -17,8 +17,7 @@ public:
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
 	virtual void SetScoreBoardVisibility(const bool& Visible) override;
 	virtual void SetTabMinimapVisibility(const bool& Visible) override;
-	void SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray);
-	void SetAIIndividualWinner();
+	void SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray) const;
 
 protected:
 	virtual void BeginPlay() override;

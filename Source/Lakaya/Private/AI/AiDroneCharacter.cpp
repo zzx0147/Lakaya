@@ -19,24 +19,3 @@ UAbilitySystemComponent* AAiDroneCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystem;
 }
-
-// Called when the game starts or when spawned
-void AAiDroneCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-// Called every frame
-void AAiDroneCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
-// Called to bind functionality to input
-void AAiDroneCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-

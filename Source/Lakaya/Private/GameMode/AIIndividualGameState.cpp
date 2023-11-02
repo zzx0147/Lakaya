@@ -409,14 +409,10 @@ void AAIIndividualGameState::SetClientTeam(const ETeam& NewTeam)
 	ClientTeam = NewTeam;
 }
 
-void AAIIndividualGameState::SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray)
+void AAIIndividualGameState::SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray) const
 {
 	if (AIIndividualLiveScoreBoardWidget.IsValid())
 	{
 		AIIndividualLiveScoreBoardWidget->SetScoreBoardPlayerAIName(PlayerAIDataArray);
 	}
-}
-
-void AAIIndividualGameState::SetAIIndividualWinner()
-{
 }

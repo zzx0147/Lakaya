@@ -14,12 +14,9 @@ class LAKAYA_API UTeamScoreWidget : public UUserWidget
 public:
 	explicit UTeamScoreWidget(const FObjectInitializer& ObjectInitializer);
 
-	void SetTeamScore(const ETeam& Team,const float& NewScore);
+	void SetTeamScore(const ETeam& Team,const float& NewScore) const;
 	void SetMaxScore(const float& ArgMaxScore);
-	void SetMaxScoreVisibility(const bool& IsVisible);
-	
-protected:
-	virtual void NativeConstruct() override;
+	void SetMaxScoreVisibility(const bool& IsVisible) const;
 
 private:
 	UPROPERTY(meta = (BindWidget))
