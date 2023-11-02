@@ -444,13 +444,6 @@ void ULakayaAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const F
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
-UEnhancedInputLocalPlayerSubsystem* ULakayaAbility::InternalGetEnhancedInputSubsystem(
-	const FGameplayAbilityActorInfo* ActorInfo)
-{
-	const auto LocalPlayer = GetLocalPlayer(ActorInfo);
-	return LocalPlayer ? LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>() : nullptr;
-}
-
 void ULakayaAbility::BindTargetDataDelegate()
 {
 	TargetDataDelegateHandle = GetTargetDataDelegate().AddUObject(this, &ThisClass::OnTargetDataReceived);
