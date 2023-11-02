@@ -3,7 +3,7 @@
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 
 #include "EngineUtils.h"
-#include "Character/InteractableCharacter.h"
+#include "Character/LakayaBaseCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/CapsuleComponent.h"
 #include "EOS/EOSGameInstance.h"
@@ -99,7 +99,7 @@ AActor* ALakayaDefaultPlayGameMode::FindPlayerStart_Implementation(AController* 
 				if (const auto Capsule = Start->GetCapsuleComponent())
 				{
 					TSet<AActor*> OverlappingActors;
-					Capsule->GetOverlappingActors(OverlappingActors,AInteractableCharacter::StaticClass());
+					Capsule->GetOverlappingActors(OverlappingActors,ALakayaBaseCharacter::StaticClass());
 					if (OverlappingActors.Num() == 0)
 						return Start;
 				}
