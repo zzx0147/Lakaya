@@ -9,6 +9,8 @@
 UAbilityComponent::UAbilityComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
+	PrimaryComponentTick.bAllowTickOnDedicatedServer = false;
 }
 
 void UAbilityComponent::SetOwningAbility(UGameplayAbility* InOwningAbility)
