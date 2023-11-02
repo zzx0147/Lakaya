@@ -18,7 +18,9 @@ void UIndividualTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float 
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
 	const TWeakObjectPtr<ALakayaBasePlayerState> MyPlayerState = Cast<ALakayaBasePlayerState>(GetOwningPlayerState());
-
+	if (MyPlayerState == nullptr)
+		UE_LOG(LogTemp, Warning, TEXT("MyPlayerState is null."));
+	
 	// 자기 자신의 위치를 업데이트 해줍니다.
 	UpdatePlayerPosition(MyPlayerState);
 
@@ -27,7 +29,7 @@ void UIndividualTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float 
 	{
 		if (IndividualGameState->GetbIsClairvoyanceActivated())
 		{
-			UpdatePlayerPosition(CurrentTeam);
+			Super::UpdatePlayerPosition(CurrentTeam);
 			return;
 		}
 	}
@@ -44,17 +46,6 @@ void UIndividualTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float 
 			UpdatePlayerPosition(PlayerState);
 		}
 	}
-}
-
-FVector2D UIndividualTabMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
-	const FVector2D& MiniMapSize)
-{
-	return Super::ConvertWorldToMiniMapCoordinates(PlayerLocation, MiniMapSize);
-}
-
-void UIndividualTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
-{
-	Super::UpdatePlayerPosition(Team);
 }
 
 void UIndividualTabMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState)
@@ -88,13 +79,6 @@ void UIndividualTabMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALak
 
 		if (NewPlayerState == GetOwningPlayerState())
 		{
-			// const auto PlayerCharacter = NewPlayerState->GetPlayerController()->GetCharacter();
-			// const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
-			// const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
-
-			// NewPlayerImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
-			// NewPlayerImage->SetBrushFromTexture(IndividualOwnIcon);
-			// UpdateMinimapImagePositionAndRotation(*NewPlayerState, NewPlayerPosition);
 			NewPlayerImage->SetRenderTransformAngle(90.0f);
 		}
 	}
@@ -120,7 +104,6 @@ void UIndividualTabMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALak
 
 			NewPlayerImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
 			NewPlayerImage->SetBrushFromTexture(IndividualOwnIcon);
-			// UpdateMinimapImagePositionAndRotation(*NewPlayerState, NewPlayerPosition);
 		}
 	}
 

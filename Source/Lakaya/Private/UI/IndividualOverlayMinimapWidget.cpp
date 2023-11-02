@@ -11,9 +11,6 @@
 void UIndividualOverlayMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	// ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("RetainerCanvasPanel")));
-	// RetainerBox = Cast<URetainerBox>(GetWidgetFromName(TEXT("RetainerBox_74")));
 }
 
 void UIndividualOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -36,7 +33,7 @@ void UIndividualOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 	{
 		if (IndividualGameState->GetbIsClairvoyanceActivated())
 		{
-			UpdatePlayerPosition(CurrentTeam);
+			Super::UpdatePlayerPosition(CurrentTeam);
 			return;
 		}
 	}
@@ -45,20 +42,6 @@ void UIndividualOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 	{
 		const auto& PlayerState = Player.Key;
 		const auto& PlayerImage = Player.Value;
-
-		// 적과 나의 생존 여부를 검사해서, 적이 죽었거나, 나 자신이 죽었다면, 사망 아이콘으로 변경시켜줍니다.
-		// ALakayaBaseCharacter* PlayerCharacter = Cast<ALakayaBaseCharacter>(PlayerState->GetPawn());
-		// if (!PlayerCharacter->GetAliveState())
-		// {
-		// 	PlayerImage->SetBrushFromTexture(DeathIcon);
-		// }
-		// else
-		// {
-		// 	if (PlayerState == GetOwningPlayerState())
-		// 		PlayerImage->SetBrushFromTexture(IndividualOwnIcon);
-		// 	
-		// 	PlayerImage->SetBrushFromTexture(IndividualEnemyIcon);
-		// }
 		
 		ALakayaBaseCharacter* MyPlayerCharacter = Cast<ALakayaBaseCharacter>(MyPlayerState->GetPawn());
 		if (MyPlayerCharacter->IsEnemyVisibleInCamera(ETeam::Individual, PlayerState, PlayerImage))
@@ -124,7 +107,7 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 	if (NewPlayerImage->GetVisibility() == ESlateVisibility::Hidden)
 		NewPlayerImage->SetVisibility(ESlateVisibility::Visible);
 
-	ALakayaBaseCharacter* LakayaBaseCharacter = Cast<ALakayaBaseCharacter>(NewPlayerState->GetPawn());
+	const ALakayaBaseCharacter* LakayaBaseCharacter = Cast<ALakayaBaseCharacter>(NewPlayerState->GetPawn());
 	if (!LakayaBaseCharacter->GetAliveState())
 	{
 		NewPlayerImage->SetBrushFromTexture(DeathIcon);
@@ -136,7 +119,6 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 			const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
 
 			NewPlayerImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
-			// NewPlayerImage->SetBrushFromTexture(IndividualOwnIcon);
 			UpdateMinimapImagePositionAndRotation(*NewPlayerState, NewPlayerPosition);
 		}
 	}
