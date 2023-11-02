@@ -5,7 +5,6 @@
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
-#include "PlayerController/InteractablePlayerController.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/IndividualOverlayMinimapWidget.h"
 #include "UI/IndividualWidget/IndividualGameResultWidget.h"
@@ -125,7 +124,7 @@ void AAIIndividualGameState::BeginPlay()
 			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
 
 			// 매치시작전에 스폰된 플레이어와 AI의 정보를 미리 한번 넣어주는곳입니다. 이후 Tick에서 실시간으로 계속 검사합니다.
-			if (AllControllers && AllControllers->IsA<AInteractablePlayerController>())
+			if (AllControllers && AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
@@ -136,7 +135,7 @@ void AAIIndividualGameState::BeginPlay()
 					FPlayerAIDataArray.Add(PlayerAIData);
 				}
 			}
-			if (AllControllers && !AllControllers->IsA<AInteractablePlayerController>())
+			if (AllControllers && AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
@@ -172,7 +171,7 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 			AController* AllControllers = It->Get();
 			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
 
-			if (AllControllers && AllControllers->IsA<AInteractablePlayerController>())
+			if (AllControllers && AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
@@ -183,7 +182,7 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 					FPlayerAIDataArray.Add(PlayerAIData);
 				}
 			}
-			if (AllControllers && !AllControllers->IsA<AInteractablePlayerController>())
+			if (AllControllers && AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
