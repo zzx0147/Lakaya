@@ -2,7 +2,6 @@
 
 #include "UI/OccupationTabMinimapWidget.h"
 
-#include "UnrealWidgetFwd.h"
 #include "Camera/CameraComponent.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/CanvasPanelSlot.h"
@@ -11,8 +10,6 @@
 void UOccupationTabMinimapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	// ParentPanel = Cast<UCanvasPanel>(GetWidgetFromName(TEXT("PlayerImagePanel")));
 
 	TeamIcons.Emplace(ETeam::Anti, AntiIcon);
 	TeamIcons.Emplace(ETeam::Pro, ProIcon);
@@ -208,47 +205,23 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	
 	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 
-	// GetWorld()->GetTimerManager().ClearTimer(QuestionIconTimerHandle);
+    FTimerHandle NewTimerHandle;
     
-    	FTimerHandle NewTimerHandle;
-    	
-    	if (PlayerTimers.Contains(NewPlayerState))
+    if (PlayerTimers.Contains(NewPlayerState))
+    {
+    	GetWorld()->GetTimerManager().ClearTimer(PlayerTimers[NewPlayerState]);
+    }
+    
+    GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, [this, EnemyImage, NewTeam]()
+    {
+    	for (const auto& Enemy : OccupationPlayersByMinimap[NewTeam])
     	{
-    		GetWorld()->GetTimerManager().ClearTimer(PlayerTimers[NewPlayerState]);
+    		SetEnemyImage();
     	}
-    	
-    	GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, [this, EnemyImage, NewTeam]()
-    	{
-    		for (const auto& Enemy : OccupationPlayersByMinimap[NewTeam])
-    		{
-    			SetEnemyImage();
-    		}
-    	}, 0.1f, false);
-    
-    	SetPlayerTimers(NewPlayerState, NewTimerHandle);
-}
+    }, 0.1f, false);
 
-#pragma region
-// void UOccupationTabMinimapWidget::HidePlayerPosition(const ETeam& NewTeam,
-// 	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
-// {
-// 	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !PlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
-// 		return;
-// 	}
-// 	
-// 	const auto& EnemyImage = PlayersByMinimap[NewTeam][NewPlayerState].Get();
-// 	if (EnemyImage == nullptr)
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
-// 		return;
-// 	}
-// 	
-// 	if (EnemyImage->GetVisibility() == ESlateVisibility::Visible)
-// 	EnemyImage->SetVisibility(ESlateVisibility::Hidden);
-// }
-#pragma endregion
+    SetPlayerTimers(NewPlayerState, NewTimerHandle);
+}
 
 UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
 {
@@ -293,10 +266,4 @@ UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 
 	UE_LOG(LogTemp, Warning, TEXT("OccupationTabMinimapWidget_PlayerImage is null."));
 	return nullptr;
-}
-
-FVector2D UOccupationTabMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
-                                                                        const FVector2D& MiniMapSize)
-{
-	return Super::ConvertWorldToMiniMapCoordinates(PlayerLocation, MiniMapSize);
 }
