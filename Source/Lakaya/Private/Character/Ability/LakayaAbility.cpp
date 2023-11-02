@@ -84,36 +84,11 @@ void ULakayaAbility::NativeCancelAbility(const FGameplayAbilitySpecHandle Handle
 	Log(ActorInfo, TEXT("Cancel Ability"));
 }
 
-UEnhancedInputComponent* ULakayaAbility::GetEnhancedInputComponent(const FGameplayAbilityActorInfo* ActorInfo)
-{
-	return ActorInfo && ActorInfo->PlayerController.IsValid()
-		       ? Cast<UEnhancedInputComponent>(ActorInfo->PlayerController->InputComponent)
-		       : nullptr;
-}
-
 ULocalPlayer* ULakayaAbility::GetLocalPlayer(const FGameplayAbilityActorInfo* ActorInfo)
 {
 	return ActorInfo && ActorInfo->PlayerController.IsValid()
 		       ? ActorInfo->PlayerController->GetLocalPlayer()
 		       : nullptr;
-}
-
-UEnhancedInputLocalPlayerSubsystem* ULakayaAbility::GetEnhancedInputSubsystem(
-	const FGameplayAbilityActorInfo* ActorInfo)
-{
-	// 인스턴스를 생성하지 않는 경우 서브시스템을 캐싱하면 안되므로, 매번 새로 가져옵니다. 
-	if (InstancingPolicy == EGameplayAbilityInstancingPolicy::NonInstanced)
-	{
-		return InternalGetEnhancedInputSubsystem(ActorInfo);
-	}
-
-	// 서브시스템이 유효하지 않는 경우 업데이트합니다.
-	if (!CachedInputSubsystem.IsValid())
-	{
-		CachedInputSubsystem = InternalGetEnhancedInputSubsystem(ActorInfo);
-	}
-
-	return CachedInputSubsystem.Get();
 }
 
 FString ULakayaAbility::LogFormat(const FGameplayAbilityActorInfo* ActorInfo, const FString& Message) const
@@ -349,34 +324,6 @@ void ULakayaAbility::SetZoom(const bool& bZoom, const float& ZoomFov, const FGam
 void ULakayaAbility::BP_SetZoom(const bool& bZoom, const float& ZoomFov)
 {
 	SetZoom(bZoom, ZoomFov, GetCurrentActorInfo());
-}
-
-void ULakayaAbility::AddMappingContext(const FGameplayAbilityActorInfo* ActorInfo,
-                                       const ULakayaInputContext* InputContext)
-{
-	if (const auto InputSystem = GetEnhancedInputSubsystem(ActorInfo); InputSystem && InputContext)
-	{
-		InputContext->AddMappingContext(InputSystem);
-	}
-}
-
-void ULakayaAbility::BP_AddMappingContext(const ULakayaInputContext* InputContext)
-{
-	AddMappingContext(GetCurrentActorInfo(), InputContext);
-}
-
-void ULakayaAbility::RemoveMappingContext(const FGameplayAbilityActorInfo* ActorInfo,
-                                          const ULakayaInputContext* InputContext)
-{
-	if (const auto InputSystem = GetEnhancedInputSubsystem(ActorInfo); InputSystem && InputContext)
-	{
-		InputContext->RemoveMappingContext(InputSystem);
-	}
-}
-
-void ULakayaAbility::BP_RemoveMappingContext(const ULakayaInputContext* InputContext)
-{
-	RemoveMappingContext(GetCurrentActorInfo(), InputContext);
 }
 
 bool ULakayaAbility::TryActivateAbilityWithSpec(UAbilitySystemComponent* ASC, const FGameplayAbilitySpec& Spec)

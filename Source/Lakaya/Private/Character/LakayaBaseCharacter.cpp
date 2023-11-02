@@ -11,7 +11,6 @@
 #include "Camera/CameraComponent.h"
 #include "Character/BulletSpreadComponent.h"
 #include "Character/LakayaBasePlayerState.h"
-#include "Character/ResourceComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PostProcessComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -57,9 +56,6 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	HitScreenEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Niagara"));
 	HitScreenEffect->SetupAttachment(Camera);
 
-	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(ResourceComponentName);
-	ResourceComponent->SetIsReplicated(true);
-
 	ClairvoyanceMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(ClairvoyanceMeshComponentName);
 	ClairvoyanceMeshComponent->SetupAttachment(GetMesh());
 	ClairvoyanceMeshComponent->SetRenderCustomDepth(true);
@@ -103,13 +99,6 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	{
 		QuestionIcon = QuestionIconFinder.Object;
 	}
-}
-
-ELifetimeCondition ALakayaBaseCharacter::AllowActorComponentToReplicate(
-	const UActorComponent* ComponentToReplicate) const
-{
-	if (ComponentToReplicate->IsA(UResourceComponent::StaticClass())) return COND_None;
-	return Super::AllowActorComponentToReplicate(ComponentToReplicate);
 }
 
 float ALakayaBaseCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
@@ -495,7 +484,6 @@ void ALakayaBaseCharacter::DissolveTick(const float& Value)
 void ALakayaBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, ResourceComponent, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, PlayerRotation, COND_SkipOwner);
 	DOREPLIFETIME(ALakayaBaseCharacter, DamageImmuneEndingTime);
 	// DOREPLIFETIME(ALakayaBaseCharacter, bIsSpottedByTeammate);

@@ -126,18 +126,11 @@ protected:
 	
 	virtual bool TrySendMatchResultData() override;
 
-	virtual bool CanInstigatorClairvoyance(const AActor* InInstigator) const override;
-	virtual bool ShouldActivateClairvoyance() const override;
-	virtual void OnClairvoyanceActivateRequested(const AActor* InInstigator) override;
-	virtual void OnClairvoyanceDeactivateRequested(const AActor* InInstigator) override;
-	virtual void OnClairvoyanceActivated() override;
-	virtual void OnClairvoyanceDeactivated() override;
-
 	virtual void OnRep_MatchEndingTime() override;
 
 	
 private:
-	virtual void SetClientTeam(const ETeam& NewTeam);
+	virtual void SetClientTeam(const ETeam& NewTeam) override;
 	
 	void EndTimeCheck();
 	
@@ -157,8 +150,6 @@ private:
 
 	void InternalSetTabMinimapVisibility(const bool& Visible) const;
 
-	void SetOpponentRenderCustomDepth(const bool& Visible) const;
-	
 	// 스코어를 업데이트 해주는 함수입니다.
 	void UpdateTeamScoreTick();
 
@@ -220,7 +211,7 @@ private:
 	//TODO: 댕글링 포인터가 발생할 수 있으므로 약포인터로 변경해야 합니다. TMap에 TArray를 값형식으로 사용하면 UPROPERTY로 선언할 수 없습니다. 
 	TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> PlayersByTeamMap;
 	
-	ETeam ClientTeam;
+	// ETeam ClientTeam;
 
 	UPROPERTY(Replicated)
 	ETeam TeamToUpdate = ETeam::None;

@@ -3,9 +3,6 @@
 
 #include "AnimInstance/WaziAnimInstance.h"
 
-#include "Character/Ability/ClairvoyanceAbility.h"
-#include "Character/Ability/CoolTimedSummonAbility.h"
-#include "Character/Ability/OverdriveAbility.h"
 #include "GameFramework/GameStateBase.h"
 
 UWaziAnimInstance::UWaziAnimInstance()
@@ -16,24 +13,24 @@ void UWaziAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
 
-	if (const auto Character = Cast<AArmedCharacter>(TryGetPawnOwner()))
-	{
-		if (const auto Ability = Character->FindAbility<UCoolTimedSummonAbility>(WeaponAbility))
-		{
-			Ability->OnAbilityStartTimeNotified.
-			         AddUObject(this, &UWaziAnimInstance::OnWeaponAbilityPerformTimeNotified);
-		}
-		if (const auto PrimaryAbility = Character->FindAbility<UOverdriveAbility>(Primary))
-		{
-			PrimaryAbility->OnAbilityStartTimeNotified.AddUObject(
-				this, &UWaziAnimInstance::OnOverdriveStartTimeNotified);
-		}
-		if (const auto SecondaryAbility = Character->FindAbility<UClairvoyanceAbility>(Secondary))
-		{
-			SecondaryAbility->OnAbilityStartTimeNotified.AddUObject(
-				this, &UWaziAnimInstance::OnClairvoyanceStartTimeNotified);
-		}
-	}
+	// if (const auto Character = Cast<AArmedCharacter>(TryGetPawnOwner()))
+	// {
+	// 	if (const auto Ability = Character->FindAbility<UCoolTimedSummonAbility>(WeaponAbility))
+	// 	{
+	// 		Ability->OnAbilityStartTimeNotified.
+	// 		         AddUObject(this, &UWaziAnimInstance::OnWeaponAbilityPerformTimeNotified);
+	// 	}
+	// 	if (const auto PrimaryAbility = Character->FindAbility<UOverdriveAbility>(Primary))
+	// 	{
+	// 		PrimaryAbility->OnAbilityStartTimeNotified.AddUObject(
+	// 			this, &UWaziAnimInstance::OnOverdriveStartTimeNotified);
+	// 	}
+	// 	if (const auto SecondaryAbility = Character->FindAbility<UClairvoyanceAbility>(Secondary))
+	// 	{
+	// 		SecondaryAbility->OnAbilityStartTimeNotified.AddUObject(
+	// 			this, &UWaziAnimInstance::OnClairvoyanceStartTimeNotified);
+	// 	}
+	// }
 }
 
 void UWaziAnimInstance::NativeUpdateAnimation(float DeltaSeconds)

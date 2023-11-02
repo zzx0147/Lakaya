@@ -7,7 +7,6 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "GameFramework/Character.h"
-#include "GameFramework/CharacterMovementComponent.h"
 
 AMovablePlayerController::AMovablePlayerController()
 {
@@ -20,21 +19,9 @@ AMovablePlayerController::AMovablePlayerController()
 	static const ConstructorHelpers::FObjectFinder<UInputAction> LookFinder(
 		TEXT("InputAction'/Game/Input/IA_Look'"));
 
-	static const ConstructorHelpers::FObjectFinder<UInputAction> JumpFinder(
-		TEXT("InputAction'/Game/Input/IA_Jump'"));
-
-	static const ConstructorHelpers::FObjectFinder<UInputAction> CrouchFinder(
-		TEXT("InputAction'/Game/Input/IA_Crouch'"));
-	
-	static const ConstructorHelpers::FObjectFinder<UInputAction> UnCrouchFinder(
-		TEXT("InputAction'/Game/Input/IA_UnCrouch'"));
-	
 	if (ContextFinder.Succeeded()) MovementContext = ContextFinder.Object;
 	if (MoveFinder.Succeeded()) MoveAction = MoveFinder.Object;
 	if (LookFinder.Succeeded()) LookAction = LookFinder.Object;
-	if (JumpFinder.Succeeded()) JumpAction = JumpFinder.Object;
-	if (CrouchFinder.Succeeded()) CrouchAction = CrouchFinder.Object;
-	if (UnCrouchFinder.Succeeded()) UnCrouchAction = UnCrouchFinder.Object;
 }
 
 void AMovablePlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
@@ -42,9 +29,6 @@ void AMovablePlayerController::SetupEnhancedInputComponent(UEnhancedInputCompone
 	Super::SetupEnhancedInputComponent(EnhancedInputComponent);
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Look);
-	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Jump);
-	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::Crouch);
-	EnhancedInputComponent->BindAction(UnCrouchAction, ETriggerEvent::Triggered, this, &AMovablePlayerController::UnCrouch);
 }
 
 void AMovablePlayerController::SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem)
@@ -70,23 +54,4 @@ void AMovablePlayerController::Look(const FInputActionValue& Value)
 	const auto Vector = Value.Get<FVector2D>();
 	AddYawInput(Vector.X);
 	AddPitchInput(Vector.Y);
-}
-
-void AMovablePlayerController::Jump()
-{
-	if (const auto LocalCharacter = GetCharacter()) LocalCharacter->Jump();
-}
-
-void AMovablePlayerController::Crouch()
-{
-	if (const auto LocalCharacter = GetCharacter())
-	{
-		if(LocalCharacter->GetCharacterMovement()->IsFalling() == false)
-			LocalCharacter->Crouch();
-	}
-}
-
-void AMovablePlayerController::UnCrouch()
-{
-	if (const auto LocalCharacter = GetCharacter()) LocalCharacter->UnCrouch();
 }
