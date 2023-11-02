@@ -2,7 +2,6 @@
 
 #include "GameMode/OccupationGameMode.h"
 #include "Character/InteractableCharacter.h"
-#include "Character/StatPlayerState.h"
 #include "GameFramework/GameSession.h"
 #include "GameMode/OccupationGameState.h"
 #include "PlayerController/InteractablePlayerController.h"
@@ -11,7 +10,6 @@ AOccupationGameMode::AOccupationGameMode() : Super()
 {
 	DefaultPawnClass = AInteractableCharacter::StaticClass();
 	PlayerControllerClass = AInteractablePlayerController::StaticClass();
-	PlayerStateClass = AStatPlayerState::StaticClass();
 	GameStateClass = AOccupationGameState::StaticClass();
 
 	MatchStartDelay = 3.0f;

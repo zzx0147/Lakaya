@@ -4,7 +4,6 @@
 #include "GameMode/IndividualGameMode.h"
 
 #include "Character/ArmedCharacter.h"
-#include "Character/StatPlayerState.h"
 #include "GameMode/IndividualGameState.h"
 #include "PlayerController/BattlePlayerController.h"
 
@@ -12,7 +11,6 @@ AIndividualGameMode::AIndividualGameMode()
 {
 	DefaultPawnClass = AArmedCharacter::StaticClass();
 	PlayerControllerClass = ABattlePlayerController::StaticClass();
-	PlayerStateClass = AStatPlayerState::StaticClass();
 	GameStateClass = AIndividualGameState::StaticClass();
 }
 

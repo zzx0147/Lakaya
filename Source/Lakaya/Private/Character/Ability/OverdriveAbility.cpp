@@ -3,8 +3,6 @@
 
 #include "Character/Ability/OverdriveAbility.h"
 
-#include "Character/BuffPlayerState.h"
-
 UOverdriveAbility::UOverdriveAbility()
 {
 	bCanEverStartRemoteCall = bUpdateStartTimeOnStart = true;
@@ -46,9 +44,9 @@ void UOverdriveAbility::ApplyBuff()
 {
 	if (!GetOwner()->HasAuthority()) return;
 
-	if (const auto MyCharacter = GetOwner<APawn>())
-		if (const auto BuffPlayerState = MyCharacter->GetPlayerState<ABuffPlayerState>())
-			BuffPlayerState->ApplyBuff(TEXT("Overdrive"));
+	// if (const auto MyCharacter = GetOwner<APawn>())
+	// 	if (const auto BuffPlayerState = MyCharacter->GetPlayerState<ABuffPlayerState>())
+	// 		BuffPlayerState->ApplyBuff(TEXT("Overdrive"));
 }
 
 void UOverdriveAbility::DisableOverdrive()
