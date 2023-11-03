@@ -137,7 +137,7 @@ void AAIIndividualGameState::BeginPlay()
 					FPlayerAIDataArray.Add(PlayerAIData);
 				}
 			}
-			if (AllControllers && AllControllers->IsPlayerController())
+			if (AllControllers && !AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
@@ -184,7 +184,7 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 					FPlayerAIDataArray.Add(PlayerAIData);
 				}
 			}
-			if (AllControllers && AllControllers->IsPlayerController())
+			if (AllControllers && !AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
@@ -409,14 +409,10 @@ void AAIIndividualGameState::SetClientTeam(const ETeam& NewTeam)
 	ClientTeam = NewTeam;
 }
 
-void AAIIndividualGameState::SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray)
+void AAIIndividualGameState::SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray) const
 {
 	if (AIIndividualLiveScoreBoardWidget.IsValid())
 	{
 		AIIndividualLiveScoreBoardWidget->SetScoreBoardPlayerAIName(PlayerAIDataArray);
 	}
-}
-
-void AAIIndividualGameState::SetAIIndividualWinner()
-{
 }

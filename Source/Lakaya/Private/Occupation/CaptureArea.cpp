@@ -2,8 +2,8 @@
 
 #include "Occupation/CaptureArea.h"
 
-#include "Character/ArmedCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
+#include "GameFramework/Character.h"
 #include "GameMode/OccupationGameState.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/AimOccupyProgressWidget.h"
@@ -38,7 +38,7 @@ void ACaptureArea::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
 		// 충돌한 액터가 캐릭터인지 확인합니다.
-		const AArmedCharacter* OverlappedArmedCharacter = Cast<AArmedCharacter>(OtherActor);
+		const auto* OverlappedArmedCharacter = Cast<ACharacter>(OtherActor);
 
 		if (OverlappedArmedCharacter)
 		{
@@ -71,7 +71,7 @@ void ACaptureArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
 		// 충돌이 끝난 액터가 캐릭터인지 확인합니다.
-		const AArmedCharacter* OverlappedArmedCharacter = Cast<AArmedCharacter>(OtherActor);
+		const auto* OverlappedArmedCharacter = Cast<ACharacter>(OtherActor);
 
 		if (OverlappedArmedCharacter)
 		{

@@ -65,16 +65,9 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 	}
 }
 
-FVector2d UOccupationOverlayMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
-	const FVector2D& MiniMapSize)
-{
-	return Super::ConvertWorldToMiniMapCoordinates(PlayerLocation, MiniMapSize);
-}
-
 UImage* UOccupationOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
 {
 	UImage* PlayerImage = NewObject<UImage>(this);
-	// const auto Team = NewTeam == ETeam::Anti ? ETeam::Anti : ETeam::Pro;
 
 	UCanvasPanelSlot* PanelSlot = ParentPanel->AddChildToCanvas(PlayerImage);
 	
@@ -194,23 +187,7 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 			{
 				// 검사한 아군(나 자신 포함)이 죽었다면 텍스처를 DeathIcon으로 변경해줍니다.
 				if (!LakayaCharacter->GetAliveState())
-				{
 					Image->SetBrushFromTexture(DeathIcon);
-				}
-				else 
-				{
-					switch (Team == ETeam::Anti ? ETeam::Pro : ETeam::Anti)
-					{
-					case ETeam::Anti:
-						// Image->SetBrushFromTexture(AntiIcon);
-						break;
-					case ETeam::Pro:
-						// Image->SetBrushFromTexture(ProIcon);
-						break;
-					default:
-						break;
-					}
-				}
 			}
 		}
 	}
@@ -280,12 +257,6 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 		}
 	}, 0.1f, false);
 	SetPlayerTimers(NewPlayerState, NewTimerHandle);
-}
-
-void UOccupationOverlayMinimapWidget::UpdateMinimapImagePositionAndRotation(const ALakayaBasePlayerState& NewPlayerState,
-                                                                        const FVector2D NewPosition) const
-{
-	Super::UpdateMinimapImagePositionAndRotation(NewPlayerState, NewPosition);
 }
 
 void UOccupationOverlayMinimapWidget::UpdateAreaImageRotation()
