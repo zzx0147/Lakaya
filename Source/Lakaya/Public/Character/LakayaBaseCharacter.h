@@ -259,7 +259,7 @@ protected:
 	float ResurrectionDamageImmuneTime;
 
 	// 로컬 캐릭터에 대한 아웃라인을 활성화할지 여부를 선택합니다.
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bEnableLocalOutline;
 
 	//머티리얼 디졸브 이펙트를 위한 커브입니다
