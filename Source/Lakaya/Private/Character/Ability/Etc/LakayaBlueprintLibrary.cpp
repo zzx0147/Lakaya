@@ -4,7 +4,10 @@
 #include "Character/Ability/Etc/LakayaBlueprintLibrary.h"
 
 #include "GameplayEffectTypes.h"
+#include "OnlineSessionSettings.h"
+#include "OnlineSubsystem.h"
 #include "Input/LakayaInputID.h"
+#include "Interfaces/OnlineSessionInterface.h"
 
 int32 ULakayaBlueprintLibrary::GetInputID(const FLakayaInputID& InputID)
 {
@@ -37,4 +40,39 @@ void ULakayaBlueprintLibrary::GetChildActors(const AActor* ParentActor, TArray<A
 UObject* ULakayaBlueprintLibrary::GetClassDefaultObject(TSubclassOf<UObject> Class)
 {
 	return Class->GetDefaultObject();
+}
+
+void ULakayaBlueprintLibrary::K2_ClientTravel(APlayerController* Controller, FString ConnectString)
+{
+	if(Controller)
+	{
+		Controller->ClientTravel(ConnectString,TRAVEL_Absolute);
+	}
+}
+
+int32 ULakayaBlueprintLibrary::GetCurrentSessionPlayerCount()
+{
+	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get();
+	if (!OnlineSubsystem)
+	{
+		return 0;
+	}
+
+	IOnlineSessionPtr SessionInterface = OnlineSubsystem->GetSessionInterface();
+	if (!SessionInterface.IsValid())
+	{
+		return 0;
+	}
+
+	FNamedOnlineSession* CurrentSession = SessionInterface->GetNamedSession(NAME_GameSession);
+	if (!CurrentSession)
+	{
+		return 0;
+	}
+
+	FOnlineSessionSettings SessionSettings = CurrentSession->SessionSettings;
+
+	int32 NumPlayers = SessionSettings.NumPublicConnections - CurrentSession->NumOpenPublicConnections;
+
+	return NumPlayers;
 }
