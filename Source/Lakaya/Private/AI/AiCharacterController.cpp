@@ -14,7 +14,7 @@ AAiCharacterController::AAiCharacterController() // 생성자
 	BehaviorTreeComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComp"));
 
 	// AI의 SpringArm SocketOffset 설정을 위한 변수
-	AISpringArmOffset = FVector(0,0,-54);
+	AISpringArmOffset = FVector(0, 0, -54);
 }
 
 void AAiCharacterController::OnPossess(APawn* InPawn)
@@ -42,15 +42,22 @@ void AAiCharacterController::UpdateControlRotation(float DeltaTime, bool bUpdate
 	if (bUpdatePawn)
 	{
 		APawn* const MyPawn = GetPawn();
-		if(MyPawn)
+		if (MyPawn)
 		{
 			const FRotator CurrentPawnRotation = MyPawn->GetActorRotation();
-			SmoothTargetRotation = UKismetMathLibrary::RInterpTo_Constant(MyPawn->GetActorRotation(), ControlRotation, DeltaTime, SmoothFocusInterpSpeed);
-		
+			SmoothTargetRotation = UKismetMathLibrary::RInterpTo_Constant(
+				MyPawn->GetActorRotation(), ControlRotation, DeltaTime, SmoothFocusInterpSpeed);
+
 			if (CurrentPawnRotation.Equals(SmoothTargetRotation, 1e-3f) == false)
 			{
 				MyPawn->FaceRotation(SmoothTargetRotation, DeltaTime);
 			}
 		}
 	}
+}
+
+UAbilitySystemComponent* AAiCharacterController::GetAbilitySystemComponent() const
+{
+	const auto CastedState = GetPlayerState<IAbilitySystemInterface>();
+	return CastedState ? CastedState->GetAbilitySystemComponent() : nullptr;
 }

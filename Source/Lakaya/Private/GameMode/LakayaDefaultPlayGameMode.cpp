@@ -2,6 +2,7 @@
 
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 
+#include "AbilitySystemGlobals.h"
 #include "EngineUtils.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "Character/LakayaBasePlayerState.h"
@@ -294,10 +295,18 @@ UClass* ALakayaDefaultPlayGameMode::GetDefaultPawnClassForController_Implementat
 	return Super::GetDefaultPawnClassForController_Implementation(InController);
 }
 
-//TODO: 필요없는 함수 랩핑
 void ALakayaDefaultPlayGameMode::RespawnPlayer(AController* KilledController)
 {
 	RestartPlayer(KilledController);
+
+	if (RespawnEffect)
+	{
+		const auto ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(KilledController);
+		if (ensure(ASC))
+		{
+			ASC->BP_ApplyGameplayEffectToSelf(RespawnEffect, 1.0f, {});
+		}
+	}
 }
 
 bool ALakayaDefaultPlayGameMode::ShouldRespawn()

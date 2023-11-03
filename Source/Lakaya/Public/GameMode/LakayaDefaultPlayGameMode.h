@@ -113,4 +113,9 @@ protected:
 	TMap<AController*, FTimerHandle> RespawnTimers;
 	FTimerHandle TimerHandle_Respawn;
 	FTimerHandle TimerHandle_DelayedCharacterSelectStart;
+
+private:
+	/** 부활시에 플레이어에게 적용할 이펙트입니다. 무적 효과같은 것들을 넣을 수 있습니다. */
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UGameplayEffect> RespawnEffect;
 };
