@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "AIController.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
@@ -14,7 +15,7 @@
  * 
  */
 UCLASS()
-class LAKAYA_API AAiCharacterController : public AAIController
+class LAKAYA_API AAiCharacterController : public AAIController, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -23,6 +24,8 @@ public:
 
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void UpdateControlRotation(float DeltaTime, bool bUpdatePawn) override;
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AI, meta = (AllowPrivateAccess = "true"))
@@ -39,12 +42,11 @@ public:
 
 protected:
 	FRotator SmoothTargetRotation;
- 
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float SmoothFocusInterpSpeed = 50.0f;
 
 private:
 	USpringArmComponent* SpringArm;
 	FVector AISpringArmOffset;
-
 };
