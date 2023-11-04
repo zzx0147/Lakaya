@@ -17,6 +17,7 @@
 namespace MatchState
 {
 	const FName IsSelectCharacter = FName(TEXT("IsSelectCharacter"));
+	const FName IsIntro = FName(TEXT("IsIntro"));
 }
 
 const FString ALakayaDefaultPlayGameMode::AntiTeamSpawnTag = FString(TEXT("AntiTeamSpawnZone"));
@@ -160,6 +161,10 @@ void ALakayaDefaultPlayGameMode::OnMatchStateSet()
 	{
 		HandleMatchIsSelectCharacter();
 	}
+	else if(MatchState == MatchState::IsIntro)
+	{
+		HandleMatchIsIntro();
+	}
 }
 
 void ALakayaDefaultPlayGameMode::HandleMatchIsWaitingToStart()
@@ -176,6 +181,10 @@ void ALakayaDefaultPlayGameMode::HandleMatchIsSelectCharacter()
 {
 	FTimerHandle TimerHandler;
 	//GetWorldTimerManager().SetTimer(TimerHandler, this, &ALakayaDefaultPlayGameMode::StartMatch, 10.0f, false);
+}
+
+void ALakayaDefaultPlayGameMode::HandleMatchIsIntro()
+{
 }
 
 void ALakayaDefaultPlayGameMode::HandleMatchHasStarted()
@@ -271,6 +280,13 @@ void ALakayaDefaultPlayGameMode::StartSelectCharacter()
 	SetMatchState(MatchState::IsSelectCharacter);
 }
 
+void ALakayaDefaultPlayGameMode::StartIntro()
+{
+	if (MatchState != MatchState::IsSelectCharacter) return;
+
+	SetMatchState(MatchState::IsIntro);
+}
+
 void ALakayaDefaultPlayGameMode::DelayedEndedGame()
 {
 	//TODO: UGameplayStatics::OpenLevelBySoftObjectPtr()를 사용하면 하드코딩을 줄일 수 있습니다.
@@ -281,8 +297,9 @@ bool ALakayaDefaultPlayGameMode::HasMatchStarted() const
 {
 	//TODO: 취향차이지만 아래의 주석과 같이 간단히 표현할 수도 있습니다.
 	// return MatchState == MatchState::IsSelectCharacter ? false : Super::HasMatchStarted();
-	if (MatchState == MatchState::IsSelectCharacter) return false;
+	if (MatchState == MatchState::IsSelectCharacter || MatchState == MatchState::IsIntro) return false;
 
+	
 	return Super::HasMatchStarted();
 }
 

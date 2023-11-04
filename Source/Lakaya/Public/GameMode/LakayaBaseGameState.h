@@ -27,6 +27,7 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 	virtual void HandleMatchIsCharacterSelect();
+	virtual void HandleMatchIsIntro();
 	virtual void OnRep_MatchState() override;
 	
 public:
@@ -108,6 +109,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	uint8 MaximumPlayers;
 
+	UPROPERTY(EditDefaultsOnly)
+	float IntroDuration;
+	
 	// 매치가 몇초간 지속될 지를 정의합니다.
 	UPROPERTY(ReplicatedUsing=OnRep_MatchEndingTime)
 	float MatchEndingTime;
@@ -125,6 +129,7 @@ protected:
 	FTimerHandle EndingTimer;
 	FTimerHandle CharacterSelectTimer;
 	FTimerHandle MatchWaitToStartTimer;
+	FTimerHandle IntroTimer;
 
 #pragma region Widget
 	// Tab키를 눌렀을 때 표시되는 점수판 위젯의 클래스를 지정합니다.
@@ -166,7 +171,13 @@ protected:
 	// 인게임 도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UTabMinimapWidget> TabMinimapWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UIntroWidget> IntroWidgetClass;
 	
+	//
+	// UPROPERTY(EditDefaultsOnly)
+	// TSubclassOf<class>
 	// 캐릭터 선택 위젯 입니다.	
 	TWeakObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 
@@ -196,6 +207,8 @@ protected:
 
 	// 인게임 도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯입니다.
 	TObjectPtr<UTabMinimapWidget> TabMinimapWidget;
+
+	TObjectPtr<UIntroWidget> IntroWidget;
 #pragma endregion
 	
 private:
