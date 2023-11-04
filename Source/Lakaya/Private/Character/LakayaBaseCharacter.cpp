@@ -4,15 +4,14 @@
 #include "Character/LakayaBaseCharacter.h"
 
 #include "AbilitySystemComponent.h"
-#include "Engine/World.h"
-#include "Character/LakayaAbilitySet.h"
 #include "NiagaraComponent.h"
-#include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Character/BulletSpreadComponent.h"
+#include "Character/LakayaAbilitySet.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PostProcessComponent.h"
+#include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
@@ -26,8 +25,6 @@ const FName ALakayaBaseCharacter::SpringArmComponentName = FName(TEXT("SpringArm
 const FName ALakayaBaseCharacter::CameraComponentName = FName(TEXT("Camera"));
 const FName ALakayaBaseCharacter::ResourceComponentName = FName(TEXT("ResourceComponent"));
 const FName ALakayaBaseCharacter::ClairvoyanceMeshComponentName = FName(TEXT("ClairvoyanceMesh"));
-const FName ALakayaBaseCharacter::DamageImmuneMeshComponentName = FName(TEXT("DamageImmuneMesh"));
-const FName ALakayaBaseCharacter::ResurrectionNiagaraName = FName(TEXT("ResurrectionNiagara"));
 const FName ALakayaBaseCharacter::GrayScalePostProcessComponentName = FName(TEXT("GrayScalePostProcess"));
 const FName ALakayaBaseCharacter::BulletSpreadComponentName = FName(TEXT("BulletSpread"));
 
@@ -41,7 +38,6 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	BTeamObjectType = ECC_GameTraceChannel6;
 	bIsAlive = true;
 	bEnableLocalOutline = true;
-	ResurrectionDamageImmuneTime = 5.f;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
 	CharacterName = TEXT("Base");
@@ -65,20 +61,6 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	ClairvoyanceMeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	ClairvoyanceMeshComponent->SetCollisionResponseToChannel(ECC_Camera, ECR_Block);
 	ClairvoyanceMeshComponent->SetVisibility(false);
-
-	DamageImmuneMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(DamageImmuneMeshComponentName);
-	DamageImmuneMeshComponent->SetupAttachment(GetMesh());
-	DamageImmuneMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	DamageImmuneMeshComponent->SetVisibility(false);
-
-	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> ResurrectionFinder(
-		TEXT("/Script/Niagara.NiagaraSystem'/Game/Effects/M_VFX/Char_Common/VFX_Resurrection.VFX_Resurrection'"));
-
-	ResurrectionNiagara = CreateDefaultSubobject<UNiagaraComponent>(ResurrectionNiagaraName);
-	ResurrectionNiagara->SetupAttachment(GetMesh());
-	ResurrectionNiagara->SetAutoActivate(false);
-	ResurrectionNiagara->SetAutoDestroy(false);
-	ResurrectionNiagara->SetAsset(ResurrectionFinder.Object);
 
 	static ConstructorHelpers::FObjectFinder<UCurveFloat> DissolveCurveFinder(
 		TEXT("/Game/Blueprints/Curve/CV_Float_DissolveCurve.CV_Float_DissolveCurve"));
@@ -104,8 +86,6 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 float ALakayaBaseCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
                                        AController* EventInstigator, AActor* DamageCauser)
 {
-	// 무적이면 넘깁니다.
-	if (DamageImmuneEndingTime >= GetServerTime()) return 0.f;
 	const auto LocalState = GetPlayerState();
 
 	// 플레이어 스테이트가 없는 경우 원본의 로직을 실행합니다.
@@ -373,12 +353,6 @@ void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 		GetMesh()->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		GetMesh()->SetRelativeLocationAndRotation(MeshRelativeLocation, MeshRelativeRotation);
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		ResurrectionNiagara->Activate(true);
-		if (HasAuthority())
-		{
-			DamageImmuneEndingTime = GetServerTime() + ResurrectionDamageImmuneTime;
-			OnRep_DamageImmuneEndingTime();
-		}
 		RemoveDissolveEffect();
 		
 
@@ -409,13 +383,6 @@ void ALakayaBaseCharacter::OnRep_PlayerRotation()
 	LatestPlayerRotation = PlayerRotation;
 }
 
-void ALakayaBaseCharacter::OnRep_DamageImmuneEndingTime()
-{
-	DamageImmuneMeshComponent->SetVisibility(true);
-	GetWorldTimerManager().SetTimer(DamageImmuneTimer, this, &ALakayaBaseCharacter::DamageImmuneTimerCallback,
-	                                DamageImmuneEndingTime - GetServerTime());
-}
-
 bool ALakayaBaseCharacter::CanJumpInternal_Implementation() const
 {
 	return JumpIsAllowedInternal();
@@ -428,11 +395,6 @@ FQuat ALakayaBaseCharacter::GetRawExtrapolatedRotator(const float& CurrentTime) 
 	return FQuat::Slerp(PrevPlayerRotation.Rotation, LatestPlayerRotation.Rotation,
 	                    UKismetMathLibrary::NormalizeToRange(CurrentTime, PrevPlayerRotation.Time,
 	                                                         LatestPlayerRotation.Time));
-}
-
-void ALakayaBaseCharacter::DamageImmuneTimerCallback()
-{
-	DamageImmuneMeshComponent->SetVisibility(false);
 }
 
 void ALakayaBaseCharacter::StartDissolveEffect()
@@ -486,6 +448,5 @@ void ALakayaBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, PlayerRotation, COND_SkipOwner);
-	DOREPLIFETIME(ALakayaBaseCharacter, DamageImmuneEndingTime);
 	// DOREPLIFETIME(ALakayaBaseCharacter, bIsSpottedByTeammate);
 }
