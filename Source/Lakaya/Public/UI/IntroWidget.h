@@ -13,5 +13,26 @@ UCLASS()
 class LAKAYA_API UIntroWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
+public:
+	void SetPlayersData(TArray<TObjectPtr<APlayerState>> Players);
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UIntroElement> IntroElementProClass;
 	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UIntroElement> IntroElementAntiClass;
+
+	UPROPERTY()
+	TArray<TObjectPtr<UIntroElement>> ProElements;
+	
+	UPROPERTY()
+	TArray<TObjectPtr<UIntroElement>> AntiElements;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UVerticalBox> ProVerticalBox;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UVerticalBox> AntiVerticalBox;
 };

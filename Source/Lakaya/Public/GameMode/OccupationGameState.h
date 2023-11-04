@@ -114,6 +114,10 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 
 	/**
+	 * @brief 게임 내에서 인트로가 시작했을 때, 호출되는 함수입니다.
+	 */
+	virtual void HandleMatchIsIntro() override;
+	/**
 	 * @brief 게임 내에서 매치가 끝났을 때, 호출되는 함수입니다.
 	 */
 	virtual void HandleMatchHasEnded() override;
