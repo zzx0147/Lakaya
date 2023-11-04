@@ -5,7 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 
-#define EVENT_SET_VALID_SCOPE(OnInvalid)\
+#define EVENT_SET_VALID_SCOPE()\
 	const auto ASC = GetAbilitySystemComponent();\
 	if (!ASC)\
 	{\
