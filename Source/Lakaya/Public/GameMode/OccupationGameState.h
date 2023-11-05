@@ -72,6 +72,28 @@ public:
 
 	UFUNCTION()
 	void UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress);
+
+	/**
+	 * @brief 점령구역의 소속 팀을 바꿔주는 함수입니다.
+	 * @param NewCaptureId 소속팀이 바뀐 점령지의 ID입니다.
+	 * @param NewTeam 바뀔 팀입니다.
+	 */
+	UFUNCTION()
+	void SetCaptureOwnerChange(const uint8 NewCaptureId, const ETeam& NewTeam);
+
+	/**
+	 * @brief 점령구역의 소속 팀이 바뀔 때, 소속 팀의 따라 이미지를 저장하는 함수입니다.
+	 * @param NewCaptureId 소속팀이 바뀐 점령지의 ID입니다.
+	 * @param NewTeam 바뀔 팀입니다.
+	 */
+	void UpdateAreaImage(const uint8 NewCaptureId, const ETeam& NewTeam) const;
+
+	/**
+	 * @brief 점령구역의 소속 팀이 바뀔 때, 점령아이콘을 바꿔주는 함수입니다.
+	 * @param NewCaptureId 소속팀이 바뀐 점령지의 ID입니다.
+	 * @param NewTexture 바뀔 팀입니다.
+	 */
+	void UpdateImage(const uint8 NewCaptureId, UTexture2D* NewTexture) const;
 	
 	void OnEnemySpotted(const ETeam& EnemyTeam,
 		ALakayaBasePlayerState* Enemy);
@@ -138,7 +160,7 @@ private:
 	
 	void EndTimeCheck();
 	
-	void DestroyShieldWallObject();
+	void DestroyShieldWallObject() const;
 
 	void UpdatePlayerByTeamMap(const ETeam& Team, ALakayaBasePlayerState* PlayerState);
 
@@ -215,8 +237,6 @@ private:
 	//TODO: 댕글링 포인터가 발생할 수 있으므로 약포인터로 변경해야 합니다. TMap에 TArray를 값형식으로 사용하면 UPROPERTY로 선언할 수 없습니다. 
 	TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> PlayersByTeamMap;
 	
-	// ETeam ClientTeam;
-
 	UPROPERTY(Replicated)
 	ETeam TeamToUpdate = ETeam::None;
 	
@@ -234,6 +254,9 @@ private:
 
 	UPROPERTY()
 	TMap<uint8, UProgressBar*> OccupyBarMaps;
+
+	UPROPERTY()
+	TMap<uint8, ETeam> CaptureOwnerMap;
 	
 #pragma region Widget
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.

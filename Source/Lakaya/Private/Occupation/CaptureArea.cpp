@@ -47,20 +47,7 @@ void ACaptureArea::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 				// OccupyPlayerList에 추가합니다.
 				AddToOccupyPlayerList(OccupyingPlayerState->GetTeam(), OccupyingPlayerState);
 			}
-			else
-			{
-				// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Character Cast Failed."));
-			}
 		}
-		else
-		{
-			// 겹친 액터는 캐릭터가 아닙니다.
-			// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Trigger Overlapped by non-ArmedCharacter"));
-		}
-	}
-	else
-	{
-		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Same Trigger"));
 	}
 }
 
@@ -89,27 +76,10 @@ void ACaptureArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 						{
 							OccupyingPlayerState->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(0, false);
 						}
-						else
-						{
-							UE_LOG(LogTemp, Warning, TEXT("84line null."));
-						}
 					}
 				}
 			}
-			else
-			{
-				// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Cast Failed."));	
-			}
 		}
-		else
-		{
-			// 겹친 액터는 캐릭터가 아닙니다.
-			// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Trigger Overlapped by non-ArmedCharacter"));
-		}
-	}
-	else
-	{
-		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Same Trigger"));
 	}
 }
 
@@ -123,28 +93,6 @@ void ACaptureArea::AddToOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePla
 	UpdateCaptureAreaState(CurrentCaptureAreaState);
 }
 
-void ACaptureArea::SetCurrentCaptureAreaTeam(const ETeam& NewTeam)
-{
-	CurrentCaptureAreaTeam = NewTeam;
-
-	switch (NewTeam)
-	{
-	case ETeam::Anti:
-		StaticMeshComponent->SetMaterial(0, AntiMaterial);
-	// TODO : 점령 시 점령 표시 UI를 업데이트 해줍니다.
-
-		break;
-	case ETeam::Pro:
-		StaticMeshComponent->SetMaterial(0, ProMaterial);
-
-		break;
-	default:
-		StaticMeshComponent->SetMaterial(0, NeutralMaterial);
-
-		break;
-	}
-}
-
 void ACaptureArea::RemoveFromOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBasePlayerState* Player)
 {
 	if (OccupyingPlayerList.Contains(PlayerTeam))
@@ -153,6 +101,24 @@ void ACaptureArea::RemoveFromOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBa
 	}
 
 	UpdateCaptureAreaState(CurrentCaptureAreaState);
+}
+
+void ACaptureArea::SetCurrentCaptureAreaTeam(const ETeam& NewTeam)
+{
+	CurrentCaptureAreaTeam = NewTeam;
+
+	switch (NewTeam)
+	{
+	case ETeam::Anti:
+		StaticMeshComponent->SetMaterial(0, AntiMaterial);
+		break;
+	case ETeam::Pro:
+		StaticMeshComponent->SetMaterial(0, ProMaterial);
+		break;
+	default:
+		StaticMeshComponent->SetMaterial(0, NeutralMaterial);
+		break;
+	}
 }
 
 void ACaptureArea::UpdateCaptureAreaState(const ECaptureAreaState& CaptureAreaState)
@@ -182,8 +148,6 @@ void ACaptureArea::UpdateCaptureAreaState(const ECaptureAreaState& CaptureAreaSt
 	}
 
 	CaptureAreaStateOnChangedSignature.Broadcast(CurrentCaptureAreaState);
-	const FString EnumString = GetEnumAsString(CurrentCaptureAreaState);
-	// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, EnumString);
 }
 
 // Anti팀 1명이상, Pro팀 0명
@@ -367,10 +331,9 @@ void ACaptureArea::IncreaseCaptureProgress()
 			ProTeamCaptureProgress = TeamCaptureProgress;
 		}
 
+		// 점령에 성공했다면
 		if (TeamCaptureProgress >= 4.0f)
 		{
-			// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("%sTeam Capture Success."), *ETeamToString(CurrentTeam)));
-
 			const ETeam OtherTeam = (CurrentTeam == ETeam::Anti) ? ETeam::Pro : ETeam::Anti;
 			if (GetCurrentCaptureAreaTeam() == OtherTeam)
 			{
@@ -378,6 +341,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 			}
 
 			OccupationGameState->AddCaptureAreaCount(CurrentTeam, CaptureAreaId);
+			OccupationGameState->SetCaptureOwnerChange(CaptureAreaId, CurrentTeam);
 			SetCurrentCaptureAreaState((CurrentTeam == ETeam::Anti) ? ECaptureAreaState::Anti : ECaptureAreaState::Pro);
 			TeamCaptureProgress = 0.0f;
 			SetCurrentCaptureAreaTeam(CurrentTeam);
