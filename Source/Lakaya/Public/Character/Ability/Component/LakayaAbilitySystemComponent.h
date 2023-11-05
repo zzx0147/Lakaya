@@ -40,6 +40,10 @@ public:
 	/** 이 InputID가 방해받지 않도록 합니다. */
 	void RemoveInputInhibitedDelegate(const int32& InputID);
 
+	void GiveCustomImmunity(ULakayaAbilityCustomImmunity* CustomImmunity);
+
+	void RemoveCustomImmunity(ULakayaAbilityCustomImmunity* CustomImmunity);
+
 	/** CustomImmunity에 의해 면역될 때 호출되는 이벤트입니다. */
 	FImmunedByCustomImmunityDelegate OnImmunedByCustomImmunity;
 
