@@ -27,7 +27,8 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FTaskCanceled OnCanceled;
 
-	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly = "true"))
+	UFUNCTION(BlueprintCallable,
+		meta=(HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"))
 	static UAbilityTask_WaitCustomImmunity* WaitCustomImmunity(UGameplayAbility* OwningAbility,
 	                                                           ULakayaAbilityCustomImmunity* CustomImmunity,
 	                                                           bool bTriggerOnce = false,
