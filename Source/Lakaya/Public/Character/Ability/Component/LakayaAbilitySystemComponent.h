@@ -7,7 +7,7 @@
 class ULakayaAbilityCustomImmunity;
 
 DECLARE_DELEGATE_OneParam(FInputInhibitedDelegate, const int32& /* InhibitedInputID */)
-DECLARE_MULTICAST_DELEGATE_TwoParams(FImmunedByCustomImmubityDelegate, const FGameplayEffectSpec&,
+DECLARE_MULTICAST_DELEGATE_TwoParams(FImmunedByCustomImmunityDelegate, const FGameplayEffectSpec&,
                                      const ULakayaAbilityCustomImmunity*)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -41,7 +41,7 @@ public:
 	void RemoveInputInhibitedDelegate(const int32& InputID);
 
 	/** CustomImmunity에 의해 면역될 때 호출되는 이벤트입니다. */
-	FImmunedByCustomImmubityDelegate OnImmunedByCustomImmunity;
+	FImmunedByCustomImmunityDelegate OnImmunedByCustomImmunity;
 
 	virtual void AbilityLocalInputPressed(int32 InputID) override;
 	virtual void AbilityLocalInputReleased(int32 InputID) override;
