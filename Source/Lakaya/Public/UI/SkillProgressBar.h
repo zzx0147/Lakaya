@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/Ability/Attribute/LakayaAttributeSet.h"
+#include "Occupation/Team.h"
 #include "SkillProgressBar.generated.h"
 
 UENUM()
@@ -66,6 +67,9 @@ public:
 
 	FORCEINLINE	FGameplayTag GetTag() const { return SkillTag; }
 	FORCEINLINE void SetTag(const FGameplayTag& NewTag) { SkillTag = NewTag; }
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetTeam(const ETeam NewTeam);
 	
 protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;

@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "SkillProgressBar.h"
 #include "Blueprint/UserWidget.h"
+#include "Occupation/Team.h"
 #include "SkillWidget.generated.h"
 
 UCLASS()
@@ -13,7 +14,9 @@ class LAKAYA_API USkillWidget : public UUserWidget
 public:
 	USkillProgressBar* GetSkillProgressBar(const ESkillKey& SkillKey) const;
 	TArray<USkillProgressBar*> GetAllSkillProgressBar();
-	
+
+	void SetTeam(const ETeam& NewTeam);
+
 private:
 	// NativePreConstructor를 오버라이드한
 	// 커스텀 위젯을 bindwidget으로 사용하면 에디터에서 클릭이 되지 않는 버그가 있습니다.

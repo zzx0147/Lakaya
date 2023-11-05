@@ -20,3 +20,10 @@ TArray<USkillProgressBar*> USkillWidget::GetAllSkillProgressBar()
 {
 	return {QSkillProgressBar, ESkillProgressBar, RMBSkillProgressBar};
 }
+
+void USkillWidget::SetTeam(const ETeam& NewTeam)
+{
+	QSkillProgressBar->SetTeam(NewTeam);
+	ESkillProgressBar->SetTeam(NewTeam);
+	RMBSkillProgressBar->SetTeam(NewTeam);
+}
