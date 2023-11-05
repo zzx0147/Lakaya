@@ -35,13 +35,4 @@ protected:
 	// 미니맵 이미지의 부모 패널입니다.
 	UPROPERTY()
 	TObjectPtr<URetainerBox> RetainerBox;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> AntiAreaImage;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> CenterAreaImage;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> ProAreaImage;
 };

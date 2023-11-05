@@ -55,6 +55,10 @@ AOccupationGameState::AOccupationGameState(): MatchResult()
 	PlayersByTeamMap.Emplace(ETeam::Anti);
 	PlayersByTeamMap.Emplace(ETeam::Pro);
 
+	CaptureOwnerMap.Emplace(0, ETeam::None);
+	CaptureOwnerMap.Emplace(1, ETeam::None);
+	CaptureOwnerMap.Emplace(2, ETeam::None);
+	
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> ResultContextFinder(
 		TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IC_ResultWidgetControl.IC_ResultWidgetControl'"));
 
@@ -442,7 +446,7 @@ void AOccupationGameState::OnRep_MatchEndingTime()
 	
 }
 
-void AOccupationGameState::DestroyShieldWallObject()
+void AOccupationGameState::DestroyShieldWallObject() const
 {
 	UWorld* World = GetWorld();
 	if (World == nullptr)
@@ -645,6 +649,63 @@ void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& I
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Bar && *Bar is null."));
+	}
+}
+
+void AOccupationGameState::SetCaptureOwnerChange(const uint8 NewCaptureId, const ETeam& NewTeam)
+{
+	CaptureOwnerMap.Emplace(NewCaptureId, NewTeam);
+
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
+		LocalController && LocalController->IsLocalController())
+	{
+		UpdateAreaImage(NewCaptureId, NewTeam);
+	}
+}
+
+void AOccupationGameState::UpdateAreaImage(const uint8 NewCaptureId, const ETeam& NewTeam) const
+{
+	UTexture2D* AntiImage = nullptr;
+	UTexture2D* ProImage = nullptr;
+	switch (NewCaptureId)
+	{
+	case 1:
+		AntiImage = HUDMinimapWidget->GetAntiAreaAntiImage();
+		ProImage = HUDMinimapWidget->GetAntiAreaProImage();
+		break;
+	case 2:
+		AntiImage = HUDMinimapWidget->GetCenterAreaAntiImage();
+		ProImage = HUDMinimapWidget->GetCenterAreaProImage();
+		break;
+	case 3:
+		AntiImage = HUDMinimapWidget->GetProAreaAntiImage();
+		ProImage = HUDMinimapWidget->GetProAreaProImage();
+		break;
+	default:
+		return;
+	}
+
+	UTexture2D* NewTexture = (NewTeam == ETeam::Anti) ? AntiImage : ProImage;
+	UpdateImage(NewCaptureId, NewTexture);
+}
+
+void AOccupationGameState::UpdateImage(const uint8 NewCaptureId, UTexture2D* NewTexture) const
+{
+	switch (NewCaptureId)
+	{
+	case 1:
+		HUDMinimapWidget->GetAntiAreaImage()->SetBrushFromTexture(NewTexture);
+		TabMinimapWidget->GetAntiAreaImage()->SetBrushFromTexture(NewTexture);
+		break;
+	case 2:
+		HUDMinimapWidget->GetCenterAreaImage()->SetBrushFromTexture(NewTexture);
+		TabMinimapWidget->GetCenterAreaImage()->SetBrushFromTexture(NewTexture);
+		break;
+	case 3:
+		HUDMinimapWidget->GetProAreaImage()->SetBrushFromTexture(NewTexture);
+		TabMinimapWidget->GetProAreaImage()->SetBrushFromTexture(NewTexture);
+		break;
+	default: ;
 	}
 }
 
