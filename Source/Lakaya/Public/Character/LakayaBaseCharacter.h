@@ -38,8 +38,6 @@ public:
 	const static FName CameraComponentName;
 	const static FName ResourceComponentName;
 	const static FName ClairvoyanceMeshComponentName;
-	const static FName DamageImmuneMeshComponentName;
-	const static FName ResurrectionNiagaraName;
 	const static FName GrayScalePostProcessComponentName;
 	const static FName BulletSpreadComponentName;
 
@@ -185,16 +183,11 @@ protected:
 	virtual void OnRep_PlayerRotation();
 
 	UFUNCTION()
-	virtual void OnRep_DamageImmuneEndingTime();
-
-	UFUNCTION()
 	virtual bool CanJumpInternal_Implementation() const override;
 
 private:
 	// 단순히 이전 주기의 플레이어 회전과 최신 주기의 플레이어 회전을 선형 외삽한 값을 반환합니다.
 	FQuat GetRawExtrapolatedRotator(const float& CurrentTime) const;
-
-	void DamageImmuneTimerCallback();
 
 	//디졸브 이펙트를 시작합니다
 	void StartDissolveEffect();
@@ -254,10 +247,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TEnumAsByte<ECollisionChannel> BTeamObjectType;
 
-	// 부활시 적용되는 무적시간을 지정합니다.
-	UPROPERTY(EditAnywhere)
-	float ResurrectionDamageImmuneTime;
-
 	// 로컬 캐릭터에 대한 아웃라인을 활성화할지 여부를 선택합니다.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bEnableLocalOutline;
@@ -303,12 +292,6 @@ private:
 	UStaticMeshComponent* ClairvoyanceMeshComponent;
 
 	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* DamageImmuneMeshComponent;
-
-	UPROPERTY(VisibleAnywhere)
-	UNiagaraComponent* ResurrectionNiagara;
-
-	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UPostProcessComponent> GrayScalePostProcessComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintGetter = GetBulletSpread)
@@ -320,9 +303,6 @@ private:
 	UPROPERTY(BlueprintGetter=GetAliveState)
 	bool bIsAlive;
 
-	UPROPERTY(ReplicatedUsing=OnRep_DamageImmuneEndingTime, Transient)
-	float DamageImmuneEndingTime;
-
 	FPlayerRotationPacket PrevPlayerRotation;
 	FPlayerRotationPacket LatestPlayerRotation;
 	FQuat LatestUpdateRotation;
@@ -331,7 +311,6 @@ private:
 	FRotator MeshRelativeRotation;
 	FName MeshCollisionProfile;
 	TWeakObjectPtr<UMaterialInstanceDynamic> CharacterOverlayMaterial;
-	FTimerHandle DamageImmuneTimer;
 	FLakayaAbilityHandleContainer AbilityHandleContainer;
 
 	// 플레이어가 적을 발견했을 때, 시야를 공유하기 위해 사용하는 변수입니다.

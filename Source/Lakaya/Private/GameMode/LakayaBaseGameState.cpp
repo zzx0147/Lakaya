@@ -14,6 +14,7 @@
 #include "UI/LoadingWidget.h"
 #include "UI/OverlayMinimapWidget.h"
 #include "UI/PlayerNameDisplayerWidget.h"
+#include "UI/IntroWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
@@ -22,6 +23,7 @@ ALakayaBaseGameState::ALakayaBaseGameState()
 	MatchDuration = 180.f;
 	MatchWaitDuration = 30.0f;
 	bWantsSendRecordResult = false;
+	IntroDuration = 5.0f;
 }
 
 void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -102,6 +104,17 @@ void ALakayaBaseGameState::BeginPlay()
 				PlayerNameDisplayerWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 			}
 		}
+
+		if(IntroWidgetClass)
+		{
+			IntroWidget = CreateWidget<UIntroWidget>(LocalController, IntroWidgetClass);
+			if(IntroWidget)
+			{
+				IntroWidget->AddToViewport(1);
+				IntroWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+		
 	}
 	
 	SpawnOutlineManager();
@@ -134,20 +147,18 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]()
 	{
 		if (!HasAuthority()) return;
-		
-		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
+
+		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<ALakayaDefaultPlayGameMode>())
 		{
-			AuthGameMode->StartMatch();
+			AuthGameMode->StartIntro();
 		}
 	}, CharacterSelectTimeWidget);
+	
+
 }
 
-void ALakayaBaseGameState::HandleMatchHasStarted()
+void ALakayaBaseGameState::HandleMatchIsIntro()
 {
-	Super::HandleMatchHasStarted();
-	StartTimeStamp = FDateTime::UtcNow().ToUnixTimestamp();
-	StartTime = GetServerWorldTimeSeconds();
-	
 	if (GetCharacterSelectWidget())
 	{
 		CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -155,6 +166,32 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
+
+	if(IntroWidget)
+		IntroWidget->SetVisibility(ESlateVisibility::Visible);
+	
+	FTimerDelegate IntroTimerDelegate;
+	IntroTimerDelegate.BindWeakLambda(this,[&]()
+	{
+		if(!HasAuthority()) return;
+		
+		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<ALakayaDefaultPlayGameMode>())
+		{
+			AuthGameMode->StartMatch();
+		}
+	});
+	
+	GetWorldTimerManager().SetTimer(IntroTimer,IntroTimerDelegate,IntroDuration,false);
+}
+
+void ALakayaBaseGameState::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+	StartTimeStamp = FDateTime::UtcNow().ToUnixTimestamp();
+	StartTime = GetServerWorldTimeSeconds();
+
+	if(IntroWidget)
+		IntroWidget->SetVisibility(ESlateVisibility::Hidden);
 	
 	if (InGameTimeWidget.IsValid())
 	{
@@ -213,6 +250,10 @@ void ALakayaBaseGameState::OnRep_MatchState()
 	if (MatchState == MatchState::IsSelectCharacter)
 	{
 		HandleMatchIsCharacterSelect();
+	}
+	else if(MatchState == MatchState::IsIntro)
+	{
+		HandleMatchIsIntro();		
 	}
 
 	if (MatchState != MatchState::InProgress)

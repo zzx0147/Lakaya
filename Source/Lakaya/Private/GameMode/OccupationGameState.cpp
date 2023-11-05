@@ -2,6 +2,7 @@
 
 #include "InputMappingContext.h"
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
@@ -14,6 +15,7 @@
 #include "UI/GameResultWidget.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
+#include "UI/IntroWidget.h"
 #include "UI/MatchStartWaitWidget.h"
 #include "UI/OccupationCharacterSelectWidget.h"
 #include "UI/OccupationOverlayMinimapWidget.h"
@@ -173,6 +175,9 @@ void AOccupationGameState::BeginPlay()
 				TabMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
+
+		LocalController->SetShowMouseCursor(true);
+		UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(LocalController);
 	}
 
 	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this,
@@ -184,7 +189,7 @@ void AOccupationGameState::BeginPlay()
 void AOccupationGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-
+	
 	if (IsValid(TeamScoreWidget))
 		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
 
@@ -273,6 +278,15 @@ void AOccupationGameState::HandleMatchHasStarted()
 	
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, TimerDelegate,
 	                                MatchWaitDuration + MatchStartWidgetLifeTime, false);
+}
+
+void AOccupationGameState::HandleMatchIsIntro()
+{
+	Super::HandleMatchIsIntro();
+	
+	if(!PlayersByTeamMap.Contains(ETeam::Pro) || !PlayersByTeamMap.Contains(ETeam::Anti)) return;
+
+	if (IntroWidget) IntroWidget->SetPlayersData(PlayerArray);
 }
 
 void AOccupationGameState::HandleMatchHasEnded()
