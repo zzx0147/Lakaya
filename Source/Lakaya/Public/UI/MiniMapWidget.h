@@ -41,6 +41,15 @@ public:
 	FORCEINLINE const TMap<ETeam, TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>>& GetOccupationPlayersByMinimap() const { return OccupationPlayersByMinimap; }
 	FORCEINLINE const TMap<TWeakObjectPtr<ALakayaBasePlayerState>, TWeakObjectPtr<UImage>>& GetIndividualPlayersByMinimap() const { return IndividualPlayersByMinimap; }
 	FORCEINLINE const TMap<TWeakObjectPtr<ALakayaBasePlayerState>, FTimerHandle>& GetPlayerTimers() const { return PlayerTimers; }
+	FORCEINLINE TObjectPtr<UTexture2D> GetAntiAreaAntiImage() const { return AntiAreaAntiImage; }
+	FORCEINLINE TObjectPtr<UImage> GetAntiAreaImage() const { return AntiAreaImage; }
+	FORCEINLINE TObjectPtr<UImage> GetCenterAreaImage() const { return CenterAreaImage; }
+	FORCEINLINE TObjectPtr<UImage> GetProAreaImage() const { return ProAreaImage; }
+	FORCEINLINE TObjectPtr<UTexture2D> GetAntiAreaProImage() const { return AntiAreaProImage; }
+	FORCEINLINE TObjectPtr<UTexture2D> GetCenterAreaAntiImage() const { return CenterAreaAntiImage; }
+	FORCEINLINE TObjectPtr<UTexture2D> GetCenterAreaProImage() const { return CenterAreaProImage; }
+	FORCEINLINE TObjectPtr<UTexture2D> GetProAreaAntiImage() const { return ProAreaAntiImage; }
+	FORCEINLINE TObjectPtr<UTexture2D> GetProAreaProImage() const { return ProAreaProImage; }
 	
 	FORCEINLINE void SetTeam(const ETeam& Team) { CurrentTeam = Team; }
 	FORCEINLINE void SetEnemyTeam(const ETeam& NewEnemyTeam) { CurrentEnemyTeam = NewEnemyTeam; }
@@ -80,6 +89,36 @@ protected:
 	// 미니맵 이미지입니다. (BindWidget으로 구현이 되어 있어서, 블루프린트의 이미지와 이름을 동일하게 설정해줘야합니다.)
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> MinimapImage;
+
+	// AntiAreaImage 입니다.
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> AntiAreaImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> AntiAreaAntiImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> AntiAreaProImage;
+	
+	// CenterAreaImage 입니다.
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> CenterAreaImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> CenterAreaAntiImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> CenterAreaProImage;
+	
+	// ProAreaImage 입니다.
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> ProAreaImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ProAreaAntiImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ProAreaProImage;
 	
 	// 미니맵상에 자기 자신(개인전)을 표시하는 아이콘 텍스쳐입니다.
 	UPROPERTY(EditAnywhere)

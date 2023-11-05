@@ -27,4 +27,5 @@ protected:
 private:
 	void SetEnemyImage() const;
 	virtual void UpdateAreaImageRotation() override;
+
 };

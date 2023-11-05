@@ -36,10 +36,17 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static UObject* GetClassDefaultObject(TSubclassOf<UObject> Class);
 
-	UFUNCTION(BlueprintCallable, Category = "Online|Session",  meta = (DisplayName = "ClientTravel"))
-	static void K2_ClientTravel(APlayerController* Controller,FString ConnectString);
+	UFUNCTION(BlueprintCallable, Category = "Online|Session", meta = (DisplayName = "ClientTravel"))
+	static void K2_ClientTravel(APlayerController* Controller, FString ConnectString);
 
-	UFUNCTION(BlueprintCallable, BlueprintPure , Category = "Online|Session")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Online|Session")
 	static int32 GetCurrentSessionPlayerCount();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static FGameplayAbilityActorInfo GetActorInfoFromAbilitySystemComponent(
+		UAbilitySystemComponent* AbilitySystemComponent);
+
+	UFUNCTION(BlueprintCallable)
+	static bool GetAttributeModifierMagnitude(const FGameplayEffectSpec& Spec, FGameplayAttribute Attribute,
+	                                        float& OutMagnitude);
 };
- 
