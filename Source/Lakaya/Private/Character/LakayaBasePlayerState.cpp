@@ -499,6 +499,12 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 					BulletSpreadComponent->OnChangeBulletSpreadAmountSignature.AddUObject(
 						CharacterWidget->GetCrossHairWidget(), &UDynamicCrossHairWidget::OnChangeBulletSpreadAmount);
 				}
+
+				if(CharacterWidget->GetSkillWidget())
+				{
+					CharacterWidget->GetSkillWidget()->SetTeam(GetTeam());
+				}
+				
 			}
 		}
 	}
