@@ -55,6 +55,10 @@ AOccupationGameState::AOccupationGameState(): MatchResult()
 	PlayersByTeamMap.Emplace(ETeam::Anti);
 	PlayersByTeamMap.Emplace(ETeam::Pro);
 
+	CaptureOwnerMap.Emplace(0, ETeam::None);
+	CaptureOwnerMap.Emplace(1, ETeam::None);
+	CaptureOwnerMap.Emplace(2, ETeam::None);
+	
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> ResultContextFinder(
 		TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IC_ResultWidgetControl.IC_ResultWidgetControl'"));
 
@@ -442,7 +446,7 @@ void AOccupationGameState::OnRep_MatchEndingTime()
 	
 }
 
-void AOccupationGameState::DestroyShieldWallObject()
+void AOccupationGameState::DestroyShieldWallObject() const
 {
 	UWorld* World = GetWorld();
 	if (World == nullptr)
@@ -645,6 +649,57 @@ void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& I
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Bar && *Bar is null."));
+	}
+}
+
+void AOccupationGameState::SetCaptureOwnerChange(const uint8 NewCaptureId, const ETeam& NewTeam)
+{
+	CaptureOwnerMap.Emplace(NewCaptureId, NewTeam);
+
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
+		LocalController && LocalController->IsLocalController())
+	{
+		switch (NewCaptureId)
+		{
+		case 1:
+			if (NewTeam == ETeam::Anti)
+			{
+				HUDMinimapWidget->GetAntiAreaImage()->SetBrushFromTexture(HUDMinimapWidget->GetAntiAreaAntiImage());
+				TabMinimapWidget->GetAntiAreaImage()->SetBrushFromTexture(TabMinimapWidget->GetAntiAreaAntiImage());
+			}
+			else if (NewTeam == ETeam::Pro)
+			{
+				HUDMinimapWidget->GetAntiAreaImage()->SetBrushFromTexture(HUDMinimapWidget->GetAntiAreaProImage());
+				TabMinimapWidget->GetAntiAreaImage()->SetBrushFromTexture(TabMinimapWidget->GetAntiAreaProImage());
+			}
+			break;
+		case 2:
+			if (NewTeam == ETeam::Anti)
+			{
+				HUDMinimapWidget->GetCenterAreaImage()->SetBrushFromTexture(HUDMinimapWidget->GetCenterAreaAntiImage());
+				TabMinimapWidget->GetCenterAreaImage()->SetBrushFromTexture(TabMinimapWidget->GetCenterAreaAntiImage());
+			}
+			else if (NewTeam == ETeam::Pro)
+			{
+				HUDMinimapWidget->GetCenterAreaImage()->SetBrushFromTexture(HUDMinimapWidget->GetCenterAreaProImage());
+				TabMinimapWidget->GetCenterAreaImage()->SetBrushFromTexture(TabMinimapWidget->GetCenterAreaProImage());
+			}
+			break;
+		case 3:
+			if (NewTeam == ETeam::Anti)
+			{
+				HUDMinimapWidget->GetProAreaImage()->SetBrushFromTexture(HUDMinimapWidget->GetProAreaAntiImage());
+				TabMinimapWidget->GetProAreaImage()->SetBrushFromTexture(TabMinimapWidget->GetProAreaAntiImage());
+			}
+			else if (NewTeam == ETeam::Pro)
+			{
+				HUDMinimapWidget->GetProAreaImage()->SetBrushFromTexture(HUDMinimapWidget->GetProAreaProImage());
+				TabMinimapWidget->GetProAreaImage()->SetBrushFromTexture(TabMinimapWidget->GetProAreaProImage());
+			}
+			break;
+		default:
+			break;
+		}	
 	}
 }
 

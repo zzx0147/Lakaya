@@ -72,6 +72,9 @@ public:
 
 	UFUNCTION()
 	void UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress);
+
+	UFUNCTION()
+	void SetCaptureOwnerChange(const uint8 NewCaptureId, const ETeam& NewTeam);
 	
 	void OnEnemySpotted(const ETeam& EnemyTeam,
 		ALakayaBasePlayerState* Enemy);
@@ -138,7 +141,7 @@ private:
 	
 	void EndTimeCheck();
 	
-	void DestroyShieldWallObject();
+	void DestroyShieldWallObject() const;
 
 	void UpdatePlayerByTeamMap(const ETeam& Team, ALakayaBasePlayerState* PlayerState);
 
@@ -215,8 +218,6 @@ private:
 	//TODO: 댕글링 포인터가 발생할 수 있으므로 약포인터로 변경해야 합니다. TMap에 TArray를 값형식으로 사용하면 UPROPERTY로 선언할 수 없습니다. 
 	TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> PlayersByTeamMap;
 	
-	// ETeam ClientTeam;
-
 	UPROPERTY(Replicated)
 	ETeam TeamToUpdate = ETeam::None;
 	
@@ -234,6 +235,9 @@ private:
 
 	UPROPERTY()
 	TMap<uint8, UProgressBar*> OccupyBarMaps;
+
+	UPROPERTY()
+	TMap<uint8, ETeam> CaptureOwnerMap;
 	
 #pragma region Widget
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
