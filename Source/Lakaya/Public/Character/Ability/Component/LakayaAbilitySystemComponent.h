@@ -38,6 +38,8 @@ public:
 
 	virtual void AbilityLocalInputPressed(int32 InputID) override;
 	virtual void AbilityLocalInputReleased(int32 InputID) override;
+	virtual FActiveGameplayEffectHandle ApplyGameplayEffectSpecToSelf(
+		const FGameplayEffectSpec& Spec, FPredictionKey PredictionKey = FPredictionKey()) override;
 
 protected:
 	virtual void InitializeComponent() override;
