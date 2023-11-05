@@ -29,10 +29,9 @@ public:
 
 	UFUNCTION(BlueprintCallable,
 		meta=(HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"))
-	static UAbilityTask_WaitCustomImmunity* WaitCustomImmunity(UGameplayAbility* OwningAbility,
-	                                                           ULakayaAbilityCustomImmunity* CustomImmunity,
-	                                                           bool bTriggerOnce = false,
-	                                                           bool bTriggerWhenSameClass = true);
+	static UAbilityTask_WaitCustomImmunity* WaitCustomImmunity(
+		UGameplayAbility* OwningAbility, TSubclassOf<ULakayaAbilityCustomImmunity> CustomImmunityClass,
+		bool bTriggerOnce = false, bool bTriggerWhenSameClass = true);
 
 	virtual void Activate() override;
 	virtual void OnDestroy(bool bInOwnerFinished) override;

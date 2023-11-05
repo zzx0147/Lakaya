@@ -7,10 +7,10 @@
 #include "Character/Ability/CustomImmunity/LakayaAbilityCustomImmunity.h"
 
 UAbilityTask_WaitCustomImmunity* UAbilityTask_WaitCustomImmunity::WaitCustomImmunity(UGameplayAbility* OwningAbility,
-                                                                                     ULakayaAbilityCustomImmunity* CustomImmunity, bool bTriggerOnce, bool bTriggerWhenSameClass)
+	TSubclassOf<ULakayaAbilityCustomImmunity> CustomImmunityClass, bool bTriggerOnce, bool bTriggerWhenSameClass)
 {
 	const auto MyObj = NewAbilityTask<ThisClass>(OwningAbility);
-	MyObj->CustomImmunity = CustomImmunity;
+	MyObj->CustomImmunity = CustomImmunityClass.GetDefaultObject();
 	MyObj->bIsTriggerOnce = bTriggerOnce;
 	MyObj->bOnlySameClass = bTriggerWhenSameClass;
 	return MyObj;
