@@ -4,7 +4,11 @@
 #include "AbilitySystemComponent.h"
 #include "LakayaAbilitySystemComponent.generated.h"
 
+class ULakayaAbilityCustomImmunity;
+
 DECLARE_DELEGATE_OneParam(FInputInhibitedDelegate, const int32& /* InhibitedInputID */)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FImmunedByCustomImmubityDelegate, const FGameplayEffectSpec&,
+                                     const ULakayaAbilityCustomImmunity*)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LAKAYA_API ULakayaAbilitySystemComponent : public UAbilitySystemComponent
@@ -36,6 +40,9 @@ public:
 	/** 이 InputID가 방해받지 않도록 합니다. */
 	void RemoveInputInhibitedDelegate(const int32& InputID);
 
+	/** CustomImmunity에 의해 면역될 때 호출되는 이벤트입니다. */
+	FImmunedByCustomImmubityDelegate OnImmunedByCustomImmunity;
+
 	virtual void AbilityLocalInputPressed(int32 InputID) override;
 	virtual void AbilityLocalInputReleased(int32 InputID) override;
 	virtual FActiveGameplayEffectHandle ApplyGameplayEffectSpecToSelf(
@@ -48,4 +55,7 @@ protected:
 private:
 	/** 입력을 가로채는 델리게이트 맵입니다. */
 	TMap<int32, FInputInhibitedDelegatePair> InputInhibitedDelegates;
+
+	/** 이 ASC에 적용된 면역 조건들입니다. 모두 항상 CDO입니다. */
+	TArray<TObjectPtr<ULakayaAbilityCustomImmunity>> CustomImmunities;
 };

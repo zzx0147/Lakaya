@@ -5,6 +5,7 @@
 #include "GameplayCueManager.h"
 #include "GameplayEffectCustomApplicationRequirement.h"
 #include "GameplayTagResponseTable.h"
+#include "Character/Ability/CustomImmunity/LakayaAbilityCustomImmunity.h"
 
 void ULakayaAbilitySystemComponent::AddInputInhibitedDelegate(const int32& InputID,
                                                               const FInputInhibitedDelegate& PressedDelegate,
@@ -73,11 +74,20 @@ FActiveGameplayEffectHandle ULakayaAbilitySystemComponent::ApplyGameplayEffectSp
 
 	// Are we currently immune to this? (ApplicationImmunity)
 	const FActiveGameplayEffect* ImmunityGE = nullptr;
-	//TODO: 여기에서 면역 조건을 추가할 예정입니다.
 	if (ActiveGameplayEffects.HasApplicationImmunityToSpec(Spec, ImmunityGE))
 	{
 		OnImmunityBlockGameplayEffect(Spec, ImmunityGE);
 		return FActiveGameplayEffectHandle();
+	}
+
+	// Immune with CustomImmunities
+	for (const auto& CustomImmunity : CustomImmunities)
+	{
+		if (CustomImmunity->ShouldImmune(Spec, this))
+		{
+			OnImmunedByCustomImmunity.Broadcast(Spec, CustomImmunity);
+			return {};
+		}
 	}
 
 	// Check AttributeSet requirements: make sure all attributes are valid
