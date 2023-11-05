@@ -45,4 +45,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static FGameplayAbilityActorInfo GetActorInfoFromAbilitySystemComponent(
 		UAbilitySystemComponent* AbilitySystemComponent);
+
+	UFUNCTION(BlueprintCallable)
+	static bool GetAttributeModifierMagnitude(const FGameplayEffectSpec& Spec, FGameplayAttribute Attribute,
+	                                        float& OutMagnitude);
 };
