@@ -73,8 +73,27 @@ public:
 	UFUNCTION()
 	void UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress);
 
+	/**
+	 * @brief 점령구역의 소속 팀을 바꿔주는 함수입니다.
+	 * @param NewCaptureId 소속팀이 바뀐 점령지의 ID입니다.
+	 * @param NewTeam 바뀔 팀입니다.
+	 */
 	UFUNCTION()
 	void SetCaptureOwnerChange(const uint8 NewCaptureId, const ETeam& NewTeam);
+
+	/**
+	 * @brief 점령구역의 소속 팀이 바뀔 때, 소속 팀의 따라 이미지를 저장하는 함수입니다.
+	 * @param NewCaptureId 소속팀이 바뀐 점령지의 ID입니다.
+	 * @param NewTeam 바뀔 팀입니다.
+	 */
+	void UpdateAreaImage(const uint8 NewCaptureId, const ETeam& NewTeam) const;
+
+	/**
+	 * @brief 점령구역의 소속 팀이 바뀔 때, 점령아이콘을 바꿔주는 함수입니다.
+	 * @param NewCaptureId 소속팀이 바뀐 점령지의 ID입니다.
+	 * @param NewTexture 바뀔 팀입니다.
+	 */
+	void UpdateImage(const uint8 NewCaptureId, UTexture2D* NewTexture) const;
 	
 	void OnEnemySpotted(const ETeam& EnemyTeam,
 		ALakayaBasePlayerState* Enemy);

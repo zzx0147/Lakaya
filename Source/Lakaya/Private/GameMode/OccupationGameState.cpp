@@ -659,47 +659,53 @@ void AOccupationGameState::SetCaptureOwnerChange(const uint8 NewCaptureId, const
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 		LocalController && LocalController->IsLocalController())
 	{
-		switch (NewCaptureId)
-		{
-		case 1:
-			if (NewTeam == ETeam::Anti)
-			{
-				HUDMinimapWidget->GetAntiAreaImage()->SetBrushFromTexture(HUDMinimapWidget->GetAntiAreaAntiImage());
-				TabMinimapWidget->GetAntiAreaImage()->SetBrushFromTexture(TabMinimapWidget->GetAntiAreaAntiImage());
-			}
-			else if (NewTeam == ETeam::Pro)
-			{
-				HUDMinimapWidget->GetAntiAreaImage()->SetBrushFromTexture(HUDMinimapWidget->GetAntiAreaProImage());
-				TabMinimapWidget->GetAntiAreaImage()->SetBrushFromTexture(TabMinimapWidget->GetAntiAreaProImage());
-			}
-			break;
-		case 2:
-			if (NewTeam == ETeam::Anti)
-			{
-				HUDMinimapWidget->GetCenterAreaImage()->SetBrushFromTexture(HUDMinimapWidget->GetCenterAreaAntiImage());
-				TabMinimapWidget->GetCenterAreaImage()->SetBrushFromTexture(TabMinimapWidget->GetCenterAreaAntiImage());
-			}
-			else if (NewTeam == ETeam::Pro)
-			{
-				HUDMinimapWidget->GetCenterAreaImage()->SetBrushFromTexture(HUDMinimapWidget->GetCenterAreaProImage());
-				TabMinimapWidget->GetCenterAreaImage()->SetBrushFromTexture(TabMinimapWidget->GetCenterAreaProImage());
-			}
-			break;
-		case 3:
-			if (NewTeam == ETeam::Anti)
-			{
-				HUDMinimapWidget->GetProAreaImage()->SetBrushFromTexture(HUDMinimapWidget->GetProAreaAntiImage());
-				TabMinimapWidget->GetProAreaImage()->SetBrushFromTexture(TabMinimapWidget->GetProAreaAntiImage());
-			}
-			else if (NewTeam == ETeam::Pro)
-			{
-				HUDMinimapWidget->GetProAreaImage()->SetBrushFromTexture(HUDMinimapWidget->GetProAreaProImage());
-				TabMinimapWidget->GetProAreaImage()->SetBrushFromTexture(TabMinimapWidget->GetProAreaProImage());
-			}
-			break;
-		default:
-			break;
-		}	
+		UpdateAreaImage(NewCaptureId, NewTeam);
+	}
+}
+
+void AOccupationGameState::UpdateAreaImage(const uint8 NewCaptureId, const ETeam& NewTeam) const
+{
+	UTexture2D* AntiImage = nullptr;
+	UTexture2D* ProImage = nullptr;
+	switch (NewCaptureId)
+	{
+	case 1:
+		AntiImage = HUDMinimapWidget->GetAntiAreaAntiImage();
+		ProImage = HUDMinimapWidget->GetAntiAreaProImage();
+		break;
+	case 2:
+		AntiImage = HUDMinimapWidget->GetCenterAreaAntiImage();
+		ProImage = HUDMinimapWidget->GetCenterAreaProImage();
+		break;
+	case 3:
+		AntiImage = HUDMinimapWidget->GetProAreaAntiImage();
+		ProImage = HUDMinimapWidget->GetProAreaProImage();
+		break;
+	default:
+		return;
+	}
+
+	UTexture2D* NewTexture = (NewTeam == ETeam::Anti) ? AntiImage : ProImage;
+	UpdateImage(NewCaptureId, NewTexture);
+}
+
+void AOccupationGameState::UpdateImage(const uint8 NewCaptureId, UTexture2D* NewTexture) const
+{
+	switch (NewCaptureId)
+	{
+	case 1:
+		HUDMinimapWidget->GetAntiAreaImage()->SetBrushFromTexture(NewTexture);
+		TabMinimapWidget->GetAntiAreaImage()->SetBrushFromTexture(NewTexture);
+		break;
+	case 2:
+		HUDMinimapWidget->GetCenterAreaImage()->SetBrushFromTexture(NewTexture);
+		TabMinimapWidget->GetCenterAreaImage()->SetBrushFromTexture(NewTexture);
+		break;
+	case 3:
+		HUDMinimapWidget->GetProAreaImage()->SetBrushFromTexture(NewTexture);
+		TabMinimapWidget->GetProAreaImage()->SetBrushFromTexture(NewTexture);
+		break;
+	default: ;
 	}
 }
 
