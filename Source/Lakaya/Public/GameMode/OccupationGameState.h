@@ -70,6 +70,12 @@ public:
 	UFUNCTION()
 	void UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id);
 
+	/**
+	 * @brief 점령중일 때, 점령 표시 위젯을 업데이트시켜주는 함수입니다.
+	 * @param Team 점령중인 팀입니다.
+	 * @param Id 점령중인 점령ID입니다.
+	 * @param Progress 점령 진행도입니다.
+	 */
 	UFUNCTION()
 	void UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress);
 
