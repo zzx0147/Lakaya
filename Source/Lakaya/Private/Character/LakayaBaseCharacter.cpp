@@ -34,8 +34,9 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	MaxHealth = 100.f;
 	PrimaryActorTick.bCanEverTick = true;
 	PlayerRotationInterpolationAlpha = 0.65f;
-	ATeamObjectType = ECC_GameTraceChannel5;
-	BTeamObjectType = ECC_GameTraceChannel6;
+	TeamObjectTypeMap.Emplace(ETeam::Anti, ECC_GameTraceChannel5);
+	TeamObjectTypeMap.Emplace(ETeam::Pro, ECC_GameTraceChannel6);
+	TeamObjectTypeMap.Emplace(ETeam::Individual, ECC_Pawn);
 	bIsAlive = true;
 	bEnableLocalOutline = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -71,7 +72,7 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	GrayScalePostProcessComponent->Priority = -1.0f;
 
 	BulletSpreadComponent = CreateDefaultSubobject<UBulletSpreadComponent>(BulletSpreadComponentName);
-	
+
 	if (DissolveCurveFinder.Succeeded()) DissolveCurve = DissolveCurveFinder.Object;
 
 	static ConstructorHelpers::FObjectFinder<UTexture2D> QuestionIconFinder(
@@ -218,7 +219,8 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 }
 
 bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
-                                                  const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState, const TWeakObjectPtr<UImage> EnemyImage)
+                                                  const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState,
+                                                  const TWeakObjectPtr<UImage> EnemyImage)
 {
 #pragma region NullCheck
 	if (!EnemyState.IsValid())
@@ -235,17 +237,17 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 	}
 
 	//TODO 월드가 유효하지 않은 때가 있습니다. 임시로 Null체크를 집어넣었습니다. 추후 수정 요망
-	if(!GetWorld()) return false;
+	if (!GetWorld()) return false;
 	// TODO : GetFristPlayerController를 가져오는 것이 맞는지 확인해야 합니다.
 	const APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	
+
 	if (!PlayerController || !PlayerController->PlayerCameraManager)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PlayerController or PlayerCameraManager is null."));
 		return false;
 	}
 #pragma endregion
-	
+
 	// 시야에 적이 들어왔는지 확인합니다.
 	{
 		const FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
@@ -257,13 +259,14 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 		const float AngleThreshold = FMath::DegreesToRadians(90.0f);
 
 		// 두 벡터 사이의 각도를 계산합니다.
-		const float AngleBetweenVectors = FMath::Acos(FVector::DotProduct(DirectionToTarget.GetSafeNormal(), LookDirection));
+		const float AngleBetweenVectors = FMath::Acos(
+			FVector::DotProduct(DirectionToTarget.GetSafeNormal(), LookDirection));
 
 		// 계산된 각도와 임계값을 비교하여, 시야 내에 있는지 판단합니다.
 		bool bIsVisible = AngleBetweenVectors <= AngleThreshold;
 
 		if (!bIsVisible) return false;
-		
+
 		FHitResult HitResult;
 
 		if (bool bIsObstructed = UKismetSystemLibrary::LineTraceSingle(
@@ -281,13 +284,13 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 		}
 
 		Server_SetEnemyVisibility(EnemyState.Get(), bIsVisible);
-		
+
 		return bIsVisible;
 	}
 }
 
 void ALakayaBaseCharacter::Server_OnEnemySpotted_Implementation(const ETeam& EnemyTeam,
-																ALakayaBasePlayerState* EnemyState)
+                                                                ALakayaBasePlayerState* EnemyState)
 {
 	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
 	{
@@ -335,11 +338,15 @@ void ALakayaBaseCharacter::Client_SetEnemyVisibility_Implementation(
 	}
 }
 
-void ALakayaBaseCharacter::SetTeam_Implementation(const ETeam& Team)
+void ALakayaBaseCharacter::SetTeam(const ETeam& Team)
 {
+	if (RecentTeam == Team)
+	{
+		return;
+	}
+	const auto OldTeam = RecentTeam;
 	RecentTeam = Team;
-	if (Team == ETeam::Anti) GetCapsuleComponent()->SetCollisionObjectType(ATeamObjectType);
-	else if (Team == ETeam::Pro) GetCapsuleComponent()->SetCollisionObjectType(BTeamObjectType);
+	OnTeamChanged(Team, OldTeam);
 }
 
 void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
@@ -354,8 +361,6 @@ void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 		GetMesh()->SetRelativeLocationAndRotation(MeshRelativeLocation, MeshRelativeRotation);
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		RemoveDissolveEffect();
-		
-
 	}
 	else
 	{
@@ -366,9 +371,9 @@ void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 	}
 	if (HasAuthority()) GetCharacterMovement()->SetMovementMode(IsAlive ? MOVE_Walking : MOVE_None);
 
-	if (const auto PlayerController = Cast<APlayerController>(Controller); PlayerController && PlayerController->IsLocalController())
+	if (const auto PlayerController = Cast<APlayerController>(Controller); PlayerController && PlayerController->
+		IsLocalController())
 		ToggleGrayScalePostProcess(IsAlive);
-	
 }
 
 float ALakayaBaseCharacter::GetServerTime() const
@@ -386,6 +391,18 @@ void ALakayaBaseCharacter::OnRep_PlayerRotation()
 bool ALakayaBaseCharacter::CanJumpInternal_Implementation() const
 {
 	return JumpIsAllowedInternal();
+}
+
+void ALakayaBaseCharacter::OnTeamChanged_Implementation(const ETeam& NewTeam, const ETeam& OldTeam)
+{
+	const auto ObjectType = TeamObjectTypeMap.FindChecked(NewTeam);
+	GetCapsuleComponent()->SetCollisionObjectType(ObjectType);
+	OnCharacterObjectTypeUpdated(ObjectType);
+}
+
+void ALakayaBaseCharacter::OnCharacterObjectTypeUpdated_Implementation(
+	const TEnumAsByte<ECollisionChannel>& NewObjectType)
+{
 }
 
 FQuat ALakayaBaseCharacter::GetRawExtrapolatedRotator(const float& CurrentTime) const
@@ -416,7 +433,7 @@ void ALakayaBaseCharacter::RemoveDissolveEffect()
 {
 	for (const auto TargetMaterial : DissolveTargetArray)
 	{
-		if(TargetMaterial)
+		if (TargetMaterial)
 		{
 			TargetMaterial->SetScalarParameterValue(TEXT("Dissolve"), 2.0f);
 		}
@@ -427,17 +444,17 @@ void ALakayaBaseCharacter::RemoveDissolveEffect()
 
 void ALakayaBaseCharacter::ToggleGrayScalePostProcess(const bool& bIsActivate)
 {
-	if(!GrayScalePostProcessComponent || !GrayScalePostProcessMaterial)
+	if (!GrayScalePostProcessComponent || !GrayScalePostProcessMaterial)
 		return;
-	
-	GrayScalePostProcessComponent->AddOrUpdateBlendable(GrayScalePostProcessMaterial,bIsActivate ? 0.0f : 1.0f);
+
+	GrayScalePostProcessComponent->AddOrUpdateBlendable(GrayScalePostProcessMaterial, bIsActivate ? 0.0f : 1.0f);
 }
 
 void ALakayaBaseCharacter::DissolveTick(const float& Value)
 {
 	for (const auto DissolveTarget : DissolveTargetArray)
 	{
-		if(DissolveTarget)
+		if (DissolveTarget)
 		{
 			DissolveTarget->SetScalarParameterValue(TEXT("Dissolve"), Value);
 		}

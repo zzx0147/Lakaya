@@ -3,6 +3,7 @@
 
 #include "Character/Ability/Etc/LakayaBlueprintLibrary.h"
 
+#include "AbilitySystemComponent.h"
 #include "GameplayEffectTypes.h"
 #include "OnlineSessionSettings.h"
 #include "OnlineSubsystem.h"
@@ -44,9 +45,9 @@ UObject* ULakayaBlueprintLibrary::GetClassDefaultObject(TSubclassOf<UObject> Cla
 
 void ULakayaBlueprintLibrary::K2_ClientTravel(APlayerController* Controller, FString ConnectString)
 {
-	if(Controller)
+	if (Controller)
 	{
-		Controller->ClientTravel(ConnectString,TRAVEL_Absolute);
+		Controller->ClientTravel(ConnectString, TRAVEL_Absolute);
 	}
 }
 
@@ -75,4 +76,25 @@ int32 ULakayaBlueprintLibrary::GetCurrentSessionPlayerCount()
 	int32 NumPlayers = SessionSettings.NumPublicConnections - CurrentSession->NumOpenPublicConnections;
 
 	return NumPlayers;
+}
+
+FGameplayAbilityActorInfo ULakayaBlueprintLibrary::GetActorInfoFromAbilitySystemComponent(
+	UAbilitySystemComponent* AbilitySystemComponent)
+{
+	return IsValid(AbilitySystemComponent) ? *AbilitySystemComponent->AbilityActorInfo : FGameplayAbilityActorInfo();
+}
+
+bool ULakayaBlueprintLibrary::GetAttributeModifierMagnitude(const FGameplayEffectSpec& Spec, FGameplayAttribute Attribute,
+                                                          float& OutMagnitude)
+{
+	if (IsValid(Spec.Def))
+	{
+		const auto Pred = [&Attribute](const auto& Modifier) { return Modifier.Attribute == Attribute; };
+
+		if (const auto Index = Spec.Def->Modifiers.FindLastByPredicate(Pred); Index != INDEX_NONE)
+		{
+			return Spec.Def->Modifiers[Index].ModifierMagnitude.AttemptCalculateMagnitude(Spec, OutMagnitude);
+		}
+	}
+	return false;
 }

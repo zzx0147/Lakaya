@@ -11,7 +11,7 @@ class ULakayaAbilitySystemComponent;
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable, Abstract)
 class LAKAYA_API ULakayaAbilityCustomImmunity : public UObject
 {
 	GENERATED_BODY()

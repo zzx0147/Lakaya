@@ -15,6 +15,7 @@ class LAKAYA_API URadialProgressBar : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable)
 	void SetPercent(const float& NewPercent);
 
 protected:

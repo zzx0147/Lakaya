@@ -24,6 +24,16 @@ void ULakayaAbilitySystemComponent::RemoveInputInhibitedDelegate(const int32& In
 	InputInhibitedDelegates.Remove(InputID);
 }
 
+void ULakayaAbilitySystemComponent::GiveCustomImmunity(ULakayaAbilityCustomImmunity* CustomImmunity)
+{
+	CustomImmunities.AddUnique(CustomImmunity);
+}
+
+void ULakayaAbilitySystemComponent::RemoveCustomImmunity(ULakayaAbilityCustomImmunity* CustomImmunity)
+{
+	CustomImmunities.Remove(CustomImmunity);
+}
+
 void ULakayaAbilitySystemComponent::AbilityLocalInputPressed(int32 InputID)
 {
 	if (!InputInhibitedDelegates.FindOrAdd(InputID).PressedIfBound(InputID))
