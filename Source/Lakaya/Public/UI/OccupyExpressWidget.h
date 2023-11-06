@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "RadialProgressBar.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/ProgressBar.h"
+#include "Components/Image.h"
 #include "OccupyExpressWidget.generated.h"
 
 
@@ -17,37 +18,66 @@ class LAKAYA_API UOccupyExpressWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	FORCEINLINE UProgressBar* GetAntiBar() const { return Anti_Bar.Get(); }
-	FORCEINLINE UProgressBar* GetCenterBar() const { return Center_Bar.Get(); }
-	FORCEINLINE UProgressBar* GetProBar() const { return Pro_Bar.Get(); }
-	FORCEINLINE UTexture* GetOccupyAntiImage() const { return OccupyAntiImage; }
-	FORCEINLINE UTexture* GetOccupyProImage() const { return OccupyProImage; }
-	FORCEINLINE TObjectPtr<UTexture> GetNoneChargeImage() const { return NoneChargeImage; }
-	FORCEINLINE TObjectPtr<UTexture> GetAntiChargeImage() const { return AntiChargeImage; }
-	FORCEINLINE TObjectPtr<UTexture> GetProChargeImage() const { return ProChargeImage; }
+	FORCEINLINE TObjectPtr<UImage>& GetAntiAreaInImage() { return AntiAreaInImage; }
+	FORCEINLINE TObjectPtr<UImage>& GetCenterAreaInImage() { return CenterAreaInImage; }
+	FORCEINLINE TObjectPtr<UImage>& GetProAreaInImage() { return ProAreaInImage; }
+	
+	FORCEINLINE TObjectPtr<URadialProgressBar>& GetAntiAreaBar() { return AntiAreaBar; }
+	FORCEINLINE TObjectPtr<URadialProgressBar>& GetCenterAreaBar() { return CenterAreaBar; }
+	FORCEINLINE TObjectPtr<URadialProgressBar>& GetProAreaBar() { return ProAreaBar; }
+
+	FORCEINLINE TObjectPtr<UTexture2D>& GetAntiAreaAntiImage() { return AntiAreaAntiImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetAntiAreaProImage() { return AntiAreaProImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetCenterAreaAntiImage() { return CenterAreaAntiImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetCenterAreaProImage() { return CenterAreaProImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetProAreaAntiImage() { return ProAreaAntiImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetProAreaProImage() { return ProAreaProImage; }
+
+	FORCEINLINE TObjectPtr<UTexture2D>& GetAntiFillImage() { return AntiFillImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetProFillImage() { return ProFillImage; }
+protected:
+	virtual void NativeConstruct() override;
 
 private:
-	UPROPERTY(EditAnywhere, Category = "Image")
-	UTexture* OccupyAntiImage;
-	
-	UPROPERTY(EditAnywhere, Category = "Image")
-	UTexture* OccupyProImage;
-	
 	UPROPERTY(meta = (BindWidget))
-	TWeakObjectPtr<UProgressBar> Anti_Bar;
-	
-	UPROPERTY(meta = (BindWidget))
-	TWeakObjectPtr<UProgressBar> Center_Bar;
+	TObjectPtr<UImage> AntiAreaInImage;
 
 	UPROPERTY(meta = (BindWidget))
-	TWeakObjectPtr<UProgressBar> Pro_Bar;
+	TObjectPtr<UImage> CenterAreaInImage;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> ProAreaInImage;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<URadialProgressBar> AntiAreaBar;
+	
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<URadialProgressBar> CenterAreaBar;
+	
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<URadialProgressBar> ProAreaBar;
 
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture> NoneChargeImage;
+	TObjectPtr<UTexture2D> AntiAreaAntiImage;
 
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture> AntiChargeImage;
+	TObjectPtr<UTexture2D> AntiAreaProImage;
 
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture> ProChargeImage;
+	TObjectPtr<UTexture2D> CenterAreaAntiImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> CenterAreaProImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ProAreaAntiImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ProAreaProImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> AntiFillImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ProFillImage;
 };

@@ -8,6 +8,7 @@
 #include "EOS/EOSGameInstance.h"
 #include "UI/OccupationTabMinimapWidget.h"
 #include "Occupation/Team.h"
+#include "UI/RadialProgressBar.h"
 
 #include "OccupationGameState.generated.h"
 
@@ -68,7 +69,7 @@ public:
 	 * @param Id 점령한 점령 구역의 Id입니다.
 	 */
 	UFUNCTION()
-	void UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id);
+	void UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id) const;
 
 	/**
 	 * @brief 점령중일 때, 점령 표시 위젯을 업데이트시켜주는 함수입니다.
@@ -258,8 +259,9 @@ private:
 
 	TSet<TWeakObjectPtr<const AActor>> ClairvoyanceInstigatorSet;
 
+	// TODO : Occupy
 	UPROPERTY()
-	TMap<uint8, UProgressBar*> OccupyBarMaps;
+	TMap<uint8, TObjectPtr<URadialProgressBar>> OccupyBarMaps;
 
 	UPROPERTY()
 	TMap<uint8, ETeam> CaptureOwnerMap;
