@@ -8,6 +8,7 @@
 #include "EOS/EOSGameInstance.h"
 #include "UI/OccupationTabMinimapWidget.h"
 #include "Occupation/Team.h"
+#include "UI/OccupyExpressElementWidget.h"
 #include "UI/RadialProgressBar.h"
 
 #include "OccupationGameState.generated.h"
@@ -260,9 +261,12 @@ private:
 	TSet<TWeakObjectPtr<const AActor>> ClairvoyanceInstigatorSet;
 
 	// TODO : Occupy
-	UPROPERTY()
-	TMap<uint8, TObjectPtr<URadialProgressBar>> OccupyBarMaps;
+	// UPROPERTY()
+	// TMap<uint8, TObjectPtr<URadialProgressBar>> OccupyBarMaps;
 
+	UPROPERTY()
+	TMap<uint8, TObjectPtr<UOccupyExpressElementWidget>> OccupyBarMaps;
+	
 	UPROPERTY()
 	TMap<uint8, ETeam> CaptureOwnerMap;
 	
