@@ -153,8 +153,14 @@ void AOccupationGameState::BeginPlay()
 				OccupyExpressWidget->AddToViewport();
 				OccupyExpressWidget->SetVisibility(ESlateVisibility::Hidden);
 				OccupyBarMaps.Emplace(1, OccupyExpressWidget->GetAntiAreaBar());
+				OccupyExpressWidget->GetAntiAreaBar()->InitOccupyExpressElementWidget(1, OccupyExpressWidget->GetAntiAreaBar()->GetAntiAreaNoneImage());
+				OccupyExpressWidget->GetAntiAreaBar()->GetProgressBar()->SetPercent(0);
 				OccupyBarMaps.Emplace(2, OccupyExpressWidget->GetCenterAreaBar());
+				OccupyExpressWidget->GetCenterAreaBar()->InitOccupyExpressElementWidget(2, OccupyExpressWidget->GetCenterAreaBar()->GetCenterAreaNoneImage());
+				OccupyExpressWidget->GetCenterAreaBar()->GetProgressBar()->SetPercent(0);
 				OccupyBarMaps.Emplace(3, OccupyExpressWidget->GetProAreaBar());
+				OccupyExpressWidget->GetProAreaBar()->InitOccupyExpressElementWidget(3, OccupyExpressWidget->GetProAreaBar()->GetProAreaNoneImage());
+				OccupyExpressWidget->GetProAreaBar()->GetProgressBar()->SetPercent(0);
 			}
 		}
 
@@ -606,19 +612,19 @@ void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const ui
 		switch (Id)
 		{
 		case 1:
-			ImageWidget = &OccupyExpressWidget->GetAntiAreaInImage();
-			ImageTexture = (Team == ETeam::Anti) ? &OccupyExpressWidget->GetAntiAreaAntiImage()
-												 : &OccupyExpressWidget->GetAntiAreaProImage();
+			ImageWidget = &OccupyExpressWidget->GetAntiAreaBar()->GetInImage();
+			ImageTexture = (Team == ETeam::Anti) ? &OccupyExpressWidget->GetAntiAreaBar()->GetAntiAreaAntiImage()
+												 : &OccupyExpressWidget->GetAntiAreaBar()->GetAntiAreaProImage();
 			break;
 		case 2:
-			ImageWidget = &OccupyExpressWidget->GetCenterAreaInImage();
-			ImageTexture = (Team == ETeam::Anti) ? &OccupyExpressWidget->GetCenterAreaAntiImage()
-												 : &OccupyExpressWidget->GetCenterAreaProImage();
+			ImageWidget = &OccupyExpressWidget->GetCenterAreaBar()->GetInImage();
+			ImageTexture = (Team == ETeam::Anti) ? &OccupyExpressWidget->GetCenterAreaBar()->GetCenterAreaAntiImage()
+												 : &OccupyExpressWidget->GetCenterAreaBar()->GetCenterAreaProImage();
 			break;
 		case 3:
-			ImageWidget = &OccupyExpressWidget->GetProAreaInImage();
-			ImageTexture = (Team == ETeam::Anti) ? &OccupyExpressWidget->GetProAreaAntiImage()
-												 : &OccupyExpressWidget->GetProAreaProImage();
+			ImageWidget = &OccupyExpressWidget->GetProAreaBar()->GetInImage();
+			ImageTexture = (Team == ETeam::Anti) ? &OccupyExpressWidget->GetProAreaBar()->GetProAreaAntiImage()
+												 : &OccupyExpressWidget->GetProAreaBar()->GetProAreaProImage();
 			break;
 		default:
 			UE_LOG(LogTemp, Warning, TEXT("점령 ID가 존재하지 않습니다."));
@@ -634,7 +640,7 @@ void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const ui
 
 void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress)
 {
-	const TObjectPtr<URadialProgressBar>* ProgressBar = OccupyBarMaps.Find(Id);
+	const TObjectPtr<UOccupyExpressElementWidget>* ProgressBar = OccupyBarMaps.Find(Id);
 
 	if (ProgressBar == nullptr || *ProgressBar == nullptr)
 	{
@@ -642,22 +648,22 @@ void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& I
 		return;
 	}
 
-	URadialProgressBar* BarWidget = *ProgressBar;
-
+	UOccupyExpressElementWidget* BarWidget = *ProgressBar;
+	
 	switch (Team)
 	{
 	case ETeam::Anti:
-		BarWidget->SetFillImage(OccupyExpressWidget->GetAntiFillImage());
+		BarWidget->GetProgressBar()->SetFillImage(OccupyExpressWidget->GetAntiAreaBar()->GetAntiFillImage());
 		break;
 	case ETeam::Pro:
-		BarWidget->SetFillImage(OccupyExpressWidget->GetProFillImage());
+		BarWidget->GetProgressBar()->SetFillImage(OccupyExpressWidget->GetAntiAreaBar()->GetProFillImage());
 		break;
 	default:
 		UE_LOG(LogTemp, Warning, TEXT("Invalid Team."));
 		return;
 	}
 
-	BarWidget->SetPercent(Progress / 4);
+	BarWidget->GetProgressBar()->SetPercent(Progress / 4);
 }
 
 void AOccupationGameState::SetCaptureOwnerChange(const uint8 NewCaptureId, const ETeam& NewTeam)

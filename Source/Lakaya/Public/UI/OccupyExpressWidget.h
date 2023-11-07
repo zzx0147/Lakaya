@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "OccupyExpressElementWidget.h"
 #include "RadialProgressBar.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Image.h"
@@ -18,66 +19,20 @@ class LAKAYA_API UOccupyExpressWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	FORCEINLINE TObjectPtr<UImage>& GetAntiAreaInImage() { return AntiAreaInImage; }
-	FORCEINLINE TObjectPtr<UImage>& GetCenterAreaInImage() { return CenterAreaInImage; }
-	FORCEINLINE TObjectPtr<UImage>& GetProAreaInImage() { return ProAreaInImage; }
-	
-	FORCEINLINE TObjectPtr<URadialProgressBar>& GetAntiAreaBar() { return AntiAreaBar; }
-	FORCEINLINE TObjectPtr<URadialProgressBar>& GetCenterAreaBar() { return CenterAreaBar; }
-	FORCEINLINE TObjectPtr<URadialProgressBar>& GetProAreaBar() { return ProAreaBar; }
+	FORCEINLINE TObjectPtr<UOccupyExpressElementWidget>& GetAntiAreaBar() { return AntiAreaBar; }
+	FORCEINLINE TObjectPtr<UOccupyExpressElementWidget>& GetCenterAreaBar() { return CenterAreaBar; }
+	FORCEINLINE TObjectPtr<UOccupyExpressElementWidget>& GetProAreaBar() { return ProAreaBar; }
 
-	FORCEINLINE TObjectPtr<UTexture2D>& GetAntiAreaAntiImage() { return AntiAreaAntiImage; }
-	FORCEINLINE TObjectPtr<UTexture2D>& GetAntiAreaProImage() { return AntiAreaProImage; }
-	FORCEINLINE TObjectPtr<UTexture2D>& GetCenterAreaAntiImage() { return CenterAreaAntiImage; }
-	FORCEINLINE TObjectPtr<UTexture2D>& GetCenterAreaProImage() { return CenterAreaProImage; }
-	FORCEINLINE TObjectPtr<UTexture2D>& GetProAreaAntiImage() { return ProAreaAntiImage; }
-	FORCEINLINE TObjectPtr<UTexture2D>& GetProAreaProImage() { return ProAreaProImage; }
-
-	FORCEINLINE TObjectPtr<UTexture2D>& GetAntiFillImage() { return AntiFillImage; }
-	FORCEINLINE TObjectPtr<UTexture2D>& GetProFillImage() { return ProFillImage; }
 protected:
 	virtual void NativeConstruct() override;
 
 private:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> AntiAreaInImage;
+	TObjectPtr<UOccupyExpressElementWidget> AntiAreaBar;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> CenterAreaInImage;
+	TObjectPtr<UOccupyExpressElementWidget> CenterAreaBar;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> ProAreaInImage;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<URadialProgressBar> AntiAreaBar;
-	
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<URadialProgressBar> CenterAreaBar;
-	
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<URadialProgressBar> ProAreaBar;
-
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> AntiAreaAntiImage;
-
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> AntiAreaProImage;
-
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> CenterAreaAntiImage;
-
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> CenterAreaProImage;
-
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> ProAreaAntiImage;
-
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> ProAreaProImage;
-
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> AntiFillImage;
-
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture2D> ProFillImage;
+	TObjectPtr<UOccupyExpressElementWidget> ProAreaBar;
 };
