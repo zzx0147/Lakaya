@@ -35,6 +35,7 @@ class LAKAYA_API ALakayaBaseCharacter : public ACharacter, public IAbilitySystem
 
 public:
 	const static FName SpringArmComponentName;
+	const static FName FirstSpringArmComponentName;
 	const static FName CameraComponentName;
 	const static FName ResourceComponentName;
 	const static FName ClairvoyanceMeshComponentName;
@@ -59,6 +60,9 @@ public:
 	// 캐릭터에 부착된 스프링암 컴포넌트를 가져옵니다.
 	UFUNCTION(BlueprintGetter)
 	class USpringArmComponent* const& GetSpringArm() const { return SpringArm; }
+
+	UFUNCTION(BlueprintGetter)
+	class USpringArmComponent* const& GetFirstSpringArm() const { return FirstSpringArm; }
 
 	// 캐릭터에 부착된 카메라 컴포넌트를 가져옵니다.
 	UFUNCTION(BlueprintGetter)
@@ -285,6 +289,9 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintGetter = GetSpringArm, Category = Camera)
 	USpringArmComponent* SpringArm;
+
+	UPROPERTY(VisibleAnywhere, BlueprintGetter = GetFirstSpringArm, Category = Camera)
+	USpringArmComponent* FirstSpringArm;
 
 	UPROPERTY(VisibleAnywhere, BlueprintGetter = GetCamera, Category = Camera)
 	UCameraComponent* Camera;
