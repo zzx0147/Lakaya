@@ -14,6 +14,22 @@ void URadialProgressBar::SetPercent(const float& NewPercent)
 	}
 }
 
+void URadialProgressBar::SetFillImage(const TObjectPtr<UTexture2D> NewImage)
+{
+	if (NewImage != nullptr)
+	{
+		// FillImage = NewImage;
+		if (ProgressBarDynamicMaterial)
+		{
+			ProgressBarDynamicMaterial->SetTextureParameterValue(TEXT("FillImage"), NewImage);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NewImage is null."));
+	}
+}
+
 void URadialProgressBar::NativePreConstruct()
 {
 	Super::NativePreConstruct();
