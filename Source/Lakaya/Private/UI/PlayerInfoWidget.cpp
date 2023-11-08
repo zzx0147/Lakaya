@@ -23,7 +23,7 @@ void UPlayerInfoWidget::SetPlayerName(const FString& NewName)
 		PlayerNameText->SetText(PlayerName);
 }
 
-void UPlayerInfoWidget::SetCharacterName(const FName& NewName)
+void UPlayerInfoWidget::SetCharacterName_Implementation(const FName& NewName)
 {
 	CharacterNameText->SetText(FText::FromName(NewName));
 
