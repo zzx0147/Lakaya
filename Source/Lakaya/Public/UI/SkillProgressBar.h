@@ -50,7 +50,9 @@ public:
 	void StartStackingRegen(const float& ArgStartTime, const float& Duration, const bool& ArgShowProgressOnlyZeroStack = false);
 
 	void OnChangeUltimateGaugeAttribute(const FOnAttributeChangeData& NewValue);
+	void SetUltimateGauge(const float& NewValue);
 	void OnChangeMaxUltimateGaugeAttribute(const FOnAttributeChangeData& NewValue);
+	void SetMaxUltimateGauge(const float& NewValue);
 	
 	void OnChangeSkillStackAttribute(const FOnAttributeChangeData& NewValue);
 	UFUNCTION(BlueprintNativeEvent)

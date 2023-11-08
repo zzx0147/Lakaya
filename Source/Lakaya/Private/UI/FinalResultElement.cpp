@@ -39,13 +39,13 @@ void UFinalResultElement::SetPlayer(TObjectPtr<ALakayaBasePlayerState> NewPlayer
 {
 	if(!NewPlayer) return;
 
-	if(APlayerController* PlayerController = NewPlayer->GetPlayerController(); PlayerController != nullptr && PlayerController->IsLocalController())
+	if(const APlayerController* PlayerController = NewPlayer->GetPlayerController(); PlayerController != nullptr && PlayerController->IsLocalController())
 	{
-		CursorImage->SetVisibility(ESlateVisibility::Hidden);
+		CursorImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 	else
 	{
-		CursorImage->SetVisibility(ESlateVisibility::Visible);
+		CursorImage->SetVisibility(ESlateVisibility::Hidden);
 	}
 	
 	ScoreText->SetText(FText::AsNumber(NewPlayer->GetTotalScore()));
