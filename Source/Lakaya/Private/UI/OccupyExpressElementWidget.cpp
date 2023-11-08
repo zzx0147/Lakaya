@@ -20,11 +20,11 @@ void UOccupyExpressElementWidget::InitOccupyExpressElementWidget(const uint8& Ca
 	default:
 		break;
 	}
+
+	ProgressBar->SetPercent(0);
 }
 
 void UOccupyExpressElementWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	
 }

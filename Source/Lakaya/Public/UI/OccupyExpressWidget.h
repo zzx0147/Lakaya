@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "OccupyExpressElementWidget.h"
-#include "RadialProgressBar.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Image.h"
 #include "OccupyExpressWidget.generated.h"
