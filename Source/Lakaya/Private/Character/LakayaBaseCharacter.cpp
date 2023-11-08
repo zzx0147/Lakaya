@@ -22,6 +22,7 @@
 #include "Net/UnrealNetwork.h"
 
 const FName ALakayaBaseCharacter::SpringArmComponentName = FName(TEXT("SpringArm"));
+const FName ALakayaBaseCharacter::FirstSpringArmComponentName = FName(TEXT("FirstSpringArm"));
 const FName ALakayaBaseCharacter::CameraComponentName = FName(TEXT("Camera"));
 const FName ALakayaBaseCharacter::ResourceComponentName = FName(TEXT("ResourceComponent"));
 const FName ALakayaBaseCharacter::ClairvoyanceMeshComponentName = FName(TEXT("ClairvoyanceMesh"));
@@ -43,8 +44,13 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
 	CharacterName = TEXT("Base");
 
+	FirstSpringArm = CreateDefaultSubobject<USpringArmComponent>(FirstSpringArmComponentName);
+	FirstSpringArm->SetupAttachment(RootComponent);
+	FirstSpringArm->TargetArmLength = 30.0f;
+	FirstSpringArm->bUsePawnControlRotation = false;
+	
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(SpringArmComponentName);
-	SpringArm->SetupAttachment(RootComponent);
+	SpringArm->SetupAttachment(FirstSpringArm);
 	SpringArm->bUsePawnControlRotation = true;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(CameraComponentName);
