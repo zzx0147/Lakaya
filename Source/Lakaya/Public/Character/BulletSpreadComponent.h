@@ -24,11 +24,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void AddSpreadAmount(const float& AdditionalAmount);
 
-	virtual float GetTotalSpreadAmount() { return FMath::Max(DefaultSpreadValue+BulletSpreadAmountByMovement + BulletSpreadAmountByFire, 0.0f); }
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetTotalSpreadAmount() const
+	{
+		return FMath::Max(DefaultSpreadValue + BulletSpreadAmountByMovement + BulletSpreadAmountByFire, 0.0f);
+	}
 
 public:
 	FOnChangeBulletSpreadAmountSignature OnChangeBulletSpreadAmountSignature;
-	
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -39,10 +43,10 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float DefaultSpreadValue;
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	float MaxSpreadAmountByFire;
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	float DecreaseSpreadAmountPerSec;
 
@@ -60,7 +64,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	FGameplayTag ZoomTag;
-	
+
 	UPROPERTY()
 	TWeakObjectPtr<class ALakayaBaseCharacter> LakayaBaseCharacter;
 	UPROPERTY()

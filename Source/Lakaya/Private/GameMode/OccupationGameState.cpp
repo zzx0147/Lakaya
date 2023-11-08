@@ -152,9 +152,15 @@ void AOccupationGameState::BeginPlay()
 			{
 				OccupyExpressWidget->AddToViewport();
 				OccupyExpressWidget->SetVisibility(ESlateVisibility::Hidden);
-				OccupyBarMaps.Emplace(1, OccupyExpressWidget->GetAntiBar());
-				OccupyBarMaps.Emplace(2, OccupyExpressWidget->GetCenterBar());
-				OccupyBarMaps.Emplace(3, OccupyExpressWidget->GetProBar());
+				OccupyBarMaps.Emplace(1, OccupyExpressWidget->GetAntiAreaBar());
+				OccupyExpressWidget->GetAntiAreaBar()->InitOccupyExpressElementWidget(1, OccupyExpressWidget->GetAntiAreaBar()->GetAntiAreaNoneImage());
+				OccupyExpressWidget->GetAntiAreaBar()->GetProgressBar()->SetPercent(0);
+				OccupyBarMaps.Emplace(2, OccupyExpressWidget->GetCenterAreaBar());
+				OccupyExpressWidget->GetCenterAreaBar()->InitOccupyExpressElementWidget(2, OccupyExpressWidget->GetCenterAreaBar()->GetCenterAreaNoneImage());
+				OccupyExpressWidget->GetCenterAreaBar()->GetProgressBar()->SetPercent(0);
+				OccupyBarMaps.Emplace(3, OccupyExpressWidget->GetProAreaBar());
+				OccupyExpressWidget->GetProAreaBar()->InitOccupyExpressElementWidget(3, OccupyExpressWidget->GetProAreaBar()->GetProAreaNoneImage());
+				OccupyExpressWidget->GetProAreaBar()->GetProgressBar()->SetPercent(0);
 			}
 		}
 
@@ -595,61 +601,69 @@ void AOccupationGameState::StopScoreUpdate()
 	TeamToUpdate = ETeam::None;
 }
 
-void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id)
+void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id) const
 {
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 		LocalController && LocalController->IsLocalController())
 	{
-		if (UProgressBar** ProgressBar = OccupyBarMaps.Find(Id))
+		const TObjectPtr<UImage>* ImageWidget = nullptr;
+		const TObjectPtr<UTexture2D>* ImageTexture = nullptr;
+
+		switch (Id)
 		{
-			FSlateBrush BackGroundImageBrush;
-
-			switch (Team)
-			{
-			case ETeam::Anti:
-				BackGroundImageBrush.SetResourceObject(OccupyExpressWidget->GetOccupyAntiImage());
-				break;
-			case ETeam::Pro:
-				BackGroundImageBrush.SetResourceObject(OccupyExpressWidget->GetOccupyProImage());
-				break;
-			default:
-				UE_LOG(LogTemp, Warning, TEXT("Invalid Team."));
-				return;
-			}
-
-			// ReSharper disable once CppDeprecatedEntity
-			(*ProgressBar)->WidgetStyle.BackgroundImage = BackGroundImageBrush;
+		case 1:
+			ImageWidget = &OccupyExpressWidget->GetAntiAreaBar()->GetInImage();
+			ImageTexture = (Team == ETeam::Anti) ? &OccupyExpressWidget->GetAntiAreaBar()->GetAntiAreaAntiImage()
+												 : &OccupyExpressWidget->GetAntiAreaBar()->GetAntiAreaProImage();
+			break;
+		case 2:
+			ImageWidget = &OccupyExpressWidget->GetCenterAreaBar()->GetInImage();
+			ImageTexture = (Team == ETeam::Anti) ? &OccupyExpressWidget->GetCenterAreaBar()->GetCenterAreaAntiImage()
+												 : &OccupyExpressWidget->GetCenterAreaBar()->GetCenterAreaProImage();
+			break;
+		case 3:
+			ImageWidget = &OccupyExpressWidget->GetProAreaBar()->GetInImage();
+			ImageTexture = (Team == ETeam::Anti) ? &OccupyExpressWidget->GetProAreaBar()->GetProAreaAntiImage()
+												 : &OccupyExpressWidget->GetProAreaBar()->GetProAreaProImage();
+			break;
+		default:
+			UE_LOG(LogTemp, Warning, TEXT("점령 ID가 존재하지 않습니다."));
+			return;
 		}
-		else
+
+		if (ImageWidget != nullptr && ImageTexture != nullptr)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ProgressBar is not Found for Id : %d"), Id);
+			(*ImageWidget)->SetBrushFromTexture(*ImageTexture);
 		}
 	}
 }
 
 void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress)
 {
-	UProgressBar** Bar = OccupyBarMaps.Find(Id);
-	FSlateBrush ChargeImageBrush;
-	if (Bar != nullptr && *Bar != nullptr)
+	const TObjectPtr<UOccupyExpressElementWidget>* ProgressBar = OccupyBarMaps.Find(Id);
+
+	if (ProgressBar == nullptr || *ProgressBar == nullptr)
 	{
-		if (Team == ETeam::Anti)
-		{
-			ChargeImageBrush.SetResourceObject(OccupyExpressWidget->GetAntiChargeImage());
-		}
-		else if (Team == ETeam::Pro)
-		{
-			ChargeImageBrush.SetResourceObject(OccupyExpressWidget->GetProChargeImage());
-		}
+		UE_LOG(LogTemp, Warning, TEXT("ProgressBar is not Found for Id : %d"), Id);
+		return;
+	}
+
+	UOccupyExpressElementWidget* BarWidget = *ProgressBar;
 	
-		(*Bar)->WidgetStyle.SetFillImage(ChargeImageBrush);
-		(*Bar)->WidgetStyle.FillImage = ChargeImageBrush;
-		(*Bar)->SetPercent(Progress / 4);
-	}
-	else
+	switch (Team)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Bar && *Bar is null."));
+	case ETeam::Anti:
+		BarWidget->GetProgressBar()->SetFillImage(OccupyExpressWidget->GetAntiAreaBar()->GetAntiFillImage());
+		break;
+	case ETeam::Pro:
+		BarWidget->GetProgressBar()->SetFillImage(OccupyExpressWidget->GetAntiAreaBar()->GetProFillImage());
+		break;
+	default:
+		UE_LOG(LogTemp, Warning, TEXT("Invalid Team."));
+		return;
 	}
+
+	BarWidget->GetProgressBar()->SetPercent(Progress / 4);
 }
 
 void AOccupationGameState::SetCaptureOwnerChange(const uint8 NewCaptureId, const ETeam& NewTeam)

@@ -2,3 +2,8 @@
 
 
 #include "UI/OccupyExpressWidget.h"
+
+void UOccupyExpressWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+}
