@@ -38,10 +38,11 @@ void UOverlayMinimapWidget::UpdateMinimapImagePositionAndRotation(const ALakayaB
 
 void UOverlayMinimapWidget::UpdateEnemyImageRotation(const TWeakObjectPtr<UImage> EnemyImage) const
 {
-	const auto PlayerCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayerPawn());
-	const FRotator PlayerRotation = PlayerCharacter->GetCamera()->GetComponentRotation();
-
-	EnemyImage->SetRenderTransformAngle((PlayerRotation.Yaw + 90.0f));
+	if(const auto PlayerCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayerPawn()))
+	{
+		const FRotator PlayerRotation = PlayerCharacter->GetCamera()->GetComponentRotation();
+		EnemyImage->SetRenderTransformAngle((PlayerRotation.Yaw + 90.0f));
+	}
 }
 
 void UOverlayMinimapWidget::UpdateAreaImageRotation()
