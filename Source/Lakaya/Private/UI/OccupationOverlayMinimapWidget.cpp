@@ -67,6 +67,7 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 
 UImage* UOccupationOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
 {
+	UE_LOG(LogTemp, Warning, TEXT("CreatePlayerImage"));
 	UImage* PlayerImage = NewObject<UImage>(this);
 
 	UCanvasPanelSlot* PanelSlot = ParentPanel->AddChildToCanvas(PlayerImage);
@@ -116,6 +117,8 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		const auto& State = Player.Key;
 		const auto& Image = Player.Value;
 
+
+		if(!State->GetPawn()) return;
 		FVector2D PlayerPosition(State->GetPawn()->GetActorLocation().X, State->GetPawn()->GetActorLocation().Y);
 		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
 
@@ -261,10 +264,12 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 
 void UOccupationOverlayMinimapWidget::UpdateAreaImageRotation()
 {
-	const auto PlayerCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayerPawn());
-	const FRotator PlayerRotation = PlayerCharacter->GetCamera()->GetComponentRotation();
+	if(const auto PlayerCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayerPawn()))
+	{
+		const FRotator PlayerRotation = PlayerCharacter->GetCamera()->GetComponentRotation();
 
-	AntiAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
-	CenterAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
-	ProAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+		AntiAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+		CenterAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+		ProAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+	}
 }

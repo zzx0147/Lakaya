@@ -84,8 +84,8 @@ FGameplayAbilityActorInfo ULakayaBlueprintLibrary::GetActorInfoFromAbilitySystem
 	return IsValid(AbilitySystemComponent) ? *AbilitySystemComponent->AbilityActorInfo : FGameplayAbilityActorInfo();
 }
 
-bool ULakayaBlueprintLibrary::GetAttributeModifierMagnitude(const FGameplayEffectSpec& Spec, FGameplayAttribute Attribute,
-                                                          float& OutMagnitude)
+bool ULakayaBlueprintLibrary::GetAttributeModifierMagnitude(const FGameplayEffectSpec& Spec,
+                                                            FGameplayAttribute Attribute, float& OutMagnitude)
 {
 	if (IsValid(Spec.Def))
 	{
@@ -97,4 +97,13 @@ bool ULakayaBlueprintLibrary::GetAttributeModifierMagnitude(const FGameplayEffec
 		}
 	}
 	return false;
+}
+
+bool ULakayaBlueprintLibrary::HasAbility(UAbilitySystemComponent* ASC, TSubclassOf<UGameplayAbility> AbilityClass)
+{
+	const auto Pred = [&AbilityClass](const FGameplayAbilitySpec& Spec)
+	{
+		return Spec.Ability->GetClass() == AbilityClass;
+	};
+	return IsValid(ASC) && ASC->GetActivatableAbilities().FindLastByPredicate(Pred) != INDEX_NONE;
 }

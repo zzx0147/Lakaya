@@ -4,11 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "LakayaBaseGameState.h"
-#include "Components/ProgressBar.h"
 #include "EOS/EOSGameInstance.h"
 #include "UI/OccupationTabMinimapWidget.h"
 #include "Occupation/Team.h"
-
+#include "UI/OccupyExpressElementWidget.h"
 #include "OccupationGameState.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeOccupationWinner, const ETeam&)
@@ -68,8 +67,14 @@ public:
 	 * @param Id 점령한 점령 구역의 Id입니다.
 	 */
 	UFUNCTION()
-	void UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id);
+	void UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id) const;
 
+	/**
+	 * @brief 점령중일 때, 점령 표시 위젯을 업데이트시켜주는 함수입니다.
+	 * @param Team 점령중인 팀입니다.
+	 * @param Id 점령중인 점령ID입니다.
+	 * @param Progress 점령 진행도입니다.
+	 */
 	UFUNCTION()
 	void UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress);
 
@@ -253,8 +258,8 @@ private:
 	TSet<TWeakObjectPtr<const AActor>> ClairvoyanceInstigatorSet;
 
 	UPROPERTY()
-	TMap<uint8, UProgressBar*> OccupyBarMaps;
-
+	TMap<uint8, TObjectPtr<UOccupyExpressElementWidget>> OccupyBarMaps;
+	
 	UPROPERTY()
 	TMap<uint8, ETeam> CaptureOwnerMap;
 	

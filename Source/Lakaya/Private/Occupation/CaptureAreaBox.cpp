@@ -28,6 +28,8 @@ ACaptureAreaBox::ACaptureAreaBox()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BoxMesh Create Failed."));
 	}
+
+	CaptureAreaWidgetComponent->SetupAttachment(Trigger);
 }
 	
 void ACaptureAreaBox::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,

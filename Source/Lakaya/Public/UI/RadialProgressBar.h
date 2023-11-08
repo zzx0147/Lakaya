@@ -18,6 +18,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetPercent(const float& NewPercent);
 
+	void SetFillImage(const TObjectPtr<UTexture2D> NewImage) const;
+	
+	FORCEINLINE TObjectPtr<UTexture2D>& GetFillImage() { return FillImage; }
+
 protected:
 	virtual void NativePreConstruct() override;
 

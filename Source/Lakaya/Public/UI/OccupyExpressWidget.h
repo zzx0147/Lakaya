@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "OccupyExpressElementWidget.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/ProgressBar.h"
+#include "Components/Image.h"
 #include "OccupyExpressWidget.generated.h"
 
 
@@ -17,37 +18,20 @@ class LAKAYA_API UOccupyExpressWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	FORCEINLINE UProgressBar* GetAntiBar() const { return Anti_Bar.Get(); }
-	FORCEINLINE UProgressBar* GetCenterBar() const { return Center_Bar.Get(); }
-	FORCEINLINE UProgressBar* GetProBar() const { return Pro_Bar.Get(); }
-	FORCEINLINE UTexture* GetOccupyAntiImage() const { return OccupyAntiImage; }
-	FORCEINLINE UTexture* GetOccupyProImage() const { return OccupyProImage; }
-	FORCEINLINE TObjectPtr<UTexture> GetNoneChargeImage() const { return NoneChargeImage; }
-	FORCEINLINE TObjectPtr<UTexture> GetAntiChargeImage() const { return AntiChargeImage; }
-	FORCEINLINE TObjectPtr<UTexture> GetProChargeImage() const { return ProChargeImage; }
+	FORCEINLINE TObjectPtr<UOccupyExpressElementWidget>& GetAntiAreaBar() { return AntiAreaBar; }
+	FORCEINLINE TObjectPtr<UOccupyExpressElementWidget>& GetCenterAreaBar() { return CenterAreaBar; }
+	FORCEINLINE TObjectPtr<UOccupyExpressElementWidget>& GetProAreaBar() { return ProAreaBar; }
+
+protected:
+	virtual void NativeConstruct() override;
 
 private:
-	UPROPERTY(EditAnywhere, Category = "Image")
-	UTexture* OccupyAntiImage;
-	
-	UPROPERTY(EditAnywhere, Category = "Image")
-	UTexture* OccupyProImage;
-	
 	UPROPERTY(meta = (BindWidget))
-	TWeakObjectPtr<UProgressBar> Anti_Bar;
-	
-	UPROPERTY(meta = (BindWidget))
-	TWeakObjectPtr<UProgressBar> Center_Bar;
+	TObjectPtr<UOccupyExpressElementWidget> AntiAreaBar;
 
 	UPROPERTY(meta = (BindWidget))
-	TWeakObjectPtr<UProgressBar> Pro_Bar;
+	TObjectPtr<UOccupyExpressElementWidget> CenterAreaBar;
 
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture> NoneChargeImage;
-
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture> AntiChargeImage;
-
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTexture> ProChargeImage;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UOccupyExpressElementWidget> ProAreaBar;
 };
