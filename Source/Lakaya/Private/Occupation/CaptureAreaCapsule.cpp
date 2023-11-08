@@ -8,7 +8,7 @@
 
 ACaptureAreaCapsule::ACaptureAreaCapsule()
 {
-	Trigger = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Trigger"));
+	Trigger = CreateDefaultSubobject<UCapsuleComponent>(TEXT("TriggerBox"));
 	Trigger->InitCapsuleSize(100.0f, 100.0f);
 	
 	RootComponent = Trigger;
@@ -28,6 +28,8 @@ ACaptureAreaCapsule::ACaptureAreaCapsule()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("CapsuleStaticMesh Create Failed."));
 	}
+
+	CaptureAreaWidgetComponent->SetupAttachment(Trigger);
 }
 
 void ACaptureAreaCapsule::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
