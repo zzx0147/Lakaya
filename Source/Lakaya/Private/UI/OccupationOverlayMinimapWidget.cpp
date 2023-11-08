@@ -67,6 +67,7 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 
 UImage* UOccupationOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
 {
+	UE_LOG(LogTemp, Warning, TEXT("CreatePlayerImage"));
 	UImage* PlayerImage = NewObject<UImage>(this);
 
 	UCanvasPanelSlot* PanelSlot = ParentPanel->AddChildToCanvas(PlayerImage);

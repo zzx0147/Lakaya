@@ -4,13 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "LakayaBaseGameState.h"
-#include "Components/ProgressBar.h"
 #include "EOS/EOSGameInstance.h"
 #include "UI/OccupationTabMinimapWidget.h"
 #include "Occupation/Team.h"
 #include "UI/OccupyExpressElementWidget.h"
-#include "UI/RadialProgressBar.h"
-
 #include "OccupationGameState.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeOccupationWinner, const ETeam&)
@@ -259,10 +256,6 @@ private:
 	FTimerHandle TimerHandle_MatchStartWaitWidget;
 
 	TSet<TWeakObjectPtr<const AActor>> ClairvoyanceInstigatorSet;
-
-	// TODO : Occupy
-	// UPROPERTY()
-	// TMap<uint8, TObjectPtr<URadialProgressBar>> OccupyBarMaps;
 
 	UPROPERTY()
 	TMap<uint8, TObjectPtr<UOccupyExpressElementWidget>> OccupyBarMaps;
