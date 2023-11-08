@@ -628,7 +628,6 @@ void ALakayaBasePlayerState::RespawnTimerCallback(FRespawnTimerDelegate Callback
 
 void ALakayaBasePlayerState::BindAllSkillToWidget()
 {
-	//TODO: 여기서 스킬과 위젯을 바인딩하면 됨
 	if (!CharacterWidget->GetSkillWidget()) return;
 
 	for (const auto& SkillProgressBar : CharacterWidget->GetSkillWidget()->GetAllSkillProgressBar())
@@ -654,8 +653,10 @@ void ALakayaBasePlayerState::BindAllSkillToWidget()
 		case ESkillProgressBarType::Ultimate:
 			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetUltimateGaugeAttribute()).
 			               AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeUltimateGaugeAttribute);
+			SkillProgressBar->SetUltimateGauge(LakayaAttributeSet->GetUltimateGauge());
 			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxUltimateGaugeAttribute()).
 			               AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeMaxUltimateGaugeAttribute);
+			SkillProgressBar->SetMaxUltimateGauge(LakayaAttributeSet->GetMaxUltimateGauge());
 			break;
 		case ESkillProgressBarType::None:
 		default: ;

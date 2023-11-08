@@ -48,5 +48,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	static bool GetAttributeModifierMagnitude(const FGameplayEffectSpec& Spec, FGameplayAttribute Attribute,
-	                                        float& OutMagnitude);
+	                                          float& OutMagnitude);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static bool HasAbility(UAbilitySystemComponent* ASC, TSubclassOf<UGameplayAbility> AbilityClass);
 };

@@ -154,13 +154,13 @@ void AOccupationGameState::BeginPlay()
 				OccupyExpressWidget->SetVisibility(ESlateVisibility::Hidden);
 				OccupyBarMaps.Emplace(1, OccupyExpressWidget->GetAntiAreaBar());
 				OccupyExpressWidget->GetAntiAreaBar()->InitOccupyExpressElementWidget(1, OccupyExpressWidget->GetAntiAreaBar()->GetAntiAreaNoneImage());
-				OccupyExpressWidget->GetAntiAreaBar()->GetProgressBar()->SetPercent(0);
+				// OccupyExpressWidget->GetAntiAreaBar()->GetProgressBar()->SetPercent(0);
 				OccupyBarMaps.Emplace(2, OccupyExpressWidget->GetCenterAreaBar());
 				OccupyExpressWidget->GetCenterAreaBar()->InitOccupyExpressElementWidget(2, OccupyExpressWidget->GetCenterAreaBar()->GetCenterAreaNoneImage());
-				OccupyExpressWidget->GetCenterAreaBar()->GetProgressBar()->SetPercent(0);
+				// OccupyExpressWidget->GetCenterAreaBar()->GetProgressBar()->SetPercent(0);
 				OccupyBarMaps.Emplace(3, OccupyExpressWidget->GetProAreaBar());
 				OccupyExpressWidget->GetProAreaBar()->InitOccupyExpressElementWidget(3, OccupyExpressWidget->GetProAreaBar()->GetProAreaNoneImage());
-				OccupyExpressWidget->GetProAreaBar()->GetProgressBar()->SetPercent(0);
+				// OccupyExpressWidget->GetProAreaBar()->GetProgressBar()->SetPercent(0);
 			}
 		}
 

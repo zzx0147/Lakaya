@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Team.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/Actor.h"
+#include "UI/OccupyExpressElementWidget.h"
 #include "CaptureArea.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FCaptureAreaStateOnChangedSignature, ECaptureAreaState);
@@ -42,7 +44,9 @@ public:
 	UFUNCTION()
 	FString ETeamToString(const ETeam& Team);
 protected:
-	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void BeginPlay() override;
+	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	/**
 	 * @brief 다른 액터와 충돌됐을 때, 실행되는 함수입니다.
@@ -121,6 +125,9 @@ protected:
 protected:
 	UPROPERTY(VisibleAnywhere, Category = StaticMesh)
 	TObjectPtr<class UStaticMeshComponent> StaticMeshComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UWidgetComponent> CaptureAreaWidgetComponent;
 	
 	UPROPERTY(Replicated)
 	ECaptureAreaState CurrentCaptureAreaState = ECaptureAreaState::None;
@@ -160,5 +167,8 @@ protected:
 	UPROPERTY()
 	float CaptureSpeed;
 
+	UPROPERTY()
+	TObjectPtr<UOccupyExpressElementWidget> OccupyExpressElementWidget;
+	
 	FTimerHandle CaptureProgressTimerHandle;
 };
