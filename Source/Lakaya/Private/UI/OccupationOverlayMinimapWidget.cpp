@@ -261,10 +261,12 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 
 void UOccupationOverlayMinimapWidget::UpdateAreaImageRotation()
 {
-	const auto PlayerCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayerPawn());
-	const FRotator PlayerRotation = PlayerCharacter->GetCamera()->GetComponentRotation();
+	if(const auto PlayerCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayerPawn()))
+	{
+		const FRotator PlayerRotation = PlayerCharacter->GetCamera()->GetComponentRotation();
 
-	AntiAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
-	CenterAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
-	ProAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+		AntiAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+		CenterAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+		ProAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
+	}
 }
