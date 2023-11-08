@@ -15,9 +15,9 @@ public:
 	AAIIndividualGameState();
 
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
-
-	void SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray);
-	void SetAIIndividualWinner();
+	virtual void SetScoreBoardVisibility(const bool& Visible) override;
+	virtual void SetTabMinimapVisibility(const bool& Visible) override;
+	void SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray) const;
 
 protected:
 	virtual void BeginPlay() override;
@@ -25,17 +25,25 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 
-	virtual bool CanInstigatorClairvoyance(const AActor* InInstigator) const override;
-
 private:
 	ERendererStencilMask GetUniqueStencilMaskWithCount(const uint8& Count);
-	
+	void InternalSetScoreBoardVisibility(const bool& Visible) const;
+	void InternalSetTabMinimapVisibility(const bool& Visible) const;
+
+	/**
+	 * @brief EnemiesByMinimap을 업데이트 해주는 함수입니다.
+	 * @param NewPlayerState 업데이트시켜줄 PlayerState입니다.
+	 * @param NewPlayerImage 업데이트 된 플레이어의 미니맵 이미지입니다.
+	 */
+	void UpdatePlayerByMinimap(const ALakayaBasePlayerState* NewPlayerState, const UImage* NewPlayerImage);
+
+	virtual void SetClientTeam(const ETeam& NewTeam) override;
 public:
 	TArray<FPlayerAIData> FPlayerAIDataArray;
 
 	FPlayerAIData PlayerAIData;
 
-	TArray<TWeakObjectPtr<ALakayaBasePlayerState>> AllPlayersArray;
+	TArray<TWeakObjectPtr<ALakayaBasePlayerState>> PlayerArrays;
 	
 private:
 	
@@ -53,6 +61,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float MatchStartWaitWidgetLifeTime;
+
+	// ETeam CurrentTeam;
 	
 	FString AIName;
 

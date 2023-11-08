@@ -2,6 +2,7 @@
 
 #include "InputMappingContext.h"
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
@@ -14,9 +15,10 @@
 #include "UI/GameResultWidget.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
+#include "UI/IntroWidget.h"
 #include "UI/MatchStartWaitWidget.h"
 #include "UI/OccupationCharacterSelectWidget.h"
-#include "UI/HUDOccupationMinimapWidget.h"
+#include "UI/OccupationOverlayMinimapWidget.h"
 #include "UI/StartMessageWidget.h"
 #include "UI/TeamScoreWidget.h"
 #include "UI/WeaponOutLineWidget.h"
@@ -53,6 +55,10 @@ AOccupationGameState::AOccupationGameState(): MatchResult()
 	PlayersByTeamMap.Emplace(ETeam::Anti);
 	PlayersByTeamMap.Emplace(ETeam::Pro);
 
+	CaptureOwnerMap.Emplace(0, ETeam::None);
+	CaptureOwnerMap.Emplace(1, ETeam::None);
+	CaptureOwnerMap.Emplace(2, ETeam::None);
+	
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> ResultContextFinder(
 		TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IC_ResultWidgetControl.IC_ResultWidgetControl'"));
 
@@ -62,7 +68,7 @@ AOccupationGameState::AOccupationGameState(): MatchResult()
 	ResultShortcutContext = ResultContextFinder.Object;
 	ResultSwitchingAction = ResultSwitchActionFinder.Object;
 
-	HUDMinimapWidgetClass = UHUDOccupationMinimapWidget::StaticClass();
+	HUDMinimapWidgetClass = UOccupationOverlayMinimapWidget::StaticClass();
 	TabMinimapWidgetClass = UOccupationTabMinimapWidget::StaticClass();
 }
 
@@ -146,15 +152,21 @@ void AOccupationGameState::BeginPlay()
 			{
 				OccupyExpressWidget->AddToViewport();
 				OccupyExpressWidget->SetVisibility(ESlateVisibility::Hidden);
-				OccupyBarMaps.Emplace(1, OccupyExpressWidget->GetAntiBar());
-				OccupyBarMaps.Emplace(2, OccupyExpressWidget->GetCenterBar());
-				OccupyBarMaps.Emplace(3, OccupyExpressWidget->GetProBar());
+				OccupyBarMaps.Emplace(1, OccupyExpressWidget->GetAntiAreaBar());
+				OccupyExpressWidget->GetAntiAreaBar()->InitOccupyExpressElementWidget(1, OccupyExpressWidget->GetAntiAreaBar()->GetAntiAreaNoneImage());
+				// OccupyExpressWidget->GetAntiAreaBar()->GetProgressBar()->SetPercent(0);
+				OccupyBarMaps.Emplace(2, OccupyExpressWidget->GetCenterAreaBar());
+				OccupyExpressWidget->GetCenterAreaBar()->InitOccupyExpressElementWidget(2, OccupyExpressWidget->GetCenterAreaBar()->GetCenterAreaNoneImage());
+				// OccupyExpressWidget->GetCenterAreaBar()->GetProgressBar()->SetPercent(0);
+				OccupyBarMaps.Emplace(3, OccupyExpressWidget->GetProAreaBar());
+				OccupyExpressWidget->GetProAreaBar()->InitOccupyExpressElementWidget(3, OccupyExpressWidget->GetProAreaBar()->GetProAreaNoneImage());
+				// OccupyExpressWidget->GetProAreaBar()->GetProgressBar()->SetPercent(0);
 			}
 		}
 
 		if (HUDMinimapWidgetClass)
 		{
-			HUDMinimapWidget = CreateWidget<UHUDOccupationMinimapWidget>(
+			HUDMinimapWidget = CreateWidget<UOccupationOverlayMinimapWidget>(
 				LocalController, HUDMinimapWidgetClass);
 			if (HUDMinimapWidget)
 			{
@@ -173,6 +185,9 @@ void AOccupationGameState::BeginPlay()
 				TabMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
+
+		LocalController->SetShowMouseCursor(true);
+		UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(LocalController);
 	}
 
 	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this,
@@ -184,7 +199,7 @@ void AOccupationGameState::BeginPlay()
 void AOccupationGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-
+	
 	if (IsValid(TeamScoreWidget))
 		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
 
@@ -205,7 +220,8 @@ void AOccupationGameState::HandleMatchHasStarted()
 			if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 			{
 				HUDMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
-
+				HUDMinimapWidget->SetEnemyTeam(LakayaPlayerState->GetTeam() == ETeam::Anti ? ETeam::Pro : ETeam::Anti);
+				
 				// 와지가 스킬을 쓰게 되면 상대방의 위치도 미니맵 상에 업데이트 해줘야 하기 때문에
 				// 일단은 본인의 팀과 상대방의 팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
 				UpdatePlayerByMinimap(ETeam::Anti, LakayaPlayerState);
@@ -224,7 +240,8 @@ void AOccupationGameState::HandleMatchHasStarted()
 			if (const auto LakayaPlayerState = LocalController->GetPlayerState<ALakayaBasePlayerState>())
 			{
 				TabMinimapWidget->SetTeam(LakayaPlayerState->GetTeam());
-
+				TabMinimapWidget->SetEnemyTeam(LakayaPlayerState->GetTeam() == ETeam::Anti ? ETeam::Pro : ETeam::Anti);
+				
 				// 와지가 스킬을 쓰게 되면 상대방의 위치도 미니맵 상에 업데이트 해줘야 하기 때문에
 				// 본인의 팀과 상대팀의 정보를 미니맵 위젯에 넣어주도록 합니다.
 				UpdatePlayerByMinimap(ETeam::Anti, LakayaPlayerState);
@@ -271,6 +288,15 @@ void AOccupationGameState::HandleMatchHasStarted()
 	
 	GetWorldTimerManager().SetTimer(TimerHandle_StartMessageHidden, TimerDelegate,
 	                                MatchWaitDuration + MatchStartWidgetLifeTime, false);
+}
+
+void AOccupationGameState::HandleMatchIsIntro()
+{
+	Super::HandleMatchIsIntro();
+	
+	if(!PlayersByTeamMap.Contains(ETeam::Pro) || !PlayersByTeamMap.Contains(ETeam::Anti)) return;
+
+	if (IntroWidget) IntroWidget->SetPlayersData(PlayerArray);
 }
 
 void AOccupationGameState::HandleMatchHasEnded()
@@ -371,11 +397,13 @@ void AOccupationGameState::OnRep_OccupationWinner() const
 
 void AOccupationGameState::UpdatePlayerByMinimap(const ETeam& Team, ALakayaBasePlayerState* PlayerState)
 {
+	if(!TabMinimapWidget || !HUDMinimapWidget) return;
+	
 	for (auto& Players : PlayersByTeamMap[Team])
 	{
 		const bool bMyPlayer = (Players == PlayerState);
-		TabMinimapWidget->SetPlayersByMinimap(Team, Players, TabMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
-		HUDMinimapWidget->SetPlayersByMinimap(Team, Players, HUDMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
+		TabMinimapWidget->SetOccupationPlayersByMinimap(Team, Players, TabMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
+		HUDMinimapWidget->SetOccupationPlayersByMinimap(Team, Players, HUDMinimapWidget->CreatePlayerImage(Team, bMyPlayer));
 	}
 }
 
@@ -416,48 +444,15 @@ bool AOccupationGameState::TrySendMatchResultData()
 	return false;
 }
 
-bool AOccupationGameState::CanInstigatorClairvoyance(const AActor* InInstigator) const
+void AOccupationGameState::OnRep_MatchEndingTime()
 {
-	if (Super::CanInstigatorClairvoyance(InInstigator))
-	{
-		const auto PlayerController = GetWorld()->GetFirstPlayerController();
-		if (PlayerController && PlayerController->IsLocalController())
-		{
-			// Find Instigator PlayerState
-			auto InstigatorState = Cast<APlayerState>(InInstigator);
-			if (!InstigatorState)
-			{
-				if (const auto Pawn = Cast<APawn>(InInstigator))
-				{
-					InstigatorState = Pawn->GetPlayerState<APlayerState>();
-				}
-			}
-
-			return IsSameTeam(PlayerController->PlayerState, InstigatorState);
-		}
-	}
-
-	return false;
+	Super::OnRep_MatchEndingTime();
+	if(InGameTimeWidget.IsValid()) InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
+	if(TeamScoreWidget) TeamScoreWidget->SetMaxScoreVisibility(true);
+	
 }
 
-bool AOccupationGameState::ShouldActivateClairvoyance() const
-{
-	return Super::ShouldActivateClairvoyance() && !ClairvoyanceInstigatorSet.IsEmpty();
-}
-
-void AOccupationGameState::OnClairvoyanceActivateRequested(const AActor* InInstigator)
-{
-	Super::OnClairvoyanceActivateRequested(InInstigator);
-	ClairvoyanceInstigatorSet.Emplace(InInstigator);
-}
-
-void AOccupationGameState::OnClairvoyanceDeactivateRequested(const AActor* InInstigator)
-{
-	Super::OnClairvoyanceDeactivateRequested(InInstigator);
-	ClairvoyanceInstigatorSet.Remove(InInstigator);
-}
-
-void AOccupationGameState::DestroyShieldWallObject()
+void AOccupationGameState::DestroyShieldWallObject() const
 {
 	UWorld* World = GetWorld();
 	if (World == nullptr)
@@ -606,60 +601,125 @@ void AOccupationGameState::StopScoreUpdate()
 	TeamToUpdate = ETeam::None;
 }
 
-void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id)
+void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id) const
 {
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
 		LocalController && LocalController->IsLocalController())
 	{
-		if (UProgressBar** ProgressBar = OccupyBarMaps.Find(Id))
+		const TObjectPtr<UImage>* ImageWidget = nullptr;
+		const TObjectPtr<UTexture2D>* ImageTexture = nullptr;
+
+		switch (Id)
 		{
-			FSlateBrush BackGroundImageBrush;
-
-			switch (Team)
-			{
-			case ETeam::Anti:
-				BackGroundImageBrush.SetResourceObject(OccupyExpressWidget->GetOccupyAntiImage());
-				break;
-			case ETeam::Pro:
-				BackGroundImageBrush.SetResourceObject(OccupyExpressWidget->GetOccupyProImage());
-				break;
-			default:
-				UE_LOG(LogTemp, Warning, TEXT("Invalid Team."));
-				return;
-			}
-
-			// ReSharper disable once CppDeprecatedEntity
-			(*ProgressBar)->WidgetStyle.BackgroundImage = BackGroundImageBrush;
+		case 1:
+			ImageWidget = &OccupyExpressWidget->GetAntiAreaBar()->GetInImage();
+			ImageTexture = (Team == ETeam::Anti) ? &OccupyExpressWidget->GetAntiAreaBar()->GetAntiAreaAntiImage()
+												 : &OccupyExpressWidget->GetAntiAreaBar()->GetAntiAreaProImage();
+			break;
+		case 2:
+			ImageWidget = &OccupyExpressWidget->GetCenterAreaBar()->GetInImage();
+			ImageTexture = (Team == ETeam::Anti) ? &OccupyExpressWidget->GetCenterAreaBar()->GetCenterAreaAntiImage()
+												 : &OccupyExpressWidget->GetCenterAreaBar()->GetCenterAreaProImage();
+			break;
+		case 3:
+			ImageWidget = &OccupyExpressWidget->GetProAreaBar()->GetInImage();
+			ImageTexture = (Team == ETeam::Anti) ? &OccupyExpressWidget->GetProAreaBar()->GetProAreaAntiImage()
+												 : &OccupyExpressWidget->GetProAreaBar()->GetProAreaProImage();
+			break;
+		default:
+			UE_LOG(LogTemp, Warning, TEXT("점령 ID가 존재하지 않습니다."));
+			return;
 		}
-		else
+
+		if (ImageWidget != nullptr && ImageTexture != nullptr)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ProgressBar is not Found for Id : %d"), Id);
+			(*ImageWidget)->SetBrushFromTexture(*ImageTexture);
 		}
 	}
 }
 
 void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress)
 {
-	UProgressBar** Bar = OccupyBarMaps.Find(Id);
-	FSlateBrush ChargeImageBrush;
-	if (Bar != nullptr && *Bar != nullptr)
+	const TObjectPtr<UOccupyExpressElementWidget>* ProgressBar = OccupyBarMaps.Find(Id);
+
+	if (ProgressBar == nullptr || *ProgressBar == nullptr)
 	{
-		if (Team == ETeam::Anti)
-		{
-			ChargeImageBrush.SetResourceObject(OccupyExpressWidget->GetAntiChargeImage());
-		}
-		else if (Team == ETeam::Pro)
-		{
-			ChargeImageBrush.SetResourceObject(OccupyExpressWidget->GetProChargeImage());
-		}
-	
-		(*Bar)->WidgetStyle.SetFillImage(ChargeImageBrush);
-		(*Bar)->WidgetStyle.FillImage = ChargeImageBrush;
-		(*Bar)->SetPercent(Progress / 4);
+		UE_LOG(LogTemp, Warning, TEXT("ProgressBar is not Found for Id : %d"), Id);
+		return;
 	}
-	else
+
+	UOccupyExpressElementWidget* BarWidget = *ProgressBar;
+	
+	switch (Team)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Bar && *Bar is null."));
+	case ETeam::Anti:
+		BarWidget->GetProgressBar()->SetFillImage(OccupyExpressWidget->GetAntiAreaBar()->GetAntiFillImage());
+		break;
+	case ETeam::Pro:
+		BarWidget->GetProgressBar()->SetFillImage(OccupyExpressWidget->GetAntiAreaBar()->GetProFillImage());
+		break;
+	default:
+		UE_LOG(LogTemp, Warning, TEXT("Invalid Team."));
+		return;
+	}
+
+	BarWidget->GetProgressBar()->SetPercent(Progress / 4);
+}
+
+void AOccupationGameState::SetCaptureOwnerChange(const uint8 NewCaptureId, const ETeam& NewTeam)
+{
+	CaptureOwnerMap.Emplace(NewCaptureId, NewTeam);
+
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
+		LocalController && LocalController->IsLocalController())
+	{
+		UpdateAreaImage(NewCaptureId, NewTeam);
+	}
+}
+
+void AOccupationGameState::UpdateAreaImage(const uint8 NewCaptureId, const ETeam& NewTeam) const
+{
+	UTexture2D* AntiImage = nullptr;
+	UTexture2D* ProImage = nullptr;
+	switch (NewCaptureId)
+	{
+	case 1:
+		AntiImage = HUDMinimapWidget->GetAntiAreaAntiImage();
+		ProImage = HUDMinimapWidget->GetAntiAreaProImage();
+		break;
+	case 2:
+		AntiImage = HUDMinimapWidget->GetCenterAreaAntiImage();
+		ProImage = HUDMinimapWidget->GetCenterAreaProImage();
+		break;
+	case 3:
+		AntiImage = HUDMinimapWidget->GetProAreaAntiImage();
+		ProImage = HUDMinimapWidget->GetProAreaProImage();
+		break;
+	default:
+		return;
+	}
+
+	UTexture2D* NewTexture = (NewTeam == ETeam::Anti) ? AntiImage : ProImage;
+	UpdateImage(NewCaptureId, NewTexture);
+}
+
+void AOccupationGameState::UpdateImage(const uint8 NewCaptureId, UTexture2D* NewTexture) const
+{
+	switch (NewCaptureId)
+	{
+	case 1:
+		HUDMinimapWidget->GetAntiAreaImage()->SetBrushFromTexture(NewTexture);
+		TabMinimapWidget->GetAntiAreaImage()->SetBrushFromTexture(NewTexture);
+		break;
+	case 2:
+		HUDMinimapWidget->GetCenterAreaImage()->SetBrushFromTexture(NewTexture);
+		TabMinimapWidget->GetCenterAreaImage()->SetBrushFromTexture(NewTexture);
+		break;
+	case 3:
+		HUDMinimapWidget->GetProAreaImage()->SetBrushFromTexture(NewTexture);
+		TabMinimapWidget->GetProAreaImage()->SetBrushFromTexture(NewTexture);
+		break;
+	default: ;
 	}
 }
 
@@ -675,6 +735,32 @@ void AOccupationGameState::OnEnemyLost(const ETeam& EnemyTeam, ALakayaBasePlayer
 	// 같은 팀의 정보는 필요 없으므로, 리턴합니다.
 	// if (EnemyTeam == ClientTeam) return;
 	MultiCast_HideFromMinimap(EnemyTeam, Enemy);
+}
+
+TArray<ALakayaBasePlayerState*> AOccupationGameState::GetAllyArray(UObject* TeamObject) const
+{
+	if (const auto CastedObject = Cast<ITeamObjectInterface>(TeamObject))
+	{
+		if (const auto Found = PlayersByTeamMap.Find(CastedObject->GetTeam()))
+		{
+			return *Found;
+		}
+	}
+	return {};
+}
+
+TArray<ALakayaBasePlayerState*> AOccupationGameState::GetEnemyArray(UObject* TeamObject) const
+{
+	if (const auto CastedObject = Cast<ITeamObjectInterface>(TeamObject))
+	{
+		switch (CastedObject->GetTeam())
+		{
+		case ETeam::Anti: return PlayersByTeamMap[ETeam::Pro];
+		case ETeam::Pro: return PlayersByTeamMap[ETeam::Anti];
+		default: return {};
+		}
+	}
+	return {};
 }
 
 void AOccupationGameState::MultiCast_HideFromMinimap_Implementation(const ETeam& EnemyTeam, ALakayaBasePlayerState* Enemy)

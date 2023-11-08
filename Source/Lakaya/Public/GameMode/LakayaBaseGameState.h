@@ -27,6 +27,7 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 	virtual void HandleMatchIsCharacterSelect();
+	virtual void HandleMatchIsIntro();
 	virtual void OnRep_MatchState() override;
 	
 public:
@@ -47,24 +48,13 @@ public:
 	float GetMatchRemainTime() const { return MatchEndingTime - GetServerWorldTimeSeconds(); }
 
 	FORCEINLINE bool GetbIsClairvoyanceActivated() const { return bIsClairvoyanceActivated;}
+	FORCEINLINE ETeam GetClientTeam() const { return ClientTeam; }
+
+	virtual void SetClientTeam(const ETeam& NewTeam) {};
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void NotifyPlayerKilled(APlayerState* VictimPlayer, APlayerState* InstigatorPlayer, AActor* DamageCauser);
 
-	/**
-	 * 적에 대한 투시를 활성화 요청합니다.
-	 * @param InInstigator 투시 어빌리티를 사용한 액터입니다.
-	 */
-	UFUNCTION(BlueprintCallable)
-	void RequestClairvoyanceActivate(const AActor* InInstigator);
-
-	/**
-	 * 적에 대한 투시를 비활성화 요청합니다.
-	 * @param InInstigator 투시 어빌리티를 종료한 액터입니다.
-	 */
-	UFUNCTION(BlueprintCallable)
-	void RequestClairvoyanceDeactivate(const AActor* InInstigator);
-	
 protected:
 	virtual class UGameLobbyCharacterSelectWidget* GetCharacterSelectWidget();
 
@@ -82,26 +72,6 @@ protected:
 	virtual void ReserveSendRecord();
 
 	virtual bool TrySendMatchResultData();
-
-	
-	/** 투시를 사용한 액터가 투시를 활성화하기 적격한지 검사합니다. */
-	virtual bool CanInstigatorClairvoyance(const AActor* InInstigator) const;
-
-	/** 투시를 활성화해야 하는 조건인지 비활성화해야하는 조건인지 검사합니다. */
-	virtual bool ShouldActivateClairvoyance() const { return !bIsClairvoyanceActivated; }
-
-	/** 적격한 액터에게서 투시 사용이 요청되었을 때 호출되는 이벤트 함수입니다. */
-	virtual void OnClairvoyanceActivateRequested(const AActor* InInstigator) { return; }
-
-	/** 투시를 활성화해야 하는 조건을 만족하여 투시가 활성화될 때 호출됩니다. */
-	virtual void OnClairvoyanceActivated();
-
-	/** 해당 액터에게서 투시 사용이 요청되었을 때 호출됩니다. 소멸중인 액터가 호출하는 경우도 있을 것이므로 적격한지 검사되지 않고 호출됩니다. */
-	virtual void OnClairvoyanceDeactivateRequested(const AActor* InInstigator) { return; }
-
-	/** 투시를 비활성화해야 하는 조건을 만족하여 투시가 비활성화될 때 호출됩니다. */
-	virtual void OnClairvoyanceDeactivated();
-	
 
 	virtual void SetScoreBoardVisibility(const bool& Visible);
 
@@ -139,6 +109,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	uint8 MaximumPlayers;
 
+	UPROPERTY(EditDefaultsOnly)
+	float IntroDuration;
+	
 	// 매치가 몇초간 지속될 지를 정의합니다.
 	UPROPERTY(ReplicatedUsing=OnRep_MatchEndingTime)
 	float MatchEndingTime;
@@ -151,9 +124,12 @@ protected:
 	UPROPERTY(ReplicatedUsing=OnRep_MatchWaitEndingTime)
 	float MatchWaitEndingTime;
 
+	ETeam ClientTeam;
+
 	FTimerHandle EndingTimer;
 	FTimerHandle CharacterSelectTimer;
 	FTimerHandle MatchWaitToStartTimer;
+	FTimerHandle IntroTimer;
 
 #pragma region Widget
 	// Tab키를 눌렀을 때 표시되는 점수판 위젯의 클래스를 지정합니다.
@@ -190,12 +166,18 @@ protected:
 
 	// 인게임도중 좌측상단에 띄워지는 미니맵 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UHUDMinimapWidget> HUDMinimapWidgetClass;
+	TSubclassOf<class UOverlayMinimapWidget> HUDMinimapWidgetClass;
 
 	// 인게임 도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UTabMinimapWidget> TabMinimapWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UIntroWidget> IntroWidgetClass;
 	
+	//
+	// UPROPERTY(EditDefaultsOnly)
+	// TSubclassOf<class>
 	// 캐릭터 선택 위젯 입니다.	
 	TWeakObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 
@@ -221,10 +203,12 @@ protected:
 	TWeakObjectPtr<AOutlineManager> OutlineManager;
 
 	// 인게임도중 좌측상단에 띄워지는 미니맵 위젯입니다.
-	TObjectPtr<UHUDMinimapWidget> HUDMinimapWidget;
+	TObjectPtr<UOverlayMinimapWidget> HUDMinimapWidget;
 
 	// 인게임 도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯입니다.
 	TObjectPtr<UTabMinimapWidget> TabMinimapWidget;
+
+	TObjectPtr<UIntroWidget> IntroWidget;
 #pragma endregion
 	
 private:

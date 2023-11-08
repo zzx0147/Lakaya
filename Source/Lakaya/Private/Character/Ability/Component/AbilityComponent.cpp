@@ -9,6 +9,8 @@
 UAbilityComponent::UAbilityComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
+	PrimaryComponentTick.bAllowTickOnDedicatedServer = false;
 }
 
 void UAbilityComponent::SetOwningAbility(UGameplayAbility* InOwningAbility)
@@ -21,21 +23,35 @@ void UAbilityComponent::SetOwningAbility(UGameplayAbility* InOwningAbility)
 	OwningAbility = InOwningAbility;
 	AbilitySystemComponent = OwningAbility->GetAbilitySystemComponentFromActorInfo_Checked();
 
-	if (!DisableGameplayTags.IsEmpty())
+	if (!EnableRequireTags.IsEmpty())
 	{
-		const auto Delegate =
-			FOnGameplayEffectTagCountChanged::FDelegate::CreateUObject(this, &ThisClass::OnGameplayTagEvent);
-
-		for (auto&& Tag : DisableGameplayTags)
+		for (auto&& Tag : EnableRequireTags.RequireTags)
 		{
-			AbilitySystemComponent->RegisterAndCallGameplayTagEvent(Tag, Delegate);
+			AbilitySystemComponent->RegisterGameplayTagEvent(Tag).AddUObject(this, &ThisClass::OnRequiredTagUpdated);
 		}
+		for (auto&& Tag : EnableRequireTags.IgnoreTags)
+		{
+			AbilitySystemComponent->RegisterGameplayTagEvent(Tag).AddUObject(this, &ThisClass::OnIgnoredTagUpdated);
+		}
+		ToggleActive();
+	}
+	else
+	{
+		Activate();
 	}
 }
 
-void UAbilityComponent::OnGameplayTagEvent(FGameplayTag Tag, int32 NewCount)
+void UAbilityComponent::OnRequiredTagUpdated(FGameplayTag Tag, int32 NewCount)
 {
-	if (ensure(AbilitySystemComponent.IsValid()))
+	if (ensure(AbilitySystemComponent))
+	{
+		SetActive(NewCount > 0);
+	}
+}
+
+void UAbilityComponent::OnIgnoredTagUpdated(FGameplayTag Tag, int32 NewCount)
+{
+	if (ensure(AbilitySystemComponent))
 	{
 		SetActive(NewCount == 0);
 	}
@@ -43,6 +59,7 @@ void UAbilityComponent::OnGameplayTagEvent(FGameplayTag Tag, int32 NewCount)
 
 bool UAbilityComponent::ShouldActivate() const
 {
-	return Super::ShouldActivate() && AbilitySystemComponent.IsValid()
-		&& AbilitySystemComponent->HasAnyMatchingGameplayTags(DisableGameplayTags);
+	return Super::ShouldActivate() && AbilitySystemComponent
+		&& AbilitySystemComponent->HasAllMatchingGameplayTags(EnableRequireTags.RequireTags)
+		&& !AbilitySystemComponent->HasAnyMatchingGameplayTags(EnableRequireTags.IgnoreTags);
 }

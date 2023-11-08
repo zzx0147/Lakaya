@@ -11,9 +11,12 @@ class LAKAYA_API UPlayerInfoWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UPlayerInfoWidget(const FObjectInitializer& ObjectInitializer);
+	explicit UPlayerInfoWidget(const FObjectInitializer& ObjectInitializer);
 	void SetPlayerName(const FString& NewName);
+
+	UFUNCTION(BlueprintNativeEvent)
 	void SetCharacterName(const FName& NewName);
+	
 	void SetTeam(const ETeam& NewTeam);
 	
 protected:

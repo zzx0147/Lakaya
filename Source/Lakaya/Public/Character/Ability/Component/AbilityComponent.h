@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayTagContainer.h"
+#include "GameplayEffectTypes.h"
 #include "Components/ActorComponent.h"
 #include "AbilityComponent.generated.h"
 
@@ -21,14 +21,24 @@ public:
 	void SetOwningAbility(UGameplayAbility* InOwningAbility);
 
 protected:
-	void OnGameplayTagEvent(FGameplayTag Tag, int32 NewCount);
+	UFUNCTION(BlueprintGetter)
+	UGameplayAbility* GetOwningAbility() const { return OwningAbility; }
+
+	UFUNCTION(BlueprintGetter)
+	UAbilitySystemComponent* GetAbilitySystemComponent() const { return AbilitySystemComponent; }
 
 	virtual bool ShouldActivate() const override;
 
 private:
-	UPROPERTY(EditAnywhere)
-	FGameplayTagContainer DisableGameplayTags;
+	void OnRequiredTagUpdated(FGameplayTag Tag, int32 NewCount);
+	void OnIgnoredTagUpdated(FGameplayTag Tag, int32 NewCount);
 
-	TWeakObjectPtr<UGameplayAbility> OwningAbility;
-	TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+	UPROPERTY(EditAnywhere)
+	FGameplayTagRequirements EnableRequireTags;
+
+	UPROPERTY(Transient, BlueprintGetter=GetOwningAbility)
+	TObjectPtr<UGameplayAbility> OwningAbility;
+
+	UPROPERTY(Transient, BlueprintGetter=GetAbilitySystemComponent)
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 };

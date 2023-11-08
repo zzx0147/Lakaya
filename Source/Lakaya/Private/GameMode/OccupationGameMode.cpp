@@ -1,16 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "GameMode/OccupationGameMode.h"
-#include "Character/InteractableCharacter.h"
-#include "Character/StatPlayerState.h"
+
+#include "Character/LakayaBaseCharacter.h"
+#include "GameFramework/GameSession.h"
 #include "GameMode/OccupationGameState.h"
-#include "PlayerController/InteractablePlayerController.h"
+#include "PlayerController/MovablePlayerController.h"
 
 AOccupationGameMode::AOccupationGameMode() : Super()
 {
-	DefaultPawnClass = AInteractableCharacter::StaticClass();
-	PlayerControllerClass = AInteractablePlayerController::StaticClass();
-	PlayerStateClass = AStatPlayerState::StaticClass();
+	DefaultPawnClass = ALakayaBaseCharacter::StaticClass();
+	PlayerControllerClass = AMovablePlayerController::StaticClass();
 	GameStateClass = AOccupationGameState::StaticClass();
 
 	MatchStartDelay = 3.0f;
@@ -76,6 +76,19 @@ void AOccupationGameMode::HandleMatchIsSelectCharacter()
 	// 		UE_LOG(LogTemp, Warning, TEXT("%s"), Team == ETeam::Anti ? TEXT("Anti팀에 배정되었습니다.") : TEXT("Pro팀에 배정되었습니다."));
 	// 	}
 	// }
+}
+
+void AOccupationGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId,
+	FString& ErrorMessage)
+{
+	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+	if(!OccupationGameState) return;
+	
+	if (GetNumPlayers() >= OccupationGameState->GetMaximumPlayers())
+	{
+		ErrorMessage = TEXT("The server is full.");
+	}
+	
 }
 
 void AOccupationGameMode::AssignTeams(const uint8 PlayerCount) const

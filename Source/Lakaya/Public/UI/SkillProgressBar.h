@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/Ability/Attribute/LakayaAttributeSet.h"
+#include "Occupation/Team.h"
 #include "SkillProgressBar.generated.h"
 
 UENUM()
@@ -42,72 +43,51 @@ public:
 	explicit USkillProgressBar(const FObjectInitializer& ObjectInitializer);
 
 	void OnEnableTimeChange(const float& ArgEnableTime);
-
-	void SetTexture(UTexture2D* NewBackgroundImageTexture, UTexture2D* NewFillImageTexture);
-	void UpdateWidget();
+	
 	FORCEINLINE void SetMaxCoolTime(const float& NewMaxCoolTime) { MaxCoolTime = NewMaxCoolTime; }
 
 	void StartCoolTime(const float& ArgStartTime, const float& Duration);
 	void StartStackingRegen(const float& ArgStartTime, const float& Duration, const bool& ArgShowProgressOnlyZeroStack = false);
 
 	void OnChangeUltimateGaugeAttribute(const FOnAttributeChangeData& NewValue);
+	void SetUltimateGauge(const float& NewValue);
 	void OnChangeMaxUltimateGaugeAttribute(const FOnAttributeChangeData& NewValue);
-
+	void SetMaxUltimateGauge(const float& NewValue);
+	
 	void OnChangeSkillStackAttribute(const FOnAttributeChangeData& NewValue);
+	UFUNCTION(BlueprintNativeEvent)
+	void SetSkillStack(const float& NewValue);
 	void OnChangeMaxSkillStackAttribute(const FOnAttributeChangeData& NewValue);
+	UFUNCTION(BlueprintNativeEvent)
+	void SetMaxSkillStack(const float& NewValue);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetPercent(const float NewPercent);
+	
 	void SetProgressType(const ESkillProgressBarType& NewType);
 	FORCEINLINE ESkillProgressBarType GetProgressType() const { return ProgressBarType; }
-	void SetKey(const ESkillKey& NewKey);
 
 	FORCEINLINE	FGameplayTag GetTag() const { return SkillTag; }
 	FORCEINLINE void SetTag(const FGameplayTag& NewTag) { SkillTag = NewTag; }
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetTeam(const ETeam NewTeam);
 	
 protected:
-	UFUNCTION(BlueprintCallable)
-	virtual void NativePreConstruct() override;
-
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
-private:
-	void CreateSkillStackImages(const uint8& Count);
-
-	void UpdateSkillStackImages();
 
 protected:
 	UPROPERTY(EditAnywhere, Category = Skill)
-	TObjectPtr<UTexture2D> BackgroundImageTexture;
-
-	UPROPERTY(EditAnywhere, Category = Skill)
-	TObjectPtr<UTexture2D> FillImageTexture;
-
-	UPROPERTY(EditAnywhere, Category = Skill)
-	TObjectPtr<UTexture2D> SkillStackFillTexture;
-
-	UPROPERTY(EditAnywhere, Category = Skill)
-	TObjectPtr<UTexture2D> SKillStackEmptyTexture;
-
-	UPROPERTY(EditAnywhere, Category = Skill)
-	TMap<ESkillKey, TObjectPtr<UTexture2D>> SkillKeyImageTextureMap;
-
-	UPROPERTY(EditAnywhere, Category = Skill)
 	FGameplayTag SkillTag;
-
-	UPROPERTY(EditAnywhere, Category = Skill)
-	float Percent;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UHorizontalBox> SkillStackPanel;
-
-	UPROPERTY(meta = (bindwidget))
-	TObjectPtr<class UProgressBar> SkillProgressBar;
-
-	UPROPERTY(meta = (bindwidget))
-	TObjectPtr<class UImage> SkillKeyImage;
 
 	UPROPERTY()
 	TArray<class UImage*> SkillStackImages;
 
+	uint8 SkillStack;
+
+	uint8 MaxSkillStack;
+	
 private:
 	float EnableTime;
 
@@ -123,9 +103,7 @@ private:
 
 	float UltimateGauge;
 	float MaxUltimateGauge;
-
-	uint8 SkillStack;
-	uint8 MaxSkillStack;
-
+	
+	UPROPERTY(EditAnywhere)
 	ESkillProgressBarType ProgressBarType;
 };

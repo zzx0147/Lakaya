@@ -9,6 +9,7 @@
 namespace MatchState
 {
 	extern const FName IsSelectCharacter; //캐릭터를 선택할때의 상태입니다, WaitingToStart 다음 상태이며, 이 상태가 끝나면 InProgress로 넘어갑니다
+	extern const FName IsIntro;//캐릭터 선택 이후 게임 시작 전 인트로 상태입니다. 인트로 위젯이 출력됩니다.
 }
 
 UCLASS()
@@ -56,8 +57,8 @@ protected:
 	// 캐릭터 선택 스테이트로 넘어갈 때 호출되는 함수
 	virtual void HandleMatchIsSelectCharacter();
 
-	// 캐릭터 선택 스테이스로 넘어갈 때 호출되는 함수
-	// virtual void HandleMatchIsSelectCharacter();
+	// 인트로 화면으로 넘어갈 때 호출되는 함수;
+	virtual void HandleMatchIsIntro();
 
 	// InProgress (진행중)
 	// 여기에 들어갈 때 HandleMatchHasStarted()함수 호출
@@ -78,6 +79,7 @@ protected:
 public:
 	virtual void OnPlayerKilled(AController* VictimController, AController* InstigatorController, AActor* DamageCauser);
 	virtual void StartSelectCharacter();
+	virtual void StartIntro();
 	virtual bool HasMatchStarted() const override;
 
 protected:
@@ -91,7 +93,7 @@ public:
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
-	TMap<FName, TSubclassOf<class AInteractableCharacter>> CharacterClasses;
+	TMap<FName, TSubclassOf<class ALakayaBaseCharacter>> CharacterClasses;
 
 	UPROPERTY(EditDefaultsOnly)
 	float CharacterSelectStartDelay;
@@ -113,4 +115,9 @@ protected:
 	TMap<AController*, FTimerHandle> RespawnTimers;
 	FTimerHandle TimerHandle_Respawn;
 	FTimerHandle TimerHandle_DelayedCharacterSelectStart;
+
+private:
+	/** 부활시에 플레이어에게 적용할 이펙트입니다. 무적 효과같은 것들을 넣을 수 있습니다. */
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UGameplayEffect> RespawnEffect;
 };

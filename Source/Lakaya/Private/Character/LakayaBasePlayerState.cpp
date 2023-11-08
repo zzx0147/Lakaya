@@ -271,12 +271,17 @@ void ALakayaBasePlayerState::OnKillOtherPlayer()
 			OnKillOtherCharacterEffect, 0, AbilitySystem->MakeEffectContext());
 
 		AbilitySystem->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+		IncreaseKillStreak();
 	}
 }
 
 void ALakayaBasePlayerState::IncreaseKillStreak()
 {
 	OnKillStreakChanged.Broadcast(++KillStreak);
+	if(HasAuthority() && KillStreakBuffEffectHandle.IsValid() && GetAbilitySystemComponent())
+	{
+		GetAbilitySystemComponent()->SetActiveGameplayEffectLevel(KillStreakBuffEffectHandle, KillStreak);
+	}
 }
 
 void ALakayaBasePlayerState::ResetKillStreak()
@@ -284,6 +289,10 @@ void ALakayaBasePlayerState::ResetKillStreak()
 	// 변경될 필요가 없다면 리턴합니다.
 	if (KillStreak == 0) return;
 	KillStreak = 0;
+	if(HasAuthority() && KillStreakBuffEffectHandle.IsValid() && GetAbilitySystemComponent())
+	{
+		GetAbilitySystemComponent()->SetActiveGameplayEffectLevel(KillStreakBuffEffectHandle, KillStreak);
+	}
 	OnKillStreakChanged.Broadcast(KillStreak);
 }
 
@@ -401,23 +410,38 @@ void ALakayaBasePlayerState::InitializeStatus()
 
 		AbilitySystem->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 
-		const FGameplayEffectSpecHandle RegenEffectSpecHandle = AbilitySystem->MakeOutgoingSpec(
+		if(StatRegenEffect)
+		{
+			const FGameplayEffectSpecHandle RegenEffectSpecHandle = AbilitySystem->MakeOutgoingSpec(
 			StatRegenEffect, 0, AbilitySystem->MakeEffectContext());
-		AbilitySystem->ApplyGameplayEffectSpecToSelf(*RegenEffectSpecHandle.Data.Get());
+			AbilitySystem->ApplyGameplayEffectSpecToSelf(*RegenEffectSpecHandle.Data.Get());
+		}
+
+		if(Character->GetKillStreakBuffEffect())
+		{
+			const FGameplayEffectSpecHandle KillStreakBuffEffectSpecHandle = AbilitySystem->MakeOutgoingSpec(
+			Character->GetKillStreakBuffEffect(), 0, AbilitySystem->MakeEffectContext());
+			KillStreakBuffEffectHandle = AbilitySystem->ApplyGameplayEffectSpecToSelf(*KillStreakBuffEffectSpecHandle.Data.Get());
+		}
 	}
 }
 
 void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
 {
+	ResetKillStreak();
 	if (HasAuthority())
 	{
 		InitializeStatus();
+		
 		Health = GetMaxHealth();
 		OnHealthChanged.Broadcast(Health);
 	}
 	
+	
 	if(bIsPawnSettedOnce) return;
 	bIsPawnSettedOnce = true;
+	
+	
 	
 	
 	if (const auto OldCharacter = Cast<ALakayaBaseCharacter>(OldPawn))
@@ -475,6 +499,12 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 					BulletSpreadComponent->OnChangeBulletSpreadAmountSignature.AddUObject(
 						CharacterWidget->GetCrossHairWidget(), &UDynamicCrossHairWidget::OnChangeBulletSpreadAmount);
 				}
+
+				if(CharacterWidget->GetSkillWidget())
+				{
+					CharacterWidget->GetSkillWidget()->SetTeam(GetTeam());
+				}
+				
 			}
 		}
 	}
@@ -583,6 +613,9 @@ void ALakayaBasePlayerState::SetAliveState(bool AliveState)
 {
 	if (bRecentAliveState == AliveState) return;
 	bRecentAliveState = AliveState;
+
+	AbilitySystem->SetLooseGameplayTagCount(DeathTag, bRecentAliveState ? 0 : 1);
+	
 	if (CharacterWidget) CharacterWidget->SetAliveState(bRecentAliveState);
 	OnAliveStateChanged.Broadcast(AliveState);
 }
@@ -595,7 +628,6 @@ void ALakayaBasePlayerState::RespawnTimerCallback(FRespawnTimerDelegate Callback
 
 void ALakayaBasePlayerState::BindAllSkillToWidget()
 {
-	//TODO: 여기서 스킬과 위젯을 바인딩하면 됨
 	if (!CharacterWidget->GetSkillWidget()) return;
 
 	for (const auto& SkillProgressBar : CharacterWidget->GetSkillWidget()->GetAllSkillProgressBar())
@@ -609,12 +641,22 @@ void ALakayaBasePlayerState::BindAllSkillToWidget()
 			               AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeSkillStackAttribute);
 			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxSkillStackAttribute()).
 			               AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeMaxSkillStackAttribute);
+
+			if(HasAuthority())
+			{
+				SkillProgressBar->SetMaxSkillStack(LakayaAttributeSet->GetMaxSkillStack());
+				SkillProgressBar->SetSkillStack(LakayaAttributeSet->GetMaxSkillStack());
+			}
+			
+			
 			break;
 		case ESkillProgressBarType::Ultimate:
 			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetUltimateGaugeAttribute()).
 			               AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeUltimateGaugeAttribute);
+			SkillProgressBar->SetUltimateGauge(LakayaAttributeSet->GetUltimateGauge());
 			AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxUltimateGaugeAttribute()).
 			               AddUObject(SkillProgressBar, &USkillProgressBar::OnChangeMaxUltimateGaugeAttribute);
+			SkillProgressBar->SetMaxUltimateGauge(LakayaAttributeSet->GetMaxUltimateGauge());
 			break;
 		case ESkillProgressBarType::None:
 		default: ;
@@ -713,7 +755,7 @@ void ALakayaBasePlayerState::OnChangeSkillStackAttribute(const FOnAttributeChang
 {
 	// const auto MaxReached = NewValue.NewValue > LakayaAttributeSet->GetMaxSkillStack() || FMath::IsNearlyEqual(NewValue.NewValue, LakayaAttributeSet->GetMaxSkillStack());
 	// AbilitySystem->SetLooseGameplayTagCount(FGameplayTag::RequestGameplayTag(TEXT("AttributeEvent.ReachMaxSkillStack")), MaxReached ? 1 : 0);
-	if (CharacterWidget && CharacterWidget->GetSkillWidget() && FMath::IsNearlyEqual(NewValue.NewValue, 0.0f))
+	if (CharacterWidget && CharacterWidget->GetSkillWidget()/* && FMath::IsNearlyEqual(NewValue.NewValue, 0.0f)*/)
 	{
 		for (const auto& ProgressBar : CharacterWidget->GetSkillWidget()->GetAllSkillProgressBar())
 		{
@@ -727,7 +769,7 @@ void ALakayaBasePlayerState::OnChangeSkillStackAttribute(const FOnAttributeChang
 				if (!Result.IsEmpty())
 				{
 					const FActiveGameplayEffect* RegenEffect = AbilitySystem->GetActiveGameplayEffect(Result[0]);
-					ProgressBar->StartStackingRegen(RegenEffect->StartWorldTime, RegenEffect->GetPeriod(), true);
+					ProgressBar->StartStackingRegen(RegenEffect->StartWorldTime, RegenEffect->GetPeriod(), false);
 					// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("StartTime : %f"), RegenEffect->StartServerWorldTime));
 				}
 				break;

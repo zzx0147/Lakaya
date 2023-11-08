@@ -18,8 +18,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDashStackFullOrNot, const bool, b
 
 DECLARE_EVENT_ThreeParams(ALakayaBasePlayerState, FPlayerKilledSignature, AController*, AController*, AActor*)
 
-DECLARE_EVENT_OneParam(ALakayaBasePlayerState, FAttributeChangeSignature, const float&)
-
 UCLASS(Config=Game)
 class LAKAYA_API ULakayaAttributeSet : public ULakayaBaseAttributeSet
 {
@@ -36,21 +34,20 @@ public:
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, SkillStack);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxSkillStack);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, EnergyHaste);
+	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, Agility);
+	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, Preparation);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, UltimateGauge);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, MaxUltimateGauge);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, UltimateGainOnAttack);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, UltimateGainOnAttacked);
 	ATTRIBUTE_ACCESSORS(ULakayaAttributeSet, UltimateGainOnSecond);
 
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDashStackFullOrNot OnDashStackFullOrNot;
-
-	mutable FAttributeChangeSignature OnHealthChanged;
-
-	mutable FAttributeChangeSignature OnMaxHealthChanged;
 
 	mutable FPlayerKilledSignature OnPlayerKill;
 
@@ -60,6 +57,8 @@ protected:
 	virtual void PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const override;
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
+	virtual void
+	PostAttributeBaseChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) const override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealth)
 	FGameplayAttributeData MaxHealth;
@@ -85,6 +84,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_EnergyHaste)
 	FGameplayAttributeData EnergyHaste;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_Agility)
+	FGameplayAttributeData Agility;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_Preparation)
+	FGameplayAttributeData Preparation;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_UltimateGauge)
 	FGameplayAttributeData UltimateGauge;
 
@@ -100,7 +105,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing= OnRep_UltimateGainOnSecond)
 	FGameplayAttributeData UltimateGainOnSecond;
 
-	
 protected:
 	UFUNCTION()
 	virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldValue);
@@ -118,6 +122,10 @@ protected:
 	virtual void OnRep_MaxSkillStack(const FGameplayAttributeData& OldValue);
 	UFUNCTION()
 	virtual void OnRep_EnergyHaste(const FGameplayAttributeData& OldValue);
+	UFUNCTION()
+	virtual void OnRep_Preparation(const FGameplayAttributeData& OldValue);
+	UFUNCTION()
+	virtual void OnRep_Agility(const FGameplayAttributeData& OldValue);
 	UFUNCTION()
 	virtual void OnRep_UltimateGauge(const FGameplayAttributeData& OldValue);
 	UFUNCTION()

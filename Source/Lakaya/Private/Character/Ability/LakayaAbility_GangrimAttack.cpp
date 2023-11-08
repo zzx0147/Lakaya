@@ -3,7 +3,7 @@
 
 #include "Character/Ability/LakayaAbility_GangrimAttack.h"
 
-FVector ULakayaAbility_GangrimAttack::GetOverlappedPoint(UPrimitiveComponent* TargetComp, AActor* TargetActor)
+FHitResult ULakayaAbility_GangrimAttack::K2_ComponentSweepMulti(UPrimitiveComponent* TargetComp, AActor* TargetActor)
 {
 	TArray<FHitResult> Results;
 	FComponentQueryParams Params;
@@ -17,9 +17,9 @@ FVector ULakayaAbility_GangrimAttack::GetOverlappedPoint(UPrimitiveComponent* Ta
 	{
 		if(Result.GetActor() == TargetActor)
 		{
-			return Result.ImpactPoint;
+			return Result;
 		}
 	}
 
-	return GetAvatarActorFromActorInfo()->GetActorLocation();
+	return FHitResult();
 }

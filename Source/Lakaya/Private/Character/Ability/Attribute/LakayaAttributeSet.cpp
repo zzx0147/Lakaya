@@ -7,6 +7,12 @@
 #include "GameFramework/PlayerState.h"
 #include "Net/UnrealNetwork.h"
 
+#define MARK_ATTRIBUTE_DIRTY_IF_CHANGED(AttributeName)\
+	if (Attribute == Get##AttributeName##Attribute())\
+	{\
+		MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, AttributeName, this)\
+	}
+
 
 bool ULakayaAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data)
 {
@@ -16,18 +22,6 @@ bool ULakayaAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackDat
 void ULakayaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
-
-	// if (Data.EvaluatedData.Attribute == GetHealthAttribute())
-	// {
-	// 	// 이 게임플레이 이펙트는 Health를 변경합니다. 적용하되 우선 값을 제한합니다.
-	// 	// 이 경우 Health 베이스 값은 음수가 아니어야 합니다.
-	// 	SetHealth(FMath::Max(GetHealth(), 0.0f));
-	// }
-	//
-	// if (Data.EvaluatedData.Attribute == GetUltimateGaugeAttribute())
-	// {
-	// 	SetUltimateGauge(FMath::Min(GetUltimateGauge(), GetMaxUltimateGauge()));
-	// }
 
 	if ((GetHealth() <= 0.0f) && !bOutOfHealth)
 	{
@@ -65,31 +59,18 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 {
 	Super::PostAttributeChange(Attribute, OldValue, NewValue);
 
-	// if (Attribute == GetSkillStackAttribute())
-	// {
-	// 	if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), NewValue, 0.01f)) //대시 갯수가 꽉 참, 대쉬 갯수 리젠 이펙트를 꺼야 함
-	// 	{
-	// 		OnDashStackFullOrNot.Broadcast(true);
-	// 	}
-	// 	else if (FMath::IsNearlyEqual(MaxSkillStack.GetCurrentValue(), OldValue, 0.01f) && NewValue < OldValue)
-	// 	//최대치에서 감소함, 이때부터 대쉬 갯수 리젠 이펙트를 켜야 함
-	// 	{
-	// 		OnDashStackFullOrNot.Broadcast(false);
-	// 	}
-	//
-	// 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("SkillStack: %f"), NewValue));
-	// }
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(Health)
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(SkillStack)
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(CurrentAmmo)
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(UltimateGauge)
+
 	if (Attribute == GetHealthAttribute())
 	{
-		OnHealthChanged.Broadcast(NewValue);
-		if(OldValue > NewValue)
+		if (OldValue > NewValue)
 		{
-			SetUltimateGauge(UltimateGauge.GetBaseValue() + (OldValue - NewValue) * UltimateGainOnAttacked.GetCurrentValue());
+			SetUltimateGauge(
+				UltimateGauge.GetBaseValue() + (OldValue - NewValue) * UltimateGainOnAttacked.GetCurrentValue());
 		}
-	}
-	else if (Attribute == GetMaxHealthAttribute())
-	{
-		OnMaxHealthChanged.Broadcast(NewValue);
 	}
 
 	if (bOutOfHealth && (GetHealth() > 0.0f))
@@ -98,16 +79,24 @@ void ULakayaAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 	}
 }
 
+void ULakayaAttributeSet::PostAttributeBaseChange(const FGameplayAttribute& Attribute, float OldValue,
+                                                  float NewValue) const
+{
+	Super::PostAttributeBaseChange(Attribute, OldValue, NewValue);
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(Health)
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(SkillStack)
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(CurrentAmmo)
+	MARK_ATTRIBUTE_DIRTY_IF_CHANGED(UltimateGauge)
+}
+
 void ULakayaAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, MaxHealth, OldValue);
-	OnMaxHealthChanged.Broadcast(MaxHealth.GetCurrentValue());
 }
 
 void ULakayaAttributeSet::OnRep_Health(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, Health, OldValue);
-	OnHealthChanged.Broadcast(Health.GetCurrentValue());
 }
 
 void ULakayaAttributeSet::OnRep_MaxAmmo(const FGameplayAttributeData& OldValue)
@@ -142,6 +131,16 @@ void ULakayaAttributeSet::OnRep_EnergyHaste(const FGameplayAttributeData& OldVal
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, EnergyHaste, OldValue);
 }
 
+void ULakayaAttributeSet::OnRep_Preparation(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, Preparation, OldValue);
+}
+
+void ULakayaAttributeSet::OnRep_Agility(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, Agility, OldValue);
+}
+
 void ULakayaAttributeSet::OnRep_UltimateGauge(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ULakayaAttributeSet, UltimateGauge, OldValue);
@@ -171,6 +170,7 @@ void ULakayaAttributeSet::OnRep_UltimateGainOnSecond(const FGameplayAttributeDat
 
 ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), MaxAmmo(-1.0f), CurrentAmmo(-1.0f),
                                              AttackPoint(40.0f), SkillStack(3.0f), MaxSkillStack(3.0f),
+                                             EnergyHaste(0.0f), Agility(0.0f), Preparation(0.0f),
                                              UltimateGauge(0.0f), MaxUltimateGauge(-1.0f), UltimateGainOnAttack(1.0f),
                                              UltimateGainOnAttacked(1.0f), UltimateGainOnSecond(0.0f)
 {
@@ -188,17 +188,24 @@ ULakayaAttributeSet::ULakayaAttributeSet() : MaxHealth(100.0f), Health(100.0f), 
 void ULakayaAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, Health, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, MaxAmmo, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, CurrentAmmo, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, AttackPoint, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, SkillStack, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, MaxSkillStack, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, EnergyHaste, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, UltimateGauge, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, MaxUltimateGauge, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, UltimateGainOnAttack, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, UltimateGainOnAttacked, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(ULakayaAttributeSet, UltimateGainOnSecond, COND_None, REPNOTIFY_Always);
+	FDoRepLifetimeParams Params;
+	Params.RepNotifyCondition = REPNOTIFY_Always;
+	Params.bIsPushBased = true;
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, Health, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, SkillStack, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, CurrentAmmo, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, UltimateGauge, Params);
+
+	Params.bIsPushBased = false;
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, MaxHealth, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, MaxAmmo, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, AttackPoint, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, MaxSkillStack, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, EnergyHaste, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, Agility, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, Preparation, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, MaxUltimateGauge, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, UltimateGainOnAttack, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, UltimateGainOnAttacked, Params);
+	DOREPLIFETIME_WITH_PARAMS(ULakayaAttributeSet, UltimateGainOnSecond, Params);
 }

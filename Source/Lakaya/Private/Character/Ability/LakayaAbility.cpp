@@ -11,6 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameplayCue_Types.h"
+#include "Character/Ability/Component/AbilityComponent.h"
 #include "ETC/LakayaPlayerCameraManager.h"
 #include "Input/LakayaInputContext.h"
 
@@ -83,36 +84,11 @@ void ULakayaAbility::NativeCancelAbility(const FGameplayAbilitySpecHandle Handle
 	Log(ActorInfo, TEXT("Cancel Ability"));
 }
 
-UEnhancedInputComponent* ULakayaAbility::GetEnhancedInputComponent(const FGameplayAbilityActorInfo* ActorInfo)
-{
-	return ActorInfo && ActorInfo->PlayerController.IsValid()
-		       ? Cast<UEnhancedInputComponent>(ActorInfo->PlayerController->InputComponent)
-		       : nullptr;
-}
-
 ULocalPlayer* ULakayaAbility::GetLocalPlayer(const FGameplayAbilityActorInfo* ActorInfo)
 {
 	return ActorInfo && ActorInfo->PlayerController.IsValid()
 		       ? ActorInfo->PlayerController->GetLocalPlayer()
 		       : nullptr;
-}
-
-UEnhancedInputLocalPlayerSubsystem* ULakayaAbility::GetEnhancedInputSubsystem(
-	const FGameplayAbilityActorInfo* ActorInfo)
-{
-	// 인스턴스를 생성하지 않는 경우 서브시스템을 캐싱하면 안되므로, 매번 새로 가져옵니다. 
-	if (InstancingPolicy == EGameplayAbilityInstancingPolicy::NonInstanced)
-	{
-		return InternalGetEnhancedInputSubsystem(ActorInfo);
-	}
-
-	// 서브시스템이 유효하지 않는 경우 업데이트합니다.
-	if (!CachedInputSubsystem.IsValid())
-	{
-		CachedInputSubsystem = InternalGetEnhancedInputSubsystem(ActorInfo);
-	}
-
-	return CachedInputSubsystem.Get();
 }
 
 FString ULakayaAbility::LogFormat(const FGameplayAbilityActorInfo* ActorInfo, const FString& Message) const
@@ -350,37 +326,36 @@ void ULakayaAbility::BP_SetZoom(const bool& bZoom, const float& ZoomFov)
 	SetZoom(bZoom, ZoomFov, GetCurrentActorInfo());
 }
 
-void ULakayaAbility::AddMappingContext(const FGameplayAbilityActorInfo* ActorInfo,
-                                       const ULakayaInputContext* InputContext)
-{
-	if (const auto InputSystem = GetEnhancedInputSubsystem(ActorInfo); InputSystem && InputContext)
-	{
-		InputContext->AddMappingContext(InputSystem);
-	}
-}
-
-void ULakayaAbility::BP_AddMappingContext(const ULakayaInputContext* InputContext)
-{
-	AddMappingContext(GetCurrentActorInfo(), InputContext);
-}
-
-void ULakayaAbility::RemoveMappingContext(const FGameplayAbilityActorInfo* ActorInfo,
-                                          const ULakayaInputContext* InputContext)
-{
-	if (const auto InputSystem = GetEnhancedInputSubsystem(ActorInfo); InputSystem && InputContext)
-	{
-		InputContext->RemoveMappingContext(InputSystem);
-	}
-}
-
-void ULakayaAbility::BP_RemoveMappingContext(const ULakayaInputContext* InputContext)
-{
-	RemoveMappingContext(GetCurrentActorInfo(), InputContext);
-}
-
 bool ULakayaAbility::TryActivateAbilityWithSpec(UAbilitySystemComponent* ASC, const FGameplayAbilitySpec& Spec)
 {
 	return ASC->TryActivateAbility(Spec.Handle);
+}
+
+UAbilityComponent* ULakayaAbility::FindOrAddAbilityComponent(AActor* TargetActor,
+                                                             const TSubclassOf<UAbilityComponent> ComponentClass,
+                                                             bool& bIsAdded)
+{
+	bIsAdded = false;
+	if (!IsValid(TargetActor) || !ComponentClass.Get())
+	{
+		return nullptr;
+	}
+
+	auto Component = Cast<UAbilityComponent>(TargetActor->GetComponentByClass(ComponentClass));
+	if (!Component)
+	{
+		Component = Cast<UAbilityComponent>(
+			TargetActor->AddComponentByClass(ComponentClass, false, FTransform::Identity, false));
+
+		if (!Component)
+		{
+			return nullptr;
+		}
+		bIsAdded = true;
+	}
+
+	Component->SetOwningAbility(this);
+	return Component;
 }
 
 void ULakayaAbility::HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
@@ -467,13 +442,6 @@ void ULakayaAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const F
 	}
 	NativeEndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-}
-
-UEnhancedInputLocalPlayerSubsystem* ULakayaAbility::InternalGetEnhancedInputSubsystem(
-	const FGameplayAbilityActorInfo* ActorInfo)
-{
-	const auto LocalPlayer = GetLocalPlayer(ActorInfo);
-	return LocalPlayer ? LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>() : nullptr;
 }
 
 void ULakayaAbility::BindTargetDataDelegate()

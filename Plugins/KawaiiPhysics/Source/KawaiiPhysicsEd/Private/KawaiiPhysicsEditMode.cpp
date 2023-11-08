@@ -128,7 +128,7 @@ void FKawaiiPhysicsEditMode::RenderSphericalLimits(FPrimitiveDrawInterface* PDI)
 		for( int32 i=0; i< RuntimeNode->SphericalLimits.Num(); i++)
 		{
 			auto& Sphere = RuntimeNode->SphericalLimits[i];
-			if (Sphere.Radius > 0)
+			if (Sphere.bEnable && Sphere.Radius > 0)
 			{
 				PDI->SetHitProxy(new HKawaiiPhysicsHitProxy(ECollisionLimitType::Spherical, i));
 				DrawSphere(PDI, Sphere.Location, FRotator::ZeroRotator, FVector(Sphere.Radius), 24, 6,
@@ -141,7 +141,7 @@ void FKawaiiPhysicsEditMode::RenderSphericalLimits(FPrimitiveDrawInterface* PDI)
 		for (int32 i = 0; i < RuntimeNode->SphericalLimitsData.Num(); i++)
 		{
 			auto& Sphere = RuntimeNode->SphericalLimitsData[i];
-			if (Sphere.Radius > 0)
+			if (Sphere.bEnable && Sphere.Radius > 0)
 			{
 				PDI->SetHitProxy(new HKawaiiPhysicsHitProxy(ECollisionLimitType::Spherical, i, true));
 				DrawSphere(PDI, Sphere.Location, FRotator::ZeroRotator, FVector(Sphere.Radius), 24, 6,
@@ -160,7 +160,7 @@ void FKawaiiPhysicsEditMode::RenderCapsuleLimit(FPrimitiveDrawInterface* PDI) co
 		for (int32 i = 0; i < RuntimeNode->CapsuleLimits.Num(); i++)
 		{
 			auto& Capsule = RuntimeNode->CapsuleLimits[i];
-			if (Capsule.Radius > 0 && Capsule.Length > 0)
+			if (Capsule.bEnable && Capsule.Radius > 0 && Capsule.Length > 0)
 			{
 				FVector XAxis = Capsule.Rotation.GetAxisX();
 				FVector YAxis = Capsule.Rotation.GetAxisY();
@@ -185,7 +185,7 @@ void FKawaiiPhysicsEditMode::RenderCapsuleLimit(FPrimitiveDrawInterface* PDI) co
 		for (int32 i = 0; i < RuntimeNode->CapsuleLimitsData.Num(); i++)
 		{
 			auto& Capsule = RuntimeNode->CapsuleLimitsData[i];
-			if (Capsule.Radius > 0 && Capsule.Length > 0)
+			if (Capsule.bEnable && Capsule.Radius > 0 && Capsule.Length > 0)
 			{
 				FVector XAxis = Capsule.Rotation.GetAxisX();
 				FVector YAxis = Capsule.Rotation.GetAxisY();
@@ -216,7 +216,6 @@ void FKawaiiPhysicsEditMode::RenderPlanerLimit(FPrimitiveDrawInterface* PDI)
 		for (int32 i = 0; i < RuntimeNode->PlanarLimits.Num(); i++)
 		{
 			auto& Plane = RuntimeNode->PlanarLimits[i];
-			
 			FTransform PlaneTransform = FTransform(Plane.Rotation, Plane.Location);
 			PlaneTransform.NormalizeRotation();
 
@@ -228,7 +227,6 @@ void FKawaiiPhysicsEditMode::RenderPlanerLimit(FPrimitiveDrawInterface* PDI)
 		for (int32 i = 0; i < RuntimeNode->PlanarLimitsData.Num(); i++)
 		{
 			auto& Plane = RuntimeNode->PlanarLimitsData[i];
-
 			FTransform PlaneTransform = FTransform(Plane.Rotation, Plane.Location);
 			PlaneTransform.NormalizeRotation();
 
@@ -361,16 +359,43 @@ bool FKawaiiPhysicsEditMode::InputKey(FEditorViewportClient* InViewportClient, F
 			switch (SelectCollisionType)
 			{
 			case ECollisionLimitType::Spherical:
-				RuntimeNode->SphericalLimits.RemoveAt(SelectCollisionIndex);
-				GraphNode->Node.SphericalLimits.RemoveAt(SelectCollisionIndex);
+				if(SelectCollisionIsFromDataAsset)
+				{
+					RuntimeNode->LimitsDataAsset->SphericalLimitsData.RemoveAt(SelectCollisionIndex);
+					RuntimeNode->LimitsDataAsset->Sync();
+					RuntimeNode->LimitsDataAsset->MarkPackageDirty();
+				}
+				else
+				{
+					RuntimeNode->SphericalLimits.RemoveAt(SelectCollisionIndex);
+					GraphNode->Node.SphericalLimits.RemoveAt(SelectCollisionIndex);
+				}
 				break;
 			case ECollisionLimitType::Capsule:
-				RuntimeNode->CapsuleLimits.RemoveAt(SelectCollisionIndex);
-				GraphNode->Node.CapsuleLimits.RemoveAt(SelectCollisionIndex);
+				if(SelectCollisionIsFromDataAsset)
+				{
+					RuntimeNode->LimitsDataAsset->CapsuleLimitsData.RemoveAt(SelectCollisionIndex);
+					RuntimeNode->LimitsDataAsset->Sync();
+					RuntimeNode->LimitsDataAsset->MarkPackageDirty();
+				}
+				else
+				{
+					RuntimeNode->CapsuleLimits.RemoveAt(SelectCollisionIndex);
+					GraphNode->Node.CapsuleLimits.RemoveAt(SelectCollisionIndex);
+				}
 				break;
 			case ECollisionLimitType::Planar:
-				RuntimeNode->PlanarLimits.RemoveAt(SelectCollisionIndex);
-				GraphNode->Node.PlanarLimits.RemoveAt(SelectCollisionIndex);
+				if(SelectCollisionIsFromDataAsset)
+				{
+					RuntimeNode->LimitsDataAsset->PlanarLimitsData.RemoveAt(SelectCollisionIndex);
+					RuntimeNode->LimitsDataAsset->Sync();
+					RuntimeNode->LimitsDataAsset->MarkPackageDirty();
+				}
+				else
+				{
+					RuntimeNode->PlanarLimits.RemoveAt(SelectCollisionIndex);
+					GraphNode->Node.PlanarLimits.RemoveAt(SelectCollisionIndex);
+				}
 				break;
 			case ECollisionLimitType::None: break;
 			default: ;
@@ -516,9 +541,18 @@ void FKawaiiPhysicsEditMode::DoRotation(FRotator& InRotation)
 	{
 		return;
 	}
-
-	USkeletalMeshComponent* SkelComp = GetAnimPreviewScene().GetPreviewMeshComponent();
-	FQuat DeltaQuat = ConvertCSRotationToBoneSpace(SkelComp, InRotation, RuntimeNode->ForwardedPose, CollisionRuntime->DrivingBone.BoneName, BCS_BoneSpace);
+	
+	FQuat DeltaQuat;
+	if(CollisionRuntime->DrivingBone.BoneIndex >= 0)
+	{
+		USkeletalMeshComponent* SkelComp = GetAnimPreviewScene().GetPreviewMeshComponent();
+		DeltaQuat = ConvertCSRotationToBoneSpace(SkelComp, InRotation, RuntimeNode->ForwardedPose, CollisionRuntime->DrivingBone.BoneName, BCS_BoneSpace);
+	}
+	else
+	{
+		DeltaQuat = InRotation.Quaternion();
+	}
+	
 	CollisionRuntime->OffsetRotation = FRotator(DeltaQuat * CollisionRuntime->OffsetRotation.Quaternion());
 	CollisionGraph->OffsetRotation = CollisionRuntime->OffsetRotation;
 

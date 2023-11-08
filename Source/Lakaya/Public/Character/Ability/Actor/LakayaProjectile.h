@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "LakayaProjectile.generated.h"
 
+class UProjectileMovementComponent;
 class USphereComponent;
 
 UENUM(BlueprintType)
@@ -184,6 +185,12 @@ public:
 	UFUNCTION(BlueprintGetter)
 	USphereComponent* GetCollisionComponent() const { return CollisionComponent; }
 
+	UFUNCTION(BlueprintGetter)
+	UProjectileMovementComponent* GetProjectileMovementComponent() const { return ProjectileMovementComponent; }
+
+	UFUNCTION(BlueprintGetter)
+	const float& GetProjectileLaunchVelocity() const { return ProjectileLaunchVelocity; }
+
 	/**
 	 * 투사체의 상태가 변경되면 호출되는 이벤트입니다. 로컬에서 예측적으로 투사체의 상태를 변경할 때에도 호출됩니다.
 	 * 이 이벤트에서 투사체의 상태를 변경할만한 함수를 호출하면 예기치 못한 버그가 발생할 수 있습니다. (예: ThrowProjectile)
@@ -213,14 +220,6 @@ protected:
 	/** 투사체의 상태를 Collapsed로 변경합니다. */
 	UFUNCTION(BlueprintCallable)
 	void SetProjectileStateCollapsed();
-
-	//TODO: 추후 블루프린트 라이브러리를 만들어서 옮겨야 합니다.
-	UFUNCTION(BlueprintCallable)
-	static void SetSourceObject(FGameplayEffectContextHandle EffectContext, const UObject* SourceObject);
-
-	//TODO: 추후 블루프린트 라이브러리를 만들어서 옮겨야 합니다.
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static ECollisionChannel ConvertToCollisionChannel(const EObjectTypeQuery& ObjectType);
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnStartPathPrediction(const FProjectileThrowData& InThrowData);
@@ -360,8 +359,8 @@ private:
 	                             UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 	                             const FHitResult& SweepResult);
 
-	UPROPERTY(VisibleAnywhere)
-	class UProjectileMovementComponent* ProjectileMovementComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintGetter=GetProjectileMovementComponent)
+	UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintGetter=GetCollisionComponent)
 	USphereComponent* CollisionComponent;
@@ -372,7 +371,7 @@ private:
 	UPROPERTY(Replicated, Transient)
 	FProjectileThrowData ThrowData;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintGetter=GetProjectileLaunchVelocity)
 	float ProjectileLaunchVelocity;
 
 	FProjectileState LocalState;

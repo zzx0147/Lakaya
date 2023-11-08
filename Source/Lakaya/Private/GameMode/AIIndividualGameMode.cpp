@@ -85,12 +85,6 @@ void AAIIndividualGameMode::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
 
-	AAIIndividualGameState* AiIndividualGameState = GetGameState<AAIIndividualGameState>();
-	if (AiIndividualGameState)
-	{
-		AiIndividualGameState->SetAIIndividualWinner();
-	}
-
 	GetWorldTimerManager().SetTimer(TimerHandle_DelayedEnded, this, &AAIIndividualGameMode::DelayedEndedGame,
 									MatchEndDelay, false);
 	

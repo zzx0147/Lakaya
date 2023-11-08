@@ -3,8 +3,6 @@
 
 #include "AI/AiCharacterController.h"
 
-#include "Character/ArmedCharacter.h"
-#include "Character/BulletComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
 AAiCharacterController::AAiCharacterController() // 생성자
@@ -16,7 +14,7 @@ AAiCharacterController::AAiCharacterController() // 생성자
 	BehaviorTreeComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComp"));
 
 	// AI의 SpringArm SocketOffset 설정을 위한 변수
-	AISpringArmOffset = FVector(0,0,-54);
+	AISpringArmOffset = FVector(0, 0, -54);
 }
 
 void AAiCharacterController::OnPossess(APawn* InPawn)
@@ -44,11 +42,12 @@ void AAiCharacterController::UpdateControlRotation(float DeltaTime, bool bUpdate
 	if (bUpdatePawn)
 	{
 		APawn* const MyPawn = GetPawn();
-		if(MyPawn)
+		if (MyPawn)
 		{
 			const FRotator CurrentPawnRotation = MyPawn->GetActorRotation();
-			SmoothTargetRotation = UKismetMathLibrary::RInterpTo_Constant(MyPawn->GetActorRotation(), ControlRotation, DeltaTime, SmoothFocusInterpSpeed);
-		
+			SmoothTargetRotation = UKismetMathLibrary::RInterpTo_Constant(
+				MyPawn->GetActorRotation(), ControlRotation, DeltaTime, SmoothFocusInterpSpeed);
+
 			if (CurrentPawnRotation.Equals(SmoothTargetRotation, 1e-3f) == false)
 			{
 				MyPawn->FaceRotation(SmoothTargetRotation, DeltaTime);
@@ -57,57 +56,8 @@ void AAiCharacterController::UpdateControlRotation(float DeltaTime, bool bUpdate
 	}
 }
 
-void AAiCharacterController::AIFireStart(AArmedCharacter* ArmCharacter)
+UAbilitySystemComponent* AAiCharacterController::GetAbilitySystemComponent() const
 {
-	if (ArmCharacter) ArmCharacter->StartAbility(WeaponFire);
-}
-
-void AAiCharacterController::AIFireStop(AArmedCharacter* ArmCharacter)
-{
-	if (ArmCharacter) ArmCharacter->StopAbility(WeaponFire);
-}
-
-void AAiCharacterController::AIReloadStart(AArmedCharacter* ArmCharacter)
-{
-	if (ArmCharacter) ArmCharacter->StartAbility(WeaponReload);
-}
-
-void AAiCharacterController::AIReloadStop(AArmedCharacter* ArmCharacter)
-{
-	if (ArmCharacter) ArmCharacter->StopAbility(WeaponReload);
-}
-
-void AAiCharacterController::AIRemainBulletCheck(AArmedCharacter* ArmCharacter, uint8& RemainBullet)
-{
-	BulletComponent = GetPawn()->FindComponentByClass<UBulletComponent>();
-	
-	if (ArmCharacter)
-	{
-		RemainBullet = BulletComponent->GetBullets();
-	}
-}
-
-void AAiCharacterController::AIPrimarySkillStart(AArmedCharacter* ArmCharacter)
-{
-	if (ArmCharacter) ArmCharacter->StartAbility(Primary);
-}
-
-void AAiCharacterController::AISecondarySkillStart(AArmedCharacter* ArmCharacter)
-{
-	if (ArmCharacter) ArmCharacter->StartAbility(Secondary);
-}
-
-void AAiCharacterController::AIWeaponSkillStart(AArmedCharacter* ArmCharacter)
-{
-	if (ArmCharacter) ArmCharacter->StartAbility(WeaponAbility);
-}
-
-void AAiCharacterController::AIPrimarySkillStop(AArmedCharacter* ArmCharacter)
-{
-	if (ArmCharacter) ArmCharacter->StopAbility(Primary);
-}
-
-void AAiCharacterController::AISecondarySkillStop(AArmedCharacter* ArmCharacter)
-{
-	if (ArmCharacter) ArmCharacter->StopAbility(Secondary);
+	const auto CastedState = GetPlayerState<IAbilitySystemInterface>();
+	return CastedState ? CastedState->GetAbilitySystemComponent() : nullptr;
 }

@@ -4,11 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "LakayaBaseGameState.h"
-#include "Components/ProgressBar.h"
 #include "EOS/EOSGameInstance.h"
 #include "UI/OccupationTabMinimapWidget.h"
 #include "Occupation/Team.h"
-
+#include "UI/OccupyExpressElementWidget.h"
 #include "OccupationGameState.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeOccupationWinner, const ETeam&)
@@ -68,10 +67,38 @@ public:
 	 * @param Id 점령한 점령 구역의 Id입니다.
 	 */
 	UFUNCTION()
-	void UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id);
+	void UpdateOccupyExpressWidget(const ETeam& Team, const uint8& Id) const;
 
+	/**
+	 * @brief 점령중일 때, 점령 표시 위젯을 업데이트시켜주는 함수입니다.
+	 * @param Team 점령중인 팀입니다.
+	 * @param Id 점령중인 점령ID입니다.
+	 * @param Progress 점령 진행도입니다.
+	 */
 	UFUNCTION()
 	void UpdateExpressWidget(const ETeam& Team, const uint8& Id, const float& Progress);
+
+	/**
+	 * @brief 점령구역의 소속 팀을 바꿔주는 함수입니다.
+	 * @param NewCaptureId 소속팀이 바뀐 점령지의 ID입니다.
+	 * @param NewTeam 바뀔 팀입니다.
+	 */
+	UFUNCTION()
+	void SetCaptureOwnerChange(const uint8 NewCaptureId, const ETeam& NewTeam);
+
+	/**
+	 * @brief 점령구역의 소속 팀이 바뀔 때, 소속 팀의 따라 이미지를 저장하는 함수입니다.
+	 * @param NewCaptureId 소속팀이 바뀐 점령지의 ID입니다.
+	 * @param NewTeam 바뀔 팀입니다.
+	 */
+	void UpdateAreaImage(const uint8 NewCaptureId, const ETeam& NewTeam) const;
+
+	/**
+	 * @brief 점령구역의 소속 팀이 바뀔 때, 점령아이콘을 바꿔주는 함수입니다.
+	 * @param NewCaptureId 소속팀이 바뀐 점령지의 ID입니다.
+	 * @param NewTexture 바뀔 팀입니다.
+	 */
+	void UpdateImage(const uint8 NewCaptureId, UTexture2D* NewTexture) const;
 	
 	void OnEnemySpotted(const ETeam& EnemyTeam,
 		ALakayaBasePlayerState* Enemy);
@@ -86,6 +113,12 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiCast_HideFromMinimap(const ETeam& EnemyTeam,
 		ALakayaBasePlayerState* Enemy);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TArray<ALakayaBasePlayerState*> GetAllyArray(UObject* TeamObject) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TArray<ALakayaBasePlayerState*> GetEnemyArray(UObject* TeamObject) const;
 	
 	FORCEINLINE const float& GetTeamScore(const ETeam& Team) const { return (Team == ETeam::Anti) ? AntiTeamScore : ProTeamScore; }
 	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }
@@ -93,8 +126,6 @@ public:
 	FORCEINLINE bool GetSomeoneReachedMaxScore() const { return AntiTeamScore >= MaxScore || ProTeamScore >= MaxScore; }
 	FORCEINLINE const uint8& GetAntiTeamCaptureAreaCount() const { return AntiTeamCaptureAreaCount; }
 	FORCEINLINE const uint8& GetProTeamCaptureAreaCount() const { return ProTeamCaptureAreaCount; }
-	FORCEINLINE TArray<TObjectPtr<ALakayaBasePlayerState>>& GetAllyArray() { return PlayersByTeamMap[ClientTeam]; }
-	FORCEINLINE TArray<TObjectPtr<ALakayaBasePlayerState>>& GetEnemyArray() { return PlayersByTeamMap[ClientTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti]; }
 	FORCEINLINE const ETeam& GetTeamToUpdate() const { return TeamToUpdate; }
 	
 	FORCEINLINE void SetAntiTeamCaptureAreaCount(const uint8& NewCaptureCount) { AntiTeamCaptureAreaCount = NewCaptureCount; }
@@ -110,6 +141,10 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 
 	/**
+	 * @brief 게임 내에서 인트로가 시작했을 때, 호출되는 함수입니다.
+	 */
+	virtual void HandleMatchIsIntro() override;
+	/**
 	 * @brief 게임 내에서 매치가 끝났을 때, 호출되는 함수입니다.
 	 */
 	virtual void HandleMatchHasEnded() override;
@@ -122,17 +157,15 @@ protected:
 	
 	virtual bool TrySendMatchResultData() override;
 
-	virtual bool CanInstigatorClairvoyance(const AActor* InInstigator) const override;
-	virtual bool ShouldActivateClairvoyance() const override;
-	virtual void OnClairvoyanceActivateRequested(const AActor* InInstigator) override;
-	virtual void OnClairvoyanceDeactivateRequested(const AActor* InInstigator) override;
+	virtual void OnRep_MatchEndingTime() override;
+
 	
 private:
-	virtual void SetClientTeam(const ETeam& NewTeam);
+	virtual void SetClientTeam(const ETeam& NewTeam) override;
 	
 	void EndTimeCheck();
 	
-	void DestroyShieldWallObject();
+	void DestroyShieldWallObject() const;
 
 	void UpdatePlayerByTeamMap(const ETeam& Team, ALakayaBasePlayerState* PlayerState);
 
@@ -147,7 +180,7 @@ private:
 	void InternalSetScoreBoardVisibility(const bool& Visible) const;
 
 	void InternalSetTabMinimapVisibility(const bool& Visible) const;
-	
+
 	// 스코어를 업데이트 해주는 함수입니다.
 	void UpdateTeamScoreTick();
 
@@ -161,7 +194,7 @@ private:
 	void OnRep_OccupationWinner() const;
 
 	/**
-	 * @brief PlayerByMinimap Tmap을 업데이트 해줍니다.
+	 * @brief PlayerByMinimap를 업데이트 해주는 함수입니다.
 	 * @param Team 업데이트시켜줄 팀입니다.
 	 * @param PlayerState PlayersByMinimap에 업데이트 시켜줄 플레이어의 정보입니다.
 	 * PlayerState에서는 팀의 정보, 자기 자신 여부를 알기 위해서 사용됩니다.
@@ -206,10 +239,9 @@ private:
 	bool ResultBool = false;
 
 	// 플레이어의 팀에 따른 플레이어 리스트를 저장하는 맵입니다.
+	//TODO: 댕글링 포인터가 발생할 수 있으므로 약포인터로 변경해야 합니다. TMap에 TArray를 값형식으로 사용하면 UPROPERTY로 선언할 수 없습니다. 
 	TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> PlayersByTeamMap;
 	
-	ETeam ClientTeam;
-
 	UPROPERTY(Replicated)
 	ETeam TeamToUpdate = ETeam::None;
 	
@@ -226,10 +258,12 @@ private:
 	TSet<TWeakObjectPtr<const AActor>> ClairvoyanceInstigatorSet;
 
 	UPROPERTY()
-	TMap<uint8, UProgressBar*> OccupyBarMaps;
+	TMap<uint8, TObjectPtr<UOccupyExpressElementWidget>> OccupyBarMaps;
+	
+	UPROPERTY()
+	TMap<uint8, ETeam> CaptureOwnerMap;
 	
 #pragma region Widget
-
 	// 게임중에 표시되는 팀 스코어 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UTeamScoreWidget> TeamScoreWidgetClass;

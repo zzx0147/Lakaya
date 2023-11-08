@@ -1,13 +1,15 @@
 #include "GameMode/AIIndividualGameState.h"
 
+#include "IndividualTabMinimapWidget.h"
 #include "AI/AiCharacterController.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "PlayerController/InteractablePlayerController.h"
+#include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
+#include "UI/IndividualOverlayMinimapWidget.h"
 #include "UI/IndividualWidget/IndividualGameResultWidget.h"
 #include "UI/IndividualWidget/IndividualLiveScoreBoardWidget.h"
+#include "UI/GameScoreBoardWidget.h"
 
 AAIIndividualGameState::AAIIndividualGameState()
 {
@@ -18,6 +20,11 @@ AAIIndividualGameState::AAIIndividualGameState()
 		TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_IndividualLiveScoreBoardWidget"));
 
 	AIIndividualLiveScoreBoardWidgetClass = AIIndividualLiveScoreBoardFinder.Class;
+
+	ClientTeam = ETeam::Individual;
+	
+	HUDMinimapWidgetClass = UIndividualOverlayMinimapWidget::StaticClass();
+	TabMinimapWidgetClass = UIndividualTabMinimapWidget::StaticClass();
 }
 
 void AAIIndividualGameState::AddPlayerState(APlayerState* PlayerState)
@@ -35,6 +42,26 @@ void AAIIndividualGameState::AddPlayerState(APlayerState* PlayerState)
 		const auto Count = PlayerArray.Num();
 		OnOwnerChanged(CastedState->GetOwner(), CastedState, Count);
 		CastedState->OnOwnerChanged.AddLambda(OnOwnerChanged, CastedState, Count);
+	}
+}
+
+void AAIIndividualGameState::SetScoreBoardVisibility(const bool& Visible)
+{
+	Super::SetScoreBoardVisibility(Visible);
+
+	if (MatchState == MatchState::InProgress)
+	{
+		InternalSetScoreBoardVisibility(Visible);
+	}
+}
+
+void AAIIndividualGameState::SetTabMinimapVisibility(const bool& Visible)
+{
+	Super::SetTabMinimapVisibility(Visible);
+
+	if (MatchState == MatchState::InProgress)
+	{
+		InternalSetTabMinimapVisibility(Visible);
 	}
 }
 
@@ -57,8 +84,30 @@ void AAIIndividualGameState::BeginPlay()
 			GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
 		else UE_LOG(LogTemp, Warning, TEXT("GameResultWidgeTClass is null"));
+
+		if (HUDMinimapWidgetClass)
+		{
+			HUDMinimapWidget = CreateWidget<UIndividualOverlayMinimapWidget>(
+				LocalController, HUDMinimapWidgetClass);
+			if (HUDMinimapWidget)
+			{
+				HUDMinimapWidget->AddToViewport();
+				HUDMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+
+		if (TabMinimapWidgetClass)
+		{
+			TabMinimapWidget = CreateWidget<UIndividualTabMinimapWidget>(
+				LocalController, TabMinimapWidgetClass);
+			if (TabMinimapWidget)
+			{
+				TabMinimapWidget->AddToViewport();
+				TabMinimapWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
 	}
-	
+
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
 		AController* AllControllers = It->Get();
@@ -67,17 +116,17 @@ void AAIIndividualGameState::BeginPlay()
 			AllControllers->GetPlayerState<ALakayaBasePlayerState>());
 
 		// AI와 플레이어들의 정보를 Array에 담습니다.
-		AllPlayersArray.Add(IndividualPlayerState);
+		PlayerArrays.Add(IndividualPlayerState);
 
 		if (AllControllers && AIIndividualLiveScoreBoardWidget.IsValid())
 		{
 			AIIndividualLiveScoreBoardWidget->AddToViewport();
 			AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Hidden);
-			
+
 			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
 
 			// 매치시작전에 스폰된 플레이어와 AI의 정보를 미리 한번 넣어주는곳입니다. 이후 Tick에서 실시간으로 계속 검사합니다.
-			if (AllControllers && AllControllers->IsA<AInteractablePlayerController>())
+			if (AllControllers && AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
@@ -88,18 +137,18 @@ void AAIIndividualGameState::BeginPlay()
 					FPlayerAIDataArray.Add(PlayerAIData);
 				}
 			}
-			if (AllControllers && !AllControllers->IsA<AInteractablePlayerController>())
+			if (AllControllers && !AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
 					// 점수판에 표시되는 이름이며 현재 AI 의 캐릭터 + 몃번째의 AI 컨트롤러 번호인지를 표시해주고있습니다.
 					AIName = PlayerStateObj->GetCharacterName().ToString()
-					+ " AI (" +  FString::FromInt(static_cast<int>(It.GetIndex())) + ")";
+						+ " AI (" + FString::FromInt(static_cast<int>(It.GetIndex())) + ")";
 
 					// AI 이름을 Set해주어서 이제 AI도 자기 이름을 가지고 있도록 했습니다.
 					PlayerStateObj->SetPlayerName(AIName);
 					PlayerAIData.PlayerName = PlayerStateObj->GetPlayerName();
-					
+
 					PlayerAIData.KillCount = PlayerStateObj->GetKillCount();
 					PlayerAIData.bIsPlayerCheck = false;
 					FPlayerAIDataArray.Add(PlayerAIData);
@@ -124,7 +173,7 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 			AController* AllControllers = It->Get();
 			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
 
-			if (AllControllers && AllControllers->IsA<AInteractablePlayerController>())
+			if (AllControllers && AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
@@ -135,7 +184,7 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 					FPlayerAIDataArray.Add(PlayerAIData);
 				}
 			}
-			if (AllControllers && !AllControllers->IsA<AInteractablePlayerController>())
+			if (AllControllers && !AllControllers->IsPlayerController())
 			{
 				if (PlayerStateObj)
 				{
@@ -155,14 +204,48 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 
+	if (HUDMinimapWidget)
+	{
+		HUDMinimapWidget->SetUpdateMinimap(true);
+		HUDMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
+		{
+			const AController* AllControllers = It->Get();
+
+			const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(
+				AllControllers->GetPlayerState<ALakayaBasePlayerState>());
+
+			// TODO : 자기 자신일 때의 작업을 해야 합니다.
+			HUDMinimapWidget->SetIndividualPlayersByMinimap(IndividualPlayerState, HUDMinimapWidget->CreatePlayerImage(ETeam::Individual));
+		}
+	}
+
+	if (TabMinimapWidget)
+	{
+		TabMinimapWidget->SetUpdateMinimap(true);
+		// TabMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
+		{
+			const AController* AllControllers = It->Get();
+
+			const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(
+				AllControllers->GetPlayerState<ALakayaBasePlayerState>());
+
+			// TODO : 자기 자신일 때의 작업을 해야 합니다.
+			TabMinimapWidget->SetIndividualPlayersByMinimap(IndividualPlayerState, TabMinimapWidget->CreatePlayerImage(ETeam::Individual));
+		}
+	}
+	
 	// 매치 시작하면 플레이어 인풋 막기
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
 		// LocalController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_None);
-		
+
 		LocalController->DisableInput(LocalController);
 	}
-	
+
 	FTimerDelegate TimerDelegate;
 	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate, MatchStartWaitWidgetLifeTime, false);
 
@@ -185,14 +268,15 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 			if (PlayerCharacterController)
 			{
 				// PlayerCharacterController->GetCharacter()->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-				
+
 				PlayerCharacterController->EnableInput(PlayerCharacterController);
 			}
 
 			// AI 동작
 			if (AiCharacterController)
 			{
-				AiCharacterController->BlackboardComp->InitializeBlackboard(*(AiCharacterController->BehaviorTreeAsset->BlackboardAsset));
+				AiCharacterController->BlackboardComp->InitializeBlackboard(
+					*(AiCharacterController->BehaviorTreeAsset->BlackboardAsset));
 				AiCharacterController->BehaviorTreeComp->StartTree(*(AiCharacterController->BehaviorTreeAsset));
 				AiCharacterController->bIsBehaviorTreeStart = true;
 			}
@@ -271,16 +355,6 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 	Timers.ClearAllTimersForObject(GetWorld());
 }
 
-bool AAIIndividualGameState::CanInstigatorClairvoyance(const AActor* InInstigator) const
-{
-	if (Super::CanInstigatorClairvoyance(InInstigator))
-	{
-		const auto Pawn = Cast<APawn>(InInstigator);
-		return Pawn && Pawn->IsLocallyControlled() && Pawn->IsPlayerControlled();
-	}
-	return false;
-}
-
 ERendererStencilMask AAIIndividualGameState::GetUniqueStencilMaskWithCount(const uint8& Count)
 {
 	switch (Count)
@@ -295,14 +369,50 @@ ERendererStencilMask AAIIndividualGameState::GetUniqueStencilMaskWithCount(const
 	}
 }
 
-void AAIIndividualGameState::SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray)
+void AAIIndividualGameState::InternalSetScoreBoardVisibility(const bool& Visible) const
+{
+	if (!ScoreBoard.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AIIndividualGameState_ScoreBoard is null."));
+		return;
+	}
+
+	ScoreBoard->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
+}
+
+void AAIIndividualGameState::InternalSetTabMinimapVisibility(const bool& Visible) const
+{
+	if (!TabMinimapWidget)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AIIndividualGameState_AIIndividualTabMinimapWidget is null."));
+		return;
+	}
+
+	TabMinimapWidget->SetVisibility(Visible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
+}
+
+void AAIIndividualGameState::UpdatePlayerByMinimap(const ALakayaBasePlayerState* NewPlayerState,
+	const UImage* NewPlayerImage)
+{
+	if (!HUDMinimapWidget || !TabMinimapWidget) return;
+
+	for (const auto& Player : PlayerArrays)
+	{
+		
+	}
+}
+
+void AAIIndividualGameState::SetClientTeam(const ETeam& NewTeam)
+{
+	Super::SetClientTeam(NewTeam);
+
+	ClientTeam = NewTeam;
+}
+
+void AAIIndividualGameState::SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray) const
 {
 	if (AIIndividualLiveScoreBoardWidget.IsValid())
 	{
 		AIIndividualLiveScoreBoardWidget->SetScoreBoardPlayerAIName(PlayerAIDataArray);
 	}
-}
-
-void AAIIndividualGameState::SetAIIndividualWinner()
-{
 }

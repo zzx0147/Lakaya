@@ -51,5 +51,10 @@ public class KawaiiPhysics : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 			);
+		
+		if (Target.bBuildEditor == true)
+		{
+			PublicDependencyModuleNames.Add("UnrealEd");
+		}
 	}
 }

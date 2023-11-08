@@ -26,9 +26,16 @@ class LAKAYA_API ALakayaPlayerCameraManager : public APlayerCameraManager
 
 public:
 
-	UFUNCTION(BlueprintNativeEvent)
-	void Zoom(const bool IsZoomIn, const float& ZoomFov = 0.0F);
 
+	UFUNCTION(BlueprintNativeEvent)
+	void Zoom(const bool IsZoomIn, const float& ZoomFov = 0.0f);
+	
 	UFUNCTION(BlueprintCallable, DisplayName="SetFov")
 	void K2_SetFov(const float& NewFov);
+
+	virtual void UpdateViewTarget(FTViewTarget& OutVT, float DeltaTime) override;
+
+private:
+	UPROPERTY(EditDefaultsOnly) float CrouchBlendDuration=0.2f;
+	float CrouchBlendTime;
 };

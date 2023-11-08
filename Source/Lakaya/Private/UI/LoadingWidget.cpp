@@ -1,5 +1,6 @@
 #include "UI/LoadingWidget.h"
 
+#include "Components/Button.h"
 #include "GameMode/AIIndividualGameMode.h"
 #include "GameMode/AIIndividualGameState.h"
 #include "GameMode/OccupationGameState.h"
@@ -17,6 +18,7 @@ void ULoadingWidget::NativeConstruct()
 	}
 }
 
+
 void ULoadingWidget::SetPlayerNumber(const uint8& PlayerCount)
 {
 	const auto CurrentGameState = UGameplayStatics::GetGameState(GetWorld());
@@ -30,6 +32,7 @@ void ULoadingWidget::SetPlayerNumber(const uint8& PlayerCount)
 		if (PlayerCount == MaxPlayerCount)
 		{
 			LoadingWidgetText->SetText(FText::FromString(TEXT("loading . . .")));
+			OnPlayerFull();
 			return;
 		}
 
@@ -40,6 +43,7 @@ void ULoadingWidget::SetPlayerNumber(const uint8& PlayerCount)
 	if (NewAIIndividualGameState)
 	{
 		LoadingWidgetText->SetText(FText::FromString(FString::Printf(TEXT("loading. . ."))));
+		OnPlayerFull();
 	}
 
 	// TODO : Individual Mode 추가

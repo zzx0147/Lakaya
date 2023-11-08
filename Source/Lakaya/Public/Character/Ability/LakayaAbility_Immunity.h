@@ -36,6 +36,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	float GetSetByCallerMagnitude(const FGameplayEffectSpec& Spec ,FGameplayTag DataTag, bool WarnIfNotFound, float DefaultIfNotFound);
+
+	UFUNCTION(BlueprintCallable)
+	bool GetModifiedAttributeValue(const FGameplayEffectSpec& Spec, FGameplayAttribute TargetAttribute, float& OutMagnitude);
 	
 private:
 	FDelegateHandle ImmunityDelegateHandle;

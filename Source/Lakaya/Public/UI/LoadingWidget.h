@@ -13,6 +13,9 @@ class LAKAYA_API ULoadingWidget : public UUserWidget
 protected:
 	virtual void NativeConstruct() override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnPlayerFull();
+	
 public:
 	virtual void SetPlayerNumber(const uint8& PlayerCount);
 	virtual void SetMaximumPlayerNumber(const uint8& PlayerCount);
@@ -21,6 +24,7 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	TWeakObjectPtr<UTextBlock> LoadingWidgetText;
-
+	
+	
 	uint8 MaxPlayerCount;
 };

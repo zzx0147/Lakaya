@@ -4,16 +4,14 @@
 #include "Character/LakayaBaseCharacter.h"
 
 #include "AbilitySystemComponent.h"
-#include "Engine/World.h"
-#include "Character/LakayaAbilitySet.h"
 #include "NiagaraComponent.h"
-#include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Character/BulletSpreadComponent.h"
+#include "Character/LakayaAbilitySet.h"
 #include "Character/LakayaBasePlayerState.h"
-#include "Character/ResourceComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PostProcessComponent.h"
+#include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
@@ -24,11 +22,10 @@
 #include "Net/UnrealNetwork.h"
 
 const FName ALakayaBaseCharacter::SpringArmComponentName = FName(TEXT("SpringArm"));
+const FName ALakayaBaseCharacter::FirstSpringArmComponentName = FName(TEXT("FirstSpringArm"));
 const FName ALakayaBaseCharacter::CameraComponentName = FName(TEXT("Camera"));
 const FName ALakayaBaseCharacter::ResourceComponentName = FName(TEXT("ResourceComponent"));
 const FName ALakayaBaseCharacter::ClairvoyanceMeshComponentName = FName(TEXT("ClairvoyanceMesh"));
-const FName ALakayaBaseCharacter::DamageImmuneMeshComponentName = FName(TEXT("DamageImmuneMesh"));
-const FName ALakayaBaseCharacter::ResurrectionNiagaraName = FName(TEXT("ResurrectionNiagara"));
 const FName ALakayaBaseCharacter::GrayScalePostProcessComponentName = FName(TEXT("GrayScalePostProcess"));
 const FName ALakayaBaseCharacter::BulletSpreadComponentName = FName(TEXT("BulletSpread"));
 
@@ -38,17 +35,22 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	MaxHealth = 100.f;
 	PrimaryActorTick.bCanEverTick = true;
 	PlayerRotationInterpolationAlpha = 0.65f;
-	ATeamObjectType = ECC_GameTraceChannel5;
-	BTeamObjectType = ECC_GameTraceChannel6;
+	TeamObjectTypeMap.Emplace(ETeam::Anti, ECC_GameTraceChannel5);
+	TeamObjectTypeMap.Emplace(ETeam::Pro, ECC_GameTraceChannel6);
+	TeamObjectTypeMap.Emplace(ETeam::Individual, ECC_Pawn);
 	bIsAlive = true;
 	bEnableLocalOutline = true;
-	ResurrectionDamageImmuneTime = 5.f;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = bUseControllerRotationPitch = bUseControllerRotationRoll = false;
 	CharacterName = TEXT("Base");
 
+	FirstSpringArm = CreateDefaultSubobject<USpringArmComponent>(FirstSpringArmComponentName);
+	FirstSpringArm->SetupAttachment(RootComponent);
+	FirstSpringArm->TargetArmLength = 30.0f;
+	FirstSpringArm->bUsePawnControlRotation = false;
+	
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(SpringArmComponentName);
-	SpringArm->SetupAttachment(RootComponent);
+	SpringArm->SetupAttachment(FirstSpringArm);
 	SpringArm->bUsePawnControlRotation = true;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(CameraComponentName);
@@ -56,9 +58,6 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 
 	HitScreenEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Niagara"));
 	HitScreenEffect->SetupAttachment(Camera);
-
-	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(ResourceComponentName);
-	ResourceComponent->SetIsReplicated(true);
 
 	ClairvoyanceMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(ClairvoyanceMeshComponentName);
 	ClairvoyanceMeshComponent->SetupAttachment(GetMesh());
@@ -70,20 +69,6 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	ClairvoyanceMeshComponent->SetCollisionResponseToChannel(ECC_Camera, ECR_Block);
 	ClairvoyanceMeshComponent->SetVisibility(false);
 
-	DamageImmuneMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(DamageImmuneMeshComponentName);
-	DamageImmuneMeshComponent->SetupAttachment(GetMesh());
-	DamageImmuneMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	DamageImmuneMeshComponent->SetVisibility(false);
-
-	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> ResurrectionFinder(
-		TEXT("/Script/Niagara.NiagaraSystem'/Game/Effects/M_VFX/Char_Common/VFX_Resurrection.VFX_Resurrection'"));
-
-	ResurrectionNiagara = CreateDefaultSubobject<UNiagaraComponent>(ResurrectionNiagaraName);
-	ResurrectionNiagara->SetupAttachment(GetMesh());
-	ResurrectionNiagara->SetAutoActivate(false);
-	ResurrectionNiagara->SetAutoDestroy(false);
-	ResurrectionNiagara->SetAsset(ResurrectionFinder.Object);
-
 	static ConstructorHelpers::FObjectFinder<UCurveFloat> DissolveCurveFinder(
 		TEXT("/Game/Blueprints/Curve/CV_Float_DissolveCurve.CV_Float_DissolveCurve"));
 
@@ -93,7 +78,7 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	GrayScalePostProcessComponent->Priority = -1.0f;
 
 	BulletSpreadComponent = CreateDefaultSubobject<UBulletSpreadComponent>(BulletSpreadComponentName);
-	
+
 	if (DissolveCurveFinder.Succeeded()) DissolveCurve = DissolveCurveFinder.Object;
 
 	static ConstructorHelpers::FObjectFinder<UTexture2D> QuestionIconFinder(
@@ -105,18 +90,9 @@ ALakayaBaseCharacter::ALakayaBaseCharacter(const FObjectInitializer& ObjectIniti
 	}
 }
 
-ELifetimeCondition ALakayaBaseCharacter::AllowActorComponentToReplicate(
-	const UActorComponent* ComponentToReplicate) const
-{
-	if (ComponentToReplicate->IsA(UResourceComponent::StaticClass())) return COND_None;
-	return Super::AllowActorComponentToReplicate(ComponentToReplicate);
-}
-
 float ALakayaBaseCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
                                        AController* EventInstigator, AActor* DamageCauser)
 {
-	// 무적이면 넘깁니다.
-	if (DamageImmuneEndingTime >= GetServerTime()) return 0.f;
 	const auto LocalState = GetPlayerState();
 
 	// 플레이어 스테이트가 없는 경우 원본의 로직을 실행합니다.
@@ -234,6 +210,7 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 	if (!bEnableLocalOutline && IsPlayerControlled() && IsLocallyControlled())
 	{
 		GetMesh()->SetOverlayMaterial(nullptr);
+		GetMesh()->SetRenderCustomDepth(false);
 		return;
 	}
 
@@ -248,7 +225,8 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 }
 
 bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
-                                                  const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState, const TWeakObjectPtr<UImage> EnemyImage)
+                                                  const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState,
+                                                  const TWeakObjectPtr<UImage> EnemyImage)
 {
 #pragma region NullCheck
 	if (!EnemyState.IsValid())
@@ -265,17 +243,17 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 	}
 
 	//TODO 월드가 유효하지 않은 때가 있습니다. 임시로 Null체크를 집어넣었습니다. 추후 수정 요망
-	if(!GetWorld()) return false;
+	if (!GetWorld()) return false;
 	// TODO : GetFristPlayerController를 가져오는 것이 맞는지 확인해야 합니다.
 	const APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	
+
 	if (!PlayerController || !PlayerController->PlayerCameraManager)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PlayerController or PlayerCameraManager is null."));
 		return false;
 	}
 #pragma endregion
-	
+
 	// 시야에 적이 들어왔는지 확인합니다.
 	{
 		const FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
@@ -287,13 +265,14 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 		const float AngleThreshold = FMath::DegreesToRadians(90.0f);
 
 		// 두 벡터 사이의 각도를 계산합니다.
-		const float AngleBetweenVectors = FMath::Acos(FVector::DotProduct(DirectionToTarget.GetSafeNormal(), LookDirection));
+		const float AngleBetweenVectors = FMath::Acos(
+			FVector::DotProduct(DirectionToTarget.GetSafeNormal(), LookDirection));
 
 		// 계산된 각도와 임계값을 비교하여, 시야 내에 있는지 판단합니다.
 		bool bIsVisible = AngleBetweenVectors <= AngleThreshold;
 
 		if (!bIsVisible) return false;
-		
+
 		FHitResult HitResult;
 
 		if (bool bIsObstructed = UKismetSystemLibrary::LineTraceSingle(
@@ -311,13 +290,13 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 		}
 
 		Server_SetEnemyVisibility(EnemyState.Get(), bIsVisible);
-		
+
 		return bIsVisible;
 	}
 }
 
 void ALakayaBaseCharacter::Server_OnEnemySpotted_Implementation(const ETeam& EnemyTeam,
-																ALakayaBasePlayerState* EnemyState)
+                                                                ALakayaBasePlayerState* EnemyState)
 {
 	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
 	{
@@ -365,11 +344,15 @@ void ALakayaBaseCharacter::Client_SetEnemyVisibility_Implementation(
 	}
 }
 
-void ALakayaBaseCharacter::SetTeam_Implementation(const ETeam& Team)
+void ALakayaBaseCharacter::SetTeam(const ETeam& Team)
 {
+	if (RecentTeam == Team)
+	{
+		return;
+	}
+	const auto OldTeam = RecentTeam;
 	RecentTeam = Team;
-	if (Team == ETeam::Anti) GetCapsuleComponent()->SetCollisionObjectType(ATeamObjectType);
-	else if (Team == ETeam::Pro) GetCapsuleComponent()->SetCollisionObjectType(BTeamObjectType);
+	OnTeamChanged(Team, OldTeam);
 }
 
 void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
@@ -383,15 +366,7 @@ void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 		GetMesh()->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		GetMesh()->SetRelativeLocationAndRotation(MeshRelativeLocation, MeshRelativeRotation);
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		ResurrectionNiagara->Activate(true);
-		if (HasAuthority())
-		{
-			DamageImmuneEndingTime = GetServerTime() + ResurrectionDamageImmuneTime;
-			OnRep_DamageImmuneEndingTime();
-		}
 		RemoveDissolveEffect();
-		
-
 	}
 	else
 	{
@@ -402,9 +377,9 @@ void ALakayaBaseCharacter::SetAliveState_Implementation(bool IsAlive)
 	}
 	if (HasAuthority()) GetCharacterMovement()->SetMovementMode(IsAlive ? MOVE_Walking : MOVE_None);
 
-	if (const auto PlayerController = Cast<APlayerController>(Controller); PlayerController && PlayerController->IsLocalController())
+	if (const auto PlayerController = Cast<APlayerController>(Controller); PlayerController && PlayerController->
+		IsLocalController())
 		ToggleGrayScalePostProcess(IsAlive);
-	
 }
 
 float ALakayaBaseCharacter::GetServerTime() const
@@ -419,16 +394,21 @@ void ALakayaBaseCharacter::OnRep_PlayerRotation()
 	LatestPlayerRotation = PlayerRotation;
 }
 
-void ALakayaBaseCharacter::OnRep_DamageImmuneEndingTime()
-{
-	DamageImmuneMeshComponent->SetVisibility(true);
-	GetWorldTimerManager().SetTimer(DamageImmuneTimer, this, &ALakayaBaseCharacter::DamageImmuneTimerCallback,
-	                                DamageImmuneEndingTime - GetServerTime());
-}
-
 bool ALakayaBaseCharacter::CanJumpInternal_Implementation() const
 {
 	return JumpIsAllowedInternal();
+}
+
+void ALakayaBaseCharacter::OnTeamChanged_Implementation(const ETeam& NewTeam, const ETeam& OldTeam)
+{
+	const auto ObjectType = TeamObjectTypeMap.FindChecked(NewTeam);
+	GetCapsuleComponent()->SetCollisionObjectType(ObjectType);
+	OnCharacterObjectTypeUpdated(ObjectType);
+}
+
+void ALakayaBaseCharacter::OnCharacterObjectTypeUpdated_Implementation(
+	const TEnumAsByte<ECollisionChannel>& NewObjectType)
+{
 }
 
 FQuat ALakayaBaseCharacter::GetRawExtrapolatedRotator(const float& CurrentTime) const
@@ -438,11 +418,6 @@ FQuat ALakayaBaseCharacter::GetRawExtrapolatedRotator(const float& CurrentTime) 
 	return FQuat::Slerp(PrevPlayerRotation.Rotation, LatestPlayerRotation.Rotation,
 	                    UKismetMathLibrary::NormalizeToRange(CurrentTime, PrevPlayerRotation.Time,
 	                                                         LatestPlayerRotation.Time));
-}
-
-void ALakayaBaseCharacter::DamageImmuneTimerCallback()
-{
-	DamageImmuneMeshComponent->SetVisibility(false);
 }
 
 void ALakayaBaseCharacter::StartDissolveEffect()
@@ -463,32 +438,38 @@ void ALakayaBaseCharacter::StartDissolveEffect()
 void ALakayaBaseCharacter::RemoveDissolveEffect()
 {
 	for (const auto TargetMaterial : DissolveTargetArray)
-		TargetMaterial->SetScalarParameterValue(TEXT("Dissolve"), 2.0f);
+	{
+		if (TargetMaterial)
+		{
+			TargetMaterial->SetScalarParameterValue(TEXT("Dissolve"), 2.0f);
+		}
+	}
 
 	if (CharacterOverlayMaterial.IsValid()) CharacterOverlayMaterial->SetScalarParameterValue(TEXT("Opacity"), 0.04f);
 }
 
 void ALakayaBaseCharacter::ToggleGrayScalePostProcess(const bool& bIsActivate)
 {
-	if(!GrayScalePostProcessComponent || !GrayScalePostProcessMaterial)
+	if (!GrayScalePostProcessComponent || !GrayScalePostProcessMaterial)
 		return;
-	
-	GrayScalePostProcessComponent->AddOrUpdateBlendable(GrayScalePostProcessMaterial,bIsActivate ? 0.0f : 1.0f);
+
+	GrayScalePostProcessComponent->AddOrUpdateBlendable(GrayScalePostProcessMaterial, bIsActivate ? 0.0f : 1.0f);
 }
 
 void ALakayaBaseCharacter::DissolveTick(const float& Value)
 {
 	for (const auto DissolveTarget : DissolveTargetArray)
 	{
-		DissolveTarget->SetScalarParameterValue(TEXT("Dissolve"), Value);
+		if (DissolveTarget)
+		{
+			DissolveTarget->SetScalarParameterValue(TEXT("Dissolve"), Value);
+		}
 	}
 }
 
 void ALakayaBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, ResourceComponent, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, PlayerRotation, COND_SkipOwner);
-	DOREPLIFETIME(ALakayaBaseCharacter, DamageImmuneEndingTime);
 	// DOREPLIFETIME(ALakayaBaseCharacter, bIsSpottedByTeammate);
 }

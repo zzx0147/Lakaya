@@ -1,21 +1,20 @@
 #include "GameMode/LakayaBaseGameState.h"
 
-#include <filesystem>
-
 #include "TabMinimapWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "EOS/EOSGameInstance.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "Net/UnrealNetwork.h"
-#include "PlayerController/BattlePlayerController.h"
+#include "PlayerController/LakayaPlayerController.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/GamePlayKillLogWidget.h"
 #include "UI/GameScoreBoardWidget.h"
 #include "UI/GameTimeWidget.h"
-#include "UI/HUDMinimapWidget.h"
 #include "UI/LoadingWidget.h"
+#include "UI/OverlayMinimapWidget.h"
 #include "UI/PlayerNameDisplayerWidget.h"
+#include "UI/IntroWidget.h"
 
 ALakayaBaseGameState::ALakayaBaseGameState()
 {
@@ -24,6 +23,7 @@ ALakayaBaseGameState::ALakayaBaseGameState()
 	MatchDuration = 180.f;
 	MatchWaitDuration = 30.0f;
 	bWantsSendRecordResult = false;
+	IntroDuration = 5.0f;
 }
 
 void ALakayaBaseGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -104,6 +104,17 @@ void ALakayaBaseGameState::BeginPlay()
 				PlayerNameDisplayerWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 			}
 		}
+
+		if(IntroWidgetClass)
+		{
+			IntroWidget = CreateWidget<UIntroWidget>(LocalController, IntroWidgetClass);
+			if(IntroWidget)
+			{
+				IntroWidget->AddToViewport(1);
+				IntroWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+		
 	}
 	
 	SpawnOutlineManager();
@@ -136,20 +147,18 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]()
 	{
 		if (!HasAuthority()) return;
-		
-		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
+
+		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<ALakayaDefaultPlayGameMode>())
 		{
-			AuthGameMode->StartMatch();
+			AuthGameMode->StartIntro();
 		}
 	}, CharacterSelectTimeWidget);
+	
+
 }
 
-void ALakayaBaseGameState::HandleMatchHasStarted()
+void ALakayaBaseGameState::HandleMatchIsIntro()
 {
-	Super::HandleMatchHasStarted();
-	StartTimeStamp = FDateTime::UtcNow().ToUnixTimestamp();
-	StartTime = GetServerWorldTimeSeconds();
-	
 	if (GetCharacterSelectWidget())
 	{
 		CharacterSelectWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -157,6 +166,32 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
+
+	if(IntroWidget)
+		IntroWidget->SetVisibility(ESlateVisibility::Visible);
+	
+	FTimerDelegate IntroTimerDelegate;
+	IntroTimerDelegate.BindWeakLambda(this,[&]()
+	{
+		if(!HasAuthority()) return;
+		
+		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<ALakayaDefaultPlayGameMode>())
+		{
+			AuthGameMode->StartMatch();
+		}
+	});
+	
+	GetWorldTimerManager().SetTimer(IntroTimer,IntroTimerDelegate,IntroDuration,false);
+}
+
+void ALakayaBaseGameState::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+	StartTimeStamp = FDateTime::UtcNow().ToUnixTimestamp();
+	StartTime = GetServerWorldTimeSeconds();
+
+	if(IntroWidget)
+		IntroWidget->SetVisibility(ESlateVisibility::Hidden);
 	
 	if (InGameTimeWidget.IsValid())
 	{
@@ -183,7 +218,7 @@ void ALakayaBaseGameState::HandleMatchHasEnded()
 	if (ScoreBoard.IsValid()) ScoreBoard->RemoveFromParent();
 	if (GetCharacterSelectWidget()) CharacterSelectWidget->RemoveFromParent();
 
-	if (const auto LocalController = GetWorld()->GetFirstPlayerController<AGameLobbyPlayerController>();
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<ALakayaPlayerController>();
 		LocalController && LocalController->IsLocalController())
 		LocalController->SetEnableExitShortcut(true);
 
@@ -216,6 +251,10 @@ void ALakayaBaseGameState::OnRep_MatchState()
 	{
 		HandleMatchIsCharacterSelect();
 	}
+	else if(MatchState == MatchState::IsIntro)
+	{
+		HandleMatchIsIntro();		
+	}
 
 	if (MatchState != MatchState::InProgress)
 	{
@@ -230,33 +269,6 @@ void ALakayaBaseGameState::SetScoreBoardVisibility(const bool& Visible)
 
 void ALakayaBaseGameState::SetTabMinimapVisibility(const bool& Visible)
 {
-}
-
-void ALakayaBaseGameState::RequestClairvoyanceActivate(const AActor* InInstigator)
-{
-	if (!CanInstigatorClairvoyance(InInstigator))
-	{
-		return;
-	}
-
-	OnClairvoyanceActivateRequested(InInstigator);
-
-	if (ShouldActivateClairvoyance())
-	{
-		bIsClairvoyanceActivated = true;
-		OnClairvoyanceActivated();
-	}
-}
-
-void ALakayaBaseGameState::RequestClairvoyanceDeactivate(const AActor* InInstigator)
-{
-	OnClairvoyanceDeactivateRequested(InInstigator);
-
-	if (!ShouldActivateClairvoyance())
-	{
-		bIsClairvoyanceActivated = false;
-		OnClairvoyanceDeactivated();
-	}
 }
 
 UGameLobbyCharacterSelectWidget* ALakayaBaseGameState::GetCharacterSelectWidget()
@@ -327,21 +339,6 @@ void ALakayaBaseGameState::ReserveSendRecord()
 bool ALakayaBaseGameState::TrySendMatchResultData()
 {
 	return true;
-}
-
-bool ALakayaBaseGameState::CanInstigatorClairvoyance(const AActor* InInstigator) const
-{
-	return ensure(InInstigator);
-}
-
-void ALakayaBaseGameState::OnClairvoyanceActivated()
-{
-	OutlineManager->SetClairvoyance(true);
-}
-
-void ALakayaBaseGameState::OnClairvoyanceDeactivated()
-{
-	OutlineManager->SetClairvoyance(false);
 }
 
 void ALakayaBaseGameState::SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,
