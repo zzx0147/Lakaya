@@ -55,9 +55,21 @@ void USkillProgressBar::OnChangeUltimateGaugeAttribute(const FOnAttributeChangeD
 	SetPercent(UltimateGauge / MaxUltimateGauge);
 }
 
+void USkillProgressBar::SetUltimateGauge(const float& NewValue)
+{
+	UltimateGauge = NewValue;
+	SetPercent(UltimateGauge / MaxUltimateGauge);
+}
+
 void USkillProgressBar::OnChangeMaxUltimateGaugeAttribute(const FOnAttributeChangeData& NewValue)
 {
 	MaxUltimateGauge = NewValue.NewValue;
+	SetPercent(UltimateGauge / MaxUltimateGauge);
+}
+
+void USkillProgressBar::SetMaxUltimateGauge(const float& NewValue)
+{
+	MaxUltimateGauge = NewValue;
 	SetPercent(UltimateGauge / MaxUltimateGauge);
 }
 
