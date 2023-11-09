@@ -5,7 +5,6 @@
 
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
-#include "Components/VerticalBox.h"
 #include "UI/IndividualWidget/IndividualLiveScoreElement.h"
 
 void UIndividualLiveScoreBoardWidget::SetScoreBoardPlayerName(const TArray<FPlayerData>& PlayerDataArray)
@@ -24,6 +23,7 @@ void UIndividualLiveScoreBoardWidget::SetScoreBoardPlayerAIName(const TArray<FPl
 		const FPlayerAIData& PlayerAIData = SortedPlayerAIDataArray[i];
 	
 		UTextBlock* NameTextBlock = nullptr;
+		UTextBlock* KillTextBlock = nullptr;
 		UImage* ImageBox = nullptr;
 		UImage* PlayerImageBox = nullptr;
 		
@@ -31,30 +31,36 @@ void UIndividualLiveScoreBoardWidget::SetScoreBoardPlayerAIName(const TArray<FPl
 		{
 		case 0:
 			NameTextBlock = Score1stNameTextBlock;
+			KillTextBlock = KillText_1st;
 			PlayerImageBox = Slot_Player_1st;
 			break;
 		case 1:
 			NameTextBlock = Score2ndNameTextBlock;
+			KillTextBlock = KillText_2nd;
 			ImageBox = Slot_2nd;
 			PlayerImageBox = Slot_Player_2nd;
 			break;
 		case 2:
 			NameTextBlock = Score3rdNameTextBlock;
+			KillTextBlock = KillText_3rd;
 			ImageBox = Slot_3rd;
 			PlayerImageBox = Slot_Player_3rd;
 			break;
 		case 3:
 			NameTextBlock = Score4thNameTextBlock;
+			KillTextBlock = KillText_4th;
 			ImageBox = Slot_4th;
 			PlayerImageBox = Slot_Player_4th;
 			break;
 		case 4:
 			NameTextBlock = Score5thNameTextBlock;
+			KillTextBlock = KillText_5th;
 			ImageBox = Slot_5th;
 			PlayerImageBox = Slot_Player_5th;
 			break;
 		case 5:
 			NameTextBlock = Score6thNameTextBlock;
+			KillTextBlock = KillText_6th;
 			ImageBox = Slot_6th;
 			PlayerImageBox = Slot_Player_6th;
 			break;
@@ -62,6 +68,9 @@ void UIndividualLiveScoreBoardWidget::SetScoreBoardPlayerAIName(const TArray<FPl
 	
 		if (NameTextBlock)
 			NameTextBlock->SetText(FText::FromString(PlayerAIData.PlayerName));
+		if (KillTextBlock)
+			KillTextBlock->SetText(FText::AsNumber(PlayerAIData.KillCount));
+		
 		if (ImageBox)
 		{
 			UTexture2D* AISlotImage = LoadObject<UTexture2D>(nullptr, TEXT("Texture2D'/Game/UI_2/UI_IngameIndividual/T_InGame_Individual_Rank_Box_2.T_InGame_Individual_Rank_Box_2'"));
