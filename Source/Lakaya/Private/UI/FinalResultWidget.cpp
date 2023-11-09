@@ -40,7 +40,9 @@ void UFinalResultWidget::SetTeam(const ETeam& NewTeam)
 
 void UFinalResultWidget::SetMatchResultData(const ETeam WinTeam, const float ProScore, const float AntiScore, TMap<ETeam, TArray<TObjectPtr<ALakayaBasePlayerState>>> PlayersByTeamMap)
 {
-	FinalResultImage->SetBrushFromTexture(WinTeam == MyTeam ? VictoryResultTexture : DefeatResultTexture);
+	bIsWin = WinTeam == MyTeam;
+	OnNotifyMatchResult(bIsWin);
+	FinalResultImage->SetBrushFromTexture(bIsWin ? VictoryResultTexture : DefeatResultTexture);
 	ProScoreText->SetText(FText::AsNumber(ProScore));
 	AntiScoreText->SetText(FText::AsNumber(AntiScore));
 
