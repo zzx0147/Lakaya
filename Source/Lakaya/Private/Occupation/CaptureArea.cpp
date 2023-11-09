@@ -379,16 +379,16 @@ void ACaptureArea::IncreaseCaptureProgress()
 		if (CurrentTeam == ETeam::Anti)
 		{
 			AntiTeamCaptureProgress = TeamCaptureProgress;
-			OccupyExpressElementWidget->GetProgressBar()->SetFillImage(OccupyExpressElementWidget->GetAntiFillImage());
+			if(IsValid(OccupyExpressElementWidget)) OccupyExpressElementWidget->GetProgressBar()->SetFillImage(OccupyExpressElementWidget->GetAntiFillImage());
 			
 		}
 		else if (CurrentTeam == ETeam::Pro)
 		{
 			ProTeamCaptureProgress = TeamCaptureProgress;
-			OccupyExpressElementWidget->GetProgressBar()->SetFillImage(OccupyExpressElementWidget->GetProFillImage());
+			if(IsValid(OccupyExpressElementWidget)) OccupyExpressElementWidget->GetProgressBar()->SetFillImage(OccupyExpressElementWidget->GetProFillImage());
 		}
-
-		OccupyExpressElementWidget->GetProgressBar()->SetPercent(TeamCaptureProgress / 4.0f);
+		
+		if(IsValid(OccupyExpressElementWidget)) OccupyExpressElementWidget->GetProgressBar()->SetPercent(TeamCaptureProgress / 4.0f);
 		
 		// 점령에 성공했다면
 		if (TeamCaptureProgress >= 4.0f)

@@ -236,6 +236,8 @@ void UGameLobbyCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum)
 		GetOwningPlayer()->SetShowMouseCursor(false);
 	}
 
+	OnCharacterSelected(CharacterNameArray[CharacterNum]);
+	
 	CharacterNameImage->SetBrushFromTexture(CharacterNameTextureMap[CharacterNameArray[CharacterNum]]);
 	CharacterNameImage->SetDesiredSizeOverride(FVector2d(CharacterNameTextureMap[CharacterNameArray[CharacterNum]]->GetSizeX(),CharacterNameTextureMap[CharacterNameArray[CharacterNum]]->GetSizeY()));
 }

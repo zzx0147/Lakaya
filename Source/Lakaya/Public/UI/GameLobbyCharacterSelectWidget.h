@@ -44,6 +44,9 @@ protected:
 
 	virtual void SelectCharacter(const uint8& CharacterNum);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnCharacterSelected(const FName& CharacterName);
+	
 	UFUNCTION()
 	void OnClickedCharacterSelectButton();
 	
