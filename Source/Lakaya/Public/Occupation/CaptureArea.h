@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Team.h"
+#include "Character/LakayaBasePlayerState.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/Actor.h"
 #include "UI/OccupyExpressElementWidget.h"

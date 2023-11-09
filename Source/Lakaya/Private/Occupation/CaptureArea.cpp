@@ -105,6 +105,7 @@ void ACaptureArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 						if (OccupyingPlayerState->GetAimOccupyProgressWidget())
 						{
 							OccupyingPlayerState->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(0, false);
+							OccupyingPlayerState->GetAimOccupyProgressWidget()->AllAimWidgetDisable();
 						}
 					}
 				}
@@ -184,6 +185,15 @@ void ACaptureArea::UpdateCaptureAreaState(const ECaptureAreaState& CaptureAreaSt
 	else if (AntiTeamPlayerCount > 0 && ProTeamPlayerCount > 0)
 	{
 		CaptureAreaHandleOpposite(CaptureAreaState);
+
+		for (const auto& Team : {ETeam::Anti, ETeam::Pro})
+		{
+			for (const auto& Player : OccupyingPlayerList[Team])
+			{
+				if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled())
+					Player->GetAimOccupyProgressWidget()->OccupyCrash();
+			}
+		}
 	}
 	else if (AntiTeamPlayerCount == 0 && ProTeamPlayerCount == 0)
 	{
