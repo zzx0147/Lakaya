@@ -30,7 +30,10 @@ void ACaptureArea::BeginPlay()
 
 	OccupyExpressElementWidget = Cast<UOccupyExpressElementWidget>(CaptureAreaWidgetComponent->GetWidget());
 	if (OccupyExpressElementWidget == nullptr)
+	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupyExpressElementWidget is null."));
+		return;
+	}
 
 	OccupyExpressElementWidget->GetProgressBar()->SetPercent(0);
 
