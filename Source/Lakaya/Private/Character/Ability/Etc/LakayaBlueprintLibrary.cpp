@@ -105,5 +105,5 @@ bool ULakayaBlueprintLibrary::HasAbility(UAbilitySystemComponent* ASC, TSubclass
 	{
 		return Spec.Ability->GetClass() == AbilityClass;
 	};
-	return IsValid(ASC) && ASC->GetActivatableAbilities().FindLastByPredicate(Pred) != INDEX_NONE;
+	return IsValid(ASC) && ASC->GetActivatableAbilities().ContainsByPredicate(Pred);
 }

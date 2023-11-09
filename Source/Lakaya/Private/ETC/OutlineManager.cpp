@@ -6,6 +6,7 @@
 #include "Character/LakayaBaseCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/PostProcessComponent.h"
+#include "GameMode/LakayaBaseGameState.h"
 
 // Sets default values
 AOutlineManager::AOutlineManager()
@@ -34,6 +35,11 @@ void AOutlineManager::SetClairvoyance(bool bIsClairvoyance)
 {
 	if (ClairvoyanceDynamic.IsValid())
 		ClairvoyanceDynamic->SetScalarParameterValue(EnemyRenderingParameterName, bIsClairvoyance ? 1.f : 0.f);
+
+	if (const auto& GameState = Cast<ALakayaBaseGameState>(GetWorld()->GetGameState()))
+	{
+		GameState->SetbIsClairvoyanceActivated(bIsClairvoyance);
+	}
 }
 
 void AOutlineManager::SetTeam(const ETeam& NewTeam)
