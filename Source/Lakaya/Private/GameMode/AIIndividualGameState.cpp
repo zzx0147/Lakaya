@@ -121,7 +121,7 @@ void AAIIndividualGameState::BeginPlay()
 		if (AllControllers && AIIndividualLiveScoreBoardWidget.IsValid())
 		{
 			AIIndividualLiveScoreBoardWidget->AddToViewport();
-			AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Hidden);
+			AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
 
 			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
 
@@ -261,8 +261,8 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 			APlayerController* PlayerCharacterController = Cast<APlayerController>(AllControllers);
 			AAiCharacterController* AiCharacterController = Cast<AAiCharacterController>(AllControllers);
 
-			if (AllControllers && AIIndividualLiveScoreBoardWidget.IsValid())
-				AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
+			// if (AllControllers && AIIndividualLiveScoreBoardWidget.IsValid())
+			// 	AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
 
 			// 플레이어 인풋 동작 
 			if (PlayerCharacterController)
