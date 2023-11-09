@@ -16,7 +16,12 @@ class LAKAYA_API AMovablePlayerController : public ALakayaPlayerController
 public:
 	AMovablePlayerController();
 
+	void SetMouseSensitivity(float Sensitivity) { MouseSensitivity = Sensitivity; }
+	float GetMouseSensitivity() {return MouseSensitivity; }
+
 protected:
+	virtual void BeginPlay() override;
+
 	virtual void SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent) override;
 	virtual void SetupMappingContext(UEnhancedInputLocalPlayerSubsystem* const& InputSubsystem) override;
 
@@ -35,4 +40,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Input|Movement|Actions")
 	UInputAction* LookAction;
+
+	float MouseSensitivity;
 };
