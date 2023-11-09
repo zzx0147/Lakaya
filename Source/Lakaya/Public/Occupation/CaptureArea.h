@@ -28,22 +28,6 @@ public:
 	FORCEINLINE void SetCurrentCaptureAreaTeam(const ETeam& NewTeam);
 
 	FORCEINLINE const uint8& GetCaptureAreaID() const { return CaptureAreaId; }
-	
-	/**
-	 * @brief Enum타입을 String으로 바꿔줍니다.
-	 * @param EnumValue 타입을 String으로 바꿔줄 Enum입니다.
-	 * @return Enum타입이 String타입으로 바뀌어서 리턴합니다.
-	 */
-	UFUNCTION()
-	FString GetEnumAsString(const ECaptureAreaState& EnumValue);
-
-	/**
-	 * @brief ETeam 열거형 타입의 값을 입력받아 해당하는 문자열을 반환하는 함수입니다.
-	 * @param Team FString형으로 반환할 ETeam 값입니다.
-	 * @return Eteam 열거형 타입을 받아서 FString형으로 반환합니다.
-	 */
-	UFUNCTION()
-	FString ETeamToString(const ETeam& Team);
 protected:
 	virtual void BeginPlay() override;
 	

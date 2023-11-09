@@ -461,30 +461,3 @@ void ACaptureArea::DecreaseCaptureProgress()
 		GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 	}
 }
-
-FString ACaptureArea::GetEnumAsString(const ECaptureAreaState& EnumValue)
-{
-	const TObjectPtr<UEnum> EnumPtr = FindObject<UEnum>(nullptr, TEXT("/Script/Lakaya.ECaptureAreaState"));
-	if (EnumPtr)
-	{
-		return EnumPtr->GetNameStringByIndex(static_cast<uint8>(EnumValue));
-	}
-
-	return FString("Casting Failed.");
-}
-
-FString ACaptureArea::ETeamToString(const ETeam& Team)
-{
-	switch (Team)
-	{
-	case ETeam::Anti:
-		return TEXT("Anti");
-	case ETeam::Pro:
-		return TEXT("Pro");
-	case ETeam::None:
-		return TEXT("None");
-	default:
-		return TEXT("Unknown");
-	}
-}
-
