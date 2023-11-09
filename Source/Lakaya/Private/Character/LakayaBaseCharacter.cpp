@@ -428,7 +428,7 @@ void ALakayaBaseCharacter::StartDissolveEffect()
 		DissolveCurveCallback.BindUFunction(this,TEXT("DissolveTick"));
 		DissolveTimeline.AddInterpFloat(DissolveCurve, DissolveCurveCallback);
 		DissolveTimeline.SetTimelineLength(DissolveTimelineLength);
-
+		DissolveTimeline.SetPlayRate(1.0f);
 		DissolveTimeline.PlayFromStart();
 	}
 
@@ -437,15 +437,28 @@ void ALakayaBaseCharacter::StartDissolveEffect()
 
 void ALakayaBaseCharacter::RemoveDissolveEffect()
 {
-	for (const auto TargetMaterial : DissolveTargetArray)
+	// for (const auto TargetMaterial : DissolveTargetArray)
+	// {
+	// 	if (TargetMaterial)
+	// 	{
+	// 		TargetMaterial->SetScalarParameterValue(TEXT("Dissolve_Amount"), 0.0f);
+	// 	}
+	// }
+	//
+	// if (CharacterOverlayMaterial.IsValid()) CharacterOverlayMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
+
+	if (DissolveCurve)
 	{
-		if (TargetMaterial)
-		{
-			TargetMaterial->SetScalarParameterValue(TEXT("Dissolve"), 2.0f);
-		}
+		FOnTimelineFloat DissolveCurveCallback;
+		DissolveCurveCallback.BindUFunction(this,TEXT("DissolveTick"));
+		DissolveTimeline.AddInterpFloat(DissolveCurve, DissolveCurveCallback);
+		DissolveTimeline.SetTimelineLength(DissolveTimelineLength);
+		DissolveTimeline.SetPlayRate(10.0f);
+		DissolveTimeline.ReverseFromEnd();
 	}
 
-	if (CharacterOverlayMaterial.IsValid()) CharacterOverlayMaterial->SetScalarParameterValue(TEXT("Opacity"), 0.04f);
+	if (CharacterOverlayMaterial.IsValid()) CharacterOverlayMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
+	
 }
 
 void ALakayaBaseCharacter::ToggleGrayScalePostProcess(const bool& bIsActivate)
@@ -458,11 +471,13 @@ void ALakayaBaseCharacter::ToggleGrayScalePostProcess(const bool& bIsActivate)
 
 void ALakayaBaseCharacter::DissolveTick(const float& Value)
 {
+
 	for (const auto DissolveTarget : DissolveTargetArray)
 	{
 		if (DissolveTarget)
 		{
-			DissolveTarget->SetScalarParameterValue(TEXT("Dissolve"), Value);
+			DissolveTarget->SetScalarParameterValue(TEXT("Dissolve_Amount"), Value);
+			
 		}
 	}
 }
