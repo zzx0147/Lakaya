@@ -431,7 +431,7 @@ void ACaptureArea::DecreaseCaptureProgress()
 		                                  ? AntiTeamCaptureProgress
 		                                  : ProTeamCaptureProgress;
 	const ETeam CurrentTeam = AntiTeamCaptureProgress > ProTeamCaptureProgress ? ETeam::Anti : ETeam::Pro;
-
+	OccupyExpressElementWidget->GetProgressBar()->SetPercent(TeamCaptureProgress / 4.0f);
 	for (const auto& Player : OccupyingPlayerList[CurrentTeam])
 	{
 		if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled())
