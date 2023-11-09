@@ -6,7 +6,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "ETC/OptionSave.h"
 #include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 
 AMovablePlayerController::AMovablePlayerController()
 {
@@ -22,6 +24,26 @@ AMovablePlayerController::AMovablePlayerController()
 	if (ContextFinder.Succeeded()) MovementContext = ContextFinder.Object;
 	if (MoveFinder.Succeeded()) MoveAction = MoveFinder.Object;
 	if (LookFinder.Succeeded()) LookAction = LookFinder.Object;
+
+	MouseSensitivity = 1.0f;
+}
+
+void AMovablePlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	FAsyncLoadGameFromSlotDelegate Delegate;
+	
+	Delegate.BindWeakLambda(this,
+		[&](const FString& SlotName, const int32 UserIndex, USaveGame* SaveFile)
+		{
+			const auto OptionSaveFile = Cast<UOptionSave>(SaveFile);
+			if (OptionSaveFile == nullptr) return;
+			MouseSensitivity = OptionSaveFile->MouseSensitivity;
+		}); // 람다식으로 바인딩
+	
+	UGameplayStatics::AsyncLoadGameFromSlot(TEXT("TestSaveSlot"), 0, Delegate);
+
 }
 
 void AMovablePlayerController::SetupEnhancedInputComponent(UEnhancedInputComponent* const& EnhancedInputComponent)
@@ -52,6 +74,6 @@ void AMovablePlayerController::Move(const FInputActionValue& Value)
 void AMovablePlayerController::Look(const FInputActionValue& Value)
 {
 	const auto Vector = Value.Get<FVector2D>();
-	AddYawInput(Vector.X);
-	AddPitchInput(Vector.Y);
+	AddYawInput(Vector.X * MouseSensitivity);
+	AddPitchInput(Vector.Y * MouseSensitivity);
 }
