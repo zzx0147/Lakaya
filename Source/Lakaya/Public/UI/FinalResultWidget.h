@@ -21,8 +21,12 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnNotifyMatchResult(bool IsWin);
 private:
+	uint8 bIsWin : 1;
+	
 	ETeam MyTeam;
 
 	UPROPERTY(EditDefaultsOnly)
