@@ -48,7 +48,10 @@ public:
 	float GetMatchRemainTime() const { return MatchEndingTime - GetServerWorldTimeSeconds(); }
 
 	FORCEINLINE bool GetbIsClairvoyanceActivated() const { return bIsClairvoyanceActivated;}
+	
 	FORCEINLINE ETeam GetClientTeam() const { return ClientTeam; }
+	
+	FORCEINLINE void SetbIsClairvoyanceActivated(bool NewbIsClairvoyance) { bIsClairvoyanceActivated = NewbIsClairvoyance;}
 
 	virtual void SetClientTeam(const ETeam& NewTeam) {};
 	
