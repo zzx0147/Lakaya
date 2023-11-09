@@ -457,7 +457,7 @@ void ALakayaBaseCharacter::RemoveDissolveEffect()
 		DissolveTimeline.ReverseFromEnd();
 	}
 
-	if (CharacterOverlayMaterial.IsValid()) CharacterOverlayMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
+	if (CharacterOverlayMaterial.IsValid()) CharacterOverlayMaterial->SetScalarParameterValue(TEXT("Opacity"), 0.5f);
 	
 }
 
