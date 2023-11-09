@@ -63,6 +63,17 @@ void UAimOccupyProgressWidget::AllAimWidgetDisable() const
 
 void UAimOccupyProgressWidget::Success()
 {
+	if (IsValid(IngTextImage) && IsValid(FinishTextImage))
+	{
+		IngTextImage->SetVisibility(ESlateVisibility::Hidden);
+		CrashTextImage->SetVisibility(ESlateVisibility::Hidden);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("IngTextImage or FinishTextImage is null."));
+		return;
+	}
+
 	FinishTextImage->SetVisibility(ESlateVisibility::Visible);
 	
 	FTimerDelegate TDelegate_FinishText;

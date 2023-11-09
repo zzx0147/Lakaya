@@ -68,9 +68,7 @@ void ACaptureArea::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
 		// 충돌한 액터가 캐릭터인지 확인합니다.
-		const auto* OverlappedArmedCharacter = Cast<ACharacter>(OtherActor);
-
-		if (OverlappedArmedCharacter)
+		if (const auto OverlappedArmedCharacter = Cast<ACharacter>(OtherActor))
 		{
 			if (const auto OccupyingPlayerState = Cast<ALakayaBasePlayerState>(OverlappedArmedCharacter->GetPlayerState()))
 			{
@@ -88,11 +86,10 @@ void ACaptureArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
 		// 충돌이 끝난 액터가 캐릭터인지 확인합니다.
-		const auto* OverlappedArmedCharacter = Cast<ACharacter>(OtherActor);
 
-		if (OverlappedArmedCharacter)
+		if (const auto OverlappedArmedCharacter = Cast<ACharacter>(OtherActor))
 		{
-			if (auto OccupyingPlayerState = Cast<ALakayaBasePlayerState>(OverlappedArmedCharacter->GetPlayerState()))
+			if (const auto OccupyingPlayerState = Cast<ALakayaBasePlayerState>(OverlappedArmedCharacter->GetPlayerState()))
 			{
 				// 충돌이 끝난 액터가 캐릭터입니다.
 				RemoveFromOccupyPlayerList(OccupyingPlayerState->GetTeam(), OccupyingPlayerState);
@@ -102,7 +99,7 @@ void ACaptureArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 				{
 					if (const auto PlayerController = OccupyingPlayerState->GetPawn()->IsLocallyControlled())
 					{
-						if (OccupyingPlayerState->GetAimOccupyProgressWidget())
+						if (IsValid(OccupyingPlayerState->GetAimOccupyProgressWidget()))
 						{
 							OccupyingPlayerState->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(0, false);
 							OccupyingPlayerState->GetAimOccupyProgressWidget()->AllAimWidgetDisable();
@@ -190,8 +187,11 @@ void ACaptureArea::UpdateCaptureAreaState(const ECaptureAreaState& CaptureAreaSt
 		{
 			for (const auto& Player : OccupyingPlayerList[Team])
 			{
-				if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled())
+				if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled() &&
+					IsValid(Player->GetAimOccupyProgressWidget()))
+				{
 					Player->GetAimOccupyProgressWidget()->OccupyCrash();
+				}
 			}
 		}
 	}
@@ -367,8 +367,10 @@ void ACaptureArea::IncreaseCaptureProgress()
 
 		for (const auto& Player : OccupyingPlayerList[CurrentTeam])
 		{
-			if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled())
+			if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled() && IsValid(Player->GetAimOccupyProgressWidget()))
+			{
 				Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, true);
+			}
 			UE_LOG(LogTemp, Warning, TEXT("true"));
 		}
 
@@ -393,8 +395,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 		// 점령에 성공했다면
 		if (TeamCaptureProgress >= 4.0f)
 		{
-			const ETeam OtherTeam = (CurrentTeam == ETeam::Anti) ? ETeam::Pro : ETeam::Anti;
-			if (GetCurrentCaptureAreaTeam() == OtherTeam)
+			if (const ETeam OtherTeam = (CurrentTeam == ETeam::Anti) ? ETeam::Pro : ETeam::Anti; GetCurrentCaptureAreaTeam() == OtherTeam)
 			{
 				OccupationGameState->SubCaptureAreaCount(OtherTeam);
 			}
@@ -413,8 +414,11 @@ void ACaptureArea::IncreaseCaptureProgress()
 			{
 				if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled())
 				{
-					Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, false);
-					Player->GetAimOccupyProgressWidget()->Success();
+					if (IsValid(Player->GetAimOccupyProgressWidget()))
+					{
+						Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, false);
+						Player->GetAimOccupyProgressWidget()->Success();
+					}
 				}
 			}
 
