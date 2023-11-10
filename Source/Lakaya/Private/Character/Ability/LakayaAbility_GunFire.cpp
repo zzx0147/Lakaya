@@ -5,6 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "Character/Ability/Component/AbilityComponent.h"
+#include "Character/Ability/Etc/LakayaBlueprintLibrary.h"
 #include "Interface/FireTraceInterface.h"
 
 
@@ -64,8 +65,8 @@ FGameplayAbilityTargetDataHandle ULakayaAbility_GunFire::MakeTargetData_Implemen
 	TArray<FHitResult> HitResults;
 	IFireTraceInterface::Execute_FireTrace(FireTraceComponent.Get(), HitResults);
 
-	FGameplayAbilityTargetDataHandle TargetDataHandle;
-	HitResultsToTargetDataHandle(HitResults, TargetDataHandle);
+	FGameplayAbilityTargetDataHandle TargetDataHandle =
+		ULakayaBlueprintLibrary::MakeTargetDataFromHitResults(HitResults);
 
 	BP_ApplyGameplayEffectOrCueToTarget(TargetDataHandle, DamageEffect, EnvironmentCue.GameplayCueTag);
 	return TargetDataHandle;
