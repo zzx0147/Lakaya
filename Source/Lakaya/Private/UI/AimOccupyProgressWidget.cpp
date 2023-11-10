@@ -5,6 +5,7 @@
 
 #include "Chaos/PBDEvolution.h"
 #include "Character/LakayaBasePlayerState.h"
+#include "EntitySystem/MovieSceneEntitySystemRunner.h"
 
 void UAimOccupyProgressWidget::NativeConstruct()
 {
@@ -53,34 +54,32 @@ void UAimOccupyProgressWidget::OccupyCrash() const
 		IngTextImage->SetVisibility(ESlateVisibility::Hidden);
 
 	CrashTextImage->SetVisibility(ESlateVisibility::Visible);
+
+	UE_LOG(LogTemp, Warning, TEXT("OccupyCrash"));
 }
 
-void UAimOccupyProgressWidget::AllAimWidgetDisable() const
+void UAimOccupyProgressWidget::InitAimOccupyWidget() const
 {
-	IngTextImage->SetVisibility(ESlateVisibility::Hidden);
-	CrashTextImage->SetVisibility(ESlateVisibility::Hidden);
-}
-
-void UAimOccupyProgressWidget::Success()
-{
-	if (IsValid(IngTextImage) && IsValid(FinishTextImage))
+	if (!IsValid(IngTextImage) || !IsValid(CrashTextImage) || !IsValid(FinishTextImage))
 	{
-		IngTextImage->SetVisibility(ESlateVisibility::Hidden);
-		CrashTextImage->SetVisibility(ESlateVisibility::Hidden);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("IngTextImage or FinishTextImage is null."));
+		UE_LOG(LogTemp, Warning, TEXT("IngTextImage or CrashTextImage or FinishTextImage is null."));
 		return;
 	}
+	
+	IngTextImage->SetVisibility(ESlateVisibility::Hidden);
+	CrashTextImage->SetVisibility(ESlateVisibility::Hidden);
+	FinishTextImage->SetVisibility(ESlateVisibility::Hidden);
+}
 
+void UAimOccupyProgressWidget::OccupySuccess()
+{
 	FinishTextImage->SetVisibility(ESlateVisibility::Visible);
 	
 	FTimerDelegate TDelegate_FinishText;
 	TDelegate_FinishText.BindLambda([this]
 	{
 		if (this == nullptr) return;
-		FinishTextImage->SetVisibility(ESlateVisibility::Hidden);
+		InitAimOccupyWidget();
 	});
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle_FinishText, TDelegate_FinishText, 1.5f, false);
 }

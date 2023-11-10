@@ -102,7 +102,7 @@ void ACaptureArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 						if (IsValid(OccupyingPlayerState->GetAimOccupyProgressWidget()))
 						{
 							OccupyingPlayerState->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(0, false);
-							OccupyingPlayerState->GetAimOccupyProgressWidget()->AllAimWidgetDisable();
+							OccupyingPlayerState->GetAimOccupyProgressWidget()->InitAimOccupyWidget();
 						}
 					}
 				}
@@ -127,7 +127,7 @@ void ACaptureArea::RemoveFromOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBa
 	{
 		OccupyingPlayerList[PlayerTeam].Remove(Player);
 	}
-
+	
 	UpdateCaptureAreaState(CurrentCaptureAreaState);
 }
 
@@ -371,12 +371,12 @@ void ACaptureArea::IncreaseCaptureProgress()
 			{
 				Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, true);
 			}
-			UE_LOG(LogTemp, Warning, TEXT("true"));
+			// UE_LOG(LogTemp, Warning, TEXT("true"));
 		}
 
 		OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress);
 
-		UE_LOG(LogTemp, Warning, TEXT("%f"), TeamCaptureProgress);
+		// UE_LOG(LogTemp, Warning, TEXT("%f"), TeamCaptureProgress);
 
 		if (CurrentTeam == ETeam::Anti)
 		{
@@ -417,7 +417,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 					if (IsValid(Player->GetAimOccupyProgressWidget()))
 					{
 						Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, false);
-						Player->GetAimOccupyProgressWidget()->Success();
+						Player->GetAimOccupyProgressWidget()->OccupySuccess();
 					}
 				}
 			}
@@ -435,8 +435,6 @@ void ACaptureArea::DecreaseCaptureProgress()
 {
 	AntiTeamCaptureProgress -= CaptureSpeed * 0.1f;
 	ProTeamCaptureProgress -= CaptureSpeed * 0.1f;
-	UE_LOG(LogTemp, Warning, TEXT("Anti : %f"), AntiTeamCaptureProgress);
-	UE_LOG(LogTemp, Warning, TEXT("Pro : %f"), ProTeamCaptureProgress);
 
 	const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
 	if (OccupationGameState == nullptr)

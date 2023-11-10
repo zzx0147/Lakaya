@@ -23,8 +23,8 @@ protected:
 public:
 	void SetAimOccupyProgressBar(const float& NewProgress, const bool& bIsNewOccupy);
 	void OccupyCrash() const;
-	void AllAimWidgetDisable() const;
-	void Success();
+	void InitAimOccupyWidget() const;
+	void OccupySuccess();
 	
 private:
 	UPROPERTY()
