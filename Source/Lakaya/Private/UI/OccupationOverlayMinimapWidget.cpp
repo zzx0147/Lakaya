@@ -196,15 +196,6 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 	}
 }
 
-void UOccupationOverlayMinimapWidget::SetEnemyImage() const
-{
-	for (const auto& Enemy : OccupationPlayersByMinimap[CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti])
-	{
-		const auto& EnemyImage = Enemy.Value;
-		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
-	}
-}
-
 void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
                                                        const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
 {
@@ -254,12 +245,18 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	
 	GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, [this, EnemyImage, NewTeam]()
 	{
-		for (const auto& Enemy : OccupationPlayersByMinimap[NewTeam])
-		{
-			SetEnemyImage();
-		}
+		SetEnemyImage();
 	}, 0.1f, false);
 	SetPlayerTimers(NewPlayerState, NewTimerHandle);
+}
+
+void UOccupationOverlayMinimapWidget::SetEnemyImage() const
+{
+	for (const auto& Enemy : OccupationPlayersByMinimap[CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti])
+	{
+		const auto& EnemyImage = Enemy.Value;
+		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
+	}
 }
 
 void UOccupationOverlayMinimapWidget::UpdateAreaImageRotation()

@@ -476,10 +476,13 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 					AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxAmmoAttribute()).
 					               AddUObject(CharacterWidget->GetGamePlayBulletWidget(),
 					                          &UGamePlayBulletWidget::OnChangeMaxBulletAttribute);
+					CharacterWidget->GetGamePlayBulletWidget()->SetMaxBullet(LakayaAttributeSet->GetMaxAmmo());
+					
 					AbilitySystem->GetGameplayAttributeValueChangeDelegate(
 						               LakayaAttributeSet->GetCurrentAmmoAttribute()).
 					               AddUObject(CharacterWidget->GetGamePlayBulletWidget(),
 					                          &UGamePlayBulletWidget::OnChangeCurrentBulletAttribute);;
+					CharacterWidget->GetGamePlayBulletWidget()->SetRemainBullet(LakayaAttributeSet->GetCurrentAmmo());
 				}
 
 				if (const auto BulletSpreadComponent = Character->GetBulletSpread(); BulletSpreadComponent &&
