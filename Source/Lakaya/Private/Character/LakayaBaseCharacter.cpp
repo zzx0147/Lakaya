@@ -262,7 +262,8 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 		const FVector LookDirection = PlayerController->GetControlRotation().Vector();
 
 		// 시야각을 설정합하여, 라디언으로 변환합니다.
-		const float AngleThreshold = FMath::DegreesToRadians(90.0f);
+		// const float AngleThreshold = FMath::DegreesToRadians(90.0f);
+		const float AngleThreshold = FMath::DegreesToRadians(45.0f);
 
 		// 두 벡터 사이의 각도를 계산합니다.
 		const float AngleBetweenVectors = FMath::Acos(
