@@ -31,7 +31,15 @@ public:
 	// 위젯에 표시되는 전체 체력 수치를 업데이트합니다.
 	void SetMaximumHealthAttribute(const FOnAttributeChangeData& NewMaximumHealth);
 
+protected:
+	
+	UPROPERTY(BlueprintReadOnly)
+	float MaximumHealth; //최대 체력 값
+	UPROPERTY(BlueprintReadOnly)
+	float Health; //체력 값
+	
 private:
+	
 	//체력 프로그래스 바를 업데이트하는 함수
 	void UpdateHealthProgressBar() const;
 
@@ -39,6 +47,14 @@ private:
 	TObjectPtr<UTextBlock> HealthText; //체력을 표기하는 텍스트
 	TObjectPtr<UTextBlock> MaximumHealthText; //최대 체력을 표기하는 텍스트
 
-	float MaximumHealth; //최대 체력 값
-	float Health; //체력 값
+	UPROPERTY(EditAnywhere)
+	FSlateColor WarningHPColor;
+
+	UPROPERTY(EditAnywhere)
+	FSlateColor DefaultHPColor;
+	
+	UPROPERTY(EditAnywhere,  meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float HealthWarningPercent;
+	
+
 };
