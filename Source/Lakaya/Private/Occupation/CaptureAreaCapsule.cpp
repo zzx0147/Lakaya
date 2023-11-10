@@ -4,14 +4,13 @@
 #include "Occupation/CaptureAreaCapsule.h"
 
 #include "Components/CapsuleComponent.h"
-#include "DynamicMesh/MeshIndexUtil.h"
 
 ACaptureAreaCapsule::ACaptureAreaCapsule()
 {
-	Trigger = CreateDefaultSubobject<UCapsuleComponent>(TEXT("TriggerBox"));
-	Trigger->InitCapsuleSize(100.0f, 100.0f);
-	
+	Trigger = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Trigger"));
 	RootComponent = Trigger;
+	Trigger->InitCapsuleSize(800.0f, 800.0f);
+	
 
 	Trigger->OnComponentBeginOverlap.AddDynamic(this, &ACaptureAreaCapsule::OnOverlapBegin);
 	Trigger->OnComponentEndOverlap.AddDynamic(this, &ACaptureAreaCapsule::OnOverlapEnd);
