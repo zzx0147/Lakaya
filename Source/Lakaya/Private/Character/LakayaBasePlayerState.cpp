@@ -174,17 +174,6 @@ void ALakayaBasePlayerState::OnRep_Owner()
 		{
 			DirectionDamageIndicatorWidget->AddToViewport();
 		}
-
-		// SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
-		// if (SkillWidget)
-		// {
-		// 	SkillWidget->AddToViewport(-2);
-		// 	OnCharacterNameChanged.AddWeakLambda(
-		// 		SkillWidget.Get(), [Widget = SkillWidget](auto, const FName& Name)
-		// 		{
-		// 			Widget->SetCharacter(Name);
-		// 		});
-		// }
 	}
 }
 

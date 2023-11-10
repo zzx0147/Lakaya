@@ -158,12 +158,14 @@ protected:
 	virtual bool TrySendMatchResultData() override;
 
 	virtual void OnRep_MatchEndingTime() override;
-
 	
 private:
 	virtual void SetClientTeam(const ETeam& NewTeam) override;
 	
 	void EndTimeCheck();
+
+	// 스코어를 업데이트 해주는 함수입니다.
+	void UpdateTeamScoreTick();
 	
 	void DestroyShieldWallObject() const;
 
@@ -180,9 +182,6 @@ private:
 	void InternalSetScoreBoardVisibility(const bool& Visible) const;
 
 	void InternalSetTabMinimapVisibility(const bool& Visible) const;
-
-	// 스코어를 업데이트 해주는 함수입니다.
-	void UpdateTeamScoreTick();
 
 	UFUNCTION()
 	void OnRep_AntiTeamScore() const;
