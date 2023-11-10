@@ -107,3 +107,21 @@ bool ULakayaBlueprintLibrary::HasAbility(UAbilitySystemComponent* ASC, TSubclass
 	};
 	return IsValid(ASC) && ASC->GetActivatableAbilities().ContainsByPredicate(Pred);
 }
+
+FGameplayAbilityTargetDataHandle ULakayaBlueprintLibrary::MakeTargetDataFromHitResults(
+	const TArray<FHitResult>& HitResults)
+{
+	FGameplayAbilityTargetDataHandle Handle;
+	AddTargetDataFromHitResults(Handle, HitResults);
+	return Handle;
+}
+
+void ULakayaBlueprintLibrary::AddTargetDataFromHitResults(FGameplayAbilityTargetDataHandle& OutTargetDataHandle,
+                                                          const TArray<FHitResult>& HitResults)
+{
+	static auto Transform = [](const FHitResult& HitResult)
+	{
+		return new FGameplayAbilityTargetData_SingleTargetHit(HitResult);
+	};
+	Algo::Transform(HitResults, OutTargetDataHandle, Transform);
+}

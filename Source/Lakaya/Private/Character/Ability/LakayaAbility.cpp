@@ -358,16 +358,6 @@ UAbilityComponent* ULakayaAbility::FindOrAddAbilityComponent(AActor* TargetActor
 	return Component;
 }
 
-void ULakayaAbility::HitResultsToTargetDataHandle(const TArray<FHitResult>& HitResults,
-                                                  FGameplayAbilityTargetDataHandle& OutTargetDataHandle)
-{
-	static auto Transform = [](const FHitResult& HitResult)
-	{
-		return new FGameplayAbilityTargetData_SingleTargetHit(HitResult);
-	};
-	Algo::Transform(HitResults, OutTargetDataHandle, Transform);
-}
-
 void ULakayaAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                      const FGameplayAbilityActorInfo* ActorInfo,
                                      const FGameplayAbilityActivationInfo ActivationInfo,
