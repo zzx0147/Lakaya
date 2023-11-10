@@ -7,6 +7,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "LakayaBlueprintLibrary.generated.h"
 
+struct FGameplayAbilityTargetDataHandle;
 struct FGameplayEffectContextHandle;
 struct FLakayaInputID;
 /**
@@ -52,4 +53,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static bool HasAbility(UAbilitySystemComponent* ASC, TSubclassOf<UGameplayAbility> AbilityClass);
+
+	UFUNCTION(BlueprintCallable)
+	static FGameplayAbilityTargetDataHandle MakeTargetDataFromHitResults(const TArray<FHitResult>& HitResults);
+
+	UFUNCTION(BlueprintCallable)
+	static void AddTargetDataFromHitResults(FGameplayAbilityTargetDataHandle& OutTargetDataHandle,
+	                                        const TArray<FHitResult>& HitResults);
 };
