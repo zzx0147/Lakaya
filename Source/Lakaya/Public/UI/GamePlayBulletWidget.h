@@ -23,10 +23,20 @@ public:
 	void OnChangeMaxBulletAttribute(const FOnAttributeChangeData& NewValue);
 	void OnChangeCurrentBulletAttribute(const FOnAttributeChangeData& NewValue);
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintNativeEvent)
 	void UpdateBulletProgressBar(const float& NewPercent);
 
 private:
+
+	UPROPERTY(EditAnywhere)
+	FSlateColor BulletWarningTextColor;
+
+	UPROPERTY(EditAnywhere)
+	FSlateColor BulletDefaultTextColor;
+
+	UPROPERTY(EditAnywhere, meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float BulletWarningPercent;
+	
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UTextBlock> RemainBulletsText; //남은 총알을 표기하는 텍스트
 

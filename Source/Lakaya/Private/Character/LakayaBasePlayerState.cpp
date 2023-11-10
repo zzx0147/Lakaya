@@ -174,17 +174,6 @@ void ALakayaBasePlayerState::OnRep_Owner()
 		{
 			DirectionDamageIndicatorWidget->AddToViewport();
 		}
-
-		// SkillWidget = CreateWidget<USkillWidget>(LocalController, SkillWidgetClass);
-		// if (SkillWidget)
-		// {
-		// 	SkillWidget->AddToViewport(-2);
-		// 	OnCharacterNameChanged.AddWeakLambda(
-		// 		SkillWidget.Get(), [Widget = SkillWidget](auto, const FName& Name)
-		// 		{
-		// 			Widget->SetCharacter(Name);
-		// 		});
-		// }
 	}
 }
 
@@ -487,10 +476,13 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 					AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxAmmoAttribute()).
 					               AddUObject(CharacterWidget->GetGamePlayBulletWidget(),
 					                          &UGamePlayBulletWidget::OnChangeMaxBulletAttribute);
+					CharacterWidget->GetGamePlayBulletWidget()->SetMaxBullet(LakayaAttributeSet->GetMaxAmmo());
+					
 					AbilitySystem->GetGameplayAttributeValueChangeDelegate(
 						               LakayaAttributeSet->GetCurrentAmmoAttribute()).
 					               AddUObject(CharacterWidget->GetGamePlayBulletWidget(),
 					                          &UGamePlayBulletWidget::OnChangeCurrentBulletAttribute);;
+					CharacterWidget->GetGamePlayBulletWidget()->SetRemainBullet(LakayaAttributeSet->GetCurrentAmmo());
 				}
 
 				if (const auto BulletSpreadComponent = Character->GetBulletSpread(); BulletSpreadComponent &&

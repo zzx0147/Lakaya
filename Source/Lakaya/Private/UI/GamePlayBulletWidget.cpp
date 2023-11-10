@@ -13,7 +13,7 @@ void UGamePlayBulletWidget::SetRemainBullet(const uint16& NewRemainBullet)
 	//업데이트된 총알 갯수를 저장하고 텍스트로 표기
 	RemainBullet = NewRemainBullet;
 	RemainBulletsText->SetText(FText::AsNumber(RemainBullet));
-	UpdateBulletProgressBar((float)RemainBullet / MaxBullet);
+	UpdateBulletProgressBar(RemainBullet / MaxBullet);
 }
 
 void UGamePlayBulletWidget::SetMaxBullet(const uint16& NewMaxBullet)
@@ -33,4 +33,16 @@ void UGamePlayBulletWidget::OnChangeMaxBulletAttribute(const FOnAttributeChangeD
 void UGamePlayBulletWidget::OnChangeCurrentBulletAttribute(const FOnAttributeChangeData& NewValue)
 {
 	SetRemainBullet(NewValue.NewValue);
+}
+
+void UGamePlayBulletWidget::UpdateBulletProgressBar_Implementation(const float& NewPercent)
+{
+	if(NewPercent <= BulletWarningPercent)
+	{
+		RemainBulletsText->SetColorAndOpacity(BulletWarningTextColor);
+	}
+	else
+	{
+		RemainBulletsText->SetColorAndOpacity(BulletDefaultTextColor);
+	}
 }

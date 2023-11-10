@@ -28,6 +28,7 @@ void UGamePlayHealthWidget::SetCurrentHealth(const float& NewHealth)
 	Health = NewHealth;
 	HealthText->SetText(FText::AsNumber(floor(Health)));
 
+	
 	//체력 바 업데이트
 	UpdateHealthProgressBar();
 }
@@ -57,4 +58,13 @@ void UGamePlayHealthWidget::UpdateHealthProgressBar() const
 {
 	//체력 바 업데이트
 	HealthProgressBar->SetPercent(Health / MaximumHealth);
+	
+	if(Health <= MaximumHealth * HealthWarningPercent)
+	{
+		HealthText->SetColorAndOpacity(WarningHPColor);
+	}
+	else
+	{
+		HealthText->SetColorAndOpacity(DefaultHPColor);
+	}
 }

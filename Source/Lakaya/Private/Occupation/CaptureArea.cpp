@@ -68,9 +68,7 @@ void ACaptureArea::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
 		// 충돌한 액터가 캐릭터인지 확인합니다.
-		const auto* OverlappedArmedCharacter = Cast<ACharacter>(OtherActor);
-
-		if (OverlappedArmedCharacter)
+		if (const auto OverlappedArmedCharacter = Cast<ACharacter>(OtherActor))
 		{
 			if (const auto OccupyingPlayerState = Cast<ALakayaBasePlayerState>(OverlappedArmedCharacter->GetPlayerState()))
 			{
@@ -88,11 +86,10 @@ void ACaptureArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
 		// 충돌이 끝난 액터가 캐릭터인지 확인합니다.
-		const auto* OverlappedArmedCharacter = Cast<ACharacter>(OtherActor);
 
-		if (OverlappedArmedCharacter)
+		if (const auto OverlappedArmedCharacter = Cast<ACharacter>(OtherActor))
 		{
-			if (auto OccupyingPlayerState = Cast<ALakayaBasePlayerState>(OverlappedArmedCharacter->GetPlayerState()))
+			if (const auto OccupyingPlayerState = Cast<ALakayaBasePlayerState>(OverlappedArmedCharacter->GetPlayerState()))
 			{
 				// 충돌이 끝난 액터가 캐릭터입니다.
 				RemoveFromOccupyPlayerList(OccupyingPlayerState->GetTeam(), OccupyingPlayerState);
@@ -102,9 +99,10 @@ void ACaptureArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 				{
 					if (const auto PlayerController = OccupyingPlayerState->GetPawn()->IsLocallyControlled())
 					{
-						if (OccupyingPlayerState->GetAimOccupyProgressWidget())
+						if (IsValid(OccupyingPlayerState->GetAimOccupyProgressWidget()))
 						{
 							OccupyingPlayerState->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(0, false);
+							OccupyingPlayerState->GetAimOccupyProgressWidget()->InitAimOccupyWidget();
 						}
 					}
 				}
@@ -129,7 +127,7 @@ void ACaptureArea::RemoveFromOccupyPlayerList(const ETeam& PlayerTeam, ALakayaBa
 	{
 		OccupyingPlayerList[PlayerTeam].Remove(Player);
 	}
-
+	
 	UpdateCaptureAreaState(CurrentCaptureAreaState);
 }
 
@@ -184,6 +182,18 @@ void ACaptureArea::UpdateCaptureAreaState(const ECaptureAreaState& CaptureAreaSt
 	else if (AntiTeamPlayerCount > 0 && ProTeamPlayerCount > 0)
 	{
 		CaptureAreaHandleOpposite(CaptureAreaState);
+
+		for (const auto& Team : {ETeam::Anti, ETeam::Pro})
+		{
+			for (const auto& Player : OccupyingPlayerList[Team])
+			{
+				if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled() &&
+					IsValid(Player->GetAimOccupyProgressWidget()))
+				{
+					Player->GetAimOccupyProgressWidget()->OccupyCrash();
+				}
+			}
+		}
 	}
 	else if (AntiTeamPlayerCount == 0 && ProTeamPlayerCount == 0)
 	{
@@ -357,14 +367,16 @@ void ACaptureArea::IncreaseCaptureProgress()
 
 		for (const auto& Player : OccupyingPlayerList[CurrentTeam])
 		{
-			if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled())
+			if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled() && IsValid(Player->GetAimOccupyProgressWidget()))
+			{
 				Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, true);
-			UE_LOG(LogTemp, Warning, TEXT("true"));
+			}
+			// UE_LOG(LogTemp, Warning, TEXT("true"));
 		}
 
 		OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress);
 
-		UE_LOG(LogTemp, Warning, TEXT("%f"), TeamCaptureProgress);
+		// UE_LOG(LogTemp, Warning, TEXT("%f"), TeamCaptureProgress);
 
 		if (CurrentTeam == ETeam::Anti)
 		{
@@ -383,8 +395,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 		// 점령에 성공했다면
 		if (TeamCaptureProgress >= 4.0f)
 		{
-			const ETeam OtherTeam = (CurrentTeam == ETeam::Anti) ? ETeam::Pro : ETeam::Anti;
-			if (GetCurrentCaptureAreaTeam() == OtherTeam)
+			if (const ETeam OtherTeam = (CurrentTeam == ETeam::Anti) ? ETeam::Pro : ETeam::Anti; GetCurrentCaptureAreaTeam() == OtherTeam)
 			{
 				OccupationGameState->SubCaptureAreaCount(OtherTeam);
 			}
@@ -403,8 +414,11 @@ void ACaptureArea::IncreaseCaptureProgress()
 			{
 				if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled())
 				{
-					Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, false);
-					Player->GetAimOccupyProgressWidget()->Success();
+					if (IsValid(Player->GetAimOccupyProgressWidget()))
+					{
+						Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, false);
+						Player->GetAimOccupyProgressWidget()->OccupySuccess();
+					}
 				}
 			}
 
@@ -421,8 +435,6 @@ void ACaptureArea::DecreaseCaptureProgress()
 {
 	AntiTeamCaptureProgress -= CaptureSpeed * 0.1f;
 	ProTeamCaptureProgress -= CaptureSpeed * 0.1f;
-	UE_LOG(LogTemp, Warning, TEXT("Anti : %f"), AntiTeamCaptureProgress);
-	UE_LOG(LogTemp, Warning, TEXT("Pro : %f"), ProTeamCaptureProgress);
 
 	const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
 	if (OccupationGameState == nullptr)
@@ -451,30 +463,3 @@ void ACaptureArea::DecreaseCaptureProgress()
 		GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 	}
 }
-
-FString ACaptureArea::GetEnumAsString(const ECaptureAreaState& EnumValue)
-{
-	const TObjectPtr<UEnum> EnumPtr = FindObject<UEnum>(nullptr, TEXT("/Script/Lakaya.ECaptureAreaState"));
-	if (EnumPtr)
-	{
-		return EnumPtr->GetNameStringByIndex(static_cast<uint8>(EnumValue));
-	}
-
-	return FString("Casting Failed.");
-}
-
-FString ACaptureArea::ETeamToString(const ETeam& Team)
-{
-	switch (Team)
-	{
-	case ETeam::Anti:
-		return TEXT("Anti");
-	case ETeam::Pro:
-		return TEXT("Pro");
-	case ETeam::None:
-		return TEXT("None");
-	default:
-		return TEXT("Unknown");
-	}
-}
-

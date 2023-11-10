@@ -45,7 +45,7 @@ AOccupationGameState::AOccupationGameState(): MatchResult()
 	AntiTeamCaptureAreaCount = 0;
 	ProTeamCaptureAreaCount = 0;
 	ScoreUpdateDelay = 1.0f;
-	AdditiveScore = 3.0f;
+	AdditiveScore = 1.0f;
 	MatchDuration = 180.f;
 	MatchStartWaitWidgetLifeTime = 3.0f;
 	MatchStartWidgetLifeTime = 5.0f;
@@ -571,19 +571,23 @@ void AOccupationGameState::SubCaptureAreaCount(const ETeam& Team)
 
 void AOccupationGameState::UpdateTeamScoreTick()
 {
+	int32 TeamScore = (TeamToUpdate == ETeam::Anti) ? AntiTeamScore : ProTeamScore;
+	TeamScore += AdditiveScore;
+	if (TeamScore >= MaxScore) TeamScore = MaxScore;
+
 	if (TeamToUpdate == ETeam::Anti)
 	{
-		AntiTeamScore += AdditiveScore;
+		AntiTeamScore = TeamScore;
 		OnRep_AntiTeamScore();
 	}
 	else if (TeamToUpdate == ETeam::Pro)
 	{
-		ProTeamScore += AdditiveScore;
+		ProTeamScore = TeamScore;
 		OnRep_ProTeamScore();
 	}
 }
 
-void AOccupationGameState::StartScoreUpdate(const ETeam& Team, float UpdateDelay)
+void AOccupationGameState::StartScoreUpdate(const ETeam& Team, const float UpdateDelay)
 {
 	if (GetWorldTimerManager().IsTimerActive(TimerHandle_UpdateScoreTimer))
 	{
@@ -591,8 +595,8 @@ void AOccupationGameState::StartScoreUpdate(const ETeam& Team, float UpdateDelay
 	}
 
 	TeamToUpdate = Team;
-	GetWorldTimerManager().SetTimer(TimerHandle_UpdateScoreTimer, this, &AOccupationGameState::UpdateTeamScoreTick,
-	                                UpdateDelay, true);
+	
+	GetWorldTimerManager().SetTimer(TimerHandle_UpdateScoreTimer, this, &AOccupationGameState::UpdateTeamScoreTick, UpdateDelay, true);
 }
 
 void AOccupationGameState::StopScoreUpdate()
