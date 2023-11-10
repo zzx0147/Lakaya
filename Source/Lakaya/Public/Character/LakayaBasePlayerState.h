@@ -49,8 +49,6 @@ public:
 	virtual void OnRep_PlayerName() override;
 	virtual void SetOwner(AActor* NewOwner) override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-
-	// virtual void PostInitializeComponents() override;
 protected:
 	virtual void BeginPlay() override;
 	virtual void CopyProperties(APlayerState* PlayerState) override;
