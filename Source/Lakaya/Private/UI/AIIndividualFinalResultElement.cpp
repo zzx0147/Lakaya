@@ -25,8 +25,7 @@ void UAIIndividualFinalResultElement::SetPlayer(TWeakObjectPtr<ALakayaBasePlayer
 {
 	if(!NewPlayer.IsValid()) return;
 
-	if(const AController* PlayerController = NewPlayer->GetOwningController(); PlayerController != nullptr
-		&& PlayerController->IsLocalController())
+	if(const APlayerController* PlayerController = NewPlayer->GetPlayerController(); PlayerController != nullptr && PlayerController->IsLocalPlayerController())
 	{
 		CursorImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
