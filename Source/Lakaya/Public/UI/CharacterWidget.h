@@ -19,6 +19,7 @@ public:
 	FORCEINLINE class UGamePlayBulletWidget* GetGamePlayBulletWidget() const { return BulletWidget; }
 	FORCEINLINE class URespawnWidget* GetRespawnWidget() const { return RespawnWidget; }
 	FORCEINLINE class UDynamicCrossHairWidget* GetCrossHairWidget() const { return CrosshairWidget; }
+	FORCEINLINE class UKillStreakWidget* GetKillStreakWidget() const { return KillStreakWidget; }
 
 	void SetAliveState(const bool& IsAlive);
 	
@@ -34,4 +35,7 @@ private:
 	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UDynamicCrossHairWidget> CrosshairWidget;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UKillStreakWidget> KillStreakWidget;
 };
