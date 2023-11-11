@@ -31,3 +31,37 @@ FVector2D UMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& Play
 	
 	return MiniMapCoordinates;
 }
+
+void UMinimapWidget::SetQuestionImage(const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
+{
+	FTimerHandle NewTimerHandle;
+	if (PlayerTimers.Contains(NewPlayerState))
+		GetWorld()->GetTimerManager().ClearTimer(PlayerTimers[NewPlayerState]);
+	
+	GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, [this]()
+	{
+		SetEnemyImage();
+	}, 0.1f, false);
+	
+	SetPlayerTimers(NewPlayerState, NewTimerHandle);
+}
+
+void UMinimapWidget::SetEnemyImage()
+{
+	for (const auto& Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
+	{
+		const auto& EnemyImage = Enemy.Value;
+		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
+	}
+
+	FTimerHandle OldTimerHandle;
+
+	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, [this]()
+	{
+		for (const auto& Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
+		{
+			const auto& EnemyImage = Enemy.Value;
+			EnemyImage->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}, 3.0f, false);
+}

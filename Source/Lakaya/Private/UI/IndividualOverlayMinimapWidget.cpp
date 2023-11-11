@@ -8,11 +8,6 @@
 #include "Components/CanvasPanelSlot.h"
 #include "GameMode/AIIndividualGameState.h"
 
-void UIndividualOverlayMinimapWidget::NativeConstruct()
-{
-	Super::NativeConstruct();
-}
-
 void UIndividualOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
@@ -150,29 +145,26 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 	}
 
 	NewPlayerImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
+
+	SetQuestionImage(NewPlayerState);
 }
 
-FVector2d UIndividualOverlayMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
-	const FVector2D& MiniMapSize)
+void UIndividualOverlayMinimapWidget::SetEnemyImage()
 {
-	return Super::ConvertWorldToMiniMapCoordinates(PlayerLocation, MiniMapSize);
-}
+	for (const auto& Enemy : IndividualPlayersByMinimap)
+	{
+		const auto& EnemyImage = Enemy.Value;
+		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
+	}
 
-void UIndividualOverlayMinimapWidget::UpdateMinimapImagePositionAndRotation(
-	const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const
-{
-	Super::UpdateMinimapImagePositionAndRotation(NewPlayerState, NewPosition);
-}
+	FTimerHandle OldTimerHandle;
 
-
-
-void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
-{
-	Super::UpdatePlayerPosition(Team);
-}
-
-void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
-{
-	Super::UpdatePlayerPosition(NewTeam, NewPlayerState);
+	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, [this]()
+	{
+		for (const auto& Enemy : IndividualPlayersByMinimap)
+		{
+			const auto& EnemyImage = Enemy.Value;
+			EnemyImage->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}, 3.0f, false);
 }

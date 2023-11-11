@@ -208,7 +208,8 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 	{
 		HUDMinimapWidget->SetUpdateMinimap(true);
 		HUDMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
+		HUDMinimapWidget->SetEnemyTeam(ETeam::Individual);
+		
 		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 		{
 			const AController* AllControllers = It->Get();
@@ -216,7 +217,6 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 			const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(
 				AllControllers->GetPlayerState<ALakayaBasePlayerState>());
 
-			// TODO : 자기 자신일 때의 작업을 해야 합니다.
 			HUDMinimapWidget->SetIndividualPlayersByMinimap(IndividualPlayerState, HUDMinimapWidget->CreatePlayerImage(ETeam::Individual));
 		}
 	}
@@ -224,6 +224,7 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 	if (TabMinimapWidget)
 	{
 		TabMinimapWidget->SetUpdateMinimap(true);
+		HUDMinimapWidget->SetEnemyTeam(ETeam::Individual);
 		// TabMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
@@ -233,7 +234,6 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 			const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(
 				AllControllers->GetPlayerState<ALakayaBasePlayerState>());
 
-			// TODO : 자기 자신일 때의 작업을 해야 합니다.
 			TabMinimapWidget->SetIndividualPlayersByMinimap(IndividualPlayerState, TabMinimapWidget->CreatePlayerImage(ETeam::Individual));
 		}
 	}
