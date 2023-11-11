@@ -16,12 +16,6 @@ class LAKAYA_API ACaptureAreaBox : public ACaptureArea
 
 public:
 	ACaptureAreaBox();
-
-private:
-	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
-	virtual void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;	
-
-public:
 	
 private:
 	UPROPERTY(VisibleAnywhere, Category = Box)

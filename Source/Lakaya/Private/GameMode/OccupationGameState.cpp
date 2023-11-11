@@ -648,7 +648,6 @@ void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& I
 
 	if (ProgressBar == nullptr || *ProgressBar == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ProgressBar is not Found for Id : %d"), Id);
 		return;
 	}
 
