@@ -25,10 +25,6 @@ public:
 	void OccupyCrash() const;
 	void InitAimOccupyWidget() const;
 	void OccupySuccess();
-	
-private:
-	UPROPERTY()
-	UProgressBar* AimOccupyChargeProgressBar;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> IngTextImage;
@@ -38,6 +34,10 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> CrashTextImage;
+	
+private:
+	UPROPERTY()
+	UProgressBar* AimOccupyChargeProgressBar;
 	
 	UPROPERTY()
 	float Percent;
