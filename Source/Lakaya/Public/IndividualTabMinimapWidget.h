@@ -18,11 +18,9 @@ public:
 	virtual UImage* CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer) override;
 	
 protected:
-	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 private:
 	virtual void UpdatePlayerPosition(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState) override;
-	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
 	virtual void SetEnemyImage() override;
 };

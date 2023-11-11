@@ -8,11 +8,6 @@
 #include "Components/CanvasPanelSlot.h"
 #include "GameMode/AIIndividualGameState.h"
 
-void UIndividualOverlayMinimapWidget::NativeConstruct()
-{
-	Super::NativeConstruct();
-}
-
 void UIndividualOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
@@ -152,29 +147,6 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 	NewPlayerImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 
 	SetQuestionImage(NewPlayerState);
-}
-
-FVector2d UIndividualOverlayMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
-	const FVector2D& MiniMapSize)
-{
-	return Super::ConvertWorldToMiniMapCoordinates(PlayerLocation, MiniMapSize);
-}
-
-void UIndividualOverlayMinimapWidget::UpdateMinimapImagePositionAndRotation(
-	const ALakayaBasePlayerState& NewPlayerState, const FVector2D NewPosition) const
-{
-	Super::UpdateMinimapImagePositionAndRotation(NewPlayerState, NewPosition);
-}
-
-void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
-{
-	Super::UpdatePlayerPosition(Team);
-}
-
-void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
-{
-	Super::UpdatePlayerPosition(NewTeam, NewPlayerState);
 }
 
 void UIndividualOverlayMinimapWidget::SetEnemyImage()

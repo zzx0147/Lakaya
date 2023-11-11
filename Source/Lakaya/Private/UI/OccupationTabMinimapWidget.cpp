@@ -154,15 +154,6 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 	}
 }
 
-void UOccupationTabMinimapWidget::SetEnemyImage() const
-{
-	for (const auto& Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
-	{
-		const auto& EnemyImage = Enemy.Value;
-		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
-	}
-}
-
 void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
                                                        const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
 {

@@ -25,6 +25,5 @@ protected:
 	virtual void UpdatePlayerPosition(const ETeam& Team) override;
 
 private:
-	void SetEnemyImage() const;
 	virtual void UpdateAreaImageRotation() override;
 };

@@ -7,12 +7,6 @@
 #include "Camera/CameraComponent.h"
 #include "GameMode/AIIndividualGameState.h"
 
-// TODO: 헤더파일에 선언된 기능을 구현해야 합니다.
-void UIndividualTabMinimapWidget::NativeConstruct()
-{
-	Super::NativeConstruct();
-}
-
 void UIndividualTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
@@ -110,12 +104,6 @@ void UIndividualTabMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALak
 	NewPlayerImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset + FVector2D(-275.0f, 0));
 
 	SetQuestionImage(NewPlayerState);
-}
-
-void UIndividualTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
-	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
-{
-	Super::UpdatePlayerPosition(NewTeam, NewPlayerState);
 }
 
 void UIndividualTabMinimapWidget::SetEnemyImage()
