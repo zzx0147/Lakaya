@@ -20,6 +20,7 @@
 #include "UI/SkillProgressBar.h"
 #include "UI/SkillWidget.h"
 #include "UI/AimOccupyProgressWidget.h"
+#include "UI/KillStreakWidget.h"
 
 void ALakayaBasePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -476,10 +477,13 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 					AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxAmmoAttribute()).
 					               AddUObject(CharacterWidget->GetGamePlayBulletWidget(),
 					                          &UGamePlayBulletWidget::OnChangeMaxBulletAttribute);
+					CharacterWidget->GetGamePlayBulletWidget()->SetMaxBullet(LakayaAttributeSet->GetMaxAmmo());
+					
 					AbilitySystem->GetGameplayAttributeValueChangeDelegate(
 						               LakayaAttributeSet->GetCurrentAmmoAttribute()).
 					               AddUObject(CharacterWidget->GetGamePlayBulletWidget(),
 					                          &UGamePlayBulletWidget::OnChangeCurrentBulletAttribute);;
+					CharacterWidget->GetGamePlayBulletWidget()->SetRemainBullet(LakayaAttributeSet->GetCurrentAmmo());
 				}
 
 				if (const auto BulletSpreadComponent = Character->GetBulletSpread(); BulletSpreadComponent &&
@@ -493,7 +497,14 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 				{
 					CharacterWidget->GetSkillWidget()->SetTeam(GetTeam());
 				}
-				
+
+				if(CharacterWidget->GetKillStreakWidget())
+				{
+					OnKillStreakChanged.AddWeakLambda(CharacterWidget->GetKillStreakWidget(),[&](const uint16 NewKillStreak)
+					{
+						CharacterWidget->GetKillStreakWidget()->OnChangeKillStreak(NewKillStreak);
+					});
+				}
 			}
 		}
 	}
@@ -604,9 +615,12 @@ void ALakayaBasePlayerState::SetAliveState(bool AliveState)
 	bRecentAliveState = AliveState;
 
 	AbilitySystem->SetLooseGameplayTagCount(DeathTag, bRecentAliveState ? 0 : 1);
+
+	if(!bRecentAliveState) ResetKillStreak();
 	
 	if (CharacterWidget) CharacterWidget->SetAliveState(bRecentAliveState);
 	OnAliveStateChanged.Broadcast(AliveState);
+	
 }
 
 void ALakayaBasePlayerState::RespawnTimerCallback(FRespawnTimerDelegate Callback)
