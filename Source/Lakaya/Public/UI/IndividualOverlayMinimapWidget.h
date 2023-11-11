@@ -28,4 +28,5 @@ private:
 	                                           FVector2D NewPosition) const;
 	virtual void UpdatePlayerPosition(const ETeam& Team) override;
 	virtual void UpdatePlayerPosition(const ETeam& NewTeam, const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) override;
+	virtual void SetEnemyImage() override;
 };

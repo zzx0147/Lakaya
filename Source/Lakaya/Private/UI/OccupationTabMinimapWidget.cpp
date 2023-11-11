@@ -202,25 +202,10 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	{
 		EnemyImage->SetBrushFromTexture(ProIcon);
 	}
-	
+
 	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 
-    FTimerHandle NewTimerHandle;
-    
-    if (PlayerTimers.Contains(NewPlayerState))
-    {
-    	GetWorld()->GetTimerManager().ClearTimer(PlayerTimers[NewPlayerState]);
-    }
-    
-    GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, [this, EnemyImage, NewTeam]()
-    {
-    	for (const auto& Enemy : OccupationPlayersByMinimap[NewTeam])
-    	{
-    		SetEnemyImage();
-    	}
-    }, 0.1f, false);
-
-    SetPlayerTimers(NewPlayerState, NewTimerHandle);
+	SetQuestionImage(NewPlayerState);
 }
 
 UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)

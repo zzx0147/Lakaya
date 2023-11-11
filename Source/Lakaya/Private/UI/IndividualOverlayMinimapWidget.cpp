@@ -150,6 +150,8 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 	}
 
 	NewPlayerImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
+
+	SetQuestionImage(NewPlayerState);
 }
 
 FVector2d UIndividualOverlayMinimapWidget::ConvertWorldToMiniMapCoordinates(const FVector2D& PlayerLocation,
@@ -164,8 +166,6 @@ void UIndividualOverlayMinimapWidget::UpdateMinimapImagePositionAndRotation(
 	Super::UpdateMinimapImagePositionAndRotation(NewPlayerState, NewPosition);
 }
 
-
-
 void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 {
 	Super::UpdatePlayerPosition(Team);
@@ -175,4 +175,24 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
 {
 	Super::UpdatePlayerPosition(NewTeam, NewPlayerState);
+}
+
+void UIndividualOverlayMinimapWidget::SetEnemyImage()
+{
+	for (const auto& Enemy : IndividualPlayersByMinimap)
+	{
+		const auto& EnemyImage = Enemy.Value;
+		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
+	}
+
+	FTimerHandle OldTimerHandle;
+
+	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, [this]()
+	{
+		for (const auto& Enemy : IndividualPlayersByMinimap)
+		{
+			const auto& EnemyImage = Enemy.Value;
+			EnemyImage->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}, 3.0f, false);
 }

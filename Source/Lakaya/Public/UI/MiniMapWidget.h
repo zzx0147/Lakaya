@@ -80,7 +80,10 @@ protected:
 	 * @param NewPlayerState 자기 자신의 PlayerState 입니다.
 	 */
 	virtual void UpdatePlayerPosition(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState) { return;}
-	
+
+	virtual void SetQuestionImage(TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState);
+
+	virtual void SetEnemyImage();
 protected:
 	// 위젯의 최상단 CanvasPanel
 	UPROPERTY()

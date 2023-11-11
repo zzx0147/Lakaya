@@ -108,12 +108,34 @@ void UIndividualTabMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALak
 	}
 
 	NewPlayerImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset + FVector2D(-275.0f, 0));
+
+	SetQuestionImage(NewPlayerState);
 }
 
 void UIndividualTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
 {
 	Super::UpdatePlayerPosition(NewTeam, NewPlayerState);
+}
+
+void UIndividualTabMinimapWidget::SetEnemyImage()
+{
+	for (const auto& Enemy : IndividualPlayersByMinimap)
+	{
+		const auto& EnemyImage = Enemy.Value;
+		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
+	}
+
+	FTimerHandle OldTimerHandle;
+
+	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, [this]()
+	{
+		for (const auto& Enemy : IndividualPlayersByMinimap)
+		{
+			const auto& EnemyImage = Enemy.Value;
+			EnemyImage->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}, 3.0f, false);
 }
 
 UImage* UIndividualTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
