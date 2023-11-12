@@ -106,7 +106,7 @@ protected:
 	UFUNCTION()
 	void DecreaseCaptureProgress();
 
-	
+	void UpdateMaterialValue();	
 protected:
 	UPROPERTY(VisibleAnywhere, Category = StaticMesh)
 	TObjectPtr<class UStaticMeshComponent> StaticMeshComponent;
@@ -123,11 +123,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
 	TObjectPtr<class UMaterialInterface> NeutralMaterial;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
-	TObjectPtr<class UMaterialInterface> AntiMaterial;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
-	TObjectPtr<class UMaterialInterface> ProMaterial;
+	UPROPERTY()
+	TObjectPtr<UMaterialInstanceDynamic> DynamicMaterial;
+	
+	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
+	// TObjectPtr<class UMaterialInterface> AntiMaterial;
+	//
+	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
+	// TObjectPtr<class UMaterialInterface> ProMaterial;
 
 	/**
 	 * @brief 점령 구역은 총 3개가 있습니다. Anti구역(Anti팀에 가까운), Pro구역(Pro팀에 가까운), Center구역(가운데)
@@ -153,7 +156,14 @@ protected:
 	float CaptureSpeed;
 
 	UPROPERTY()
+	float MaterialValue;
+
+	UPROPERTY(EditAnywhere)
+	float InterpSpeed;
+	
+	UPROPERTY()
 	TObjectPtr<UOccupyExpressElementWidget> OccupyExpressElementWidget;
 	
 	FTimerHandle CaptureProgressTimerHandle;
+	FTimerHandle MaterialUpdateTimerHandle;
 };

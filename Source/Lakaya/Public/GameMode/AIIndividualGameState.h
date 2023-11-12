@@ -68,12 +68,15 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float MatchStartWaitWidgetLifeTime;
+
+	UPROPERTY(EditAnywhere)
+	float AIIndividualFinalResultLifeTime;
 	
 	FString AIName;
 
 	FTimerHandle TimerHandle_StartMessageVisible;
 	FTimerHandle TimerHandle_StartMessageHidden;
 	FTimerHandle TimerHandle_WaitTimerHandle;
-	FTimerHandle TimerHandle_GameResultHandle;
+	FTimerHandle TimerHandle_AIIndividualFinalResultHandle;
 	FTimerHandle TimerHandle_CharacterSelectTimer;
 };

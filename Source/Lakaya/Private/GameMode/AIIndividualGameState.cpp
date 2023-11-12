@@ -17,6 +17,7 @@ AAIIndividualGameState::AAIIndividualGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	MatchStartWaitWidgetLifeTime = 3.0f;
+	AIIndividualFinalResultLifeTime = 4.0f;
 
 	static ConstructorHelpers::FClassFinder<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardFinder(
 		TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_IndividualLiveScoreBoardWidget"));
@@ -305,6 +306,21 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
 
+	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
+	{
+		AController* AllControllers = It->Get();
+		
+		if(AllControllers)
+		{
+			AAiCharacterController* AiCharacterController = Cast<AAiCharacterController>(AllControllers);
+			AAiDroneController* AiDroneController = Cast<AAiDroneController>(AllControllers);
+		
+			// AI 동작 정지
+			if (AiCharacterController) AiCharacterController->BehaviorTreeComp->StopTree();
+			if (AiDroneController) AiDroneController->BehaviorTreeComp->StopTree();
+		}
+	}
+
 	if (GameResultWidget.IsValid())
 		GameResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
@@ -389,11 +405,11 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 			AIIndividualFinalResultWidget->SetMatchResultData(PlayerAIData.KillCount, PlayerArrays);
 			AIIndividualFinalResultWidget->SetVisibility(ESlateVisibility::Visible);
 		});
-		GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
+		GetWorldTimerManager().SetTimer(TimerHandle_AIIndividualFinalResultHandle, TimerDelegate, AIIndividualFinalResultLifeTime, false);
 	}
 	
-	FTimerManager Timers;
-	Timers.ClearAllTimersForObject(GetWorld());
+	// FTimerManager Timers;
+	// Timers.ClearAllTimersForObject(GetWorld());
 }
 
 ERendererStencilMask AAIIndividualGameState::GetUniqueStencilMaskWithCount(const uint8& Count)
