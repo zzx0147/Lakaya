@@ -3,8 +3,7 @@
 
 #include "Character/BulletSpreadComponent.h"
 
-#include <algorithm>
-
+#include "OnlineSubsystemImpl.h"
 #include "Character/LakayaBaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -20,6 +19,7 @@ void UBulletSpreadComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	LakayaBaseCharacter = Cast<ALakayaBaseCharacter>(GetOwner());
+	
 	if (LakayaBaseCharacter.IsValid())
 	{
 		CharacterMovementComponent = LakayaBaseCharacter->GetCharacterMovement();
@@ -29,6 +29,22 @@ void UBulletSpreadComponent::BeginPlay()
 			{
 				bIsZoomed = Count >= 1;
 			});
+		}
+		else
+		{
+			FTimerDelegate TimerDelegate;
+			TimerDelegate.BindWeakLambda(this,[&]()
+			{
+				CharacterMovementComponent = LakayaBaseCharacter->GetCharacterMovement();
+				if (const auto& AbilitySystemComponent = LakayaBaseCharacter->GetAbilitySystemComponent())
+				{
+					AbilitySystemComponent->RegisterGameplayTagEvent(ZoomTag, EGameplayTagEventType::NewOrRemoved).AddWeakLambda(this, [&](const FGameplayTag Tag, int32 Count)
+					{
+						bIsZoomed = Count >= 1;
+					});
+				}
+			});
+			GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
 		}
 	}
 }
