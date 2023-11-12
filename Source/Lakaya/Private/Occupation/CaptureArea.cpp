@@ -21,6 +21,10 @@ ACaptureArea::ACaptureArea()
 
 	CaptureAreaId = 100;
 
+	MaterialValue = 0.5f;
+
+	InterpSpeed = 5.0f;
+	
 	CaptureAreaWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComponent"));
 }
 
@@ -35,6 +39,17 @@ void ACaptureArea::BeginPlay()
 		return;
 	}
 
+	DynamicMaterial = StaticMeshComponent->CreateAndSetMaterialInstanceDynamicFromMaterial(0, NeutralMaterial);
+	if (DynamicMaterial != nullptr)
+	{
+		DynamicMaterial->SetScalarParameterValue(TEXT("0=NonOccupation_1=Occupation"), 0);
+		DynamicMaterial->SetScalarParameterValue(TEXT("0=Anti_1=Pro"), 0);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("DynamicMaterial is null."));
+	}
+	
 	OccupyExpressElementWidget->GetProgressBar()->SetPercent(0);
 
 	switch (CaptureAreaId)
@@ -50,6 +65,8 @@ void ACaptureArea::BeginPlay()
 		break;
 	default: ;
 	}
+
+	GetWorld()->GetTimerManager().SetTimer(MaterialUpdateTimerHandle, this, &ACaptureArea::UpdateMaterialValue, 0.1f, true);
 }
 
 void ACaptureArea::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -156,8 +173,7 @@ void ACaptureArea::SetCurrentCaptureAreaTeam(const ETeam& NewTeam)
 		break;
 	}
 
-	const TObjectPtr<UMaterialInterface> TeamMaterial = (NewTeam == ETeam::Anti) ? AntiMaterial : ProMaterial;
-	StaticMeshComponent->SetMaterial(0, TeamMaterial);
+	DynamicMaterial->SetScalarParameterValue(TEXT("0=NonOccupation_1=Occupation"), 1.0f);
 	OccupyExpressElementWidget->GetInImage()->SetBrushFromTexture(*WidgetImage);
 	OccupyExpressElementWidget->GetProgressBar()->SetPercent(0);
 }
@@ -461,5 +477,18 @@ void ACaptureArea::DecreaseCaptureProgress()
 		ProTeamCaptureProgress = 0.0f;
 
 		GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
+	}
+}
+
+void ACaptureArea::UpdateMaterialValue()
+{
+	if (CurrentCaptureAreaTeam == ETeam::None) return;
+	
+	const float TargetValue = (CurrentCaptureAreaTeam == ETeam::Anti) ? 0.0f : 1.0f;
+	MaterialValue = FMath::FInterpTo(MaterialValue, TargetValue, GetWorld()->GetDeltaSeconds(), InterpSpeed);
+
+	if (IsValid(DynamicMaterial))
+	{
+		DynamicMaterial->SetScalarParameterValue(TEXT("0=Anti_1=Pro"), MaterialValue);
 	}
 }
