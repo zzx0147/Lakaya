@@ -31,6 +31,9 @@ public:
 	// 위젯에 표시되는 전체 체력 수치를 업데이트합니다.
 	void SetMaximumHealthAttribute(const FOnAttributeChangeData& NewMaximumHealth);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetTeam(const ETeam& NewTeam);
+	
 protected:
 	
 	UPROPERTY(BlueprintReadOnly)

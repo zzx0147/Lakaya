@@ -201,7 +201,10 @@ void AOccupationGameState::HandleMatchHasStarted()
 	Super::HandleMatchHasStarted();
 	
 	if (IsValid(TeamScoreWidget))
+	{
 		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
+		TeamScoreWidget->SetTeam(ClientTeam);
+	}
 
 	if (IsValid(WeaponOutLineWidget))
 		WeaponOutLineWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
