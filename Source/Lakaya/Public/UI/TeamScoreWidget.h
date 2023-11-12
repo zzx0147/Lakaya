@@ -18,6 +18,9 @@ public:
 	void SetMaxScore(const float& ArgMaxScore);
 	void SetMaxScoreVisibility(const bool& IsVisible) const;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetTeam(const ETeam& NewTeam);
+
 private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> AntiTeamScoreText;
