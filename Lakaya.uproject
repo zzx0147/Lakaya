@@ -63,12 +63,17 @@
 		{
 			"Name": "GameplayAbilities",
 			"Enabled": true
+		},
+		{
+			"Name": "CommonUI",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
 		"Linux",
 		"LinuxArm64",
 		"Mac",
-		"Windows"
+		"Windows",
+		"HoloLens"
 	]
 }

@@ -201,7 +201,10 @@ void AOccupationGameState::HandleMatchHasStarted()
 	Super::HandleMatchHasStarted();
 	
 	if (IsValid(TeamScoreWidget))
+	{
 		TeamScoreWidget->SetVisibility(ESlateVisibility::Visible);
+		TeamScoreWidget->SetTeam(ClientTeam);
+	}
 
 	if (IsValid(WeaponOutLineWidget))
 		WeaponOutLineWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -648,7 +651,6 @@ void AOccupationGameState::UpdateExpressWidget(const ETeam& Team, const uint8& I
 
 	if (ProgressBar == nullptr || *ProgressBar == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ProgressBar is not Found for Id : %d"), Id);
 		return;
 	}
 

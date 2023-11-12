@@ -2,9 +2,11 @@
 
 #include "IndividualTabMinimapWidget.h"
 #include "AI/AiCharacterController.h"
+#include "AI/AiDroneController.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
+#include "UI/AIIndividualFinalResultWidget.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/IndividualOverlayMinimapWidget.h"
 #include "UI/IndividualWidget/IndividualGameResultWidget.h"
@@ -15,6 +17,7 @@ AAIIndividualGameState::AAIIndividualGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	MatchStartWaitWidgetLifeTime = 3.0f;
+	AIIndividualFinalResultLifeTime = 4.0f;
 
 	static ConstructorHelpers::FClassFinder<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardFinder(
 		TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_IndividualLiveScoreBoardWidget"));
@@ -96,6 +99,17 @@ void AAIIndividualGameState::BeginPlay()
 			}
 		}
 
+		if (AIIndividualFinalResultWidgetClass)
+		{
+			AIIndividualFinalResultWidget = CreateWidget<UAIIndividualFinalResultWidget>(
+				LocalController, AIIndividualFinalResultWidgetClass);
+			if (AIIndividualFinalResultWidget)
+			{
+				AIIndividualFinalResultWidget->AddToViewport(30);
+				AIIndividualFinalResultWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+
 		if (TabMinimapWidgetClass)
 		{
 			TabMinimapWidget = CreateWidget<UIndividualTabMinimapWidget>(
@@ -111,6 +125,8 @@ void AAIIndividualGameState::BeginPlay()
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
 		AController* AllControllers = It->Get();
+
+		if (Cast<AAiDroneController>(AllControllers)) continue;
 
 		const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(
 			AllControllers->GetPlayerState<ALakayaBasePlayerState>());
@@ -171,6 +187,7 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 		{
 			AController* AllControllers = It->Get();
+			if (Cast<AAiDroneController>(AllControllers)) continue;
 			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
 
 			if (AllControllers && AllControllers->IsPlayerController())
@@ -289,6 +306,21 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
 
+	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
+	{
+		AController* AllControllers = It->Get();
+		
+		if(AllControllers)
+		{
+			AAiCharacterController* AiCharacterController = Cast<AAiCharacterController>(AllControllers);
+			AAiDroneController* AiDroneController = Cast<AAiDroneController>(AllControllers);
+		
+			// AI 동작 정지
+			if (AiCharacterController) AiCharacterController->BehaviorTreeComp->StopTree();
+			if (AiDroneController) AiDroneController->BehaviorTreeComp->StopTree();
+		}
+	}
+
 	if (GameResultWidget.IsValid())
 		GameResultWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
@@ -351,8 +383,33 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 		}
 	}
 
-	FTimerManager Timers;
-	Timers.ClearAllTimersForObject(GetWorld());
+	
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
+		LocalController && LocalController->IsLocalController())
+	{
+		PlayerArrays.Sort([](const TWeakObjectPtr<ALakayaBasePlayerState,FWeakObjectPtr>& A,
+			const TWeakObjectPtr<ALakayaBasePlayerState,FWeakObjectPtr>& B)
+		{
+			const ALakayaBasePlayerState* PlayerStateA = A.Get();
+			const ALakayaBasePlayerState* PlayerStateB = B.Get();
+
+			if (!PlayerStateA || !PlayerStateB) return false;
+
+			return PlayerStateA->GetKillCount() > PlayerStateB->GetKillCount();
+		});
+		
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindLambda([&]
+		{
+			GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
+			AIIndividualFinalResultWidget->SetMatchResultData(PlayerAIData.KillCount, PlayerArrays);
+			AIIndividualFinalResultWidget->SetVisibility(ESlateVisibility::Visible);
+		});
+		GetWorldTimerManager().SetTimer(TimerHandle_AIIndividualFinalResultHandle, TimerDelegate, AIIndividualFinalResultLifeTime, false);
+	}
+	
+	// FTimerManager Timers;
+	// Timers.ClearAllTimersForObject(GetWorld());
 }
 
 ERendererStencilMask AAIIndividualGameState::GetUniqueStencilMaskWithCount(const uint8& Count)

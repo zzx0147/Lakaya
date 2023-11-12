@@ -49,12 +49,19 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UIndividualGameResultWidget> GameResultWidgetClass;
+
+	// 게임 종료 시 등수를 뛰우는 위젯 클래스를 지정합니다.
+	TWeakObjectPtr<UIndividualGameResultWidget> GameResultWidget;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardWidgetClass;
 
-	// 게임 종료 시 등수를 뛰우는 위젯 클래스를 지정합니다.
-	TWeakObjectPtr<UIndividualGameResultWidget> GameResultWidget;
+	// 게임 종료 시 게임 디테일 결과를 띄우는 위젯 클래스를 지정합니다.
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UAIIndividualFinalResultWidget> AIIndividualFinalResultWidgetClass;
+	
+	// 게임 종료 후 게임 디테일 결과 위젯입니다.
+	TObjectPtr<UAIIndividualFinalResultWidget> AIIndividualFinalResultWidget;
 
 	// 게임 종료 시 "1등", "2등", "N둥"..위젯을 띄우는 위젯 클래스를 지정합니다.
 	TWeakObjectPtr<class UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardWidget;
@@ -62,12 +69,14 @@ private:
 	UPROPERTY(EditAnywhere)
 	float MatchStartWaitWidgetLifeTime;
 
-	// ETeam CurrentTeam;
+	UPROPERTY(EditAnywhere)
+	float AIIndividualFinalResultLifeTime;
 	
 	FString AIName;
 
 	FTimerHandle TimerHandle_StartMessageVisible;
 	FTimerHandle TimerHandle_StartMessageHidden;
 	FTimerHandle TimerHandle_WaitTimerHandle;
+	FTimerHandle TimerHandle_AIIndividualFinalResultHandle;
 	FTimerHandle TimerHandle_CharacterSelectTimer;
 };

@@ -457,8 +457,11 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 	if (const auto Character = Cast<ALakayaBaseCharacter>(NewPawn))
 	{
 		if (Team != ETeam::None) Character->SetTeam(Team);
-		if (HealthWidget.IsValid()) HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
+		if (HealthWidget.IsValid())
+		{
+			HealthWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			HealthWidget->SetTeam(Team);
+		}
 		OnAliveStateChanged.AddUObject(Character, &ALakayaBaseCharacter::SetAliveState);
 		Character->SetStencilMask(UniqueRenderMask);
 		Character->SetAlly(bIsAlly);
