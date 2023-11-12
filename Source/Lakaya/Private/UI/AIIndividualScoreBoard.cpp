@@ -3,6 +3,7 @@
 
 #include "UI/AIIndividualScoreBoard.h"
 
+#include "AI/AiDroneController.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/VerticalBox.h"
 #include "UI/AIIndividualScoreBoardElement.h"
@@ -30,46 +31,50 @@ void UAIIndividualScoreBoard::RegisterPlayer(APlayerState* PlayerState)
 	UE_LOG(LogTemp, Warning, TEXT("RegisterPlayer Called."));
 	
 	const auto LakayaState = Cast<ALakayaBasePlayerState>(PlayerState);
-	const auto Element = CreateWidget<UAIIndividualScoreBoardElement>(this, ElementClass);
-	if (!LakayaState || !Element) return;
-	UE_LOG(LogScript, Log, TEXT("UAIIndividualScoreBoard::RegisterPlayer Called"));
-
-	switch (LakayaState->GetTeam())
+	
+	if(LakayaState->GetOwningController() != Cast<AAiDroneController>(LakayaState->GetOwningController()))
 	{
-	case ETeam::None:
-		Element->AddToViewport();
-		Element->SetVisibility(ESlateVisibility::Collapsed);
-		break;
-	case ETeam::Individual:
-		Element->AddToViewport();
-		Element->SetVisibility(ESlateVisibility::Collapsed);
-		break;
-	default:
-		UE_LOG(LogScript, Error, TEXT("Invalid team value on UAIIndividualScoreBoard::RegisterPlayer()!"));
-		Element->RemoveFromRoot();
-		return;
+		const auto Element = CreateWidget<UAIIndividualScoreBoardElement>(this, ElementClass);
+		if (!LakayaState || !Element) return;
+		UE_LOG(LogScript, Log, TEXT("UAIIndividualScoreBoard::RegisterPlayer Called"));
+
+		switch (LakayaState->GetTeam())
+		{
+		case ETeam::None:
+			Element->AddToViewport();
+			Element->SetVisibility(ESlateVisibility::Collapsed);
+			break;
+		case ETeam::Individual:
+			Element->AddToViewport();
+			Element->SetVisibility(ESlateVisibility::Collapsed);
+			break;
+		default:
+			UE_LOG(LogScript, Error, TEXT("Invalid team value on UAIIndividualScoreBoard::RegisterPlayer()!"));
+			Element->RemoveFromRoot();
+			return;
+		}
+
+		// 엘리먼트 데이터 바인딩
+		// TODO : AI 개인전에서 애들이 None 으로 팀이 들어가있어서 이렇게 처리함 나중에 개인전 팀 할당 체크좀 해줘용
+
+		LakayaState->OnKillCountChanged.AddUObject(this, &UAIIndividualScoreBoard::OnKillCountChanged);
+
+		AIIndividualTeamBox->AddChildToVerticalBox(Element);
+		Element->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		Element->Individual_BackGround_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	
+		LakayaState->OnPlayerNameChanged.AddUObject(Element, &UScoreBoardElement::SetPlayerName);
+		LakayaState->OnKillCountChanged.AddUObject(Element, &UScoreBoardElement::SetKillCount);
+		LakayaState->OnDeathCountChanged.AddUObject(Element, &UScoreBoardElement::SetDeathCount);
+	
+		Element->SetPlayerName(LakayaState->GetPlayerName());
+		Element->SetDeathCount(LakayaState->GetDeathCount());
+		Element->SetKillCount(LakayaState->GetKillCount());
+		Element->IndividualKillCount = LakayaState->GetKillCount();
+		OnKillCountChanged(LakayaState->GetKillCount());
+	
+		LakayaState->OnKillCountChanged.AddUObject(this, &UAIIndividualScoreBoard::OnKillCountChanged);
 	}
-
-	// 엘리먼트 데이터 바인딩
-	// TODO : AI 개인전에서 애들이 None 으로 팀이 들어가있어서 이렇게 처리함 나중에 개인전 팀 할당 체크좀 해줘용
-
-	LakayaState->OnKillCountChanged.AddUObject(this, &UAIIndividualScoreBoard::OnKillCountChanged);
-
-	AIIndividualTeamBox->AddChildToVerticalBox(Element);
-	Element->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	Element->Individual_BackGround_Image->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	
-	LakayaState->OnPlayerNameChanged.AddUObject(Element, &UScoreBoardElement::SetPlayerName);
-	LakayaState->OnKillCountChanged.AddUObject(Element, &UScoreBoardElement::SetKillCount);
-	LakayaState->OnDeathCountChanged.AddUObject(Element, &UScoreBoardElement::SetDeathCount);
-	
-	Element->SetPlayerName(LakayaState->GetPlayerName());
-	Element->SetDeathCount(LakayaState->GetDeathCount());
-	Element->SetKillCount(LakayaState->GetKillCount());
-	Element->IndividualKillCount = LakayaState->GetKillCount();
-	OnKillCountChanged(LakayaState->GetKillCount());
-	
-	LakayaState->OnKillCountChanged.AddUObject(this, &UAIIndividualScoreBoard::OnKillCountChanged);
 }
 
 void UAIIndividualScoreBoard::OnKillCountChanged(const uint16& NewKillCount)

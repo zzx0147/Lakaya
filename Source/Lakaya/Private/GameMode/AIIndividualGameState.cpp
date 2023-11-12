@@ -2,9 +2,11 @@
 
 #include "IndividualTabMinimapWidget.h"
 #include "AI/AiCharacterController.h"
+#include "AI/AiDroneController.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
+#include "UI/AIIndividualFinalResultWidget.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/IndividualOverlayMinimapWidget.h"
 #include "UI/IndividualWidget/IndividualGameResultWidget.h"
@@ -96,6 +98,17 @@ void AAIIndividualGameState::BeginPlay()
 			}
 		}
 
+		if (AIIndividualFinalResultWidgetClass)
+		{
+			AIIndividualFinalResultWidget = CreateWidget<UAIIndividualFinalResultWidget>(
+				LocalController, AIIndividualFinalResultWidgetClass);
+			if (AIIndividualFinalResultWidget)
+			{
+				AIIndividualFinalResultWidget->AddToViewport(30);
+				AIIndividualFinalResultWidget->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+
 		if (TabMinimapWidgetClass)
 		{
 			TabMinimapWidget = CreateWidget<UIndividualTabMinimapWidget>(
@@ -111,6 +124,8 @@ void AAIIndividualGameState::BeginPlay()
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
 		AController* AllControllers = It->Get();
+
+		if (Cast<AAiDroneController>(AllControllers)) continue;
 
 		const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(
 			AllControllers->GetPlayerState<ALakayaBasePlayerState>());
@@ -171,6 +186,7 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 		{
 			AController* AllControllers = It->Get();
+			if (Cast<AAiDroneController>(AllControllers)) continue;
 			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
 
 			if (AllControllers && AllControllers->IsPlayerController())
@@ -208,7 +224,8 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 	{
 		HUDMinimapWidget->SetUpdateMinimap(true);
 		HUDMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
+		HUDMinimapWidget->SetEnemyTeam(ETeam::Individual);
+		
 		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 		{
 			const AController* AllControllers = It->Get();
@@ -216,7 +233,6 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 			const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(
 				AllControllers->GetPlayerState<ALakayaBasePlayerState>());
 
-			// TODO : 자기 자신일 때의 작업을 해야 합니다.
 			HUDMinimapWidget->SetIndividualPlayersByMinimap(IndividualPlayerState, HUDMinimapWidget->CreatePlayerImage(ETeam::Individual));
 		}
 	}
@@ -224,6 +240,7 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 	if (TabMinimapWidget)
 	{
 		TabMinimapWidget->SetUpdateMinimap(true);
+		HUDMinimapWidget->SetEnemyTeam(ETeam::Individual);
 		// TabMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
@@ -233,7 +250,6 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 			const auto IndividualPlayerState = Cast<ALakayaBasePlayerState>(
 				AllControllers->GetPlayerState<ALakayaBasePlayerState>());
 
-			// TODO : 자기 자신일 때의 작업을 해야 합니다.
 			TabMinimapWidget->SetIndividualPlayersByMinimap(IndividualPlayerState, TabMinimapWidget->CreatePlayerImage(ETeam::Individual));
 		}
 	}
@@ -351,6 +367,31 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 		}
 	}
 
+	
+	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>();
+		LocalController && LocalController->IsLocalController())
+	{
+		PlayerArrays.Sort([](const TWeakObjectPtr<ALakayaBasePlayerState,FWeakObjectPtr>& A,
+			const TWeakObjectPtr<ALakayaBasePlayerState,FWeakObjectPtr>& B)
+		{
+			const ALakayaBasePlayerState* PlayerStateA = A.Get();
+			const ALakayaBasePlayerState* PlayerStateB = B.Get();
+
+			if (!PlayerStateA || !PlayerStateB) return false;
+
+			return PlayerStateA->GetKillCount() > PlayerStateB->GetKillCount();
+		});
+		
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindLambda([&]
+		{
+			GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
+			AIIndividualFinalResultWidget->SetMatchResultData(PlayerAIData.KillCount, PlayerArrays);
+			AIIndividualFinalResultWidget->SetVisibility(ESlateVisibility::Visible);
+		});
+		GetWorldTimerManager().SetTimer(TimerHandle_GameResultHandle, TimerDelegate, 5.0f, false);
+	}
+	
 	FTimerManager Timers;
 	Timers.ClearAllTimersForObject(GetWorld());
 }

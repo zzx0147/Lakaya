@@ -25,19 +25,19 @@ public:
 	void OccupyCrash() const;
 	void InitAimOccupyWidget() const;
 	void OccupySuccess();
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	TObjectPtr<UImage> IngTextImage;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	TObjectPtr<UImage> FinishTextImage;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	TObjectPtr<UImage> CrashTextImage;
 	
 private:
 	UPROPERTY()
 	UProgressBar* AimOccupyChargeProgressBar;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> IngTextImage;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> FinishTextImage;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> CrashTextImage;
 	
 	UPROPERTY()
 	float Percent;

@@ -239,24 +239,7 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 	
 	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 
-	FTimerHandle NewTimerHandle;
-	if (PlayerTimers.Contains(NewPlayerState))
-		GetWorld()->GetTimerManager().ClearTimer(PlayerTimers[NewPlayerState]);
-	
-	GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, [this, EnemyImage, NewTeam]()
-	{
-		SetEnemyImage();
-	}, 0.1f, false);
-	SetPlayerTimers(NewPlayerState, NewTimerHandle);
-}
-
-void UOccupationOverlayMinimapWidget::SetEnemyImage() const
-{
-	for (const auto& Enemy : OccupationPlayersByMinimap[CurrentTeam == ETeam::Anti ? ETeam::Pro : ETeam::Anti])
-	{
-		const auto& EnemyImage = Enemy.Value;
-		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
-	}
+	SetQuestionImage(NewPlayerState);
 }
 
 void UOccupationOverlayMinimapWidget::UpdateAreaImageRotation()
