@@ -18,13 +18,9 @@ ACaptureArea::ACaptureArea()
 	AntiTeamCaptureProgress = 0.0f;
 	ProTeamCaptureProgress = 0.0f;
 	CaptureSpeed = 1.0f;
-
 	CaptureAreaId = 100;
-
 	MaterialValue = 0.5f;
-
 	InterpSpeed = 5.0f;
-	
 	CaptureAreaWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComponent"));
 }
 
@@ -387,12 +383,9 @@ void ACaptureArea::IncreaseCaptureProgress()
 			{
 				Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, true);
 			}
-			// UE_LOG(LogTemp, Warning, TEXT("true"));
 		}
 
 		OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress);
-
-		// UE_LOG(LogTemp, Warning, TEXT("%f"), TeamCaptureProgress);
 
 		if (CurrentTeam == ETeam::Anti)
 		{
