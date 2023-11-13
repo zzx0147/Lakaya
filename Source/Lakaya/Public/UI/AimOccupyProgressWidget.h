@@ -30,7 +30,7 @@ public:
 	FORCEINLINE const TObjectPtr<UTexture2D>& GetOccupyChargeProTexture() const { return OccupyChargeProTexture; }
 	FORCEINLINE const ETeam& GetCurrentTeam() const { return CurrentTeam; }
 
-	FORCEINLINE void SetCurrentTeam(const ETeam& NewTeam);
+	void SetCurrentTeam(const ETeam& NewTeam);
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UImage> IngTextImage;
