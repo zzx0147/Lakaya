@@ -17,6 +17,9 @@ UCLASS()
 class LAKAYA_API UMinimapWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
+protected:
+	virtual void BeginDestroy() override;
 	
 public:
 	/**
