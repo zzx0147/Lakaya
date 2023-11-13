@@ -186,8 +186,8 @@ void AOccupationGameState::BeginPlay()
 			}
 		}
 
-		LocalController->SetShowMouseCursor(true);
-		UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(LocalController);
+		LocalController->SetShowMouseCursor(false);
+		UWidgetBlueprintLibrary::SetInputMode_GameOnly(LocalController);
 	}
 
 	GetWorldTimerManager().SetTimer(TimerHandle_GameTimeCheck, this,

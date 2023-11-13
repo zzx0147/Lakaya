@@ -62,7 +62,7 @@ void ACaptureArea::BeginPlay()
 	default: ;
 	}
 
-	GetWorld()->GetTimerManager().SetTimer(MaterialUpdateTimerHandle, this, &ACaptureArea::UpdateMaterialValue, 0.1f, true);
+	// GetWorld()->GetTimerManager().SetTimer(MaterialUpdateTimerHandle, this, &ACaptureArea::UpdateMaterialValue, 0.1f, true);
 }
 
 void ACaptureArea::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -114,7 +114,7 @@ void ACaptureArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 					{
 						if (IsValid(OccupyingPlayerState->GetAimOccupyProgressWidget()))
 						{
-							OccupyingPlayerState->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(0, false);
+							OccupyingPlayerState->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(OccupyingPlayerState->GetTeam() ,0, false);
 							OccupyingPlayerState->GetAimOccupyProgressWidget()->InitAimOccupyWidget();
 						}
 					}
@@ -381,7 +381,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 		{
 			if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled() && IsValid(Player->GetAimOccupyProgressWidget()))
 			{
-				Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, true);
+				Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(Player->GetTeam() ,TeamCaptureProgress, true);
 			}
 		}
 
@@ -425,7 +425,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 				{
 					if (IsValid(Player->GetAimOccupyProgressWidget()))
 					{
-						Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, false);
+						Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(Player->GetTeam() ,TeamCaptureProgress, false);
 						Player->GetAimOccupyProgressWidget()->OccupySuccess();
 					}
 				}
@@ -437,6 +437,8 @@ void ACaptureArea::IncreaseCaptureProgress()
 				OccupationGameState->StartScoreUpdate(CurrentTeam, 1.0f);
 			}
 		}
+
+		GetWorld()->GetTimerManager().SetTimer(MaterialUpdateTimerHandle, this, &ACaptureArea::UpdateMaterialValue, 0.1f, true);
 	}
 }
 
@@ -459,7 +461,7 @@ void ACaptureArea::DecreaseCaptureProgress()
 	for (const auto& Player : OccupyingPlayerList[CurrentTeam])
 	{
 		if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled())
-			Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, false);
+			Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(Player->GetTeam() ,TeamCaptureProgress, false);
 	}
 
 	OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress);
@@ -476,8 +478,19 @@ void ACaptureArea::DecreaseCaptureProgress()
 void ACaptureArea::UpdateMaterialValue()
 {
 	if (CurrentCaptureAreaTeam == ETeam::None) return;
-	
+
 	const float TargetValue = (CurrentCaptureAreaTeam == ETeam::Anti) ? 0.0f : 1.0f;
+	if (CurrentCaptureAreaTeam == ETeam::Anti && MaterialValue <= 0.1f)
+	{
+		MaterialValue = 0;
+		GetWorld()->GetTimerManager().ClearTimer(MaterialUpdateTimerHandle);
+	}
+	else if (CurrentCaptureAreaTeam == ETeam::Pro && MaterialValue >= 0.9f)
+	{
+		MaterialValue = 1.0f;
+		GetWorld()->GetTimerManager().ClearTimer(MaterialUpdateTimerHandle);
+	}
+
 	MaterialValue = FMath::FInterpTo(MaterialValue, TargetValue, GetWorld()->GetDeltaSeconds(), InterpSpeed);
 
 	if (IsValid(DynamicMaterial))

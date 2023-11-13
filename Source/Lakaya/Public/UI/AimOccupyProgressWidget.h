@@ -21,11 +21,17 @@ protected:
 	virtual void NativeConstruct() override;
 	
 public:
-	void SetAimOccupyProgressBar(const float& NewProgress, const bool& bIsNewOccupy);
+	void SetAimOccupyProgressBar(const ETeam& NewPlayerTeam, const float& NewProgress, const bool& bIsNewOccupy);
 	void OccupyCrash() const;
 	void InitAimOccupyWidget() const;
 	void OccupySuccess();
 
+	FORCEINLINE const TObjectPtr<UTexture2D>& GetOccupyChargeAntiTexture() const { return OccupyChargeAntiTexture; }
+	FORCEINLINE const TObjectPtr<UTexture2D>& GetOccupyChargeProTexture() const { return OccupyChargeProTexture; }
+	FORCEINLINE const ETeam& GetCurrentTeam() const { return CurrentTeam; }
+
+	void SetCurrentTeam(const ETeam& NewTeam);
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UImage> IngTextImage;
 
@@ -36,11 +42,19 @@ public:
 	TObjectPtr<UImage> CrashTextImage;
 	
 private:
-	UPROPERTY()
-	UProgressBar* AimOccupyChargeProgressBar;
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> OccupyChargeAntiTexture;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> OccupyChargeProTexture;
+	
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* AimOccupyProgressbar;
 	
 	UPROPERTY()
 	float Percent;
+
+	ETeam CurrentTeam = ETeam::None;
 
 	FTimerHandle TimerHandle_FinishText;
 };
