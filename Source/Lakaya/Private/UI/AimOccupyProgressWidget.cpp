@@ -81,7 +81,7 @@ void UAimOccupyProgressWidget::OccupySuccess()
 	FinishTextImage->SetVisibility(ESlateVisibility::Visible);
 	
 	FTimerDelegate TDelegate_FinishText;
-	TDelegate_FinishText.BindLambda([this]
+	TDelegate_FinishText.BindWeakLambda(this, [this]
 	{
 		if (this == nullptr) return;
 		InitAimOccupyWidget();
