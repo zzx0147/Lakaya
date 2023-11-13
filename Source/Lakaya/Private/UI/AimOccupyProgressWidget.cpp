@@ -2,10 +2,7 @@
 
 
 #include "UI/AimOccupyProgressWidget.h"
-
-#include "Chaos/PBDEvolution.h"
 #include "Character/LakayaBasePlayerState.h"
-#include "EntitySystem/MovieSceneEntitySystemRunner.h"
 
 void UAimOccupyProgressWidget::NativeConstruct()
 {
@@ -13,32 +10,40 @@ void UAimOccupyProgressWidget::NativeConstruct()
 
 	Percent = 0.0;
 
-	AimOccupyChargeProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("adad")));
-	
-	if (AimOccupyChargeProgressBar == nullptr) UE_LOG(LogTemp, Warning, TEXT("NULL"));
+	if (AimOccupyProgressbar == nullptr) UE_LOG(LogTemp, Warning, TEXT("NULL"));
 
 	if (IngTextImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("IngTextImage is null."));
 	if (FinishTextImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("FinishTextImage is null."));
 	if (CrashTextImage == nullptr) UE_LOG(LogTemp, Warning, TEXT("CrashTextImage is null."));
 }
 
-void UAimOccupyProgressWidget::SetAimOccupyProgressBar(const float& NewProgress, const bool& bIsNewOccupy)
+void UAimOccupyProgressWidget::SetAimOccupyProgressBar(const ETeam& NewPlayerTeam, const float& NewProgress, const bool& bIsNewOccupy)
 {
-	if (AimOccupyChargeProgressBar)
+	if (!IsValid(AimOccupyProgressbar) || !IsValid(CrashTextImage) || !IsValid(IngTextImage))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AimOccupyProgressbar is null. || CrashTextImage is null. || IngTextImage is null."));
+		return;
+	}
+	
+	if (CurrentTeam != ETeam::None)
 	{
 		Percent = NewProgress;
 	
 		if (bIsNewOccupy)
 		{
-			AimOccupyChargeProgressBar->SetPercent(Percent / 4);
+			AimOccupyProgressbar->SetPercent(Percent / 4);
 			CrashTextImage->SetVisibility(ESlateVisibility::Hidden);
 			IngTextImage->SetVisibility(ESlateVisibility::Visible);
 		}
 		else
 		{
-			AimOccupyChargeProgressBar->SetPercent(0);
+			AimOccupyProgressbar->SetPercent(0);
 			IngTextImage->SetVisibility(ESlateVisibility::Hidden);
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CurrentTeam is None."));
 	}
 }
 
@@ -54,8 +59,6 @@ void UAimOccupyProgressWidget::OccupyCrash() const
 		IngTextImage->SetVisibility(ESlateVisibility::Hidden);
 
 	CrashTextImage->SetVisibility(ESlateVisibility::Visible);
-
-	UE_LOG(LogTemp, Warning, TEXT("OccupyCrash"));
 }
 
 void UAimOccupyProgressWidget::InitAimOccupyWidget() const
@@ -73,6 +76,8 @@ void UAimOccupyProgressWidget::InitAimOccupyWidget() const
 
 void UAimOccupyProgressWidget::OccupySuccess()
 {
+	if (!IsValid(FinishTextImage)) return;
+	
 	FinishTextImage->SetVisibility(ESlateVisibility::Visible);
 	
 	FTimerDelegate TDelegate_FinishText;
@@ -82,4 +87,34 @@ void UAimOccupyProgressWidget::OccupySuccess()
 		InitAimOccupyWidget();
 	});
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle_FinishText, TDelegate_FinishText, 1.5f, false);
+}
+
+void UAimOccupyProgressWidget::SetCurrentTeam(const ETeam& NewTeam)
+{
+	if (!IsValid(AimOccupyProgressbar))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AimOccupyProgressbar is null."));
+		return;
+	}
+	
+	if (NewTeam == ETeam::None)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NewTeam is none."));
+		return;
+	}
+	
+	CurrentTeam = NewTeam;
+	
+	FSlateBrush NewBrush;
+	
+	if (CurrentTeam == ETeam::Anti)
+	{
+		NewBrush.SetResourceObject(GetOccupyChargeAntiTexture());
+	}
+	else if (CurrentTeam == ETeam::Pro)
+	{
+		NewBrush.SetResourceObject(GetOccupyChargeProTexture());
+	}
+	
+	AimOccupyProgressbar->WidgetStyle.SetFillImage(NewBrush);
 }

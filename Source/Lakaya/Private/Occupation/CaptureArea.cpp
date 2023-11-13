@@ -114,7 +114,7 @@ void ACaptureArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 					{
 						if (IsValid(OccupyingPlayerState->GetAimOccupyProgressWidget()))
 						{
-							OccupyingPlayerState->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(0, false);
+							OccupyingPlayerState->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(OccupyingPlayerState->GetTeam() ,0, false);
 							OccupyingPlayerState->GetAimOccupyProgressWidget()->InitAimOccupyWidget();
 						}
 					}
@@ -381,7 +381,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 		{
 			if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled() && IsValid(Player->GetAimOccupyProgressWidget()))
 			{
-				Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, true);
+				Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(Player->GetTeam() ,TeamCaptureProgress, true);
 			}
 		}
 
@@ -425,7 +425,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 				{
 					if (IsValid(Player->GetAimOccupyProgressWidget()))
 					{
-						Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, false);
+						Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(Player->GetTeam() ,TeamCaptureProgress, false);
 						Player->GetAimOccupyProgressWidget()->OccupySuccess();
 					}
 				}
@@ -459,7 +459,7 @@ void ACaptureArea::DecreaseCaptureProgress()
 	for (const auto& Player : OccupyingPlayerList[CurrentTeam])
 	{
 		if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled())
-			Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(TeamCaptureProgress, false);
+			Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(Player->GetTeam() ,TeamCaptureProgress, false);
 	}
 
 	OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress);
