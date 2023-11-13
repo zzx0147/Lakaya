@@ -508,6 +508,15 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 						CharacterWidget->GetKillStreakWidget()->OnChangeKillStreak(NewKillStreak);
 					});
 				}
+
+				if (IsValid(AimOccupyProgressWidget))
+				{
+					AimOccupyProgressWidget->SetCurrentTeam(GetTeam());
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("AimOccupyProgressWidget is nullptr."))
+				}
 			}
 		}
 	}
