@@ -254,7 +254,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 	}
 	
 	FTimerDelegate TimerDelegate_MatchStartWaitWidget;
-	TimerDelegate_MatchStartWaitWidget.BindLambda([this]
+	TimerDelegate_MatchStartWaitWidget.BindWeakLambda(this,[this]
 	{
 		if (this == nullptr) return;
 		if (MatchStartWaitWidget.IsValid())
@@ -265,7 +265,7 @@ void AOccupationGameState::HandleMatchHasStarted()
 
 	// MatchStartWaitWidget위젯을 띄우고, N초(MatchStartWaitWidgetLifeTime) 뒤에 비활성화 해줍니다.
 	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindLambda([this]
+	TimerDelegate.BindWeakLambda(this, [this]
 	{
 		if (this == nullptr) return;
 		if (MatchStartWaitWidget.IsValid()) MatchStartWaitWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -338,7 +338,7 @@ void AOccupationGameState::HandleMatchHasEnded()
 		GameResultWidget->ShowResult(ClientTeam == GetOccupationWinner(), AntiTeamScore, ProTeamScore);
 
 		FTimerDelegate TimerDelegate;
-		TimerDelegate.BindLambda([&]
+		TimerDelegate.BindWeakLambda(this, [&]
 		{
 			GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
 			FinalResultWidget->SetTeam(ClientTeam);

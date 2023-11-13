@@ -267,7 +267,7 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate, MatchStartWaitWidgetLifeTime, false);
 
 	// 게임이 본격적으로 시작이 되면 AI 의 비헤이비어 트리를 시작시켜줍니다.
-	TimerDelegate.BindLambda([this]
+	TimerDelegate.BindWeakLambda(this,[this]
 	{
 		if (this == nullptr) return;
 
@@ -399,7 +399,7 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 		});
 		
 		FTimerDelegate TimerDelegate;
-		TimerDelegate.BindLambda([&]
+		TimerDelegate.BindWeakLambda(this, [&]
 		{
 			GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
 			AIIndividualFinalResultWidget->SetMatchResultData(PlayerAIData.KillCount, PlayerArrays);
