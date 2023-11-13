@@ -149,6 +149,8 @@ void ACaptureArea::SetCurrentCaptureAreaTeam(const ETeam& NewTeam)
 	CurrentCaptureAreaTeam = NewTeam;
 
 	const TObjectPtr<UTexture2D>* WidgetImage = nullptr;
+
+	if(!IsValid(OccupyExpressElementWidget)) return;
 	
 	switch (CaptureAreaId)
 	{
@@ -169,9 +171,12 @@ void ACaptureArea::SetCurrentCaptureAreaTeam(const ETeam& NewTeam)
 		break;
 	}
 
-	DynamicMaterial->SetScalarParameterValue(TEXT("0=NonOccupation_1=Occupation"), 1.0f);
+	if(IsValid(DynamicMaterial)) DynamicMaterial->SetScalarParameterValue(TEXT("0=NonOccupation_1=Occupation"), 1.0f);
+
+
 	OccupyExpressElementWidget->GetInImage()->SetBrushFromTexture(*WidgetImage);
 	OccupyExpressElementWidget->GetProgressBar()->SetPercent(0);
+
 }
 
 void ACaptureArea::UpdateCaptureAreaState(const ECaptureAreaState& CaptureAreaState)
@@ -457,6 +462,10 @@ void ACaptureArea::DecreaseCaptureProgress()
 		                                  ? AntiTeamCaptureProgress
 		                                  : ProTeamCaptureProgress;
 	const ETeam CurrentTeam = AntiTeamCaptureProgress > ProTeamCaptureProgress ? ETeam::Anti : ETeam::Pro;
+
+
+	if(!IsValid(OccupyExpressElementWidget)) return;
+	
 	OccupyExpressElementWidget->GetProgressBar()->SetPercent(TeamCaptureProgress / 4.0f);
 	for (const auto& Player : OccupyingPlayerList[CurrentTeam])
 	{
