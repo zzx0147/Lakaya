@@ -126,12 +126,6 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> DynamicMaterial;
 	
-	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
-	// TObjectPtr<class UMaterialInterface> AntiMaterial;
-	//
-	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
-	// TObjectPtr<class UMaterialInterface> ProMaterial;
-
 	/**
 	 * @brief 점령 구역은 총 3개가 있습니다. Anti구역(Anti팀에 가까운), Pro구역(Pro팀에 가까운), Center구역(가운데)
 	 * Anti구역의 점령 아이디는 '1'입니다.
