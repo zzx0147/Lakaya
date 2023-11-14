@@ -50,7 +50,7 @@ void ALakayaBaseGameState::BeginPlay()
 				LoadingWidget->SetMaximumPlayerNumber(MaximumPlayers);
 				LoadingWidget->SetPlayerNumber(PlayerArray.Num());
 				LoadingWidget->AddToViewport(10);
-				LoadingWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				LoadingWidget->ActivateWidget();
 			}
 		}
 
@@ -139,7 +139,7 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 {
 	if (GetCharacterSelectWidget()) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
 
-	if (LoadingWidget.IsValid()) LoadingWidget->SetVisibility(ESlateVisibility::Hidden);
+	if (LoadingWidget.IsValid()) LoadingWidget->DeactivateWidget();
 
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
