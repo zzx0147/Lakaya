@@ -54,7 +54,10 @@ private:
 	TWeakObjectPtr<UIndividualGameResultWidget> GameResultWidget;
 	
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardWidgetClass;
+	TSubclassOf<class UIndividualLiveScoreBoardWidget> IndividualLiveScoreBoardWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UAIIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardWidgetClass;
 
 	// 게임 종료 시 게임 디테일 결과를 띄우는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
@@ -63,8 +66,11 @@ private:
 	// 게임 종료 후 게임 디테일 결과 위젯입니다.
 	TObjectPtr<UAIIndividualFinalResultWidget> AIIndividualFinalResultWidget;
 
+	// 실시간 라이브 스코어 위젯
+	TWeakObjectPtr<UAIIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardWidget;
+	
 	// 게임 종료 시 "1등", "2등", "N둥"..위젯을 띄우는 위젯 클래스를 지정합니다.
-	TWeakObjectPtr<class UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardWidget;
+	TWeakObjectPtr<UIndividualLiveScoreBoardWidget> IndividualLiveScoreBoardWidget;
 
 	UPROPERTY(EditAnywhere)
 	float MatchStartWaitWidgetLifeTime;
