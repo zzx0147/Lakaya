@@ -31,7 +31,7 @@ void ACaptureArea::BeginPlay()
 	Super::BeginPlay();
 
 	OccupyExpressElementWidget = Cast<UOccupyExpressElementWidget>(CaptureAreaWidgetComponent->GetWidget());
-	if (!IsValid(OccupyExpressElementWidget) && !IsValid(OccupyExpressElementWidget->GetInImage()))
+	if (!IsValid(OccupyExpressElementWidget) || !IsValid(OccupyExpressElementWidget->GetInImage()))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupyExpressElementWidget or OccupyExpressElementWidget GetInImage is null."));
 		return;
