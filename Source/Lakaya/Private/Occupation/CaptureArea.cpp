@@ -21,6 +21,7 @@ ACaptureArea::ACaptureArea()
 	CaptureAreaId = 100;
 	MaterialValue = 0.5f;
 	InterpSpeed = 5.0f;
+	SuccessPlayer = nullptr;
 	CaptureAreaWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComponent"));
 }
 
@@ -435,6 +436,20 @@ void ACaptureArea::IncreaseCaptureProgress()
 				if (Player == OccupyingPlayerList[CurrentTeam][0])
 				{
 					Player->AddTotalScoreCount(500);
+					Player->IncreaseSuccessCaptureCount();
+					Player->IncreaseCurrentCaptureCount();
+
+					if (SuccessPlayer != nullptr)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("점령지의 소유권이 바뀌었습니다."));
+						SuccessPlayer->DecreaseCurrentCaptureCount();
+						SuccessPlayer = Player;
+					}
+					else if (SuccessPlayer == nullptr)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("점령지의 소유권이 처음 생겼습니다."));
+						SuccessPlayer = Player;
+					}
 				}
 				
 				if (Player->GetPawn()->IsLocallyControlled())
