@@ -104,3 +104,7 @@ Plugins/Developer/RiderLink/*
 #Files For Server Test
 LakayaServerPlayer.lnk
 
+Binaries/Linux/LakayaServer
+Binaries/Linux/LakayaServer.debug
+Binaries/Linux/LakayaServer.sym
+Binaries/Linux/LakayaServer.target

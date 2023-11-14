@@ -140,6 +140,9 @@ protected:
 	FCaptureAreaTeamOnChangedSignature CaptureAreaTeamOnChangedSignature;
 
 	UPROPERTY()
+	TObjectPtr<ALakayaBasePlayerState> SuccessPlayer;
+	
+	UPROPERTY()
 	float AntiTeamCaptureProgress;
 
 	UPROPERTY()

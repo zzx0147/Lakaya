@@ -60,4 +60,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	static void AddTargetDataFromHitResults(FGameplayAbilityTargetDataHandle& OutTargetDataHandle,
 	                                        const TArray<FHitResult>& HitResults);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static bool IsGame();
 };

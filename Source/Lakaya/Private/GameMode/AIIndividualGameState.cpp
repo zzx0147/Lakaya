@@ -7,6 +7,7 @@
 #include "ETC/OutlineManager.h"
 #include "GameMode/LakayaDefaultPlayGameMode.h"
 #include "UI/AIIndividualFinalResultWidget.h"
+#include "UI/AIIndividualLiveScoreBoardWidget.h"
 #include "UI/GameLobbyCharacterSelectWidget.h"
 #include "UI/IndividualOverlayMinimapWidget.h"
 #include "UI/IndividualWidget/IndividualGameResultWidget.h"
@@ -19,13 +20,9 @@ AAIIndividualGameState::AAIIndividualGameState()
 	MatchStartWaitWidgetLifeTime = 3.0f;
 	AIIndividualFinalResultLifeTime = 4.0f;
 
-	static ConstructorHelpers::FClassFinder<UIndividualLiveScoreBoardWidget> AIIndividualLiveScoreBoardFinder(
-		TEXT("/Game/Blueprints/UMG/IndividualWidget/WBP_IndividualLiveScoreBoardWidget"));
-
-	AIIndividualLiveScoreBoardWidgetClass = AIIndividualLiveScoreBoardFinder.Class;
-
 	ClientTeam = ETeam::Individual;
-	
+	IndividualLiveScoreBoardWidgetClass = UIndividualLiveScoreBoardWidget::StaticClass();
+	AIIndividualLiveScoreBoardWidgetClass = UAIIndividualLiveScoreBoardWidget::StaticClass();
 	HUDMinimapWidgetClass = UIndividualOverlayMinimapWidget::StaticClass();
 	TabMinimapWidgetClass = UIndividualTabMinimapWidget::StaticClass();
 }
@@ -33,6 +30,8 @@ AAIIndividualGameState::AAIIndividualGameState()
 void AAIIndividualGameState::AddPlayerState(APlayerState* PlayerState)
 {
 	Super::AddPlayerState(PlayerState);
+	if (AIIndividualLiveScoreBoardWidget.IsValid()) AIIndividualLiveScoreBoardWidget->RegisterPlayer(PlayerState);
+
 	if (const auto CastedState = Cast<ALakayaBasePlayerState>(PlayerState))
 	{
 		auto OnOwnerChanged = [this](AActor* InOwner, ALakayaBasePlayerState* State, const uint8 Count)
@@ -76,8 +75,19 @@ void AAIIndividualGameState::BeginPlay()
 
 	if (const auto LocalController = GetWorld()->GetFirstPlayerController<APlayerController>())
 	{
-		AIIndividualLiveScoreBoardWidget = CreateWidget<UIndividualLiveScoreBoardWidget>(
-			LocalController, AIIndividualLiveScoreBoardWidgetClass);
+		IndividualLiveScoreBoardWidget = CreateWidget<UIndividualLiveScoreBoardWidget>(
+			LocalController, IndividualLiveScoreBoardWidgetClass);
+		
+		if (AIIndividualLiveScoreBoardWidgetClass)
+		{
+			AIIndividualLiveScoreBoardWidget = CreateWidget<UAIIndividualLiveScoreBoardWidget>(LocalController, AIIndividualLiveScoreBoardWidgetClass);
+			if (AIIndividualLiveScoreBoardWidget.IsValid())
+			{
+				AIIndividualLiveScoreBoardWidget->AddToViewport();
+				AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				for (auto& Player : PlayerArray) AIIndividualLiveScoreBoardWidget->RegisterPlayer(Player);
+			}
+		}
 
 		if (GameResultWidgetClass)
 		{
@@ -134,10 +144,10 @@ void AAIIndividualGameState::BeginPlay()
 		// AI와 플레이어들의 정보를 Array에 담습니다.
 		PlayerArrays.Add(IndividualPlayerState);
 
-		if (AllControllers && AIIndividualLiveScoreBoardWidget.IsValid())
+		if (AllControllers && IndividualLiveScoreBoardWidget.IsValid())
 		{
-			AIIndividualLiveScoreBoardWidget->AddToViewport();
-			AIIndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
+			IndividualLiveScoreBoardWidget->AddToViewport();
+			IndividualLiveScoreBoardWidget->SetVisibility(ESlateVisibility::Visible);
 
 			ALakayaBasePlayerState* PlayerStateObj = Cast<ALakayaBasePlayerState>(AllControllers->PlayerState);
 
@@ -180,7 +190,7 @@ void AAIIndividualGameState::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	// TODO : 실시간으로 순위판에 계속 킬수를 검사해 위젯 칸에 넣어주기위해 Tick에 구현했습니다 나중에 리팩토링 필요합니다.
-	if (AIIndividualLiveScoreBoardWidget.IsValid())
+	if (IndividualLiveScoreBoardWidget.IsValid())
 	{
 		FPlayerAIDataArray.Empty();
 
@@ -267,7 +277,7 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 	GetWorldTimerManager().SetTimer(TimerHandle_WaitTimerHandle, TimerDelegate, MatchStartWaitWidgetLifeTime, false);
 
 	// 게임이 본격적으로 시작이 되면 AI 의 비헤이비어 트리를 시작시켜줍니다.
-	TimerDelegate.BindLambda([this]
+	TimerDelegate.BindWeakLambda(this,[this]
 	{
 		if (this == nullptr) return;
 
@@ -399,7 +409,7 @@ void AAIIndividualGameState::HandleMatchHasEnded()
 		});
 		
 		FTimerDelegate TimerDelegate;
-		TimerDelegate.BindLambda([&]
+		TimerDelegate.BindWeakLambda(this, [&]
 		{
 			GameResultWidget->SetVisibility(ESlateVisibility::Hidden);
 			AIIndividualFinalResultWidget->SetMatchResultData(PlayerAIData.KillCount, PlayerArrays);
@@ -468,8 +478,8 @@ void AAIIndividualGameState::SetClientTeam(const ETeam& NewTeam)
 
 void AAIIndividualGameState::SetScoreBoardPlayerAIName(const TArray<FPlayerAIData>& PlayerAIDataArray) const
 {
-	if (AIIndividualLiveScoreBoardWidget.IsValid())
+	if (IndividualLiveScoreBoardWidget.IsValid())
 	{
-		AIIndividualLiveScoreBoardWidget->SetScoreBoardPlayerAIName(PlayerAIDataArray);
+		IndividualLiveScoreBoardWidget->SetScoreBoardPlayerAIName(PlayerAIDataArray);
 	}
 }
