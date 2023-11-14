@@ -16,8 +16,11 @@ class LAKAYA_API UOccupyExpressElementWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void NativeConstruct() override;
+	
 public:
-	void InitOccupyExpressElementWidget(const uint8& CaptureId ,const TObjectPtr<UTexture2D> NoneImage) const;
+	void InitOccupyExpressElementWidget(const uint8& CaptureId) const;
 	
 	FORCEINLINE TObjectPtr<UImage>& GetInImage() { return InImage; }
 	FORCEINLINE TObjectPtr<URadialProgressBar>& GetProgressBar() { return ProgressBar; }
@@ -32,9 +35,6 @@ public:
 	FORCEINLINE TObjectPtr<UTexture2D>& GetProAreaProImage() { return ProAreaProImage; }
 	FORCEINLINE TObjectPtr<UTexture2D>& GetAntiFillImage() { return AntiFillImage; }
 	FORCEINLINE TObjectPtr<UTexture2D>& GetProFillImage() { return ProFillImage; }
-	
-protected:
-	virtual void NativeConstruct() override;
 	
 private:
 	UPROPERTY(meta = (BindWidget))
