@@ -432,6 +432,11 @@ void ACaptureArea::IncreaseCaptureProgress()
 
 			for (const auto& Player : OccupyingPlayerList[CurrentTeam])
 			{
+				if (Player == OccupyingPlayerList[CurrentTeam][0])
+				{
+					Player->AddTotalScoreCount(500);
+				}
+				
 				if (Player->GetPawn()->IsLocallyControlled())
 				{
 					if (IsValid(Player->GetAimOccupyProgressWidget()) && IsValid(Player->GetAimOccupyProgressWidget()))
