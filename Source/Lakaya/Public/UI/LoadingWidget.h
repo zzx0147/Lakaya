@@ -1,12 +1,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CommonActivatableWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "LoadingWidget.generated.h"
 
 UCLASS()
-class LAKAYA_API ULoadingWidget : public UUserWidget
+class LAKAYA_API ULoadingWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
 	
