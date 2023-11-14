@@ -125,3 +125,12 @@ void ULakayaBlueprintLibrary::AddTargetDataFromHitResults(FGameplayAbilityTarget
 	};
 	Algo::Transform(HitResults, OutTargetDataHandle, Transform);
 }
+
+bool ULakayaBlueprintLibrary::IsGame()
+{
+#if UE_GAME
+	return true;
+#else
+	return false;
+#endif
+}
