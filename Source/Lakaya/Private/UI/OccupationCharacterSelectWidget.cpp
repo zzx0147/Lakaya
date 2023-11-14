@@ -3,7 +3,6 @@
 
 #include "UI/OccupationCharacterSelectWidget.h"
 #include "Components/VerticalBox.h"
-#include "UI/ImageTextWidget.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/Button.h"
 #include "Components/Image.h"

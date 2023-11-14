@@ -21,6 +21,7 @@ ACaptureArea::ACaptureArea()
 	CaptureAreaId = 100;
 	MaterialValue = 0.5f;
 	InterpSpeed = 5.0f;
+	SuccessPlayer = nullptr;
 	CaptureAreaWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComponent"));
 }
 
@@ -33,8 +34,11 @@ void ACaptureArea::BeginPlay()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupyExpressElementWidget is null."));
 		return;
-	}
+	} 
 
+	if (IsValid(OccupyExpressElementWidget->GetProgressBar()))
+		OccupyExpressElementWidget->GetProgressBar()->SetPercent(0);
+	
 	DynamicMaterial = StaticMeshComponent->CreateAndSetMaterialInstanceDynamicFromMaterial(0, NeutralMaterial);
 	if (DynamicMaterial != nullptr)
 	{
@@ -45,8 +49,6 @@ void ACaptureArea::BeginPlay()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("DynamicMaterial is null."));
 	}
-	
-	OccupyExpressElementWidget->GetProgressBar()->SetPercent(0);
 
 	switch (CaptureAreaId)
 	{
@@ -61,8 +63,6 @@ void ACaptureArea::BeginPlay()
 		break;
 	default: ;
 	}
-
-	// GetWorld()->GetTimerManager().SetTimer(MaterialUpdateTimerHandle, this, &ACaptureArea::UpdateMaterialValue, 0.1f, true);
 }
 
 void ACaptureArea::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -110,7 +110,7 @@ void ACaptureArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 				// AimOccupyProgressWidget을 0으로 초기화해줍니다.
 				if (OccupyingPlayerState && OccupyingPlayerState->GetPawn())
 				{
-					if (const auto PlayerController = OccupyingPlayerState->GetPawn()->IsLocallyControlled())
+					if (OccupyingPlayerState->GetPawn()->IsLocallyControlled())
 					{
 						if (IsValid(OccupyingPlayerState->GetAimOccupyProgressWidget()))
 						{
@@ -172,8 +172,7 @@ void ACaptureArea::SetCurrentCaptureAreaTeam(const ETeam& NewTeam)
 	}
 
 	if(IsValid(DynamicMaterial)) DynamicMaterial->SetScalarParameterValue(TEXT("0=NonOccupation_1=Occupation"), 1.0f);
-
-
+	
 	OccupyExpressElementWidget->GetInImage()->SetBrushFromTexture(*WidgetImage);
 	OccupyExpressElementWidget->GetProgressBar()->SetPercent(0);
 
@@ -391,20 +390,28 @@ void ACaptureArea::IncreaseCaptureProgress()
 		}
 
 		OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress);
-
+		
 		if (CurrentTeam == ETeam::Anti)
 		{
 			AntiTeamCaptureProgress = TeamCaptureProgress;
-			if(IsValid(OccupyExpressElementWidget)) OccupyExpressElementWidget->GetProgressBar()->SetFillImage(OccupyExpressElementWidget->GetAntiFillImage());
-			
+			if(IsValid(OccupyExpressElementWidget) && IsValid(OccupyExpressElementWidget->GetProgressBar()))
+			{
+				OccupyExpressElementWidget->GetProgressBar()->SetFillImage(OccupyExpressElementWidget->GetAntiFillImage());
+			}
 		}
 		else if (CurrentTeam == ETeam::Pro)
 		{
 			ProTeamCaptureProgress = TeamCaptureProgress;
-			if(IsValid(OccupyExpressElementWidget)) OccupyExpressElementWidget->GetProgressBar()->SetFillImage(OccupyExpressElementWidget->GetProFillImage());
+			if(IsValid(OccupyExpressElementWidget) && IsValid(OccupyExpressElementWidget->GetProgressBar()))
+			{
+				OccupyExpressElementWidget->GetProgressBar()->SetFillImage(OccupyExpressElementWidget->GetProFillImage());
+			}
 		}
 		
-		if(IsValid(OccupyExpressElementWidget)) OccupyExpressElementWidget->GetProgressBar()->SetPercent(TeamCaptureProgress / 4.0f);
+		if(IsValid(OccupyExpressElementWidget) && IsValid(OccupyExpressElementWidget->GetProgressBar()))
+		{
+			OccupyExpressElementWidget->GetProgressBar()->SetPercent(TeamCaptureProgress / 4.0f);
+		}
 		
 		// 점령에 성공했다면
 		if (TeamCaptureProgress >= 4.0f)
@@ -426,9 +433,28 @@ void ACaptureArea::IncreaseCaptureProgress()
 
 			for (const auto& Player : OccupyingPlayerList[CurrentTeam])
 			{
-				if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled())
+				if (Player == OccupyingPlayerList[CurrentTeam][0])
 				{
-					if (IsValid(Player->GetAimOccupyProgressWidget()))
+					Player->AddTotalScoreCount(500);
+					Player->IncreaseSuccessCaptureCount();
+					Player->IncreaseCurrentCaptureCount();
+
+					if (SuccessPlayer != nullptr)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("점령지의 소유권이 바뀌었습니다."));
+						SuccessPlayer->DecreaseCurrentCaptureCount();
+						SuccessPlayer = Player;
+					}
+					else if (SuccessPlayer == nullptr)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("점령지의 소유권이 처음 생겼습니다."));
+						SuccessPlayer = Player;
+					}
+				}
+				
+				if (Player->GetPawn()->IsLocallyControlled())
+				{
+					if (IsValid(Player->GetAimOccupyProgressWidget()) && IsValid(Player->GetAimOccupyProgressWidget()))
 					{
 						Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(Player->GetTeam() ,TeamCaptureProgress, false);
 						Player->GetAimOccupyProgressWidget()->OccupySuccess();
@@ -464,12 +490,14 @@ void ACaptureArea::DecreaseCaptureProgress()
 	const ETeam CurrentTeam = AntiTeamCaptureProgress > ProTeamCaptureProgress ? ETeam::Anti : ETeam::Pro;
 
 
-	if(!IsValid(OccupyExpressElementWidget)) return;
+	if(IsValid(OccupyExpressElementWidget) && IsValid(OccupyExpressElementWidget->GetProgressBar()))
+	{
+		OccupyExpressElementWidget->GetProgressBar()->SetPercent(TeamCaptureProgress / 4.0f);
+	}
 	
-	OccupyExpressElementWidget->GetProgressBar()->SetPercent(TeamCaptureProgress / 4.0f);
 	for (const auto& Player : OccupyingPlayerList[CurrentTeam])
 	{
-		if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled())
+		if (Player->GetPawn()->IsLocallyControlled() && IsValid(Player->GetAimOccupyProgressWidget()))
 			Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(Player->GetTeam() ,TeamCaptureProgress, false);
 	}
 
