@@ -54,10 +54,10 @@ void UMinimapWidget::SetQuestionImage(const TWeakObjectPtr<ALakayaBasePlayerStat
 	if (PlayerTimers.Contains(NewPlayerState))
 		GetWorld()->GetTimerManager().ClearTimer(PlayerTimers[NewPlayerState]);
 	
-	GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, [this]()
+	GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, FTimerDelegate::CreateWeakLambda(this,[this]()
 	{
 		SetEnemyImage();
-	}, 0.1f, false);
+	}), 0.1f, false);
 	
 	SetPlayerTimers(NewPlayerState, NewTimerHandle);
 }
@@ -72,12 +72,14 @@ void UMinimapWidget::SetEnemyImage()
 
 	FTimerHandle OldTimerHandle;
 
-	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, [this]()
+	
+	
+	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
 	{
 		for (const auto& Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
 		{
 			const auto& EnemyImage = Enemy.Value;
 			EnemyImage->SetVisibility(ESlateVisibility::Hidden);
 		}
-	}, 3.0f, false);
+	}), 3.0f, false);
 }
