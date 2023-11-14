@@ -3,8 +3,14 @@
 
 #include "UI/OccupyExpressElementWidget.h"
 
-void UOccupyExpressElementWidget::InitOccupyExpressElementWidget(const uint8& CaptureId,
-	const TObjectPtr<UTexture2D> NoneImage) const
+void UOccupyExpressElementWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	ProgressBar->SetPercent(0);
+}
+
+void UOccupyExpressElementWidget::InitOccupyExpressElementWidget(const uint8& CaptureId) const
 {
 	switch (CaptureId)
 	{
@@ -22,9 +28,4 @@ void UOccupyExpressElementWidget::InitOccupyExpressElementWidget(const uint8& Ca
 	}
 
 	ProgressBar->SetPercent(0);
-}
-
-void UOccupyExpressElementWidget::NativeConstruct()
-{
-	Super::NativeConstruct();
 }
