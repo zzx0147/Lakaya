@@ -22,6 +22,7 @@ ACaptureArea::ACaptureArea()
 	MaterialValue = 0.5f;
 	InterpSpeed = 5.0f;
 	SuccessPlayer = nullptr;
+
 	CaptureAreaWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComponent"));
 }
 
@@ -30,14 +31,11 @@ void ACaptureArea::BeginPlay()
 	Super::BeginPlay();
 
 	OccupyExpressElementWidget = Cast<UOccupyExpressElementWidget>(CaptureAreaWidgetComponent->GetWidget());
-	if (OccupyExpressElementWidget == nullptr)
+	if (!IsValid(OccupyExpressElementWidget) && !IsValid(OccupyExpressElementWidget->GetInImage()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OccupyExpressElementWidget is null."));
+		UE_LOG(LogTemp, Warning, TEXT("OccupyExpressElementWidget or OccupyExpressElementWidget GetInImage is null."));
 		return;
-	} 
-
-	if (IsValid(OccupyExpressElementWidget->GetProgressBar()))
-		OccupyExpressElementWidget->GetProgressBar()->SetPercent(0);
+	}
 	
 	DynamicMaterial = StaticMeshComponent->CreateAndSetMaterialInstanceDynamicFromMaterial(0, NeutralMaterial);
 	if (DynamicMaterial != nullptr)
@@ -49,7 +47,7 @@ void ACaptureArea::BeginPlay()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("DynamicMaterial is null."));
 	}
-
+	
 	switch (CaptureAreaId)
 	{
 	case 1:

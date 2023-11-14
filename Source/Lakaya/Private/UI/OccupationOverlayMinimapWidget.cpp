@@ -51,11 +51,17 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
 		const TWeakObjectPtr<UImage> EnemyImage = Enemy.Value;
 
+		if (!EnemyState.IsValid() || !EnemyImage.IsValid()) return;
+
 		for (const auto& Ally : OccupationPlayersByMinimap[CurrentTeam])
 		{
 			const auto& AllyState = Ally.Key;
+
+			if (!AllyState.IsValid()) return;
 			
 			ALakayaBaseCharacter* AllyCharacter = Cast<ALakayaBaseCharacter>(AllyState->GetPawn());
+
+			if (!IsValid(AllyCharacter)) return;
 			
 			if (AllyCharacter->IsEnemyVisibleInCamera(CurrentEnemyTeam, EnemyState, EnemyImage))
 			{
@@ -67,14 +73,12 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 
 UImage* UOccupationOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
 {
-	UE_LOG(LogTemp, Warning, TEXT("CreatePlayerImage"));
 	UImage* PlayerImage = NewObject<UImage>(this);
-
 	UCanvasPanelSlot* PanelSlot = ParentPanel->AddChildToCanvas(PlayerImage);
 	
-	if (PanelSlot == nullptr)
+	if (!IsValid(PlayerImage) || !IsValid(PanelSlot))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PanelSlot is null."));
+		UE_LOG(LogTemp, Warning, TEXT("PanelSlot or PlayerImage is null."));
 		return nullptr;
 	}
 	
@@ -117,7 +121,12 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		const auto& State = Player.Key;
 		const auto& Image = Player.Value;
 
-
+		if (!State.IsValid() || !Image.IsValid())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("State or Image is null."));
+			return;
+		}
+		
 		if(!State->GetPawn()) return;
 		FVector2D PlayerPosition(State->GetPawn()->GetActorLocation().X, State->GetPawn()->GetActorLocation().Y);
 		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
@@ -131,7 +140,9 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 			UpdateMinimapImagePositionAndRotation(*State, NewPlayerPosition);
 
 			const auto PlayerCharacter = State->GetPlayerController()->GetCharacter();
+			if (!IsValid(PlayerCharacter)) return;
 			const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
+			if (!IsValid(LakayaCharacter)) return;
 			const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
 			
 			Image->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
@@ -183,6 +194,8 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		const auto& State = Player.Key;
 		const auto& Image = Player.Value;
 
+		if (!State.IsValid() || !Image.IsValid()) return;
+		
 		// 아군들을 검사해서 아군(나 자신 포함)이 죽어있다면, 죽음 아이콘으로 변경해줍니다.
 		if (const auto PlayerCharacter = State->GetPawn())
 		{
@@ -246,8 +259,16 @@ void UOccupationOverlayMinimapWidget::UpdateAreaImageRotation()
 {
 	if(const auto PlayerCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayerPawn()))
 	{
-		const FRotator PlayerRotation = PlayerCharacter->GetCamera()->GetComponentRotation();
+		if (!IsValid(AntiAreaImage) || !IsValid(CenterAreaImage) || !IsValid(ProAreaImage))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AntiAreaImage or CenterAreaImage or ProAreaImage is null."))
+			return;
+		}
 
+		if (!IsValid(PlayerCharacter->GetCamera())) return;
+		
+		const FRotator PlayerRotation = PlayerCharacter->GetCamera()->GetComponentRotation();
+		
 		AntiAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
 		CenterAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
 		ProAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);

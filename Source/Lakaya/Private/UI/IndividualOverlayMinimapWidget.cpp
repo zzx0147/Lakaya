@@ -104,6 +104,9 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 		NewPlayerImage->SetVisibility(ESlateVisibility::Visible);
 
 	const ALakayaBaseCharacter* LakayaBaseCharacter = Cast<ALakayaBaseCharacter>(NewPlayerState->GetPawn());
+
+	if (!IsValid(LakayaBaseCharacter)) return;
+	
 	if (!LakayaBaseCharacter->GetAliveState())
 	{
 		NewPlayerImage->SetBrushFromTexture(DeathIcon);
@@ -111,7 +114,9 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 		if (NewPlayerState == GetOwningPlayerState())
 		{
 			const auto PlayerCharacter = NewPlayerState->GetPlayerController()->GetCharacter();
+			if(!IsValid(PlayerCharacter)) return;
 			const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
+			if (!IsValid(LakayaCharacter)) return;
 			const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
 
 			NewPlayerImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
@@ -122,8 +127,6 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 	{
 		if (NewPlayerState != GetOwningPlayerState())
 		{
-			
-			
 			NewPlayerImage->SetBrushFromTexture(IndividualEnemyIcon);
 			FTimerHandle NewTimerHandle;
 			if (PlayerTimers.Contains(NewPlayerState))
@@ -137,7 +140,9 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 		else if (NewPlayerState == GetOwningPlayerState())
 		{
 			const auto PlayerCharacter = NewPlayerState->GetPlayerController()->GetCharacter();
+			if (!IsValid(PlayerCharacter)) return;
 			const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
+			if (!IsValid(LakayaCharacter)) return;
 			const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
 
 			NewPlayerImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
@@ -156,6 +161,7 @@ void UIndividualOverlayMinimapWidget::SetEnemyImage()
 	for (const auto& Enemy : IndividualPlayersByMinimap)
 	{
 		const auto& EnemyImage = Enemy.Value;
+		if (EnemyImage.IsValid()) return;
 		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
 	}
 
@@ -166,6 +172,7 @@ void UIndividualOverlayMinimapWidget::SetEnemyImage()
 		for (const auto& Enemy : IndividualPlayersByMinimap)
 		{
 			const auto& EnemyImage = Enemy.Value;
+			if (EnemyImage.IsValid()) return;
 			EnemyImage->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}, 3.0f, false);
