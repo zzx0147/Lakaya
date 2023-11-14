@@ -122,15 +122,17 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 	{
 		if (NewPlayerState != GetOwningPlayerState())
 		{
+			
+			
 			NewPlayerImage->SetBrushFromTexture(IndividualEnemyIcon);
 			FTimerHandle NewTimerHandle;
 			if (PlayerTimers.Contains(NewPlayerState))
 				GetWorld()->GetTimerManager().ClearTimer(PlayerTimers[NewPlayerState]);
 
-			GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, [this, NewPlayerImage]()
+			GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this, NewPlayerImage]()
 			{
-				NewPlayerImage->SetBrushFromTexture(QuestionMarkIcon);
-			}, 0.1f, false);
+				NewPlayerImage->SetBrushFromTexture(IndividualEnemyIcon);
+			}), 0.1f, false);
 		}
 		else if (NewPlayerState == GetOwningPlayerState())
 		{
