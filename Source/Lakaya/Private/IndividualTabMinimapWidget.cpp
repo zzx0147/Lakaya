@@ -32,8 +32,10 @@ void UIndividualTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float 
 	{
 		const auto& PlayerState = Player.Key;
 		const auto& PlayerImage = Player.Value;
-
+		if (!PlayerState.IsValid() || !PlayerImage.IsValid()) return;
+		
 		ALakayaBaseCharacter* MyPlayerCharacter = Cast<ALakayaBaseCharacter>(MyPlayerState->GetPawn());
+		if (!IsValid(MyPlayerCharacter)) return;
 		if (MyPlayerCharacter->IsEnemyVisibleInCamera(ETeam::Individual, PlayerState, PlayerImage))
 		{
 			// 해당 적이 나의 시야에 있다면 해당 적을 미니맵에 업데이트 해줍니다.
@@ -67,6 +69,7 @@ void UIndividualTabMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALak
 		NewPlayerImage->SetVisibility(ESlateVisibility::Visible);
 
 	ALakayaBaseCharacter* LakayaBaseCharacter = Cast<ALakayaBaseCharacter>(NewPlayerState->GetPawn());
+	if (!IsValid(LakayaBaseCharacter)) return;
 	if (!LakayaBaseCharacter->GetAliveState())
 	{
 		NewPlayerImage->SetBrushFromTexture(DeathIcon);
@@ -93,7 +96,9 @@ void UIndividualTabMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALak
 		else if (NewPlayerState == GetOwningPlayerState())
 		{
 			const auto PlayerCharacter = NewPlayerState->GetPlayerController()->GetCharacter();
+			if (!IsValid(PlayerCharacter)) return;
 			const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
+			if (!IsValid(LakayaCharacter)) return;
 			const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
 
 			NewPlayerImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
@@ -111,6 +116,7 @@ void UIndividualTabMinimapWidget::SetEnemyImage()
 	for (const auto& Enemy : IndividualPlayersByMinimap)
 	{
 		const auto& EnemyImage = Enemy.Value;
+		if (!EnemyImage.IsValid()) return;
 		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
 	}
 
@@ -121,6 +127,7 @@ void UIndividualTabMinimapWidget::SetEnemyImage()
 		for (const auto& Enemy : IndividualPlayersByMinimap)
 		{
 			const auto& EnemyImage = Enemy.Value;
+			if (!EnemyImage.IsValid()) return;
 			EnemyImage->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}, 3.0f, false);
@@ -131,9 +138,9 @@ UImage* UIndividualTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 	UImage* PlayerImage = NewObject<UImage>(this);
 	UCanvasPanelSlot* PanelSlot = ParentPanel->AddChildToCanvas(PlayerImage);
 
-	if (PanelSlot == nullptr)
+	if (!IsValid(PlayerImage) || !IsValid(PanelSlot))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PanelSlot is null."));
+		UE_LOG(LogTemp, Warning, TEXT("PanelSlot or PlayerImage is null."));
 		return nullptr;
 	}
 
@@ -153,6 +160,4 @@ UImage* UIndividualTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 		PlayerImage->SetBrushFromTexture(IndividualEnemyIcon);
 		return PlayerImage;
 	}
-	
-	return nullptr;
 }

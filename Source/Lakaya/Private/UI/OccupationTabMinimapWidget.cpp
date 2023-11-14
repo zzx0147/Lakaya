@@ -40,7 +40,7 @@ void UOccupationTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float 
 		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
 		const TWeakObjectPtr<UImage> EnemyImage = Enemy.Value;
 
-		if (EnemyState == nullptr || EnemyImage == nullptr)
+		if (!EnemyState.IsValid() || !EnemyImage.IsValid())
 		{
 			UE_LOG(LogTemp, Warning, TEXT("EnemyState or EnemyImage is null."));
 			return;
@@ -49,9 +49,9 @@ void UOccupationTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float 
 		for (const auto& Ally : OccupationPlayersByMinimap[CurrentTeam])
 		{
 			const auto& AllyState = Ally.Key;
-			
+			if (!AllyState.IsValid()) return;
 			ALakayaBaseCharacter* AllyCharacter = Cast<ALakayaBaseCharacter>(AllyState->GetPawn());
-			
+			if (!IsValid(AllyCharacter)) return;
 			if (AllyCharacter->IsEnemyVisibleInCamera(CurrentEnemyTeam, EnemyState, EnemyImage))
 			{
 				AllyCharacter->Server_OnEnemySpotted(CurrentEnemyTeam, EnemyState.Get());
@@ -70,7 +70,7 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		const auto& State = Player.Key;
 		const auto& Image = Player.Value;
 
-		if (State == nullptr || Image == nullptr)
+		if (!State.IsValid() || !Image.IsValid())
 		{
 			UE_LOG(LogTemp, Warning, TEXT("State or Image is null."));
 			return;
@@ -85,7 +85,9 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		if (State == GetOwningPlayerState())
 		{
 			const auto PlayerCharacter = State->GetPlayerController()->GetCharacter();
+			if (!IsValid(PlayerCharacter)) return;
 			const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
+			if (!IsValid(LakayaCharacter)) return;
 			const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
 			
 			Image->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
@@ -137,7 +139,7 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		const auto& State = Player.Key;
 		const auto& Image = Player.Value;
 
-		if (State == nullptr || Image == nullptr)
+		if (!State.IsValid() || !Image.IsValid())
 		{
 			UE_LOG(LogTemp, Warning, TEXT("State or Image is null."));
 			return;
@@ -206,11 +208,10 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
 {
 	UImage* PlayerImage = NewObject<UImage>(this);
+	UCanvasPanelSlot* PanelSlot = ParentPanel->AddChildToCanvas(PlayerImage);
 	const auto Team = NewTeam;
 
-	UCanvasPanelSlot* PanelSlot = ParentPanel->AddChildToCanvas(PlayerImage);
-
-	if (PanelSlot == nullptr || PlayerImage == nullptr)
+	if (!IsValid(PlayerImage) || !IsValid(PanelSlot))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PanelSlot or PlayerImage is null."));
 		return nullptr;
