@@ -67,14 +67,12 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 
 UImage* UOccupationOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
 {
-	UE_LOG(LogTemp, Warning, TEXT("CreatePlayerImage"));
 	UImage* PlayerImage = NewObject<UImage>(this);
-
 	UCanvasPanelSlot* PanelSlot = ParentPanel->AddChildToCanvas(PlayerImage);
 	
-	if (PanelSlot == nullptr)
+	if (PlayerImage == nullptr || PanelSlot == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PanelSlot is null."));
+		UE_LOG(LogTemp, Warning, TEXT("PanelSlot or PlayerImage is null."));
 		return nullptr;
 	}
 	
@@ -117,7 +115,12 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		const auto& State = Player.Key;
 		const auto& Image = Player.Value;
 
-
+		if (State == nullptr || Image == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("State or Image is null."));
+			return;
+		}
+		
 		if(!State->GetPawn()) return;
 		FVector2D PlayerPosition(State->GetPawn()->GetActorLocation().X, State->GetPawn()->GetActorLocation().Y);
 		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
@@ -248,6 +251,12 @@ void UOccupationOverlayMinimapWidget::UpdateAreaImageRotation()
 	{
 		const FRotator PlayerRotation = PlayerCharacter->GetCamera()->GetComponentRotation();
 
+		if (AntiAreaImage == nullptr || CenterAreaImage == nullptr || ProAreaImage == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AntiAreaImage or CenterAreaImage or ProAreaImage is null."))
+			return;
+		}
+		
 		AntiAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
 		CenterAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
 		ProAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);

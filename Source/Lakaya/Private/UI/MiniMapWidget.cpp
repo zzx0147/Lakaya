@@ -8,17 +8,6 @@
 void UMinimapWidget::BeginDestroy()
 {
 	Super::BeginDestroy();
-
-	// if (!GetOwningLocalPlayer()) return;
-	//
-	// for (auto& Timer : PlayerTimers)
-	// {
-	// 	const TWeakObjectPtr<ALakayaBasePlayerState> PlayerState = Timer.Key.Get();
-	// 	FTimerHandle& TimerHandle = Timer.Value;
-	//
-	// 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
-	// 	UE_LOG(LogTemp, Warning, TEXT("ClearTimer."));
-	// }
 }
 
 void UMinimapWidget::NativeConstruct()
@@ -71,8 +60,6 @@ void UMinimapWidget::SetEnemyImage()
 	}
 
 	FTimerHandle OldTimerHandle;
-
-	
 	
 	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
 	{
