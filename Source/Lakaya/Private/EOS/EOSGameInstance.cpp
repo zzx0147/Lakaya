@@ -16,6 +16,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Online/OnlineSessionNames.h"
 #include "OnlineSubsystem.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/Widget.h"
 
 static constexpr int MaxPlayer = 6;
 
@@ -58,6 +60,8 @@ void UEOSGameInstance::Init()
 	{
 		AbilitySystemGlobals.InitGlobalData();
 	}
+
+	UGameViewportClient::OnViewportCreated().AddUObject(this, &UEOSGameInstance::OnViewportCreated);
 
 	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, *OnlineSubsystem->GetSubsystemName().ToString());
 }
@@ -598,7 +602,7 @@ void UEOSGameInstance::Connect()
 	//IP 설정
 	FIPv4Address IPAddress;
 	FIPv4Address::Parse(TEXT("150.230.43.3"), IPAddress);
-	constexpr int32 Port = 55165; 
+	constexpr int32 Port = 55165;
 
 	const TSharedRef<FInternetAddr> Addr = SocketSubsystem->CreateInternetAddr();
 	Addr->SetIp(IPAddress.Value);
@@ -656,7 +660,7 @@ bool UEOSGameInstance::IsSocketConnected()
 {
 	//소켓이 생성되지 않았으면 false
 	if (SocketClient == nullptr) return false;
-	
+
 	return ESocketConnectionState::SCS_Connected == SocketClient->GetConnectionState();
 }
 
@@ -682,7 +686,7 @@ TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Start Recv Match Result Record"));
 		//데이터 수신
 		SocketClient->Recv(Buffer, 10000, Size, ESocketReceiveFlags::None);
-		
+
 		// const FString ReceivedString = FString(Size, (const TCHAR*)Buffer);
 		FUTF8ToTCHAR Utf8Converted((const ANSICHAR*)Buffer, Size);
 		// 변환된 TCHAR를 FString으로 변환
@@ -696,12 +700,12 @@ TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 		{
 			//Json 오브젝트로부터 데이터 추출
 			const auto MatchRecordArray = JsonObject->GetArrayField(TEXT("MatchRecords"));
-			
+
 			for (const auto& MatchRecord : MatchRecordArray)
 			{
 				FMatchResultStruct MatchResultStruct;
 				TSharedPtr<FJsonObject> ElementAsObject = MatchRecord->AsObject();
-				
+
 				if (ElementAsObject->HasField(TEXT("StartTime")))
 				{
 					// GEngine->AddOnScreenDebugMessage(-1, 300, FColor::Red, FString::Printf(TEXT("asefasefasefef")));
@@ -715,7 +719,7 @@ TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 					const double DoubleValue = ElementAsObject->GetNumberField(TEXT("Duration"));
 					MatchResultStruct.Duration = DoubleValue;
 				}
-				
+
 				if (ElementAsObject->HasField(TEXT("WinTeam")))
 				{
 					int32 WinTeamValue = ElementAsObject->GetIntegerField(TEXT("WinTeam"));
@@ -725,40 +729,63 @@ TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 				const auto ProPlayersJson = ElementAsObject->GetArrayField(TEXT("ProPlayers"));
 				const auto AntiPlayersJson = ElementAsObject->GetArrayField(TEXT("AntiPlayers"));
 
-				for(const auto& PlayerElement : ProPlayersJson)
+				for (const auto& PlayerElement : ProPlayersJson)
 				{
 					const TSharedPtr<FJsonObject> PlayerJsonObject = PlayerElement->AsObject();
 					FPlayerStats PlayerStats;
 
-					if(PlayerJsonObject->HasField(TEXT("PlayerName"))) PlayerStats.PlayerName = PlayerJsonObject->GetStringField(TEXT("PlayerName"));
-					if(PlayerJsonObject->HasField(TEXT("PlayerID"))) PlayerStats.PlayerID = PlayerJsonObject->GetStringField(TEXT("PlayerID"));
-					if(PlayerJsonObject->HasField(TEXT("Kill"))) PlayerStats.Kill = PlayerJsonObject->GetIntegerField(TEXT("Kill"));
-					if(PlayerJsonObject->HasField(TEXT("Death"))) PlayerStats.Death = PlayerJsonObject->GetIntegerField(TEXT("Death"));
-					if(PlayerJsonObject->HasField(TEXT("OccupationCount"))) PlayerStats.OccupationCount = PlayerJsonObject->GetIntegerField(TEXT("OccupationCount"));
-					if(PlayerJsonObject->HasField(TEXT("OccupationTickCount"))) PlayerStats.OccupationTickCount = PlayerJsonObject->GetIntegerField(TEXT("OccupationTickCount"));
-					
+					if (PlayerJsonObject->HasField(TEXT("PlayerName")))
+						PlayerStats.PlayerName = PlayerJsonObject->
+							GetStringField(TEXT("PlayerName"));
+					if (PlayerJsonObject->HasField(TEXT("PlayerID")))
+						PlayerStats.PlayerID = PlayerJsonObject->
+							GetStringField(TEXT("PlayerID"));
+					if (PlayerJsonObject->HasField(TEXT("Kill")))
+						PlayerStats.Kill = PlayerJsonObject->GetIntegerField(
+							TEXT("Kill"));
+					if (PlayerJsonObject->HasField(TEXT("Death")))
+						PlayerStats.Death = PlayerJsonObject->
+							GetIntegerField(TEXT("Death"));
+					if (PlayerJsonObject->HasField(TEXT("OccupationCount")))
+						PlayerStats.OccupationCount =
+							PlayerJsonObject->GetIntegerField(TEXT("OccupationCount"));
+					if (PlayerJsonObject->HasField(TEXT("OccupationTickCount")))
+						PlayerStats.OccupationTickCount =
+							PlayerJsonObject->GetIntegerField(TEXT("OccupationTickCount"));
+
 					MatchResultStruct.ProPlayers.Emplace(PlayerStats);
 				}
 
-				for(const auto& PlayerElement : AntiPlayersJson)
+				for (const auto& PlayerElement : AntiPlayersJson)
 				{
 					const TSharedPtr<FJsonObject> PlayerJsonObject = PlayerElement->AsObject();
 					FPlayerStats PlayerStats;
 
-					if(PlayerJsonObject->HasField(TEXT("PlayerName"))) PlayerStats.PlayerName = PlayerJsonObject->GetStringField(TEXT("PlayerName"));
-					if(PlayerJsonObject->HasField(TEXT("PlayerID"))) PlayerStats.PlayerID = PlayerJsonObject->GetStringField(TEXT("PlayerID"));
-					if(PlayerJsonObject->HasField(TEXT("Kill"))) PlayerStats.Kill = PlayerJsonObject->GetIntegerField(TEXT("Kill"));
-					if(PlayerJsonObject->HasField(TEXT("Death"))) PlayerStats.Death = PlayerJsonObject->GetIntegerField(TEXT("Death"));
-					if(PlayerJsonObject->HasField(TEXT("OccupationCount"))) PlayerStats.OccupationCount = PlayerJsonObject->GetIntegerField(TEXT("OccupationCount"));
-					if(PlayerJsonObject->HasField(TEXT("OccupationTickCount"))) PlayerStats.OccupationTickCount = PlayerJsonObject->GetIntegerField(TEXT("OccupationTickCount"));
-					
+					if (PlayerJsonObject->HasField(TEXT("PlayerName")))
+						PlayerStats.PlayerName = PlayerJsonObject->
+							GetStringField(TEXT("PlayerName"));
+					if (PlayerJsonObject->HasField(TEXT("PlayerID")))
+						PlayerStats.PlayerID = PlayerJsonObject->
+							GetStringField(TEXT("PlayerID"));
+					if (PlayerJsonObject->HasField(TEXT("Kill")))
+						PlayerStats.Kill = PlayerJsonObject->GetIntegerField(
+							TEXT("Kill"));
+					if (PlayerJsonObject->HasField(TEXT("Death")))
+						PlayerStats.Death = PlayerJsonObject->
+							GetIntegerField(TEXT("Death"));
+					if (PlayerJsonObject->HasField(TEXT("OccupationCount")))
+						PlayerStats.OccupationCount =
+							PlayerJsonObject->GetIntegerField(TEXT("OccupationCount"));
+					if (PlayerJsonObject->HasField(TEXT("OccupationTickCount")))
+						PlayerStats.OccupationTickCount =
+							PlayerJsonObject->GetIntegerField(TEXT("OccupationTickCount"));
+
 					MatchResultStruct.AntiPlayers.Emplace(PlayerStats);
 				}
-				
+
 				//추출한 데이터를 결과 구조체 배열에 저장
 				Results.Emplace(MatchResultStruct);
 			}
-			
 		}
 		else
 		{
@@ -874,13 +901,46 @@ void UEOSGameInstance::CreateDedicatedSession()
 
 	OnlineSessionPtr->OnCreateSessionCompleteDelegates.AddUObject(
 		this, &UEOSGameInstance::OnCreateSessionComplete);
-	
+
 	const FName SessionName(NAME_GameSession);
-	OnlineSessionPtr->CreateSession(0, FName(NAME_GameSession), SessionSettings);//데디일때
+	OnlineSessionPtr->CreateSession(0, FName(NAME_GameSession), SessionSettings); //데디일때
+}
+
+UUserWidget* UEOSGameInstance::FindPersistentWidget(TSubclassOf<UUserWidget> WidgetClass, bool& OutFound)
+{
+	const auto Found = PersistentWidgets.FindByPredicate([WidgetClass](const UUserWidget* Widget)
+	{
+		return IsValid(Widget) && Widget->IsA(WidgetClass);
+	});
+	OutFound = Found != nullptr;
+	return OutFound ? *Found : nullptr;
 }
 
 bool UEOSGameInstance::IsServer()
 {
 	return UKismetSystemLibrary::IsServer(GEngine->GetWorld()) || UKismetSystemLibrary::IsDedicatedServer(
 		GEngine->GetWorld());
+}
+
+void UEOSGameInstance::OnViewportCreated()
+{
+	// Create widgets and sanitize it
+	if (const auto Viewport = GetGameViewportClient())
+	{
+		Algo::Transform(PersistentWidgetClasses, PersistentWidgets, [&](const TSubclassOf<UUserWidget> WidgetClass)
+		{
+			const auto UserWidget = CreateWidget<UUserWidget>(this, WidgetClass);
+			if (IsValid(UserWidget))
+			{
+				//TODO: 필요하다면 추후 초기의 비저빌리티나 Z순서를 받아올 수 있도록 해야 합니다.
+				Viewport->AddViewportWidgetContent(UserWidget->TakeWidget(), 1000);
+				UserWidget->SetVisibility(ESlateVisibility::Collapsed);
+				UE_LOG(LogTemp, Log, TEXT("Persisted Widget Created: %s"), *UserWidget->GetName());
+			}
+			return UserWidget;
+		});
+		PersistentWidgets.RemoveAllSwap([](const UUserWidget* Widget) { return !IsValid(Widget); });
+	}
+	
+	UGameViewportClient::OnViewportCreated().RemoveAll(this);
 }
