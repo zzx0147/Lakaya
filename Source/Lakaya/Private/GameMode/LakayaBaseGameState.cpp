@@ -54,6 +54,15 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 
+		if(InGameWidgetStackClass)
+		{
+			InGameWidgetStack = CreateWidget<UCommonActivatableWidget>(LocalController,InGameWidgetStackClass);
+			if (InGameWidgetStack)
+			{
+				InGameWidgetStack->AddToViewport();
+			}
+		}
+
 		if (ScoreBoardClass)
 		{
 			ScoreBoard = CreateWidget<UGameScoreBoardWidget>(LocalController, ScoreBoardClass);
@@ -190,6 +199,9 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 	StartTimeStamp = FDateTime::UtcNow().ToUnixTimestamp();
 	StartTime = GetServerWorldTimeSeconds();
 
+	if(InGameWidgetStack)
+		InGameWidgetStack->ActivateWidget();
+	
 	if(IntroWidget)
 		IntroWidget->SetVisibility(ESlateVisibility::Hidden);
 	
