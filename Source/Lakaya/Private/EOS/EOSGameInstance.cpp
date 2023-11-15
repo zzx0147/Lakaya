@@ -931,6 +931,7 @@ void UEOSGameInstance::OnViewportCreated()
 			const auto UserWidget = CreateWidget<UUserWidget>(this, WidgetClass);
 			if (IsValid(UserWidget))
 			{
+				//TODO: 필요하다면 추후 초기의 비저빌리티나 Z순서를 받아올 수 있도록 해야 합니다.
 				Viewport->AddViewportWidgetContent(UserWidget->TakeWidget(), 1000);
 				UserWidget->SetVisibility(ESlateVisibility::Collapsed);
 				UE_LOG(LogTemp, Log, TEXT("Persisted Widget Created: %s"), *UserWidget->GetName());
