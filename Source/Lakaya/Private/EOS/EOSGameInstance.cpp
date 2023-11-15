@@ -165,6 +165,8 @@ void UEOSGameInstance::CreateSession()
 		OnlineSessionPtr->OnCreateSessionCompleteDelegates.AddUObject(
 			this, &UEOSGameInstance::OnCreateSessionComplete);
 
+		MyPlayerController = GetFirstLocalPlayerController(GetWorld());
+		
 		const FUniqueNetIdPtr UserId = MyPlayerController->GetLocalPlayer()->GetPreferredUniqueNetId().
 		                                                   GetUniqueNetId();
 		const FName SessionName(NAME_GameSession);
@@ -332,6 +334,7 @@ void UEOSGameInstance::QuickJoinSession()
 	OnlineSessionPtr->OnFindSessionsCompleteDelegates.AddUObject(
 		this, &UEOSGameInstance::OnFindSessionCompleteWithQuickJoin);
 
+	MyPlayerController = GetFirstLocalPlayerController(GetWorld());
 	const FUniqueNetIdPtr UserId = MyPlayerController->GetLocalPlayer()->GetPreferredUniqueNetId().
 	                                                   GetUniqueNetId();
 
