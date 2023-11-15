@@ -16,6 +16,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Online/OnlineSessionNames.h"
 #include "OnlineSubsystem.h"
+#include "Components/Widget.h"
 
 static constexpr int MaxPlayer = 6;
 
@@ -598,7 +599,7 @@ void UEOSGameInstance::Connect()
 	//IP 설정
 	FIPv4Address IPAddress;
 	FIPv4Address::Parse(TEXT("150.230.43.3"), IPAddress);
-	constexpr int32 Port = 55165; 
+	constexpr int32 Port = 55165;
 
 	const TSharedRef<FInternetAddr> Addr = SocketSubsystem->CreateInternetAddr();
 	Addr->SetIp(IPAddress.Value);
@@ -656,7 +657,7 @@ bool UEOSGameInstance::IsSocketConnected()
 {
 	//소켓이 생성되지 않았으면 false
 	if (SocketClient == nullptr) return false;
-	
+
 	return ESocketConnectionState::SCS_Connected == SocketClient->GetConnectionState();
 }
 
@@ -682,7 +683,7 @@ TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 		// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Start Recv Match Result Record"));
 		//데이터 수신
 		SocketClient->Recv(Buffer, 10000, Size, ESocketReceiveFlags::None);
-		
+
 		// const FString ReceivedString = FString(Size, (const TCHAR*)Buffer);
 		FUTF8ToTCHAR Utf8Converted((const ANSICHAR*)Buffer, Size);
 		// 변환된 TCHAR를 FString으로 변환
@@ -696,12 +697,12 @@ TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 		{
 			//Json 오브젝트로부터 데이터 추출
 			const auto MatchRecordArray = JsonObject->GetArrayField(TEXT("MatchRecords"));
-			
+
 			for (const auto& MatchRecord : MatchRecordArray)
 			{
 				FMatchResultStruct MatchResultStruct;
 				TSharedPtr<FJsonObject> ElementAsObject = MatchRecord->AsObject();
-				
+
 				if (ElementAsObject->HasField(TEXT("StartTime")))
 				{
 					// GEngine->AddOnScreenDebugMessage(-1, 300, FColor::Red, FString::Printf(TEXT("asefasefasefef")));
@@ -715,7 +716,7 @@ TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 					const double DoubleValue = ElementAsObject->GetNumberField(TEXT("Duration"));
 					MatchResultStruct.Duration = DoubleValue;
 				}
-				
+
 				if (ElementAsObject->HasField(TEXT("WinTeam")))
 				{
 					int32 WinTeamValue = ElementAsObject->GetIntegerField(TEXT("WinTeam"));
@@ -725,40 +726,63 @@ TArray<FMatchResultStruct> UEOSGameInstance::RecvMatchResultRecord()
 				const auto ProPlayersJson = ElementAsObject->GetArrayField(TEXT("ProPlayers"));
 				const auto AntiPlayersJson = ElementAsObject->GetArrayField(TEXT("AntiPlayers"));
 
-				for(const auto& PlayerElement : ProPlayersJson)
+				for (const auto& PlayerElement : ProPlayersJson)
 				{
 					const TSharedPtr<FJsonObject> PlayerJsonObject = PlayerElement->AsObject();
 					FPlayerStats PlayerStats;
 
-					if(PlayerJsonObject->HasField(TEXT("PlayerName"))) PlayerStats.PlayerName = PlayerJsonObject->GetStringField(TEXT("PlayerName"));
-					if(PlayerJsonObject->HasField(TEXT("PlayerID"))) PlayerStats.PlayerID = PlayerJsonObject->GetStringField(TEXT("PlayerID"));
-					if(PlayerJsonObject->HasField(TEXT("Kill"))) PlayerStats.Kill = PlayerJsonObject->GetIntegerField(TEXT("Kill"));
-					if(PlayerJsonObject->HasField(TEXT("Death"))) PlayerStats.Death = PlayerJsonObject->GetIntegerField(TEXT("Death"));
-					if(PlayerJsonObject->HasField(TEXT("OccupationCount"))) PlayerStats.OccupationCount = PlayerJsonObject->GetIntegerField(TEXT("OccupationCount"));
-					if(PlayerJsonObject->HasField(TEXT("OccupationTickCount"))) PlayerStats.OccupationTickCount = PlayerJsonObject->GetIntegerField(TEXT("OccupationTickCount"));
-					
+					if (PlayerJsonObject->HasField(TEXT("PlayerName")))
+						PlayerStats.PlayerName = PlayerJsonObject->
+							GetStringField(TEXT("PlayerName"));
+					if (PlayerJsonObject->HasField(TEXT("PlayerID")))
+						PlayerStats.PlayerID = PlayerJsonObject->
+							GetStringField(TEXT("PlayerID"));
+					if (PlayerJsonObject->HasField(TEXT("Kill")))
+						PlayerStats.Kill = PlayerJsonObject->GetIntegerField(
+							TEXT("Kill"));
+					if (PlayerJsonObject->HasField(TEXT("Death")))
+						PlayerStats.Death = PlayerJsonObject->
+							GetIntegerField(TEXT("Death"));
+					if (PlayerJsonObject->HasField(TEXT("OccupationCount")))
+						PlayerStats.OccupationCount =
+							PlayerJsonObject->GetIntegerField(TEXT("OccupationCount"));
+					if (PlayerJsonObject->HasField(TEXT("OccupationTickCount")))
+						PlayerStats.OccupationTickCount =
+							PlayerJsonObject->GetIntegerField(TEXT("OccupationTickCount"));
+
 					MatchResultStruct.ProPlayers.Emplace(PlayerStats);
 				}
 
-				for(const auto& PlayerElement : AntiPlayersJson)
+				for (const auto& PlayerElement : AntiPlayersJson)
 				{
 					const TSharedPtr<FJsonObject> PlayerJsonObject = PlayerElement->AsObject();
 					FPlayerStats PlayerStats;
 
-					if(PlayerJsonObject->HasField(TEXT("PlayerName"))) PlayerStats.PlayerName = PlayerJsonObject->GetStringField(TEXT("PlayerName"));
-					if(PlayerJsonObject->HasField(TEXT("PlayerID"))) PlayerStats.PlayerID = PlayerJsonObject->GetStringField(TEXT("PlayerID"));
-					if(PlayerJsonObject->HasField(TEXT("Kill"))) PlayerStats.Kill = PlayerJsonObject->GetIntegerField(TEXT("Kill"));
-					if(PlayerJsonObject->HasField(TEXT("Death"))) PlayerStats.Death = PlayerJsonObject->GetIntegerField(TEXT("Death"));
-					if(PlayerJsonObject->HasField(TEXT("OccupationCount"))) PlayerStats.OccupationCount = PlayerJsonObject->GetIntegerField(TEXT("OccupationCount"));
-					if(PlayerJsonObject->HasField(TEXT("OccupationTickCount"))) PlayerStats.OccupationTickCount = PlayerJsonObject->GetIntegerField(TEXT("OccupationTickCount"));
-					
+					if (PlayerJsonObject->HasField(TEXT("PlayerName")))
+						PlayerStats.PlayerName = PlayerJsonObject->
+							GetStringField(TEXT("PlayerName"));
+					if (PlayerJsonObject->HasField(TEXT("PlayerID")))
+						PlayerStats.PlayerID = PlayerJsonObject->
+							GetStringField(TEXT("PlayerID"));
+					if (PlayerJsonObject->HasField(TEXT("Kill")))
+						PlayerStats.Kill = PlayerJsonObject->GetIntegerField(
+							TEXT("Kill"));
+					if (PlayerJsonObject->HasField(TEXT("Death")))
+						PlayerStats.Death = PlayerJsonObject->
+							GetIntegerField(TEXT("Death"));
+					if (PlayerJsonObject->HasField(TEXT("OccupationCount")))
+						PlayerStats.OccupationCount =
+							PlayerJsonObject->GetIntegerField(TEXT("OccupationCount"));
+					if (PlayerJsonObject->HasField(TEXT("OccupationTickCount")))
+						PlayerStats.OccupationTickCount =
+							PlayerJsonObject->GetIntegerField(TEXT("OccupationTickCount"));
+
 					MatchResultStruct.AntiPlayers.Emplace(PlayerStats);
 				}
-				
+
 				//추출한 데이터를 결과 구조체 배열에 저장
 				Results.Emplace(MatchResultStruct);
 			}
-			
 		}
 		else
 		{
@@ -874,9 +898,17 @@ void UEOSGameInstance::CreateDedicatedSession()
 
 	OnlineSessionPtr->OnCreateSessionCompleteDelegates.AddUObject(
 		this, &UEOSGameInstance::OnCreateSessionComplete);
-	
+
 	const FName SessionName(NAME_GameSession);
-	OnlineSessionPtr->CreateSession(0, FName(NAME_GameSession), SessionSettings);//데디일때
+	OnlineSessionPtr->CreateSession(0, FName(NAME_GameSession), SessionSettings); //데디일때
+}
+
+void UEOSGameInstance::AddToViewportPersistently(UWidget* Widget)
+{
+	if (const auto ViewportClient = GetGameViewportClient(); ViewportClient && IsValid(Widget))
+	{
+		ViewportClient->AddViewportWidgetContent(Widget->TakeWidget(), 1000);
+	}
 }
 
 bool UEOSGameInstance::IsServer()
