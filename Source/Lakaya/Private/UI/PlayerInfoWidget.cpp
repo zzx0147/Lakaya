@@ -11,7 +11,8 @@ UPlayerInfoWidget::UPlayerInfoWidget(const FObjectInitializer& ObjectInitializer
 
 	BackgroundTextureMap.Emplace(ETeam::Pro);
 	BackgroundTextureMap.Emplace(ETeam::Anti);
-
+	BackgroundTextureMap.Emplace(ETeam::Individual);
+	BackgroundTextureMap.Emplace(ETeam::None);
 
 	PlayerName = FText::GetEmpty();
 }
