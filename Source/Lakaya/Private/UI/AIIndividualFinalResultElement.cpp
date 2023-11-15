@@ -12,6 +12,13 @@ UAIIndividualFinalResultElement::UAIIndividualFinalResultElement(const FObjectIn
 	Character3DImageMaterialMap.Emplace( FName(TEXT("Rena")),nullptr);
 	Character3DImageMaterialMap.Emplace( FName(TEXT("Wazi")),nullptr);
 	Character3DImageMaterialMap.Emplace( FName(TEXT("Gangrim")),nullptr);
+
+	GradeImageMap.Emplace(FName(TEXT("1")),nullptr);
+	GradeImageMap.Emplace(FName(TEXT("2")),nullptr);
+	GradeImageMap.Emplace(FName(TEXT("3")),nullptr);
+	GradeImageMap.Emplace(FName(TEXT("4")),nullptr);
+	GradeImageMap.Emplace(FName(TEXT("5")),nullptr);
+	GradeImageMap.Emplace(FName(TEXT("6")),nullptr);
 }
 
 void UAIIndividualFinalResultElement::SetGrade(const uint32& NewGrade)
@@ -19,6 +26,11 @@ void UAIIndividualFinalResultElement::SetGrade(const uint32& NewGrade)
 	static FText FormatText = FText::FromString(TEXT("{0}위"));
 
 	GradeText->SetText(FText::Format(FormatText,NewGrade));
+	
+	if(GradeImageMap.Contains(FName(*FString::FromInt(NewGrade))))
+		GradeImage->SetBrushFromTexture(GradeImageMap[FName(*FString::FromInt(NewGrade))]);
+	else
+		GradeImage->SetBrushFromTexture(nullptr);
 }
 
 void UAIIndividualFinalResultElement::SetPlayer(TWeakObjectPtr<ALakayaBasePlayerState> NewPlayer)

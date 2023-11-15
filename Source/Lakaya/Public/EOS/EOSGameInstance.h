@@ -8,9 +8,11 @@
 #include "Occupation/Team.h"
 #include "EOSGameInstance.generated.h"
 
+class UWidget;
 //퀵 조인 완료시 콜백해주는 델리게이트
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickJoinSessionComplete,bool,IsSucsess);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoginCompleted,bool,IsSucsess);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickJoinSessionComplete, bool, IsSucsess);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoginCompleted, bool, IsSucsess);
 
 //서버에 보내는 리퀘스트 종류 Enum입니다.
 enum class ERequestType
@@ -42,21 +44,26 @@ USTRUCT()
 struct FPlayerStats
 {
 	GENERATED_BODY()
-	FPlayerStats(): Kill(0), Death(0), OccupationCount(0), OccupationTickCount(0){};
+	FPlayerStats(): Kill(0), Death(0), OccupationCount(0), OccupationTickCount(0)
+	{
+	};
+
 	FPlayerStats(const FString& PlayerID, const FString& PlayerName, uint16 Kill, uint16 Death, uint16 OccupationCount,
-		uint16 OccupationTickCount)
+	             uint16 OccupationTickCount)
 		: PlayerID(PlayerID),
 		  PlayerName(PlayerName),
 		  Kill(Kill),
 		  Death(Death),
 		  OccupationCount(OccupationCount),
-		  OccupationTickCount(OccupationTickCount){}
-	
+		  OccupationTickCount(OccupationTickCount)
+	{
+	}
+
 	FString PlayerID;
 
 	FString PlayerName;
 
-	uint16 Kill; 
+	uint16 Kill;
 
 	uint16 Death;
 
@@ -79,15 +86,16 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Login();
-	void OnLoginComplete(int32 LocalUserNum,const bool bWasSuccessful, const FUniqueNetId& UserId, const FString& Error);
+	void OnLoginComplete(int32 LocalUserNum, const bool bWasSuccessful, const FUniqueNetId& UserId,
+	                     const FString& Error);
 
 	UFUNCTION(BlueprintCallable)
 	void CreateSession();
-	void OnCreateSessionComplete(FName SessionName,const bool bWasSuccessful);
+	void OnCreateSessionComplete(FName SessionName, const bool bWasSuccessful);
 
 	UFUNCTION(BlueprintCallable)
 	void DestroySession();
-	void OnDestroySessionComplete(FName SessionName,const bool bWasSuccessful);
+	void OnDestroySessionComplete(FName SessionName, const bool bWasSuccessful);
 
 	UFUNCTION(BlueprintCallable)
 	void FindSession();
@@ -101,7 +109,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void GetAllFriends();
-	void OnGetAllFriendsComplete(int32 LocalUserNum, bool bWasSuccessful, const FString& ListName, const FString& ErrorStr);
+	void OnGetAllFriendsComplete(int32 LocalUserNum, bool bWasSuccessful, const FString& ListName,
+	                             const FString& ErrorStr);
 
 	UFUNCTION(BlueprintCallable)
 	void ShowInviteUI();
@@ -152,17 +161,21 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CreateDedicatedSession();
 
-	
+protected:
+	/** 위젯을 뷰포트에 영원히 표시되도록 합니다. 이 기능으로 추가된 위젯은 게임이 종료될 때까지 사라지지 않고 뷰포트에 남습니다. */
+	UFUNCTION(BlueprintCallable)
+	void AddToViewportPersistently(UWidget* Widget);
+
 private:
 	static bool IsServer();
 
 public:
-	UPROPERTY(BlueprintAssignable,VisibleAnywhere, BlueprintCallable, Category = "Event")
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable, Category = "Event")
 	FOnQuickJoinSessionComplete OnQuickJoinSessionComplete;
 
-	UPROPERTY(BlueprintAssignable,VisibleAnywhere, BlueprintCallable, Category = "Event")
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable, Category = "Event")
 	FOnLoginCompleted OnLoginCompleted;
-	
+
 protected:
 	IOnlineSubsystem* OnlineSubsystem;
 
