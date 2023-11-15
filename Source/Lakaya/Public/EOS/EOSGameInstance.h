@@ -161,8 +161,8 @@ public:
 	void CreateDedicatedSession();
 
 	/** 해당 클래스의 뷰포트에 고정된 위젯을 찾습니다. */
-	UFUNCTION(BlueprintCallable, meta=(DeterminesOutputType="WidgetClass"))
-	UUserWidget* FindPersistentWidget(TSubclassOf<UUserWidget> WidgetClass);
+	UFUNCTION(BlueprintCallable, meta=(DeterminesOutputType="WidgetClass", ExpandBoolAsExecs="OutFound"))
+	UUserWidget* FindPersistentWidget(TSubclassOf<UUserWidget> WidgetClass, bool& OutFound);
 
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable, Category = "Event")
 	FOnQuickJoinSessionComplete OnQuickJoinSessionComplete;
