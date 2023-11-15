@@ -915,7 +915,7 @@ UUserWidget* UEOSGameInstance::FindPersistentWidget(TSubclassOf<UUserWidget> Wid
 	{
 		return IsValid(Widget) && Widget->IsA(WidgetClass);
 	});
-	OutFound = Found;
+	OutFound = Found != nullptr;
 	return OutFound ? *Found : nullptr;
 }
 
