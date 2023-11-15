@@ -16,6 +16,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Online/OnlineSessionNames.h"
 #include "OnlineSubsystem.h"
+#include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
 
 static constexpr int MaxPlayer = 6;
@@ -59,6 +60,8 @@ void UEOSGameInstance::Init()
 	{
 		AbilitySystemGlobals.InitGlobalData();
 	}
+
+	UGameViewportClient::OnViewportCreated().AddUObject(this, &UEOSGameInstance::OnViewportCreated);
 
 	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, *OnlineSubsystem->GetSubsystemName().ToString());
 }
@@ -903,16 +906,41 @@ void UEOSGameInstance::CreateDedicatedSession()
 	OnlineSessionPtr->CreateSession(0, FName(NAME_GameSession), SessionSettings); //데디일때
 }
 
-void UEOSGameInstance::AddToViewportPersistently(UWidget* Widget)
+UUserWidget* UEOSGameInstance::FindPersistentWidget(TSubclassOf<UUserWidget> WidgetClass, bool& OutFound)
 {
-	if (const auto ViewportClient = GetGameViewportClient(); ViewportClient && IsValid(Widget))
+	const auto Found = PersistentWidgets.FindByPredicate([WidgetClass](const UUserWidget* Widget)
 	{
-		ViewportClient->AddViewportWidgetContent(Widget->TakeWidget(), 1000);
-	}
+		return IsValid(Widget) && Widget->IsA(WidgetClass);
+	});
+	OutFound = Found != nullptr;
+	return OutFound ? *Found : nullptr;
 }
 
 bool UEOSGameInstance::IsServer()
 {
 	return UKismetSystemLibrary::IsServer(GEngine->GetWorld()) || UKismetSystemLibrary::IsDedicatedServer(
 		GEngine->GetWorld());
+}
+
+void UEOSGameInstance::OnViewportCreated()
+{
+	// Create widgets and sanitize it
+	if (const auto Viewport = GetGameViewportClient())
+	{
+		Algo::Transform(PersistentWidgetClasses, PersistentWidgets, [&](const TSubclassOf<UUserWidget> WidgetClass)
+		{
+			const auto UserWidget = CreateWidget<UUserWidget>(this, WidgetClass);
+			if (IsValid(UserWidget))
+			{
+				//TODO: 필요하다면 추후 초기의 비저빌리티나 Z순서를 받아올 수 있도록 해야 합니다.
+				Viewport->AddViewportWidgetContent(UserWidget->TakeWidget(), 1000);
+				UserWidget->SetVisibility(ESlateVisibility::Collapsed);
+				UE_LOG(LogTemp, Log, TEXT("Persisted Widget Created: %s"), *UserWidget->GetName());
+			}
+			return UserWidget;
+		});
+		PersistentWidgets.RemoveAllSwap([](const UUserWidget* Widget) { return !IsValid(Widget); });
+	}
+	
+	UGameViewportClient::OnViewportCreated().RemoveAll(this);
 }

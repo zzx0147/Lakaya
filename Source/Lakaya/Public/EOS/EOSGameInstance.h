@@ -8,7 +8,6 @@
 #include "Occupation/Team.h"
 #include "EOSGameInstance.generated.h"
 
-class UWidget;
 //퀵 조인 완료시 콜백해주는 델리게이트
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickJoinSessionComplete, bool, IsSucsess);
 
@@ -161,15 +160,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CreateDedicatedSession();
 
-protected:
-	/** 위젯을 뷰포트에 영원히 표시되도록 합니다. 이 기능으로 추가된 위젯은 게임이 종료될 때까지 사라지지 않고 뷰포트에 남습니다. */
-	UFUNCTION(BlueprintCallable)
-	void AddToViewportPersistently(UWidget* Widget);
+	/** 해당 클래스의 뷰포트에 고정된 위젯을 찾습니다. */
+	UFUNCTION(BlueprintCallable, meta=(DeterminesOutputType="WidgetClass", ExpandBoolAsExecs="OutFound"))
+	UUserWidget* FindPersistentWidget(TSubclassOf<UUserWidget> WidgetClass, bool& OutFound);
 
-private:
-	static bool IsServer();
-
-public:
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable, Category = "Event")
 	FOnQuickJoinSessionComplete OnQuickJoinSessionComplete;
 
@@ -177,6 +171,10 @@ public:
 	FOnLoginCompleted OnLoginCompleted;
 
 protected:
+	/** 뷰포트에 고정시킬 위젯 클래스입니다. 뷰포트가 생성되고나면 바로 이 위젯들이 뷰포트로 추가됩니다. 비저빌리티는 Hidden으로 설정됩니다. */
+	UPROPERTY(EditDefaultsOnly)
+	TArray<TSubclassOf<UUserWidget>> PersistentWidgetClasses;
+
 	IOnlineSubsystem* OnlineSubsystem;
 
 	IOnlineSessionPtr OnlineSessionPtr;
@@ -192,8 +190,16 @@ protected:
 	FUniqueNetIdPtr ClientNetId;
 
 private:
+	static bool IsServer();
+
+	void OnViewportCreated();
+
 	//클라이언트용 소켓입니다
 	FSocket* SocketClient;
 	ISocketSubsystem* SocketSubsystem;
 	uint32 RecvDataSize;
+
+	/** 뷰포트에 고정된 위젯들입니다. */
+	UPROPERTY(Transient, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
+	TArray<UUserWidget*> PersistentWidgets;
 };
