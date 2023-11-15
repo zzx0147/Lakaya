@@ -16,6 +16,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Online/OnlineSessionNames.h"
 #include "OnlineSubsystem.h"
+#include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
 
 static constexpr int MaxPlayer = 6;
@@ -59,6 +60,8 @@ void UEOSGameInstance::Init()
 	{
 		AbilitySystemGlobals.InitGlobalData();
 	}
+
+	UGameViewportClient::OnViewportCreated().AddUObject(this, &UEOSGameInstance::OnViewportCreated);
 
 	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, *OnlineSubsystem->GetSubsystemName().ToString());
 }
@@ -903,16 +906,30 @@ void UEOSGameInstance::CreateDedicatedSession()
 	OnlineSessionPtr->CreateSession(0, FName(NAME_GameSession), SessionSettings); //데디일때
 }
 
-void UEOSGameInstance::AddToViewportPersistently(UWidget* Widget)
-{
-	if (const auto ViewportClient = GetGameViewportClient(); ViewportClient && IsValid(Widget))
-	{
-		ViewportClient->AddViewportWidgetContent(Widget->TakeWidget(), 1000);
-	}
-}
-
 bool UEOSGameInstance::IsServer()
 {
 	return UKismetSystemLibrary::IsServer(GEngine->GetWorld()) || UKismetSystemLibrary::IsDedicatedServer(
 		GEngine->GetWorld());
+}
+
+void UEOSGameInstance::OnViewportCreated()
+{
+	// Create widgets and sanitize it
+	if (const auto Viewport = GetGameViewportClient())
+	{
+		Algo::Transform(PersistentWidgetClasses, PersistentWidgets, [&](const TSubclassOf<UUserWidget> WidgetClass)
+		{
+			const auto UserWidget = CreateWidget<UUserWidget>(this, WidgetClass);
+			if (IsValid(UserWidget))
+			{
+				Viewport->AddViewportWidgetContent(UserWidget->TakeWidget(), 1000);
+				UserWidget->SetVisibility(ESlateVisibility::Collapsed);
+				UE_LOG(LogTemp, Log, TEXT("Persisted Widget Created: %s"), *UserWidget->GetName());
+			}
+			return UserWidget;
+		});
+		PersistentWidgets.RemoveAllSwap([](const UUserWidget* Widget) { return !IsValid(Widget); });
+	}
+	
+	UGameViewportClient::OnViewportCreated().RemoveAll(this);
 }
