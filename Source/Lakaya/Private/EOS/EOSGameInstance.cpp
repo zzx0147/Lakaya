@@ -906,6 +906,15 @@ void UEOSGameInstance::CreateDedicatedSession()
 	OnlineSessionPtr->CreateSession(0, FName(NAME_GameSession), SessionSettings); //데디일때
 }
 
+UUserWidget* UEOSGameInstance::FindPersistentWidget(TSubclassOf<UUserWidget> WidgetClass)
+{
+	const auto Found = PersistentWidgets.FindByPredicate([WidgetClass](const UUserWidget* Widget)
+	{
+		return IsValid(Widget) && Widget->IsA(WidgetClass);
+	});
+	return Found ? *Found : nullptr;
+}
+
 bool UEOSGameInstance::IsServer()
 {
 	return UKismetSystemLibrary::IsServer(GEngine->GetWorld()) || UKismetSystemLibrary::IsDedicatedServer(

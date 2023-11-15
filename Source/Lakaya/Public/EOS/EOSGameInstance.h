@@ -160,6 +160,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CreateDedicatedSession();
 
+	/** 해당 클래스의 뷰포트에 고정된 위젯을 찾습니다. */
+	UFUNCTION(BlueprintCallable, meta=(DeterminesOutputType="WidgetClass"))
+	UUserWidget* FindPersistentWidget(TSubclassOf<UUserWidget> WidgetClass);
+
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable, Category = "Event")
 	FOnQuickJoinSessionComplete OnQuickJoinSessionComplete;
 
@@ -196,6 +200,6 @@ private:
 	uint32 RecvDataSize;
 
 	/** 뷰포트에 고정된 위젯들입니다. */
-	UPROPERTY(Transient)
+	UPROPERTY(Transient, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	TArray<UUserWidget*> PersistentWidgets;
 };
