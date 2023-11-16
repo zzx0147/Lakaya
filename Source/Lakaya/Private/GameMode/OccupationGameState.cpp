@@ -120,7 +120,10 @@ void AOccupationGameState::BeginPlay()
 				StartMessageWidget->AddToViewport(1);
 				StartMessageWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
-			else UE_LOG(LogTemp, Warning, TEXT("StartMessageWidget is null."));
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("StartMessageWidget is null."));
+			}
 		}
 
 		if (GameResultWidgetClass)
