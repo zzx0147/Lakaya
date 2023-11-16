@@ -513,10 +513,6 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 				{
 					AimOccupyProgressWidget->SetCurrentTeam(GetTeam());
 				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("AimOccupyProgressWidget is nullptr."))
-				}
 			}
 		}
 	}

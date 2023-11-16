@@ -34,7 +34,7 @@ void AOccupationObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White, TEXT("Object Interaction Start!"));
-	if (Caller == nullptr)
+	if (!IsValid(Caller))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OnInteractionStart_Caller is null."));
 		// Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
@@ -42,7 +42,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	}
 	
 	const auto OccupationPlayerState = Caller->GetPlayerState<ALakayaBasePlayerState>();
-	if (OccupationPlayerState == nullptr)
+	if (!IsValid(OccupationPlayerState))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OccupationObject_OccupationPlayerState is null."));
 		// Cast<AInteractableCharacter>(Caller)->StopInteraction(EInteractionState::None);
@@ -58,7 +58,7 @@ void AOccupationObject::OnInteractionStart(const float& Time, APawn* Caller)
 	}
 	
 	// 아무도 상호작용을 하지 않고 있는 경우
-	if (InteractingPawn == nullptr)
+	if (!IsValid(InteractingPawn))
 	{
 		InteractingPawn = Caller;
 		OnInteractingActorSignature.Broadcast(InteractingPawn);
