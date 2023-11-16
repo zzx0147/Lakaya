@@ -16,8 +16,11 @@ class LAKAYA_API AMovablePlayerController : public ALakayaPlayerController
 public:
 	AMovablePlayerController();
 
-	void SetMouseSensitivity(float Sensitivity) { MouseSensitivity = Sensitivity; }
-	float GetMouseSensitivity() {return MouseSensitivity; }
+	UFUNCTION(BlueprintCallable)
+	void SetMouseSensitivity(const float& Sensitivity) { MouseSensitivity = Sensitivity; }
+
+	UFUNCTION(BlueprintCallable)
+	float GetMouseSensitivity() const {return MouseSensitivity; }
 
 protected:
 	virtual void BeginPlay() override;
