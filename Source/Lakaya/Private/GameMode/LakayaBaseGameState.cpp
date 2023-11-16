@@ -59,7 +59,7 @@ void ALakayaBaseGameState::BeginPlay()
 			InGameWidgetStack = CreateWidget<UCommonActivatableWidget>(LocalController,InGameWidgetStackClass);
 			if (InGameWidgetStack)
 			{
-				InGameWidgetStack->AddToViewport();
+				InGameWidgetStack->AddToViewport(3);
 			}
 		}
 
