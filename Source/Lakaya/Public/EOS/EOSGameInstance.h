@@ -9,8 +9,9 @@
 #include "EOSGameInstance.generated.h"
 
 //퀵 조인 완료시 콜백해주는 델리게이트
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickJoinSessionComplete,bool,IsSucsess);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoginCompleted,bool,IsSucsess);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickJoinSessionComplete, bool, IsSucsess);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoginCompleted, bool, IsSucsess);
 
 //서버에 보내는 리퀘스트 종류 Enum입니다.
 enum class ERequestType
@@ -42,21 +43,26 @@ USTRUCT()
 struct FPlayerStats
 {
 	GENERATED_BODY()
-	FPlayerStats(): Kill(0), Death(0), OccupationCount(0), OccupationTickCount(0){};
+	FPlayerStats(): Kill(0), Death(0), OccupationCount(0), OccupationTickCount(0)
+	{
+	};
+
 	FPlayerStats(const FString& PlayerID, const FString& PlayerName, uint16 Kill, uint16 Death, uint16 OccupationCount,
-		uint16 OccupationTickCount)
+	             uint16 OccupationTickCount)
 		: PlayerID(PlayerID),
 		  PlayerName(PlayerName),
 		  Kill(Kill),
 		  Death(Death),
 		  OccupationCount(OccupationCount),
-		  OccupationTickCount(OccupationTickCount){}
-	
+		  OccupationTickCount(OccupationTickCount)
+	{
+	}
+
 	FString PlayerID;
 
 	FString PlayerName;
 
-	uint16 Kill; 
+	uint16 Kill;
 
 	uint16 Death;
 
@@ -79,15 +85,16 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Login();
-	void OnLoginComplete(int32 LocalUserNum,const bool bWasSuccessful, const FUniqueNetId& UserId, const FString& Error);
+	void OnLoginComplete(int32 LocalUserNum, const bool bWasSuccessful, const FUniqueNetId& UserId,
+	                     const FString& Error);
 
 	UFUNCTION(BlueprintCallable)
 	void CreateSession();
-	void OnCreateSessionComplete(FName SessionName,const bool bWasSuccessful);
+	void OnCreateSessionComplete(FName SessionName, const bool bWasSuccessful);
 
 	UFUNCTION(BlueprintCallable)
 	void DestroySession();
-	void OnDestroySessionComplete(FName SessionName,const bool bWasSuccessful);
+	void OnDestroySessionComplete(FName SessionName, const bool bWasSuccessful);
 
 	UFUNCTION(BlueprintCallable)
 	void FindSession();
@@ -101,7 +108,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void GetAllFriends();
-	void OnGetAllFriendsComplete(int32 LocalUserNum, bool bWasSuccessful, const FString& ListName, const FString& ErrorStr);
+	void OnGetAllFriendsComplete(int32 LocalUserNum, bool bWasSuccessful, const FString& ListName,
+	                             const FString& ErrorStr);
 
 	UFUNCTION(BlueprintCallable)
 	void ShowInviteUI();
@@ -152,18 +160,21 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CreateDedicatedSession();
 
-	
-private:
-	static bool IsServer();
+	/** 해당 클래스의 뷰포트에 고정된 위젯을 찾습니다. */
+	UFUNCTION(BlueprintCallable, meta=(DeterminesOutputType="WidgetClass", ExpandBoolAsExecs="OutFound"))
+	UUserWidget* FindPersistentWidget(TSubclassOf<UUserWidget> WidgetClass, bool& OutFound);
 
-public:
-	UPROPERTY(BlueprintAssignable,VisibleAnywhere, BlueprintCallable, Category = "Event")
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable, Category = "Event")
 	FOnQuickJoinSessionComplete OnQuickJoinSessionComplete;
 
-	UPROPERTY(BlueprintAssignable,VisibleAnywhere, BlueprintCallable, Category = "Event")
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable, Category = "Event")
 	FOnLoginCompleted OnLoginCompleted;
-	
+
 protected:
+	/** 뷰포트에 고정시킬 위젯 클래스입니다. 뷰포트가 생성되고나면 바로 이 위젯들이 뷰포트로 추가됩니다. 비저빌리티는 Hidden으로 설정됩니다. */
+	UPROPERTY(EditDefaultsOnly)
+	TArray<TSubclassOf<UUserWidget>> PersistentWidgetClasses;
+
 	IOnlineSubsystem* OnlineSubsystem;
 
 	IOnlineSessionPtr OnlineSessionPtr;
@@ -179,8 +190,16 @@ protected:
 	FUniqueNetIdPtr ClientNetId;
 
 private:
+	static bool IsServer();
+
+	void OnViewportCreated();
+
 	//클라이언트용 소켓입니다
 	FSocket* SocketClient;
 	ISocketSubsystem* SocketSubsystem;
 	uint32 RecvDataSize;
+
+	/** 뷰포트에 고정된 위젯들입니다. */
+	UPROPERTY(Transient, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
+	TArray<UUserWidget*> PersistentWidgets;
 };
