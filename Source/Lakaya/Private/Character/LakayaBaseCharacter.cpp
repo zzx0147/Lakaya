@@ -221,7 +221,8 @@ void ALakayaBaseCharacter::SetAlly(const bool& IsAlly)
 		GetMesh()->SetOverlayMaterial(CharacterOverlayMaterial.Get());
 	}
 
-	CharacterOverlayMaterial->SetVectorParameterValue(TEXT("Color"), IsAlly ? FLinearColor::Blue : FLinearColor::Red);
+	CharacterOverlayMaterial->SetVectorParameterValue(
+		TEXT("Color"), IsAlly ? FLinearColor(0.1f, 0.2f, 0.7f, 1.0f) : FLinearColor(1.0f, 0.05f, 0.0f, 1.0f));
 }
 
 bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,

@@ -17,8 +17,6 @@ UFinalResultWidget::UFinalResultWidget(const FObjectInitializer& ObjectInitializ
 	
 	ButtonPressedTextureMap.Emplace(ETeam::Anti, nullptr);
 	ButtonPressedTextureMap.Emplace(ETeam::Pro, nullptr);
-
-	
 }
 
 void UFinalResultWidget::SetTeam(const ETeam& NewTeam)
