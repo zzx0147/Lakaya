@@ -88,10 +88,10 @@ void UIndividualTabMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALak
 			if (PlayerTimers.Contains(NewPlayerState))
 				GetWorld()->GetTimerManager().ClearTimer(PlayerTimers[NewPlayerState]);
 
-			GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, [this, NewPlayerImage]()
+			GetWorld()->GetTimerManager().SetTimer(NewTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this, NewPlayerImage]()
 			{
 				NewPlayerImage->SetBrushFromTexture(QuestionMarkIcon);
-			}, 0.1f, false);
+			}), 0.1f, false);
 		}
 		else if (NewPlayerState == GetOwningPlayerState())
 		{
@@ -122,7 +122,7 @@ void UIndividualTabMinimapWidget::SetEnemyImage()
 
 	FTimerHandle OldTimerHandle;
 
-	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, [this]()
+	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
 	{
 		for (const auto& Enemy : IndividualPlayersByMinimap)
 		{
@@ -130,7 +130,7 @@ void UIndividualTabMinimapWidget::SetEnemyImage()
 			if (!EnemyImage.IsValid()) return;
 			EnemyImage->SetVisibility(ESlateVisibility::Hidden);
 		}
-	}, 3.0f, false);
+	}), 3.0f, false);
 }
 
 UImage* UIndividualTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
