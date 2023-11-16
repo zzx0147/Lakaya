@@ -177,7 +177,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UIntroWidget> IntroWidgetClass;
-	
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UCommonActivatableWidget> InGameWidgetStackClass;
 	//
 	// UPROPERTY(EditDefaultsOnly)
 	// TSubclassOf<class>
@@ -212,6 +214,10 @@ protected:
 	TObjectPtr<UTabMinimapWidget> TabMinimapWidget;
 
 	TObjectPtr<UIntroWidget> IntroWidget;
+
+	//인게임 일반 UI를 담는 위젯입니다.
+	TObjectPtr<class UCommonActivatableWidget> InGameWidgetStack;
+
 #pragma endregion
 	
 private:
