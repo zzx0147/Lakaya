@@ -455,13 +455,12 @@ void AOccupationGameState::OnRep_MatchEndingTime()
 void AOccupationGameState::DestroyShieldWallObject() const
 {
 	const UWorld* World = GetWorld();
-	if (!!IsValid(World))
+	if (!IsValid(World))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("World is null."));
 		return;
 	}
 
-	// TArray<AActor*> FoundActors;
 	TArray<TObjectPtr<AActor>> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(World, AShieldWallObject::StaticClass(), FoundActors);
 
