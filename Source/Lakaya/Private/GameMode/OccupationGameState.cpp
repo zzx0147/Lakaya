@@ -352,8 +352,8 @@ void AOccupationGameState::EndTimeCheck()
 	{
 		GetWorldTimerManager().ClearTimer(TimerHandle_GameTimeCheck);
 
-		auto GameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
-		if (GameMode == nullptr)
+		const auto GameMode = Cast<AOccupationGameMode>(GetWorld()->GetAuthGameMode());
+		if (!IsValid(GameMode))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("GameMode is null."));
 			return;
@@ -454,8 +454,8 @@ void AOccupationGameState::OnRep_MatchEndingTime()
 
 void AOccupationGameState::DestroyShieldWallObject() const
 {
-	UWorld* World = GetWorld();
-	if (World == nullptr)
+	const UWorld* World = GetWorld();
+	if (!!IsValid(World))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("World is null."));
 		return;
@@ -635,7 +635,7 @@ void AOccupationGameState::UpdateOccupyExpressWidget(const ETeam& Team, const ui
 			return;
 		}
 
-		if (ImageWidget != nullptr && ImageTexture != nullptr)
+		if (IsValid(*ImageWidget)&& IsValid(*ImageTexture))
 		{
 			(*ImageWidget)->SetBrushFromTexture(*ImageTexture);
 		}
