@@ -236,6 +236,7 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 		HUDMinimapWidget->SetUpdateMinimap(true);
 		HUDMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		HUDMinimapWidget->SetEnemyTeam(ETeam::Individual);
+		HUDMinimapWidget->SetTeam(ETeam::Individual);
 		
 		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 		{
@@ -251,7 +252,8 @@ void AAIIndividualGameState::HandleMatchHasStarted()
 	if (TabMinimapWidget)
 	{
 		TabMinimapWidget->SetUpdateMinimap(true);
-		HUDMinimapWidget->SetEnemyTeam(ETeam::Individual);
+		TabMinimapWidget->SetEnemyTeam(ETeam::Individual);
+		TabMinimapWidget->SetTeam(ETeam::Individual);
 		// TabMinimapWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 		for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
