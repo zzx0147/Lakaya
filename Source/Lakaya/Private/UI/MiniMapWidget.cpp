@@ -50,8 +50,3 @@ void UMinimapWidget::SetQuestionImage(const TWeakObjectPtr<ALakayaBasePlayerStat
 	
 	SetPlayerTimers(NewPlayerState, NewTimerHandle);
 }
-
-// void UMinimapWidget::SetEnemyImage()
-// {
-
-// }

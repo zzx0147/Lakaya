@@ -113,9 +113,10 @@ void UIndividualTabMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALak
 
 void UIndividualTabMinimapWidget::SetEnemyImage()
 {
-	for (const auto& Enemy : IndividualPlayersByMinimap)
+	UE_LOG(LogTemp, Warning, TEXT("IndividualTabSetEnemyImage"));
+	for (const auto Enemy : IndividualPlayersByMinimap)
 	{
-		const auto& EnemyImage = Enemy.Value;
+		const auto EnemyImage = Enemy.Value;
 		if (!EnemyImage.IsValid()) return;
 		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
 	}
@@ -124,11 +125,10 @@ void UIndividualTabMinimapWidget::SetEnemyImage()
 
 	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
 	{
-		for (const auto& Enemy : IndividualPlayersByMinimap)
+		for (const auto Enemy : IndividualPlayersByMinimap)
 		{
-			const auto& EnemyImage = Enemy.Value;
-			if (!EnemyImage.IsValid()) return;
-			EnemyImage->SetVisibility(ESlateVisibility::Hidden);
+			if (const auto EnemyImage = Enemy.Value; EnemyImage.IsValid())
+				EnemyImage->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}), 3.0f, false);
 }

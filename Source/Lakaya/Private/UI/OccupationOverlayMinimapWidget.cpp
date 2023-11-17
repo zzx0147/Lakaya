@@ -284,10 +284,11 @@ void UOccupationOverlayMinimapWidget::UpdateAreaImageRotation()
 
 void UOccupationOverlayMinimapWidget::SetEnemyImage()
 {
+	UE_LOG(LogTemp, Warning, TEXT("OccupationOverlaySetEnemyImage"));
 	for (const auto Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
 	{
 		const auto EnemyImage = Enemy.Value;
-		if (EnemyImage.IsValid()) return;
+		if (!EnemyImage.IsValid()) return;
 		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
 	}
 
@@ -297,9 +298,8 @@ void UOccupationOverlayMinimapWidget::SetEnemyImage()
 	{
 		for (const auto Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
 		{
-			const auto EnemyImage = Enemy.Value;
-			if (EnemyImage.IsValid()) return;
-			EnemyImage->SetVisibility(ESlateVisibility::Hidden);
+			if (const auto EnemyImage = Enemy.Value; EnemyImage.IsValid())
+				EnemyImage->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}), 3.0f, false);
 }
