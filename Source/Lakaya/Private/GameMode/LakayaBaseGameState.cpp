@@ -114,10 +114,10 @@ void ALakayaBaseGameState::BeginPlay()
 			}
 		}
 
-		if(IntroWidgetClass)
+		if (IntroWidgetClass)
 		{
 			IntroWidget = CreateWidget<UIntroWidget>(LocalController, IntroWidgetClass);
-			if(IntroWidget)
+			if (IntroWidget.IsValid())
 			{
 				IntroWidget->AddToViewport(1);
 				IntroWidget->SetVisibility(ESlateVisibility::Hidden);
@@ -176,7 +176,7 @@ void ALakayaBaseGameState::HandleMatchIsIntro()
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 
-	if(IntroWidget)
+	if (IntroWidget.IsValid())
 		IntroWidget->SetVisibility(ESlateVisibility::Visible);
 	
 	FTimerDelegate IntroTimerDelegate;
@@ -201,8 +201,8 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 
 	if(InGameWidgetStack)
 		InGameWidgetStack->ActivateWidget();
-	
-	if(IntroWidget)
+
+	if (IntroWidget.IsValid())
 		IntroWidget->SetVisibility(ESlateVisibility::Hidden);
 	
 	if (InGameTimeWidget.IsValid())

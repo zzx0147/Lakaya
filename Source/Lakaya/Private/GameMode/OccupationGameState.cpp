@@ -299,7 +299,7 @@ void AOccupationGameState::HandleMatchIsIntro()
 	
 	if(!PlayersByTeamMap.Contains(ETeam::Pro) || !PlayersByTeamMap.Contains(ETeam::Anti)) return;
 
-	if (IntroWidget) IntroWidget->SetPlayersData(PlayerArray);
+	if (IntroWidget.IsValid()) IntroWidget->SetPlayersData(PlayerArray);
 }
 
 void AOccupationGameState::HandleMatchHasEnded()
