@@ -7,6 +7,7 @@
 #include "GameFramework/GameState.h"
 #include "LakayaBaseGameState.generated.h"
 
+class UGameStateSequentialWidget;
 DECLARE_EVENT_OneParam(ALakayaBaseGameState, OnChangePlayerNumberSignature, const uint8&)
 
 DECLARE_EVENT_ThreeParams(ALakayaBaseGameState, FOnPlayerKillNotifiedSignature, APlayerState*, APlayerState*, AActor*)
@@ -180,9 +181,13 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UCommonActivatableWidget> InGameWidgetStackClass;
-	//
-	// UPROPERTY(EditDefaultsOnly)
-	// TSubclassOf<class>
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameStateSequentialWidget> SequentialWidgetClass;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UGameStateSequentialWidget> SequentialWidget;
+	
 	// 캐릭터 선택 위젯 입니다.	
 	TWeakObjectPtr<UGameLobbyCharacterSelectWidget> CharacterSelectWidget;
 
@@ -213,7 +218,7 @@ protected:
 	// 인게임 도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯입니다.
 	TObjectPtr<UTabMinimapWidget> TabMinimapWidget;
 
-	TObjectPtr<UIntroWidget> IntroWidget;
+	TWeakObjectPtr<UIntroWidget> IntroWidget;
 
 	//인게임 일반 UI를 담는 위젯입니다.
 	TObjectPtr<class UCommonActivatableWidget> InGameWidgetStack;
