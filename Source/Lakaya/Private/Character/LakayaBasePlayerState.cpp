@@ -350,9 +350,14 @@ FPlayerStats ALakayaBasePlayerState::GetPlayerStats()
 
 float ALakayaBasePlayerState::GetServerTime() const
 {
-	if(!IsValid(GetWorld()) || !IsValid(GetWorld()->GetGameState())) return -1.0f;
-
-	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+	if (const auto World = GetWorld())
+	{
+		if (const auto GameState = World->GetGameState())
+		{
+			return GameState->GetServerWorldTimeSeconds();
+		}
+	}
+	return 0.f;
 }
 
 void ALakayaBasePlayerState::BroadcastMaxHealthChanged() const
@@ -429,12 +434,8 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 		OnHealthChanged.Broadcast(Health);
 	}
 	
-	
 	if(bIsPawnSettedOnce) return;
 	bIsPawnSettedOnce = true;
-	
-	
-	
 	
 	if (const auto OldCharacter = Cast<ALakayaBaseCharacter>(OldPawn))
 	{
@@ -531,17 +532,7 @@ void ALakayaBasePlayerState::OnPawnSetCallback(APlayerState* Player, APawn* NewP
 			HealthWidget.Get(), &UGamePlayHealthWidget::SetCurrentHealthAttribute);
 		AbilitySystem->GetGameplayAttributeValueChangeDelegate(LakayaAttributeSet->GetMaxHealthAttribute()).AddUObject(
 			HealthWidget.Get(), &UGamePlayHealthWidget::SetMaximumHealthAttribute);
-		// LakayaAttributeSet->OnHealthChanged.AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetCurrentHealth);
-		// LakayaAttributeSet->OnMaxHealthChanged.AddUObject(HealthWidget.Get(),&UGamePlayHealthWidget::SetMaximumHealth);
 	}
-
-	// if (HasAuthority())
-	// {
-	// 	InitializeStatus();
-	// 	// 캐릭터가 변경된 경우 그 캐릭터에 맞는 체력으로 재설정합니다.
-	// 	Health = GetMaxHealth();
-	// 	OnHealthChanged.Broadcast(Health);
-	// }
 }
 
 float ALakayaBasePlayerState::GetMaxHealth() const
@@ -574,9 +565,12 @@ void ALakayaBasePlayerState::OnRep_RespawnTime()
 	OnRespawnTimeChanged.Broadcast(RespawnTime);
 
 	// 부활시간에 OnAliveStateChanged 이벤트가 호출될 수 있도록 타이머를 설정합니다.
-	static FTimerDelegate Delegate;
-	Delegate.BindUObject(this, &ALakayaBasePlayerState::SetAliveState, true);
-	GetWorldTimerManager().SetTimer(RespawnTimer, Delegate, RespawnTime - CurrentTime, false);
+	if (const auto World = GetWorld())
+	{
+		static FTimerDelegate Delegate;
+		Delegate.BindUObject(this, &ALakayaBasePlayerState::SetAliveState, true);
+		World->GetTimerManager().SetTimer(RespawnTimer, Delegate, RespawnTime - CurrentTime, false);
+	}
 }
 
 void ALakayaBasePlayerState::OnRep_CharacterName()
@@ -624,13 +618,12 @@ void ALakayaBasePlayerState::SetAliveState(bool AliveState)
 	if (bRecentAliveState == AliveState) return;
 	bRecentAliveState = AliveState;
 
-	AbilitySystem->SetLooseGameplayTagCount(DeathTag, bRecentAliveState ? 0 : 1);
+	if (AbilitySystem) AbilitySystem->SetLooseGameplayTagCount(DeathTag, bRecentAliveState ? 0 : 1);
 
-	if(!bRecentAliveState) ResetKillStreak();
-	
+	if (!bRecentAliveState) ResetKillStreak();
+
 	if (CharacterWidget) CharacterWidget->SetAliveState(bRecentAliveState);
 	OnAliveStateChanged.Broadcast(AliveState);
-	
 }
 
 void ALakayaBasePlayerState::RespawnTimerCallback(FRespawnTimerDelegate Callback)

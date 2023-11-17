@@ -4,12 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
-#include "UI/CharacterWidget.h"
-#include "GameFramework/PlayerState.h"
-#include "Occupation/Team.h"
-#include "EOS/EOSGameInstance.h"
 #include "Character/Ability/Attribute/LakayaAttributeSet.h"
+#include "EOS/EOSGameInstance.h"
+#include "GameFramework/PlayerState.h"
 #include "Interface/TeamObjectInterface.h"
+#include "Occupation/Team.h"
+#include "UI/CharacterWidget.h"
 #include "LakayaBasePlayerState.generated.h"
 
 
@@ -49,6 +49,7 @@ public:
 	virtual void OnRep_PlayerName() override;
 	virtual void SetOwner(AActor* NewOwner) override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void CopyProperties(APlayerState* PlayerState) override;
@@ -61,8 +62,8 @@ public:
 
 	virtual ETeam GetTeam() const override { return Team; }
 
-	virtual const ULakayaAttributeSet* GetLakayaAttributeSet() {return LakayaAttributeSet;}
-	
+	virtual const ULakayaAttributeSet* GetLakayaAttributeSet() { return LakayaAttributeSet; }
+
 	UFUNCTION(BlueprintGetter)
 	const ETeam& BP_GetTeam() const { return Team; }
 
@@ -70,7 +71,7 @@ public:
 	const class UDynamicCrossHairWidget* GetDynamicCrossHairWidget() const;
 
 	UAimOccupyProgressWidget* GetAimOccupyProgressWidget() const { return AimOccupyProgressWidget; }
-	
+
 	/**
 	 * @brief 플레이어가 예약된 시간에 부활하도록 합니다.
 	 * @param ReservedRespawnTime 목표 부활 시간입니다. 이 시간에 플레이어가 부활합니다.
@@ -136,7 +137,7 @@ public:
 	virtual void IncreaseKillCount();
 
 	virtual void OnKillOtherPlayer();
-	
+
 	// 플레이어의 연속처치 횟수를 늘립니다.
 	virtual void IncreaseKillStreak();
 
@@ -238,16 +239,22 @@ private:
 	// UFUNCTION(Client, Reliable)
 	UFUNCTION(BlueprintCallable)
 	void NoticePlayerHit(const FName& CauserName, const FVector& CauserLocation);
-	
+
 	UFUNCTION(BlueprintCallable)
 	void NoticeNormalAttackHitEnemy();
-	
+
 	void RespawnTimerCallback(FRespawnTimerDelegate Callback);
 
 	void BindAllSkillToWidget();
 
-	void OnActiveGameplayEffectAddedDelegateToSelfCallback(UAbilitySystemComponent* ArgAbilitySystemComponent, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle);
-	void OnGameplayEffectAppliedDelegateToTargetCallback(UAbilitySystemComponent* ArgAbilitySystemComponent, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle);
+	void OnActiveGameplayEffectAddedDelegateToSelfCallback(UAbilitySystemComponent* ArgAbilitySystemComponent,
+	                                                       const FGameplayEffectSpec& SpecApplied,
+	                                                       FActiveGameplayEffectHandle ActiveHandle);
+
+	void OnGameplayEffectAppliedDelegateToTargetCallback(UAbilitySystemComponent* ArgAbilitySystemComponent,
+	                                                     const FGameplayEffectSpec& SpecApplied,
+	                                                     FActiveGameplayEffectHandle ActiveHandle);
+
 	void OnChangeSkillStackAttribute(const FOnAttributeChangeData& NewValue);
 
 	void OnRespawnTimeChangedCallback(const float& ReservedRespawnTime);
@@ -297,14 +304,14 @@ public:
 
 	//리스폰 타임이 변경될 때 호출됩니다. 매개변수로 부활하는 시간을 받습니다. 음수면 부활하지 못하는 것이고 현재 시간보다 작으면 이미 부활한 것입니다.
 	FOnRespawnTimeChangeSignature OnRespawnTimeChanged;
-	
+
 protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGamePlayHealthWidget> HealthWidgetClass;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class USkillWidget> SkillWidgetClass;
-	
+
 	// 게임중에 표시되는 피격 레이더 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UDirectionalDamageIndicator> DirectionDamageIndicatorClass;
@@ -317,7 +324,7 @@ protected:
 
 	//서버에서만 유효합니다 이펙트의 레벨을 변경할 때 사용합니다
 	FActiveGameplayEffectHandle KillStreakBuffEffectHandle;
-	
+
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Health, Transient)
 	float Health;
@@ -362,7 +369,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> OnKillOtherCharacterEffect;
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> StatRegenEffect;
 
@@ -371,9 +378,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	FGameplayTag DeathTag;
-	
+
 	UPROPERTY()
 	TObjectPtr<const ULakayaAttributeSet> LakayaAttributeSet;
+
+	UPROPERTY(Transient)
+	TObjectPtr<class UCharacterWidget> CharacterWidget;
 
 	FTimerHandle RespawnTimer;
 	FTimerHandle CurrentCaptureTimer;
@@ -382,12 +392,9 @@ private:
 	bool bIsAlly;
 
 	uint8 bIsPawnSettedOnce : 1;
-	
+
 	TWeakObjectPtr<UGamePlayHealthWidget> HealthWidget;
-	// TObjectPtr<USkillWidget> SkillWidget;
 	TObjectPtr<UDirectionalDamageIndicator> DirectionDamageIndicatorWidget;
 	TWeakObjectPtr<UGamePlayPortraitWidget> PortraitWidget;
-	UPROPERTY()
-	TObjectPtr<class UCharacterWidget> CharacterWidget;
-	TObjectPtr<class UAimOccupyProgressWidget> AimOccupyProgressWidget;
+	TObjectPtr<UAimOccupyProgressWidget> AimOccupyProgressWidget;
 };
