@@ -81,7 +81,7 @@ protected:
 	virtual void SetTabMinimapVisibility(const bool& Visible);
 private:
 	void SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,
-	                      std::function<void()> Callback, TWeakObjectPtr<class UGameTimeWidget> TimeWidget);
+	                      const FTimerDelegate& Callback, TWeakObjectPtr<class UGameTimeWidget> TimeWidget);
 
 public:
 	virtual bool HasMatchStarted() const override;

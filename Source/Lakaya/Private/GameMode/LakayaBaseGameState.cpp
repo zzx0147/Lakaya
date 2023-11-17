@@ -153,7 +153,7 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 	if (CharacterSelectTimeWidget.IsValid())
 		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
-	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, [this]()
+	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, FTimerDelegate::CreateWeakLambda(this,[this]()
 	{
 		if (!HasAuthority()) return;
 
@@ -161,7 +161,7 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 		{
 			AuthGameMode->StartIntro();
 		}
-	}, CharacterSelectTimeWidget);
+	}), CharacterSelectTimeWidget);
 	
 
 }
@@ -210,16 +210,16 @@ void ALakayaBaseGameState::HandleMatchHasStarted()
 		InGameTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 	
-	SetupTimerWidget(MatchWaitToStartTimer, MatchWaitDuration, MatchWaitEndingTime, [this]
+	SetupTimerWidget(MatchWaitToStartTimer, MatchWaitDuration, MatchWaitEndingTime,FTimerDelegate::CreateWeakLambda(this, [this]
 	{
-		SetupTimerWidget(EndingTimer, MatchDuration, MatchEndingTime, [this]
+		SetupTimerWidget(EndingTimer, MatchDuration, MatchEndingTime,FTimerDelegate::CreateWeakLambda(this, [this]
 		{
 			if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<AGameMode>())
 			{
 				AuthGameMode->EndMatch();
 			}
-		}, InGameTimeWidget);
-	}, InGameTimeWidget);
+		}), InGameTimeWidget);
+	}), InGameTimeWidget);
 	
 }
 
@@ -354,7 +354,7 @@ bool ALakayaBaseGameState::TrySendMatchResultData()
 }
 
 void ALakayaBaseGameState::SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,
-                                            std::function<void(void)> Callback,
+                                            const FTimerDelegate& Callback,
                                             TWeakObjectPtr<UGameTimeWidget> TimeWidget)
 {
 	GetWorldTimerManager().SetTimer(TimerHandle, Callback, Duration, false);

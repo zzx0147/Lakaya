@@ -50,7 +50,7 @@ void UWaziAnimInstance::OnWeaponAbilityPerformTimeNotified(const float& Time)
 		WeaponSkillAnimSpeed = WeaponAbilityPerformDelayAnimDuration / RemainTime;
 		bIsWeaponSkill = true;
 
-		GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, [this]
+		GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, FTimerDelegate::CreateWeakLambda(this, [this]
 		{
 			if (this == nullptr) return;
 
@@ -58,13 +58,13 @@ void UWaziAnimInstance::OnWeaponAbilityPerformTimeNotified(const float& Time)
 			WeaponSkillAnimSpeed = 1.f;
 
 			// 전체 애니메이션이 종료되는 시간에 bIsWeaponSkill을 false로 바꿔줍니다.
-			GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, [this]
+			GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, FTimerDelegate::CreateWeakLambda(this, [this]
 			{
 				if (this == nullptr) return;
 
 				bIsWeaponSkill = false;
-			}, WeaponAbilityLateAnimDuration, false);
-		}, RemainTime, false);
+			}), WeaponAbilityLateAnimDuration, false);
+		}), RemainTime, false);
 	}
 	// 투사체 투척 시간을 이미 지나버렸지만 아직 전체 애니메이션 시간을 지나지는 않은 경우 애니메이션을 빨리 재생시킵니다.
 	else if (-RemainTime < WeaponAbilityLateAnimDuration)
@@ -75,11 +75,11 @@ void UWaziAnimInstance::OnWeaponAbilityPerformTimeNotified(const float& Time)
 		// 전체 애니메이션 시간 / 남은시간을 통해 애니메이션 배속을 특정합니다.
 		WeaponSkillAnimSpeed = (WeaponAbilityPerformDelayAnimDuration + WeaponAbilityLateAnimDuration) / RemainTime;
 		bIsWeaponSkill = true;
-		GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, [this]
+		GetWorld()->GetTimerManager().SetTimer(WeaponAbilityAnimTimer, FTimerDelegate::CreateWeakLambda(this, [this]
 		{
 			if (this == nullptr) return;
 			bIsWeaponSkill = false;
-		}, RemainTime, false);
+		}), RemainTime, false);
 	}
 }
 
@@ -87,20 +87,20 @@ void UWaziAnimInstance::OnOverdriveStartTimeNotified(const float& Time)
 {
 	const auto RemainTime = Time - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 	bIsPrimarySkill = RemainTime > 0.f;
-	GetWorld()->GetTimerManager().SetTimer(PrimaryAbilityTimer, [this]
+	GetWorld()->GetTimerManager().SetTimer(PrimaryAbilityTimer, FTimerDelegate::CreateWeakLambda(this, [this]
 	{
 		if (this == nullptr) return;
 		bIsPrimarySkill = false;
-	}, RemainTime, false);
+	}), RemainTime, false);
 }
 
 void UWaziAnimInstance::OnClairvoyanceStartTimeNotified(const float& Time)
 {
 	const auto RemainTime = Time - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 	bIsSecondarySkill = RemainTime > 0.f;
-	GetWorld()->GetTimerManager().SetTimer(SecondaryAbilityTimer, [this]
+	GetWorld()->GetTimerManager().SetTimer(SecondaryAbilityTimer, FTimerDelegate::CreateWeakLambda(this, [this]
 	{
 		if (this == nullptr) return;
 		bIsSecondarySkill = false;
-	}, RemainTime, false);
+	}), RemainTime, false);
 }

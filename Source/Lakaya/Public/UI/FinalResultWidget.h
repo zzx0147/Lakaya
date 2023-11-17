@@ -57,7 +57,7 @@ private:
 	TObjectPtr<UFinalResultElement> FinalResultElement2;
 	
 	UPROPERTY(meta=(BindWidget))
-	TObjectPtr<UFinalResultElement> FinalResultElement3;
+TObjectPtr<UFinalResultElement> FinalResultElement3;
 
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<class UButton> ExitButton;

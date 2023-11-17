@@ -126,8 +126,10 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 			UE_LOG(LogTemp, Warning, TEXT("State or Image is null."));
 			return;
 		}
+
+		//플레이어 스테이트가 존재한다고 해서 반드시 폰도 존재하는 것은 아닙니다. 폰도 존재하는지 검사할 필요가 있습니다
+		if(!IsValid(State->GetPawn())) return;
 		
-		if(!State->GetPawn()) return;
 		FVector2D PlayerPosition(State->GetPawn()->GetActorLocation().X, State->GetPawn()->GetActorLocation().Y);
 		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
 
@@ -195,6 +197,9 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 		const auto& Image = Player.Value;
 
 		if (!State.IsValid() || !Image.IsValid()) return;
+
+		//플레이어 스테이트가 존재한다고 해서 반드시 폰도 존재하는 것은 아닙니다. 폰도 존재하는지 검사할 필요가 있습니다
+		if(!IsValid(State->GetPawn())) return;
 		
 		// 아군들을 검사해서 아군(나 자신 포함)이 죽어있다면, 죽음 아이콘으로 변경해줍니다.
 		if (const auto PlayerCharacter = State->GetPawn())
@@ -213,6 +218,8 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
                                                        const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
 {
 #pragma region NullCheck
+	if(!NewPlayerState.IsValid() || !IsValid(NewPlayerState->GetPawn())) return;
+	
 	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !OccupationPlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
