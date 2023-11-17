@@ -58,8 +58,8 @@ void UIndividualTabMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALak
 	{
 		NewPlayerImage->SetBrushFromTexture(DeathIcon);
 
-		if (NewPlayerState == GetOwningPlayerState())
-			NewPlayerImage->SetRenderTransformAngle(90.0f);
+		// if (NewPlayerState == GetOwningPlayerState())
+		NewPlayerImage->SetRenderTransformAngle(0.0f);
 	}
 	else
 	{
