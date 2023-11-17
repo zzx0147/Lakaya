@@ -18,13 +18,11 @@ void UIndividualOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 	UpdatePlayerPosition(MyPlayerState);
 
 	// 미니맵 상에 표시되는 적들의 아이콘 회전 값을 업데이트 해줍니다.
-	for (const auto& Player : IndividualPlayersByMinimap)
-	{
+	for (const auto Player : IndividualPlayersByMinimap)
 		UpdateEnemyImageRotation(Player.Value);
-	}
 	
 	// 만약 와지(본인)이 궁극기를 사용중이라면, 적들의 위치를 업데이트 합니다.
-	if (const auto& IndividualGameState = Cast<AAIIndividualGameState>(GetWorld()->GetGameState()))
+	if (const auto IndividualGameState = Cast<AAIIndividualGameState>(GetWorld()->GetGameState()))
 	{
 		if (IndividualGameState->GetbIsClairvoyanceActivated())
 		{
@@ -33,31 +31,24 @@ void UIndividualOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 		}
 	}
 	
-	for (const auto& Player : IndividualPlayersByMinimap)
+	for (const auto Player : IndividualPlayersByMinimap)
 	{
-		const auto& PlayerState = Player.Key;
-		const auto& PlayerImage = Player.Value;
-		
+		const auto PlayerState = Player.Key;
+		const auto PlayerImage = Player.Value;
+		if (!PlayerState.IsValid() || !PlayerImage.IsValid()) return;
 		ALakayaBaseCharacter* MyPlayerCharacter = Cast<ALakayaBaseCharacter>(MyPlayerState->GetPawn());
+		if (!IsValid(MyPlayerCharacter)) return;
 		if (MyPlayerCharacter->IsEnemyVisibleInCamera(ETeam::Individual, PlayerState, PlayerImage))
-		{
-			// 해당 적이 나의 시야에 있다면 해당 적을 미니맵에 업데이트 해줍니다.
 			UpdatePlayerPosition(PlayerState);
-		}
 	}
 }
 
 UImage* UIndividualOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, const bool bMyPlayer)
 {
-	UE_LOG(LogTemp, Warning, TEXT("CreatePlayerImage"));
 	UImage* PlayerImage = NewObject<UImage>(this);
 	UCanvasPanelSlot* PanelSlot = ParentPanel->AddChildToCanvas(PlayerImage);
 
-	if (PanelSlot == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PanelSlot is null."));
-		return nullptr;
-	}
+	if (PanelSlot == nullptr) return nullptr;
 
 	PanelSlot->SetAlignment(IconAlignment);
 	PanelSlot->SetSize(IconSize);
@@ -75,28 +66,15 @@ UImage* UIndividualOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam,
 		PlayerImage->SetBrushFromTexture(IndividualEnemyIcon);
 		return PlayerImage;
 	}
-	
-	return nullptr;
 }
 
 void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState)
 {
-#pragma region Null Check
-	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState;
-		!IndividualPlayersByMinimap.Contains(WeakNewPlayerState))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("WeakNewPlayerState is not in IndividualPlayersByMinimap."));
-		return;
-	}
+	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !IndividualPlayersByMinimap.Contains(WeakNewPlayerState)) return;
 	
-	const auto& NewPlayerImage = IndividualPlayersByMinimap[NewPlayerState];
-	if (NewPlayerImage == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NewPlayerImage is null."));
-		return;
-	}
-#pragma endregion
-
+	const auto NewPlayerImage = IndividualPlayersByMinimap[NewPlayerState];
+	if (!NewPlayerImage.IsValid()) return;
+	if (!IsValid(NewPlayerState->GetPawn())) return;
 	const FVector2D PlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
 	const FVector2D NewPlayerPosition = const_cast<UIndividualOverlayMinimapWidget*>(this)->ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
 
@@ -107,7 +85,7 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 
 	if (!IsValid(LakayaBaseCharacter)) return;
 	
-	if (!LakayaBaseCharacter->GetAliveState())
+	if (LakayaBaseCharacter->GetAliveState() == false)
 	{
 		NewPlayerImage->SetBrushFromTexture(DeathIcon);
 
@@ -116,9 +94,8 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 			const auto PlayerCharacter = NewPlayerState->GetPlayerController()->GetCharacter();
 			if(!IsValid(PlayerCharacter)) return;
 			const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
-			if (!IsValid(LakayaCharacter)) return;
+			if (!IsValid(LakayaCharacter) || !IsValid(LakayaCharacter->GetCamera())) return;
 			const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
-
 			NewPlayerImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
 			UpdateMinimapImagePositionAndRotation(*NewPlayerState, NewPlayerPosition);
 		}
@@ -142,7 +119,7 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 			const auto PlayerCharacter = NewPlayerState->GetPlayerController()->GetCharacter();
 			if (!IsValid(PlayerCharacter)) return;
 			const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
-			if (!IsValid(LakayaCharacter)) return;
+			if (!IsValid(LakayaCharacter) || !IsValid(LakayaCharacter->GetCamera())) return;
 			const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
 
 			NewPlayerImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
@@ -158,10 +135,10 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 
 void UIndividualOverlayMinimapWidget::SetEnemyImage()
 {
-	for (const auto& Enemy : IndividualPlayersByMinimap)
+	for (const auto Enemy : IndividualPlayersByMinimap)
 	{
-		const auto& EnemyImage = Enemy.Value;
-		if (EnemyImage.IsValid()) return;
+		const auto EnemyImage = Enemy.Value;
+		if (!EnemyImage.IsValid()) return;
 		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
 	}
 
@@ -169,11 +146,10 @@ void UIndividualOverlayMinimapWidget::SetEnemyImage()
 
 	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
 	{
-		for (const auto& Enemy : IndividualPlayersByMinimap)
+		for (const auto Enemy : IndividualPlayersByMinimap)
 		{
-			const auto& EnemyImage = Enemy.Value;
-			if (EnemyImage.IsValid()) return;
-			EnemyImage->SetVisibility(ESlateVisibility::Hidden);
+			if (const auto EnemyImage = Enemy.Value; EnemyImage.IsValid())
+				EnemyImage->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}), 3.0f, false);
 }
