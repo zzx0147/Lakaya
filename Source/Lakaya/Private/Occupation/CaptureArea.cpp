@@ -398,11 +398,13 @@ void ACaptureArea::IncreaseCaptureProgress()
 				}
 			}
 
-			if (OccupationGameState->CheckCaptureAreaCount(CurrentTeam))
-			{
-				OccupationGameState->SetTeamToUpdate(CurrentTeam);
-				OccupationGameState->StartScoreUpdate(CurrentTeam, 1.0f);
-			}
+			// if (OccupationGameState->CheckCaptureAreaCount(CurrentTeam))
+			// {
+			// 	OccupationGameState->SetTeamToUpdate(CurrentTeam);
+			// 	OccupationGameState->StartScoreUpdate(CurrentTeam, 1.0f);
+			// }
+
+			OccupationGameState->CheckCaptureAreaCount(CurrentTeam);
 		}
 
 		GetWorld()->GetTimerManager().SetTimer(MaterialUpdateTimerHandle, this, &ACaptureArea::UpdateMaterialValue, 0.1f, true);
