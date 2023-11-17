@@ -350,6 +350,8 @@ FPlayerStats ALakayaBasePlayerState::GetPlayerStats()
 
 float ALakayaBasePlayerState::GetServerTime() const
 {
+	if(!IsValid(GetWorld()) || !IsValid(GetWorld()->GetGameState())) return -1.0f;
+
 	return GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 }
 
