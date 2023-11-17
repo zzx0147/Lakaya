@@ -19,13 +19,13 @@ void UOccupationTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float 
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	if (!UpdateMinimap) return;
+	if (UpdateMinimap == false) return;
 
 	// 자신의 팀(자기 자신 포함)위치를 업데이트 해줍니다.
 	UpdatePlayerPosition(CurrentTeam);
 
 	// 같은 와지가 궁극기를 사용중이라면, 적들의 위치를 업데이트 해줍니다.
-	if (const auto& GameState = Cast<AOccupationGameState>(GetWorld()->GetGameState()))
+	if (const auto GameState = Cast<AOccupationGameState>(GetWorld()->GetGameState()))
 	{
 		if (GameState->GetbIsClairvoyanceActivated())
 		{
@@ -35,27 +35,23 @@ void UOccupationTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float 
 	}
 
 	// 적들의 정보를 가져와서, 팀원(자기 자신 포함)들의 시야에서 적이 보인다면, 미니맵에 표시해줍니다.
-	for (const auto& Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
+	for (const auto Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
 	{
 		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
 		const TWeakObjectPtr<UImage> EnemyImage = Enemy.Value;
 
-		if (!EnemyState.IsValid() || !EnemyImage.IsValid())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("EnemyState or EnemyImage is null."));
-			return;
-		}
+		if (!EnemyState.IsValid() || !EnemyImage.IsValid()) return;
 		
-		for (const auto& Ally : OccupationPlayersByMinimap[CurrentTeam])
+		for (const auto Ally : OccupationPlayersByMinimap[CurrentTeam])
 		{
-			const auto& AllyState = Ally.Key;
+			const auto AllyState = Ally.Key;
 			if (!AllyState.IsValid()) return;
 			ALakayaBaseCharacter* AllyCharacter = Cast<ALakayaBaseCharacter>(AllyState->GetPawn());
 			if (!IsValid(AllyCharacter)) return;
+
+			// TODO
 			if (AllyCharacter->IsEnemyVisibleInCamera(CurrentEnemyTeam, EnemyState, EnemyImage))
-			{
 				AllyCharacter->Server_OnEnemySpotted(CurrentEnemyTeam, EnemyState.Get());
-			}
 		}
 	}
 }
@@ -65,16 +61,12 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 	Super::UpdatePlayerPosition(Team);
 
 	// 자기 자신을 검사해서, 자신의 위치를 토대로 미니맵을 회전과 위치를 업데이트시켜줍니다.
-	for (auto& Player : OccupationPlayersByMinimap[Team])
+	for (auto Player : OccupationPlayersByMinimap[Team])
 	{
-		const auto& State = Player.Key;
-		const auto& Image = Player.Value;
+		const auto State = Player.Key;
+		const auto Image = Player.Value;
 
-		if (!State.IsValid() || !Image.IsValid())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("State or Image is null."));
-			return;
-		}
+		if (!State.IsValid() || !Image.IsValid() || !IsValid(State->GetPawn())) return;
 		
 		FVector2D PlayerPosition(State->GetPawn()->GetActorLocation().X, State->GetPawn()->GetActorLocation().Y);
 		const FVector2D NewPlayerPosition = ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
@@ -87,7 +79,7 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 			const auto PlayerCharacter = State->GetPlayerController()->GetCharacter();
 			if (!IsValid(PlayerCharacter)) return;
 			const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
-			if (!IsValid(LakayaCharacter)) return;
+			if (!IsValid(LakayaCharacter) || !IsValid(LakayaCharacter->GetCamera())) return;
 			const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
 			
 			Image->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
@@ -101,10 +93,8 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 			if (const ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter))
 			{
 				// 검사한 아군(나 자신 포함)이 죽었다면 텍스처를 DeathIcon으로 변경해줍니다.
-				if (!LakayaCharacter->GetAliveState())
-				{
+				if (LakayaCharacter->GetAliveState() == false)
 					Image->SetBrushFromTexture(DeathIcon);
-				}
 				else 
 				{
 					switch (Team)
@@ -125,8 +115,7 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 						}
 						Image->SetBrushFromTexture(ProIcon);
 						break;
-					default:
-						break;
+					default: break;
 					}
 				}
 			}
@@ -134,16 +123,12 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 	}
 
 	// 적들의 사망 여부를 체크해서 사망했다면, 사망 아이콘으로 변경해줍니다.
-	for (auto& Player : OccupationPlayersByMinimap[CurrentEnemyTeam])
+	for (const auto Player : OccupationPlayersByMinimap[CurrentEnemyTeam])
 	{
-		const auto& State = Player.Key;
-		const auto& Image = Player.Value;
+		const auto State = Player.Key;
+		const auto Image = Player.Value;
 
-		if (!State.IsValid() || !Image.IsValid())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("State or Image is null."));
-			return;
-		}
+		if (!State.IsValid() || !Image.IsValid()) return;
 		
 		// 아군들을 검사해서 아군(나 자신 포함)이 죽어있다면, 죽음 아이콘으로 변경해줍니다.
 		if (const auto PlayerCharacter = State->GetPawn())
@@ -151,10 +136,8 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 			if (const ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter))
 			{
 				// 검사한 적이 죽었다면 텍스처를 DeathIcon으로 변경해줍니다.
-				if (!LakayaCharacter->GetAliveState())
-				{
+				if (LakayaCharacter->GetAliveState() == false)
 					Image->SetBrushFromTexture(DeathIcon);
-				}
 			}
 		}
 	}
@@ -162,7 +145,6 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 
 void UOccupationTabMinimapWidget::SetEnemyImage()
 {
-	UE_LOG(LogTemp, Warning, TEXT("OccupationTabSetEnemyImage"));
 	for (const auto Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
 	{
 		const auto EnemyImage = Enemy.Value;
@@ -185,25 +167,12 @@ void UOccupationTabMinimapWidget::SetEnemyImage()
 void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
                                                        const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState) 
 {
-#pragma region NullCheck
-
 	if(!NewPlayerState.IsValid()) return;
 	if(!IsValid(NewPlayerState->GetPawn())) return;
-	
-	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !OccupationPlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
-		return;
-	}
-
-	const auto& EnemyImage = OccupationPlayersByMinimap[NewTeam][NewPlayerState].Get();
-	if (EnemyImage == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
-		return;
-	}
-	
-#pragma endregion
+	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !OccupationPlayersByMinimap[NewTeam].Contains(WeakNewPlayerState)) return;
+	const auto EnemyImage = OccupationPlayersByMinimap[NewTeam][NewPlayerState].Get();
+	if (!IsValid(EnemyImage)) return;
+	if (!IsValid(NewPlayerState->GetPawn())) return;
 	const FVector2D PlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
 	const FVector2D NewPlayerPosition = const_cast<UOccupationTabMinimapWidget*>(this)->ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
 
@@ -219,13 +188,9 @@ void UOccupationTabMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 		EnemyImage->SetVisibility(ESlateVisibility::Visible);
 
 	if (NewTeam == ETeam::Anti)
-	{
 		EnemyImage->SetBrushFromTexture(AntiIcon);
-	}
 	else
-	{
 		EnemyImage->SetBrushFromTexture(ProIcon);
-	}
 
 	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 
@@ -238,11 +203,7 @@ UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 	UCanvasPanelSlot* PanelSlot = ParentPanel->AddChildToCanvas(PlayerImage);
 	const auto Team = NewTeam;
 
-	if (!IsValid(PlayerImage) || !IsValid(PanelSlot))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PanelSlot or PlayerImage is null."));
-		return nullptr;
-	}
+	if (!IsValid(PlayerImage) || !IsValid(PanelSlot)) return nullptr;
 	
 	PanelSlot->SetAlignment(IconAlignment);
 	PanelSlot->SetSize(IconSize);
@@ -258,7 +219,7 @@ UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 			PlayerImage->SetBrushFromTexture(AntiOwnIcon);
 			return PlayerImage;
 		}
-		else if (Team == ETeam::Pro)
+		if (Team == ETeam::Pro)
 		{
 			PlayerImage->SetBrushFromTexture(ProOwnIcon);
 			return PlayerImage;
@@ -272,6 +233,5 @@ UImage* UOccupationTabMinimapWidget::CreatePlayerImage(const ETeam& NewTeam, con
 		return PlayerImage;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("OccupationTabMinimapWidget_PlayerImage is null."));
 	return nullptr;
 }
