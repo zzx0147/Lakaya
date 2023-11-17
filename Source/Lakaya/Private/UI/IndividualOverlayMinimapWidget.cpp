@@ -75,8 +75,6 @@ UImage* UIndividualOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam,
 		PlayerImage->SetBrushFromTexture(IndividualEnemyIcon);
 		return PlayerImage;
 	}
-	
-	return nullptr;
 }
 
 void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<ALakayaBasePlayerState>& NewPlayerState)
@@ -167,7 +165,7 @@ void UIndividualOverlayMinimapWidget::SetEnemyImage()
 
 	FTimerHandle OldTimerHandle;
 
-	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, [this]()
+	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
 	{
 		for (const auto Enemy : IndividualPlayersByMinimap)
 		{
@@ -175,5 +173,5 @@ void UIndividualOverlayMinimapWidget::SetEnemyImage()
 			if (EnemyImage.IsValid()) return;
 			EnemyImage->SetVisibility(ESlateVisibility::Hidden);
 		}
-	}, 3.0f, false);
+	}), 3.0f, false);
 }
