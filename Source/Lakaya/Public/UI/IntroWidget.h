@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "CommonActivatableWidget.h"
 #include "IntroWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LAKAYA_API UIntroWidget : public UUserWidget
+class LAKAYA_API UIntroWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
 
