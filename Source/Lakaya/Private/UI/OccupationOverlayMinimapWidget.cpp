@@ -62,7 +62,8 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 			if (!IsValid(AllyCharacter)) return;
 			
 			if (AllyCharacter->IsEnemyVisibleInCamera(CurrentEnemyTeam, EnemyState, EnemyImage))
-				AllyCharacter->Server_OnEnemySpotted(CurrentEnemyTeam, EnemyState.Get());
+				UpdatePlayerPosition(CurrentEnemyTeam, EnemyState);
+			// AllyCharacter->Server_OnEnemySpotted(CurrentEnemyTeam, EnemyState.Get());
 		}
 	}
 }

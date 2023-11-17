@@ -36,10 +36,7 @@ void UIndividualTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float 
 		ALakayaBaseCharacter* MyPlayerCharacter = Cast<ALakayaBaseCharacter>(MyPlayerState->GetPawn());
 		if (!IsValid(MyPlayerCharacter)) return;
 		if (MyPlayerCharacter->IsEnemyVisibleInCamera(ETeam::Individual, PlayerState, PlayerImage))
-		{
-			// 해당 적이 나의 시야에 있다면 해당 적을 미니맵에 업데이트 해줍니다.
 			UpdatePlayerPosition(PlayerState);
-		}
 	}
 }
 
