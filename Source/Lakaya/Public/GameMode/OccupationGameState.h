@@ -100,20 +100,6 @@ public:
 	 */
 	void UpdateImage(const uint8 NewCaptureId, UTexture2D* NewTexture) const;
 	
-	void OnEnemySpotted(const ETeam& EnemyTeam,
-		ALakayaBasePlayerState* Enemy);
-
-	void OnEnemyLost(const ETeam& EnemyTeam,
-		ALakayaBasePlayerState* Enemy);
-	
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_UpdateMinimap(const ETeam& EnemyTeam,
-	ALakayaBasePlayerState* Enemy);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiCast_HideFromMinimap(const ETeam& EnemyTeam,
-		ALakayaBasePlayerState* Enemy);
-
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TArray<ALakayaBasePlayerState*> GetAllyArray(UObject* TeamObject) const;
 

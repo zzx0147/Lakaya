@@ -1,8 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CommonActivatableWidget.h"
 #include "EnhancedInputComponent.h"
-#include "Blueprint/UserWidget.h"
 #include "GameLobbyCharacterSelectWidget.generated.h"
 
 //선택한 캐릭터가 변경되었을 때 작동하는 델리게이트, 해당 캐릭터의 이름을 넘겨줍니다
@@ -11,7 +11,7 @@ DECLARE_EVENT_OneParam(UGameLobbyCharacterSelectWidget, OnChangeSelectedCharacte
 
 //캐릭터 선택 UI 클래스
 UCLASS()
-class LAKAYA_API UGameLobbyCharacterSelectWidget : public UUserWidget
+class LAKAYA_API UGameLobbyCharacterSelectWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
 

@@ -229,31 +229,14 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
                                                   const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState,
                                                   const TWeakObjectPtr<UImage> EnemyImage)
 {
-#pragma region NullCheck
-	if (!EnemyState.IsValid())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("State is not valid."));
-		return false;
-	}
-
+	if (!EnemyState.IsValid()) return false;
 	const APawn* EnemyPawn = EnemyState->GetPawn();
-	if (!EnemyPawn)
-	{
-		// UE_LOG(LogTemp, Warning, TEXT("EnemyPawn is null."));
-		return false;
-	}
+	if (!IsValid(EnemyPawn)) return false;
 
-	//TODO 월드가 유효하지 않은 때가 있습니다. 임시로 Null체크를 집어넣었습니다. 추후 수정 요망
 	if (!GetWorld()) return false;
-	// TODO : GetFristPlayerController를 가져오는 것이 맞는지 확인해야 합니다.
 	const APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 
-	if (!PlayerController || !PlayerController->PlayerCameraManager)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayerController or PlayerCameraManager is null."));
-		return false;
-	}
-#pragma endregion
+	if (!IsValid(PlayerController) || !IsValid(PlayerController->PlayerCameraManager)) return false;
 
 	// 시야에 적이 들어왔는지 확인합니다.
 	{
@@ -261,22 +244,13 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 		const FVector EnemyLocation = EnemyPawn->GetActorLocation();
 		const FVector DirectionToTarget = (EnemyLocation - CameraLocation).GetSafeNormal();
 		const FVector LookDirection = PlayerController->GetControlRotation().Vector();
-
-		// 시야각을 설정합하여, 라디언으로 변환합니다.
-		// const float AngleThreshold = FMath::DegreesToRadians(90.0f);
 		const float AngleThreshold = FMath::DegreesToRadians(45.0f);
+		const float AngleBetweenVectors = FMath::Acos(FVector::DotProduct(DirectionToTarget.GetSafeNormal(), LookDirection));
 
-		// 두 벡터 사이의 각도를 계산합니다.
-		const float AngleBetweenVectors = FMath::Acos(
-			FVector::DotProduct(DirectionToTarget.GetSafeNormal(), LookDirection));
-
-		// 계산된 각도와 임계값을 비교하여, 시야 내에 있는지 판단합니다.
 		bool bIsVisible = AngleBetweenVectors <= AngleThreshold;
-
 		if (!bIsVisible) return false;
 
 		FHitResult HitResult;
-
 		if (bool bIsObstructed = UKismetSystemLibrary::LineTraceSingle(
 			this,
 			CameraLocation,
@@ -291,58 +265,7 @@ bool ALakayaBaseCharacter::IsEnemyVisibleInCamera(const ETeam& EnemyTeam,
 			bIsVisible = false;
 		}
 
-		Server_SetEnemyVisibility(EnemyState.Get(), bIsVisible);
-
 		return bIsVisible;
-	}
-}
-
-void ALakayaBaseCharacter::Server_OnEnemySpotted_Implementation(const ETeam& EnemyTeam,
-                                                                ALakayaBasePlayerState* EnemyState)
-{
-	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
-	{
-		OccupationGameState->OnEnemySpotted(EnemyTeam, EnemyState);
-	}
-}
-
-void ALakayaBaseCharacter::Server_OnEnemyLost_Implementation(const ETeam& EnemyTeam, ALakayaBasePlayerState* EnemyState)
-{
-	if (AOccupationGameState* OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>())
-	{
-		OccupationGameState->OnEnemyLost(EnemyTeam, EnemyState);
-	}
-}
-
-void ALakayaBaseCharacter::Server_SetEnemyVisibility_Implementation(
-	ALakayaBasePlayerState* EnemyState, bool bIsVisible)
-{
-	if (bIsVisible && !VisibleEnemies.Contains(EnemyState))
-	{
-		VisibleEnemies.Emplace(EnemyState);
-		UE_LOG(LogTemp, Warning, TEXT("Server_Emplace"));
-		Client_SetEnemyVisibility(EnemyState, true);
-	}
-	else if (!bIsVisible && VisibleEnemies.Contains(EnemyState))
-	{
-		VisibleEnemies.Remove(EnemyState);
-		UE_LOG(LogTemp, Warning, TEXT("Server_Remove"));
-		Client_SetEnemyVisibility(EnemyState, false);
-	}
-}
-
-void ALakayaBaseCharacter::Client_SetEnemyVisibility_Implementation(
-	ALakayaBasePlayerState* EnemyState, bool bIsVisible)
-{
-	if (bIsVisible)
-	{
-		VisibleEnemies.Emplace(EnemyState);
-		UE_LOG(LogTemp, Warning, TEXT("Client_Emplace"));
-	}
-	else
-	{
-		VisibleEnemies.Remove(EnemyState);
-		UE_LOG(LogTemp, Warning, TEXT("Client_Remove"));
 	}
 }
 
@@ -488,5 +411,4 @@ void ALakayaBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(ALakayaBaseCharacter, PlayerRotation, COND_SkipOwner);
-	// DOREPLIFETIME(ALakayaBaseCharacter, bIsSpottedByTeammate);
 }

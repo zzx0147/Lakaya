@@ -23,6 +23,7 @@ public:
 	void InitOccupyExpressElementWidget(const uint8& CaptureId) const;
 	
 	FORCEINLINE TObjectPtr<UImage>& GetInImage() { return InImage; }
+	FORCEINLINE TObjectPtr<UImage>& GetOutImage() { return OutImage;}
 	FORCEINLINE TObjectPtr<URadialProgressBar>& GetProgressBar() { return ProgressBar; }
 	FORCEINLINE TObjectPtr<UTexture2D>& GetAntiAreaNoneImage() { return AntiAreaNoneImage; }
 	FORCEINLINE TObjectPtr<UTexture2D>& GetCenterAreaNoneImage() { return CenterAreaNoneImage; }
@@ -35,11 +36,29 @@ public:
 	FORCEINLINE TObjectPtr<UTexture2D>& GetProAreaProImage() { return ProAreaProImage; }
 	FORCEINLINE TObjectPtr<UTexture2D>& GetAntiFillImage() { return AntiFillImage; }
 	FORCEINLINE TObjectPtr<UTexture2D>& GetProFillImage() { return ProFillImage; }
-	
+
+	FORCEINLINE TObjectPtr<UTexture2D>& GetFloatingOutImage() { return FloatingOutImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetFloatingAntiAreaNoneImage() { return FloatingAntiAreaNoneImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetFloatingAntiAreaAntiImage() { return FloatingAntiAreaAntiImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetFloatingAntiAreaProImage() { return FloatingAntiAreaProImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetFloatingCenterAreaNoneImage() { return FloatingCenterAreaNoneImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetFloatingCenterAreaAntiImage() { return FloatingCenterAreaAntiImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetFloatingCenterAreaProImage() { return FloatingCenterAreaProImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetFloatingProAreaNoneImage() { return FloatingProAreaNoneImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetFloatingProAreaAntiImage() { return FloatingProAreaAntiImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetFloatingProAreaProImage() { return FloatingProAreaProImage; }
+
+	FORCEINLINE TObjectPtr<UTexture2D>& GetFloatingAntiFillImage() { return FloatingAntiFillImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetFloatingProFillImage() { return FloatingProFillImage; }
+	FORCEINLINE TObjectPtr<UTexture2D>& GetFloatingEmptyImage() { return FloatingEmptyImage; }
 private:
+#pragma region OccupyExpressElementWidget
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> InImage;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> OutImage;
+	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<URadialProgressBar> ProgressBar;
 
@@ -75,4 +94,46 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture2D> ProFillImage;
+#pragma endregion
+
+#pragma region Floating 관련 OccupyExpressElementWidget
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> FloatingOutImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> FloatingAntiAreaNoneImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> FloatingAntiAreaAntiImage;
+
+	UPROPERTY(EditAnywhere)
+    TObjectPtr<UTexture2D> FloatingAntiAreaProImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> FloatingCenterAreaNoneImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> FloatingCenterAreaAntiImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> FloatingCenterAreaProImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> FloatingProAreaNoneImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> FloatingProAreaAntiImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> FloatingProAreaProImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> FloatingAntiFillImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> FloatingProFillImage;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> FloatingEmptyImage;
+#pragma endregion
 };

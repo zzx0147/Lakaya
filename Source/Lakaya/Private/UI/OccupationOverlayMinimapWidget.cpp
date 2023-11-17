@@ -21,22 +21,20 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
 	// 게임 중이 아닐 때에는 미니맵을 업데이트 해주지 않습니다.
-	if (!UpdateMinimap) return;
+	if (UpdateMinimap == false) return;
 
 	// 자신의 팀(자기 자신 포함)위치를 업데이트 해줍니다.
 	UpdatePlayerPosition(CurrentTeam);
 
 	// 미니맵 상에 표시되는 적들의 아이콘 회전 값을 업데이트 해줍니다.
-	for (const auto& Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
-	{
+	for (const auto Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
 		UpdateEnemyImageRotation(Enemy.Value);
-	}
 
 	// 미니맵 상에 표시되는 점령 구역 아이콘의 회전 값을 업데이트 해줍니다.
 	UpdateAreaImageRotation();
 
 	// 같은 와지가 궁극기를 사용중이라면, 적들의 위치를 업데이트 해줍니다.
-	if (const auto& GameState = Cast<AOccupationGameState>(GetWorld()->GetGameState()))
+	if (const auto GameState = Cast<AOccupationGameState>(GetWorld()->GetGameState()))
 	{
 		if (GameState->GetbIsClairvoyanceActivated())
 		{
@@ -46,16 +44,16 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 	}
 
 	// 적들의 정보를 가져와서, 팀원(자기 자신 포함)들의 시야에서 적이 보인다면, 미니맵에 표시해줍니다.
-	for (const auto& Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
+	for (const auto Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
 	{
 		const TWeakObjectPtr<ALakayaBasePlayerState> EnemyState = Enemy.Key;
 		const TWeakObjectPtr<UImage> EnemyImage = Enemy.Value;
 
 		if (!EnemyState.IsValid() || !EnemyImage.IsValid()) return;
 
-		for (const auto& Ally : OccupationPlayersByMinimap[CurrentTeam])
+		for (const auto Ally : OccupationPlayersByMinimap[CurrentTeam])
 		{
-			const auto& AllyState = Ally.Key;
+			auto AllyState = Ally.Key;
 
 			if (!AllyState.IsValid()) return;
 			
@@ -64,9 +62,8 @@ void UOccupationOverlayMinimapWidget::NativeTick(const FGeometry& MyGeometry, fl
 			if (!IsValid(AllyCharacter)) return;
 			
 			if (AllyCharacter->IsEnemyVisibleInCamera(CurrentEnemyTeam, EnemyState, EnemyImage))
-			{
-				AllyCharacter->Server_OnEnemySpotted(CurrentEnemyTeam, EnemyState.Get());
-			}
+				UpdatePlayerPosition(CurrentEnemyTeam, EnemyState);
+			// AllyCharacter->Server_OnEnemySpotted(CurrentEnemyTeam, EnemyState.Get());
 		}
 	}
 }
@@ -96,7 +93,7 @@ UImage* UOccupationOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam,
 			PlayerImage->SetBrushFromTexture(AntiOwnIcon);
 			return PlayerImage;
 		}
-		else if (NewTeam == ETeam::Pro)
+		if (NewTeam == ETeam::Pro)
 		{
 			PlayerImage->SetBrushFromTexture(ProOwnIcon);
 			return PlayerImage;
@@ -116,16 +113,12 @@ UImage* UOccupationOverlayMinimapWidget::CreatePlayerImage(const ETeam& NewTeam,
 void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 {
 	// 자기 자신을 검사해서, 자신의 위치를 토대로 미니맵을 회전과 위치를 업데이트시켜줍니다.
-	for (auto& Player : OccupationPlayersByMinimap[Team])
+	for (const auto Player : OccupationPlayersByMinimap[Team])
 	{
-		const auto& State = Player.Key;
-		const auto& Image = Player.Value;
+		const auto State = Player.Key;
+		const auto Image = Player.Value;
 
-		if (!State.IsValid() || !Image.IsValid())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("State or Image is null."));
-			return;
-		}
+		if (!State.IsValid() || !Image.IsValid()) return;
 
 		//플레이어 스테이트가 존재한다고 해서 반드시 폰도 존재하는 것은 아닙니다. 폰도 존재하는지 검사할 필요가 있습니다
 		if(!IsValid(State->GetPawn())) return;
@@ -144,7 +137,7 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 			const auto PlayerCharacter = State->GetPlayerController()->GetCharacter();
 			if (!IsValid(PlayerCharacter)) return;
 			const auto LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter);
-			if (!IsValid(LakayaCharacter)) return;
+			if (!IsValid(LakayaCharacter) || !IsValid(LakayaCharacter->GetCamera())) return;
 			const FRotator PlayerRotation = LakayaCharacter->GetCamera()->GetComponentRotation();
 			
 			Image->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
@@ -158,7 +151,7 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 			if (const ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter))
 			{
 				// 검사한 아군(나 자신 포함)이 죽었다면 텍스처를 DeathIcon으로 변경해줍니다.
-				if (!LakayaCharacter->GetAliveState())
+				if (LakayaCharacter->GetAliveState() == false)
 				{
 					Image->SetBrushFromTexture(DeathIcon);
 				}
@@ -191,10 +184,10 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 	}
 
 	// 적 사망 검사
-	for (auto& Player : OccupationPlayersByMinimap[CurrentEnemyTeam])
+	for (const auto Player : OccupationPlayersByMinimap[CurrentEnemyTeam])
 	{
-		const auto& State = Player.Key;
-		const auto& Image = Player.Value;
+		const auto State = Player.Key;
+		const auto Image = Player.Value;
 
 		if (!State.IsValid() || !Image.IsValid()) return;
 
@@ -207,7 +200,7 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 			if (const ALakayaBaseCharacter* LakayaCharacter = Cast<ALakayaBaseCharacter>(PlayerCharacter))
 			{
 				// 검사한 아군(나 자신 포함)이 죽었다면 텍스처를 DeathIcon으로 변경해줍니다.
-				if (!LakayaCharacter->GetAliveState())
+				if (LakayaCharacter->GetAliveState() == false)
 					Image->SetBrushFromTexture(DeathIcon);
 			}
 		}
@@ -217,22 +210,10 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& Team)
 void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
                                                        const TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState)
 {
-#pragma region NullCheck
 	if(!NewPlayerState.IsValid() || !IsValid(NewPlayerState->GetPawn())) return;
-	
-	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !OccupationPlayersByMinimap[NewTeam].Contains(WeakNewPlayerState))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NewPlayerState is not in PlayersByMinimap."));
-		return;
-	}
-	
-	const auto& EnemyImage = OccupationPlayersByMinimap[NewTeam][NewPlayerState].Get();
-	if (EnemyImage == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("EnemyImage is null."));
-		return;
-	}
-#pragma endregion
+	if (const TWeakObjectPtr<ALakayaBasePlayerState> WeakNewPlayerState = NewPlayerState; !OccupationPlayersByMinimap[NewTeam].Contains(WeakNewPlayerState)) return;
+	const auto EnemyImage = OccupationPlayersByMinimap[NewTeam][NewPlayerState].Get();
+	if (!IsValid(EnemyImage)) return;
 	
 	const FVector2D PlayerPosition(NewPlayerState->GetPawn()->GetActorLocation().X, NewPlayerState->GetPawn()->GetActorLocation().Y);
 	const FVector2D NewPlayerPosition = const_cast<UOccupationOverlayMinimapWidget*>(this)->ConvertWorldToMiniMapCoordinates(PlayerPosition, MinimapSize);
@@ -249,13 +230,9 @@ void UOccupationOverlayMinimapWidget::UpdatePlayerPosition(const ETeam& NewTeam,
 		EnemyImage->SetVisibility(ESlateVisibility::Visible);
 
 	if (NewTeam == ETeam::Anti)
-	{
 		EnemyImage->SetBrushFromTexture(AntiIcon);
-	}
 	else
-	{
 		EnemyImage->SetBrushFromTexture(ProIcon);
-	}
 	
 	EnemyImage->SetRenderTranslation(NewPlayerPosition + WidgetOffset);
 
@@ -266,12 +243,7 @@ void UOccupationOverlayMinimapWidget::UpdateAreaImageRotation()
 {
 	if(const auto PlayerCharacter = Cast<ALakayaBaseCharacter>(GetOwningPlayerPawn()))
 	{
-		if (!IsValid(AntiAreaImage) || !IsValid(CenterAreaImage) || !IsValid(ProAreaImage))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("AntiAreaImage or CenterAreaImage or ProAreaImage is null."))
-			return;
-		}
-
+		if (!IsValid(AntiAreaImage) || !IsValid(CenterAreaImage) || !IsValid(ProAreaImage)) return;
 		if (!IsValid(PlayerCharacter->GetCamera())) return;
 		
 		const FRotator PlayerRotation = PlayerCharacter->GetCamera()->GetComponentRotation();
@@ -280,4 +252,25 @@ void UOccupationOverlayMinimapWidget::UpdateAreaImageRotation()
 		CenterAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
 		ProAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
 	}
+}
+
+void UOccupationOverlayMinimapWidget::SetEnemyImage()
+{
+	for (const auto Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
+	{
+		const auto EnemyImage = Enemy.Value;
+		if (!EnemyImage.IsValid()) return;
+		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
+	}
+
+	FTimerHandle OldTimerHandle;
+	
+	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
+	{
+		for (const auto Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
+		{
+			if (const auto EnemyImage = Enemy.Value; EnemyImage.IsValid())
+				EnemyImage->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}), 3.0f, false);
 }

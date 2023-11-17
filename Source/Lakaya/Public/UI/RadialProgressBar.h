@@ -21,7 +21,7 @@ public:
 	void SetFillImage(const TObjectPtr<UTexture2D> NewImage) const;
 	
 	FORCEINLINE TObjectPtr<UTexture2D>& GetFillImage() { return FillImage; }
-
+	FORCEINLINE TObjectPtr<UTexture2D>& GetEmptyImage() { return EmptyImage; }
 protected:
 	virtual void NativePreConstruct() override;
 

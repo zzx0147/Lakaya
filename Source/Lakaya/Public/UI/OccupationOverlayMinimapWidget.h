@@ -26,4 +26,5 @@ protected:
 
 private:
 	virtual void UpdateAreaImageRotation() override;
+	virtual void SetEnemyImage() override;
 };
