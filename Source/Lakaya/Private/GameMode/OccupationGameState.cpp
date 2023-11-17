@@ -592,9 +592,7 @@ void AOccupationGameState::UpdateTeamScoreTick()
 void AOccupationGameState::StartScoreUpdate(const ETeam& Team, const float UpdateDelay)
 {
 	if (GetWorldTimerManager().IsTimerActive(TimerHandle_UpdateScoreTimer))
-	{
 		StopScoreUpdate();
-	}
 
 	TeamToUpdate = Team;
 	
@@ -756,8 +754,8 @@ TArray<ALakayaBasePlayerState*> AOccupationGameState::GetEnemyArray(UObject* Tea
 
 bool AOccupationGameState::CheckCaptureAreaCount(const ETeam& Team)
 {
-	const int AntiCaptureAreaCount = GetAntiTeamCaptureAreaCount();
-	const int ProCaptureAreaCount = GetProTeamCaptureAreaCount();
+	const uint8 AntiCaptureAreaCount = AntiTeamCaptureAreaCount;
+	const uint8 ProCaptureAreaCount = ProTeamCaptureAreaCount;
 
 	if (AntiCaptureAreaCount == ProCaptureAreaCount)
 	{
@@ -765,9 +763,7 @@ bool AOccupationGameState::CheckCaptureAreaCount(const ETeam& Team)
 		return false;
 	}
 
-	return (Team == ETeam::Anti)
-		       ? (AntiCaptureAreaCount > ProCaptureAreaCount)
-		       : (AntiCaptureAreaCount < ProCaptureAreaCount);
+	return (Team == ETeam::Anti) ? (AntiCaptureAreaCount > ProCaptureAreaCount) : (AntiCaptureAreaCount < ProCaptureAreaCount);
 }
 
 void AOccupationGameState::SetupPlayerStateOnLocal(ALakayaBasePlayerState* PlayerState)

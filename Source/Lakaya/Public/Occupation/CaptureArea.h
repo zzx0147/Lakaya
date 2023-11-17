@@ -21,11 +21,6 @@ class LAKAYA_API ACaptureArea : public AActor
 public:	
 	ACaptureArea();
 
-	FORCEINLINE const uint8& GetCaptureAreaID() const { return CaptureAreaId; }
-	FORCEINLINE const ECaptureAreaState& GetCurrentCaptureAreaState() const { return CurrentCaptureAreaState; }
-	FORCEINLINE const ETeam& GetCurrentCaptureAreaTeam() const { return CurrentCaptureAreaTeam; }
-	
-	FORCEINLINE void SetCurrentCaptureAreaState(const ECaptureAreaState& NewState) { CurrentCaptureAreaState = NewState; }
 	FORCEINLINE void SetCurrentCaptureAreaTeam(const ETeam& NewTeam);
 
 protected:
