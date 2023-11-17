@@ -158,9 +158,9 @@ void UIndividualOverlayMinimapWidget::UpdatePlayerPosition(const TWeakObjectPtr<
 
 void UIndividualOverlayMinimapWidget::SetEnemyImage()
 {
-	for (const auto& Enemy : IndividualPlayersByMinimap)
+	for (const auto Enemy : IndividualPlayersByMinimap)
 	{
-		const auto& EnemyImage = Enemy.Value;
+		const auto EnemyImage = Enemy.Value;
 		if (EnemyImage.IsValid()) return;
 		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
 	}
@@ -169,9 +169,9 @@ void UIndividualOverlayMinimapWidget::SetEnemyImage()
 
 	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, [this]()
 	{
-		for (const auto& Enemy : IndividualPlayersByMinimap)
+		for (const auto Enemy : IndividualPlayersByMinimap)
 		{
-			const auto& EnemyImage = Enemy.Value;
+			const auto EnemyImage = Enemy.Value;
 			if (EnemyImage.IsValid()) return;
 			EnemyImage->SetVisibility(ESlateVisibility::Hidden);
 		}

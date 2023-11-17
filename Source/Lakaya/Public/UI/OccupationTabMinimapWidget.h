@@ -26,4 +26,7 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	virtual void UpdatePlayerPosition(const ETeam& Team) override;
+
+private:
+	virtual void SetEnemyImage() override;
 };

@@ -86,7 +86,7 @@ protected:
 
 	virtual void SetQuestionImage(TWeakObjectPtr<ALakayaBasePlayerState> NewPlayerState);
 
-	virtual void SetEnemyImage();
+	virtual void SetEnemyImage() {};
 protected:
 	// 위젯의 최상단 CanvasPanel
 	UPROPERTY()

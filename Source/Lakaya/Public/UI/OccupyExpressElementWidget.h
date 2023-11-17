@@ -75,4 +75,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture2D> ProFillImage;
+
+	
 };

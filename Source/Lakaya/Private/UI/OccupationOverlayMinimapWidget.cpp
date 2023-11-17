@@ -274,3 +274,25 @@ void UOccupationOverlayMinimapWidget::UpdateAreaImageRotation()
 		ProAreaImage->SetRenderTransformAngle(PlayerRotation.Yaw + 90.0f);
 	}
 }
+
+void UOccupationOverlayMinimapWidget::SetEnemyImage()
+{
+	for (const auto Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
+	{
+		const auto EnemyImage = Enemy.Value;
+		if (EnemyImage.IsValid()) return;
+		EnemyImage->SetBrushFromTexture(QuestionMarkIcon);
+	}
+
+	FTimerHandle OldTimerHandle;
+	
+	GetWorld()->GetTimerManager().SetTimer(OldTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
+	{
+		for (const auto Enemy : OccupationPlayersByMinimap[CurrentEnemyTeam])
+		{
+			const auto EnemyImage = Enemy.Value;
+			if (EnemyImage.IsValid()) return;
+			EnemyImage->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}), 3.0f, false);
+}
