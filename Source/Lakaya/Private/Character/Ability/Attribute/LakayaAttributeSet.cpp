@@ -32,7 +32,18 @@ void ULakayaAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 			AActor* Causer = EffectContext.GetEffectCauser();
 
 			const auto VictimPlayerState = Cast<APlayerState>(GetOwningActor());
-			const auto InstigatorPlayerState = Cast<APlayerState>(Instigator);
+			auto InstigatorPlayerState = Cast<APlayerState>(Instigator);
+
+			if(!InstigatorPlayerState) //인스티게이터가 플레이어 스테이트가 아닌 경우(드론이 죽였을 경우)
+			{
+				auto InstigatorPlayerPawn = Instigator->GetInstigator();
+
+				if(InstigatorPlayerPawn)
+				{
+					InstigatorPlayerState = Cast<APlayerState>(InstigatorPlayerPawn->GetPlayerState());
+				}
+			}
+			
 			if (VictimPlayerState != nullptr && InstigatorPlayerState != nullptr)
 			{
 				OnPlayerKill.Broadcast(VictimPlayerState->GetOwningController(),
