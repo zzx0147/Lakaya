@@ -49,9 +49,9 @@ void UOccupationTabMinimapWidget::NativeTick(const FGeometry& MyGeometry, float 
 			ALakayaBaseCharacter* AllyCharacter = Cast<ALakayaBaseCharacter>(AllyState->GetPawn());
 			if (!IsValid(AllyCharacter)) return;
 
-			// TODO
 			if (AllyCharacter->IsEnemyVisibleInCamera(CurrentEnemyTeam, EnemyState, EnemyImage))
-				AllyCharacter->Server_OnEnemySpotted(CurrentEnemyTeam, EnemyState.Get());
+					UpdatePlayerPosition(CurrentEnemyTeam, EnemyState);
+			// AllyCharacter->Server_OnEnemySpotted(CurrentEnemyTeam, EnemyState.Get());
 		}
 	}
 }
