@@ -196,11 +196,9 @@ void ACaptureArea::UpdateCaptureAreaState(const ECaptureAreaState& CaptureAreaSt
 		{
 			for (const auto Player : OccupyingPlayerList[Team])
 			{
-				if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled() &&
-					IsValid(Player->GetAimOccupyProgressWidget()))
-				{
+				if (!IsValid(Player) || !IsValid(Player->GetPawn()) || !IsValid(Player->GetAimOccupyProgressWidget())) return;
+				if (Player->GetPawn()->IsLocallyControlled())
 					Player->GetAimOccupyProgressWidget()->OccupyCrash();
-				}
 			}
 		}
 	}
@@ -322,7 +320,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 	if (CaptureAreaState == ECaptureAreaState::AntiProgress || CaptureAreaState == ECaptureAreaState::ProProgress)
 	{
 		const ETeam CurrentTeam = (CaptureAreaState == ECaptureAreaState::AntiProgress) ? ETeam::Anti : ETeam::Pro;
-		float&TeamCaptureProgress = (CurrentTeam == ETeam::Anti) ? AntiTeamCaptureProgress : ProTeamCaptureProgress;
+		float& TeamCaptureProgress = (CurrentTeam == ETeam::Anti) ? AntiTeamCaptureProgress : ProTeamCaptureProgress;
 		TeamCaptureProgress += CaptureSpeed * 0.1f;
 		
 		const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
@@ -353,7 +351,8 @@ void ACaptureArea::IncreaseCaptureProgress()
 		
 		if(IsValid(OccupyExpressElementWidget) && IsValid(OccupyExpressElementWidget->GetProgressBar()))
 			OccupyExpressElementWidget->GetProgressBar()->SetPercent(TeamCaptureProgress / 4.0f);
-		
+
+		// Capture Success.
 		if (TeamCaptureProgress >= 4.0f)
 		{
 			if (const ETeam OtherTeam = (CurrentTeam == ETeam::Anti) ? ETeam::Pro : ETeam::Anti; CurrentCaptureAreaTeam == OtherTeam)
@@ -369,6 +368,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 
 			OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress);
 
+			// 점령구역에 제일 먼저 들어와 있던 인원에게 점수를 부여합니다.
 			for (const auto Player : OccupyingPlayerList[CurrentTeam])
 			{
 				if (Player == OccupyingPlayerList[CurrentTeam][0])
