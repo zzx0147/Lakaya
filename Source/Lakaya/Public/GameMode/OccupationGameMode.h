@@ -18,11 +18,8 @@ public:
 	virtual void OnPlayerKilled(AController* VictimController, AController* InstigatorController, AActor* DamageCauser) override;
 
 protected:
-	// 함수에 대한 설명은 부모클래스에 설명되어 있음.
 	virtual void BeginPlay() override;
 	virtual void HandleMatchHasEnded() override;
-	virtual void RegisterPlayer(AController* NewPlayer) override;
-	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchIsSelectCharacter() override;
 	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 
@@ -31,5 +28,6 @@ private:
 	void AssignTeams(const uint8 PlayerCount) const;
 	
 private:
+	UPROPERTY()
 	TObjectPtr<AOccupationGameState> OccupationGameState;
 };
