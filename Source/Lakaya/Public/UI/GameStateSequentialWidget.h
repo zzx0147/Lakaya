@@ -55,7 +55,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SwitchToInGameOverlay();
 
+protected:
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnActiveWidgetChanged(UCommonActivatableWidget* Widget);
+
+	virtual void NativeOnInitialized() override;
+
 private:
+	void OnActiveWidgetIndexChanged(UWidget* Widget, int32 Index);
+
 	UPROPERTY(BlueprintGetter="GetWidgetSwitcher", meta=(BindWidget))
 	TObjectPtr<UCommonActivatableWidgetSwitcher> WidgetSwitcher;
 

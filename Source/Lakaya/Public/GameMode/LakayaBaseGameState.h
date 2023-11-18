@@ -1,12 +1,12 @@
 #pragma once
 
-#include <functional>
-
 #include "CoreMinimal.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "GameFramework/GameState.h"
 #include "LakayaBaseGameState.generated.h"
 
+class UIntroWidget;
+class ULoadingWidget;
 class UGameStateSequentialWidget;
 DECLARE_EVENT_OneParam(ALakayaBaseGameState, OnChangePlayerNumberSignature, const uint8&)
 
@@ -60,7 +60,7 @@ public:
 	void NotifyPlayerKilled(APlayerState* VictimPlayer, APlayerState* InstigatorPlayer, AActor* DamageCauser);
 
 protected:
-	virtual class UGameLobbyCharacterSelectWidget* GetCharacterSelectWidget();
+	virtual class UGameLobbyCharacterSelectWidget* GetOrCreateCharacterSelectWidget();
 
 	UFUNCTION()
 	virtual void OnRep_MatchEndingTime();
@@ -83,6 +83,8 @@ protected:
 private:
 	void SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,
 	                      const FTimerDelegate& Callback, TWeakObjectPtr<class UGameTimeWidget> TimeWidget);
+
+	UGameStateSequentialWidget* GetOrCreateSequentialWidget();
 
 public:
 	virtual bool HasMatchStarted() const override;
@@ -140,22 +142,10 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGameScoreBoardWidget> ScoreBoardClass;
 
-	// 다른 플레이어의 접속을 대기할 때 표시되는 위젯의 클래스를 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class ULoadingWidget> LoadingWidgetClass;
-
-	// 캐릭터 선택창 위젯의 클래스를 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UGameLobbyCharacterSelectWidget> CharacterSelectWidgetClass;
-
 	// 게임중에 표시되는 타이머 위젯 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UGameTimeWidget> InGameTimerWidgetClass;
 
-	// 캐릭터 선택 중에 표시되는 타이머 위젯 클래스를 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UGameTimeWidget> CharacterSelectTimerWidgetClass;
-	
 	// 에임에 있는 플레이어의 이름을 표기해주는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UPlayerNameDisplayerWidget> PlayerNameDisplayerWidgetClass;
@@ -175,12 +165,6 @@ protected:
 	// 인게임 도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UTabMinimapWidget> TabMinimapWidgetClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UIntroWidget> IntroWidgetClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UCommonActivatableWidget> InGameWidgetStackClass;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameStateSequentialWidget> SequentialWidgetClass;
