@@ -39,7 +39,8 @@ void ACaptureArea::BeginPlay()
 		DynamicMaterial->SetScalarParameterValue(TEXT("0=NonOccupation_1=Occupation"), 0);
 		DynamicMaterial->SetScalarParameterValue(TEXT("0=Anti_1=Pro"), 0);
 	}
-	else UE_LOG(LogTemp, Warning, TEXT("DynamicMaterial is null."));
+	else
+		UE_LOG(LogTemp, Warning, TEXT("DynamicMaterial is null."));
 	
 	switch (CaptureAreaId)
 	{
@@ -218,7 +219,7 @@ void ACaptureArea::CaptureAreaHandleAntiTeam(const ECaptureAreaState& CaptureAre
 		ECaptureAreaState::Opposite
 		|| CaptureAreaState == ECaptureAreaState::AntiExtortion || CaptureAreaState == ECaptureAreaState::AntiProgress)
 	{
-		SetCurrentCaptureAreaState(ECaptureAreaState::AntiProgress);
+		CurrentCaptureAreaState = ECaptureAreaState::AntiProgress;
 		if (GetWorld()->GetTimerManager().IsTimerActive(CaptureProgressTimerHandle))
 			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 
@@ -226,10 +227,10 @@ void ACaptureArea::CaptureAreaHandleAntiTeam(const ECaptureAreaState& CaptureAre
 	}
 	else if (CaptureAreaState == ECaptureAreaState::ProExtortion)
 	{
-		SetCurrentCaptureAreaState(ECaptureAreaState::Anti);
+		CurrentCaptureAreaState = ECaptureAreaState::Anti;
 		if (GetWorld()->GetTimerManager().IsTimerActive(CaptureProgressTimerHandle))
-
 			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
+		
 		GetWorld()->GetTimerManager().SetTimer(CaptureProgressTimerHandle, this, &ACaptureArea::DecreaseCaptureProgress, 0.1f, true);
 	}
 }
@@ -241,7 +242,7 @@ void ACaptureArea::CaptureAreaHandleProTeam(const ECaptureAreaState& CaptureArea
 		== ECaptureAreaState::Opposite
 		|| CaptureAreaState == ECaptureAreaState::ProExtortion || CaptureAreaState == ECaptureAreaState::ProProgress)
 	{
-		SetCurrentCaptureAreaState(ECaptureAreaState::ProProgress);
+		CurrentCaptureAreaState = ECaptureAreaState::ProProgress;
 		if (GetWorld()->GetTimerManager().IsTimerActive(CaptureProgressTimerHandle))
 			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 
@@ -249,7 +250,7 @@ void ACaptureArea::CaptureAreaHandleProTeam(const ECaptureAreaState& CaptureArea
 	}
 	else if (CaptureAreaState == ECaptureAreaState::AntiExtortion)
 	{
-		SetCurrentCaptureAreaState(ECaptureAreaState::Pro);
+		CurrentCaptureAreaState = ECaptureAreaState::Pro;
 		if (GetWorld()->GetTimerManager().IsTimerActive(CaptureProgressTimerHandle))
 			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 
@@ -265,13 +266,13 @@ void ACaptureArea::CaptureAreaHandleOpposite(const ECaptureAreaState& CaptureAre
 		switch (CurrentCaptureAreaTeam)
 		{
 		case ETeam::None:
-			SetCurrentCaptureAreaState(ECaptureAreaState::Opposite);
+			CurrentCaptureAreaState = ECaptureAreaState::Opposite;
 			break;
 		case ETeam::Anti:
-			SetCurrentCaptureAreaState(ECaptureAreaState::ProExtortion);
+			CurrentCaptureAreaState = ECaptureAreaState::ProExtortion;
 			break;
 		case ETeam::Pro:
-			SetCurrentCaptureAreaState(ECaptureAreaState::AntiExtortion);
+			CurrentCaptureAreaState = ECaptureAreaState::AntiExtortion;
 			break;
 		default:
 			break;
@@ -281,12 +282,12 @@ void ACaptureArea::CaptureAreaHandleOpposite(const ECaptureAreaState& CaptureAre
 	}
 	else if (CaptureAreaState == ECaptureAreaState::Anti)
 	{
-		SetCurrentCaptureAreaState(ECaptureAreaState::ProExtortion);
+		CurrentCaptureAreaState = ECaptureAreaState::ProExtortion;
 		GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 	}
 	else if (CaptureAreaState == ECaptureAreaState::Pro)
 	{
-		SetCurrentCaptureAreaState(ECaptureAreaState::AntiExtortion);
+		CurrentCaptureAreaState = ECaptureAreaState::AntiExtortion;
 		GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 	}
 }
@@ -295,17 +296,17 @@ void ACaptureArea::CaptureAreaHandleOpposite(const ECaptureAreaState& CaptureAre
 void ACaptureArea::CaptureAreaHandleNone(const ECaptureAreaState& CaptureAreaState)
 {
 	if (CaptureAreaState == ECaptureAreaState::Anti || CaptureAreaState == ECaptureAreaState::ProExtortion)
-		SetCurrentCaptureAreaState(ECaptureAreaState::Anti);
+		CurrentCaptureAreaState = ECaptureAreaState::Anti;
 	else if (CaptureAreaState == ECaptureAreaState::Pro || CaptureAreaState == ECaptureAreaState::AntiExtortion)
-		SetCurrentCaptureAreaState(ECaptureAreaState::Pro);
+		CurrentCaptureAreaState = ECaptureAreaState::Pro;
 	else if (CaptureAreaState == ECaptureAreaState::ProProgress || CaptureAreaState == ECaptureAreaState::AntiProgress)
 	{
-		if (GetCurrentCaptureAreaTeam() == ETeam::None)
-			SetCurrentCaptureAreaState(ECaptureAreaState::None);
-		else if (GetCurrentCaptureAreaTeam() == ETeam::Anti)
-			SetCurrentCaptureAreaState(ECaptureAreaState::Anti);
-		else if (GetCurrentCaptureAreaTeam() == ETeam::Pro)
-			SetCurrentCaptureAreaState(ECaptureAreaState::Pro);
+		if (CurrentCaptureAreaTeam == ETeam::None)
+			CurrentCaptureAreaState = ECaptureAreaState::None;
+		else if (CurrentCaptureAreaTeam == ETeam::Anti)
+			CurrentCaptureAreaState = ECaptureAreaState::Anti;
+		else if (CurrentCaptureAreaTeam == ETeam::Pro)
+			CurrentCaptureAreaState = ECaptureAreaState::Pro;
 	}
 
 	if (GetWorld()->GetTimerManager().IsTimerActive(CaptureProgressTimerHandle))
@@ -316,7 +317,7 @@ void ACaptureArea::CaptureAreaHandleNone(const ECaptureAreaState& CaptureAreaSta
 
 void ACaptureArea::IncreaseCaptureProgress()
 {
-	const ECaptureAreaState CaptureAreaState = GetCurrentCaptureAreaState();
+	const ECaptureAreaState CaptureAreaState = CurrentCaptureAreaState;
 
 	if (CaptureAreaState == ECaptureAreaState::AntiProgress || CaptureAreaState == ECaptureAreaState::ProProgress)
 	{
@@ -331,10 +332,8 @@ void ACaptureArea::IncreaseCaptureProgress()
 		{
 			if(!IsValid(Player->GetPawn())) continue;
 			
-			if (const auto PlayerController = Player->GetPawn()->IsLocallyControlled() && IsValid(Player->GetAimOccupyProgressWidget()))
-			{
+			if (Player->GetPawn()->IsLocallyControlled() && IsValid(Player->GetAimOccupyProgressWidget()))
 				Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(Player->GetTeam() ,TeamCaptureProgress, true);
-			}
 		}
 
 		OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress);
@@ -353,21 +352,19 @@ void ACaptureArea::IncreaseCaptureProgress()
 		}
 		
 		if(IsValid(OccupyExpressElementWidget) && IsValid(OccupyExpressElementWidget->GetProgressBar()))
-		{
 			OccupyExpressElementWidget->GetProgressBar()->SetPercent(TeamCaptureProgress / 4.0f);
-		}
 		
 		if (TeamCaptureProgress >= 4.0f)
 		{
-			if (const ETeam OtherTeam = (CurrentTeam == ETeam::Anti) ? ETeam::Pro : ETeam::Anti; GetCurrentCaptureAreaTeam() == OtherTeam)
+			if (const ETeam OtherTeam = (CurrentTeam == ETeam::Anti) ? ETeam::Pro : ETeam::Anti; CurrentCaptureAreaTeam == OtherTeam)
 				OccupationGameState->SubCaptureAreaCount(OtherTeam);
 
 			OccupationGameState->AddCaptureAreaCount(CurrentTeam, CaptureAreaId);
 			OccupationGameState->SetCaptureOwnerChange(CaptureAreaId, CurrentTeam);
-			SetCurrentCaptureAreaState((CurrentTeam == ETeam::Anti) ? ECaptureAreaState::Anti : ECaptureAreaState::Pro);
+			CurrentCaptureAreaState = (CurrentTeam == ETeam::Anti) ? ECaptureAreaState::Anti : ECaptureAreaState::Pro;
 			TeamCaptureProgress = 0.0f;
 			SetCurrentCaptureAreaTeam(CurrentTeam);
-			CaptureAreaTeamOnChangedSignature.Broadcast(GetCurrentCaptureAreaTeam());
+			CaptureAreaTeamOnChangedSignature.Broadcast(CurrentCaptureAreaTeam);
 			GetWorld()->GetTimerManager().ClearTimer(CaptureProgressTimerHandle);
 
 			OccupationGameState->UpdateExpressWidget(CurrentTeam, CaptureAreaId, TeamCaptureProgress);
@@ -420,15 +417,11 @@ void ACaptureArea::DecreaseCaptureProgress()
 	const auto OccupationGameState = GetWorld()->GetGameState<AOccupationGameState>();
 	if (!IsValid(OccupationGameState)) return;
 
-	const float TeamCaptureProgress = AntiTeamCaptureProgress > ProTeamCaptureProgress
-		                                  ? AntiTeamCaptureProgress
-		                                  : ProTeamCaptureProgress;
+	const float TeamCaptureProgress = AntiTeamCaptureProgress > ProTeamCaptureProgress ? AntiTeamCaptureProgress : ProTeamCaptureProgress;
 	const ETeam CurrentTeam = AntiTeamCaptureProgress > ProTeamCaptureProgress ? ETeam::Anti : ETeam::Pro;
 	
 	if(IsValid(OccupyExpressElementWidget) && IsValid(OccupyExpressElementWidget->GetProgressBar()))
-	{
 		OccupyExpressElementWidget->GetProgressBar()->SetPercent(TeamCaptureProgress / 4.0f);
-	}
 	
 	for (const auto Player : OccupyingPlayerList[CurrentTeam])
 	{
