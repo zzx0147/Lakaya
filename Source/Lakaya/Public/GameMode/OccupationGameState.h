@@ -35,7 +35,7 @@ public:
 	* @param Team 점령에 성공한 팀입니다.
 	*/
 	UFUNCTION()
-	bool CheckCaptureAreaCount(const ETeam& Team);
+	void CheckCaptureAreaCount(const ETeam& Team);
 
 	/**
 	 * @brief 팀에서 점령중인 점령구역 개수를 추가해주는 함수입니다.
@@ -106,33 +106,15 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TArray<ALakayaBasePlayerState*> GetEnemyArray(UObject* TeamObject) const;
 	
-	FORCEINLINE const float& GetTeamScore(const ETeam& Team) const { return (Team == ETeam::Anti) ? AntiTeamScore : ProTeamScore; }
-	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }
 	FORCEINLINE const ETeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
-	FORCEINLINE bool GetSomeoneReachedMaxScore() const { return AntiTeamScore >= MaxScore || ProTeamScore >= MaxScore; }
-	FORCEINLINE const uint8& GetAntiTeamCaptureAreaCount() const { return AntiTeamCaptureAreaCount; }
-	FORCEINLINE const uint8& GetProTeamCaptureAreaCount() const { return ProTeamCaptureAreaCount; }
-	FORCEINLINE const ETeam& GetTeamToUpdate() const { return TeamToUpdate; }
 	
-	FORCEINLINE void SetAntiTeamCaptureAreaCount(const uint8& NewCaptureCount) { AntiTeamCaptureAreaCount = NewCaptureCount; }
-	FORCEINLINE void SetProTeamCaptureAreaCount(const uint8& NewCaptureCount) { ProTeamCaptureAreaCount = NewCaptureCount; }
 	FORCEINLINE void SetTeamToUpdate(const ETeam& NewTeam) { TeamToUpdate = NewTeam; }
 	
 protected:
 	virtual void BeginPlay() override;
 	
-	/**
-	 * @brief 게임 내에서 매치가 시작했을 때, 호출되는 함수입니다.
-	 */
 	virtual void HandleMatchHasStarted() override;
-
-	/**
-	 * @brief 게임 내에서 인트로가 시작했을 때, 호출되는 함수입니다.
-	 */
 	virtual void HandleMatchIsIntro() override;
-	/**
-	 * @brief 게임 내에서 매치가 끝났을 때, 호출되는 함수입니다.
-	 */
 	virtual void HandleMatchHasEnded() override;
 
 	/**

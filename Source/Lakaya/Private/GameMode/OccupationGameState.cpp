@@ -86,7 +86,7 @@ void AOccupationGameState::BeginPlay()
 				TeamScoreWidget->SetVisibility(ESlateVisibility::Hidden);
 				TeamScoreWidget->SetMaxScore(MaxScore);
 				TeamScoreWidget->SetMaxScoreVisibility(false);
-				OnTeamScoreSignature.AddUObject(TeamScoreWidget,&UTeamScoreWidget::SetTeamScore);
+				OnTeamScoreSignature.AddUObject(TeamScoreWidget, &UTeamScoreWidget::SetTeamScore);
 			}
 			else UE_LOG(LogTemp, Warning, TEXT("TeamScoreWidget is null."));
 		}
@@ -592,9 +592,7 @@ void AOccupationGameState::UpdateTeamScoreTick()
 void AOccupationGameState::StartScoreUpdate(const ETeam& Team, const float UpdateDelay)
 {
 	if (GetWorldTimerManager().IsTimerActive(TimerHandle_UpdateScoreTimer))
-	{
 		StopScoreUpdate();
-	}
 
 	TeamToUpdate = Team;
 	
@@ -754,20 +752,21 @@ TArray<ALakayaBasePlayerState*> AOccupationGameState::GetEnemyArray(UObject* Tea
 	return {};
 }
 
-bool AOccupationGameState::CheckCaptureAreaCount(const ETeam& Team)
+void AOccupationGameState::CheckCaptureAreaCount(const ETeam& Team)
 {
-	const int AntiCaptureAreaCount = GetAntiTeamCaptureAreaCount();
-	const int ProCaptureAreaCount = GetProTeamCaptureAreaCount();
+	const uint8 AntiCaptureAreaCount = AntiTeamCaptureAreaCount;
+	const uint8 ProCaptureAreaCount = ProTeamCaptureAreaCount;
 
 	if (AntiCaptureAreaCount == ProCaptureAreaCount)
 	{
 		StopScoreUpdate();
-		return false;
+		return;
 	}
 
-	return (Team == ETeam::Anti)
-		       ? (AntiCaptureAreaCount > ProCaptureAreaCount)
-		       : (AntiCaptureAreaCount < ProCaptureAreaCount);
+	if ((Team == ETeam::Anti) ? (AntiCaptureAreaCount > ProCaptureAreaCount) : (AntiCaptureAreaCount < ProCaptureAreaCount))
+	{
+		StartScoreUpdate(Team, 1.0f);
+	}
 }
 
 void AOccupationGameState::SetupPlayerStateOnLocal(ALakayaBasePlayerState* PlayerState)
