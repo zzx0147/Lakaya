@@ -146,10 +146,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UGameTimeWidget> InGameTimerWidgetClass;
 
-	// 캐릭터 선택 중에 표시되는 타이머 위젯 클래스를 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UGameTimeWidget> CharacterSelectTimerWidgetClass;
-	
 	// 에임에 있는 플레이어의 이름을 표기해주는 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UPlayerNameDisplayerWidget> PlayerNameDisplayerWidgetClass;
