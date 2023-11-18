@@ -36,9 +36,24 @@ public:
 	UFUNCTION(BlueprintGetter)
 	UCommonActivatableWidget* GetInGameOverlayWidget() const { return InGameOverlayWidget; }
 
-	/** 해당 위젯에 스위처에 보여지도록 합니다. 자식이 아니던 위젯은 자동으로 추가해서 보여주는데, 비활성화될 때 다시 제거되지는 않습니다. */
+	/**
+	 * 해당 위젯에 스위처에 보여지도록 합니다.
+	 * @param bForce true이면 스위처의 자식이 아니던 위젯은 자식으로 추가해서 스위칭합니다, 하지만 비활성화될 때 다시 제거되지는 않습니다.
+	 */
 	UFUNCTION(BlueprintCallable)
-	void SwitchTo(UCommonActivatableWidget* Widget);
+	void SwitchTo(UCommonActivatableWidget* Widget, bool bForce = false);
+
+	UFUNCTION(BlueprintCallable)
+	void SwitchToLoading();
+
+	UFUNCTION(BlueprintCallable)
+	void SwitchToCharacterSelect();
+
+	UFUNCTION(BlueprintCallable)
+	void SwitchToGameIntro();
+
+	UFUNCTION(BlueprintCallable)
+	void SwitchToInGameOverlay();
 
 private:
 	UPROPERTY(BlueprintGetter="GetWidgetSwitcher", meta=(BindWidget))
