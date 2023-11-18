@@ -2,10 +2,10 @@
 #define DO_CHECK 1
 
 #include "UI/OccupationCharacterSelectWidget.h"
-#include "Components/VerticalBox.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
+#include "Components/VerticalBox.h"
 #include "UI/PlayerInfoWidget.h"
 
 UOccupationCharacterSelectWidget::UOccupationCharacterSelectWidget(const FObjectInitializer& ObjectInitializer) : Super(
@@ -60,7 +60,12 @@ void UOccupationCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum
 void UOccupationCharacterSelectWidget::RegisterPlayer(APlayerState* PlayerState)
 {
 	Super::RegisterPlayer(PlayerState);
-	if (PlayerState == GetOwningPlayer()->GetPlayerState<APlayerState>()) return; //로컬 플레이어가 아닐 때에만 따진다
+
+	if (PlayerState == GetOwningPlayer()->GetPlayerState<APlayerState>())
+	{
+		TryBindToPlayerState();
+		return;
+	}
 
 	//위젯을 생성하고 등록시킨다.
 	if (const auto BasePlayerState = Cast<ALakayaBasePlayerState>(PlayerState))
@@ -69,7 +74,7 @@ void UOccupationCharacterSelectWidget::RegisterPlayer(APlayerState* PlayerState)
 		OtherPlayerInfoArray.Emplace(PlayerNameWidget);
 		PlayerInfoVerticalBox->AddChildToVerticalBox(PlayerNameWidget);
 		PlayerNameWidget->SetPlayerName(PlayerState->GetPlayerName());
-		PlayerNameWidget->SetPadding(FMargin(0.0f,50.0f,0.0f,0.0f));
+		PlayerNameWidget->SetPadding(FMargin(0.0f, 50.0f, 0.0f, 0.0f));
 		PlayerNameWidget->SetTeam(MyTeam);
 		BasePlayerState->OnPlayerNameChanged.AddLambda([PlayerNameWidget](const FString& NewName)
 		{

@@ -35,7 +35,7 @@ public:
 	* @param Team 점령에 성공한 팀입니다.
 	*/
 	UFUNCTION()
-	bool CheckCaptureAreaCount(const ETeam& Team);
+	void CheckCaptureAreaCount(const ETeam& Team);
 
 	/**
 	 * @brief 팀에서 점령중인 점령구역 개수를 추가해주는 함수입니다.
@@ -106,8 +106,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TArray<ALakayaBasePlayerState*> GetEnemyArray(UObject* TeamObject) const;
 	
-	FORCEINLINE const float& GetTeamScore(const ETeam& Team) const { return (Team == ETeam::Anti) ? AntiTeamScore : ProTeamScore; }
-	FORCEINLINE const float& GetMaxScore() const { return MaxScore; }
 	FORCEINLINE const ETeam& GetOccupationWinner() const { return CurrentOccupationWinner; }
 	
 	FORCEINLINE void SetTeamToUpdate(const ETeam& NewTeam) { TeamToUpdate = NewTeam; }

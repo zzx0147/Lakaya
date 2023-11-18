@@ -45,3 +45,14 @@ void UGameStateSequentialWidget::SwitchToInGameOverlay()
 {
 	SwitchTo(GetInGameOverlayWidget());
 }
+
+void UGameStateSequentialWidget::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
+	WidgetSwitcher->OnActiveWidgetIndexChanged.AddUObject(this, &ThisClass::OnActiveWidgetIndexChanged);
+}
+
+void UGameStateSequentialWidget::OnActiveWidgetIndexChanged(UWidget* Widget, int32 Index)
+{
+	OnActiveWidgetChanged(CastChecked<UCommonActivatableWidget>(Widget));
+}
