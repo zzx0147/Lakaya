@@ -56,6 +56,11 @@ void ALakayaBaseGameState::BeginPlay()
 			CharacterSelectWidget = Sequential->GetCharacterSelectWidget();
 		}
 
+		if (CharacterSelectWidget.IsValid())
+		{
+			CharacterSelectTimeWidget = CharacterSelectWidget->GetTimerWidget();
+		}
+
 		IntroWidget = Sequential->GetGameIntroWidget();
 		InGameWidgetStack = Sequential->GetInGameOverlayWidget();
 	}
@@ -81,16 +86,6 @@ void ALakayaBaseGameState::BeginPlay()
 			{
 				InGameTimeWidget->AddToViewport(10);
 				InGameTimeWidget->SetVisibility(ESlateVisibility::Hidden);
-			}
-		}
-
-		if (CharacterSelectTimerWidgetClass)
-		{
-			CharacterSelectTimeWidget = CreateWidget<UGameTimeWidget>(LocalController, CharacterSelectTimerWidgetClass);
-			if (CharacterSelectTimeWidget.IsValid())
-			{
-				CharacterSelectTimeWidget->AddToViewport(10);
-				CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
 
@@ -141,10 +136,6 @@ void ALakayaBaseGameState::HandleMatchIsCharacterSelect()
 		SequentialWidget->SwitchToCharacterSelect();
 	}
 
-	//TODO: 타임 위젯은 캐릭터 선택창에 어태치하도록 해야 합니다.
-	if (CharacterSelectTimeWidget.IsValid())
-		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
 	SetupTimerWidget(CharacterSelectTimer, CharacterSelectDuration, CharacterSelectEndingTime, FTimerDelegate::CreateWeakLambda(this,[this]
 	{
 		if (const auto AuthGameMode = GetWorld()->GetAuthGameMode<ALakayaDefaultPlayGameMode>())
@@ -160,9 +151,6 @@ void ALakayaBaseGameState::HandleMatchIsIntro()
 	{
 		SequentialWidget->SwitchToGameIntro();
 	}
-
-	if (CharacterSelectTimeWidget.IsValid())
-		CharacterSelectTimeWidget->SetVisibility(ESlateVisibility::Hidden);
 
 	FTimerDelegate IntroTimerDelegate;
 	IntroTimerDelegate.BindWeakLambda(this, [this]
