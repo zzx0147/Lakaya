@@ -46,10 +46,12 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnCharacterSelected(const FName& CharacterName);
-	
+
 	UFUNCTION()
 	void OnClickedCharacterSelectButton();
-	
+
+	void TryBindToPlayerState();
+
 public:
 	OnChangeSelectedCharacterSignature OnChangeSelectedCharacter;
 
@@ -67,7 +69,7 @@ protected:
 	bool bAutoShortcutEnable;
 
 	TArray<TObjectPtr<class UButton>> CharacterButtonArray;
-	
+
 	TArray<FName> CharacterNameArray;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -75,10 +77,10 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> CharacterNameImage;
-	
-	TObjectPtr<class UPlayerInfoWidget> PlayerInfoWidget;
-private:
 
+	TObjectPtr<class UPlayerInfoWidget> PlayerInfoWidget;
+
+private:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TObjectPtr<UMaterialInterface>> CharacterRenderTargetMaterialArray;
 
@@ -93,13 +95,13 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FName, TObjectPtr<UTexture2D>> CharacterBackgroundTextureMap;
-	
+
 	TObjectPtr<UButton> CharacterSelectButton;
-	
+
 	TObjectPtr<class UImage> GunImage;
 
 	TObjectPtr<UImage> CharacterBackgroundImage;
-	
+
 	TObjectPtr<UImage> SelectedCharacterImage;
 
 	TObjectPtr<UButton> PrevCharacterButton;
@@ -110,7 +112,6 @@ private:
 
 	TObjectPtr<class URichTextBlock> IntroductionText;
 
-
 	bool bAutoHide;
-	
+	bool bPlayerStateBound;
 };

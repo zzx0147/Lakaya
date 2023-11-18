@@ -43,11 +43,11 @@ UGameLobbyCharacterSelectWidget::UGameLobbyCharacterSelectWidget(const FObjectIn
 	GunTextureMap.Emplace(CharacterNameArray[1], nullptr);
 	GunTextureMap.Emplace(CharacterNameArray[2], nullptr);
 
-	
+
 	CharacterBackgroundTextureMap.Emplace(CharacterNameArray[0], nullptr);
 	CharacterBackgroundTextureMap.Emplace(CharacterNameArray[1], nullptr);
 	CharacterBackgroundTextureMap.Emplace(CharacterNameArray[2], nullptr);
-	
+
 	MagazineMap.Emplace(CharacterNameArray[0], 40);
 	MagazineMap.Emplace(CharacterNameArray[1], 30);
 	MagazineMap.Emplace(CharacterNameArray[2], 40);
@@ -55,7 +55,7 @@ UGameLobbyCharacterSelectWidget::UGameLobbyCharacterSelectWidget(const FObjectIn
 	CharacterNameTextureMap.Emplace(CharacterNameArray[0], nullptr);
 	CharacterNameTextureMap.Emplace(CharacterNameArray[1], nullptr);
 	CharacterNameTextureMap.Emplace(CharacterNameArray[2], nullptr);
-	
+
 	MagazineTextFormat = FText::FromString(TEXT("{0}/{0}"));
 	ShortcutPriority = 10;
 	ShortcutContext = ContextFinder.Object;
@@ -69,7 +69,7 @@ void UGameLobbyCharacterSelectWidget::SetVisibility(ESlateVisibility InVisibilit
 	{
 		PlayerController->SetShowMouseCursor(InVisibility == ESlateVisibility::Visible);
 
-		if(InVisibility == ESlateVisibility::Visible)
+		if (InVisibility == ESlateVisibility::Visible)
 		{
 			UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(PlayerController);
 		}
@@ -101,11 +101,11 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 	GunImage = Cast<UImage>(GetWidgetFromName(TEXT("Gun_Img")));
 
 	CharacterBackgroundImage = Cast<UImage>(GetWidgetFromName(TEXT("Background_Img")));
-	
+
 	PlayerInfoWidget = Cast<UPlayerInfoWidget>(GetWidgetFromName(TEXT("MyPlayerInfo")));
 
 	MagazineInfoText = Cast<UTextBlock>(GetWidgetFromName(TEXT("Magazine_Text")));
-	
+
 	check(SelectedCharacterImage != nullptr);
 	for (auto temp : CharacterButtonArray) { check(temp != nullptr) }
 
@@ -118,17 +118,12 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 		this, &UGameLobbyCharacterSelectWidget::OnClickedCharacter2Button);
 	CharacterButtonArray[2]->OnClicked.AddUniqueDynamic(
 		this, &UGameLobbyCharacterSelectWidget::OnClickedCharacter3Button);
-	
+
 	//최초 캐릭터를 1번 캐릭터로 설정
 	PrevCharacterButton = CharacterButtonArray[0];
 	OnClickedCharacter1Button();
 
-	if (const auto PlayerState = GetOwningPlayerState<ALakayaBasePlayerState>())
-	{
-		OnChangeSelectedCharacter.AddUObject(PlayerState, &ALakayaBasePlayerState::RequestCharacterChange);
-		if (PlayerInfoWidget) PlayerInfoWidget->SetPlayerName(PlayerState->GetPlayerName());
-		PlayerState->OnPlayerNameChanged.AddUObject(PlayerInfoWidget.Get(), &UPlayerInfoWidget::SetPlayerName);
-	}
+	TryBindToPlayerState();
 
 	if (const auto Controller = GetOwningPlayer())
 	{
@@ -141,9 +136,9 @@ void UGameLobbyCharacterSelectWidget::NativeConstruct()
 	if (bAutoShortcutEnable) SetShortcutEnabled(true);
 
 	CharacterSelectButton = Cast<UButton>(GetWidgetFromName(TEXT("CharSelect_Btn")));
-	
-	CharacterSelectButton->OnClicked.AddUniqueDynamic(this, &UGameLobbyCharacterSelectWidget::OnClickedCharacterSelectButton);
 
+	CharacterSelectButton->OnClicked.AddUniqueDynamic(
+		this, &UGameLobbyCharacterSelectWidget::OnClickedCharacterSelectButton);
 }
 
 void UGameLobbyCharacterSelectWidget::NativeDestruct()
@@ -220,10 +215,11 @@ void UGameLobbyCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum)
 		CharacterNameArray[CharacterNum]] != nullptr)
 		GunImage->SetBrushFromTexture(GunTextureMap[CharacterNameArray[CharacterNum]]);
 
-	if (CharacterBackgroundImage != nullptr && CharacterBackgroundTextureMap.Contains(CharacterNameArray[CharacterNum]) && CharacterBackgroundTextureMap[
-	CharacterNameArray[CharacterNum]] != nullptr)
+	if (CharacterBackgroundImage != nullptr && CharacterBackgroundTextureMap.Contains(CharacterNameArray[CharacterNum])
+		&& CharacterBackgroundTextureMap[
+			CharacterNameArray[CharacterNum]] != nullptr)
 		CharacterBackgroundImage->SetBrushFromTexture(CharacterBackgroundTextureMap[CharacterNameArray[CharacterNum]]);
-	
+
 	if (PlayerInfoWidget != nullptr)
 		PlayerInfoWidget->SetCharacterName(CharacterNameArray[CharacterNum]);
 
@@ -237,9 +233,11 @@ void UGameLobbyCharacterSelectWidget::SelectCharacter(const uint8& CharacterNum)
 	}
 
 	OnCharacterSelected(CharacterNameArray[CharacterNum]);
-	
+
 	CharacterNameImage->SetBrushFromTexture(CharacterNameTextureMap[CharacterNameArray[CharacterNum]]);
-	CharacterNameImage->SetDesiredSizeOverride(FVector2d(CharacterNameTextureMap[CharacterNameArray[CharacterNum]]->GetSizeX(),CharacterNameTextureMap[CharacterNameArray[CharacterNum]]->GetSizeY()));
+	CharacterNameImage->SetDesiredSizeOverride(FVector2d(
+		CharacterNameTextureMap[CharacterNameArray[CharacterNum]]->GetSizeX(),
+		CharacterNameTextureMap[CharacterNameArray[CharacterNum]]->GetSizeY()));
 }
 
 
@@ -247,4 +245,16 @@ void UGameLobbyCharacterSelectWidget::OnClickedCharacterSelectButton()
 {
 	// GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("OnClickedCharacterSelectButton"));
 	SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UGameLobbyCharacterSelectWidget::TryBindToPlayerState()
+{
+	if (const auto PlayerState = GetOwningPlayerState<ALakayaBasePlayerState>();
+		PlayerState && !bPlayerStateBound)
+	{
+		OnChangeSelectedCharacter.AddUObject(PlayerState, &ALakayaBasePlayerState::RequestCharacterChange);
+		if (PlayerInfoWidget) PlayerInfoWidget->SetPlayerName(PlayerState->GetPlayerName());
+		PlayerState->OnPlayerNameChanged.AddUObject(PlayerInfoWidget.Get(), &UPlayerInfoWidget::SetPlayerName);
+		bPlayerStateBound = true;
+	}
 }
