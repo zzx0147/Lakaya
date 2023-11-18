@@ -1,12 +1,12 @@
 #pragma once
 
-#include <functional>
-
 #include "CoreMinimal.h"
 #include "Character/LakayaBasePlayerState.h"
 #include "GameFramework/GameState.h"
 #include "LakayaBaseGameState.generated.h"
 
+class UIntroWidget;
+class ULoadingWidget;
 class UGameStateSequentialWidget;
 DECLARE_EVENT_OneParam(ALakayaBaseGameState, OnChangePlayerNumberSignature, const uint8&)
 
@@ -142,14 +142,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UGameScoreBoardWidget> ScoreBoardClass;
 
-	// 다른 플레이어의 접속을 대기할 때 표시되는 위젯의 클래스를 지정합니다.
-	UPROPERTY(EditDefaultsOnly, meta=(DeprecatedProperty))
-	TSubclassOf<class ULoadingWidget> LoadingWidgetClass;
-
-	// 캐릭터 선택창 위젯의 클래스를 지정합니다.
-	UPROPERTY(EditDefaultsOnly, meta=(DeprecatedProperty))
-	TSubclassOf<UGameLobbyCharacterSelectWidget> CharacterSelectWidgetClass;
-
 	// 게임중에 표시되는 타이머 위젯 클래스를 지정합니다.
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UGameTimeWidget> InGameTimerWidgetClass;
@@ -177,12 +169,6 @@ protected:
 	// 인게임 도중 Tab키를 눌렀을 시, 띄워지는 미니맵 위젯 클래스를 지정합니다.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UTabMinimapWidget> TabMinimapWidgetClass;
-
-	UPROPERTY(EditDefaultsOnly, meta=(DeprecatedProperty))
-	TSubclassOf<class UIntroWidget> IntroWidgetClass;
-
-	UPROPERTY(EditDefaultsOnly, meta=(DeprecatedProperty))
-	TSubclassOf<class UCommonActivatableWidget> InGameWidgetStackClass;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameStateSequentialWidget> SequentialWidgetClass;
