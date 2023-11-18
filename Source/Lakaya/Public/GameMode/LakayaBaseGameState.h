@@ -60,7 +60,7 @@ public:
 	void NotifyPlayerKilled(APlayerState* VictimPlayer, APlayerState* InstigatorPlayer, AActor* DamageCauser);
 
 protected:
-	virtual class UGameLobbyCharacterSelectWidget* GetCharacterSelectWidget();
+	virtual class UGameLobbyCharacterSelectWidget* GetOrCreateCharacterSelectWidget();
 
 	UFUNCTION()
 	virtual void OnRep_MatchEndingTime();
@@ -83,6 +83,8 @@ protected:
 private:
 	void SetupTimerWidget(FTimerHandle& TimerHandle, const float& Duration, float& EndingTime,
 	                      const FTimerDelegate& Callback, TWeakObjectPtr<class UGameTimeWidget> TimeWidget);
+
+	UGameStateSequentialWidget* GetOrCreateSequentialWidget();
 
 public:
 	virtual bool HasMatchStarted() const override;
@@ -141,11 +143,11 @@ protected:
 	TSubclassOf<class UGameScoreBoardWidget> ScoreBoardClass;
 
 	// 다른 플레이어의 접속을 대기할 때 표시되는 위젯의 클래스를 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, meta=(DeprecatedProperty))
 	TSubclassOf<class ULoadingWidget> LoadingWidgetClass;
 
 	// 캐릭터 선택창 위젯의 클래스를 지정합니다.
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, meta=(DeprecatedProperty))
 	TSubclassOf<UGameLobbyCharacterSelectWidget> CharacterSelectWidgetClass;
 
 	// 게임중에 표시되는 타이머 위젯 클래스를 지정합니다.
@@ -176,10 +178,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UTabMinimapWidget> TabMinimapWidgetClass;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, meta=(DeprecatedProperty))
 	TSubclassOf<class UIntroWidget> IntroWidgetClass;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, meta=(DeprecatedProperty))
 	TSubclassOf<class UCommonActivatableWidget> InGameWidgetStackClass;
 
 	UPROPERTY(EditDefaultsOnly)

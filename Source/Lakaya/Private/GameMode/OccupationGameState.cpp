@@ -419,8 +419,8 @@ void AOccupationGameState::SetClientTeam(const ETeam& NewTeam)
 		for (const auto& Player : Pair.Value)
 			SetupPlayerStateOnLocal(Player);
 
-	if (UOccupationCharacterSelectWidget* const OccupationCharacterSelectWidget
-		= Cast<UOccupationCharacterSelectWidget>(CharacterSelectWidget))
+	if (const auto OccupationCharacterSelectWidget
+		= Cast<UOccupationCharacterSelectWidget>(GetOrCreateCharacterSelectWidget()))
 		OccupationCharacterSelectWidget->SetTeam(NewTeam);
 
 	if (PlayerNameDisplayerWidget.IsValid())
@@ -776,6 +776,6 @@ void AOccupationGameState::SetupPlayerStateOnLocal(ALakayaBasePlayerState* Playe
 	const auto IsAlly = Team == ClientTeam;
 	PlayerState->SetUniqueStencilMask(GetUniqueStencilMask(IsAlly, PlayersByTeamMap[Team].Find(PlayerState)));
 	PlayerState->SetAlly(IsAlly);
-	if (const auto Widget = GetCharacterSelectWidget(); Widget && IsAlly)
+	if (const auto Widget = GetOrCreateCharacterSelectWidget(); Widget && IsAlly)
 		Widget->RegisterPlayer(PlayerState);
 }
