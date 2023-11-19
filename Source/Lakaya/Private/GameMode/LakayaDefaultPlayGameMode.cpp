@@ -223,8 +223,12 @@ void ALakayaDefaultPlayGameMode::HandleMatchHasEnded()
 				}
 			}
 		}
+
+		if(UKismetSystemLibrary::IsDedicatedServer(this))
+		{
+			RestartGame();
+		}
 		
-		RestartGame();
 	});
 	GetWorldTimerManager().SetTimer(RestartServerTimerHandle, TimerDelegate, 15.0f, false);
 }
