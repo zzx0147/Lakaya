@@ -328,7 +328,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 
 		for (const auto Player : OccupyingPlayerList[CurrentTeam])
 		{
-			if(!IsValid(Player->GetPawn())) continue;
+			if(!IsValid(Player->GetPawn())) return;
 			
 			if (Player->GetPawn()->IsLocallyControlled() && IsValid(Player->GetAimOccupyProgressWidget()))
 				Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(Player->GetTeam() ,TeamCaptureProgress, true);
@@ -371,6 +371,9 @@ void ACaptureArea::IncreaseCaptureProgress()
 			// 점령구역에 제일 먼저 들어와 있던 인원에게 점수를 부여합니다.
 			for (const auto Player : OccupyingPlayerList[CurrentTeam])
 			{
+				if (!IsValid(Player)) return;
+				if (!IsValid(Player->GetPawn())) return;
+				
 				if (Player == OccupyingPlayerList[CurrentTeam][0])
 				{
 					Player->AddTotalScoreCount(500);
@@ -387,7 +390,8 @@ void ACaptureArea::IncreaseCaptureProgress()
 						SuccessPlayer = Player;
 					}
 				}
-				
+
+
 				if (Player->GetPawn()->IsLocallyControlled())
 				{
 					if (IsValid(Player->GetAimOccupyProgressWidget()) && IsValid(Player->GetAimOccupyProgressWidget()))
@@ -427,6 +431,9 @@ void ACaptureArea::DecreaseCaptureProgress()
 	
 	for (const auto Player : OccupyingPlayerList[CurrentTeam])
 	{
+		if(!IsValid(Player)) return;
+		if(!IsValid(Player->GetPawn())) return;
+		
 		if (Player->GetPawn()->IsLocallyControlled() && IsValid(Player->GetAimOccupyProgressWidget()))
 			Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(Player->GetTeam() ,TeamCaptureProgress, false);
 	}
