@@ -26,6 +26,8 @@ void UPlayerInfoWidget::SetPlayerName(const FString& NewName)
 
 void UPlayerInfoWidget::SetCharacterName_Implementation(const FName& NewName)
 {
+	if(CharacterNameText == nullptr) return;
+	
 	CharacterNameText->SetText(FText::FromName(NewName));
 
 	if (CharacterPortraitMap.Contains(NewName))
@@ -42,9 +44,9 @@ void UPlayerInfoWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	PlayerNameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("PlayerName_Text")));
-	CharacterNameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("CharacterName_Text")));
-	CharacterPortraitImage = Cast<UImage>(GetWidgetFromName(TEXT("Character_Img")));
+	// PlayerNameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("PlayerName_Text")));
+	// CharacterNameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("CharacterName_Text")));
+	// CharacterPortraitImage = Cast<UImage>(GetWidgetFromName(TEXT("Character_Img")));
 
 	if (PlayerNameText != nullptr)
 		PlayerNameText->SetText(PlayerName);
