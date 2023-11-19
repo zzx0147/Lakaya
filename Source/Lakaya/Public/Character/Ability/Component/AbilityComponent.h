@@ -41,4 +41,12 @@ private:
 
 	UPROPERTY(Transient, BlueprintGetter=GetAbilitySystemComponent)
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+
+	/** true이면 원격 서버에서도 어빌리티 컴포넌트가 활성화됩니다. */
+	UPROPERTY(EditAnywhere)
+	uint8 bActivateOnRemoteServer : 1;
+
+	/** true이면 AI가 조종하는 폰이더라도 활성화됩니다. */
+	UPROPERTY(EditAnywhere)
+	uint8 bActivateOnAI : 1;
 };
