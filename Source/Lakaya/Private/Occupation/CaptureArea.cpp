@@ -317,6 +317,8 @@ void ACaptureArea::IncreaseCaptureProgress()
 {
 	const ECaptureAreaState CaptureAreaState = CurrentCaptureAreaState;
 
+	if(!IsValid(this)) return;
+	
 	if (CaptureAreaState == ECaptureAreaState::AntiProgress || CaptureAreaState == ECaptureAreaState::ProProgress)
 	{
 		const ETeam CurrentTeam = (CaptureAreaState == ECaptureAreaState::AntiProgress) ? ETeam::Anti : ETeam::Pro;
@@ -328,8 +330,15 @@ void ACaptureArea::IncreaseCaptureProgress()
 
 		for (const auto Player : OccupyingPlayerList[CurrentTeam])
 		{
-			if(!IsValid(Player)) return;
-			if(!IsValid(Player->GetPawn())) return;
+			try
+			{
+				if(!IsValid(Player)) return;
+				if(!IsValid(Player->GetPawn())) return;
+			}
+			catch (...)
+			{
+				return;
+			}
 			
 			if (Player->GetPawn()->IsLocallyControlled() && IsValid(Player->GetAimOccupyProgressWidget()))
 				Player->GetAimOccupyProgressWidget()->SetAimOccupyProgressBar(Player->GetTeam() ,TeamCaptureProgress, true);
