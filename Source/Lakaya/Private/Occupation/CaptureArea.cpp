@@ -328,6 +328,7 @@ void ACaptureArea::IncreaseCaptureProgress()
 
 		for (const auto Player : OccupyingPlayerList[CurrentTeam])
 		{
+			if(!IsValid(Player)) return;
 			if(!IsValid(Player->GetPawn())) return;
 			
 			if (Player->GetPawn()->IsLocallyControlled() && IsValid(Player->GetAimOccupyProgressWidget()))
