@@ -46,6 +46,7 @@ public:
 	
 	FORCEINLINE void SetMaxCoolTime(const float& NewMaxCoolTime) { MaxCoolTime = NewMaxCoolTime; }
 
+	UFUNCTION(BlueprintCallable)
 	void StartCoolTime(const float& ArgStartTime, const float& Duration);
 	void StartStackingRegen(const float& ArgStartTime, const float& Duration, const bool& ArgShowProgressOnlyZeroStack = false);
 
