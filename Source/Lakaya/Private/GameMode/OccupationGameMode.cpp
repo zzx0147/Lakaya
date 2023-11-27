@@ -5,6 +5,8 @@
 #include "Character/LakayaBaseCharacter.h"
 #include "GameMode/OccupationGameState.h"
 #include "PlayerController/MovablePlayerController.h"
+#include "Kismet/GameplayStatics.h"
+#include "Occupation/CaptureArea.h"
 
 AOccupationGameMode::AOccupationGameMode()
 {
@@ -32,6 +34,14 @@ void AOccupationGameMode::HandleMatchHasEnded()
 	Super::HandleMatchHasEnded();
 
 	OccupationGameState->SetOccupationWinner();
+	TArray<AActor*> CaptureAreas;
+	
+	UGameplayStatics::GetAllActorsOfClass(this,ACaptureArea::StaticClass(),CaptureAreas);
+	
+	for(const auto CaptureArea : CaptureAreas)
+	{
+		GetWorldTimerManager().ClearAllTimersForObject(CaptureArea);
+	}
 }
 
 void AOccupationGameMode::HandleMatchIsSelectCharacter()

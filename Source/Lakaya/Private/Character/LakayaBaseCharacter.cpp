@@ -4,6 +4,7 @@
 #include "Character/LakayaBaseCharacter.h"
 
 #include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
 #include "NiagaraComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Character/BulletSpreadComponent.h"
@@ -142,10 +143,7 @@ UAbilitySystemComponent* ALakayaBaseCharacter::GetAbilitySystemComponent() const
 	{
 		return AbilityHandleContainer.AbilitySystem.Get();
 	}
-
-	// 마지막으로 플레이어 스테이트를 타입캐스팅하여 플레이어 스테이트의 어빌리티 시스템 컴포넌트를 사용합니다.
-	const auto CastedState = GetPlayerState<IAbilitySystemInterface>();
-	return ensure(CastedState) ? CastedState->GetAbilitySystemComponent() : nullptr;
+	return UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetPlayerState());
 }
 
 void ALakayaBaseCharacter::GiveAbilities(UAbilitySystemComponent* InAbilitySystem)

@@ -118,6 +118,9 @@ bool FProjectilePool::BindPendingItems() const
 void FProjectilePool::ClientProjectileStateChanged(ALakayaProjectile* InProjectile, const FProjectileState& OldState,
                                                    const FProjectileState& NewState) const
 {
+	UE_LOG(LogTemp, Log, TEXT("%s : %s -> %s"), InProjectile ? *InProjectile->GetName() : TEXT(""),
+	       *UEnum::GetValueAsString(OldState.GetProjectileState()),
+	       *UEnum::GetValueAsString(NewState.GetProjectileState()));
 	NewState.IsCollapsed() ? FreeProjectiles.AddUnique(InProjectile) : FreeProjectiles.Remove(InProjectile);
 }
 

@@ -6,7 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "Abilities/GameplayAbility.h"
 
-UAbilityComponent::UAbilityComponent()
+UAbilityComponent::UAbilityComponent(): bActivateOnRemoteServer(0), bActivateOnAI(0)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
@@ -33,12 +33,8 @@ void UAbilityComponent::SetOwningAbility(UGameplayAbility* InOwningAbility)
 		{
 			AbilitySystemComponent->RegisterGameplayTagEvent(Tag).AddUObject(this, &ThisClass::OnIgnoredTagUpdated);
 		}
-		ToggleActive();
 	}
-	else
-	{
-		Activate();
-	}
+	Activate();
 }
 
 void UAbilityComponent::OnRequiredTagUpdated(FGameplayTag Tag, int32 NewCount)
@@ -59,7 +55,17 @@ void UAbilityComponent::OnIgnoredTagUpdated(FGameplayTag Tag, int32 NewCount)
 
 bool UAbilityComponent::ShouldActivate() const
 {
-	return Super::ShouldActivate() && AbilitySystemComponent
+	const bool bTreatTagRequirements = AbilitySystemComponent
 		&& AbilitySystemComponent->HasAllMatchingGameplayTags(EnableRequireTags.RequireTags)
 		&& !AbilitySystemComponent->HasAnyMatchingGameplayTags(EnableRequireTags.IgnoreTags);
+
+	bool bTreatRemoteServerCond = false;
+	bool bTreatAICond = false;
+	//TODO: 오너가 폰이 아닌 경우에 폰을 찾도록 하는 로직이 필요할 수 있습니다.
+	if (const auto Pawn = GetOwner<APawn>())
+	{
+		bTreatAICond = Pawn->IsPlayerControlled() ? true : bActivateOnAI;
+		bTreatRemoteServerCond = Pawn->IsLocallyControlled() ? true : Pawn->HasAuthority() && bActivateOnRemoteServer;
+	}
+	return Super::ShouldActivate() && bTreatTagRequirements && bTreatRemoteServerCond && bTreatAICond;
 }
